@@ -137,7 +137,7 @@ For example, `@KirstieJane` will send a notification to Kirstie Whitaker so she 
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
-![](images/example-conversation-in-issue.png)
+![](images/example-conversation-in-issue.jpg)
 
 ### Capturing knowledge in the GitHub wiki
 
