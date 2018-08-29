@@ -6,7 +6,7 @@ Thank you for being here and contributing to the project.
 It can truly only succeed with a interdisiplinary team working together.
 
 The point of these contributing guidelines are to help you participate as easily as possible.
-If you have any questions that aren't discussed below, please let us know by [opening an issue](#open-an-issue). `NOTE TO SELF: MAKE THIS HEADING!`
+If you have any questions that aren't discussed below, please let us know by [opening an issue](#project-management-through-issues).
 
 ## Table of contents
 
@@ -24,12 +24,8 @@ Jump to the following sections:
   * [Issues as conversations](#issues-as-conversations)
   * [Capturing knowledge in the GitHub wiki](#capturing-knowledge-in-the-github-wiki)
   * [Working in a private repository](#working-in-a-private-repository)
-  * [Who's involved](#whos-involved)
-* [Where to start: wiki, code and templates](#where-to-start-wiki-code-and-templates)
-* [Where to start: issue labels](#where-to-start-issue-labels)
-* [Make a change with a pull request](#making-a-change-with-a-pull-request)
-  * [Example pull request](#example-pull-request)
-* [Recognizing contributions](#recognizing-contributions)
+  * [Who's involved in the project](#Whos-involved-in-the-project)
+  * [Make a change with a pull request](#making-a-change-with-a-pull-request)
 
 ## An Agile development philosophy
 
@@ -153,7 +149,6 @@ Here's a useful [introduction to GitHub wikis][intro-github-wiki].
 To calm your nerves, the wiki is *itself* a git repository in the background and therefore it is versioned and (in that sense) backed up.
 **You can't totally erase anyone's work in the wiki** so please don't feel nervous about refining and adding your work to an already existing document.
 
-
 Your work does not need to be perfect and we encourage you to remember the premise behind the [Bus Factor][bus-factor]: a measurement of the risk resulting from information and capabilities not being shared among team members, from the phrase "in case they get hit by a bus".
 
 > If you have thought about something, reviewed some work, worried about a potential problem, or come up with a potential solution it should be **written down in the wiki** to give the project resilience and to prevent us from reinventing the wheel.
@@ -164,11 +159,14 @@ As one of the goals of this project is to build a secure infrastructure for data
 
 Please note that the plan is to make the contents of this repository openly available by the end of 2018. Please be considerate of the content you add and use professional and inclusive language at all times.
 
-As we're working in a private repository you may not be able to see the repository if you aren't signed in. So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
+As we're working in a private repository you may not be able to see the repository if you aren't signed in.
+So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
 
-### Who's involved
+### Who's involved in the project
 
-The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do. (Another option for private repositories is to allow all members of the organisation but *not* public members to see all projects owned by the organisation.) Therefore it is sometimes nice to know **who** you're working with on the project (which is oddly difficult to do if you aren't an administrator on the project!)
+The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do.
+(Another option for private repositories is to allow all members of the organisation but *not* public members to see all projects owned by the organisation.)
+Therefore it is sometimes nice to know **who** you're working with on the project (which is oddly difficult to do if you aren't an administrator on the project!)
 
 (Additionally some users have GitHub IDs that make it a little difficult to know who they are in real life! Hopefully this table will help you put names to faces and IDs :sparkles:)
 
@@ -195,7 +193,7 @@ The following people have access to the project:
 | Sebastian Vollmer  | [@vollmersj](https://github.com/vollmersj)| <svollmer@turing.ac.uk> |
 | Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
 
-## Making a change with a pull request
+### Making a change with a pull request
 
 To contribute to the codebase you'll need to submit a **pull request**.
 
@@ -238,7 +236,7 @@ You're awesome. :wave::smiley:
 
 <br>
 
-*&mdash; Based on contributing guidelines from the [BIDS Starter Kit][bids-starterkit-repo] project.*
+*&mdash; Based on contributing guidelines from the [BIDS Starter Kit][bids-starterkit-repo] project. Reused under the CC-BY license.*
 
 [bids-starterkit-repo]: https://github.com/INCF/bids-starter-kit
 [bus-factor]: https://en.wikipedia.org/wiki/Bus_factor
