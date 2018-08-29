@@ -82,7 +82,7 @@ During a daily meeting everyone on the team would answer the following questions
 As we are distributed around the Turing and not working full time on this project, the best way to work around the absense of the daily meetings is to **commit to sharing updates as regularly as possible**.
 Please see the section on [project management through issues](#project-management-through-issues) below on how to do this via GitHub.
 
-> If each individual team member asks themselves the three questions (what did I did, what will I do, what is blocking me) and updates their assigned issues with the answers we will likely make good progress in the absense of these daily meetings.
+***If each individual team member asks themselves the three questions (what did I did, what will I do, what is blocking me) and updates their assigned issues with the answers we will likely make good progress in the absense of these daily meetings.***
 
 <img align="right" width="50%" src="https://linuxcentro.com.br/wp-content/uploads/2017/04/github-520x350.jpg" alt="Two github cats working together"/>
 
@@ -151,7 +151,7 @@ To calm your nerves, the wiki is *itself* a git repository in the background and
 
 Your work does not need to be perfect and we encourage you to remember the premise behind the [Bus Factor][bus-factor]: a measurement of the risk resulting from information and capabilities not being shared among team members, from the phrase "in case they get hit by a bus".
 
-> If you have thought about something, reviewed some work, worried about a potential problem, or come up with a potential solution it should be **written down in the wiki** to give the project resilience and to prevent us from reinventing the wheel.
+***If you have thought about something, reviewed some work, worried about a potential problem, or come up with a potential solution it should be WRITTEN DOWN IN THE WIKI to give the project resilience and to prevent us from reinventing the wheel.***
 
 ### Working in a private repository
 
@@ -197,7 +197,7 @@ The following people have access to the project:
 
 To contribute to the codebase you'll need to submit a **pull request**.
 
-:point_right: Remember that if you're adding information to the wiki (as described [above](#github-wiki) you ***don't need to submit a pull request***. You can just log into GitHub, navigate to the [repository wiki][safehaven-wiki] and click the **edit** button.
+:point_right: Remember that if you're adding information to the wiki (as described [above](#capturing-knowledge-in-the-github-wiki) you ***don't need to submit a pull request***. You can just log into GitHub, navigate to the [repository wiki][safehaven-wiki] and click the **edit** button.
 
 If you're updating the code or other documents in the main repository, the following steps are a guide to help you contribute in a way that will be easy for everyone to review and accept with ease  :sunglasses:.
 
