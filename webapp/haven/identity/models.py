@@ -3,8 +3,7 @@ from django.db import models
 
 from projects.models import Project
 
-from .roles import CREATION_PERMISSIONS, GLOBAL_ROLES, PROJECT_ROLES, Role
-
+from .roles import CREATION_PERMISSIONS, GLOBAL_ROLES, PROJECT_ROLES
 
 
 class User(AbstractUser):

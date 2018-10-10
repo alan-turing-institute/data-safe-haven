@@ -21,4 +21,3 @@ TIERS = [
     (Tier.TWO, 'Tier 2'),
     (Tier.THREE, 'Tier 3'),
 ]
-

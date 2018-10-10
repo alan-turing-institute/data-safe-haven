@@ -9,6 +9,7 @@ class Role:
     INVESTIGATOR = 'investigator'
     RESEARCHER = 'researcher'
 
+
 GLOBAL_ROLES = (
     (Role.SYSTEM_CONTROLLER, 'System Controller'),
     (Role.RESEARCH_COORDINATOR, 'Research Coordinator'),

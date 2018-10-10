@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db import models
 
-from .tiers import Tier, TIERS
+from .tiers import TIERS, Tier
 
 
 class Dataset(models.Model):
