@@ -18,7 +18,7 @@ class User(AbstractUser):
 
 
 class Participant(models.Model):
-    role = models.CharField(max_length=50, choices=PROJECT_ROLES, blank=True)
+    role = models.CharField(max_length=50, choices=PROJECT_ROLES)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
