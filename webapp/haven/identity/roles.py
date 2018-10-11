@@ -2,6 +2,10 @@ from collections import defaultdict
 
 
 class Role:
+    """
+    Define roles that can be taken on by a user, either globally
+    or in the context of a project
+    """
     SYSTEM_CONTROLLER = 'system_controller'
     RESEARCH_COORDINATOR = 'research_coordinator'
     DATA_PROVIDER_REPRESENTATIVE = 'data_provider_representative'
@@ -20,6 +24,7 @@ class Role:
     }
 
 
+# A list of all roles
 ALL_ROLES = [
     Role.SYSTEM_CONTROLLER,
     Role.RESEARCH_COORDINATOR,
@@ -29,6 +34,7 @@ ALL_ROLES = [
     Role.RESEARCH_COORDINATOR,
 ]
 
+# Roles that can be applied globally to a user
 GLOBAL_ROLES = [
     Role.SYSTEM_CONTROLLER,
     Role.RESEARCH_COORDINATOR,
@@ -38,6 +44,8 @@ GLOBAL_ROLE_CHOICES = (
     (role, Role.NAMES[role]) for role in GLOBAL_ROLES
 )
 
+
+# Roles that are project-specific.
 PROJECT_ROLES = (
     Role.DATA_PROVIDER_REPRESENTATIVE,
     Role.RESEARCH_COORDINATOR,
@@ -51,7 +59,7 @@ PROJECT_ROLE_CHOICES = (
 )
 
 
-# Define the other roles which can be created by each role
+# Mapping of roles to a list of other roles they are allowed to create
 CREATION_PERMISSIONS = defaultdict(list, {
     Role.SYSTEM_CONTROLLER: [
         Role.RESEARCH_COORDINATOR,

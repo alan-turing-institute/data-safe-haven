@@ -1,5 +1,8 @@
 
 class Tier:
+    """
+    Define data tiers
+    """
     # Tier zero: public
     ZERO = 0
 

@@ -7,7 +7,15 @@ from .roles import GLOBAL_ROLE_CHOICES, PROJECT_ROLE_CHOICES, can_create
 
 
 class User(AbstractUser):
-    role = models.CharField(max_length=50, choices=GLOBAL_ROLE_CHOICES, blank=True)
+    """
+    Represents a user which can log in to the system
+    """
+    role = models.CharField(
+        max_length=50,
+        choices=GLOBAL_ROLE_CHOICES,
+        blank=True,
+        help_text="The user's role in the system"
+    )
 
     def can_create_role(self, role):
         """
@@ -17,7 +25,14 @@ class User(AbstractUser):
 
 
 class Participant(models.Model):
-    role = models.CharField(max_length=50, choices=PROJECT_ROLE_CHOICES)
+    """
+    Represents a user's participation in a project
+    """
+    role = models.CharField(
+        max_length=50,
+        choices=PROJECT_ROLE_CHOICES,
+        help_text="The participant's role on this project"
+    )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
