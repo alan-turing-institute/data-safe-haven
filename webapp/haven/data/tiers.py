@@ -15,7 +15,7 @@ class Tier:
     # Tier 4 is secret (Out of scope)
 
 
-TIERS = [
+TIER_CHOICES = [
     (Tier.ZERO, 'Tier 0'),
     (Tier.ONE, 'Tier 1'),
     (Tier.TWO, 'Tier 2'),
