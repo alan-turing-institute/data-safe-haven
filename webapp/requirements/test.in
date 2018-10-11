@@ -1,0 +1,4 @@
+-r base.in
+
+pytest==3.8.2
+pytest-django==3.4.3
