@@ -67,3 +67,10 @@ python haven/manage.py runserver
 cd haven
 pytest
 ```
+
+## Contributing
+
+Python dependencies are managed via [`pip-tools`](https://pypi.org/project/pip-tools/). To add a new python package to the requirements:
+
+* Add the package name and version to the relevant `.in` file in `requirements/` (usually `requirements/base.in`)
+* Run `make -C requirements/` to rebuild the requirements txt files
