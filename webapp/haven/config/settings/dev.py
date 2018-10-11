@@ -1,6 +1,8 @@
 from .base import *  # noqa
 
 
+# Settings specific to the development environment
+
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
