@@ -21,7 +21,7 @@ or, for local dev setup:
 pip install -r requirements/dev.txt
 ```
 
-### Create Postgres (user &) database
+### Set up PostgreSQL
 
 The --createdb flag should be set for the database user if running tests (so test databases can be set up and torn down). This should not be done on a production system.
 
@@ -59,4 +59,11 @@ haven/manage.py createsuperuser
 
 ```bash
 python haven/manage.py runserver
+```
+
+### Run unit tests
+
+```
+cd haven
+pytest
 ```

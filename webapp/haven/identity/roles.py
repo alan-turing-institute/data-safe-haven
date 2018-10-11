@@ -9,18 +9,45 @@ class Role:
     INVESTIGATOR = 'investigator'
     RESEARCHER = 'researcher'
 
+    NAMES = {
+        SYSTEM_CONTROLLER: 'System Controller',
+        RESEARCH_COORDINATOR: 'Research Coordinator',
+        DATA_PROVIDER_REPRESENTATIVE: 'Data Provider Representative',
+        RESEARCH_COORDINATOR: 'Research Coordinator',
+        REFEREE: 'Referee',
+        INVESTIGATOR: 'Investigator',
+        RESEARCHER: 'Researcher',
+    }
 
-GLOBAL_ROLES = (
-    (Role.SYSTEM_CONTROLLER, 'System Controller'),
-    (Role.RESEARCH_COORDINATOR, 'Research Coordinator'),
+
+ALL_ROLES = [
+    Role.SYSTEM_CONTROLLER,
+    Role.RESEARCH_COORDINATOR,
+    Role.DATA_PROVIDER_REPRESENTATIVE,
+    Role.REFEREE,
+    Role.INVESTIGATOR,
+    Role.RESEARCH_COORDINATOR,
+]
+
+GLOBAL_ROLES = [
+    Role.SYSTEM_CONTROLLER,
+    Role.RESEARCH_COORDINATOR,
+]
+
+GLOBAL_ROLE_CHOICES = (
+    (role, Role.NAMES[role]) for role in GLOBAL_ROLES
 )
 
 PROJECT_ROLES = (
-    (Role.DATA_PROVIDER_REPRESENTATIVE, 'Data Provider Representative'),
-    (Role.RESEARCH_COORDINATOR, 'Research Coordinator'),
-    (Role.REFEREE, 'Referee'),
-    (Role.INVESTIGATOR, 'Investigator'),
-    (Role.RESEARCHER, 'Researcher'),
+    Role.DATA_PROVIDER_REPRESENTATIVE,
+    Role.RESEARCH_COORDINATOR,
+    Role.REFEREE,
+    Role.INVESTIGATOR,
+    Role.RESEARCHER,
+)
+
+PROJECT_ROLE_CHOICES = (
+    (role, Role.NAMES[role]) for role in PROJECT_ROLES
 )
 
 
@@ -42,3 +69,15 @@ CREATION_PERMISSIONS = defaultdict(list, {
         Role.RESEARCHER,
     ],
 })
+
+
+def can_create(creator, createe):
+    """
+    Does the `creator` role have permission to create the `createe` role?
+
+    :param creator: `Role` string representing creator role
+    :param createe: `Role` string representing createe role
+
+    :return `True` if creator can create createe, `False` if not
+    """
+    return createe in CREATION_PERMISSIONS[creator]
