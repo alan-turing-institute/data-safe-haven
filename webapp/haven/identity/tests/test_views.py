@@ -4,25 +4,20 @@ from identity.models import User
 from identity.roles import UserRole
 
 
-def assert_login_redirect(response):
-    assert response.status_code == 302
-    assert '/login/' in response.url
-
-
 @pytest.mark.django_db
 class TestCreateUser:
-    def test_anonymous_cannot_access_page(self, client):
+    def test_anonymous_cannot_access_page(self, client, helpers):
         response = client.get('/users/new')
 
-        assert_login_redirect(response)
+        helpers.assert_login_redirect(response)
 
-    def test_anonymous_cannot_post_form(self, client):
+    def test_anonymous_cannot_post_form(self, client, helpers):
         response = client.post('/users/new', {
             'username': 'testuser',
             'role': '',
         })
 
-        assert_login_redirect(response)
+        helpers.assert_login_redirect(response)
         assert not User.objects.filter(username='testuser').exists()
 
     def test_research_coordinator_cannot_access_page(self, as_research_coordinator):

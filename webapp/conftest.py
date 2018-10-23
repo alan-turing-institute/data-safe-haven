@@ -7,6 +7,17 @@ from identity.roles import UserRole
 DUMMY_PASSWORD = 'password'
 
 
+class Helpers:
+    def assert_login_redirect(response):
+        assert response.status_code == 302
+        assert '/login/' in response.url
+
+
+@pytest.fixture
+def helpers():
+    return Helpers
+
+
 @pytest.fixture
 def superuser():
     return User.objects.create_superuser(
@@ -37,11 +48,10 @@ def research_coordinator():
 
 
 @pytest.fixture
-def project_participant():
+def regular_user():
     return User.objects.create_user(
-        username='participant',
-        email='coordinator@example.com',
-        role=UserRole.PROJECT_PARTICIPANT,
+        username='regular_user',
+        email='regular_user@example.com',
         password=DUMMY_PASSWORD,
     )
 
@@ -81,6 +91,6 @@ def as_data_provider_representative(client, data_provider_representative):
 
 
 @pytest.fixture
-def as_project_participant(client, project_participant):
-    client.login(username=project_participant.username, password=DUMMY_PASSWORD)
+def as_regular_user(client, regular_user):
+    client.login(username=regular_user.username, password=DUMMY_PASSWORD)
     return client

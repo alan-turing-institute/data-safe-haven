@@ -25,6 +25,16 @@ class User(AbstractUser):
         return bool(self.creatable_roles)
 
     @property
+    def can_create_projects(self):
+        """
+        Can this user create other users at all?
+        """
+        return self.role in [
+            UserRole.SYSTEM_CONTROLLER,
+            UserRole.RESEARCH_COORDINATOR,
+        ]
+
+    @property
     def creatable_roles(self):
         """
         Roles which this user is allowed to create

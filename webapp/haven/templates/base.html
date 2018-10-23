@@ -16,19 +16,22 @@
   <body>
 
      <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">Navbar</a>
+       <a class="navbar-brand" href="{% url 'home' %}">Data Safe Haven</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-          </li>
           {% if request.user.can_create_users %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
+          </li>
+          {% endif %}
+
+          {% if request.user.can_create_projects %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'projects:add_project' %}">Create Project</a>
           </li>
           {% endif %}
         </ul>

@@ -1,18 +1,9 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
 
+from .mixins import UserRoleRequiredMixin
 from .models import User
 from .roles import UserRole
-
-
-class UserRoleRequiredMixin(UserPassesTestMixin):
-    allowed_roles = []
-
-    def test_func(self):
-        return (
-            self.request.user.is_superuser or
-            self.request.user.role in self.allowed_roles
-        )
 
 
 class UserCreate(LoginRequiredMixin, UserRoleRequiredMixin, CreateView):
@@ -20,7 +11,7 @@ class UserCreate(LoginRequiredMixin, UserRoleRequiredMixin, CreateView):
     fields = ['username', 'role']
     success_url = '/'
 
-    allowed_roles = [UserRole.SYSTEM_CONTROLLER]
+    user_roles = [UserRole.SYSTEM_CONTROLLER]
 
     def _restrict_roles(self, form):
         """

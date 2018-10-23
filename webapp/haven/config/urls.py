@@ -24,6 +24,8 @@ urlpatterns = [
 
     path('users/', include('identity.urls', namespace='identity')),
 
+    path('projects/', include('projects.urls', namespace='projects')),
+
     path(
         'accounts/login/',
         auth_views.LoginView.as_view(template_name='identity/login.html'),
