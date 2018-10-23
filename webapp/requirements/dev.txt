@@ -9,6 +9,7 @@ attrs==18.2.0
 backcall==0.1.0           # via ipython
 click==7.0                # via pip-tools
 decorator==4.3.0          # via ipython, traitlets
+django-braces==1.13.0
 django-crispy-forms==1.7.2
 django-environ==0.4.5
 django==2.1

@@ -1,8 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from projects.models import Project
-
 from .roles import ProjectRole, UserRole
 
 
@@ -58,4 +56,4 @@ class Participant(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE)

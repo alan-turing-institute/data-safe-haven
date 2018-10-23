@@ -33,6 +33,7 @@ class TestCreateProject:
         project = Project.objects.get()
         assert project.name == 'my project'
         assert project.description == 'a new project'
+        assert project.created_by.username == response.context['user'].username
 
     def test_create_project_as_system_controller(self, as_system_controller):
         response = as_system_controller.post(
