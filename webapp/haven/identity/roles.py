@@ -29,19 +29,6 @@ class UserRole:
         ],
     })
 
-    @classmethod
-    def can_access_user_creation_page(cls, user):
-        return bool(cls.creatable_roles(user))
-
-    @classmethod
-    def creatable_roles(cls, user):
-        if not user.is_authenticated:
-            return []
-        elif user.is_superuser:
-            return cls.ALL
-        else:
-            return cls.ALLOWED_CREATIONS[user.role]
-
 
 class ProjectRole:
     """

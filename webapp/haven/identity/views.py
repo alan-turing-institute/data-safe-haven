@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView
 
 from .models import User
-from .roles import UserRole
 
 
 class UserCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -14,7 +13,7 @@ class UserCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         """
         Ensure role creation is restricted for the user
         """
-        creatable_roles = UserRole.creatable_roles(self.request.user)
+        creatable_roles = self.request.user.creatable_roles
 
         form.fields['role'].choices = [
             (role, name)
@@ -28,4 +27,4 @@ class UserCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return form
 
     def test_func(self):
-        return UserRole.can_access_user_creation_page(self.request.user)
+        return self.request.user.can_create_users

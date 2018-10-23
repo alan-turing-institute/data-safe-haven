@@ -17,6 +17,25 @@ class User(AbstractUser):
         help_text="The user's role in the system"
     )
 
+    @property
+    def can_create_users(self):
+        """
+        Can this user create other users at all?
+        """
+        return bool(self.creatable_roles)
+
+    @property
+    def creatable_roles(self):
+        """
+        Roles which this user is allowed to create
+        """
+        if not self.is_authenticated:
+            return []
+        elif self.is_superuser:
+            return UserRole.ALL
+        else:
+            return UserRole.ALLOWED_CREATIONS[self.role]
+
 
 class Participant(models.Model):
     """

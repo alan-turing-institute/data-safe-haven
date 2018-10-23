@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='role',
-            field=models.CharField(blank=True, choices=[('system_controller', 'System Controller'), ('research_coordinator', 'Research Coordinator'), ('data_provider_representative', 'Data Provider Representative'), ('project_participant', '')], help_text="The user's role in the system", max_length=50),
+            field=models.CharField(blank=True, choices=[('system_controller', 'System Controller'), ('research_coordinator', 'Research Coordinator'), ('data_provider_representative', 'Data Provider Representative')], help_text="The user's role in the system", max_length=50),
         ),
     ]

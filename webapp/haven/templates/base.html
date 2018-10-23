@@ -1,5 +1,4 @@
 {% load static %}
-{% load user_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -27,7 +26,7 @@
           <li class="nav-item active">
             <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
           </li>
-          {% if request.user|show_create_user_page %}
+          {% if request.user.can_create_users %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
           </li>
@@ -37,11 +36,16 @@
         <span class="navbar-text">
           {% if request.user.is_authenticated %}
             Logged in as {{ request.user.username }}
-            <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
           {% else %}
           <a class="nav-link" href="{% url 'login' %}">Log In</a>
           {% endif %}
         </span>
+
+        {% if request.user.is_authenticated %}
+          <span class="navbar-text">
+            <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+          </span>
+        {% endif %}
       </div>
     </nav>
 
