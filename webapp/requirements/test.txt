@@ -6,6 +6,7 @@
 #
 atomicwrites==1.2.1       # via pytest
 attrs==18.2.0             # via pytest
+django-crispy-forms==1.7.2
 django-environ==0.4.5
 django==2.1
 more-itertools==4.3.0     # via pytest

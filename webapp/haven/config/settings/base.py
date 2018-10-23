@@ -49,13 +49,17 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+THIRD_PARTY_APPS = [
+    'crispy_forms',
+]
+
 LOCAL_APPS = [
     'identity',
     'projects',
     'data',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
@@ -116,6 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'identity.User'
 
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -139,3 +146,5 @@ STATIC_ROOT = str(BASE_DIR / 'staticfiles')
 STATICFILES_DIRS = [
     str(BASE_DIR / 'static'),
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

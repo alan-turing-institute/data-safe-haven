@@ -4,5 +4,20 @@ from django.contrib.auth.admin import UserAdmin
 from .models import Participant, User
 
 
-admin.site.register(User, UserAdmin)
+@admin.register(User)
+class IdentityUserAdmin(UserAdmin):
+    list_display = 'username', 'email', 'role', 'is_staff'
+
+    fieldsets = UserAdmin.fieldsets + (
+        ('Extra fields', {
+            'fields': ['role']
+        }),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Extra fields', {
+            'fields': ['role']
+        }),
+    )
+
+
 admin.site.register(Participant)

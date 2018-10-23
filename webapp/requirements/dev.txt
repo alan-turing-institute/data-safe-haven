@@ -6,20 +6,36 @@
 #
 atomicwrites==1.2.1
 attrs==18.2.0
+backcall==0.1.0           # via ipython
 click==7.0                # via pip-tools
+decorator==4.3.0          # via ipython, traitlets
+django-crispy-forms==1.7.2
 django-environ==0.4.5
 django==2.1
 flake8==3.5.0
+ipdb==0.11
+ipython-genutils==0.2.0   # via traitlets
+ipython==7.0.1            # via ipdb
 isort==4.3.4
+jedi==0.13.1              # via ipython
 mccabe==0.6.1             # via flake8
 more-itertools==4.3.0
+parso==0.3.1              # via jedi
+pexpect==4.6.0            # via ipython
+pickleshare==0.7.5        # via ipython
 pip-tools==3.1.0
 pluggy==0.7.1
+prompt-toolkit==2.0.6     # via ipython
 psycopg2-binary==2.7.5
+ptyprocess==0.6.0         # via pexpect
 py==1.6.0
 pycodestyle==2.3.1        # via flake8
 pyflakes==1.6.0           # via flake8
+pygments==2.2.0           # via ipython
 pytest-django==3.4.3
 pytest==3.8.2
 pytz==2018.5
+simplegeneric==0.8.1      # via ipython
 six==1.11.0
+traitlets==4.3.2          # via ipython
+wcwidth==0.1.7            # via prompt-toolkit

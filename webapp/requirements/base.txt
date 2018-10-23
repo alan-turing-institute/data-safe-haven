@@ -4,6 +4,7 @@
 #
 #    pip-compile --output-file base.txt base.in
 #
+django-crispy-forms==1.7.2
 django-environ==0.4.5
 django==2.1
 psycopg2-binary==2.7.5
