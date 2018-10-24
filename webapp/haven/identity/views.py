@@ -22,7 +22,7 @@ class UserCreate(LoginRequiredMixin, UserRoleRequiredMixin, CreateView):
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
-            if role in creatable_roles
+            if role in creatable_roles or role == ''
         ]
 
     def get_form(self):

@@ -1,5 +1,6 @@
 import pytest
 
+from core import recipes
 from projects.models import Project
 
 
@@ -13,12 +14,12 @@ class TestCreateProject:
         response = client.post('/projects/new')
         helpers.assert_login_redirect(response)
 
-    def test_regular_user_cannot_access_page(self, as_regular_user):
-        response = as_regular_user.get('/projects/new')
+    def test_project_participant_cannot_access_page(self, as_project_participant):
+        response = as_project_participant.get('/projects/new')
         assert response.status_code == 403
 
-    def test_regular_user_cannot_post_form(self, as_regular_user):
-        response = as_regular_user.post('/projects/new')
+    def test_project_participant_cannot_post_form(self, as_project_participant):
+        response = as_project_participant.post('/projects/new')
         assert response.status_code == 403
 
     def test_create_project(self, as_research_coordinator):
@@ -54,3 +55,27 @@ class TestCreateProject:
 
         assert response.status_code == 200
         assert Project.objects.exists()
+
+
+@pytest.mark.django_db
+class TestListProjects:
+    def test_anonymous_cannot_access_page(self, client, helpers):
+        response = client.get('/projects/')
+        helpers.assert_login_redirect(response)
+
+    def test_list_owned_projects(self, client, research_coordinator, system_controller):
+        my_project = recipes.project.make(created_by=research_coordinator)
+        recipes.project.make(created_by=system_controller)
+        client.force_login(research_coordinator)
+        response = client.get('/projects/')
+        assert list(response.context['projects']) == [my_project]
+
+    def test_list_involved_projects(self, as_project_participant):
+        pass
+
+    def test_list_all_projects(self, client, research_coordinator, system_controller):
+        my_project = recipes.project.make(created_by=system_controller)
+        other_project = recipes.project.make(created_by=research_coordinator)
+        client.force_login(system_controller)
+        response = client.get('/projects/')
+        assert list(response.context['projects']) == [my_project, other_project]

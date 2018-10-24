@@ -29,9 +29,15 @@
           </li>
           {% endif %}
 
+          {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'projects:list' %}">Projects</a>
+          </li>
+          {% endif %}
+
           {% if request.user.can_create_projects %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'projects:add_project' %}">Create Project</a>
+            <a class="nav-link" href="{% url 'projects:create' %}">Create Project</a>
           </li>
           {% endif %}
         </ul>

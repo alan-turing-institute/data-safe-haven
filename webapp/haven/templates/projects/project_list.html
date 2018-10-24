@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block page_title %}Projects{% endblock %}
+
+{% block content %}
+<ul class="list-group">
+  {% for project in projects %}
+  <li class="list-group-item">
+    <div class="d-flex w-100 justify-content-between">
+      <h4>{{ project.name }}</h4>
+      <small>{{ project.created_at }}</small>
+    </div>
+    <p>
+    {{ project.description }}
+    </p>
+  </li>
+  {% endfor %}
+</ul>
+
+<div class="btn-group" role="group">
+  {% if request.user.can_create_projects %}
+    <a class="btn btn-primary btn-lg" href="{% url 'projects:create' %}">Create Project</a>
+  {% endif %}
+</div>
+
+{% endblock content %}

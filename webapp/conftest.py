@@ -48,10 +48,10 @@ def research_coordinator():
 
 
 @pytest.fixture
-def regular_user():
+def project_participant():
     return User.objects.create_user(
-        username='regular_user',
-        email='regular_user@example.com',
+        username='project_participant',
+        email='project_participant@example.com',
         password=DUMMY_PASSWORD,
     )
 
@@ -68,29 +68,29 @@ def data_provider_representative():
 
 @pytest.fixture
 def as_superuser(client, superuser):
-    client.login(username=superuser.username, password=DUMMY_PASSWORD)
+    client.force_login(superuser)
     return client
 
 
 @pytest.fixture
 def as_system_controller(client, system_controller):
-    client.login(username=system_controller.username, password=DUMMY_PASSWORD)
+    client.force_login(system_controller)
     return client
 
 
 @pytest.fixture
 def as_research_coordinator(client, research_coordinator):
-    client.login(username=research_coordinator.username, password=DUMMY_PASSWORD)
+    client.force_login(research_coordinator)
     return client
 
 
 @pytest.fixture
 def as_data_provider_representative(client, data_provider_representative):
-    client.login(username=data_provider_representative.username, password=DUMMY_PASSWORD)
+    client.force_login(data_provider_representative)
     return client
 
 
 @pytest.fixture
-def as_regular_user(client, regular_user):
-    client.login(username=regular_user.username, password=DUMMY_PASSWORD)
+def as_project_participant(client, project_participant):
+    client.force_login(project_participant)
     return client
