@@ -70,8 +70,15 @@ class TestListProjects:
         response = client.get('/projects/')
         assert list(response.context['projects']) == [my_project]
 
-    def test_list_involved_projects(self, as_project_participant):
-        pass
+    def test_list_involved_projects(self, client, project_participant):
+        project1, project2 = recipes.project.make(_quantity=2)
+
+        recipes.participant.make(project=project1, user=project_participant)
+
+        client.force_login(project_participant)
+        response = client.get('/projects/')
+
+        assert list(response.context['projects']) == [project1]
 
     def test_list_all_projects(self, client, research_coordinator, system_controller):
         my_project = recipes.project.make(created_by=system_controller)
