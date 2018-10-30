@@ -1,7 +1,6 @@
 from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView
 
 from identity.mixins import UserRoleRequiredMixin
@@ -24,15 +23,11 @@ class ProjectList(LoginRequiredMixin, ListView):
     context_object_name = 'projects'
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        view_all = (
-            self.request.user.is_superuser or
-            self.request.user.role == UserRole.SYSTEM_CONTROLLER
-        )
+        return super().get_queryset().get_visible_projects(self.request.user)
 
-        if not view_all:
-            qs = qs.filter(
-                Q(created_by=self.request.user) |
-                Q(participant__user=self.request.user)
-            )
-        return qs
+
+class ProjectDetail(LoginRequiredMixin, DetailView):
+    model = Project
+
+    def get_queryset(self):
+        return super().get_queryset().get_visible_projects(self.request.user)

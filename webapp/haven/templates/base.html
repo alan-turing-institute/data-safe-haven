@@ -1,4 +1,5 @@
 {% load static %}
+{% load permission_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -23,7 +24,7 @@
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
-          {% if request.user.can_create_users %}
+          {% if can_create_users %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
           </li>
@@ -35,7 +36,7 @@
           </li>
           {% endif %}
 
-          {% if request.user.can_create_projects %}
+          {% if can_create_projects %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'projects:create' %}">Create Project</a>
           </li>

@@ -3,6 +3,8 @@ from django.db import models
 from data.models import Dataset
 from identity.models import User
 
+from .managers import ProjectQuerySet
+
 
 class Project(models.Model):
     name = models.CharField(max_length=256)
@@ -11,6 +13,8 @@ class Project(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
 
     datasets = models.ManyToManyField(Dataset, related_name='projects', blank=True)
+
+    objects = ProjectQuerySet.as_manager()
 
     def __str__(self):
         return self.name

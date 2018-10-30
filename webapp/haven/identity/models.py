@@ -32,6 +32,13 @@ class User(AbstractUser):
             UserRole.RESEARCH_COORDINATOR,
         ]
 
+    def can_add_user_to_project(self, project):
+        return (
+            self.role == UserRole.SYSTEM_CONTROLLER or
+            self.is_superuser or
+            project.created_by == self
+        )
+
     @property
     def creatable_roles(self):
         """

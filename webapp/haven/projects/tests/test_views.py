@@ -86,3 +86,52 @@ class TestListProjects:
         client.force_login(system_controller)
         response = client.get('/projects/')
         assert list(response.context['projects']) == [my_project, other_project]
+
+
+@pytest.mark.django_db
+class TestViewProject:
+    def test_anonymous_cannot_access_page(self, client, helpers):
+        response = client.get('/projects/1')
+        helpers.assert_login_redirect(response)
+
+    def test_view_owned_project(self, client, research_coordinator):
+        project = recipes.project.make(created_by=research_coordinator)
+        client.force_login(research_coordinator)
+
+        response = client.get('/projects/%d' % project.id)
+
+        assert response.status_code == 200
+        assert response.context['project'] == project
+
+    def test_view_involved_project(self, client, project_participant):
+        client.force_login(project_participant)
+        project1, project2 = recipes.project.make(_quantity=2)
+        recipes.participant.make(project=project1, user=project_participant)
+
+        response = client.get('/projects/%d' % project1.id)
+
+        assert response.status_code == 200
+        assert response.context['project'] == project1
+
+    def test_cannot_view_other_project(self, as_research_coordinator):
+        project = recipes.project.make()
+
+        response = as_research_coordinator.get('/projects/%d' % project.id)
+
+        assert response.status_code == 404
+
+    def test_view_as_system_controller(self, as_system_controller):
+        project = recipes.project.make()
+
+        response = as_system_controller.get('/projects/%d' % project.id)
+
+        assert response.status_code == 200
+        assert response.context['project'] == project
+
+    def test_view_as_superuser(self, as_superuser):
+        project = recipes.project.make()
+
+        response = as_superuser.get('/projects/%d' % project.id)
+
+        assert response.status_code == 200
+        assert response.context['project'] == project
