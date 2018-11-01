@@ -1,7 +1,8 @@
 import pytest
 
+from core import recipes
 from identity.models import User
-from identity.roles import UserRole
+from identity.roles import ProjectRole, UserRole
 
 
 DUMMY_PASSWORD = 'password'
@@ -64,6 +65,16 @@ def data_provider_representative():
         role=UserRole.DATA_PROVIDER_REPRESENTATIVE,
         password=DUMMY_PASSWORD,
     )
+
+
+@pytest.fixture
+def investigator():
+    return recipes.participant.make(role=ProjectRole.INVESTIGATOR)
+
+
+@pytest.fixture
+def researcher():
+    return recipes.participant.make(role=ProjectRole.RESEARCHER)
 
 
 @pytest.fixture

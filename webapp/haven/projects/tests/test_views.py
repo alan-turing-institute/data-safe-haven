@@ -1,6 +1,7 @@
 import pytest
 
 from core import recipes
+from identity.roles import ProjectRole
 from projects.models import Project
 
 
@@ -135,3 +136,72 @@ class TestViewProject:
 
         assert response.status_code == 200
         assert response.context['project'] == project
+
+
+@pytest.mark.django_db
+class TestAddUserToProject:
+    def test_anonymous_cannot_access_page(self, client, helpers):
+        project = recipes.project.make()
+        response = client.get('/projects/%d/users/add' % project.id)
+        helpers.assert_login_redirect(response)
+
+    def test_view_page(self, client, research_coordinator):
+        project = recipes.project.make(created_by=research_coordinator)
+        client.force_login(research_coordinator)
+
+        response = client.get('/projects/%d/users/add' % project.id)
+        assert response.status_code == 200
+        assert response.context['project'] == project
+
+    def test_add_new_user_to_project(self, client, research_coordinator):
+        project = recipes.project.make(created_by=research_coordinator)
+        client.force_login(research_coordinator)
+
+        response = client.post('/projects/%d/users/add' % project.id, {
+            'role': ProjectRole.RESEARCHER,
+            'username': 'newuser',
+        })
+
+        assert response.status_code == 302
+        assert response.url == '/projects/%d' % project.id
+
+        assert project.participant_set.count() == 1
+        assert project.participant_set.first().user.username == 'newuser'
+        assert project.participant_set.first().role == ProjectRole.RESEARCHER
+
+    def test_add_existing_user_to_project(self, client, research_coordinator, project_participant):
+        project = recipes.project.make(created_by=research_coordinator)
+
+        client.force_login(research_coordinator)
+        response = client.post('/projects/%d/users/add' % project.id, {
+            'role': ProjectRole.RESEARCHER,
+            'username': project_participant.username,
+        })
+
+        assert response.status_code == 302
+        assert response.url == '/projects/%d' % project.id
+
+        assert project.participant_set.count() == 1
+        assert project.participant_set.first().user == project_participant
+        assert project.participant_set.first().role == ProjectRole.RESEARCHER
+
+    def test_returns_404_for_invisible_project(self, as_research_coordinator):
+        project = recipes.project.make()
+
+        # Research coordinator shouldn't have visibility of this other project at all
+        # so pretend it doesn't exist and raise a 404
+        response = as_research_coordinator.get('/projects/%d/users/add' % project.id)
+        assert response.status_code == 404
+
+        response = as_research_coordinator.post('/projects/%d/users/add' % project.id)
+        assert response.status_code == 404
+
+    def test_returns_403_if_no_add_permissions(self, client, researcher):
+        # Researchers can't add users, so do not display the page
+        client.force_login(researcher.user)
+
+        response = client.get('/projects/%d/users/add' % researcher.project.id)
+        assert response.status_code == 403
+
+        response = client.post('/projects/%d/users/add' % researcher.project.id)
+        assert response.status_code == 403

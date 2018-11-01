@@ -33,23 +33,32 @@ class User(AbstractUser):
         ]
 
     def can_add_user_to_project(self, project):
-        return (
-            self.role == UserRole.SYSTEM_CONTROLLER or
-            self.is_superuser or
-            project.created_by == self
-        )
+        return bool(self.creatable_roles_for_project(project))
 
     @property
     def creatable_roles(self):
         """
         Roles which this user is allowed to create
         """
-        if not self.is_authenticated:
-            return []
-        elif self.is_superuser:
+        if self.is_superuser:
             return UserRole.ALL
         else:
             return UserRole.ALLOWED_CREATIONS[self.role]
+
+    def creatable_roles_for_project(self, project):
+        """
+        Roles this user is allowed to create on the given project
+        """
+        if ((self.is_superuser or
+             self.role == UserRole.SYSTEM_CONTROLLER or
+             project.created_by == self)):
+            return ProjectRole.ALL
+        else:
+            role = project.user_role(self)
+            if role:
+                return ProjectRole.ALLOWED_CREATIONS[role]
+
+        return []
 
 
 class Participant(models.Model):
@@ -64,3 +73,6 @@ class Participant(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} ({self.get_role_display()} on {self.project})'

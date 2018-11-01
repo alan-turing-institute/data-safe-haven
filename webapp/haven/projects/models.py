@@ -1,7 +1,7 @@
-from django.db import models
+from django.db import models, transaction
 
 from data.models import Dataset
-from identity.models import User
+from identity.models import Participant, User
 
 from .managers import ProjectQuerySet
 
@@ -18,3 +18,22 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+    def user_role(self, user):
+        """
+        Return the role of a user on this project
+
+        :return: ProjectRole string or None if user is not involved in project
+        """
+        try:
+            return self.participant_set.get(user=user).role
+        except Participant.DoesNotExist:
+            return None
+
+    @transaction.atomic
+    def add_user(self, username, role):
+        user, _ = User.objects.get_or_create(username=username)
+
+        return Participant.objects.create(
+            user=user, role=role, project=self
+        )

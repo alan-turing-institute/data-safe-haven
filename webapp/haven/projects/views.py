@@ -1,12 +1,13 @@
 from braces.views import UserFormKwargsMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse
 from django.views.generic import DetailView, ListView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormMixin
 
 from identity.mixins import UserRoleRequiredMixin
 from identity.roles import UserRole
 
-from .forms import ProjectForm
+from .forms import ProjectAddUserForm, ProjectForm
 from .models import Project
 
 
@@ -31,3 +32,32 @@ class ProjectDetail(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().get_visible_projects(self.request.user)
+
+
+class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailView):
+    model = Project
+    template_name = 'projects/project_add_user.html'
+    form_class = ProjectAddUserForm
+
+    def get_success_url(self):
+        obj = self.get_object()
+        return reverse('projects:detail', args=[obj.id])
+
+    def get_queryset(self):
+        return super().get_queryset().get_visible_projects(self.request.user)
+
+    def test_func(self):
+        return self.request.user.can_add_user_to_project(self.get_object())
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        self.object = self.get_object()
+        if form.is_valid():
+            role = form.cleaned_data['role']
+            username = form.cleaned_data['username']
+
+            self.object.add_user(username, role)
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)

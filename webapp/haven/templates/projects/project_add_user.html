@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% load permission_tags %}
 
 {% block page_title %}{{ project.name }}{% endblock %}
@@ -11,10 +12,11 @@
 </p>
 
 <div class="btn-group my-3" role="group">
-  {% can_add_user_to_project project as add_user_permission %}
-  {% if add_user_permission %}
-    <a class="btn btn-primary btn-lg" href="{% url 'projects:add_user' project.id %}">Add User</a>
-  {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success">Add User</button>
+  </form>
 </div>
 
 {% endblock content %}
