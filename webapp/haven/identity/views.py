@@ -1,14 +1,16 @@
+from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
 
+from .forms import CreateUserForm
 from .mixins import UserRoleRequiredMixin
 from .models import User
 from .roles import UserRole
 
 
-class UserCreate(LoginRequiredMixin, UserRoleRequiredMixin, CreateView):
+class UserCreate(LoginRequiredMixin, UserFormKwargsMixin, UserRoleRequiredMixin, CreateView):
+    form_class = CreateUserForm
     model = User
-    fields = ['username', 'role']
     success_url = '/'
 
     user_roles = [UserRole.SYSTEM_CONTROLLER]

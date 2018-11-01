@@ -15,6 +15,15 @@ class User(AbstractUser):
         help_text="The user's role in the system"
     )
 
+    # No created_at field here since `AbstractUser` already stores this
+    created_by = models.ForeignKey(
+        'self',
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='+',
+        help_text='User who created this user',
+    )
+
     @property
     def can_create_users(self):
         """
@@ -73,6 +82,18 @@ class Participant(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='Time the user was added to the project',
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='+',
+        help_text='User who added this user to the project',
+    )
 
     def __str__(self):
         return f'{self.user} ({self.get_role_display()} on {self.project})'

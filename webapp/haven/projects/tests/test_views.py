@@ -145,6 +145,9 @@ class TestAddUserToProject:
         response = client.get('/projects/%d/users/add' % project.id)
         helpers.assert_login_redirect(response)
 
+        response = client.post('/projects/%d/users/add' % project.id)
+        helpers.assert_login_redirect(response)
+
     def test_view_page(self, client, research_coordinator):
         project = recipes.project.make(created_by=research_coordinator)
         client.force_login(research_coordinator)
@@ -166,8 +169,11 @@ class TestAddUserToProject:
         assert response.url == '/projects/%d' % project.id
 
         assert project.participant_set.count() == 1
-        assert project.participant_set.first().user.username == 'newuser'
-        assert project.participant_set.first().role == ProjectRole.RESEARCHER
+        participant = project.participant_set.first()
+        assert participant.user.username == 'newuser'
+        assert participant.role == ProjectRole.RESEARCHER
+        assert participant.created_by == research_coordinator
+        assert participant.user.created_by == research_coordinator
 
     def test_add_existing_user_to_project(self, client, research_coordinator, project_participant):
         project = recipes.project.make(created_by=research_coordinator)
@@ -182,8 +188,10 @@ class TestAddUserToProject:
         assert response.url == '/projects/%d' % project.id
 
         assert project.participant_set.count() == 1
-        assert project.participant_set.first().user == project_participant
-        assert project.participant_set.first().role == ProjectRole.RESEARCHER
+        participant = project.participant_set.first()
+        assert participant.user == project_participant
+        assert participant.role == ProjectRole.RESEARCHER
+        assert participant.created_by == research_coordinator
 
     def test_returns_404_for_invisible_project(self, as_research_coordinator):
         project = recipes.project.make()

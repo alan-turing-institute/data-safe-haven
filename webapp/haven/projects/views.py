@@ -56,7 +56,7 @@ class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailV
             role = form.cleaned_data['role']
             username = form.cleaned_data['username']
 
-            self.object.add_user(username, role)
+            self.object.add_user(username, role, self.request.user)
 
             return self.form_valid(form)
         else:

@@ -31,9 +31,17 @@ class Project(models.Model):
             return None
 
     @transaction.atomic
-    def add_user(self, username, role):
-        user, _ = User.objects.get_or_create(username=username)
+    def add_user(self, username, role, creator):
+        user, _ = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'created_by': creator,
+            }
+        )
 
         return Participant.objects.create(
-            user=user, role=role, project=self
+            user=user,
+            role=role,
+            created_by=creator,
+            project=self,
         )

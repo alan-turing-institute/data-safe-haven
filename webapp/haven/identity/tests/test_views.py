@@ -8,57 +8,42 @@ from identity.roles import UserRole
 class TestCreateUser:
     def test_anonymous_cannot_access_page(self, client, helpers):
         response = client.get('/users/new')
-
         helpers.assert_login_redirect(response)
 
-    def test_anonymous_cannot_post_form(self, client, helpers):
         response = client.post('/users/new', {
             'username': 'testuser',
             'role': '',
         })
-
         helpers.assert_login_redirect(response)
         assert not User.objects.filter(username='testuser').exists()
 
-    def test_research_coordinator_cannot_access_page(self, as_research_coordinator):
-        response = as_research_coordinator.get('/users/new')
+    def test_view_page(self, as_system_controller):
+        response = as_system_controller.get('/users/new')
+
+        assert response.status_code == 200
+        assert response.context['form']
+
+    def test_create_user(self, client, system_controller):
+        client.force_login(system_controller)
+        response = client.post('/users/new', {
+            'username': 'testuser',
+            'role': UserRole.RESEARCH_COORDINATOR,
+        }, follow=True)
+
+        assert response.status_code == 200
+        user = User.objects.filter(username='testuser')
+        assert user.exists()
+        assert user.first().created_by == system_controller
+
+    def test_returns_403_if_cannot_create_users(self, as_project_participant):
+        response = as_project_participant.get('/users/new')
         assert response.status_code == 403
 
-    def test_research_coordinator_cannot_post_form(self, as_research_coordinator):
-        response = as_research_coordinator.post('/users/new', {'username': 'testuser', 'role': ''})
+        response = as_project_participant.post('/users/new', {'username': 'testuser', 'role': ''})
         assert response.status_code == 403
         assert not User.objects.filter(username='testuser').exists()
 
-    @pytest.mark.parametrize('role', [
-        UserRole.SYSTEM_CONTROLLER,
-        UserRole.RESEARCH_COORDINATOR,
-        UserRole.DATA_PROVIDER_REPRESENTATIVE,
-        ''
-    ])
-    def test_superuser_can_create_users(self, as_superuser, role):
-        response = as_superuser.post('/users/new', {
-            'username': 'testuser',
-            'role': role,
-        }, follow=True)
-
-        assert response.status_code == 200
-        assert User.objects.filter(username='testuser').exists()
-
-    @pytest.mark.parametrize('role', [
-        UserRole.RESEARCH_COORDINATOR,
-        UserRole.DATA_PROVIDER_REPRESENTATIVE,
-        ''
-    ])
-    def test_system_controller_can_create_users(self, as_system_controller, role):
-        response = as_system_controller.post('/users/new', {
-            'username': 'testuser',
-            'role': role,
-        }, follow=True)
-
-        assert response.status_code == 200
-        assert User.objects.filter(username='testuser').exists()
-
-    def test_system_controller_cannot_create_system_controller(self, as_system_controller):
+    def test_restricts_creation_based_on_role(self, as_system_controller):
         # A system controller cannot create a system controller
         response = as_system_controller.post('/users/new', {
             'username': 'controller',
