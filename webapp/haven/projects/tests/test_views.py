@@ -64,28 +64,29 @@ class TestListProjects:
         response = client.get('/projects/')
         helpers.assert_login_redirect(response)
 
-    def test_list_owned_projects(self, client, research_coordinator, system_controller):
-        my_project = recipes.project.make(created_by=research_coordinator)
+    def test_list_owned_projects(self, as_research_coordinator, system_controller):
+        my_project = recipes.project.make(created_by=as_research_coordinator._user)
         recipes.project.make(created_by=system_controller)
-        client.force_login(research_coordinator)
-        response = client.get('/projects/')
+
+        response = as_research_coordinator.get('/projects/')
+
         assert list(response.context['projects']) == [my_project]
 
-    def test_list_involved_projects(self, client, project_participant):
+    def test_list_involved_projects(self, as_project_participant):
         project1, project2 = recipes.project.make(_quantity=2)
 
-        recipes.participant.make(project=project1, user=project_participant)
+        recipes.participant.make(project=project1, user=as_project_participant._user)
 
-        client.force_login(project_participant)
-        response = client.get('/projects/')
+        response = as_project_participant.get('/projects/')
 
         assert list(response.context['projects']) == [project1]
 
-    def test_list_all_projects(self, client, research_coordinator, system_controller):
-        my_project = recipes.project.make(created_by=system_controller)
+    def test_list_all_projects(self, research_coordinator, as_system_controller):
+        my_project = recipes.project.make(created_by=as_system_controller._user)
         other_project = recipes.project.make(created_by=research_coordinator)
-        client.force_login(system_controller)
-        response = client.get('/projects/')
+
+        response = as_system_controller.get('/projects/')
+
         assert list(response.context['projects']) == [my_project, other_project]
 
 
@@ -95,21 +96,19 @@ class TestViewProject:
         response = client.get('/projects/1')
         helpers.assert_login_redirect(response)
 
-    def test_view_owned_project(self, client, research_coordinator):
-        project = recipes.project.make(created_by=research_coordinator)
-        client.force_login(research_coordinator)
+    def test_view_owned_project(self, as_research_coordinator):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = client.get('/projects/%d' % project.id)
+        response = as_research_coordinator.get('/projects/%d' % project.id)
 
         assert response.status_code == 200
         assert response.context['project'] == project
 
-    def test_view_involved_project(self, client, project_participant):
-        client.force_login(project_participant)
+    def test_view_involved_project(self, as_project_participant):
         project1, project2 = recipes.project.make(_quantity=2)
-        recipes.participant.make(project=project1, user=project_participant)
+        recipes.participant.make(project=project1, user=as_project_participant._user)
 
-        response = client.get('/projects/%d' % project1.id)
+        response = as_project_participant.get('/projects/%d' % project1.id)
 
         assert response.status_code == 200
         assert response.context['project'] == project1
@@ -148,19 +147,17 @@ class TestAddUserToProject:
         response = client.post('/projects/%d/users/add' % project.id)
         helpers.assert_login_redirect(response)
 
-    def test_view_page(self, client, research_coordinator):
-        project = recipes.project.make(created_by=research_coordinator)
-        client.force_login(research_coordinator)
+    def test_view_page(self, as_research_coordinator):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = client.get('/projects/%d/users/add' % project.id)
+        response = as_research_coordinator.get('/projects/%d/users/add' % project.id)
         assert response.status_code == 200
         assert response.context['project'] == project
 
-    def test_add_new_user_to_project(self, client, research_coordinator):
-        project = recipes.project.make(created_by=research_coordinator)
-        client.force_login(research_coordinator)
+    def test_add_new_user_to_project(self, as_research_coordinator):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = client.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
             'role': ProjectRole.RESEARCHER,
             'username': 'newuser',
         })
@@ -172,14 +169,13 @@ class TestAddUserToProject:
         participant = project.participant_set.first()
         assert participant.user.username == 'newuser'
         assert participant.role == ProjectRole.RESEARCHER
-        assert participant.created_by == research_coordinator
-        assert participant.user.created_by == research_coordinator
+        assert participant.created_by == as_research_coordinator._user
+        assert participant.user.created_by == as_research_coordinator._user
 
-    def test_add_existing_user_to_project(self, client, research_coordinator, project_participant):
-        project = recipes.project.make(created_by=research_coordinator)
+    def test_add_existing_user_to_project(self, as_research_coordinator, project_participant):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        client.force_login(research_coordinator)
-        response = client.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
             'role': ProjectRole.RESEARCHER,
             'username': project_participant.username,
         })
@@ -191,7 +187,7 @@ class TestAddUserToProject:
         participant = project.participant_set.first()
         assert participant.user == project_participant
         assert participant.role == ProjectRole.RESEARCHER
-        assert participant.created_by == research_coordinator
+        assert participant.created_by == as_research_coordinator._user
 
     def test_returns_404_for_invisible_project(self, as_research_coordinator):
         project = recipes.project.make()

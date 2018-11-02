@@ -77,31 +77,32 @@ def researcher():
     return recipes.participant.make(role=ProjectRole.RESEARCHER)
 
 
+def client_login(client, user):
+    client.force_login(user)
+    client._user = user
+    return client
+
+
 @pytest.fixture
 def as_superuser(client, superuser):
-    client.force_login(superuser)
-    return client
+    return client_login(client, superuser)
 
 
 @pytest.fixture
 def as_system_controller(client, system_controller):
-    client.force_login(system_controller)
-    return client
+    return client_login(client, system_controller)
 
 
 @pytest.fixture
 def as_research_coordinator(client, research_coordinator):
-    client.force_login(research_coordinator)
-    return client
+    return client_login(client, research_coordinator)
 
 
 @pytest.fixture
 def as_data_provider_representative(client, data_provider_representative):
-    client.force_login(data_provider_representative)
-    return client
+    return client_login(client, data_provider_representative)
 
 
 @pytest.fixture
 def as_project_participant(client, project_participant):
-    client.force_login(project_participant)
-    return client
+    return client_login(client, project_participant)

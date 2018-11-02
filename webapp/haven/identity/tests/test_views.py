@@ -23,9 +23,8 @@ class TestCreateUser:
         assert response.status_code == 200
         assert response.context['form']
 
-    def test_create_user(self, client, system_controller):
-        client.force_login(system_controller)
-        response = client.post('/users/new', {
+    def test_create_user(self, as_system_controller):
+        response = as_system_controller.post('/users/new', {
             'username': 'testuser',
             'role': UserRole.RESEARCH_COORDINATOR,
         }, follow=True)
@@ -33,7 +32,7 @@ class TestCreateUser:
         assert response.status_code == 200
         user = User.objects.filter(username='testuser')
         assert user.exists()
-        assert user.first().created_by == system_controller
+        assert user.first().created_by == as_system_controller._user
 
     def test_returns_403_if_cannot_create_users(self, as_project_participant):
         response = as_project_participant.get('/users/new')
