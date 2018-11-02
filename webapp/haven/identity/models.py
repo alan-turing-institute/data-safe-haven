@@ -95,5 +95,8 @@ class Participant(models.Model):
         help_text='User who added this user to the project',
     )
 
+    class Meta:
+        unique_together = ('user', 'project')
+
     def __str__(self):
         return f'{self.user} ({self.get_role_display()} on {self.project})'

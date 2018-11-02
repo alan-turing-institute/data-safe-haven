@@ -1,5 +1,6 @@
 from braces.forms import UserKwargModelFormMixin
 from django import forms
+from django.core.exceptions import ValidationError
 
 from identity.roles import ProjectRole
 
@@ -19,9 +20,23 @@ class ProjectForm(UserKwargModelFormMixin, forms.ModelForm):
         return project
 
 
-class ProjectAddUserForm(forms.Form):
+class ProjectAddUserForm(UserKwargModelFormMixin, forms.Form):
     username = forms.CharField(help_text='Username')
     role = forms.ChoiceField(
         choices=ProjectRole.CHOICES,
         help_text='Role on this project'
     )
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+
+        if self.project.participant_set.filter(
+            user__username=username
+        ).exists():
+            raise ValidationError("User is already on project")
+        return username
+
+    def save(self, **kwargs):
+        role = self.cleaned_data['role']
+        username = self.cleaned_data['username']
+        self.project.add_user(username, role, self.user)

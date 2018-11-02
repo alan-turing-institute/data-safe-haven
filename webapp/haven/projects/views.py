@@ -34,7 +34,10 @@ class ProjectDetail(LoginRequiredMixin, DetailView):
         return super().get_queryset().get_visible_projects(self.request.user)
 
 
-class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailView):
+class ProjectAddUser(
+    LoginRequiredMixin, UserPassesTestMixin,
+    UserFormKwargsMixin, FormMixin, DetailView
+):
     model = Project
     template_name = 'projects/project_add_user.html'
     form_class = ProjectAddUserForm
@@ -44,6 +47,7 @@ class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailV
 
         creatable_roles = self.request.user.creatable_roles_for_project(self.get_object())
 
+        form.project = self.get_object()
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
@@ -65,11 +69,7 @@ class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailV
         form = self.get_form()
         self.object = self.get_object()
         if form.is_valid():
-            role = form.cleaned_data['role']
-            username = form.cleaned_data['username']
-
-            self.object.add_user(username, role, self.request.user)
-
+            form.save()
             return self.form_valid(form)
         else:
             return self.form_invalid(form)

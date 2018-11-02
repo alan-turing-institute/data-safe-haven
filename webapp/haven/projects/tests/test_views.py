@@ -189,6 +189,27 @@ class TestAddUserToProject:
         assert participant.role == ProjectRole.RESEARCHER
         assert participant.created_by == as_research_coordinator._user
 
+    def test_cannot_add_user_to_project_twice(self, as_research_coordinator, project_participant):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
+
+        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+            'role': ProjectRole.RESEARCHER,
+            'username': project_participant.username,
+        })
+
+        assert response.status_code == 302
+        assert response.url == '/projects/%d' % project.id
+
+        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+            'role': ProjectRole.INVESTIGATOR,
+            'username': project_participant.username,
+        })
+
+        assert response.status_code == 200
+        assert 'username' in response.context['form'].errors
+
+        assert project.participant_set.count() == 1
+
     def test_returns_404_for_invisible_project(self, as_research_coordinator):
         project = recipes.project.make()
 
