@@ -209,3 +209,27 @@ class TestAddUserToProject:
 
         response = client.post('/projects/%d/users/add' % researcher.project.id)
         assert response.status_code == 403
+
+    def test_restricts_creation_based_on_role(self, client, investigator):
+        # An investigator cannot create another investigator on the project
+        client.force_login(investigator.user)
+        response = client.post(
+            '/projects/%d/users/add' % investigator.project.id,
+            {
+                'username': 'newuser',
+                'role': ProjectRole.INVESTIGATOR,
+            })
+
+        assert response.status_code == 200
+        assert 'role' in response.context['form'].errors
+        assert investigator.project.participant_set.count() == 1
+
+    def test_roles_are_restricted_in_dropdown(self, client, investigator):
+        # An investigator should not see 'investigator' as an option
+        client.force_login(investigator.user)
+
+        response = client.get('/projects/%d/users/add' % investigator.project.id)
+
+        assert response.status_code == 200
+        role_field = response.context['form']['role'].field
+        assert not role_field.valid_value(ProjectRole.INVESTIGATOR)

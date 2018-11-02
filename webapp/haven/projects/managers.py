@@ -15,6 +15,6 @@ class ProjectQuerySet(models.QuerySet):
             return self.filter(
                 Q(created_by=user) |
                 Q(participant__user=user)
-            )
+            ).distinct()
 
         return self

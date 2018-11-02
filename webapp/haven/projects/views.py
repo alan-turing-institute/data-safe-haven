@@ -39,6 +39,18 @@ class ProjectAddUser(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailV
     template_name = 'projects/project_add_user.html'
     form_class = ProjectAddUserForm
 
+    def get_form(self):
+        form = super().get_form()
+
+        creatable_roles = self.request.user.creatable_roles_for_project(self.get_object())
+
+        form.fields['role'].choices = [
+            (role, name)
+            for (role, name) in form.fields['role'].choices
+            if role in creatable_roles or role == ''
+        ]
+        return form
+
     def get_success_url(self):
         obj = self.get_object()
         return reverse('projects:detail', args=[obj.id])

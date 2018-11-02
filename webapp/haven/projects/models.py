@@ -32,6 +32,14 @@ class Project(models.Model):
 
     @transaction.atomic
     def add_user(self, username, role, creator):
+        """
+        Add user to this project
+        Creates user if they do not already exist
+
+        :param username: username of user to add
+        :param role: Role user will have on the project
+        :param creator: `User` who is doing the adding
+        """
         user, _ = User.objects.get_or_create(
             username=username,
             defaults={

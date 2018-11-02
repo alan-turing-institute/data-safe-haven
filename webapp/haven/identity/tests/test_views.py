@@ -54,7 +54,7 @@ class TestCreateUser:
         assert not User.objects.filter(username='testuser').exists()
 
     def test_roles_are_restricted_in_dropdown(self, as_system_controller):
-        response = as_system_controller.get('/users/new', {})
+        response = as_system_controller.get('/users/new')
 
         assert response.status_code == 200
         role_field = response.context['form']['role'].field
