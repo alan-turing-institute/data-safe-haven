@@ -1,7 +1,8 @@
 from django.db import models, transaction
 
 from data.models import Dataset
-from identity.models import Participant, User
+from identity.models import User
+from identity.roles import ProjectRole
 
 from .managers import ProjectQuerySet
 
@@ -53,3 +54,34 @@ class Project(models.Model):
             created_by=creator,
             project=self,
         )
+
+
+class Participant(models.Model):
+    """
+    Represents a user's participation in a project
+    """
+    role = models.CharField(
+        max_length=50,
+        choices=ProjectRole.CHOICES,
+        help_text="The participant's role on this project"
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey('projects.Project', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='Time the user was added to the project',
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='+',
+        help_text='User who added this user to the project',
+    )
+
+    class Meta:
+        unique_together = ('user', 'project')
+
+    def __str__(self):
+        return f'{self.user} ({self.get_role_display()} on {self.project})'

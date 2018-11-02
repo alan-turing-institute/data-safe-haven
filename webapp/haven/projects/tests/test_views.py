@@ -254,3 +254,35 @@ class TestAddUserToProject:
         assert response.status_code == 200
         role_field = response.context['form']['role'].field
         assert not role_field.valid_value(ProjectRole.INVESTIGATOR)
+
+
+@pytest.mark.django_db
+class TestListParticipants:
+    def test_anonymous_cannot_access_page(self, client, helpers):
+        project = recipes.project.make()
+        response = client.get('/projects/%d/users/' % project.id)
+        helpers.assert_login_redirect(response)
+
+    def test_view_page(self, as_research_coordinator):
+        project = recipes.project.make(created_by=as_research_coordinator._user)
+        researcher = recipes.researcher.make(project=project)
+        investigator = recipes.investigator.make(project=project)
+
+        response = as_research_coordinator.get('/projects/%d/users/' % project.id)
+
+        assert response.status_code == 200
+        assert list(response.context['participants']) == [researcher, investigator]
+
+    def test_returns_404_for_invisible_project(self, as_research_coordinator):
+        project = recipes.project.make()
+
+        # Research coordinator shouldn't have visibility of this other project at all
+        # so pretend it doesn't exist and raise a 404
+        response = as_research_coordinator.get('/projects/%d/users/' % project.id)
+        assert response.status_code == 404
+
+    def test_returns_403_for_unauthorised_user(self, client, researcher):
+        client.force_login(researcher.user)
+
+        response = client.get('/projects/%d/users/' % researcher.project.id)
+        assert response.status_code == 403

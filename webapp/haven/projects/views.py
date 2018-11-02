@@ -1,5 +1,6 @@
 from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, FormMixin
@@ -8,7 +9,7 @@ from identity.mixins import UserRoleRequiredMixin
 from identity.roles import UserRole
 
 from .forms import ProjectAddUserForm, ProjectForm
-from .models import Project
+from .models import Participant, Project
 
 
 class ProjectCreate(LoginRequiredMixin, UserRoleRequiredMixin, UserFormKwargsMixin, CreateView):
@@ -73,3 +74,28 @@ class ProjectAddUser(
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
+
+
+class ProjectListUsers(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Participant
+    context_object_name = 'participants'
+
+    def get_project(self):
+        if not hasattr(self, '_project'):
+            self._project = get_object_or_404(
+                Project.objects.get_visible_projects(self.request.user),
+                pk=self.kwargs['pk']
+            )
+        return self._project
+
+    def get_queryset(self):
+        return self.get_project().participant_set.all()
+
+    def test_func(self):
+        return self.request.user.can_list_participants(self.get_project())
+
+    def get_context_data(self, **kwargs):
+        kwargs.update({
+            'project': self.get_project()
+        })
+        return super().get_context_data(**kwargs)

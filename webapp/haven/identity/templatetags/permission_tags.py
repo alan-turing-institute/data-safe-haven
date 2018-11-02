@@ -17,3 +17,8 @@ def can_create_projects(context):
 @register.simple_tag(takes_context=True)
 def can_add_user_to_project(context, project):
     return context['user'].can_add_user_to_project(project)
+
+
+@register.simple_tag(takes_context=True)
+def can_list_participants(context, project):
+    return context['user'].can_list_participants(project)
