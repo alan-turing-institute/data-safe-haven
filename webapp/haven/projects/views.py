@@ -1,5 +1,6 @@
 from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import OuterRef, Subquery
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView
@@ -27,7 +28,12 @@ class ProjectList(LoginRequiredMixin, ListView):
     context_object_name = 'projects'
 
     def get_queryset(self):
-        return super().get_queryset().get_visible_projects(self.request.user)
+        participants = Participant.objects.filter(
+            user=self.request.user, project=OuterRef('pk')
+        )
+        return super().get_queryset().get_visible_projects(self.request.user).annotate(
+            your_role=Subquery(participants.values('role')[:1])
+        )
 
 
 class ProjectDetail(LoginRequiredMixin, DetailView):
@@ -35,6 +41,10 @@ class ProjectDetail(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().get_visible_projects(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        kwargs['participant'] = self.get_object().get_participant(self.request.user)
+        return super().get_context_data(**kwargs)
 
 
 class ProjectAddUser(

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load role_tags %}
 
 {% block page_title %}Projects{% endblock %}
 {% block h1_title %}Projects{% endblock %}
@@ -8,7 +9,11 @@
   {% for project in projects %}
   <li class="list-group-item">
     <div class="d-flex w-100 justify-content-between">
-      <h4><a href="{% url "projects:detail" project.id %}">{{ project.name }}</a></h4>
+      <h4><a href="{% url "projects:detail" project.id %}">{{ project.name }}</a>
+        {% if project.your_role %}
+          ({{ project.your_role|project_role_display }})
+        {% endif %}
+      </h4>
       <small>{{ project.created_at }}</small>
     </div>
     <p>

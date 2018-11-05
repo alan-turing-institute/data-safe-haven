@@ -26,8 +26,17 @@ class Project(models.Model):
 
         :return: ProjectRole string or None if user is not involved in project
         """
+        participant = self.get_participant(user)
+        return participant.role if participant else None
+
+    def get_participant(self, user):
+        """
+        Return a Participant object for a user on the project
+
+        :return: `Participant` object or None if user is not involved in project
+        """
         try:
-            return self.participant_set.get(user=user).role
+            return self.participant_set.get(user=user)
         except Participant.DoesNotExist:
             return None
 

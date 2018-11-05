@@ -6,6 +6,12 @@
 
 {% block content %}
 
+{% if participant %}
+<p>
+Role: {{ participant.get_role_display }}
+</p>
+{% endif %}
+
 <p>
 {{ project.description }}
 </p>
