@@ -141,23 +141,23 @@ class TestViewProject:
 class TestAddUserToProject:
     def test_anonymous_cannot_access_page(self, client, helpers):
         project = recipes.project.make()
-        response = client.get('/projects/%d/users/add' % project.id)
+        response = client.get('/projects/%d/participants/add' % project.id)
         helpers.assert_login_redirect(response)
 
-        response = client.post('/projects/%d/users/add' % project.id)
+        response = client.post('/projects/%d/participants/add' % project.id)
         helpers.assert_login_redirect(response)
 
     def test_view_page(self, as_research_coordinator):
         project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = as_research_coordinator.get('/projects/%d/users/add' % project.id)
+        response = as_research_coordinator.get('/projects/%d/participants/add' % project.id)
         assert response.status_code == 200
         assert response.context['project'] == project
 
     def test_add_new_user_to_project(self, as_research_coordinator):
         project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
             'role': ProjectRole.RESEARCHER,
             'username': 'newuser',
         })
@@ -175,7 +175,7 @@ class TestAddUserToProject:
     def test_add_existing_user_to_project(self, as_research_coordinator, project_participant):
         project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
             'role': ProjectRole.RESEARCHER,
             'username': project_participant.username,
         })
@@ -192,7 +192,7 @@ class TestAddUserToProject:
     def test_cannot_add_user_to_project_twice(self, as_research_coordinator, project_participant):
         project = recipes.project.make(created_by=as_research_coordinator._user)
 
-        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
             'role': ProjectRole.RESEARCHER,
             'username': project_participant.username,
         })
@@ -200,7 +200,7 @@ class TestAddUserToProject:
         assert response.status_code == 302
         assert response.url == '/projects/%d' % project.id
 
-        response = as_research_coordinator.post('/projects/%d/users/add' % project.id, {
+        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
             'role': ProjectRole.INVESTIGATOR,
             'username': project_participant.username,
         })
@@ -215,27 +215,27 @@ class TestAddUserToProject:
 
         # Research coordinator shouldn't have visibility of this other project at all
         # so pretend it doesn't exist and raise a 404
-        response = as_research_coordinator.get('/projects/%d/users/add' % project.id)
+        response = as_research_coordinator.get('/projects/%d/participants/add' % project.id)
         assert response.status_code == 404
 
-        response = as_research_coordinator.post('/projects/%d/users/add' % project.id)
+        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id)
         assert response.status_code == 404
 
     def test_returns_403_if_no_add_permissions(self, client, researcher):
-        # Researchers can't add users, so do not display the page
+        # Researchers can't add participants, so do not display the page
         client.force_login(researcher.user)
 
-        response = client.get('/projects/%d/users/add' % researcher.project.id)
+        response = client.get('/projects/%d/participants/add' % researcher.project.id)
         assert response.status_code == 403
 
-        response = client.post('/projects/%d/users/add' % researcher.project.id)
+        response = client.post('/projects/%d/participants/add' % researcher.project.id)
         assert response.status_code == 403
 
     def test_restricts_creation_based_on_role(self, client, investigator):
         # An investigator cannot create another investigator on the project
         client.force_login(investigator.user)
         response = client.post(
-            '/projects/%d/users/add' % investigator.project.id,
+            '/projects/%d/participants/add' % investigator.project.id,
             {
                 'username': 'newuser',
                 'role': ProjectRole.INVESTIGATOR,
@@ -249,7 +249,7 @@ class TestAddUserToProject:
         # An investigator should not see 'investigator' as an option
         client.force_login(investigator.user)
 
-        response = client.get('/projects/%d/users/add' % investigator.project.id)
+        response = client.get('/projects/%d/participants/add' % investigator.project.id)
 
         assert response.status_code == 200
         role_field = response.context['form']['role'].field
@@ -260,7 +260,7 @@ class TestAddUserToProject:
 class TestListParticipants:
     def test_anonymous_cannot_access_page(self, client, helpers):
         project = recipes.project.make()
-        response = client.get('/projects/%d/users/' % project.id)
+        response = client.get('/projects/%d/participants/' % project.id)
         helpers.assert_login_redirect(response)
 
     def test_view_page(self, as_research_coordinator):
@@ -268,7 +268,7 @@ class TestListParticipants:
         researcher = recipes.researcher.make(project=project)
         investigator = recipes.investigator.make(project=project)
 
-        response = as_research_coordinator.get('/projects/%d/users/' % project.id)
+        response = as_research_coordinator.get('/projects/%d/participants/' % project.id)
 
         assert response.status_code == 200
         assert list(response.context['participants']) == [researcher, investigator]
@@ -278,11 +278,11 @@ class TestListParticipants:
 
         # Research coordinator shouldn't have visibility of this other project at all
         # so pretend it doesn't exist and raise a 404
-        response = as_research_coordinator.get('/projects/%d/users/' % project.id)
+        response = as_research_coordinator.get('/projects/%d/participants/' % project.id)
         assert response.status_code == 404
 
     def test_returns_403_for_unauthorised_user(self, client, researcher):
         client.force_login(researcher.user)
 
-        response = client.get('/projects/%d/users/' % researcher.project.id)
+        response = client.get('/projects/%d/participants/' % researcher.project.id)
         assert response.status_code == 403

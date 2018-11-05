@@ -76,7 +76,7 @@ class ProjectAddUser(
             return self.form_invalid(form)
 
 
-class ProjectListUsers(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class ProjectListParticipants(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Participant
     context_object_name = 'participants'
 
