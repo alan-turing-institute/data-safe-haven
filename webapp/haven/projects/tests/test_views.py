@@ -27,15 +27,15 @@ class TestCreateProject:
         response = as_research_coordinator.post(
             '/projects/new',
             {'name': 'my project', 'description': 'a new project'},
-            follow=True
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 302
+        assert response.url == '/projects/'
 
         project = Project.objects.get()
         assert project.name == 'my project'
         assert project.description == 'a new project'
-        assert project.created_by.username == response.context['user'].username
+        assert project.created_by == as_research_coordinator._user
 
     def test_create_project_as_system_controller(self, as_system_controller):
         response = as_system_controller.post(

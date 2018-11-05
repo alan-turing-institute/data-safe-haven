@@ -14,10 +14,12 @@ from .models import Participant, Project
 
 class ProjectCreate(LoginRequiredMixin, UserRoleRequiredMixin, UserFormKwargsMixin, CreateView):
     form_class = ProjectForm
-    success_url = '/'
     model = Project
 
     user_roles = [UserRole.SYSTEM_CONTROLLER, UserRole.RESEARCH_COORDINATOR]
+
+    def get_success_url(self):
+        return reverse('projects:list')
 
 
 class ProjectList(LoginRequiredMixin, ListView):
