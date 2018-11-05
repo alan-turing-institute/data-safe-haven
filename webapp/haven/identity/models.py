@@ -36,7 +36,7 @@ class User(AbstractUser):
         """
         Can this user create other users at all?
         """
-        return self.role in [
+        return self.is_superuser or self.role in [
             UserRole.SYSTEM_CONTROLLER,
             UserRole.RESEARCH_COORDINATOR,
         ]

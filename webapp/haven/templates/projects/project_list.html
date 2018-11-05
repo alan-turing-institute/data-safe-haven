@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load permission_tags %}
 {% load role_tags %}
 
 {% block page_title %}Projects{% endblock %}
@@ -24,7 +25,8 @@
 </ul>
 
 <div class="btn-group my-3" role="group">
-  {% if can_create_projects %}
+  {% can_create_projects as permission %}
+  {% if permission %}
     <a class="btn btn-primary btn-lg" href="{% url 'projects:create' %}">Create Project</a>
   {% endif %}
 </div>

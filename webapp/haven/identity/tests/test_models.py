@@ -39,3 +39,18 @@ class TestUserCreatableRoles:
     def test_investigator_cannot_create_researchers_on_other_project(self, investigator):
         project = recipes.project.make()
         assert investigator.user.creatable_roles_for_project(project) == []
+
+
+@pytest.mark.django_db
+class TestCreateProjects:
+    def test_superuser_can_create_projects(self, superuser):
+        assert superuser.can_create_projects
+
+    def test_system_controller_can_create_projects(self, system_controller):
+        assert system_controller.can_create_projects
+
+    def test_research_coordinator_can_create_projects(self, research_coordinator):
+        assert research_coordinator.can_create_projects
+
+    def test_ordinary_user_cannot_create_projects(self, project_participant):
+        assert not project_participant.can_create_projects

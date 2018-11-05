@@ -1,4 +1,5 @@
 {% load static %}
+{% load permission_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -24,10 +25,17 @@
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           {% if request.user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'projects:list' %}">Projects</a>
-          </li>
-          {% endif %}
+            {% can_create_users as permission %}
+            {% if permission %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'projects:list' %}">Projects</a>
+            </li>
+            {% endif %}
         </ul>
 
         <span class="navbar-text">
