@@ -30,9 +30,7 @@ class TestCreateUser:
         }, follow=True)
 
         assert response.status_code == 200
-        user = User.objects.filter(username='testuser')
-        assert user.exists()
-        assert user.first().created_by == as_system_controller._user
+        assert User.objects.filter(username='testuser').exists()
 
     def test_returns_403_if_cannot_create_users(self, as_project_participant):
         response = as_project_participant.get('/users/new')
