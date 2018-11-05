@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 {% load permission_tags %}
 
-{% block page_title %}{{ project.name }}{% endblock %}
-{% block h1_title %}{{ project.name }}{% endblock %}
+{% block page_title %}{{ project.name }}: Add User{% endblock %}
+{% block h1_title %}{{ project.name }}: Add User{% endblock %}
 
 {% block content %}
 
@@ -20,3 +20,17 @@
 </div>
 
 {% endblock content %}
+
+
+{% block crumbs %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'projects:list' %}">Projects</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'projects:detail' project.id %}">{{ project.name }}</a></li>
+  {% can_list_participants project as permission %}
+  {% if permission %}
+    <li class="breadcrumb-item"><a href="{% url 'projects:list_participants' project.id %}">Participants</a></li>
+  {% else %}
+    <li class="breadcrumb-item">Participants</li>
+  {% endif %}
+  <li class="breadcrumb-item active" aria-current="page">Add</li>
+{% endblock crumbs %}

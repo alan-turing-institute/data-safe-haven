@@ -1,5 +1,4 @@
 {% load static %}
-{% load permission_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -12,7 +11,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
-    <title>{% block page_title %}Data Safe Haven{% endblock %}</title>
+    <title>{% block page_title %}Home{% endblock %} | Data Safe Haven</title>
   </head>
   <body>
 
@@ -24,21 +23,9 @@
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
-          {% if can_create_users %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
-          </li>
-          {% endif %}
-
           {% if request.user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'projects:list' %}">Projects</a>
-          </li>
-          {% endif %}
-
-          {% if can_create_projects %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'projects:create' %}">Create Project</a>
           </li>
           {% endif %}
         </ul>
@@ -57,6 +44,13 @@
           </span>
         {% endif %}
       </div>
+    </nav>
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% block crumbs %}
+        {% endblock %}
+      </ol>
     </nav>
 
     <main role="main" class="container">

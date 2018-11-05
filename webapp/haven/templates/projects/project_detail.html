@@ -11,10 +11,23 @@
 </p>
 
 <div class="my-3" role="group">
-  {% can_list_participants project as list_participants_permission %}
-  {% if list_participants_permission %}
+  {% can_list_participants project as permission %}
+  {% if permission %}
     <a class="btn btn-primary btn-lg" href="{% url 'projects:list_participants' project.id %}">Participants</a>
   {% endif %}
 </div>
 
+<div class="my-3" role="group">
+  {% can_add_user_to_project project as permission %}
+  {% if permission %}
+    <a class="btn btn-primary btn-lg" href="{% url 'projects:add_user' project.id %}">Add User</a>
+  {% endif %}
+</div>
+
 {% endblock content %}
+
+{% block crumbs %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'projects:list' %}">Projects</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+{% endblock crumbs %}
