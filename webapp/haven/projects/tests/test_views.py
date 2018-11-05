@@ -163,7 +163,7 @@ class TestAddUserToProject:
         })
 
         assert response.status_code == 302
-        assert response.url == '/projects/%d' % project.id
+        assert response.url == '/projects/%d/participants/' % project.id
 
         assert project.participant_set.count() == 1
         participant = project.participant_set.first()
@@ -181,7 +181,7 @@ class TestAddUserToProject:
         })
 
         assert response.status_code == 302
-        assert response.url == '/projects/%d' % project.id
+        assert response.url == '/projects/%d/participants/' % project.id
 
         assert project.participant_set.count() == 1
         participant = project.participant_set.first()
@@ -198,7 +198,7 @@ class TestAddUserToProject:
         })
 
         assert response.status_code == 302
-        assert response.url == '/projects/%d' % project.id
+        assert response.url == '/projects/%d/participants/' % project.id
 
         response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
             'role': ProjectRole.INVESTIGATOR,

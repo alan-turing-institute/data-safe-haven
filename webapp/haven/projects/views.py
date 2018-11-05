@@ -60,7 +60,10 @@ class ProjectAddUser(
 
     def get_success_url(self):
         obj = self.get_object()
-        return reverse('projects:detail', args=[obj.id])
+        if self.request.user.can_list_participants(obj):
+            return reverse('projects:list_participants', args=[obj.id])
+        else:
+            return reverse('projects:detail', args=[obj.id])
 
     def get_queryset(self):
         return super().get_queryset().get_visible_projects(self.request.user)
