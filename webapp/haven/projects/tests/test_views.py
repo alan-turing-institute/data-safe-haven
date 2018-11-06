@@ -166,49 +166,7 @@ class TestAddUserToProject:
         assert response.url == '/projects/%d/participants/' % project.id
 
         assert project.participant_set.count() == 1
-        participant = project.participant_set.first()
-        assert participant.user.username == 'newuser'
-        assert participant.role == ProjectRole.RESEARCHER
-        assert participant.created_by == as_research_coordinator._user
-        assert participant.user.created_by == as_research_coordinator._user
-
-    def test_add_existing_user_to_project(self, as_research_coordinator, project_participant):
-        project = recipes.project.make(created_by=as_research_coordinator._user)
-
-        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
-            'role': ProjectRole.RESEARCHER,
-            'username': project_participant.username,
-        })
-
-        assert response.status_code == 302
-        assert response.url == '/projects/%d/participants/' % project.id
-
-        assert project.participant_set.count() == 1
-        participant = project.participant_set.first()
-        assert participant.user == project_participant
-        assert participant.role == ProjectRole.RESEARCHER
-        assert participant.created_by == as_research_coordinator._user
-
-    def test_cannot_add_user_to_project_twice(self, as_research_coordinator, project_participant):
-        project = recipes.project.make(created_by=as_research_coordinator._user)
-
-        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
-            'role': ProjectRole.RESEARCHER,
-            'username': project_participant.username,
-        })
-
-        assert response.status_code == 302
-        assert response.url == '/projects/%d/participants/' % project.id
-
-        response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
-            'role': ProjectRole.INVESTIGATOR,
-            'username': project_participant.username,
-        })
-
-        assert response.status_code == 200
-        assert 'username' in response.context['form'].errors
-
-        assert project.participant_set.count() == 1
+        assert project.participant_set.first().user.username == 'newuser'
 
     def test_returns_404_for_invisible_project(self, as_research_coordinator):
         project = recipes.project.make()

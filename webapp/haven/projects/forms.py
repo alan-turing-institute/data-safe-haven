@@ -39,4 +39,4 @@ class ProjectAddUserForm(UserKwargModelFormMixin, forms.Form):
     def save(self, **kwargs):
         role = self.cleaned_data['role']
         username = self.cleaned_data['username']
-        self.project.add_user(username, role, self.user)
+        return self.project.add_user(username, role, self.user)
