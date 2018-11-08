@@ -1,7 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .roles import ProjectRole, UserRole
+from projects.roles import ProjectRole
+
+from .roles import UserRole
 
 
 class User(AbstractUser):

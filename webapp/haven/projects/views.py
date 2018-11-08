@@ -7,10 +7,11 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, FormMixin
 
 from identity.mixins import UserRoleRequiredMixin
-from identity.roles import ProjectRole, UserRole
+from identity.roles import UserRole
 
 from .forms import ProjectAddUserForm, ProjectForm
 from .models import Participant, Project
+from .roles import ProjectRole
 
 
 class ProjectCreate(LoginRequiredMixin, UserRoleRequiredMixin, UserFormKwargsMixin, CreateView):

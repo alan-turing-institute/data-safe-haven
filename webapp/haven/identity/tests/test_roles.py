@@ -1,4 +1,5 @@
-from identity.roles import ProjectRole, UserRole
+from identity.roles import UserRole
+from projects.roles import ProjectRole
 
 
 class TestUserRole:

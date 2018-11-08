@@ -1,8 +1,8 @@
 import pytest
 
 from core import recipes
-from identity.roles import ProjectRole
 from projects.forms import ProjectAddUserForm
+from projects.roles import ProjectRole
 
 
 @pytest.mark.django_db

@@ -2,9 +2,9 @@ from django.db import models, transaction
 
 from data.models import Dataset
 from identity.models import User
-from identity.roles import ProjectRole
 
 from .managers import ProjectQuerySet
+from .roles import ProjectRole
 
 
 class Project(models.Model):

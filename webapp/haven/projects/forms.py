@@ -2,9 +2,8 @@ from braces.forms import UserKwargModelFormMixin
 from django import forms
 from django.core.exceptions import ValidationError
 
-from identity.roles import ProjectRole
-
 from .models import Project
+from .roles import ProjectRole
 
 
 class ProjectForm(UserKwargModelFormMixin, forms.ModelForm):

@@ -2,7 +2,8 @@ import pytest
 
 from core import recipes
 from identity.models import User
-from identity.roles import ProjectRole, UserRole
+from identity.roles import UserRole
+from projects.roles import ProjectRole
 
 
 DUMMY_PASSWORD = 'password'
