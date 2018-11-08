@@ -1,9 +1,9 @@
 from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import OuterRef, Subquery
-from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import CreateView, FormMixin
 
 from identity.mixins import UserRoleRequiredMixin
@@ -14,9 +14,26 @@ from .models import Participant, Project
 from .roles import ProjectRole
 
 
-class ProjectCreate(LoginRequiredMixin, UserRoleRequiredMixin, UserFormKwargsMixin, CreateView):
-    form_class = ProjectForm
+class SingleProjectMixin(SingleObjectMixin):
     model = Project
+
+    def get_queryset(self):
+        return super().get_queryset().get_visible_projects(self.request.user)
+
+    def get_project_role(self):
+        """Logged in user's role on the project"""
+        return self.request.user.project_role(self.get_object())
+
+    def get_context_data(self, **kwargs):
+        kwargs['project_role'] = self.get_project_role()
+        return super().get_context_data(**kwargs)
+
+
+class ProjectCreate(
+    LoginRequiredMixin, UserRoleRequiredMixin,
+    UserFormKwargsMixin, SingleProjectMixin, CreateView
+):
+    form_class = ProjectForm
 
     user_roles = [UserRole.SYSTEM_CONTROLLER, UserRole.RESEARCH_COORDINATOR]
 
@@ -25,24 +42,20 @@ class ProjectCreate(LoginRequiredMixin, UserRoleRequiredMixin, UserFormKwargsMix
 
 
 class ProjectList(LoginRequiredMixin, ListView):
-    model = Project
     context_object_name = 'projects'
+    model = Project
 
     def get_queryset(self):
+        # Store the user's project role on each participant
         participants = Participant.objects.filter(
             user=self.request.user, project=OuterRef('pk')
         )
-        return super().get_queryset().get_visible_projects(self.request.user).annotate(
-            your_role=Subquery(participants.values('role')[:1])
-        )
+        return super().get_queryset().\
+            get_visible_projects(self.request.user).\
+            annotate(your_role=Subquery(participants.values('role')[:1]))
 
 
-class ProjectDetail(LoginRequiredMixin, DetailView):
-    model = Project
-
-    def get_queryset(self):
-        return super().get_queryset().get_visible_projects(self.request.user)
-
+class ProjectDetail(LoginRequiredMixin, SingleProjectMixin, DetailView):
     def get_context_data(self, **kwargs):
         kwargs['participant'] = self.request.user.get_participant(self.get_object())
         return super().get_context_data(**kwargs)
@@ -50,17 +63,17 @@ class ProjectDetail(LoginRequiredMixin, DetailView):
 
 class ProjectAddUser(
     LoginRequiredMixin, UserPassesTestMixin,
-    UserFormKwargsMixin, FormMixin, DetailView
+    UserFormKwargsMixin, FormMixin, SingleProjectMixin, DetailView
 ):
-    model = Project
     template_name = 'projects/project_add_user.html'
     form_class = ProjectAddUserForm
 
     def get_form(self):
         form = super().get_form()
 
-        creatable_roles = self.request.user.project_role(self.get_object()).creatable_roles
+        creatable_roles = self.get_project_role().creatable_roles
 
+        # Restrict form dropdown to roles this user is allowed to create on the project
         form.project = self.get_object()
         form.fields['role'].choices = [
             (role, name)
@@ -71,16 +84,13 @@ class ProjectAddUser(
 
     def get_success_url(self):
         obj = self.get_object()
-        if self.request.user.project_role(obj).can_list_participants:
+        if self.get_project_role().can_list_participants:
             return reverse('projects:list_participants', args=[obj.id])
         else:
             return reverse('projects:detail', args=[obj.id])
 
-    def get_queryset(self):
-        return super().get_queryset().get_visible_projects(self.request.user)
-
     def test_func(self):
-        return self.request.user.project_role(self.get_object()).can_add_participant
+        return self.get_project_role().can_add_participant
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
@@ -92,26 +102,14 @@ class ProjectAddUser(
             return self.form_invalid(form)
 
 
-class ProjectListParticipants(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = Participant
-    context_object_name = 'participants'
-
-    def get_project(self):
-        if not hasattr(self, '_project'):
-            self._project = get_object_or_404(
-                Project.objects.get_visible_projects(self.request.user),
-                pk=self.kwargs['pk']
-            )
-        return self._project
-
-    def get_queryset(self):
-        return self.get_project().participant_set.all()
+class ProjectListParticipants(
+    LoginRequiredMixin, UserPassesTestMixin, SingleProjectMixin, DetailView
+):
+    template_name = 'projects/participant_list.html'
 
     def test_func(self):
-        return self.request.user.project_role(self.get_project()).can_list_participants
+        return self.get_project_role().can_list_participants
 
     def get_context_data(self, **kwargs):
-        kwargs.update({
-            'project': self.get_project()
-        })
+        kwargs['participants'] = self.get_object().participant_set.all()
         return super().get_context_data(**kwargs)

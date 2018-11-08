@@ -1,5 +1,4 @@
 {% load static %}
-{% load permission_tags %}
 
 <!doctype html>
 <html lang="en">
@@ -25,8 +24,7 @@
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           {% if request.user.is_authenticated %}
-            {% can_create_users as permission %}
-            {% if permission %}
+            {% if request.user.user_role.can_create_users %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'identity:add_user' %}">Create User</a>
             </li>

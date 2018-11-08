@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load permission_tags %}
 
 {% block page_title %}{{ project.name }}: Participants{% endblock %}
 {% block h1_title %}{{ project.name }}: Participants{% endblock %}
@@ -18,8 +17,7 @@
 </ul>
 
 <div class="my-3" role="group">
-  {% can_add_participant project as add_user_permission %}
-  {% if add_user_permission %}
+  {% if project_role.can_add_participant %}
     <a class="btn btn-primary btn-lg" href="{% url 'projects:add_user' project.id %}">Add User</a>
   {% endif %}
 </div>
