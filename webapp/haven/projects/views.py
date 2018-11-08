@@ -7,7 +7,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, FormMixin
 
 from identity.mixins import UserRoleRequiredMixin
-from identity.roles import UserRole
+from identity.roles import ProjectRole, UserRole
 
 from .forms import ProjectAddUserForm, ProjectForm
 from .models import Participant, Project
@@ -43,7 +43,7 @@ class ProjectDetail(LoginRequiredMixin, DetailView):
         return super().get_queryset().get_visible_projects(self.request.user)
 
     def get_context_data(self, **kwargs):
-        kwargs['participant'] = self.get_object().get_participant(self.request.user)
+        kwargs['participant'] = self.request.user.get_participant(self.get_object())
         return super().get_context_data(**kwargs)
 
 
@@ -58,19 +58,19 @@ class ProjectAddUser(
     def get_form(self):
         form = super().get_form()
 
-        creatable_roles = self.request.user.creatable_roles_for_project(self.get_object())
+        creatable_roles = self.request.user.project_role(self.get_object()).creatable_roles
 
         form.project = self.get_object()
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
-            if role in creatable_roles or role == ''
+            if ProjectRole(role) in creatable_roles or role == ''
         ]
         return form
 
     def get_success_url(self):
         obj = self.get_object()
-        if self.request.user.can_list_participants(obj):
+        if self.request.user.project_role(obj).can_list_participants:
             return reverse('projects:list_participants', args=[obj.id])
         else:
             return reverse('projects:detail', args=[obj.id])
@@ -79,7 +79,7 @@ class ProjectAddUser(
         return super().get_queryset().get_visible_projects(self.request.user)
 
     def test_func(self):
-        return self.request.user.can_add_user_to_project(self.get_object())
+        return self.request.user.project_role(self.get_object()).can_add_participant
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
@@ -107,7 +107,7 @@ class ProjectListParticipants(LoginRequiredMixin, UserPassesTestMixin, ListView)
         return self.get_project().participant_set.all()
 
     def test_func(self):
-        return self.request.user.can_list_participants(self.get_project())
+        return self.request.user.project_role(self.get_project()).can_list_participants
 
     def get_context_data(self, **kwargs):
         kwargs.update({

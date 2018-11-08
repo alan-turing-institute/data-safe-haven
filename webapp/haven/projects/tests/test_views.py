@@ -158,7 +158,7 @@ class TestAddUserToProject:
         project = recipes.project.make(created_by=as_research_coordinator._user)
 
         response = as_research_coordinator.post('/projects/%d/participants/add' % project.id, {
-            'role': ProjectRole.RESEARCHER,
+            'role': ProjectRole.RESEARCHER.value,
             'username': 'newuser',
         })
 
@@ -196,7 +196,7 @@ class TestAddUserToProject:
             '/projects/%d/participants/add' % investigator.project.id,
             {
                 'username': 'newuser',
-                'role': ProjectRole.INVESTIGATOR,
+                'role': ProjectRole.INVESTIGATOR.value,
             })
 
         assert response.status_code == 200
@@ -211,7 +211,7 @@ class TestAddUserToProject:
 
         assert response.status_code == 200
         role_field = response.context['form']['role'].field
-        assert not role_field.valid_value(ProjectRole.INVESTIGATOR)
+        assert not role_field.valid_value(ProjectRole.INVESTIGATOR.value)
 
 
 @pytest.mark.django_db

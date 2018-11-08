@@ -69,12 +69,12 @@ def data_provider_representative():
 
 @pytest.fixture
 def investigator():
-    return recipes.participant.make(role=ProjectRole.INVESTIGATOR)
+    return recipes.participant.make(role=ProjectRole.INVESTIGATOR.value)
 
 
 @pytest.fixture
 def researcher():
-    return recipes.participant.make(role=ProjectRole.RESEARCHER)
+    return recipes.participant.make(role=ProjectRole.RESEARCHER.value)
 
 
 def client_login(client, user):

@@ -1,4 +1,3 @@
-from collections import defaultdict
 from enum import Enum
 
 
@@ -11,14 +10,6 @@ class UserRole(Enum):
     RESEARCH_COORDINATOR = 'research_coordinator'
     DATA_PROVIDER_REPRESENTATIVE = 'data_provider_representative'
     NONE = ''
-
-    @classmethod
-    def all_roles(cls):
-        return [
-            val
-            for val in cls.__members__.values()
-            if val.value != ''
-        ]
 
     @classmethod
     def choices(cls):
@@ -35,7 +26,11 @@ class UserRole(Enum):
         """
         # Mapping of user roles to a list of other user roles they are allowed to create
         if self is self.SUPERUSER:
-            return self.all_roles()
+            return [
+                self.SYSTEM_CONTROLLER,
+                self.RESEARCH_COORDINATOR,
+                self.DATA_PROVIDER_REPRESENTATIVE,
+            ]
         elif self is self.SYSTEM_CONTROLLER:
             return [
                 self.RESEARCH_COORDINATOR,
@@ -58,41 +53,49 @@ class UserRole(Enum):
         return bool(self.creatable_roles)
 
 
-class ProjectRole:
+class ProjectRole(Enum):
     """
     Roles which a user can take in the context of a project.
     """
+
+    PROJECT_ADMIN = 'project_admin'
     REFEREE = 'referee'
     INVESTIGATOR = 'investigator'
     RESEARCHER = 'researcher'
 
-    # Roles that are project-specific.
-    ALL = (
-        REFEREE,
-        INVESTIGATOR,
-        RESEARCHER,
-    )
-
-    CHOICES = [
-        (REFEREE, 'Referee'),
-        (INVESTIGATOR, 'Investigator'),
-        (RESEARCHER, 'Researcher'),
-    ]
-
-    ALLOWED_CREATIONS = defaultdict(list, {
-        INVESTIGATOR: [
-            RESEARCHER,
-        ],
-    })
-
     @classmethod
-    def can_create(cls, creator, createe):
-        """
-        Does the `creator` role have permission to create the `createe` role?
+    def choices(cls):
+        return [
+            (cls.REFEREE.value, 'Referee'),
+            (cls.INVESTIGATOR.value, 'Investigator'),
+            (cls.RESEARCHER.value, 'Researcher'),
+        ]
 
-        :param creator: `Role` string representing creator role
-        :param createe: `Role` string representing role to be created
-
-        :return `True` if creator can create createe, `False` if not
+    @property
+    def creatable_roles(self):
         """
-        return createe in cls.ALLOWED_CREATIONS[creator]
+        Roles this role is allowed to create on the same project
+        """
+        if self is self.PROJECT_ADMIN:
+            return [self.INVESTIGATOR, self.RESEARCHER]
+        elif self is self.INVESTIGATOR:
+            return [self.RESEARCHER]
+        return []
+
+    @property
+    def can_add_participant(self):
+        return bool(self.creatable_roles)
+
+    @property
+    def can_list_participants(self):
+        return self is self.PROJECT_ADMIN
+
+    def can_add(self, role):
+        """
+        Does this role have permission to assign the given role to a user
+
+        :param role: `ProjectRole` to be created
+
+        :return `True` if can create role, `False` if not
+        """
+        return role in self.creatable_roles

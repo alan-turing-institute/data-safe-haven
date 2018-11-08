@@ -1,5 +1,3 @@
-from itertools import permutations
-
 from identity.roles import ProjectRole, UserRole
 
 
@@ -7,11 +5,14 @@ class TestUserRole:
     def test_superuser_can_create_any_roles(self):
         assert UserRole.SYSTEM_CONTROLLER in UserRole.SUPERUSER.creatable_roles
         assert UserRole.RESEARCH_COORDINATOR in UserRole.SUPERUSER.creatable_roles
-        assert UserRole.all_roles() == UserRole.SUPERUSER.creatable_roles
 
     def test_creatable_roles(self):
         assert UserRole.RESEARCH_COORDINATOR in UserRole.SYSTEM_CONTROLLER.creatable_roles
         assert UserRole.SYSTEM_CONTROLLER not in UserRole.SYSTEM_CONTROLLER.creatable_roles
+
+    def test_no_creatable_roles(self):
+        assert UserRole.RESEARCH_COORDINATOR.creatable_roles == []
+        assert UserRole.NONE.creatable_roles == []
 
     def test_superuser_can_create_projects(self):
         assert UserRole.SUPERUSER.can_create_projects
@@ -27,9 +28,21 @@ class TestUserRole:
 
 
 class TestProjectRole:
-    ALLOWED_CREATIONS = {
-        (ProjectRole.INVESTIGATOR, ProjectRole.RESEARCHER),
-    }
+    def test_add_as_admin(self):
+        assert ProjectRole.PROJECT_ADMIN.can_add_participant
+        assert ProjectRole.PROJECT_ADMIN.can_add(ProjectRole.INVESTIGATOR)
+        assert ProjectRole.PROJECT_ADMIN.can_add(ProjectRole.RESEARCHER)
 
-    # Everything else should be disallowed
-    DISALLOWED_CREATIONS = set(permutations(ProjectRole.ALL, 2)) - ALLOWED_CREATIONS
+    def test_add_as_investigator(self):
+        assert ProjectRole.INVESTIGATOR.can_add_participant
+        assert ProjectRole.INVESTIGATOR.can_add(ProjectRole.RESEARCHER)
+        assert not ProjectRole.INVESTIGATOR.can_add(ProjectRole.INVESTIGATOR)
+
+    def test_add_as_researcher(self):
+        assert not ProjectRole.RESEARCHER.can_add_participant
+        assert not ProjectRole.RESEARCHER.can_add(ProjectRole.RESEARCHER)
+
+    def test_list_participants(self):
+        assert ProjectRole.PROJECT_ADMIN.can_list_participants
+        assert not ProjectRole.INVESTIGATOR.can_list_participants
+        assert not ProjectRole.RESEARCHER.can_list_participants

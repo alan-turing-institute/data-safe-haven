@@ -10,4 +10,4 @@ register = template.Library()
 @register.filter
 @stringfilter
 def project_role_display(role):
-    return dict(ProjectRole.CHOICES).get(role, '')
+    return dict(ProjectRole.choices()).get(role, '')

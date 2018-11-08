@@ -11,7 +11,7 @@ class TestProjectAddUserForm:
         project = recipes.project.make(created_by=research_coordinator)
 
         form = ProjectAddUserForm({
-            'role': ProjectRole.RESEARCHER,
+            'role': ProjectRole.RESEARCHER.value,
             'username': 'newuser',
         }, user=research_coordinator)
         form.project = project
@@ -22,7 +22,7 @@ class TestProjectAddUserForm:
         participant = project.participant_set.get()
         assert form_obj == participant
         assert participant.user.username == 'newuser'
-        assert participant.role == ProjectRole.RESEARCHER
+        assert participant.role == ProjectRole.RESEARCHER.value
         assert participant.created_by == research_coordinator
         assert participant.user.created_by == research_coordinator
 
@@ -30,7 +30,7 @@ class TestProjectAddUserForm:
         project = recipes.project.make(created_by=research_coordinator)
 
         form = ProjectAddUserForm({
-            'role': ProjectRole.RESEARCHER,
+            'role': ProjectRole.RESEARCHER.value,
             'username': project_participant.username,
         }, user=research_coordinator)
         form.project = project
@@ -48,7 +48,7 @@ class TestProjectAddUserForm:
         project.add_user(project_participant, ProjectRole.RESEARCHER, research_coordinator)
 
         form = ProjectAddUserForm({
-            'role': ProjectRole.INVESTIGATOR,
+            'role': ProjectRole.INVESTIGATOR.value,
             'username': project_participant.username,
         }, user=research_coordinator)
         form.project = project

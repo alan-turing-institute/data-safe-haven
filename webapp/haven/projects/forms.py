@@ -23,7 +23,7 @@ class ProjectForm(UserKwargModelFormMixin, forms.ModelForm):
 class ProjectAddUserForm(UserKwargModelFormMixin, forms.Form):
     username = forms.CharField(help_text='Username')
     role = forms.ChoiceField(
-        choices=ProjectRole.CHOICES,
+        choices=ProjectRole.choices(),
         help_text='Role on this project'
     )
 
