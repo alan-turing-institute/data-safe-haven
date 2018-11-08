@@ -1,0 +1,357 @@
+#cloud-config
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+  # Set a mirror if required
+  # mirror: http://us.archive.ubuntu.com/ubuntu/
+
+  sources:
+    chronitis-jupyter.list:
+      source: "ppa:chronitis/jupyter"
+
+    graphics-drivers:
+      source: "ppa:graphics-drivers/ppa"
+
+    marutter-c2d4u35.list:
+      source: "ppa:marutter/c2d4u3.5"
+
+    microsoft.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+
+    microsoft-azure-cli.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
+      keyid: EB3E94ADBE1229CF
+
+    microsoft-vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      keyid: EB3E94ADBE1229CF
+
+    mono-project.list:
+      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+      keyserver: hkp://keyserver.ubuntu.com:80
+      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+
+    # nvidia.list:
+    #   source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ "
+
+    rproject-cran35.list:
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+      keyserver: hkp://keyserver.ubuntu.com:80
+      keyid: 51716619E084DAB9
+
+    # rstudio-cran.list:
+    #   source: "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/"
+    #   keyserver: hkp://keyserver.ubuntu.com:80
+    #   keyid: E084DAB9
+
+    webupd8team-atom.list:
+      source: "ppa:webupd8team/atom"
+
+      `sudo dpkg -i cuda-repo-ubuntu1804_10.0.130-1_amd64.deb`
+`sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub`
+`sudo apt-get update`
+`sudo apt-get install cuda
+
+# package_upgrade: true
+packages:
+  - apt-transport-https
+  - atom
+  - azcopy
+  - azure-cli
+  - build-essential
+  - ca-certificates
+  - code
+  - cuda
+  - curl
+  - default-jdk
+  - dpkg
+  - docker.io
+  - dotnet-sdk-2.1
+  - emacs
+  - firefox
+  - gdebi-core
+  - gfortran
+  - git-core
+  - htop
+  - libcanberra-gtk0
+  - libgconf-2-4
+  - libgit2-dev
+  - libgnome-keyring0
+  - libhdf5-serial-dev
+  - liblmdb-dev
+  - libssl-dev
+  - mono-complete
+  - mono-devel
+  - nano
+  - nvidia-cuda-toolkit
+  - postgresql
+  - postgresql-contrib
+  - r-base
+  - r-base-core
+  - r-base-dev
+  - r-cran-ada
+  - r-cran-assertthat
+  - r-cran-backports
+  - r-cran-bbmisc
+  - r-cran-bh
+  - r-cran-bitops
+  - r-cran-boot
+  - r-cran-car
+  - r-cran-care
+  - r-cran-caret
+  - r-cran-checkmate
+  - r-cran-chron
+  - r-cran-class
+  - r-cran-cluster
+  - r-cran-codetools
+  - r-cran-colorramps
+  - r-cran-colorspace
+  - r-cran-coxboost
+  - r-cran-crayon
+  - r-cran-cvst
+  - r-cran-data.table
+  - r-cran-dbi
+  - r-cran-deepnet
+  - r-cran-devtools
+  - r-cran-diagrammer
+  - r-cran-dichromat
+  - r-cran-digest
+  - r-cran-doparallel
+  - r-cran-dplyr
+  - r-cran-dt
+  - r-cran-dygraphs
+  - r-cran-e1071
+  - r-cran-evaluate
+  - r-cran-foreach
+  - r-cran-foreign
+  - r-cran-gbm
+  - r-cran-gdata
+  - r-cran-ggmap
+  - r-cran-ggplot2
+  - r-cran-ggvis
+  - r-cran-glmnet
+  - r-cran-glmnet
+  - r-cran-googlevis
+  - r-cran-gtable
+  - r-cran-highr
+  - r-cran-hmisc
+  - r-cran-htmltools
+  - r-cran-htmlwidgets
+  - r-cran-httpuv
+  - r-cran-httr
+  - r-cran-irace
+  - r-cran-iterators
+  - r-cran-jsonlite
+  - r-cran-kernlab
+  - r-cran-kernsmooth
+  - r-cran-kknn
+  - r-cran-knitr
+  - r-cran-labeling
+  - r-cran-lattice
+  - r-cran-lazyeval
+  - r-cran-leaflet
+  - r-cran-liblinear
+  - r-cran-lme4
+  - r-cran-lubridate
+  - r-cran-magrittr
+  - r-cran-maps
+  - r-cran-maptools
+  - r-cran-markdown
+  - r-cran-mass
+  - r-cran-matrix
+  - r-cran-mboost
+  - r-cran-mgcv
+  - r-cran-mime
+  - r-cran-mlr
+  - r-cran-multcomp
+  - r-cran-munsell
+  - r-cran-neuralnet
+  - r-cran-nlme
+  - r-cran-nnet
+  - r-cran-parallelmap
+  - r-cran-paramhelpers
+  - r-cran-party
+  - r-cran-pbdzmq
+  - r-cran-pls
+  - r-cran-plyr
+  - r-cran-purrr
+  - r-cran-quantmod
+  - r-cran-r6
+  - r-cran-randomforest
+  - r-cran-randomforestsrc
+  - r-cran-ranger
+  - r-cran-rcolorbrewer
+  - r-cran-rcpp
+  - r-cran-rcpparmadillo
+  - r-cran-rcppeigen
+  - r-cran-rcurl
+  - r-cran-readr
+  - r-cran-repr
+  - r-cran-reshape
+  - r-cran-reshape2
+  - r-cran-rgl
+  - r-cran-rjava
+  - r-cran-rmarkdown
+  - r-cran-rmysql
+  - r-cran-roxygen2
+  - r-cran-rpart
+  - r-cran-rpostgresql
+  - r-cran-rsqlite
+  - r-cran-rstan
+  - r-cran-rweka
+  - r-cran-scales
+  - r-cran-shiny
+  - r-cran-sourcetools
+  - r-cran-sp
+  - r-cran-spatial
+  - r-cran-sqldf
+  - r-cran-stringi
+  - r-cran-stringr
+  - r-cran-survival
+  - r-cran-tcltk2
+  - r-cran-testthat
+  - r-cran-tgp
+  - r-cran-threejs
+  - r-cran-tibble
+  - r-cran-tidyr
+  - r-cran-tidyverse
+  - r-cran-uuid
+  - r-cran-vcd
+  - r-cran-xgboost
+  - r-cran-xlsx
+  - r-cran-xml
+  - r-cran-xtable
+  - r-cran-xts
+  - r-cran-yaml
+  - r-cran-zoo
+  - r-recommended
+  - scala
+  - software-properties-common
+  - tzdata
+  - vim
+  - wget
+
+runcmd:
+  # Install latest anaconda version (download is ~640MB)
+  - cd /tmp
+  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
+  - rm Anaconda3-5.3.0-Linux-x86_64.sh
+  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/anaconda3/bin
+  # Update installation
+  - conda update --all --yes
+  # Install python versions: 2.6, 3.6, 3.7 (default)
+  - conda create -n py27 python=2.7 anaconda
+  - conda create -n py36 python=3.6 anaconda
+  - conda create -n py37 python=3.7 anaconda
+
+  # Install tensorflow and keras
+  - conda create -n tensorflow27 python=2.7 tensorflow
+  - conda create -n tensorflow36 python=3.6 tensorflow
+  - conda create -n tensorflow37 python=3.7 tensorflow
+  - conda install -c anaconda keras
+
+  # Install pystan
+  - conda install -c conda-forge pystan 
+
+  # Add additional R packages not available as debs (NB. 'translations' is deprecated)
+  - Rscript -e "install.packages(c('h2o', 'IRdisplay', 'networkD3', 'XLConnect'))"
+
+  # Install RStudio
+  - cd /tmp
+  - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
+  - gdebi rstudio-xenial-1.1.463-amd64.deb
+  - rm -f rstudio-xenial-1.1.463-amd64.deb
+
+  # Install latest julia version
+  - mkdir -p /opt/julia
+  - cd /opt/julia
+  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.1-linux-x86_64.tar.gz
+  - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
+  - rm -rf julia-1.0.1-linux-x86_64.tar.gz
+  - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
+
+  # Install jupyter/jupyterhub/jupyterlab plus kernels
+  - conda install -c anaconda jupyter_client
+  - conda install -c conda-forge jupyterhub 
+  - conda install -c conda-forge jupyterlab
+  - conda install -c r notebook r-irkernel
+  - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
+  - Rscript -e "IRkernel::installspec(user = FALSE)"
+  - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+
+  # Install CUDA
+  - cd /tmp
+  - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+  - dpkg -i cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+  - rm cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+  - sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+  - sudo apt-get update
+  - sudo apt-get install cuda
+
+  # Install spark
+  - mkdir -p /opt/spark
+  - cd /opt/spark
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
+  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
+
+  # Install torch
+  - mkdir -p /opt/torch
+  - cd /opt/torch
+  - git clone https://github.com/torch/distro.git /opt/torch --recursive
+  - bash install-deps
+  - bash install.sh -b
+  - sed -i 's|\(.*\)"|\1:/opt/torch/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/torch/bin
+
+  # Install pytorch
+  - conda install pytorch torchvision -c pytorch
+
+  # Check for successful installations
+  # - programming languages
+  - echo "python $(which python)"
+  - echo "R $(which R)"
+  - echo "psql $(which psql)"
+  - echo "julia $(which julia)"
+  - echo "java $(which java)"
+  - echo "dotnet $(which dotnet)"
+  - echo "gcc $(which gcc)"
+  - echo "g++ $(which g++)"
+  - echo "gfortran $(which gfortran)"
+  # - development tools
+  - echo "bash $(which bash)"
+  - echo "git $(which git)"
+  - echo "htop $(which htop)"
+  - echo "firefox $(which firefox)"
+  - echo "vim $(which vim)"
+  - echo "emacs $(which emacs)"
+  - echo "nano $(which nano)"
+  - echo "code $(which code)"
+  - echo "atom $(which atom)"
+  - echo "rstudio $(which rstudio)"
+  - echo "jupyter $(which jupyter)"
+  - echo "docker $(which docker)"
+  - echo "az $(which az)"
+  - echo "scala $(which scala)"
+  - echo "spark-shell $(which spark-shell)"
+  - echo "th $(which th)"
+  
+  # Deprovision
+  - waagent -deprovision+user -force
+  # Fix internet connectivity that is broken by waagent deprovisioning
+  - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+final_message:
+  "The system is setup and deprovisioned, after $UPTIME seconds"
+
+# Not including Azure Storage Explorer
