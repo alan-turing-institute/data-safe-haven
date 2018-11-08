@@ -24,7 +24,7 @@ class UserCreate(LoginRequiredMixin, UserFormKwargsMixin, UserRoleRequiredMixin,
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
-            if role in creatable_roles or role == ''
+            if UserRole(role) in creatable_roles or role == ''
         ]
 
     def get_form(self):

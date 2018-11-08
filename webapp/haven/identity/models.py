@@ -10,7 +10,7 @@ class User(AbstractUser):
     """
     role = models.CharField(
         max_length=50,
-        choices=UserRole.CHOICES,
+        choices=UserRole.choices(),
         blank=True,
         help_text="The user's role in the system"
     )
@@ -25,6 +25,10 @@ class User(AbstractUser):
     )
 
     @property
+    def user_role(self):
+        return UserRole(self.role)
+
+    @property
     def can_create_users(self):
         """
         Can this user create other users at all?
@@ -36,7 +40,7 @@ class User(AbstractUser):
         """
         Can this user create other users at all?
         """
-        return self.is_superuser or self.role in [
+        return self.is_superuser or self.user_role in [
             UserRole.SYSTEM_CONTROLLER,
             UserRole.RESEARCH_COORDINATOR,
         ]
@@ -50,13 +54,13 @@ class User(AbstractUser):
         Roles which this user is allowed to create
         """
         if self.is_superuser:
-            return UserRole.ALL
+            return UserRole.all_roles()
         else:
-            return UserRole.ALLOWED_CREATIONS[self.role]
+            return self.user_role.allowed_creations
 
     def is_project_admin(self, project):
         return (self.is_superuser or
-                self.role == UserRole.SYSTEM_CONTROLLER or
+                self.user_role is UserRole.SYSTEM_CONTROLLER or
                 project.created_by == self)
 
     def creatable_roles_for_project(self, project):

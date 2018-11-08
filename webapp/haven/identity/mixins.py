@@ -7,5 +7,5 @@ class UserRoleRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return (
             self.request.user.is_superuser or
-            self.request.user.role in self.user_roles
+            self.request.user.user_role in self.user_roles
         )

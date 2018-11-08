@@ -8,7 +8,7 @@ class ProjectQuerySet(models.QuerySet):
     def get_visible_projects(self, user):
         view_all = (
             user.is_superuser or
-            user.role == UserRole.SYSTEM_CONTROLLER
+            user.user_role is UserRole.SYSTEM_CONTROLLER
         )
 
         if not view_all:

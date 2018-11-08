@@ -33,7 +33,7 @@ def system_controller():
     return User.objects.create_user(
         username='controller',
         email='controller@example.com',
-        role=UserRole.SYSTEM_CONTROLLER,
+        role=UserRole.SYSTEM_CONTROLLER.value,
         password=DUMMY_PASSWORD,
     )
 
@@ -43,7 +43,7 @@ def research_coordinator():
     return User.objects.create_user(
         username='coordinator',
         email='coordinator@example.com',
-        role=UserRole.RESEARCH_COORDINATOR,
+        role=UserRole.RESEARCH_COORDINATOR.value,
         password=DUMMY_PASSWORD,
     )
 
@@ -62,7 +62,7 @@ def data_provider_representative():
     return User.objects.create_user(
         username='datarep',
         email='datarep@example.com',
-        role=UserRole.DATA_PROVIDER_REPRESENTATIVE,
+        role=UserRole.DATA_PROVIDER_REPRESENTATIVE.value,
         password=DUMMY_PASSWORD,
     )
 

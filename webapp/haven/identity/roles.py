@@ -1,33 +1,42 @@
 from collections import defaultdict
+from enum import Enum
 
 
-class UserRole:
+class UserRole(Enum):
     """
     User roles global to the system
     """
     SYSTEM_CONTROLLER = 'system_controller'
     RESEARCH_COORDINATOR = 'research_coordinator'
     DATA_PROVIDER_REPRESENTATIVE = 'data_provider_representative'
+    NONE = ''
 
-    ALL = [
-        SYSTEM_CONTROLLER,
-        RESEARCH_COORDINATOR,
-        DATA_PROVIDER_REPRESENTATIVE,
-    ]
+    @classmethod
+    def all_roles(cls):
+        return [
+            val
+            for val in cls.__members__.values()
+            if val.value != ''
+        ]
 
-    CHOICES = [
-        (SYSTEM_CONTROLLER, 'System Controller'),
-        (RESEARCH_COORDINATOR, 'Research Coordinator'),
-        (DATA_PROVIDER_REPRESENTATIVE, 'Data Provider Representative'),
-    ]
+    @classmethod
+    def choices(cls):
+        return [
+            (cls.SYSTEM_CONTROLLER.value, 'System Controller'),
+            (cls.RESEARCH_COORDINATOR.value, 'Research Coordinator'),
+            (cls.DATA_PROVIDER_REPRESENTATIVE.value, 'Data Provider Representative'),
+        ]
 
-    # Mapping of user roles to a list of other user roles they are allowed to create
-    ALLOWED_CREATIONS = defaultdict(list, {
-        SYSTEM_CONTROLLER: [
-            RESEARCH_COORDINATOR,
-            DATA_PROVIDER_REPRESENTATIVE,
-        ],
-    })
+    @property
+    def allowed_creations(self):
+        # Mapping of user roles to a list of other user roles they are allowed to create
+        if self is self.SYSTEM_CONTROLLER:
+            return [
+                self.RESEARCH_COORDINATOR,
+                self.DATA_PROVIDER_REPRESENTATIVE,
+            ]
+
+        return []
 
 
 class ProjectRole:

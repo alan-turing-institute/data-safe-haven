@@ -10,7 +10,7 @@ class TestCreateUserForm:
     def test_create_user(self, system_controller):
         form = CreateUserForm({
             'username': 'testuser',
-            'role': UserRole.RESEARCH_COORDINATOR,
+            'role': UserRole.RESEARCH_COORDINATOR.value,
         }, user=system_controller)
         assert form.is_valid()
 

@@ -26,7 +26,7 @@ class TestCreateUser:
     def test_create_user(self, as_system_controller):
         response = as_system_controller.post('/users/new', {
             'username': 'testuser',
-            'role': UserRole.RESEARCH_COORDINATOR,
+            'role': UserRole.RESEARCH_COORDINATOR.value,
         }, follow=True)
 
         assert response.status_code == 200
@@ -44,7 +44,7 @@ class TestCreateUser:
         # A system controller cannot create a system controller
         response = as_system_controller.post('/users/new', {
             'username': 'controller',
-            'role': UserRole.SYSTEM_CONTROLLER,
+            'role': UserRole.SYSTEM_CONTROLLER.value,
         })
 
         assert response.status_code == 200
@@ -56,4 +56,4 @@ class TestCreateUser:
 
         assert response.status_code == 200
         role_field = response.context['form']['role'].field
-        assert not role_field.valid_value(UserRole.SYSTEM_CONTROLLER)
+        assert not role_field.valid_value(UserRole.SYSTEM_CONTROLLER.value)

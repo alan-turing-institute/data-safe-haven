@@ -7,7 +7,9 @@ from identity.roles import ProjectRole, UserRole
 @pytest.mark.django_db
 class TestUserCreatableRoles:
     def test_superuser_can_create_any_roles(self, superuser):
-        assert superuser.creatable_roles == UserRole.ALL
+        assert UserRole.SYSTEM_CONTROLLER in superuser.creatable_roles
+        assert UserRole.RESEARCH_COORDINATOR in superuser.creatable_roles
+        assert UserRole.all_roles() == superuser.creatable_roles
 
     def test_creatable_roles(self, system_controller):
         assert UserRole.RESEARCH_COORDINATOR in system_controller.creatable_roles
