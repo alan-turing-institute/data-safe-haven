@@ -19,7 +19,7 @@ class UserCreate(LoginRequiredMixin, UserFormKwargsMixin, UserRoleRequiredMixin,
         """
         Ensure role creation is restricted for the user
         """
-        creatable_roles = self.request.user.creatable_roles
+        creatable_roles = self.request.user.user_role.creatable_roles
 
         form.fields['role'].choices = [
             (role, name)

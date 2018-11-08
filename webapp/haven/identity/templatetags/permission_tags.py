@@ -6,12 +6,12 @@ register = template.Library()
 
 @register.simple_tag(takes_context=True)
 def can_create_users(context):
-    return context['user'].can_create_users
+    return context['user'].user_role.can_create_users
 
 
 @register.simple_tag(takes_context=True)
 def can_create_projects(context):
-    return context['user'].can_create_projects
+    return context['user'].user_role.can_create_projects
 
 
 @register.simple_tag(takes_context=True)

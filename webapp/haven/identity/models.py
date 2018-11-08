@@ -26,37 +26,12 @@ class User(AbstractUser):
 
     @property
     def user_role(self):
+        if self.is_superuser:
+            return UserRole.SUPERUSER
         return UserRole(self.role)
-
-    @property
-    def can_create_users(self):
-        """
-        Can this user create other users at all?
-        """
-        return bool(self.creatable_roles)
-
-    @property
-    def can_create_projects(self):
-        """
-        Can this user create other users at all?
-        """
-        return self.is_superuser or self.user_role in [
-            UserRole.SYSTEM_CONTROLLER,
-            UserRole.RESEARCH_COORDINATOR,
-        ]
 
     def can_add_user_to_project(self, project):
         return bool(self.creatable_roles_for_project(project))
-
-    @property
-    def creatable_roles(self):
-        """
-        Roles which this user is allowed to create
-        """
-        if self.is_superuser:
-            return UserRole.all_roles()
-        else:
-            return self.user_role.allowed_creations
 
     def is_project_admin(self, project):
         return (self.is_superuser or
