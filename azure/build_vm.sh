@@ -7,6 +7,10 @@ BASENAME="${MACHINENAME}ForImaging-${TIMESTAMP}"
 IMAGENAME="${MACHINENAME}Image-${TIMESTAMP}"
 OUTPUTNAME="${MACHINENAME}-${TIMESTAMP}"
 
+RED="\033[0;31m"
+BLUE="\033[0;34m"
+END="\033[0m"
+
 # Create resource group
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo "Creating resource group $RESOURCEGROUP"
@@ -14,48 +18,46 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
 fi
 
 # Create the VM
-echo "Creating VM $BASENAME as part of $RESOURCEGROUP"
+echo -e " ${RED}Creating VM ${BLUE}$BASENAME ${RED}as part of ${BLUE}$RESOURCEGROUP${END}"
 az vm create \
   --resource-group $RESOURCEGROUP \
   --name $BASENAME \
   --image Canonical:UbuntuServer:18.04-LTS:latest \
   --custom-data cloud-init.yaml \
   --admin-username azureuser \
-  --generate-ssh-keys > vm_info.json
+  --generate-ssh-keys > $BASENAME.json
 
 # ssh into the new VM and read output log until installation is finished
-PUBLICIP=$(grep "publicIpAddress" vm_info.json | cut -d':' -f2 | cut -d'"' -f2)
-echo "Monitoring installation progress using..."
-echo "ssh azureuser@${PUBLICIP}"
+PUBLICIP=$(grep "publicIpAddress" $BASENAME.json | cut -d':' -f2 | cut -d'"' -f2)
+rm $BASENAME.json
+echo -e "${RED}Monitoring installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}"
 ssh -o "StrictHostKeyChecking no" azureuser@${PUBLICIP} <<'ENDSSH'
 log_file="/var/log/cloud-init-output.log"
-curr_line="$(tail -n1 $log_file)"
-last_line="$(tail -n1 $log_file)"
 
-cat $log_file
+tail -f -n +1 $log_file &
+TAILPID=$(jobs -p)
 while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
-        curr_line="$(tail -n1 $log_file)"
-        if [ "$curr_line" != "$last_line" ]
-        then
-                echo $curr_line
-                last_line=$curr_line
-        fi  
+    sleep 1
 done
+kill $TAILPID
+
+cloud-init status
 ENDSSH
-echo "Installation finished"
+echo -e "${RED}Installation finished${END}"
+# echo "ssh azureuser@${PUBLICIP}"
 
 # Deallocate and generalize
-echo "Deallocating and generalizing VM..."
+echo -e "${RED}Deallocating and generalizing VM...${END}"
 az vm deallocate --resource-group $RESOURCEGROUP --name $BASENAME
 az vm generalize --resource-group $RESOURCEGROUP --name $BASENAME
 
 # Create image and then list available images
-echo "Creating an image from this VM..."
+echo -e "${RED}Creating an image from this VM...${END}"
 az image create --resource-group $RESOURCEGROUP --name $IMAGENAME --source $BASENAME
 az image list --resource-group $RESOURCEGROUP
 
-echo "To make a new VM from this image do:"
-echo "az vm create --resource-group $RESOURCEGROUP --name $OUTPUTNAME --image $IMAGENAME --admin-username azureuser --generate-ssh-keys"
+echo -e "${RED}To make a new VM from this image do:${END}"
+echo -e "${BLUE}az vm create --resource-group $RESOURCEGROUP --name $OUTPUTNAME --image $IMAGENAME --admin-username azureuser --generate-ssh-keys${END}"
 
-echo "To delete this image do:"
-echo "az image delete --resource-group $RESOURCEGROUP --name $IMAGENAME"
+echo -e "${RED}To delete this image do:${END}"
+echo -e "${BLUE}az image delete --resource-group $RESOURCEGROUP --name $IMAGENAME${END}"

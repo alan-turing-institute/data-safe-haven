@@ -14,14 +14,12 @@ apt:
     chronitis-jupyter.list:
       source: "ppa:chronitis/jupyter"
 
-    graphics-drivers:
-      source: "ppa:graphics-drivers/ppa"
-
     marutter-c2d4u35.list:
       source: "ppa:marutter/c2d4u3.5"
 
-    microsoft.list:
+    microsoft-prod.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      keyid: EB3E94ADBE1229CF
 
     microsoft-azure-cli.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
@@ -36,44 +34,63 @@ apt:
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
-    # nvidia.list:
-    #   source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ "
+    nvidia.list:
+      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
+      key: |
+        -----BEGIN PGP PUBLIC KEY BLOCK-----
+        Version: GnuPG v1
+
+        mQINBFdtt4UBEAC8FDSWMR07GJZ265giLn7kLF+EsJCWESUq6Cd13QN0JQ/tLibi
+        QlW4ZjeOnEH9VPlqh/mKqNMG4SwRt8S+GHpePMQrr0aOkiRGfCclnAWIZURSAP+t
+        PLelCt43fkw1BBTopd/0oOzO8kHu8j8WU4A8GHxqghfFWPv54FQs2iaZ2eWR7a6d
+        79IJrbDKaVCCiQrkhCM8m648pNKHhuoJ9cQXFV+uvwkpfmKWGQ4ultxlOyjLHJLF
+        vuML2RuAO9IxbdZjzeYNN+T+wjFIBVcPnwEO+WrYgvGkT4r9aqVqTeg3EPb7QclV
+        sKBVJdxk4jZl0y22HAWqScVi6SJ15uK9pXxywDZkbpuRBWx4ThWiGe/FiUa2igi9
+        /SIvqN2TBY0g18sRTrylVr1wE1UGa/y7nDx6PoGCP1frBt8YUYt3pkM8Xvb2CRxx
+        CyWwmuFEQHC6jCEWf7FnoBHBYQwTVGNrU0vkuIeDrm+ZAcv8wx+ie1hlFhqCCJnf
+        jqeQ0/zA9RPmCPOkLyTdSsNZtlxxk7bzCdTdFFKzBjGTR7Gz3SMSp23d11eIyRiF
+        HQsp2v0SvnPJ6OcgB95Hmo544vi3RuoVfovtDOdfSBCRxP+GhhxkKSrTleQjD0/r
+        CGkdG2Kox3m9YllAsvZchLXlS7bZV9mGRF61mVMjF3HJRUQfBBm89VPQ+QARAQAB
+        tCBjdWRhdG9vbHMgPGN1ZGF0b29sc0BudmlkaWEuY29tPokCNwQTAQgAIQUCV223
+        hQIbAwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgAAKCRD2D0s9f6KvgNArEAChnfcW
+        rYItgt7xXXubT6E+KpJyJ0RPrXf51S2mhciFbjDl+3EXRMRjOutVmgWYPWUUZaKR
+        8Iez3Lz4BRmwYOWBLtdnOLbKoSsQUX95rnPFjfly/DFLfjKxz4NRBmh4r4/rCYWm
+        2hmnXmOAi8kV7fqx3g5XMpJ//N6+T8ctEol2iZ82GrXjadcRWE4rAe7UyuEzJ74y
+        6ZKIzk5ijdgEKtcaBhzEWvoV5Pr9nkn7ByGsdehKR/gNnjPMYXrklSHGfphJIsS2
+        S32lMk/kuRjihBcWcYBXIPEQ7CV+PNW2TlkZj/YqTg637sZHwkhcjcNzxeqKvRYG
+        8V7Ju5hTDxL1UQBmgDS3cRx1lw7tYRG5bS67tbC2dc/CpPkG5agiZ/WyoHQDnn4r
+        1fRuOFx694QR6+0rAP6171xEEoNAPaH7gdJdhWKiYiJD0T2EEbW7wBUi/EupeKRv
+        kR12R1jUa1mlpxNtWQxJ7qp98T9+DmkxI1XDmWx0/g4ryuicwLDSqoPgNcRNdSQb
+        b8YfTqrkqaDdYzwLr/n0YKW3cYIvIeisV0WxRjb6OP7oAlAtaAhImlIc//51qNO7
+        /WAud6qMtnhFoZayR/BzLKqnCioN5GYr9BAKskpPHe9cDKVS3fg+Qvc1sNJID+jf
+        k52PqyW24Qsr0A9+5zQyE4tH9dfv120gj9avmg==
+        =0nKc
+        -----END PGP PUBLIC KEY BLOCK-----
 
     rproject-cran35.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 51716619E084DAB9
 
-    # rstudio-cran.list:
-    #   source: "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/"
-    #   keyserver: hkp://keyserver.ubuntu.com:80
-    #   keyid: E084DAB9
-
     webupd8team-atom.list:
       source: "ppa:webupd8team/atom"
 
-      `sudo dpkg -i cuda-repo-ubuntu1804_10.0.130-1_amd64.deb`
-`sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub`
-`sudo apt-get update`
-`sudo apt-get install cuda
-
-# package_upgrade: true
 packages:
   - apt-transport-https
   - atom
-  - azcopy
   - azure-cli
   - build-essential
   - ca-certificates
+  - cmake
   - code
   - cuda
   - curl
   - default-jdk
-  - dpkg
   - docker.io
   - dotnet-sdk-2.1
   - emacs
   - firefox
+  - gcc
   - gdebi-core
   - gfortran
   - git-core
@@ -237,28 +254,35 @@ packages:
   - wget
 
 runcmd:
-  # Install latest anaconda version (download is ~640MB)
+  # Install torch
+  - mkdir -p /opt/torch
+  - cd /opt/torch
+  - git clone https://github.com/torch/distro.git /opt/torch --recursive
+  - sed -i '/python-software-properties/s/^/#/g' install-deps 
+  - bash install-deps
+  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
+  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g+
+  - bash install.sh -b
+  - sed -i 's|\(.*\)"|\1:/opt/torch/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/torch/bin
+  - if [ "$(which th)" == "" ]; then echo exit 1; fi
+
+  # Install azcopy
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
-  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
-  - rm Anaconda3-5.3.0-Linux-x86_64.sh
-  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/anaconda3/bin
-  # Update installation
-  - conda update --all --yes
-  # Install python versions: 2.6, 3.6, 3.7 (default)
-  - conda create -n py27 python=2.7 anaconda
-  - conda create -n py36 python=3.6 anaconda
-  - conda create -n py37 python=3.7 anaconda
+  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
+  - tar -xf azcopy.tar.gz
+  - bash install.sh
+  - rm -f azcopy.tar.gz
+  - if [ "$(which azcopy)" == "" ]; then echo exit 1; fi
 
-  # Install tensorflow and keras
-  - conda create -n tensorflow27 python=2.7 tensorflow
-  - conda create -n tensorflow36 python=3.6 tensorflow
-  - conda create -n tensorflow37 python=3.7 tensorflow
-  - conda install -c anaconda keras
-
-  # Install pystan
-  - conda install -c conda-forge pystan 
+  # Install spark
+  - mkdir -p /opt/spark
+  - cd /opt/spark
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
+  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
 
   # Add additional R packages not available as debs (NB. 'translations' is deprecated)
   - Rscript -e "install.packages(c('h2o', 'IRdisplay', 'networkD3', 'XLConnect'))"
@@ -266,7 +290,7 @@ runcmd:
   # Install RStudio
   - cd /tmp
   - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
-  - gdebi rstudio-xenial-1.1.463-amd64.deb
+  - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
   - rm -f rstudio-xenial-1.1.463-amd64.deb
 
   # Install latest julia version
@@ -278,44 +302,36 @@ runcmd:
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
 
+  # Install latest anaconda version (download is ~640MB)
+  - cd /tmp
+  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
+  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
+  - rm Anaconda3-5.3.0-Linux-x86_64.sh
+  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/anaconda3/bin
+  # Update installation
+  - conda config --add channels conda-forge
+  - conda config --add channels anaconda
+  - conda config --add channels pytorch
+  - conda config --add channels r
+  - conda update --all --yes
+  # Create environment: python 2.7 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  - conda create -n py27 python=2.7 anaconda
+  - source activate py27
+  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+  # Create environment: python 3.6 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  - conda create -n py36 python=3.6 anaconda
+  - source activate py36
+  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+  # Create environment: python 3.7 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  - conda create -n py37 python=3.7 anaconda
+  - source activate py37
+  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+
   # Install jupyter/jupyterhub/jupyterlab plus kernels
-  - conda install -c anaconda jupyter_client
-  - conda install -c conda-forge jupyterhub 
-  - conda install -c conda-forge jupyterlab
-  - conda install -c r notebook r-irkernel
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
   - Rscript -e "IRkernel::installspec(user = FALSE)"
   - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
-
-  # Install CUDA
-  - cd /tmp
-  - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
-  - dpkg -i cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
-  - rm cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
-  - sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
-  - sudo apt-get update
-  - sudo apt-get install cuda
-
-  # Install spark
-  - mkdir -p /opt/spark
-  - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
-  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
-  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
-
-  # Install torch
-  - mkdir -p /opt/torch
-  - cd /opt/torch
-  - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  - bash install-deps
-  - bash install.sh -b
-  - sed -i 's|\(.*\)"|\1:/opt/torch/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/torch/bin
-
-  # Install pytorch
-  - conda install pytorch torchvision -c pytorch
 
   # Check for successful installations
   # - programming languages
@@ -345,7 +361,9 @@ runcmd:
   - echo "scala $(which scala)"
   - echo "spark-shell $(which spark-shell)"
   - echo "th $(which th)"
-  
+  - echo "cuda-gdb $(which cuda-gdb)"
+  - python -c 'import torch; print(torch.cuda.is_available())'
+
   # Deprovision
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
