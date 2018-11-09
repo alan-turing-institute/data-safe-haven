@@ -45,3 +45,17 @@ class TestUserRoleCreateProject:
 
     def test_unprivileged_user_cannot_create_projects(self):
         assert not UserRole.NONE.can_create_projects
+
+
+class TestUserRoleViewAllProjects:
+    def test_superuser_can_view_all_projects(self):
+        assert UserRole.SUPERUSER.can_view_all_projects
+
+    def test_system_controller_can_view_all_projects(self):
+        assert UserRole.SYSTEM_CONTROLLER.can_view_all_projects
+
+    def test_research_coordinator_can_view_all_projects(self):
+        assert not UserRole.RESEARCH_COORDINATOR.can_view_all_projects
+
+    def test_unprivileged_user_cannot_view_all_projects(self):
+        assert not UserRole.NONE.can_view_all_projects
