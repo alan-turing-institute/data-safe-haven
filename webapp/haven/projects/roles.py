@@ -13,6 +13,7 @@ class ProjectRole(Enum):
 
     # Roles which are assignable to users on a project
     REFEREE = 'referee'
+    RESEARCH_COORDINATOR = 'research_coordinator'
     INVESTIGATOR = 'investigator'
     RESEARCHER = 'researcher'
 
@@ -21,6 +22,7 @@ class ProjectRole(Enum):
         """Dropdown choices for project roles"""
         return [
             (cls.REFEREE.value, 'Referee'),
+            (cls.RESEARCH_COORDINATOR.value, 'Research Coordinator'),
             (cls.INVESTIGATOR.value, 'Investigator'),
             (cls.RESEARCHER.value, 'Researcher'),
         ]
@@ -33,7 +35,9 @@ class ProjectRole(Enum):
         :return: list of `ProjectRole` objects
         """
         if self is self.PROJECT_ADMIN:
-            return [self.INVESTIGATOR, self.RESEARCHER]
+            return [self.RESEARCH_COORDINATOR, self.INVESTIGATOR, self.RESEARCHER]
+        elif self is self.RESEARCH_COORDINATOR:
+            return [self.RESEARCH_COORDINATOR, self.INVESTIGATOR, self.RESEARCHER]
         elif self is self.INVESTIGATOR:
             return [self.RESEARCHER]
         return []
@@ -43,13 +47,18 @@ class ProjectRole(Enum):
         """Is this role able to add new participants to the project?"""
         return self in [
             self.PROJECT_ADMIN,
+            self.RESEARCH_COORDINATOR,
             self.INVESTIGATOR,
         ]
 
     @property
     def can_list_participants(self):
         """Is this role able to list participants?"""
-        return self is self.PROJECT_ADMIN
+        return self in [
+            self.PROJECT_ADMIN,
+            self.RESEARCH_COORDINATOR,
+            self.INVESTIGATOR,
+        ]
 
     def can_assign_role(self, role):
         """
