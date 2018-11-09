@@ -1,6 +1,8 @@
 import pytest
+from django.db import IntegrityError
 
 from core import recipes
+from identity.models import User
 from identity.roles import UserRole
 from projects.roles import ProjectRole
 
@@ -38,3 +40,9 @@ class TestUser:
 
     def test_project_role_is_None_for_non_involved_project(self, researcher):
         assert researcher.user.project_role(recipes.project.make()) is None
+
+    def test_email_must_be_unique(self):
+        User.objects.create_user(username='user1', email='controller@example.com')
+
+        with pytest.raises(IntegrityError):
+            User.objects.create_user(username='user2', email='controller@example.com')

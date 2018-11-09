@@ -26,6 +26,12 @@ class User(AbstractUser):
         help_text='User who created this user',
     )
 
+    email = models.EmailField(
+        max_length=254,
+        verbose_name='email address',
+        unique=True
+    )
+
     @property
     def user_role(self):
         if self.is_superuser:
