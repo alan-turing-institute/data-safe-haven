@@ -6,13 +6,19 @@ class ProjectRole(Enum):
     Roles which a user can take in the context of a project.
     """
 
+    # Project admin is an inherited role - it's not stored anywhere but is
+    # automatically applied to a project owner, or users which have certain
+    # system-level roles
     PROJECT_ADMIN = 'project_admin'
+
+    # Roles which are assignable to users on a project
     REFEREE = 'referee'
     INVESTIGATOR = 'investigator'
     RESEARCHER = 'researcher'
 
     @classmethod
     def choices(cls):
+        """Dropdown choices for project roles"""
         return [
             (cls.REFEREE.value, 'Referee'),
             (cls.INVESTIGATOR.value, 'Investigator'),
@@ -20,9 +26,11 @@ class ProjectRole(Enum):
         ]
 
     @property
-    def creatable_roles(self):
+    def assignable_roles(self):
         """
-        Roles this role is allowed to create on the same project
+        Roles this role is allowed to assign on the same project
+
+        :return: list of `ProjectRole` objects
         """
         if self is self.PROJECT_ADMIN:
             return [self.INVESTIGATOR, self.RESEARCHER]
@@ -31,19 +39,23 @@ class ProjectRole(Enum):
         return []
 
     @property
-    def can_add_participant(self):
-        return bool(self.creatable_roles)
+    def can_add_participants(self):
+        """Is this role able to add new participants to the project?"""
+        return self in [
+            self.PROJECT_ADMIN,
+            self.INVESTIGATOR,
+        ]
 
     @property
     def can_list_participants(self):
+        """Is this role able to list participants?"""
         return self is self.PROJECT_ADMIN
 
-    def can_add(self, role):
+    def can_assign_role(self, role):
         """
-        Does this role have permission to assign the given role to a user
+        Can this role assign the given role on this project?
 
-        :param role: `ProjectRole` to be created
-
-        :return `True` if can create role, `False` if not
+        :param role: `ProjectRole` to be assigned
+        :return `True` if can assign role, `False` if not
         """
-        return role in self.creatable_roles
+        return role in self.assignable_roles

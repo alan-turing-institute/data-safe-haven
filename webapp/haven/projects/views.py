@@ -71,14 +71,14 @@ class ProjectAddUser(
     def get_form(self):
         form = super().get_form()
 
-        creatable_roles = self.get_project_role().creatable_roles
+        project_role = self.get_project_role()
 
-        # Restrict form dropdown to roles this user is allowed to create on the project
+        # Restrict form dropdown to roles this user is allowed to assign on the project
         form.project = self.get_object()
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
-            if ProjectRole(role) in creatable_roles or role == ''
+            if project_role.can_assign_role(ProjectRole(role))
         ]
         return form
 
@@ -90,7 +90,7 @@ class ProjectAddUser(
             return reverse('projects:detail', args=[obj.id])
 
     def test_func(self):
-        return self.get_project_role().can_add_participant
+        return self.get_project_role().can_add_participants
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()

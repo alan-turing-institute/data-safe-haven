@@ -19,12 +19,12 @@ class UserCreate(LoginRequiredMixin, UserFormKwargsMixin, UserRoleRequiredMixin,
         """
         Ensure role creation is restricted for the user
         """
-        creatable_roles = self.request.user.user_role.creatable_roles
+        user_role = self.request.user.user_role
 
         form.fields['role'].choices = [
             (role, name)
             for (role, name) in form.fields['role'].choices
-            if UserRole(role) in creatable_roles or role == ''
+            if user_role.can_create(UserRole(role))
         ]
 
     def get_form(self):
