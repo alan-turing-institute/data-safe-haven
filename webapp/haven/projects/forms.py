@@ -1,22 +1,19 @@
 from braces.forms import UserKwargModelFormMixin
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory
 
-from .models import Project
+from identity.mixins import SaveCreatorMixin
+from identity.models import User
+
+from .models import Participant, Project
 from .roles import ProjectRole
 
 
-class ProjectForm(UserKwargModelFormMixin, forms.ModelForm):
+class ProjectForm(SaveCreatorMixin, forms.ModelForm):
     class Meta:
         model = Project
         fields = ['name', 'description']
-
-    def save(self, **kwargs):
-        project = super().save(commit=False)
-        project.created_by = self.user
-        project.save()
-        self.save_m2m()
-        return project
 
 
 class ProjectAddUserForm(UserKwargModelFormMixin, forms.Form):
@@ -39,3 +36,28 @@ class ProjectAddUserForm(UserKwargModelFormMixin, forms.Form):
         role = self.cleaned_data['role']
         username = self.cleaned_data['username']
         return self.project.add_user(username, role, self.user)
+
+
+class AddUserToProjectInlineForm(SaveCreatorMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['project'].queryset = Project.objects.get_editable_projects(self.user)
+
+    class Meta:
+        model = Participant
+        fields = ('project', 'role')
+
+    def clean(self):
+        project = self.cleaned_data['project']
+        role = ProjectRole(self.cleaned_data['role'])
+        if not self.user.project_role(project).can_assign_role(role):
+            raise ValidationError("You cannot assign the role on this project")
+
+
+AddUsersToProjectInlineFormSet = inlineformset_factory(
+    User,
+    Participant,
+    form=AddUserToProjectInlineForm,
+    fk_name='user',
+    extra=1
+)

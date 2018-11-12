@@ -148,3 +148,5 @@ STATICFILES_DIRS = [
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+SAFE_HAVEN_DOMAIN = 'haven.example.com'

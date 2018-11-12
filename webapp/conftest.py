@@ -32,7 +32,7 @@ def superuser():
 @pytest.fixture
 def system_controller():
     return User.objects.create_user(
-        username='controller',
+        username='controller@example.com',
         email='controller@example.com',
         role=UserRole.SYSTEM_CONTROLLER.value,
         password=DUMMY_PASSWORD,
@@ -42,7 +42,7 @@ def system_controller():
 @pytest.fixture
 def research_coordinator():
     return User.objects.create_user(
-        username='coordinator',
+        username='coordinator@example.com',
         email='coordinator@example.com',
         role=UserRole.RESEARCH_COORDINATOR.value,
         password=DUMMY_PASSWORD,
@@ -52,7 +52,7 @@ def research_coordinator():
 @pytest.fixture
 def project_participant():
     return User.objects.create_user(
-        username='project_participant',
+        username='project_participant@example.com',
         email='project_participant@example.com',
         password=DUMMY_PASSWORD,
     )
@@ -61,7 +61,7 @@ def project_participant():
 @pytest.fixture
 def data_provider_representative():
     return User.objects.create_user(
-        username='datarep',
+        username='datarep@example.com',
         email='datarep@example.com',
         role=UserRole.DATA_PROVIDER_REPRESENTATIVE.value,
         password=DUMMY_PASSWORD,

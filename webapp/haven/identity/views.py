@@ -2,6 +2,9 @@ from braces.views import UserFormKwargsMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
 
+from core.forms import InlineFormSetHelper
+from projects.forms import AddUsersToProjectInlineFormSet
+
 from .forms import CreateUserForm
 from .mixins import UserRoleRequiredMixin
 from .models import User
@@ -15,19 +18,24 @@ class UserCreate(LoginRequiredMixin, UserFormKwargsMixin, UserRoleRequiredMixin,
 
     user_roles = [UserRole.SYSTEM_CONTROLLER]
 
-    def _restrict_roles(self, form):
-        """
-        Ensure role creation is restricted for the user
-        """
-        user_role = self.request.user.user_role
+    def get_context_data(self, **kwargs):
+        kwargs['formset'] = self.get_formset()
+        kwargs['helper'] = InlineFormSetHelper()
+        return super().get_context_data(**kwargs)
 
-        form.fields['role'].choices = [
-            (role, name)
-            for (role, name) in form.fields['role'].choices
-            if user_role.can_create(UserRole(role))
-        ]
+    def get_formset(self, **kwargs):
+        form_kwargs = {'user': self.request.user}
+        if self.request.method == 'POST':
+            return AddUsersToProjectInlineFormSet(self.request.POST, form_kwargs=form_kwargs)
+        else:
+            return AddUsersToProjectInlineFormSet(form_kwargs=form_kwargs)
 
-    def get_form(self):
-        form = super().get_form()
-        self._restrict_roles(form)
-        return form
+    def post(self, request, *args, **kwargs):
+        formset = self.get_formset()
+        form = self.get_form()
+        if form.is_valid() and formset.is_valid():
+            formset.instance = form.save()
+            formset.save()
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)

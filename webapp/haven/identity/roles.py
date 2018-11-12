@@ -56,6 +56,14 @@ class UserRole(Enum):
         ]
 
     @property
+    def can_edit_all_projects(self):
+        """Can a user with this role edit all projects?"""
+        return self in [
+            self.SUPERUSER,
+            self.SYSTEM_CONTROLLER,
+        ]
+
+    @property
     def can_create_projects(self):
         """Can a user with this role create projects?"""
         return self in [

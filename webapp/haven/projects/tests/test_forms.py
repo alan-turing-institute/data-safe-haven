@@ -1,7 +1,7 @@
 import pytest
 
 from core import recipes
-from projects.forms import ProjectAddUserForm
+from projects.forms import AddUserToProjectInlineForm, ProjectAddUserForm
 from projects.roles import ProjectRole
 
 
@@ -57,3 +57,41 @@ class TestProjectAddUserForm:
         assert 'username' in form.errors
 
         assert project.participant_set.count() == 1
+
+
+@pytest.mark.django_db
+class TestAddUserForm:
+    def test_project_dropdown_is_restricted(self, investigator):
+        user = investigator.user
+        involved_project = investigator.project
+        # Another project on which the user is a researcher
+        read_only_project = recipes.researcher.make(user=user).project
+        other_project = recipes.project.make()
+
+        form = AddUserToProjectInlineForm(user=user)
+        field = form.fields['project']
+        assert field.valid_value(involved_project.pk)
+        assert not field.valid_value(other_project.pk)
+        assert not field.valid_value(read_only_project.pk)
+
+    def test_add_user_to_project(self, investigator, project_participant):
+        project = investigator.project
+        form = AddUserToProjectInlineForm({
+            'project': project.pk,
+            'role': ProjectRole.RESEARCHER.value,
+        }, user=investigator.user)
+        assert form.is_valid()
+
+        form.instance.user = project_participant
+        form.save()
+
+        assert project_participant.project_role(project) == ProjectRole.RESEARCHER
+
+    def test_cannot_add_restricted_project_role_combination(self, investigator):
+        form = AddUserToProjectInlineForm({
+            'project': investigator.project.pk,
+            'role': ProjectRole.INVESTIGATOR.value,
+        }, user=investigator.user)
+
+        assert not form.is_valid()
+        assert form.errors['__all__']

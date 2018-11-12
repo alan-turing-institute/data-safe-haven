@@ -4,9 +4,12 @@
 {% block h1_title %}Create User{% endblock %}
 
 {% block content %}
-<form method="POST">
+<form method="POST" action="">
   {% csrf_token %}
   {{ form|crispy }}
+
+  {% crispy formset helper %}
+
   <button type="submit" class="btn btn-success">Save User</button>
 </form>
 
