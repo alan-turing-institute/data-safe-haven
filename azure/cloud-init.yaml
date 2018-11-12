@@ -7,9 +7,6 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
-  # Set a mirror if required
-  # mirror: http://us.archive.ubuntu.com/ubuntu/
-
   sources:
     chronitis-jupyter.list:
       source: "ppa:chronitis/jupyter"
@@ -252,48 +249,27 @@ packages:
   - tzdata
   - vim
   - wget
+  - xfce4
+  - xrdp
 
 runcmd:
-  # Install torch
-  - mkdir -p /opt/torch
-  - cd /opt/torch
-  - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  - sed -i '/python-software-properties/s/^/#/g' install-deps 
-  - bash install-deps
-  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
-  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g+
-  - bash install.sh -b
-  - sed -i 's|\(.*\)"|\1:/opt/torch/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/torch/bin
-  - if [ "$(which th)" == "" ]; then echo exit 1; fi
-
-  # Install azcopy
-  - cd /tmp
-  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
-  - tar -xf azcopy.tar.gz
-  - bash install.sh
-  - rm -f azcopy.tar.gz
-  - if [ "$(which azcopy)" == "" ]; then echo exit 1; fi
-
-  # Install spark
-  - mkdir -p /opt/spark
-  - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
-  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
-  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
+  # Clean up installation
+  - apt-get clean
 
   # Add additional R packages not available as debs (NB. 'translations' is deprecated)
+  - echo "Installing additional R packages..."
   - Rscript -e "install.packages(c('h2o', 'IRdisplay', 'networkD3', 'XLConnect'))"
 
   # Install RStudio
+  - echo "Installing RStudio..."
   - cd /tmp
   - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
   - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
   - rm -f rstudio-xenial-1.1.463-amd64.deb
+  - if [ "$(which rstudio)" == "" ]; then exit 1; fi
 
   # Install latest julia version
+  - echo "Installing Julia..."
   - mkdir -p /opt/julia
   - cd /opt/julia
   - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.1-linux-x86_64.tar.gz
@@ -301,8 +277,10 @@ runcmd:
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
+  - if [ "$(which julia)" == "" ]; then exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
+  - echo "Installing Anaconda..."
   - cd /tmp
   - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
   - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
@@ -314,55 +292,97 @@ runcmd:
   - conda config --add channels anaconda
   - conda config --add channels pytorch
   - conda config --add channels r
-  - conda update --all --yes
-  # Create environment: python 2.7 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  # Create environment: python 2.7 with tensorflow, keras, pystan, pytorch and jupyterlab
+  # NB. jupyterhub is not available for python 2.7
+  - echo "Preparing py27 environment..."
   - conda create -n py27 python=2.7 anaconda
-  - source activate py27
-  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+  - conda install -y --name py27 ipykernel jupyter_client jupyterlab keras notebook pystan tensorflow r-irkernel
+  - conda install -y --name py27 pytorch torchvision
+  - if [ "$(conda env list | grep py27)" == "" ]; then exit 1; fi
   # Create environment: python 3.6 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  - echo "Preparing py36 environment..."
   - conda create -n py36 python=3.6 anaconda
-  - source activate py36
-  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+  - conda install -y --name py36 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan tensorflow r-irkernel
+  - conda install -y --name py36 pytorch torchvision
+  - if [ "$(conda env list | grep py36)" == "" ]; then exit 1; fi
   # Create environment: python 3.7 with tensorflow, keras, pystan, pytorch and jupyterhub/lab
+  - echo "Preparing py37 environment..."
   - conda create -n py37 python=3.7 anaconda
-  - source activate py37
-  - conda install -y jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch tensorflow torchvision r-irkernel  
+  - conda install -y --name py37 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan tensorflow r-irkernel
+  - conda install -y --name py37 pytorch torchvision
+  - if [ "$(conda env list | grep py37)" == "" ]; then exit 1; fi
 
-  # Install jupyter/jupyterhub/jupyterlab plus kernels
+  # Install jupyter kernels
+  - echo "Setting up R and Julia kernels for jupyter..."
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
   - Rscript -e "IRkernel::installspec(user = FALSE)"
   - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
 
+  # Install torch
+  - echo "Installing torch..."
+  - mkdir -p /opt/torch
+  - cd /opt/torch
+  - git clone https://github.com/torch/distro.git /opt/torch --recursive
+  - sed -i '/python-software-properties/s/^/#/g' install-deps
+  - bash install-deps
+  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
+  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g+
+  - bash install.sh -b
+  - sed -i 's|\(.*\)"|\1:/opt/torch/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/torch/bin
+  - if [ "$(which th)" == "" ]; then exit 1; fi
+
+  # Install spark
+  - echo "Installing spark..."
+  - mkdir -p /opt/spark
+  - cd /opt/spark
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
+  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
+  - if [ "$(which spark-shell)" == "" ]; then exit 1; fi
+
+  # Install azcopy
+  - echo "Installing azcopy..."
+  - cd /tmp
+  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
+  - tar -xf azcopy.tar.gz
+  - bash install.sh
+  - rm -rf azcopy.tar.gz azcopy install.sh
+  - if [ "$(which azcopy)" == "" ]; then exit 1; fi
+
   # Check for successful installations
+  - echo "Checking for successful installation..."
   # - programming languages
-  - echo "python $(which python)"
-  - echo "R $(which R)"
-  - echo "psql $(which psql)"
-  - echo "julia $(which julia)"
-  - echo "java $(which java)"
-  - echo "dotnet $(which dotnet)"
-  - echo "gcc $(which gcc)"
-  - echo "g++ $(which g++)"
-  - echo "gfortran $(which gfortran)"
+  - if [ "$(which python)" != "" ]; then echo "python $(which python)"; else exit 1; fi
+  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; else exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; else exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; else exit 1; fi
+  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; else exit 1; fi
+  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; else exit 1; fi
+  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; else exit 1; fi
+  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; else exit 1; fi
+  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; else exit 1; fi
+  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; else exit 1; fi
   # - development tools
-  - echo "bash $(which bash)"
-  - echo "git $(which git)"
-  - echo "htop $(which htop)"
-  - echo "firefox $(which firefox)"
-  - echo "vim $(which vim)"
-  - echo "emacs $(which emacs)"
-  - echo "nano $(which nano)"
-  - echo "code $(which code)"
-  - echo "atom $(which atom)"
-  - echo "rstudio $(which rstudio)"
-  - echo "jupyter $(which jupyter)"
-  - echo "docker $(which docker)"
-  - echo "az $(which az)"
-  - echo "scala $(which scala)"
-  - echo "spark-shell $(which spark-shell)"
-  - echo "th $(which th)"
-  - echo "cuda-gdb $(which cuda-gdb)"
-  - python -c 'import torch; print(torch.cuda.is_available())'
+  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; else exit 1; fi
+  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; else exit 1; fi
+  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; else exit 1; fi
+  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; else exit 1; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; else exit 1; fi
+  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; else exit 1; fi
+  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; else exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; else exit 1; fi
+  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; else exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; else exit 1; fi
+  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; else exit 1; fi
+  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; else exit 1; fi
+  - if [ "$(which az)" != "" ]; then echo "az $(which az)"; else exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else exit 1; fi
+  - if [ "$(which spark-shell)" != "" ]; then echo "spark-shell $(which spark-shell)"; else exit 1; fi
+  - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else exit 1; fi
+  - if [ "$(which cuda-gdb)" != "" ]; then echo "cuda-gdb $(which cuda-gdb)"; else exit 1; fi
 
   # Deprovision
   - waagent -deprovision+user -force

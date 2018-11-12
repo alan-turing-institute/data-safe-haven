@@ -23,6 +23,7 @@ az vm create \
   --resource-group $RESOURCEGROUP \
   --name $BASENAME \
   --image Canonical:UbuntuServer:18.04-LTS:latest \
+  --data-disk-sizes-gb 40 \
   --custom-data cloud-init.yaml \
   --admin-username azureuser \
   --generate-ssh-keys > $BASENAME.json
@@ -44,7 +45,7 @@ kill $TAILPID
 cloud-init status
 ENDSSH
 echo -e "${RED}Installation finished${END}"
-# echo "ssh azureuser@${PUBLICIP}"
+echo "ssh azureuser@${PUBLICIP}"
 
 # Deallocate and generalize
 echo -e "${RED}Deallocating and generalizing VM...${END}"
@@ -58,6 +59,11 @@ az image list --resource-group $RESOURCEGROUP
 
 echo -e "${RED}To make a new VM from this image do:${END}"
 echo -e "${BLUE}az vm create --resource-group $RESOURCEGROUP --name $OUTPUTNAME --image $IMAGENAME --admin-username azureuser --generate-ssh-keys${END}"
+echo -e "To use this new VM with remote desktop..."
+echo -e "... port 3389 needs to be opened: ${BLUE}az vm open-port --resource-group $RESOURCEGROUP --name $OUTPUTNAME --port 3389${END}"
+echo -e "... a user account with a password is needed: ${BLUE}sudo passwd <USERNAME>${END}"
+echo -e "... a default desktop is needed - eg. for xfce: ${BLUE}echo xfce4-session >~/.xsession${END}"
+echo -e "See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop for more details"
 
 echo -e "${RED}To delete this image do:${END}"
 echo -e "${BLUE}az image delete --resource-group $RESOURCEGROUP --name $IMAGENAME${END}"
