@@ -31,8 +31,9 @@ class SingleProjectMixin(SingleObjectMixin):
 
 class ProjectCreate(
     LoginRequiredMixin, UserRoleRequiredMixin,
-    UserFormKwargsMixin, SingleProjectMixin, CreateView
+    UserFormKwargsMixin, CreateView
 ):
+    model = Project
     form_class = ProjectForm
 
     user_roles = [UserRole.SYSTEM_CONTROLLER, UserRole.RESEARCH_COORDINATOR]
