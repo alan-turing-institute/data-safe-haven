@@ -48,10 +48,12 @@ if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     INITSCRIPT="cloud-init-ubuntu.yaml"
     DISKSIZEGB="40"
+    PLANDETAILS=""
 elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
     INITSCRIPT="cloud-init-datascience.yaml"
     DISKSIZEGB="60"
+    PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
     echo -e "${RED}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
 else
@@ -62,7 +64,6 @@ fi
 TIMESTAMP="$(date '+%Y%m%d%H%M')"
 BASENAME="Provisioning${MACHINENAME}-${TIMESTAMP}"
 IMAGENAME="Image${MACHINENAME}-${TIMESTAMP}"
-
 
 # Create resource group if it does not already exist
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
@@ -113,10 +114,9 @@ az vm generalize --resource-group $RESOURCEGROUP --name $BASENAME
 # Create image and then list available images
 echo -e "${RED}Creating an image from this VM...${END}"
 az image create --resource-group $RESOURCEGROUP --name $IMAGENAME --source $BASENAME
-az image list --resource-group $RESOURCEGROUP
 
 echo -e "${RED}To make a new VM from this image do:${END}"
-echo -e "${BLUE}az vm create --resource-group $RESOURCEGROUP --name <VMNAME> --image $IMAGENAME --admin-username azureuser --generate-ssh-keys${END}"
+echo -e "${BLUE}az vm create --resource-group $RESOURCEGROUP --name <VMNAME> --image $IMAGENAME --admin-username azureuser --generate-ssh-keys ${PLANDETAILS}${END}"
 echo -e "To use this new VM with remote desktop..."
 echo -e "... port 3389 needs to be opened: ${BLUE}az vm open-port --resource-group $RESOURCEGROUP --name <VMNAME> --port 3389${END}"
 echo -e "... a user account with a password is needed: ${BLUE}sudo passwd <USERNAME>${END}"
