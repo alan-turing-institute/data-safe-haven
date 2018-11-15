@@ -7,7 +7,7 @@ END="\033[0m"
 
 # Set default names
 SOURCEIMAGE="DataScience"
-RESOURCEGROUP="DataSafeHavenTest"
+RESOURCEGROUP="DataSafeHavenImageBuild"
 MACHINENAME="DSGComputeMachineVM"
 
 # Document usage for this script

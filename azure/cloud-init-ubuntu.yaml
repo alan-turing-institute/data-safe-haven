@@ -299,7 +299,7 @@ runcmd:
   - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
   - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
   - rm -f rstudio-xenial-1.1.463-amd64.deb
-  - ls -alh /usr/bin/rstudio
+  - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
 
   # Install latest julia version
   - echo "*** Installing Julia... ***"
