@@ -104,14 +104,6 @@ bootcmd:
   - curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
 
 runcmd:
-  # Ensure that R packages are installed
-  - echo "*** Installing R packages... ***"
-  - echo "Previously installed R packages:"
-  - Rscript -e "installed.packages()[,'Package']"
-  - export RPACKAGES="'ada', 'assertthat', 'backports', 'BBmisc', 'bitops', 'boot', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'CoxBoost', 'crayon', 'CVST', 'datasets', 'data.table', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'doParallel', 'dplyr', 'DT', 'dygraphs', 'e1071', 'evaluate', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'mboost', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'tcltk', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'uuid', 'utils', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
-  - echo "R packages remaining to be installed:"
-  - Rscript -e "list.of.packages <- c($RPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
-
   # Create python environments through conda
   - echo "*** Initial conda environments... ***"
   - export PATH=$PATH:/anaconda/bin/
@@ -133,6 +125,14 @@ runcmd:
   - echo "*** Final conda environments... ***"
   - conda env list
   - conda clean -a
+
+  # Ensure that R packages are installed
+  - echo "*** Installing additional R packages... ***"
+  - echo "Previously installed R packages:"
+  - Rscript -e "installed.packages()[,'Package']"
+  - export RPACKAGES="'ada', 'assertthat', 'backports', 'BBmisc', 'bitops', 'boot', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'CoxBoost', 'crayon', 'CVST', 'datasets', 'data.table', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'doParallel', 'dplyr', 'DT', 'dygraphs', 'e1071', 'evaluate', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'mboost', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'tcltk', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'uuid', 'utils', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
+  - echo "R packages remaining to be installed:"
+  - Rscript -e "list.of.packages <- c($RPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
 
   # Install spark
   - echo "*** Installing spark... ***"
@@ -170,7 +170,6 @@ runcmd:
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; exit 1; fi
   - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
@@ -178,6 +177,7 @@ runcmd:
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
 
   # Deprovision
   - waagent -deprovision+user -force
