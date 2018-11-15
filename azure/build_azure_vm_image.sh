@@ -74,6 +74,7 @@ fi
 # Create the VM based off the selected source image
 echo -e "${RED}Creating VM ${BLUE}$BASENAME ${RED}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
+STARTTIME=$(date +%s)
 az vm create \
   --resource-group $RESOURCEGROUP \
   --name $BASENAME \
@@ -102,8 +103,8 @@ while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
 done
 kill $TAILPID
 ENDSSH
-echo -e "${RED}Installation finished${END}"
-echo -e "Further testing with: ${BLUE}ssh azureuser@${PUBLICIP}${END}"
+ELAPSEDTIME=$(($(date +%s)-STARTTIME))
+echo -e "${RED}Installation finished after $ELAPSEDTIME seconds${END}"
 echo -e "Delete with ${BLUE}az vm delete --name $BASENAME --resource-group $RESOURCEGROUP${END}"
 
 # Deallocate and generalize

@@ -281,8 +281,9 @@ runcmd:
   - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
   - echo "*** Creating py36 environment... ***"
   - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Final conda environments... ***"
+  - echo "*** Cleanup... ***"
   - conda clean -a
+  - echo "*** Final conda environments... ***"
   - conda env list
 
   # Add additional R packages not available as debs (NB. 'translations' is deprecated)
