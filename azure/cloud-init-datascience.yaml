@@ -19,13 +19,26 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - adcli
+  - attr
+  - krb5-kdc
+  - ldap-utils
   - libmariadb-client-lgpl-dev
+  - libnss-ldap
+  - libnss-sss
+  - libpam-ldap
+  - libpam-sss
   - libpq-dev
+  - oddjob
+  - oddjob-mkhomedir
   - postgresql
   - postgresql-contrib
   - r-base
   - r-base-core
   - r-base-dev
+  - r-bioc-limma
+  - r-bioc-phyloseq
+  - r-bioc-rbgl
   - r-cran-ada
   - r-cran-bbmisc
   - r-cran-bitops
@@ -33,6 +46,7 @@ packages:
   - r-cran-caret
   - r-cran-checkmate
   - r-cran-chron
+  - r-cran-coda
   - r-cran-colorramps
   - r-cran-coxboost
   - r-cran-cvst
@@ -44,6 +58,7 @@ packages:
   - r-cran-dt
   - r-cran-dygraphs
   - r-cran-e1071
+  - r-cran-factominer
   - r-cran-foreach
   - r-cran-gbm
   - r-cran-gdata
@@ -60,7 +75,10 @@ packages:
   - r-cran-lme4
   - r-cran-maps
   - r-cran-maptools
+  - r-cran-matrixstats
   - r-cran-mboost
+  - r-cran-mclust
+  - r-cran-mcmcpack
   - r-cran-mlr
   - r-cran-multcomp
   - r-cran-neuralnet
@@ -79,6 +97,7 @@ packages:
   - r-cran-rgl
   - r-cran-rjava
   - r-cran-rmysql
+  - r-cran-rocr
   - r-cran-roxygen2
   - r-cran-rpostgresql
   - r-cran-rsqlite
@@ -96,6 +115,9 @@ packages:
   - r-cran-xlsx
   - r-cran-xts
   - r-recommended
+  - realmd
+  - sssd
+  - sssd-tools
   - xfce4
   - xrdp
 
@@ -130,9 +152,15 @@ runcmd:
   - echo "*** Installing additional R packages... ***"
   - echo "Previously installed R packages:"
   - Rscript -e "installed.packages()[,'Package']"
-  - export RPACKAGES="'ada', 'assertthat', 'backports', 'BBmisc', 'bitops', 'boot', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'CoxBoost', 'crayon', 'CVST', 'datasets', 'data.table', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'doParallel', 'dplyr', 'DT', 'dygraphs', 'e1071', 'evaluate', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'mboost', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'tcltk', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'uuid', 'utils', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
+  - export RPACKAGES="'ada', 'assertthat', 'AUC', 'backports', 'BBmisc', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'corrplot', 'CoxBoost', 'crayon', 'CVST', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'dirichletprocess', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dygraphs', 'e1071', 'evaluate', 'factoextra', 'FactoMineR', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'PReMiuM', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'synthpop', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'traj', 'utils', 'uuid', 'varbvs', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
   - echo "R packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($RPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  # Bioconductor
+  - echo "Previously installed Bioconductor packages:"
+  - export BIOCPACKAGES="'apeglm', 'ballgown', 'ChemmineR', 'clusterProfiler', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'treeio'"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - echo "Bioconductor packages remaining to be installed:"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
 
   # Install spark
   - echo "*** Installing spark... ***"
