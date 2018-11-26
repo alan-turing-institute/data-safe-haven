@@ -85,7 +85,7 @@ az vm create \
   --admin-username azureuser \
   --generate-ssh-keys 
 
-sleep 20 # allow some time for the system to finish initialising or the connection might be refused
+sleep 30 # allow some time for the system to finish initialising or the connection might be refused
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
