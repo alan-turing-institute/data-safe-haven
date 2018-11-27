@@ -9,30 +9,14 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - openssh-server
   - rsync
 
 write_files:
-  - content: |
-        [mirror]
-        ; The directory where the mirror data will be stored.
-        directory = /datadrive
-
-        ; The PyPI server which will be mirrored.
-        master = https://pypi.python.org
-
-        ; Whether to stop a sync quickly after an error is found or whether to continue
-        ; syncing but not marking the sync as successful. Value should be "true" or
-        ; "false".
-        stop-on-error = false
-
-        ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
-        delete-packages = true
-      path: /etc/bandersnatch.conf
-  - content: |
-        #! /bin/bash
-        rsync -rtlzv --delete cran.r-project.org::CRAN /datadrive
-      path: /update_mirror.sh
-
+  - path: "/update_mirror.sh"
+    content: |
+      #! /bin/bash
+      rsync -rtlzv --delete cran.r-project.org::CRAN /datadrive
 
 runcmd:
   # Upgrade installation then clean up
@@ -50,4 +34,4 @@ runcmd:
   - mv fstab.tmp /etc/fstab
 
   # Update the mirror
-  - source /update_mirror.sh
+  - bash /update_mirror.sh
