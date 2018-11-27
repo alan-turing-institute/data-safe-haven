@@ -10,24 +10,11 @@ apt:
 # List of packages to install with apt-get
 packages:
   - openssh-server
-  - rsync
+  - python3-pip
+  - python3-venv
 
-write_files:
-  - path: "/push_to_internal.sh"
-    content: |
-      #! /bin/bash
-      rsync -rtlzv --delete /datadrive/* admincran@10.0.1.5:/datadrive
-  - path: "/update_mirror.sh"
-    content: |
-      #! /bin/bash
-      rsync -rtlzv --delete cran.r-project.org::CRAN /datadrive
 
 runcmd:
-  # Upgrade installation then clean up
-  - echo "*** Upgrade and clean up apt-get packages... ***"
-  - apt-get -y upgrade
-  - apt-get clean
-
   # Set up disk
   - echo "*** Setting up local disk... ***"
   - (echo n; echo 1; echo ; echo ; echo ; echo w; echo Y) | gdisk /dev/sdc
@@ -36,6 +23,13 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - chown -R adminpypi /datadrive
 
-  # Update the mirror
-  - bash /update_mirror.sh
+  # Install pypiserver with pip
+  - echo "*** Installing pypiserver... ***"
+  - python3 -m venv pypiserver
+  - pypiserver/bin/pip install pypiserver
+
+  # Set up pypiserver
+  - echo "*** Setting up pypiserver pointing to local disk... ***"
+  - /pypiserver/bin/pypi-server -p 8080 -P . -a . /datadrive/web/packages &

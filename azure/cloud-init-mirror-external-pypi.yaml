@@ -16,6 +16,10 @@ packages:
   - python3-venv
 
 write_files:
+  - path: "/push_to_internal.sh"
+    content: |
+      #! /bin/bash
+      rsync -rtlzv --delete /datadrive/* adminpypi@10.0.1.4:/datadrive
   - path: "/update_mirror.sh"
     content: |
       #! /bin/bash
@@ -51,11 +55,12 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - chown -R adminpypi /datadrive
 
   # # Force use of python3
   # - update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 
-  # Install bandersnatch with pip (NB. this will use python 2.7)
+  # Install bandersnatch with pip
   - echo "*** Installing bandersnatch... ***"
   - python3 -m venv bandersnatch
   - bandersnatch/bin/pip install bandersnatch
