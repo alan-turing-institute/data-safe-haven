@@ -34,3 +34,5 @@ az vm create --resource-group <NAME_OF_RESOURCE_GROUP_CONTAINING_IMAGE> --name <
 ```
 
 If the image was built using the Microsoft Data Science VM, some additional `--plan` options will be needed that are also printed out in the output from this script.
+
+NB. These images will need to be copied to the target subscription in order to be deployable there.

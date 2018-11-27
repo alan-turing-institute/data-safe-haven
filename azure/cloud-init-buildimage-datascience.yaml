@@ -9,111 +9,26 @@ apt:
 
   # Add repositories
   sources:
-    chronitis-jupyter.list:
-      source: "ppa:chronitis/jupyter"
-
     marutter-c2d4u35.list:
       source: "ppa:marutter/c2d4u3.5"
 
-    microsoft-prod.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
-      keyid: EB3E94ADBE1229CF
-
-    microsoft-azure-cli.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
-      keyid: EB3E94ADBE1229CF
-
-    microsoft-vscode.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-      keyid: EB3E94ADBE1229CF
-
-    mono-project.list:
-      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
-      keyserver: hkp://keyserver.ubuntu.com:80
-      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-
-    nvidia.list:
-      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
-      key: |
-        -----BEGIN PGP PUBLIC KEY BLOCK-----
-        Version: GnuPG v1
-
-        mQINBFdtt4UBEAC8FDSWMR07GJZ265giLn7kLF+EsJCWESUq6Cd13QN0JQ/tLibi
-        QlW4ZjeOnEH9VPlqh/mKqNMG4SwRt8S+GHpePMQrr0aOkiRGfCclnAWIZURSAP+t
-        PLelCt43fkw1BBTopd/0oOzO8kHu8j8WU4A8GHxqghfFWPv54FQs2iaZ2eWR7a6d
-        79IJrbDKaVCCiQrkhCM8m648pNKHhuoJ9cQXFV+uvwkpfmKWGQ4ultxlOyjLHJLF
-        vuML2RuAO9IxbdZjzeYNN+T+wjFIBVcPnwEO+WrYgvGkT4r9aqVqTeg3EPb7QclV
-        sKBVJdxk4jZl0y22HAWqScVi6SJ15uK9pXxywDZkbpuRBWx4ThWiGe/FiUa2igi9
-        /SIvqN2TBY0g18sRTrylVr1wE1UGa/y7nDx6PoGCP1frBt8YUYt3pkM8Xvb2CRxx
-        CyWwmuFEQHC6jCEWf7FnoBHBYQwTVGNrU0vkuIeDrm+ZAcv8wx+ie1hlFhqCCJnf
-        jqeQ0/zA9RPmCPOkLyTdSsNZtlxxk7bzCdTdFFKzBjGTR7Gz3SMSp23d11eIyRiF
-        HQsp2v0SvnPJ6OcgB95Hmo544vi3RuoVfovtDOdfSBCRxP+GhhxkKSrTleQjD0/r
-        CGkdG2Kox3m9YllAsvZchLXlS7bZV9mGRF61mVMjF3HJRUQfBBm89VPQ+QARAQAB
-        tCBjdWRhdG9vbHMgPGN1ZGF0b29sc0BudmlkaWEuY29tPokCNwQTAQgAIQUCV223
-        hQIbAwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgAAKCRD2D0s9f6KvgNArEAChnfcW
-        rYItgt7xXXubT6E+KpJyJ0RPrXf51S2mhciFbjDl+3EXRMRjOutVmgWYPWUUZaKR
-        8Iez3Lz4BRmwYOWBLtdnOLbKoSsQUX95rnPFjfly/DFLfjKxz4NRBmh4r4/rCYWm
-        2hmnXmOAi8kV7fqx3g5XMpJ//N6+T8ctEol2iZ82GrXjadcRWE4rAe7UyuEzJ74y
-        6ZKIzk5ijdgEKtcaBhzEWvoV5Pr9nkn7ByGsdehKR/gNnjPMYXrklSHGfphJIsS2
-        S32lMk/kuRjihBcWcYBXIPEQ7CV+PNW2TlkZj/YqTg637sZHwkhcjcNzxeqKvRYG
-        8V7Ju5hTDxL1UQBmgDS3cRx1lw7tYRG5bS67tbC2dc/CpPkG5agiZ/WyoHQDnn4r
-        1fRuOFx694QR6+0rAP6171xEEoNAPaH7gdJdhWKiYiJD0T2EEbW7wBUi/EupeKRv
-        kR12R1jUa1mlpxNtWQxJ7qp98T9+DmkxI1XDmWx0/g4ryuicwLDSqoPgNcRNdSQb
-        b8YfTqrkqaDdYzwLr/n0YKW3cYIvIeisV0WxRjb6OP7oAlAtaAhImlIc//51qNO7
-        /WAud6qMtnhFoZayR/BzLKqnCioN5GYr9BAKskpPHe9cDKVS3fg+Qvc1sNJID+jf
-        k52PqyW24Qsr0A9+5zQyE4tH9dfv120gj9avmg==
-        =0nKc
-        -----END PGP PUBLIC KEY BLOCK-----
-
     rproject-cran35.list:
-      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran35/"
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 51716619E084DAB9
-
-    webupd8team-atom.list:
-      source: "ppa:webupd8team/atom"
 
 # List of packages to install with apt-get
 packages:
   - adcli
-  - apt-transport-https
-  - atom
   - attr
-  - azure-cli
-  - code
-  - cuda
-  - default-jdk
-  - docker.io
-  - dotnet-sdk-2.1
-  - emacs
-  - firefox
-  - g++-6
-  - gcc-6
-  - gdebi-core
-  - git-core
   - krb5-kdc
   - ldap-utils
-  - libasound2
-  - libcanberra-gtk0
-  - libgconf-2-4
-  - libgconf-2-4
-  - libgit2-dev
-  - libgnome-keyring0
-  - libgtk-3-0
-  - libhdf5-serial-dev
-  - liblmdb-dev
   - libmariadb-client-lgpl-dev
   - libnss-ldap
   - libnss-sss
-  - libnss3
   - libpam-ldap
   - libpam-sss
   - libpq-dev
-  - libssl-dev
-  - libxss1
-  - mono-complete
-  - mono-devel
-  - nvidia-cuda-toolkit
   - oddjob
   - oddjob-mkhomedir
   - postgresql
@@ -121,191 +36,117 @@ packages:
   - r-base
   - r-base-core
   - r-base-dev
-  - r-bioc-cummerbund
-  - r-bioc-deseq2
-  - r-bioc-ebseq
-  - r-bioc-interactivedisplaybase
   - r-bioc-limma
-  - r-bioc-metagenomeseq
   - r-bioc-phyloseq
   - r-bioc-rbgl
   - r-cran-ada
-  - r-cran-assertthat
-  - r-cran-backports
   - r-cran-bbmisc
   - r-cran-bitops
   - r-cran-car
-  - r-cran-care
   - r-cran-caret
   - r-cran-checkmate
   - r-cran-chron
+  - r-cran-coda
   - r-cran-colorramps
-  - r-cran-colorspace
   - r-cran-coxboost
-  - r-cran-crayon
   - r-cran-cvst
-  - r-cran-data.table
-  - r-cran-dbi
   - r-cran-deepnet
   - r-cran-devtools
   - r-cran-diagrammer
   - r-cran-dichromat
-  - r-cran-digest
   - r-cran-doparallel
-  - r-cran-dplyr
   - r-cran-dt
   - r-cran-dygraphs
   - r-cran-e1071
-  - r-cran-evaluate
+  - r-cran-factominer
   - r-cran-foreach
   - r-cran-gbm
   - r-cran-gdata
   - r-cran-ggmap
-  - r-cran-ggplot2
   - r-cran-ggvis
   - r-cran-glmnet
   - r-cran-googlevis
-  - r-cran-gtable
-  - r-cran-highr
   - r-cran-hmisc
-  - r-cran-htmltools
-  - r-cran-httpuv
-  - r-cran-httr
   - r-cran-irace
   - r-cran-iterators
-  - r-cran-jsonlite
   - r-cran-kernlab
   - r-cran-kknn
-  - r-cran-knitr
-  - r-cran-labeling
-  - r-cran-lazyeval
   - r-cran-leaflet
   - r-cran-lme4
-  - r-cran-lubridate
-  - r-cran-magrittr
   - r-cran-maps
   - r-cran-maptools
-  - r-cran-markdown
+  - r-cran-matrixstats
   - r-cran-mboost
-  - r-cran-mime
+  - r-cran-mclust
+  - r-cran-mcmcpack
   - r-cran-mlr
   - r-cran-multcomp
-  - r-cran-munsell
   - r-cran-neuralnet
   - r-cran-parallelmap
   - r-cran-paramhelpers
   - r-cran-party
-  - r-cran-pbdzmq
   - r-cran-pls
-  - r-cran-plyr
-  - r-cran-purrr
   - r-cran-quantmod
-  - r-cran-r6
   - r-cran-randomforest
   - r-cran-randomforestsrc
   - r-cran-ranger
-  - r-cran-rcolorbrewer
-  - r-cran-rcpp
   - r-cran-rcpparmadillo
-  - r-cran-rcppeigen
   - r-cran-rcurl
-  - r-cran-readr
   - r-cran-repr
   - r-cran-reshape
-  - r-cran-reshape2
   - r-cran-rgl
   - r-cran-rjava
-  - r-cran-rmarkdown
   - r-cran-rmysql
+  - r-cran-rocr
   - r-cran-roxygen2
   - r-cran-rpostgresql
   - r-cran-rsqlite
   - r-cran-rstan
   - r-cran-rweka
-  - r-cran-scales
-  - r-cran-shiny
-  - r-cran-sourcetools
-  - r-cran-sp
   - r-cran-sqldf
-  - r-cran-stringi
-  - r-cran-stringr
   - r-cran-tcltk2
   - r-cran-testthat
   - r-cran-tgp
   - r-cran-threejs
-  - r-cran-tibble
-  - r-cran-tidyr
   - r-cran-tidyverse
   - r-cran-uuid
   - r-cran-vcd
   - r-cran-xgboost
   - r-cran-xlsx
-  - r-cran-xml
-  - r-cran-xtable
   - r-cran-xts
-  - r-cran-yaml
-  - r-cran-zoo
   - r-recommended
   - realmd
-  - scala
   - sssd
   - sssd-tools
   - xfce4
   - xrdp
 
-runcmd:
-  # Clean up installation
-  - echo "*** Cleaning up apt-get packages... ***"
-  - apt-get clean
+bootcmd:
+  # Update NVidia repository before installing any packages
+  - curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
 
-  # Install torch
-  - echo "*** Installing torch... ***"
-  - mkdir -p /opt/torch
-  - cd /opt/torch
-  - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  - sed -i '/python-software-properties/s/^/#/g' install-deps
-  - bash install-deps
-  # Switch compilers to gcc-6 and g++-6 or compilation will fail
-  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
-  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
-  # Build with half-operators disabled as these are included in CUDA 9
-  - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh 
-  - bash install.sh -b
-  # ... and now switch them back
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/torch/install/bin
-  - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
-
-  # Install latest anaconda version (download is ~640MB)
-  - echo "*** Installing Anaconda... ***"
-  - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
-  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
-  - rm Anaconda3-5.3.0-Linux-x86_64.sh
-  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/anaconda3/bin
+runcmd:  
+  # Create python environments through conda
+  - echo "*** Initial conda environments... ***"
+  - export PATH=$PATH:/anaconda/bin/
+  - conda env list
+  - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels anaconda
   - conda config --add channels pytorch
   - conda config --add channels r
   # Prepare environments
-  - echo "*** Initial conda environments... ***"
-  - conda env list
-  - echo "*** Creating py27 environment... ***"
-  - conda create -y -n py27 python=2.7 ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Creating py35 environment... ***"
-  - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Creating py36 environment... ***"
-  - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Cleanup... ***"
-  - conda clean -a
+  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
+  - echo "*** Working on py27 environment... ***"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y -n py27 python=2.7 $PYTHONPACKAGES; else conda install -y -n py27 $PYTHONPACKAGES; fi
+  - echo "*** Working on py35 environment... ***"
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y -n py35 python=3.5 jupyterhub $PYTHONPACKAGES; else conda install -y -n py35 jupyterhub $PYTHONPACKAGES; fi
+  - echo "*** Working on py36 environment... ***"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y -n py36 python=3.6 jupyterhub $PYTHONPACKAGES; else conda install -y -n py36 jupyterhub $PYTHONPACKAGES; fi
   - echo "*** Final conda environments... ***"
   - conda env list
+  - conda clean -a
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
@@ -321,17 +162,10 @@ runcmd:
   - echo "Bioconductor packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
 
-  # Install RStudio
-  - echo "*** Installing RStudio... ***"
-  - cd /tmp
-  - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
-  - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
-  - rm -f rstudio-xenial-1.1.463-amd64.deb
-  - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
-
   # Install latest julia version
   - echo "*** Installing Julia... ***"
-  - echo "Preparing directory..."
+  - echo "Removing old installation and preparing directory..."
+  - sudo rm /usr/bin/julia
   - mkdir -p /opt/julia
   - cd /opt/julia
   - echo "Downloading package..."
@@ -342,12 +176,6 @@ runcmd:
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
-
-  # Install jupyter kernels
-  - echo "*** Setting up R and Julia kernels for jupyter... ***"
-  - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
-  - Rscript -e "IRkernel::installspec(user = FALSE)"
-  - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
 
   # Install spark
   - echo "*** Installing spark... ***"
@@ -360,24 +188,8 @@ runcmd:
   - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
-  # Install azcopy
-  - echo "*** Installing azcopy... ***"
-  - cd /tmp
-  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
-  - tar -xf azcopy.tar.gz
-  - bash install.sh
-  - rm -rf azcopy.tar.gz azcopy install.sh
-  - if [ "$(which azcopy)" = "" ]; then echo "Could not install azcopy"; exit 1; fi
-
-  # Azure Storage Explorer
-  - mkdir -p /opt/azurestorage
-  - cd /opt/azurestorage
-  - wget http://download.microsoft.com/download/A/E/3/AE32C485-B62B-4437-92F7-8B6B2C48CB40/previous-StorageExplorer-linux-x64.tar.gz
-  - tar -zxf previous-StorageExplorer-linux-x64.tar.gz
-  - rm -f previous-StorageExplorer-linux-x64.tar.gz
-  - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
-  - export PATH=$PATH:/opt/azurestorage/
-  - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
+  # Add torch to the path
+  - export PATH=$PATH:/dsvm/tools/torch/bin
 
   # Check for successful installations
   - echo "*** Checking for successful installation... ***"
@@ -409,11 +221,16 @@ runcmd:
   - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  # Check for missing packages
+  - echo "R packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($RPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - echo "Bioconductor packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
   # Deprovision
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
-  - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+  - rm /etc/resolv.conf; ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 final_message:
   "The system is setup and deprovisioned, after $UPTIME seconds"

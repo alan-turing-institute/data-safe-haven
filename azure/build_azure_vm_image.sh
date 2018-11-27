@@ -6,8 +6,9 @@ BLUE="\033[0;34m"
 END="\033[0m"
 
 # Set default names
+SUBSCRIPTION="Data Study Group Testing"
 SOURCEIMAGE="DataScience"
-RESOURCEGROUP="DataSafeHavenImageBuild"
+RESOURCEGROUP="DataSafeHavenImages"
 MACHINENAME="DSGComputeMachineVM"
 
 # Document usage for this script
@@ -42,16 +43,26 @@ while getopts "h:i:r:n:" opt; do
     esac
 done
 
+# Switch subscription and setup resource group if it does not already exist
+az account set --subscription "$SUBSCRIPTION"
+if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
+    echo "Creating resource group $RESOURCEGROUP"
+    az group create --name $RESOURCEGROUP --location ukwest
+fi
+
+
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04). Exit, printing usage, if anything else is requested.
 # If using the Data Science VM then the terms will be automatically accepted
 if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
+    MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    INITSCRIPT="cloud-init-ubuntu.yaml"
+    INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
     DISKSIZEGB="40"
     PLANDETAILS=""
 elif [ "$SOURCEIMAGE" == "DataScience" ]; then
+    MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-    INITSCRIPT="cloud-init-datascience.yaml"
+    INITSCRIPT="cloud-init-buildimage-datascience.yaml"
     DISKSIZEGB="60"
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
     echo -e "${RED}Auto-accepting licence terms for the Data Science VM${END}"
@@ -59,6 +70,7 @@ elif [ "$SOURCEIMAGE" == "DataScience" ]; then
 else
     usage
 fi
+
 
 # Append timestamp to allow unique naming
 TIMESTAMP="$(date '+%Y%m%d%H%M')"
