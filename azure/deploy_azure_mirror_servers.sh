@@ -36,28 +36,28 @@ if [ "$(az keyvault certificate list --vault-name $VAULTNAME | grep "key-CRAN")"
 fi
 
 
-# # Set up PyPI mirror
-# # ------------------
-# VMNAME="ExternalMirrorPyPI"
-# INITSCRIPT="cloud-init-pypi.yaml"
+# Set up PyPI mirror
+# ------------------
+VMNAME="ExternalMirrorPyPI"
+INITSCRIPT="cloud-init-pypi.yaml"
 
-# # Create the VM based off the selected source image
-# echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED}as part of ${BLUE}$RESOURCEGROUP${END}"
-# echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
-# KEY_PYPI=$(az keyvault secret list-versions --vault-name $VAULTNAME -n key-PyPI --query "[?attributes.enabled].id" -o tsv)
-# VM_SECRET=$(az vm secret format -s "$KEY_PYPI")
+# Create the VM based off the selected source image
+echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED}as part of ${BLUE}$RESOURCEGROUP${END}"
+echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
+KEY_PYPI=$(az keyvault secret list-versions --vault-name $VAULTNAME -n key-PyPI --query "[?attributes.enabled].id" -o tsv)
+VM_SECRET=$(az vm secret format -s "$KEY_PYPI")
 
-# az vm create \
-#     --resource-group $RESOURCEGROUP \
-#     --name $VMNAME \
-#     --image $SOURCEIMAGE \
-#     --custom-data $INITSCRIPT \
-#     --size Standard_F4s_v2 \
-#     --admin-username adminpypi \
-#     --data-disk-sizes-gb 4095 \
-#     --storage-sku Standard_LRS \
-#     --secrets "$VM_SECRET"
-# echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server"
+az vm create \
+    --resource-group $RESOURCEGROUP \
+    --name $VMNAME \
+    --image $SOURCEIMAGE \
+    --custom-data $INITSCRIPT \
+    --size Standard_F4s_v2 \
+    --admin-username adminpypi \
+    --data-disk-sizes-gb 4095 \
+    --storage-sku Standard_LRS \
+    --secrets "$VM_SECRET"
+echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server"
 
 
 # Set up CRAN mirror
@@ -82,3 +82,4 @@ az vm create \
     --storage-sku Standard_LRS \
     --secrets "$VM_SECRET"
 echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server"
+
