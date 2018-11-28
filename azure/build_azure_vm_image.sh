@@ -31,7 +31,6 @@ while getopts "h:i:r:n:" opt; do
             SOURCEIMAGE=$OPTARG
             ;;
         r)
-            echo "Called r with $OPTARG"
             RESOURCEGROUP=$OPTARG
             ;;
         n)
