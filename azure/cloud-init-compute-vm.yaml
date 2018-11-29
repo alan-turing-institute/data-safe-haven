@@ -1,0 +1,7 @@
+#cloud-config
+runcmd:
+  - echo xfce4-session > ~azureuser/.xsession
+  - echo $(hostname -I | cut -d\  -f1) $(hostname) | tee -a /etc/hosts
+  - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
+  - cp /etc/profile ~azureuser/.bashrc
+  - chown -R azureuser ~azureuser
