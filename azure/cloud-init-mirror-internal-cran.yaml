@@ -11,18 +11,19 @@ apt:
 packages:
   - openssh-server
   - rsync
+  - apache2
 
-write_files:
-  - owner: www-data:www-data
-  - path: /nginx-settings.txt
-    content: |
-      server {
-          listen 80 default_server;
-          listen [::]:80 default_server;
-          location / {
-              root /datadrive;
-          }
-      }
+# write_files:
+#   - owner: www-data:www-data
+#   - path: /nginx-settings.txt
+#     content: |
+#       server {
+#           listen 80 default_server;
+#           listen [::]:80 default_server;
+#           location / {
+#               root /datadrive;
+#           }
+#       }
 
 
 runcmd:
@@ -41,13 +42,61 @@ runcmd:
   - mv fstab.tmp /etc/fstab
   - chown -R admincran /datadrive
 
-  # Set up nginx
-  - echo "*** Installing nginx... ***"
-  - apt-get install -y nginx
-  - mv /nginx-settings.txt /etc/nginx/sites-available/default
-  - secretsname=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57)
-  - mkdir /etc/nginx/ssl
-  - cp $secretsname.crt /etc/nginx/ssl/keyintPyPI.cert
-  - cp $secretsname.prv /etc/nginx/ssl/keyintPyPI.prv
-  - echo "*** Installing nginx... ***"
-  - service nginx restart
+  # Set up apache
+  - sed -i "s|/var/www/html|/datadrive|" /etc/apache2/sites-enabled/000-default.conf
+  - service apache2 reload
+  # - echo "*** Installing nginx... ***"
+  # - apt-get install -y nginx
+  # - mv /nginx-settings.txt /etc/nginx/sites-available/default
+  # - secretsname=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57)
+  # - mkdir /etc/nginx/ssl
+  # - cp $secretsname.crt /etc/nginx/ssl/keyintPyPI.cert
+  # - cp $secretsname.prv /etc/nginx/ssl/keyintPyPI.prv
+  # - echo "*** Installing nginx... ***"
+  # - service nginx restart
+
+
+# # List of packages to install with apt-get
+# packages:
+#   - openssh-server
+#   - rsync
+
+# write_files:
+#   - owner: www-data:www-data
+#   - path: /nginx-settings.txt
+#     content: |
+#       server {
+#           listen 80 default_server;
+#           listen [::]:80 default_server;
+#           location / {
+#               root /datadrive;
+#           }
+#       }
+
+
+# runcmd:
+#   # Upgrade installation, clean up, then install nginx
+#   - echo "*** Upgrade and clean up apt-get packages... ***"
+#   - apt-get -y upgrade
+#   - apt-get clean
+
+#   # Set up disk
+#   - echo "*** Setting up local disk... ***"
+#   - (echo n; echo 1; echo ; echo ; echo ; echo w; echo Y) | gdisk /dev/sdc
+#   - mkfs -t ext4 /dev/sdc1
+#   - mkdir /datadrive && mount /dev/sdc1 /datadrive
+#   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+#   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+#   - mv fstab.tmp /etc/fstab
+#   - chown -R admincran /datadrive
+
+#   # Set up nginx
+#   - echo "*** Installing nginx... ***"
+#   - apt-get install -y nginx
+#   - mv /nginx-settings.txt /etc/nginx/sites-available/default
+#   - secretsname=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57)
+#   - mkdir /etc/nginx/ssl
+#   - cp $secretsname.crt /etc/nginx/ssl/keyintPyPI.cert
+#   - cp $secretsname.prv /etc/nginx/ssl/keyintPyPI.prv
+#   - echo "*** Installing nginx... ***"
+#   - service nginx restart
