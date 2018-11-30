@@ -272,7 +272,7 @@ runcmd:
   - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
   - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
   # Build with half-operators disabled as these are included in CUDA 9
-  - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh 
+  - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
   - bash install.sh -b
   # ... and now switch them back
   - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
@@ -300,9 +300,9 @@ runcmd:
   - echo "*** Creating py27 environment... ***"
   - conda create -y -n py27 python=2.7 ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
   - echo "*** Creating py35 environment... ***"
-  - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
+  - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterhub-ldapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
   - echo "*** Creating py36 environment... ***"
-  - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
+  - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterhub-dapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
   - echo "*** Cleanup... ***"
   - conda clean -a
   - echo "*** Final conda environments... ***"
