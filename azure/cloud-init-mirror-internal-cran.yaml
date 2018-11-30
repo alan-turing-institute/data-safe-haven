@@ -13,17 +13,19 @@ packages:
   - rsync
   - apache2
 
-# write_files:
-#   - owner: www-data:www-data
-#   - path: /nginx-settings.txt
-#     content: |
-#       server {
-#           listen 80 default_server;
-#           listen [::]:80 default_server;
-#           location / {
-#               root /datadrive;
-#           }
-#       }
+write_files:
+  - path: /000-default.conf
+    content: |
+      <VirtualHost *:80>
+        DocumentRoot "/datadrive/"
+        <Directory "/datadrive">
+            Options Indexes FollowSymLinks Includes ExecCGI
+            AllowOverride All
+            Order allow,deny
+            Allow from all
+            Require all granted
+        </Directory>
+    </VirtualHost>
 
 
 runcmd:
@@ -43,7 +45,8 @@ runcmd:
   - chown -R admincran /datadrive
 
   # Set up apache
-  - sed -i "s|/var/www/html|/datadrive|" /etc/apache2/sites-enabled/000-default.conf
+  # - sed -i "s|/var/www/html|/datadrive|" /etc/apache2/sites-enabled/000-default.conf
+  - mv /000-default.conf /etc/apache2/sites-enabled/000-default.conf
   - service apache2 reload
   # - echo "*** Installing nginx... ***"
   # - apt-get install -y nginx

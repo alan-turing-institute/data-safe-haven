@@ -12,6 +12,13 @@ packages:
   - openssh-server
   - rsync
 
+users:
+  - name: fizzbuzz
+    sudo: False
+    ssh_authorized_keys:
+      - <ssh pub key 1>
+      - <ssh pub key 2>
+
 write_files:
   - path: "/push_to_internal.sh"
     content: |

@@ -58,13 +58,18 @@ fi
 
 # Set up the NSGs and subnets
 # ---------------------------
-if [ "$(az network nsg show -g $RESOURCEGROUP -n NSGExternalMirrors 2> /dev/null)" = "" ]; then
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSGExternalMirrors 2> /dev/null)" = "" ]; then
     echo "Creating NSG for external mirrors"
-    az network nsg create -g $RESOURCEGROUP -n NSGExternalMirrors
+    az network nsg create --resource-group $RESOURCEGROUP --name NSGExternalMirrors
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSGExternalMirrors --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes 10.0.1.0/24 --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 100
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSGExternalMirrors --direction Inbound --name DenyAll --description "Deny all" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
-if [ "$(az network nsg show -g $RESOURCEGROUP -n NSGInternalMirrors 2> /dev/null)" = "" ]; then
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSGInternalMirrors 2> /dev/null)" = "" ]; then
     echo "Creating NSG for internal mirrors"
-    az network nsg create -g $RESOURCEGROUP -n NSGInternalMirrors
+    az network nsg create --resource-group $RESOURCEGROUP --name NSGInternalMirrors
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSGInternalMirrors --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes 10.0.0.0/24 --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 100
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSGInternalMirrors --direction Inbound --name http --description "Allow ports 80 for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 --protocol TCP --destination-address-prefixes "*" --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSGInternalMirrors --direction Inbound --name DenyAll --description "Deny all" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
 # Make the subnets
 if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "SubnetExternal" 2> /dev/null)" = "" ]; then
@@ -107,9 +112,10 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
         --image $SOURCEIMAGE \
         --custom-data $INITSCRIPT \
         --size Standard_F4s_v2 \
-        --admin-username adminpypi \
+        --admin-username atiadmin \
         --data-disk-sizes-gb 4095 \
         --storage-sku Standard_LRS \
+        --public-ip-address "" \
         --secrets "$VM_SECRET"
     echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
 fi
@@ -135,9 +141,10 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
         --image $SOURCEIMAGE \
         --custom-data $INITSCRIPT \
         --size Standard_F4s_v2 \
-        --admin-username admincran \
+        --admin-username atiadmin \
         --data-disk-sizes-gb 4095 \
         --storage-sku Standard_LRS \
+        --public-ip-address "" \
         --secrets "$VM_SECRET"
     echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
 fi
@@ -163,9 +170,10 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
         --image $SOURCEIMAGE \
         --custom-data $INITSCRIPT \
         --size Standard_F4s_v2 \
-        --admin-username adminpypi \
+        --admin-username atiadmin \
         --data-disk-sizes-gb 4095 \
         --storage-sku Standard_LRS \
+        --public-ip-address "" \
         --secrets "$VM_SECRET"
     echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
 fi
@@ -190,9 +198,10 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
         --image $SOURCEIMAGE \
         --custom-data $INITSCRIPT \
         --size Standard_F4s_v2 \
-        --admin-username admincran \
+        --admin-username atiadmin \
         --data-disk-sizes-gb 4095 \
         --storage-sku Standard_LRS \
+        --public-ip-address "" \
         --secrets "$VM_SECRET"
     echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
 
