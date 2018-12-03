@@ -12,6 +12,14 @@ The available options for configuring the base image, resource group and name of
 Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 1.5 hours.
 Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
 
+```
+usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]
+    -h                 display help"
+    -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
+    -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
+    -s subscription    specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
+```
+
 ### Build examples
 Build an image based off Ubuntu 18.04 (used by default if not specified) called `UbuntuVM`
 
@@ -31,6 +39,19 @@ Information about how to monitor the build using ssh is given at the end of `./b
 
 Once the build has finished, it can be registered in the image gallery using the `./register_images_in_gallery.sh` script.
 This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
+
+```
+usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-s subscription] [-v version_suffix]
+  -h                  display help
+  -i source_image     specify an already existing image to add to the gallery.
+  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this.
+  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_DSG_IMAGEGALLERY')
+  -s subscription     specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')
+  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc.
+```
+
+### Registration examples
+For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like. 
 
 ```bash
 ./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941
