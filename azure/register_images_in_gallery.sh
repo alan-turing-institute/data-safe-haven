@@ -5,7 +5,7 @@ MACHINENAME=""
 SOURCEIMAGE=""
 # At least one of the previous two must be specified on the command line
 RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
-SUBSCRIPTION="Safe Haven Management Testing"
+SUBSCRIPTION=""
 VERSIONSUFFIX="00"
 
 # Constants for colourised output
@@ -26,7 +26,7 @@ print_usage_and_exit() {
     echo "  -i source_image     specify an already existing image to add to the gallery."
     echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
     echo "  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_DSG_IMAGEGALLERY')"
-    echo "  -s subscription     specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
+    echo "  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
     echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc."
     exit 1
 }
@@ -54,6 +54,12 @@ while getopts "hi:n:r:s:v:" opt; do
             ;;
     esac
 done
+
+# Check that a subscription has been provided
+if [ "$SUBSCRIPTION" = "" ]; then
+    echo -e "${RED}Subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
 
 # Switch subscription and check that resource group exists
 az account set --subscription "$SUBSCRIPTION"
