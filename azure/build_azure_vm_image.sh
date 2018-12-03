@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Options which are configurable at the command line
-SUBSCRIPTION="Safe Haven Management Testing"
-RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
+SUBSCRIPTION=""
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SOURCEIMAGE="Ubuntu"
 
 # Constants for colourised output
@@ -20,13 +20,13 @@ usage() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]"
     echo "  -h                 display help"
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
-    echo "  -s subscription    specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
+    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
+    echo "  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:n:" opt; do
+while getopts "hi:r:s:" opt; do
     case $opt in
         h)
             usage
@@ -45,6 +45,12 @@ while getopts "hi:r:n:" opt; do
             ;;
     esac
 done
+
+# Check that a subscription has been provided
+if [ "$SUBSCRIPTION" = "" ]; then
+    echo -e "${RED}Subscription is a required argument!"
+    usage
+fi
 
 # Switch subscription and setup resource group if it does not already exist
 # - have to build in West Europe in order to use Shared Image Gallery

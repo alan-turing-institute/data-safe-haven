@@ -17,7 +17,7 @@ usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r reso
     -h                 display help"
     -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
     -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
-    -s subscription    specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
+    -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
 ```
 
 ### Build examples
@@ -41,7 +41,7 @@ Once the build has finished, it can be registered in the image gallery using the
 This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
 
 ```
-usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-s subscription] [-v version_suffix]
+usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription] [-v version_suffix]
   -h                  display help
   -i source_image     specify an already existing image to add to the gallery.
   -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this.

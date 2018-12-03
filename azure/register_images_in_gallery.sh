@@ -31,9 +31,8 @@ usage() {
     exit 1
 }
 
-
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:n:v:" opt; do
+while getopts "hi:n:r:s:v:" opt; do
     case $opt in
         h)
             usage
