@@ -64,8 +64,31 @@ fi
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name ManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    az network nsg rule create \
+        --resource-group $RESOURCEGROUP \
+        --nsg-name NSG_IMAGE_BUILD \
+        --direction Inbound \
+        --name ManualConfigSSH \
+        --description "Allow port 22 for management over ssh" \
+        --source-address-prefixes 193.60.220.253 \
+        --source-port-ranges "*" \
+        --destination-address-prefixes "*" \
+        --destination-port-ranges 22 \
+        --protocol TCP \
+        --priority 100
+    az network nsg rule create \
+        --resource-group $RESOURCEGROUP \
+        --nsg-name NSG_IMAGE_BUILD \
+        --direction Inbound \
+        --name DenyAll \
+        --description "Deny all" \
+        --access "Deny" \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*" \
+        --destination-address-prefixes "*" \
+        --destination-port-ranges "*" \
+        --protocol "*" \
+        --priority 3000
 fi
 
 # Enable image sharing from this subscription
@@ -75,20 +98,19 @@ if [ "$(az provider show --namespace Microsoft.Compute -o table | grep "Register
     az provider register --namespace Microsoft.Compute
 fi
 
-# Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04). Exit, printing usage, if anything else is requested.
-# If using the Data Science VM then the terms will be automatically accepted
+# Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
+# If anything else is requested then print usage message and exit.
+# If using the Data Science VM then the terms will be automatically accepted.
 if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
     MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
     DISKSIZEGB="40"
-    PLANDETAILS=""
 elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
     INITSCRIPT="cloud-init-buildimage-datascience.yaml"
     DISKSIZEGB="60"
-    PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
 else
@@ -98,7 +120,6 @@ fi
 # Append timestamp to allow unique naming
 TIMESTAMP="$(date '+%Y%m%d%H%M')"
 BASENAME="Generalized${MACHINENAME}-${TIMESTAMP}"
-IMAGENAME="Image${MACHINENAME}-${TIMESTAMP}"
 
 # Create the VM based off the selected source image
 echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
@@ -113,10 +134,11 @@ az vm create \
   --custom-data $INITSCRIPT \
   --nsg NSG_IMAGE_BUILD \
   --size Standard_DS2_v2 \
-  --admin-username azureuser \
-  --generate-ssh-keys
+  --admin-username atiadmin \
+  --generate-ssh-keys # will use ~/.ssh/id_rsa if available and otherwise generate a new key
+                      # the key will be removed from the build machine at the end of VM creation
 
-# # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
+# Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${RED}This process will take several hours to complete.${END}"
 echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
