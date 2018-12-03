@@ -1,27 +1,29 @@
 #! /bin/bash
 
-# # Constants for colourised output
-# RED="\033[0;31m"
-# BLUE="\033[0;34m"
-# END="\033[0m"
+# Constants for colourised output
+RED="\033[0;31m"
+BLUE="\033[0;34m"
+END="\033[0m"
 
-# # Set default names
-# # SUBSCRIPTION="Data Study Group Testing"
-# # SOURCEIMAGE="ImageDSGComputeMachineVM-DataScienceBase-201811271331-ukwest"
-# # RESOURCEGROUP="DSGTest1"
+# Set default names
+SUBSCRIPTION="Data Study Group Testing"
+# SOURCEIMAGE="ImageDSGComputeMachineVM-DataScienceBase-201811271331-ukwest"
+# RESOURCEGROUP="DSGTest1"
 # SUBSCRIPTION="Safe Haven Management Testing"
 # SOURCEIMAGE="ImageDSGComputeMachineVM-DataScienceBase-201811281323"
-# RESOURCEGROUP="DataSafeHavenImages"
-# MACHINENAME="DSGTESTDSCPUv1"
+RESOURCEGROUP="DataSafeHavenImages"
+MACHINENAME="DSGTESTDSCPUv1"
+USERNAME="atiadmin"
 
-# # Document usage for this script
-# usage() {
-#     echo "usage: $0 [-h] [-i source_image] [-r resource_group] [-n machine_name]"
-#     echo "  -h                 display help"
-#     echo "  -i source_image    specify source_image: either 'Ubuntu' or 'DataScience' (default)"
-#     echo "  -n machine_name    specify machine name (defaults to 'DSGComputeMachineVM')"
-#     exit 1
-# }
+# Document usage for this script
+usage() {
+    echo "usage: $0 [-h] [-i source_image] [-r resource_group] [-n machine_name]"
+    echo "  -h                 display help"
+    echo "  -i source_image    specify source_image: either 'Ubuntu' or 'DataScience' (default)"
+    echo "  -n machine_name    specify machine name (defaults to 'DSGComputeMachineVM')"
+    echo "  -u user_name       specify a username for the admin account (defaults to 'atiadmin')"
+    exit 1
+}
 
 # # Read command line arguments, overriding defaults where necessary
 # while getopts "h:i:r:n:" opt; do
@@ -61,6 +63,9 @@
 # # read -s -p "Enter VM password: " PASSWORD
 # # echo ""
 # PASSWORD="n00fn4gustL4zP07k7K5"
+
+# az vm create -g rg -n rg-vm --image /subscriptions/<sub-id>/resourceGroups/rg/providers/Microsoft.Compute/galleries/gallery1/images/gallery-image1/versions/1.0.0
+
 
 # # Create the VM based off the selected source image
 # echo -e "Creating VM ${BLUE}$MACHINENAME${END} as part of ${BLUE}$RESOURCEGROUP${END}"

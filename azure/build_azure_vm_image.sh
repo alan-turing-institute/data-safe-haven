@@ -104,6 +104,12 @@ echo -e "  You can monitor installation progress using... ${BLUE}ssh azureuser@$
 echo -e "  Once logged in, check the installation progress with: ${BLUE}tail -f /var/log/cloud-init-output.log${END}"
 
 
+
+
+
+
+
+
 # # allow some time for the system to finish initialising or the connection might be refused
 # sleep 30
 

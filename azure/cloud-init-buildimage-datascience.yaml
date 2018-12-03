@@ -29,6 +29,7 @@ packages:
   - libpam-ldap
   - libpam-sss
   - libpq-dev
+  - octave
   - oddjob
   - oddjob-mkhomedir
   - postgresql

@@ -1,4 +1,10 @@
 #cloud-config
+write_files:
+  - path: "/home/mirrordaemon/push_to_internal.sh"
+    content: |
+      #! /bin/bash
+      rsync -rtlzv --delete /datadrive/* mirrordaemon@10.0.1.4:/datadrive
+
 runcmd:
   - echo xfce4-session > ~azureuser/.xsession
   - echo $(hostname -I | cut -d\  -f1) $(hostname) | tee -a /etc/hosts

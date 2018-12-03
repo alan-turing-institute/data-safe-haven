@@ -115,6 +115,7 @@ packages:
   - mono-complete
   - mono-devel
   - nvidia-cuda-toolkit
+  - octave
   - oddjob
   - oddjob-mkhomedir
   - postgresql

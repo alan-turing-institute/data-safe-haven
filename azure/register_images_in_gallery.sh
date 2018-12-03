@@ -65,10 +65,6 @@ fi
 for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
     IMAGETYPE=$(echo $SUPPORTEDIMAGE | cut -d'-' -f1)
     SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
-    # az sig image-definition delete \
-    #     --resource-group $RESOURCEGROUP \
-    #     --gallery-name $GALLERYNAME \
-    #     --gallery-image-definition "$SUPPORTEDIMAGE"
     if [ "$(az sig image-definition show --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE 2>&1 | grep 'not found')" != "" ]; then
         echo -e "Ensuring that ${BLUE}$SUPPORTEDIMAGE${END} is correctly registered in the image gallery"
         az sig image-definition create \
@@ -120,7 +116,8 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
         SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
         RESOURCEID="$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --query 'id' | xargs)" # use xargs default echo to strip extraneous quotation marks
         IMAGEVERSION=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')${VERSIONSUFFIX}
-        echo -e "Trying to register this image as version ${BLUE}$IMAGEVERSION${END} of ${BLUE}$SUPPORTEDIMAGE${END}"
+        echo -e "Trying to replicate this image across 3 regions as version ${BLUE}$IMAGEVERSION${END} of ${BLUE}$SUPPORTEDIMAGE${END}"
+        echo -e "${RED}Please note, this may take more than 30 minutes to complete${END}"
         az sig image-version create \
             --resource-group $RESOURCEGROUP \
             --gallery-name $GALLERYNAME \
@@ -128,5 +125,7 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
             --gallery-image-version "$IMAGEVERSION" \
             --target-regions "West Europe" "UK South" "UK West" \
             --managed-image $RESOURCEID
+        echo "${BLUE}Result of replication...${END}"
+        az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE
     fi
 done
