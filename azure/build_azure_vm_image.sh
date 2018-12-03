@@ -54,6 +54,14 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
 
+# Add an NSG group to deny inbound connections except Turing-based SSH
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
+    echo -e "Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
+    az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name ManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+fi
+
 # Enable image sharing from this subscription
 if [ "$(az provider show --namespace Microsoft.Compute -o table | grep "Registered")" = "" ]; then
     echo "Registering ${BLUE}UserImageSharing${END} for ${BLUE}$SUBSCRIPTION${END}"
@@ -97,6 +105,7 @@ az vm create \
   --image $SOURCEIMAGE \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
+  --nsg NSG_IMAGE_BUILD \
   --size Standard_DS2_v2 \
   --admin-username azureuser \
   --generate-ssh-keys

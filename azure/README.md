@@ -59,4 +59,5 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 
 ## Deploying a VM from the image gallery
 VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
+At the moment this does not deploy into a correctly set up environment (eg. with NSG rules/VNETs etc.).
 This may be separated into two scripts in future - one to set up a new environment and one to deploy VMs into it.

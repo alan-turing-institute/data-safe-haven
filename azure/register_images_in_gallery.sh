@@ -106,6 +106,7 @@ elif [ "$MACHINENAME" != "" ]; then
         SOURCEIMAGE="Image$(echo $MACHINENAME | sed 's/Generalized//')"
         echo -e "Creating an image from VM: ${BLUE}${MACHINENAME}${END}"
         az image create --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --source $MACHINENAME
+        # echo "Residual artifacts of the build process (ie. anything starting with $MACHINENAME) can now be deleted from $RESOURCEGROUP."
     fi
 fi
 

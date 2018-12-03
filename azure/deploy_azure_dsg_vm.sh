@@ -2,8 +2,8 @@
 
 # Options which are configurable at the command line
 SOURCEIMAGE="Ubuntu"
-MACHINENAME="DSGDSCPU$(date '+%Y%m%d%H%M')"
-RESOURCEGROUP="RS_DSG_TEST2"
+MACHINENAME="DSGComputeMachineVM"
+RESOURCEGROUP="RS_DSG_TEST"
 SUBSCRIPTION="Data Study Group Testing"
 USERNAME="atiadmin"
 
@@ -132,7 +132,7 @@ sed -i -e 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm-specific.yaml
 
 # Create the VM based off the selected source image
 echo -e "Creating VM ${BLUE}$MACHINENAME${END} as part of ${BLUE}$RESOURCEGROUP${END}"
-echo -e "This will be based off the ${BLUE}$SOURCEIMAGE${END} image"
+echo -e "This will use the ${BLUE}$SOURCEIMAGE${END}-based compute machine image"
 STARTTIME=$(date +%s)
 az vm create ${PLANDETAILS} \
   --resource-group $RESOURCEGROUP \
@@ -144,7 +144,7 @@ az vm create ${PLANDETAILS} \
   --size Standard_DS2_v2 \
   --admin-username $USERNAME \
   --admin-password $PASSWORD
-rm cloud-init-compute-vm-specific.yaml
+rm cloud-init-compute-vm-specific.yaml*
 
 # allow some time for the system to finish initialising
 sleep 30
