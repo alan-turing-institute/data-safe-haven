@@ -1,14 +1,14 @@
 #! /bin/bash
 
 # Options which are configurable at the command line
-SUBSCRIPTION=""
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SOURCEIMAGE="Ubuntu"
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+SUBSCRIPTION=""
 
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
-BLUE="\033[0;34m"
+BLUE="\033[0;36m"
 END="\033[0m"
 
 # Other constants
@@ -16,7 +16,7 @@ MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 
 # Document usage for this script
-usage() {
+print_usage_and_exit() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]"
     echo "  -h                 display help"
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
@@ -29,7 +29,7 @@ usage() {
 while getopts "hi:r:s:" opt; do
     case $opt in
         h)
-            usage
+            print_usage_and_exit
             ;;
         i)
             SOURCEIMAGE=$OPTARG
@@ -48,21 +48,21 @@ done
 
 # Check that a subscription has been provided
 if [ "$SUBSCRIPTION" = "" ]; then
-    echo -e "${RED}Subscription is a required argument!"
-    usage
+    echo -e "${RED}Subscription is a required argument!${END}"
+    print_usage_and_exit
 fi
 
 # Switch subscription and setup resource group if it does not already exist
 # - have to build in West Europe in order to use Shared Image Gallery
 az account set --subscription "$SUBSCRIPTION"
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
-    echo "Creating resource group ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
-    echo -e "Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
+    echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name ManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name NSG_IMAGE_BUILD --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
@@ -70,7 +70,7 @@ fi
 
 # Enable image sharing from this subscription
 if [ "$(az provider show --namespace Microsoft.Compute -o table | grep "Registered")" = "" ]; then
-    echo "Registering ${BLUE}UserImageSharing${END} for ${BLUE}$SUBSCRIPTION${END}"
+    echo "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
     az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
     az provider register --namespace Microsoft.Compute
 fi
@@ -92,7 +92,7 @@ elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
 else
-    usage
+    print_usage_and_exit
 fi
 
 # Append timestamp to allow unique naming
@@ -101,9 +101,9 @@ BASENAME="Generalized${MACHINENAME}-${TIMESTAMP}"
 IMAGENAME="Image${MACHINENAME}-${TIMESTAMP}"
 
 # Create the VM based off the selected source image
-echo -e "Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} as part of ${BLUE}$SUBSCRIPTION${END}"
-echo -e "  VM name: ${BLUE}$BASENAME${END}"
-echo -e "  Base image: ${BLUE}$SOURCEIMAGE${END}"
+echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
+echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
+echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
 STARTTIME=$(date +%s)
 az vm create \
   --resource-group $RESOURCEGROUP \
@@ -119,5 +119,5 @@ az vm create \
 # # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${RED}This process will take several hours to complete.${END}"
-echo -e "  You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
-echo -e "  Once logged in, check the installation progress with: ${BLUE}tail -f /var/log/cloud-init-output.log${END}"
+echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
+echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f /var/log/cloud-init-output.log${END}"

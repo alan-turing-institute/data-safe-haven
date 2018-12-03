@@ -23,7 +23,7 @@ LOCATION="uksouth"
 IPRANGE="10.0.2.0/24"
 
 # Document usage for this script
-usage() {
+print_usage_and_exit() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription] [-u user_name]"
     echo "  -h                 display help"
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
@@ -35,10 +35,10 @@ usage() {
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:n:" opt; do
+while getopts "hi:n:r:s:u:" opt; do
     case $opt in
         h)
-            usage
+            print_usage_and_exit
             ;;
         i)
             SOURCEIMAGE=$OPTARG
@@ -69,7 +69,7 @@ elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     IMAGE_DEFINITION="ComputeVM-DataScienceBase"
 else
     echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
-    usage
+    print_usage_and_exit
 fi
 
 # List available versions

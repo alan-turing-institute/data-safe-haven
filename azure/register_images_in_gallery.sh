@@ -20,7 +20,7 @@ VERSIONMAJOR="0"
 VERSIONMINOR="0"
 
 # Document usage for this script
-usage() {
+print_usage_and_exit() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-s subscription] [-v version_suffix]"
     echo "  -h                  display help"
     echo "  -i source_image     specify an already existing image to add to the gallery."
@@ -35,7 +35,7 @@ usage() {
 while getopts "hi:n:r:s:v:" opt; do
     case $opt in
         h)
-            usage
+            print_usage_and_exit
             ;;
         i)
             SOURCEIMAGE=$OPTARG
@@ -59,7 +59,7 @@ done
 az account set --subscription "$SUBSCRIPTION"
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo "${RED}Resource group ${BLUE}$RESOURCEGROUP${END} does not exist!${END}"
-    usage
+    print_usage_and_exit
 fi
 
 # Create image gallery if it doesn't already exist
@@ -88,14 +88,14 @@ done
 # Require exactly one image name or one machine name that must exist in this resource group
 if [ "$MACHINENAME" = "" ] && [ "$SOURCEIMAGE" = "" ]; then
     echo -e "${RED}You must specify an image name (or a machine name that will be turned into an image) in order to add it to the gallery${END}"
-    usage
+    print_usage_and_exit
 elif [ "$MACHINENAME" != "" ] && [ "$SOURCEIMAGE" != "" ]; then
     echo -e "${RED}You must specify EITHER an image name OR a machine name, not both${END}"
-    usage
+    print_usage_and_exit
 elif [ "$MACHINENAME" != "" ]; then
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME)" = "" ]; then
         echo -e "${RED}Could not find a machine called ${BLUE}$MACHINENAME${RED} in resource group $RESOURCEGROUP${END}"
-        usage
+        print_usage_and_exit
     else
         # Deallocate and generalize
         echo -e "Deallocating and generalizing VM: ${BLUE}${MACHINENAME}${END}"
