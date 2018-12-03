@@ -1,10 +1,9 @@
 #! /bin/bash
 
-# Configure default names here
+# Options which are configurable at the command line
 SUBSCRIPTION="Safe Haven Management Testing"
 RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
 SOURCEIMAGE="Ubuntu"
-MACHINENAME="ComputeVM"
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -12,13 +11,16 @@ RED="\033[0;31m"
 BLUE="\033[0;34m"
 END="\033[0m"
 
+# Other constants
+MACHINENAME="ComputeVM"
+LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+
 # Document usage for this script
 usage() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]"
     echo "  -h                 display help"
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    echo "  -n machine_name    specify machine name (defaults to 'ComputeVM')"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'DataSafeHavenTest')"
+    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
     echo "  -s subscription    specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
     exit 1
 }
@@ -31,9 +33,6 @@ while getopts "hi:r:n:" opt; do
             ;;
         i)
             SOURCEIMAGE=$OPTARG
-            ;;
-        n)
-            MACHINENAME=$OPTARG
             ;;
         r)
             RESOURCEGROUP=$OPTARG
@@ -52,7 +51,7 @@ done
 az account set --subscription "$SUBSCRIPTION"
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo "Creating resource group ${BLUE}$RESOURCEGROUP${END}"
-    az group create --name $RESOURCEGROUP --location westeurope
+    az group create --name $RESOURCEGROUP --location $LOCATION
 fi
 
 # Enable image sharing from this subscription

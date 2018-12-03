@@ -1,13 +1,11 @@
 #! /bin/bash
 
-# Configure default names here
-SUBSCRIPTION="Data Study Group Testing"
+# Options which are configurable at the command line
 SOURCEIMAGE="Ubuntu"
-RESOURCEGROUP="RS_DSG_TEST2"
 MACHINENAME="DSGDSCPU$(date '+%Y%m%d%H%M')"
+RESOURCEGROUP="RS_DSG_TEST2"
+SUBSCRIPTION="Data Study Group Testing"
 USERNAME="atiadmin"
-LOCATION="uksouth"
-IPRANGE="10.0.2.0/24"
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -15,12 +13,14 @@ RED="\033[0;31m"
 BLUE="\033[0;34m"
 END="\033[0m"
 
-# Location of image gallery and package mirror components
+# Other constants
 MANAGEMENT_SUBSCRIPTION="Safe Haven Management Testing"
 RESOURCEGROUP_IMAGES="RG_DSG_IMAGEGALLERY"
 GALLERY_IMAGES="SIG_DSG_COMPUTE"
 RESOURCEGROUP_PKG_MIRRORS="RS_DSG_PKG_MIRRORS"
 VNETNAME_PKG_MIRRORS="VN_DSG_PKG_MIRRORS"
+LOCATION="uksouth"
+IPRANGE="10.0.2.0/24"
 
 # Document usage for this script
 usage() {

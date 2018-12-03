@@ -1,18 +1,23 @@
 #! /bin/bash
 
+# Options which are configurable at the command line
+MACHINENAME=""
+SOURCEIMAGE=""
+# At least one of the previous two must be specified on the command line
+RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
+SUBSCRIPTION="Safe Haven Management Testing"
+VERSIONSUFFIX="00"
+
 # Constants for colourised output
 RED="\033[0;31m"
 BLUE="\033[0;34m"
 END="\033[0m"
 
-# Set default names
+# Other constants
 SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base")
-SUBSCRIPTION="Safe Haven Management Testing"
-RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
 GALLERYNAME="SIG_DSG_COMPUTE"
 VERSIONMAJOR="0"
 VERSIONMINOR="0"
-VERSIONSUFFIX="00"
 
 # Document usage for this script
 usage() {
@@ -20,14 +25,12 @@ usage() {
     echo "  -h                  display help"
     echo "  -i source_image     specify an already existing image to add to the gallery."
     echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
+    echo "  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_DSG_IMAGEGALLERY')"
     echo "  -s subscription     specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
     echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc."
     exit 1
 }
 
-# At least one of these must be specified on the command line
-MACHINENAME=""
-SOURCEIMAGE=""
 
 # Read command line arguments, overriding defaults where necessary
 while getopts "hi:r:n:v:" opt; do
@@ -53,12 +56,11 @@ while getopts "hi:r:n:v:" opt; do
     esac
 done
 
-# Switch subscription and setup resource group if it does not already exist
-# - have to use West Europe in order to use Shared Image Gallery
+# Switch subscription and check that resource group exists
 az account set --subscription "$SUBSCRIPTION"
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
-    echo "Creating resource group $RESOURCEGROUP"
-    az group create --name $RESOURCEGROUP --location westeurope
+    echo "${RED}Resource group ${BLUE}$RESOURCEGROUP${END} does not exist!${END}"
+    usage
 fi
 
 # Create image gallery if it doesn't already exist
