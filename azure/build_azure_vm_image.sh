@@ -1,23 +1,25 @@
 #! /bin/bash
 
+# Configure default names here
+SUBSCRIPTION="Safe Haven Management Testing"
+RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
+SOURCEIMAGE="Ubuntu"
+MACHINENAME="ComputeVM"
+
 # Constants for colourised output
+BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;34m"
 END="\033[0m"
 
-# Set default names
-SUBSCRIPTION="Safe Haven Management Testing"
-RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
-SOURCEIMAGE="DataScience"
-MACHINENAME="ComputeVM"
-
 # Document usage for this script
 usage() {
-    echo "usage: $0 [-h] [-i source_image] [-r resource_group] [-n machine_name]"
+    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]"
     echo "  -h                 display help"
-    echo "  -i source_image    specify source_image: either 'Ubuntu' or 'DataScience' (default)"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'DataSafeHavenTest')"
+    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
     echo "  -n machine_name    specify machine name (defaults to 'ComputeVM')"
+    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'DataSafeHavenTest')"
+    echo "  -s subscription    specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
     exit 1
 }
 
@@ -30,11 +32,14 @@ while getopts "hi:r:n:" opt; do
         i)
             SOURCEIMAGE=$OPTARG
             ;;
+        n)
+            MACHINENAME=$OPTARG
+            ;;
         r)
             RESOURCEGROUP=$OPTARG
             ;;
-        n)
-            MACHINENAME=$OPTARG
+        s)
+            SUBSCRIPTION=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -91,7 +96,7 @@ az vm create \
   --resource-group $RESOURCEGROUP \
   --name $BASENAME \
   --image $SOURCEIMAGE \
-  --os-disk-size-gb $DISKSIZEGB\
+  --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
   --size Standard_DS2_v2 \
   --admin-username azureuser \
@@ -102,60 +107,3 @@ PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASEN
 echo -e "${RED}This process will take several hours to complete.${END}"
 echo -e "  You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
 echo -e "  Once logged in, check the installation progress with: ${BLUE}tail -f /var/log/cloud-init-output.log${END}"
-
-
-
-
-
-
-
-
-# # allow some time for the system to finish initialising or the connection might be refused
-# sleep 30
-
-# # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-# PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
-
-# # ssh into the new VM calling the enclosed script to read output log
-# # Once installation is finished the loop will terminate and the ssh session will end
-# echo -e "Monitoring installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}"
-# ssh -o "StrictHostKeyChecking no" azureuser@${PUBLICIP} <<'ENDSSH'
-# log_file="/var/log/cloud-init-output.log"
-
-# tail -f -n +1 $log_file &
-# TAILPID=$(jobs -p)
-# while [ ! -f /var/lib/cloud/instance/boot-finished ]; do
-#     sleep 1
-# done
-# kill $TAILPID
-# ENDSSH
-# ELAPSEDTIME=$(($(date +%s)-STARTTIME))
-# echo -e "${BLUE}Installation finished after $ELAPSEDTIME seconds${END}"
-
-# # Deallocate and generalize
-# echo -e "Deallocating and generalizing VM..."
-# az vm deallocate --resource-group $RESOURCEGROUP --name $BASENAME
-# az vm generalize --resource-group $RESOURCEGROUP --name $BASENAME
-
-
-
-
-
-
-# # Create image and then list available images
-# echo -e "${BLUE}Creating an image from this VM...${END}"
-# az image create --resource-group $RESOURCEGROUP --name $IMAGENAME --source $BASENAME
-
-# echo -e "${BLUE}To make a new VM from this image do:${END}"
-# echo -e "${BLUE}az vm create --resource-group $RESOURCEGROUP --name <VMNAME> --image $IMAGENAME --admin-username azureuser --generate-ssh-keys ${PLANDETAILS}${END}"
-# echo -e "To use this new VM with remote desktop..."
-# echo -e "... port 3389 needs to be opened: ${BLUE}az vm open-port --resource-group $RESOURCEGROUP --name <VMNAME> --port 3389${END}"
-# echo -e "... a user account with a password is needed: ${BLUE}sudo passwd <USERNAME>${END}"
-# echo -e "... a default desktop is needed - eg. for xfce: ${BLUE}echo xfce4-session >~/.xsession${END}"
-# echo -e "See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop for more details"
-
-# echo -e "${BLUE}To delete this image do:${END}"
-# echo -e "${RED}az image delete --resource-group $RESOURCEGROUP --name $IMAGENAME${END}"
-
-
-# # az image copy --source-object-name ImageDSGComputeMachineVM-DataScienceBase-201811281323 --source-resource-group DataSafeHavenImages --target-resource-group RG_DSG_LINUX --target-subscription "Data Study Group Testing" --target-location uksouth

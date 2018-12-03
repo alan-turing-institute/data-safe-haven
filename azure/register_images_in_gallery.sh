@@ -10,21 +10,24 @@ SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base")
 SUBSCRIPTION="Safe Haven Management Testing"
 RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
 GALLERYNAME="SIG_DSG_COMPUTE"
-MACHINENAME=""
-SOURCEIMAGE=""
 VERSIONMAJOR="0"
 VERSIONMINOR="0"
 VERSIONSUFFIX="00"
 
 # Document usage for this script
 usage() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-v version_suffix]"
+    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-s subscription] [-v version_suffix]"
     echo "  -h                  display help"
     echo "  -i source_image     specify an already existing image to add to the gallery."
     echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
+    echo "  -s subscription     specify subscription for storing the VM images (defaults to 'Safe Haven Management Testing')"
     echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc."
     exit 1
 }
+
+# At least one of these must be specified on the command line
+MACHINENAME=""
+SOURCEIMAGE=""
 
 # Read command line arguments, overriding defaults where necessary
 while getopts "hi:r:n:v:" opt; do
@@ -32,11 +35,14 @@ while getopts "hi:r:n:v:" opt; do
         h)
             usage
             ;;
+        i)
+            SOURCEIMAGE=$OPTARG
+            ;;
         n)
             MACHINENAME=$OPTARG
             ;;
-        i)
-            SOURCEIMAGE=$OPTARG
+        s)
+            SUBSCRIPTION=$OPTARG
             ;;
         v)
             VERSIONSUFFIX=$OPTARG

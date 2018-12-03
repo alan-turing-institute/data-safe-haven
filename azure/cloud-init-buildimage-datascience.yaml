@@ -121,6 +121,8 @@ packages:
   - sssd-tools
   - xfce4
   - xrdp
+  - xubuntu-default-settings
+  - xubuntu-desktop
 
 bootcmd:
   # Update NVidia repository before installing any packages
