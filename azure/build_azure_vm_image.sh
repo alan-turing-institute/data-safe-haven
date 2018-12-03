@@ -142,4 +142,4 @@ az vm create \
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${RED}This process will take several hours to complete.${END}"
 echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
-echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f /var/log/cloud-init-output.log${END}"
+echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"
