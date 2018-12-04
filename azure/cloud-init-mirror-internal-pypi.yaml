@@ -13,6 +13,36 @@ packages:
   - python3-pip
   - python3-venv
 
+users:
+  - name: mirrordaemon
+    sudo: False
+
+write_files:
+  - path: "/etc/systemd/system/pypiserver.service"
+    content: |
+      [Unit]
+      Description=A minimal PyPI server for use with pip/easy_install.
+      After=network.target
+
+      [Service]
+      Type=simple
+      PIDFile=/var/run/pypiserver.pid
+      User=mirrordaemon
+      Group=mirrordaemon
+
+      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . /datadrive/web/packages
+      ExecStop=/bin/kill -TERM $MAINPID
+      ExecReload=/bin/kill -HUP $MAINPID
+      Restart=always
+
+      WorkingDirectory=/datadrive/web/packages
+
+      TimeoutStartSec=3
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
 
 runcmd:
   # Set up disk
@@ -23,7 +53,23 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
-  - chown -R adminpypi /datadrive
+  - chown -R mirrordaemon /datadrive
+
+  # Add authorized public key
+  - ls /var/lib/waagent/
+  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
+  - echo "Found secret named $KEYNAME"
+  - cd
+  - cp /var/lib/waagent/${KEYNAME}.crt /var/lib/waagent/${KEYNAME}.prv .
+  - "openssl pkcs12 -export -passout pass: -in ${KEYNAME}.crt -inkey ${KEYNAME}.prv -out sshkey.pfx"
+  - "openssl pkcs12 -passin pass: -in sshkey.pfx -out sshkey.pem -nocerts -nodes"
+  - ssh-keygen -f sshkey.pem -y > sshkey.pub
+  - mkdir ~mirrordaemon/.ssh
+  - cp sshkey.pub ~mirrordaemon/.ssh/authorized_keys
+  - chown -R mirrordaemon ~mirrordaemon
+  - chgrp -R mirrordaemon ~mirrordaemon
+  - chmod 0644 ~mirrordaemon/.ssh/authorized_keys
+  - rm -f ${KEYNAME}.* sshkey.*
 
   # Install pypiserver with pip
   - echo "*** Installing pypiserver... ***"
@@ -32,4 +78,5 @@ runcmd:
 
   # Set up pypiserver
   - echo "*** Setting up pypiserver pointing to local disk... ***"
-  - /pypiserver/bin/pypi-server -p 8080 -P . -a . /datadrive/web/packages &
+  - systemctl start pypiserver.service
+  - systemctl status pypiserver.service

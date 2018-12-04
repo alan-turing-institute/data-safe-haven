@@ -13,21 +13,18 @@ packages:
   - rsync
 
 users:
-  - name: fizzbuzz
+  - name: mirrordaemon
     sudo: False
-    ssh_authorized_keys:
-      - <ssh pub key 1>
-      - <ssh pub key 2>
 
 write_files:
-  - path: "/push_to_internal.sh"
+  - path: "/home/mirrordaemon/push_to_internal.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete /datadrive/* admincran@10.0.1.5:/datadrive
-  - path: "/update_mirror.sh"
+      rsync -e "ssh -o StrictHostKeyChecking=no" -rtlzv --delete --progress /datadrive/* mirrordaemon@10.0.1.5:/datadrive
+  - path: "/home/mirrordaemon/update_mirror.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete cran.r-project.org::CRAN /datadrive
+      rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive
 
 runcmd:
   # Upgrade installation then clean up
@@ -43,6 +40,33 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - chown -R mirrordaemon /datadrive
 
-  # Update the mirror
-  - bash /update_mirror.sh
+  # Ensure that mirrordaemon owns the synchronisation scripts
+  - chown mirrordaemon ~mirrordaemon/*.sh
+  - chgrp mirrordaemon ~mirrordaemon/*.sh
+
+  # Add public and private keys
+  - ls /var/lib/waagent/
+  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
+  - echo "Found secret named $KEYNAME"
+  - cd
+  - cp /var/lib/waagent/${KEYNAME}.crt /var/lib/waagent/${KEYNAME}.prv .
+  - "openssl pkcs12 -export -passout pass: -in ${KEYNAME}.crt -inkey ${KEYNAME}.prv -out sshkey.pfx"
+  - "openssl pkcs12 -passin pass: -in sshkey.pfx -nocerts -nodes | openssl rsa > id_rsa"
+  - "openssl pkcs12 -passin pass: -in sshkey.pfx -out sshkey.pem -nocerts -nodes"
+  - ssh-keygen -f sshkey.pem -y > id_rsa.pub
+  - mkdir -p ~mirrordaemon/.ssh
+  - cp id_rsa* ~mirrordaemon/.ssh/
+  - chown -R mirrordaemon ~mirrordaemon
+  - chgrp -R mirrordaemon ~mirrordaemon
+  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
+  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+  - rm -f ${KEYNAME}.* sshkey.* id_rsa*
+
+  # Set up mirroring
+  - chmod u+x ~mirrordaemon/*.sh
+  - echo "*** Adding external update (bandersnatch) job to crontab (2am on 2nd of each month)... ***"
+  - echo "0 2 2 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
+  - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
+  - echo "0 2 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab

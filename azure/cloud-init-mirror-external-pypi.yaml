@@ -15,12 +15,16 @@ packages:
   - python3-pip
   - python3-venv
 
+users:
+  - name: mirrordaemon
+    sudo: False
+
 write_files:
-  - path: "/push_to_internal.sh"
+  - path: "/home/mirrordaemon/push_to_internal.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete /datadrive/* adminpypi@10.0.1.4:/datadrive
-  - path: "/update_mirror.sh"
+      rsync -e "ssh -o StrictHostKeyChecking=no" -rtlzv --delete --progress /datadrive/* mirrordaemon@10.0.1.4:/datadrive
+  - path: "/home/mirrordaemon/update_mirror.sh"
     content: |
       #! /bin/bash
       /bandersnatch/bin/bandersnatch mirror
@@ -30,8 +34,30 @@ write_files:
         ; The directory where the mirror data will be stored.
         directory = /datadrive
 
+        ; Save JSON metadata into the web tree
+        ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
+        json = false
+
         ; The PyPI server which will be mirrored.
-        master = https://pypi.python.org
+        master = https://pypi.org
+
+        ; The network socket timeout to use for all connections. This is set to a
+        ; somewhat aggressively low value - rather fail quickly temporarily and re-run
+        ; the client soon instead of having a process hang infinitely and have TCP not
+        ; catching up for ages.
+        timeout = 10
+
+        ; Whether to hash package indexes
+        ; Note that package index directory hashing is incompatible with pip
+        ; Recommended - the default of false for full pip/pypi compatibility.
+        hash-index = false
+
+        ; Number of worker threads to use for parallel downloads.
+        ; Recommendations for worker thread setting
+        ; - leave the default of 3 to avoid overloading the pypi master
+        ; - official servers located in data centers could run 10 workers
+        ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
+        workers = 5
 
         ; Whether to stop a sync quickly after an error is found or whether to continue
         ; syncing but not marking the sync as successful. Value should be "true" or
@@ -40,6 +66,11 @@ write_files:
 
         ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
         delete-packages = true
+
+        ; [whitelist]
+        ; packages =
+        ;     numpy
+        ;     matplotlib
 
 runcmd:
   # Upgrade installation then clean up
@@ -55,16 +86,39 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
-  - chown -R adminpypi /datadrive
+  - chown -R mirrordaemon /datadrive
 
-  # # Force use of python3
-  # - update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+  # Ensure that mirrordaemon owns the synchronisation scripts
+  - chown mirrordaemon ~mirrordaemon/*.sh
+  - chgrp mirrordaemon ~mirrordaemon/*.sh
+
+  # Add public and private keys
+  - ls /var/lib/waagent/
+  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
+  - echo "Found secret named $KEYNAME"
+  - cd
+  - cp /var/lib/waagent/${KEYNAME}.crt /var/lib/waagent/${KEYNAME}.prv .
+  - "openssl pkcs12 -export -passout pass: -in ${KEYNAME}.crt -inkey ${KEYNAME}.prv -out sshkey.pfx"
+  - "openssl pkcs12 -passin pass: -in sshkey.pfx -nocerts -nodes | openssl rsa > id_rsa"
+  - "openssl pkcs12 -passin pass: -in sshkey.pfx -out sshkey.pem -nocerts -nodes"
+  - ssh-keygen -f sshkey.pem -y > id_rsa.pub
+  - mkdir -p ~mirrordaemon/.ssh
+  - cp id_rsa* ~mirrordaemon/.ssh/
+  - chown -R mirrordaemon ~mirrordaemon
+  - chgrp -R mirrordaemon ~mirrordaemon
+  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
+  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+  - rm -f ${KEYNAME}.* sshkey.*
 
   # Install bandersnatch with pip
   - echo "*** Installing bandersnatch... ***"
   - python3 -m venv bandersnatch
+  - bandersnatch/bin/pip install wheel
   - bandersnatch/bin/pip install bandersnatch
 
-  # Set up bandersnatch
-  - echo "*** Setting up bandersnatch mirror on local disk... ***"
-  - bash /update_mirror.sh
+  # Set up mirroring
+  - chmod u+x ~mirrordaemon/*.sh
+  - echo "*** Adding external update (rsync) job to crontab (2am on 2nd of each month)... ***"
+  - echo "0 2 2 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
+  - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
+  - echo "0 2 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab
