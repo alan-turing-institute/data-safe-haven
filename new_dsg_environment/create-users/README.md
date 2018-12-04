@@ -10,7 +10,7 @@
   - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one method must work at Turing
 - Powershell to create users (can be run by IT / Rob - IT have the script)
 
-## User creation (System Controller)
+## User creation (Domain Admin)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
 - Run `CreateUser.ps1 -Environment <Testing | Production> -UserFilePath <PathToUserFile>
