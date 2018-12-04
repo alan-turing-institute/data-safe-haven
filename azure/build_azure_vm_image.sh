@@ -60,6 +60,21 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
 
+# Ensure image sharing is enabled from this subscription
+SHARING_STATE="$(az feature show --namespace Microsoft.Compute --name UserImageSharing --query 'properties.state' | xargs)"
+if [ "$SHARING_STATE" = "Registered" ]; then
+    # Do nothing - feature already registered
+    sleep 0
+elif [ "$SHARING_STATE" = "NotRegistered" ]; then
+    # Register feature
+    echo -e "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
+    az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
+    az provider register --namespace Microsoft.Compute
+else
+    echo -e "${RED}UserImageSharing state could not be found. Try updating Azure CLI.${END}"
+    exit 1
+fi
+
 # Add an NSG group to deny inbound connections except Turing-based SSH
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
@@ -89,13 +104,6 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUI
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 3000
-fi
-
-# Enable image sharing from this subscription
-if [ "$(az provider show --namespace Microsoft.Compute -o table | grep "Registered")" = "" ]; then
-    echo -e "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
-    az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
-    az provider register --namespace Microsoft.Compute
 fi
 
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
