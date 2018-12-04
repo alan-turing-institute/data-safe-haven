@@ -94,6 +94,10 @@ done
 # Require exactly one image name or one machine name that must exist in this resource group
 if [ "$MACHINENAME" = "" ] && [ "$SOURCEIMAGE" = "" ]; then
     echo -e "${RED}You must specify an image name (or a machine name that will be turned into an image) in order to add it to the gallery${END}"
+    echo -e "${BOLD}Available machines are:${END}"
+    az vm list --resource-group $RESOURCEGROUP --query "[].name" -o table
+    echo -e "${BOLD}Available images are:${END}"
+    az image list --resource-group RG_DSG_IMAGEGALLERY --query "[].name" -o table
     print_usage_and_exit
 elif [ "$MACHINENAME" != "" ] && [ "$SOURCEIMAGE" != "" ]; then
     echo -e "${RED}You must specify EITHER an image name OR a machine name, not both${END}"
