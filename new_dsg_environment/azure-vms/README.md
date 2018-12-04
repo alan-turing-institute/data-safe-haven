@@ -16,7 +16,7 @@ Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to bu
 usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
     -h                 display help"
     -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
+    -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
     -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
 ```
 
@@ -24,13 +24,13 @@ usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r reso
 Build an image based off Ubuntu 18.04 (used by default if not specified) called `UbuntuVM`
 
 ```bash
-./build_azure_vm_image.sh -i Ubuntu
+./build_azure_vm_image.sh -i Ubuntu -s "Safe Haven Management Testing"
 ```
 
 Build an image based off the Microsoft Data Science VM in the `TestBuild` resource group
 
 ```bash
-./build_azure_vm_image.sh -i DataScience -r TestBuild
+./build_azure_vm_image.sh -i DataScience -r TestBuild -s "Safe Haven Management Testing"
 ```
 
 ## Registering VMs in the image gallery
@@ -54,7 +54,7 @@ usage: register_images_in_gallery.sh -s subscription [-h] [-i source_image] [-n 
 For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like.
 
 ```bash
-./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941
+./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941 -s "Safe Haven Management Testing"
 ```
 
 ## Creating a DSG environment
