@@ -3,7 +3,7 @@
 # Options which are configurable at the command line
 MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
-RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION=""
 VERSIONSUFFIX="00"
 
