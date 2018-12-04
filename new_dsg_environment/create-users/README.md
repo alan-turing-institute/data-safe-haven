@@ -6,25 +6,45 @@
   - Account name (log in username **without** the @domain bit)
   - First name
   - Last name
-  - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one method must work at Turing.
+  - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one MFA method must work at Turing.
+ - Send the file to IT
 
-## User creation (Domain Admin)
+## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run `CreateUser.ps1 -Environment <Testing | Production> -UserFilePath <PathToUserFile>
+- Run `CreateUser.ps1 -Environment <Testing | Production> -UserFilePath <PathToUserFile>` (e.g. `CreateUser.ps1 -Environment Testing -UserFilePath ./20181205-1423_UserCreate.csv`
 - In 15 mins users will be on Azure AD
 - Add "Active directory premium P2" licence to users (could likely be scripted but will be manual bulk operation in portal) Q: Can we selectively apply licence to new batches of users if we don't add everyone at once?
 - Enable MFA on all user (could likely be scripted but will be manual bulk operation in portal)
 - Users are now ready to reset password and set up MFA
 
 ## User activation
-- Give users their user ID and instructions  - Q: Do we email in advance or do on the day with paper? A: We can email as they need access to the phone number they provided us.
-  - Open a private browser session to avoid picking up any existing Azure / Microsoft accounts you have
-  - Paste the following UR into the private browser address bar - https://aka.ms/ssprsetup
-  - At the login prompt enter my user name
-  - At password prompt click "Forgotten password"
-  - Complete the requested information (captcha/my phone number)
-  - Reset my password
-  - Click "Login"
-  - Enter user name and my new password
-  - Now the MFA configuration process starts (these steps are in Kirstie's doc - add the preceding steps to this).
+- Research Co-ordinator to email users their user ID and instructions. We can securely email users thei ruser ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
+
+### User activation instructions
+These are a summary. The user should be sent a delegate pack / guide that has fuller instructions with screenshots. Kirstie's previous guide is being updated by Ian in issue #96.
+
+#### Reset password
+For security we do not store your initial password, so you must reset it before you can log in.
+1. Open a private browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
+2. Paste the following UR into the private browser address bar - https://aka.ms/ssprsetup
+3. At the login prompt enter your username (provided in the welcome email)
+4. At password prompt click "Forgotten password"
+5. Complete the requested information (captcha and the phone number you provided on registration)
+6. Reset your password
+  
+#### Set up MFA
+Before you can access the secure environment, you need to setup your multifactor authentication.  The authentication method can be either via a call to a mobile phone or the Microsoft Authenticator app (recommended).
+
+##### Step 1 (if using the Microsoft authenticator app): download the app on your mobile device
+The links to download the app for iOS, Android and Window mobile are:
+-	iOS: http://bit.ly/iosauthenticator 
+-	Android: http://bit.ly/androidauthenticator 
+-	Windows mobile: http://bit.ly/windowsauthenticator
+
+##### Step 2: Configure the multifactor authentication
+1.	Open a private browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
+2.	Enter https://aka.ms/MFASetup into the private browser address bar
+3.	Login with the username provided in your welcome email and the new password you chose when you reset your password.
+4.	Click “Set it up now” when prompted
+5.	On the “Additional security verification” screen you have three options on how the system will contact you for verification.  Click the drop down next under “Step 1” and select the option you wish to use.
