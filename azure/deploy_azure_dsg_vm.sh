@@ -4,38 +4,41 @@
 SOURCEIMAGE="Ubuntu"
 MACHINENAME="DSGComputeMachineVM"
 RESOURCEGROUP="RS_DSG_TEST"
-SUBSCRIPTION="Data Study Group Testing"
+IPRANGE="10.0.2.0/24"
+SUBSCRIPTIONSOURCE="" # must be provided
+SUBSCRIPTIONTARGET="" # must be provided
 USERNAME="atiadmin"
 
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
-BLUE="\033[0;34m"
+BLUE="\033[0;36m"
 END="\033[0m"
 
 # Other constants
-MANAGEMENT_SUBSCRIPTION="Safe Haven Management Testing"
 RESOURCEGROUP_IMAGES="RG_DSG_IMAGEGALLERY"
 GALLERY_IMAGES="SIG_DSG_COMPUTE"
 RESOURCEGROUP_PKG_MIRRORS="RS_DSG_PKG_MIRRORS"
 VNETNAME_PKG_MIRRORS="VN_DSG_PKG_MIRRORS"
 LOCATION="uksouth"
-IPRANGE="10.0.2.0/24"
+
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription] [-u user_name]"
-    echo "  -h                 display help"
-    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    echo "  -n machine_name    specify machine name (defaults to 'DSGComputeMachineVM')"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
-    echo "  -s subscription    specify subscription for this DSG (defaults to 'Data Study Group Testing')"
-    echo "  -u user_name       specify a username for the admin account (defaults to 'atiadmin')"
+    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-p ip_range] [-r resource_group] -s subscription -t subscription [-u user_name]"
+    echo "  -h                        display help"
+    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'"
+    echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')"
+    echo "  -p ip_range               specify IP range for this subnet (defaults to '10.0.2.0/24')"
+    echo "  -r resource_group         specify resource group for deploying the VM image- will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
+    echo "  -s subscription_source    specify source subscription for this DSG required]. (Test using 'Safe Haven Management Testing')"
+    echo "  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')"
+    echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:n:r:s:u:" opt; do
+while getopts "hi:n:p:r:s:t:u:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -46,11 +49,17 @@ while getopts "hi:n:r:s:u:" opt; do
         n)
             MACHINENAME=$OPTARG
             ;;
+        p)
+            IPRANGE=$OPTARG
+            ;;
         r)
             RESOURCEGROUP=$OPTARG
             ;;
         s)
-            SUBSCRIPTION=$OPTARG
+            SUBSCRIPTIONSOURCE=$OPTARG
+            ;;
+        t)
+            SUBSCRIPTIONTARGET=$OPTARG
             ;;
         u)
             USERNAME=$OPTARG
@@ -61,8 +70,19 @@ while getopts "hi:n:r:s:u:" opt; do
     esac
 done
 
+# Check that a source subscription has been provided
+if [ "$SUBSCRIPTIONSOURCE" = "" ]; then
+    echo -e "${RED}Source subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+# Check that a target subscription has been provided
+if [ "$SUBSCRIPTIONTARGET" = "" ]; then
+    echo -e "${RED}Target subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+
 # Search for available images and prompt user to select one
-az account set --subscription "$MANAGEMENT_SUBSCRIPTION"
+az account set --subscription "$SUBSCRIPTIONSOURCE"
 if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
     IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
 elif [ "$SOURCEIMAGE" = "DataScience" ]; then
@@ -88,13 +108,13 @@ if [ "$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --galle
 fi
 IMAGE_ID=$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --gallery-name $GALLERY_IMAGES --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
 
-echo "Admin username will be: ${USERNAME}" 
+echo "Admin username will be: ${USERNAME}"
 read -s -p "Enter password for this user: " PASSWORD
 echo ""
 
 # Switch subscription and setup resource group if it does not already exist
 # -------------------------------------------------------------------------
-az account set --subscription "$SUBSCRIPTION"
+az account set --subscription "$SUBSCRIPTIONTARGET"
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo "Creating resource group $RESOURCEGROUP"
     az group create --name $RESOURCEGROUP --location $LOCATION
@@ -120,7 +140,7 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
 fi
 
 
-# If using the Data Science VM then the terms must be added here
+# If using the Data Science VM then the terms must be added before creating the VM
 PLANDETAILS=""
 if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
@@ -149,23 +169,23 @@ rm cloud-init-compute-vm-specific.yaml*
 # allow some time for the system to finish initialising
 sleep 30
 
-# Open RDP port on the VM
+# Open RDP port on the VM - TODO should be done at NSG-level
 echo -e "Opening ${BLUE}RDP port${END}"
 az vm open-port --resource-group $RESOURCEGROUP --name $MACHINENAME --port 3389
 
-# Peer this VNet to the one containing the package mirrors
-echo -e "Peering VNet with ${BLUE}$VNETNAME_PKG_MIRRORS${END}"
-
-# Get VNet IDs
-az account set --subscription "$MANAGEMENT_SUBSCRIPTION"
-VNET_PKG_MIRROR_ID="$(az network vnet show --resource-group $RESOURCEGROUP_PKG_MIRRORS --name $VNETNAME_PKG_MIRRORS --query id | xargs)"
-az account set --subscription "$SUBSCRIPTION"
-VNET_ID="$(az network vnet show --resource-group $RESOURCEGROUP --name $VNETNAME --query id | xargs)"
-# Peer VNets in both directions
-az account set --subscription "$MANAGEMENT_SUBSCRIPTION"
-az network vnet peering create --resource-group $RESOURCEGROUP_PKG_MIRRORS --name "PEER_${VNETNAME}" --vnet-name $VNETNAME_PKG_MIRRORS --remote-vnet $VNET_ID
-az account set --subscription "$SUBSCRIPTION"
-az network vnet peering create --resource-group $RESOURCEGROUP --name "PEER_${VNETNAME_PKG_MIRRORS}" --vnet-name $VNETNAME --remote-vnet $VNET_PKG_MIRROR_ID 
+# # Peer this VNet to the one containing the package mirrors
+# # --------------------------------------------------------
+# echo -e "Peering VNet with ${BLUE}$VNETNAME_PKG_MIRRORS${END}"
+# # Get VNet IDs
+# az account set --subscription "$SUBSCRIPTIONSOURCE"
+# VNET_PKG_MIRROR_ID="$(az network vnet show --resource-group $RESOURCEGROUP_PKG_MIRRORS --name $VNETNAME_PKG_MIRRORS --query id | xargs)"
+# az account set --subscription "$SUBSCRIPTIONTARGET"
+# VNET_ID="$(az network vnet show --resource-group $RESOURCEGROUP --name $VNETNAME --query id | xargs)"
+# # Peer VNets in both directions
+# az account set --subscription "$SUBSCRIPTIONSOURCE"
+# az network vnet peering create --resource-group $RESOURCEGROUP_PKG_MIRRORS --name "PEER_${VNETNAME}" --vnet-name $VNETNAME_PKG_MIRRORS --remote-vnet $VNET_ID
+# az account set --subscription "$SUBSCRIPTIONTARGET"
+# az network vnet peering create --resource-group $RESOURCEGROUP --name "PEER_${VNETNAME_PKG_MIRRORS}" --vnet-name $VNETNAME --remote-vnet $VNET_PKG_MIRROR_ID
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)

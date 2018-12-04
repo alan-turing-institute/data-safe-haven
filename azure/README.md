@@ -13,7 +13,7 @@ Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) t
 Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
 
 ```
-usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]
+usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
     -h                 display help"
     -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
     -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
@@ -51,7 +51,7 @@ usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-
 ```
 
 ### Registration examples
-For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like. 
+For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like.
 
 ```bash
 ./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941
@@ -61,3 +61,15 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
 At the moment this does not deploy into a correctly set up environment (eg. with NSG rules/VNETs etc.).
 This may be separated into two scripts in future - one to set up a new environment and one to deploy VMs into it.
+
+```
+usage: $0 [-h] [-i source_image] [-n machine_name] [-p ip_range] [-r resource_group] -s subscription -t subscription [-u user_name]
+  -h                        display help
+  -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'
+  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')
+  -p ip_range               specify IP range for this subnet (defaults to '10.0.2.0/24')
+  -r resource_group         specify resource group for deploying the VM image- will be created if it does not already exist (defaults to 'RS_DSG_TEST')
+  -s subscription_source    specify source subscription for this DSG required]. (Test using 'Safe Haven Management Testing')
+  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
+  -u user_name              specify a username for the admin account (defaults to 'atiadmin')
+```

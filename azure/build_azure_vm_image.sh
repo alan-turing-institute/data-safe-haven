@@ -3,7 +3,7 @@
 # Options which are configurable at the command line
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-SUBSCRIPTION=""
+SUBSCRIPTION="" # must be provided
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -17,7 +17,7 @@ LOCATION="westeurope" # have to build in West Europe in order to use Shared Imag
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription]"
+    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription"
     echo "  -h                 display help"
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
     echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
@@ -93,7 +93,7 @@ fi
 
 # Enable image sharing from this subscription
 if [ "$(az provider show --namespace Microsoft.Compute -o table | grep "Registered")" = "" ]; then
-    echo "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
+    echo -e "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
     az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
     az provider register --namespace Microsoft.Compute
 fi
