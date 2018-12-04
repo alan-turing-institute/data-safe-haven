@@ -72,25 +72,38 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
 fi
 
 # Ensure required features for shared image galleries are enabled for this subscription
-# 1. Need to ensure that the Galleries feature is enabled
 FEATURE="GalleryPreview"
 NAMESPACE="Microsoft.Compute"
-SHARING_STATE="$(az feature show --namespace "$NAMESPACE" --name "$FEATURE" --query 'properties.state' | xargs)"
-echo "Ensuring $FEATURE feature registered in namespace $NAMESPACE (this may take some time). Current state is $SHARING_STATE."
-while [ "$SHARING_STATE" != "Registered" ]; do
-    if [ "$SHARING_STATE" = "NotRegistered" ]; then
+FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
+RESOURCE="galleries/images/versions"
+RESOURCE_METADATA_QUERY="resourceTypes[?resourceType=='$RESOURCE']"
+RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
+
+echo "Ensuring $FEATURE feature is registered and $RESOURCE resource is present in namespace $NAMESPACE (this may take some time)."
+echo "Current $FEATURE feature state is $FEATURE_STATE."
+if [ "$RESOURCE_METADATA" = "[]" ]; then
+    echo "Resource $RESOURCE is not present."
+else
+    echo "Resource $RESOURCE is present."
+fi
+
+while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
+    if [ "$FEATURE_STATE" = "NotRegistered" ]; then
         # Register feature
         echo -e "${BOLD}Registering ${BLUE}$FEATURE${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
         az feature register --namespace Microsoft.Compute --name "$FEATURE" --subscription "$SUBSCRIPTION"
         az provider register --namespace Microsoft.Compute
-    elif [ "$SHARING_STATE" = "Pending" ] -o [ "$SHARING_STATE" = "Registering" ]; then
+    elif [ "$FEATURE_STATE" = "Pending"  -o  "$FEATURE_STATE" = "Registering" -o "$RESOURCE_METADATA" = "[]" ]; then
         echo -ne "."
         sleep 30
     else
-        echo -e "${RED}$FEATURE state could not be found. Try updating Azure CLI.${END}"
+        echo -e "${RED}$FEATURE state or $RESOURCE resource could not be found. Try updating Azure CLI.${END}"
         exit 1
     fi
-    SHARING_STATE="$(az feature show --namespace "$NAMESPACE" --name "$FEATURE" --query 'properties.state' | xargs)"
+    FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
+    RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
+    echo FEATURE_STATE
+    echo $RESOURCE_METADATA
 done
 
 # Create image gallery if it doesn't already exist
