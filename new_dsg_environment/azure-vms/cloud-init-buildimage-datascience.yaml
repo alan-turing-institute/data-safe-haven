@@ -1,0 +1,239 @@
+#cloud-config
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+  # Add repositories
+  sources:
+    marutter-c2d4u35.list:
+      source: "ppa:marutter/c2d4u3.5"
+
+    rproject-cran35.list:
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu xenial-cran35/"
+      keyserver: hkp://keyserver.ubuntu.com:80
+      keyid: 51716619E084DAB9
+
+# List of packages to install with apt-get
+packages:
+  - adcli
+  - attr
+  - krb5-kdc
+  - ldap-utils
+  - libmariadb-client-lgpl-dev
+  - libnss-ldap
+  - libnss-sss
+  - libpam-ldap
+  - libpam-sss
+  - libpq-dev
+  - octave
+  - oddjob
+  - oddjob-mkhomedir
+  - postgresql
+  - postgresql-contrib
+  - r-base
+  - r-base-core
+  - r-base-dev
+  - r-bioc-limma
+  - r-bioc-phyloseq
+  - r-bioc-rbgl
+  - r-cran-ada
+  - r-cran-bbmisc
+  - r-cran-bitops
+  - r-cran-car
+  - r-cran-caret
+  - r-cran-checkmate
+  - r-cran-chron
+  - r-cran-coda
+  - r-cran-colorramps
+  - r-cran-coxboost
+  - r-cran-cvst
+  - r-cran-deepnet
+  - r-cran-devtools
+  - r-cran-diagrammer
+  - r-cran-dichromat
+  - r-cran-doparallel
+  - r-cran-dt
+  - r-cran-dygraphs
+  - r-cran-e1071
+  - r-cran-factominer
+  - r-cran-foreach
+  - r-cran-gbm
+  - r-cran-gdata
+  - r-cran-ggmap
+  - r-cran-ggvis
+  - r-cran-glmnet
+  - r-cran-googlevis
+  - r-cran-hmisc
+  - r-cran-irace
+  - r-cran-iterators
+  - r-cran-kernlab
+  - r-cran-kknn
+  - r-cran-leaflet
+  - r-cran-lme4
+  - r-cran-maps
+  - r-cran-maptools
+  - r-cran-matrixstats
+  - r-cran-mboost
+  - r-cran-mclust
+  - r-cran-mcmcpack
+  - r-cran-mlr
+  - r-cran-multcomp
+  - r-cran-neuralnet
+  - r-cran-parallelmap
+  - r-cran-paramhelpers
+  - r-cran-party
+  - r-cran-pls
+  - r-cran-quantmod
+  - r-cran-randomforest
+  - r-cran-randomforestsrc
+  - r-cran-ranger
+  - r-cran-rcpparmadillo
+  - r-cran-rcurl
+  - r-cran-repr
+  - r-cran-reshape
+  - r-cran-rgl
+  - r-cran-rjava
+  - r-cran-rmysql
+  - r-cran-rocr
+  - r-cran-roxygen2
+  - r-cran-rpostgresql
+  - r-cran-rsqlite
+  - r-cran-rstan
+  - r-cran-rweka
+  - r-cran-sqldf
+  - r-cran-tcltk2
+  - r-cran-testthat
+  - r-cran-tgp
+  - r-cran-threejs
+  - r-cran-tidyverse
+  - r-cran-uuid
+  - r-cran-vcd
+  - r-cran-xgboost
+  - r-cran-xlsx
+  - r-cran-xts
+  - r-recommended
+  - realmd
+  - sssd
+  - sssd-tools
+  - xfce4
+  - xrdp
+  - xubuntu-default-settings
+  - xubuntu-desktop
+
+bootcmd:
+  # Update NVidia repository before installing any packages
+  - curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+
+runcmd:
+  # Create python environments through conda
+  - echo "*** Initial conda environments... ***"
+  - export PATH=$PATH:/anaconda/bin/
+  - conda env list
+  - conda update -n base -c defaults conda
+  # Add channels
+  - conda config --add channels conda-forge
+  - conda config --add channels anaconda
+  - conda config --add channels pytorch
+  - conda config --add channels r
+  # Prepare environments
+  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
+  - echo "*** Working on py27 environment... ***"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y -n py27 python=2.7 $PYTHONPACKAGES; else conda install -y -n py27 $PYTHONPACKAGES; fi
+  - echo "*** Working on py35 environment... ***"
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y -n py35 python=3.5 jupyterhub jupyterhub-ldapauthentication $PYTHONPACKAGES; else conda install -y -n py35 jupyterhub $PYTHONPACKAGES; fi
+  - echo "*** Working on py36 environment... ***"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y -n py36 python=3.6 jupyterhub jupyterhub-ldapauthentication $PYTHONPACKAGES; else conda install -y -n py36 jupyterhub $PYTHONPACKAGES; fi
+  - echo "*** Final conda environments... ***"
+  - conda env list
+  - conda clean -a
+
+  # Ensure that R packages are installed
+  - echo "*** Installing additional R packages... ***"
+  - echo "Previously installed R packages:"
+  - Rscript -e "installed.packages()[,'Package']"
+  - export RPACKAGES="'ada', 'assertthat', 'AUC', 'backports', 'BBmisc', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'corrplot', 'CoxBoost', 'crayon', 'CVST', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'dirichletprocess', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dygraphs', 'e1071', 'evaluate', 'factoextra', 'FactoMineR', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'PReMiuM', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'synthpop', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'traj', 'utils', 'uuid', 'varbvs', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
+  - echo "R packages remaining to be installed:"
+  - Rscript -e "list.of.packages <- c($RPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  # Bioconductor
+  - echo "Previously installed Bioconductor packages:"
+  - export BIOCPACKAGES="'apeglm', 'ballgown', 'ChemmineR', 'clusterProfiler', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'treeio'"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - echo "Bioconductor packages remaining to be installed:"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
+
+  # Install latest julia version
+  - echo "*** Installing Julia... ***"
+  - echo "Removing old installation and preparing directory..."
+  - sudo rm /usr/bin/julia
+  - mkdir -p /opt/julia
+  - cd /opt/julia
+  - echo "Downloading package..."
+  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.1-linux-x86_64.tar.gz
+  - echo "Installing and cleaning up..."
+  - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
+  - rm -rf julia-1.0.1-linux-x86_64.tar.gz
+  - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
+  - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
+
+  # Install spark
+  - echo "*** Installing spark... ***"
+  - mkdir -p /opt/spark
+  - cd /opt/spark
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
+  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
+  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
+
+  # Add torch to the path
+  - export PATH=$PATH:/dsvm/tools/torch/bin
+
+  # Check for successful installations
+  - echo "*** Checking for successful installation... ***"
+  # - programming languages
+  - if [ "$(which python)" != "" ]; then echo "python $(which python)"; echo "$(python --version)"; else echo "python not found!"; exit 1; fi
+  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
+  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
+  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
+  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
+  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
+  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
+  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
+  # - development tools
+  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
+  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
+  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
+  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
+  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
+  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
+  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
+  - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
+  - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
+  - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
+  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  # Check for missing packages
+  - echo "R packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($RPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - echo "Bioconductor packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+
+  # Deprovision
+  - waagent -deprovision+user -force
+  # Fix internet connectivity that is broken by waagent deprovisioning
+  - rm /etc/resolv.conf; ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+final_message:
+  "The system is setup and deprovisioned, after $UPTIME seconds"
