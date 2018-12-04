@@ -1,0 +1,36 @@
+#cloud-config
+package_upgrade: true
+
+packages:
+  - xfce4
+  - xrdp
+
+write_files:
+  - path: "/startwm.sh"
+    content: |
+      #!/bin/sh
+      if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG LANGUAGE
+      fi
+      # Start xfce4
+      startxfce4
+
+runcmd:
+  - echo xfce4-session > ~USERNAME/.xsession
+  - chown -R USERNAME ~USERNAME
+  - mv /startwm.sh /etc/xrdp/startwm.sh
+  - chmod 0755 /etc/xrdp/startwm.sh
+  - service xrdp restart
+  - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
+  - cp /etc/profile ~USERNAME/.bashrc
+  # - echo $(hostname -I | cut -d' ' -f1) $(hostname) | tee -a /etc/hosts
+
+  # - systemctl enable xrdp
+  # - echo xfce4-session > ~USERNAME/.xsession
+  # - echo $(hostname -I | cut -d' ' -f1) $(hostname) | tee -a /etc/hosts
+  # - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
+  # - cp /etc/profile ~USERNAME/.bashrc
+  # - chown -R USERNAME ~USERNAME
+  # - chmod ugo+r /etc/ssl/private/ssl-cert-snakeoil.key
+  # - service xrdp restart
