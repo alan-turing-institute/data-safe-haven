@@ -19,10 +19,8 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Other constants
-RESOURCEGROUP_IMAGES="RG_DSG_IMAGEGALLERY"
-GALLERY_IMAGES="SIG_DSG_COMPUTE"
-RESOURCEGROUP_PKG_MIRRORS="RS_DSG_PKG_MIRRORS"
-VNETNAME_PKG_MIRRORS="VN_DSG_PKG_MIRRORS"
+IMAGES_RESOURCEGROUP="RG_DSG_IMAGEGALLERY"
+IMAGES_GALLERY="SIG_DSG_COMPUTE"
 LOCATION="uksouth"
 
 # Document usage for this script
@@ -109,19 +107,19 @@ fi
 # List available versions
 echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
 az sig image-version list \
-    --resource-group $RESOURCEGROUP_IMAGES \
-    --gallery-name $GALLERY_IMAGES \
+    --resource-group $IMAGES_RESOURCEGROUP \
+    --gallery-name $IMAGES_GALLERY \
     --gallery-image-definition $IMAGE_DEFINITION \
     --query "[].name" -o table
 echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]${END}"
 read VERSION
 
 # Check that this is a valid version and then get the image ID
-if [ "$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --gallery-name $GALLERY_IMAGES --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
+if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Version $VERSION could not be found.${END}"
     print_usage_and_exit
 fi
-IMAGE_ID=$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --gallery-name $GALLERY_IMAGES --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
+IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
 
 echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
 read -s -p "Enter password for this user: " PASSWORD
@@ -178,13 +176,12 @@ fi
 
 # Set appropriate username
 cp cloud-init-compute-vm.yaml cloud-init-compute-vm-specific.yaml
-# cp cloud-init-simpleubuntu.yaml cloud-init-compute-vm-specific.yaml
 sed -i -e 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm-specific.yaml
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
-echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image"
+echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
 STARTTIME=$(date +%s)
 az vm create ${PLANDETAILS} \
   --resource-group $RESOURCEGROUP \
@@ -194,75 +191,14 @@ az vm create ${PLANDETAILS} \
   --nsg $DSG_NSG_ID \
   --public-ip-address "" \
   --custom-data cloud-init-compute-vm-specific.yaml \
-  --size Standard_DS2_v2 \
+  --size $VM_SIZE \
   --admin-username $USERNAME \
   --admin-password $PASSWORD
 rm cloud-init-compute-vm-specific.yaml*
 
-# az vm create ${PLANDETAILS} \
-#   --resource-group $RESOURCEGROUP \
-#   --name $MACHINENAME \
-#   --image Canonical:UbuntuServer:18.04-LTS:latest \
-#   --subnet $DSG_SUBNET_ID \
-#   --nsg $DSG_NSG_ID \
-#   --public-ip-address "" \
-#   --custom-data cloud-init-compute-vm-specific.yaml \
-#   --size Standard_DS2_v2 \
-#   --admin-username $USERNAME \
-#   --admin-password $PASSWORD
-# rm cloud-init-compute-vm-specific.yaml*
-
-
-
 # allow some time for the system to finish initialising
 sleep 30
 
-# # Open RDP port on the VM - TODO should be done at NSG-level
-# echo -e "Opening ${BLUE}RDP port${END}"
-# az vm open-port --resource-group $RESOURCEGROUP --name $MACHINENAME --port 3389
-
-# # Peer this VNet to the one containing the package mirrors
-# # --------------------------------------------------------
-# echo -e "Peering VNet with ${BLUE}$VNETNAME_PKG_MIRRORS${END}"
-# # Get VNet IDs
-# az account set --subscription "$SUBSCRIPTIONSOURCE"
-# VNET_PKG_MIRROR_ID="$(az network vnet show --resource-group $RESOURCEGROUP_PKG_MIRRORS --name $VNETNAME_PKG_MIRRORS --query id | xargs)"
-# az account set --subscription "$SUBSCRIPTIONTARGET"
-# VNET_ID="$(az network vnet show --resource-group $RESOURCEGROUP --name $VNETNAME --query id | xargs)"
-# # Peer VNets in both directions
-# az account set --subscription "$SUBSCRIPTIONSOURCE"
-# az network vnet peering create --resource-group $RESOURCEGROUP_PKG_MIRRORS --name "PEER_${VNETNAME}" --vnet-name $VNETNAME_PKG_MIRRORS --remote-vnet $VNET_ID
-# az account set --subscription "$SUBSCRIPTIONTARGET"
-# az network vnet peering create --resource-group $RESOURCEGROUP --name "PEER_${VNETNAME_PKG_MIRRORS}" --vnet-name $VNETNAME --remote-vnet $VNET_PKG_MIRROR_ID
-
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
-
-echo -e "${BOLD}This new VM can be accessed with remote desktop at ${BLUE}${PUBLICIP}${END}"
-# echo -e "See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/use-remote-desktop for more details"
-
-
-
-# if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
-#     echo -e "${RED}Could not find NSG ${BLUE}$DSG_NSG ${RED}in resource group ${BLUE}$RESOURCEGROUP${END}"
-#     print_usage_and_exit
-#     # az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
-#     # az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSGNAME --direction Outbound --name AllowVNetHttp --description "Allow 80 and 8080 outbound to Azure" --protocol "*" --source-address-prefixes VirtualNetwork --source-port-ranges "*" --destination-address-prefixes VirtualNetwork --destination-port-ranges 80 8080 --priority 500
-#     # az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSGNAME --direction Outbound --access Deny --name DenyInternet --description "Deny outbound internet connections" --protocol "*" --source-address-prefixes VirtualNetwork --source-port-ranges "*" --destination-address-prefixes "Internet" --destination-port-ranges "*" --priority 3000
-# fi
-
-
-# # Check that VNET and subnet already exist
-# # ----------------------------------------
-# if [ "$(az network vnet list --resource-group $RESOURCEGROUP | grep $DSG_VNET)" = "" ]; then
-#     echo -e "${RED}Could not find VNET ${BLUE}$DSG_VNET ${RED}in resource group ${BLUE}$RESOURCEGROUP${END}"
-#     print_usage_and_exit
-#     # echo "Creating VNet $VNETNAME"
-#     # az network vnet create --resource-group $RESOURCEGROUP -n $VNETNAME
-# fi
-# if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $DSG_VNET | grep $DSG_SUBNET)" = "" ]; then
-#     echo -e "${RED}Could not find subnet ${BLUE}$DSG_SUBNET ${RED}in VNET ${BLUE}$DSG_VNET${END}"
-#     print_usage_and_exit
-#     # echo "Creating subnet $SUBNETNAME"
-#     # az network vnet subnet create --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --network-security-group $NSGNAME --address-prefixes $IPRANGE --name $SUBNETNAME
-# fi
+PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0].ipAddress" | xargs echo)
+echo -e "${BOLD}This new VM can be accessed with remote desktop at ${BLUE}${PRIVATEIP}${END}"
