@@ -79,7 +79,7 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
     IMAGETYPE=$(echo $SUPPORTEDIMAGE | cut -d'-' -f1)
     SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
     if [ "$(az sig image-definition show --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE 2>&1 | grep 'not found')" != "" ]; then
-        echo -e "${BOLD}Ensuring that ${BLUE}${SUPPORTEDIMAGE} ${BOLD}is correctly registered in the image gallery${END}"
+        echo -e "${BOLD}Ensuring that ${BLUE}${SUPPORTEDIMAGE}${END} ${BOLD}is correctly registered in the image gallery${END}"
         az sig image-definition create \
             --resource-group $RESOURCEGROUP \
             --gallery-name $GALLERYNAME \
@@ -101,6 +101,8 @@ elif [ "$MACHINENAME" != "" ] && [ "$SOURCEIMAGE" != "" ]; then
 elif [ "$MACHINENAME" != "" ]; then
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME)" = "" ]; then
         echo -e "${RED}Could not find a machine called ${BLUE}${MACHINENAME}${RED} in resource group ${RESOURCEGROUP}${END}"
+        echo -e "${BOLD}Available machines are:${END}"
+        az vm list --resource-group $RESOURCEGROUP --query "[].name" -o table
         print_usage_and_exit
     else
         # Deallocate and generalize
@@ -118,19 +120,21 @@ fi
 # By this point we've either been provided with an image name, or we've made a new image and we know its name
 if [ "$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Image ${BLUE}${SOURCEIMAGE}${RED} could not be found in resource group ${BLUE}${RESOURCEGROUP}${END}"
+    echo -e "${BOLD}Available images are:${END}"
+    az image list --resource-group RG_DSG_IMAGEGALLERY --query "[].name" -o table
     exit 1
 fi
 
 # Create the image as a new version of the appropriate existing registered version
-echo -e "${BOLD}Trying to identify ${BLUE}$SOURCEIMAGE ${BOLD}as a supported image...${END}"
+echo -e "${BOLD}Trying to identify ${BLUE}$SOURCEIMAGE${END} ${BOLD}as a supported image...${END}"
 for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
     if [[ "$SOURCEIMAGE" = *"$SUPPORTEDIMAGE"* ]]; then
-        echo -e "Identified ${BLUE}${SOURCEIMAGE}${END} as an instance of ${BLUE}${SUPPORTEDIMAGE}${END}"
+        echo -e "${BOLD}Identified ${BLUE}${SOURCEIMAGE}${END} ${BOLD}as an instance of ${BLUE}${SUPPORTEDIMAGE}${END}"
         IMAGETYPE=$(echo $SUPPORTEDIMAGE | cut -d'-' -f1)
         SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
         RESOURCEID="$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --query 'id' | xargs)" # use xargs default echo to strip extraneous quotation marks
         IMAGEVERSION=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')${VERSIONSUFFIX}
-        echo -e "${BOLD}Trying to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
+        echo -e "${BOLD}Trying to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
         echo -e "${RED}Please note, this may take more than 30 minutes to complete${END}"
         az sig image-version create \
             --resource-group $RESOURCEGROUP \
