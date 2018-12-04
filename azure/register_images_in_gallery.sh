@@ -162,7 +162,7 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
             --gallery-image-version "$IMAGEVERSION" \
             --target-regions "West Europe" "UK South" "UK West" \
             --managed-image $RESOURCEID
-        echo "${BOLD}Result of replication...${END}"
+        echo -e "${BOLD}Result of replication...${END}"
         az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE
     fi
 done
