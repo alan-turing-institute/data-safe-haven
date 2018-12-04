@@ -3,12 +3,10 @@
 ## Create new user file (Project Investigator or Research Co-ordinator)
 - Make a new copy of `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
-  - Safe haven user ID (**without** the @domain bit)
+  - Account name (log in username **without** the @domain bit)
   - First name
   - Last name
-  - Safe haven user ID (test = xxx@dsgroupdev.co.uk / prod = xxx@turingsafehaven.ac.uk)
-  - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one method must work at Turing
-- Powershell to create users (can be run by IT / Rob - IT have the script)
+  - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one method must work at Turing.
 
 ## User creation (Domain Admin)
 - Log into the Active Directory Domain Controller (DC)
