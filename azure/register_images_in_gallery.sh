@@ -43,6 +43,9 @@ while getopts "hi:n:r:s:v:" opt; do
         n)
             MACHINENAME=$OPTARG
             ;;
+        r)
+            RESOURCEGROUP=$OPTARG
+            ;;
         s)
             SUBSCRIPTION=$OPTARG
             ;;
@@ -68,20 +71,27 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     print_usage_and_exit
 fi
 
-# Ensure image sharing is enabled from this subscription
-SHARING_STATE="$(az feature show --namespace Microsoft.Compute --name UserImageSharing --query 'properties.state' | xargs)"
-if [ "$SHARING_STATE" = "Registered" ]; then
-    # Do nothing - feature already registered
-    sleep 0
-elif [ "$SHARING_STATE" = "NotRegistered" ]; then
-    # Register feature
-    echo -e "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
-    az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
-    az provider register --namespace Microsoft.Compute
-else
-    echo -e "${RED}UserImageSharing state could not be found. Try updating Azure CLI.${END}"
-    exit 1
-fi
+# Ensure required features for shared image galleries are enabled for this subscription
+# 1. Need to ensure that the Galleries feature is enabled
+FEATURE="GalleryPreview"
+NAMESPACE="Microsoft.Compute"
+SHARING_STATE="$(az feature show --namespace "$NAMESPACE" --name "$FEATURE" --query 'properties.state' | xargs)"
+echo "Ensuring $FEATURE feature registered in namespace $NAMESPACE (this may take some time). Current state is $SHARING_STATE."
+while [ "$SHARING_STATE" != "Registered" ]; do
+    if [ "$SHARING_STATE" = "NotRegistered" ]; then
+        # Register feature
+        echo -e "${BOLD}Registering ${BLUE}$FEATURE${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
+        az feature register --namespace Microsoft.Compute --name "$FEATURE" --subscription "$SUBSCRIPTION"
+        az provider register --namespace Microsoft.Compute
+    elif [ "$SHARING_STATE" = "Pending" ] -o [ "$SHARING_STATE" = "Registering" ]; then
+        echo -ne "."
+        sleep 30
+    else
+        echo -e "${RED}$FEATURE state could not be found. Try updating Azure CLI.${END}"
+        exit 1
+    fi
+    SHARING_STATE="$(az feature show --namespace "$NAMESPACE" --name "$FEATURE" --query 'properties.state' | xargs)"
+done
 
 # Create image gallery if it doesn't already exist
 if [ "$(az sig list --resource-group $RESOURCEGROUP | grep 'name' | grep $GALLERYNAME)" = "" ]; then
