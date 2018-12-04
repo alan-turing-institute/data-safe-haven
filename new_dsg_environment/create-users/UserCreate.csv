@@ -1,2 +1,2 @@
-DisplayName,SamAccountName,cn,sn,Description,Department,Path,Password
-John Smith,JSmith,John,Smith,User Description,,"OU=Company Users,DC=coriniumtech,DC=com",bCRG7BpNy1V2dH82Uudl
+SamAccountName,GivenName,Surname,Mobile
+TestUser1,Test,User1,+44 07700900000
