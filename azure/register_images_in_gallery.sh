@@ -68,6 +68,21 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     print_usage_and_exit
 fi
 
+# Ensure image sharing is enabled from this subscription
+SHARING_STATE="$(az feature show --namespace Microsoft.Compute --name UserImageSharing --query 'properties.state' | xargs)"
+if [ "$SHARING_STATE" = "Registered" ]; then
+    # Do nothing - feature already registered
+    sleep 0
+elif [ "$SHARING_STATE" = "NotRegistered" ]; then
+    # Register feature
+    echo -e "${BOLD}Registering ${BLUE}UserImageSharing${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
+    az feature register --namespace Microsoft.Compute --name "UserImageSharing" --subscription "$SUBSCRIPTION"
+    az provider register --namespace Microsoft.Compute
+else
+    echo -e "${RED}UserImageSharing state could not be found. Try updating Azure CLI.${END}"
+    exit 1
+fi
+
 # Create image gallery if it doesn't already exist
 if [ "$(az sig list --resource-group $RESOURCEGROUP | grep 'name' | grep $GALLERYNAME)" = "" ]; then
     echo -e "${BOLD}Creating image gallery ${BLUE}$GALLERYNAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
