@@ -73,3 +73,25 @@ usage: $0 [-h] [-i source_image] [-n machine_name] [-p ip_range] [-r resource_gr
   -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
   -u user_name              specify a username for the admin account (defaults to 'atiadmin')
 ```
+
+## Deploying the mirror servers
+We use a separate resource group and associated VNet to contain all of the external and internal package repository mirrors.
+This can be created and deployed using `deploy_azure_mirror_servers.sh`.
+
+```
+usage: $0 [-h] [-r resource_group] -s subscription [-v vnet_name]
+  -h                  display help
+  -e external_ip      specify IP range for external mirror servers (defaults to '10.0.0.0/24')
+  -i internal_ip      specify IP range for internal mirror servers (defaults to '10.0.1.0/24')
+  -r resource_group   specify resource group - will be created if it does not already exist (defaults to 'RG_SH_PKG_MIRRORS')
+  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')
+  -v vnet_name        specify name for VNet that mirror servers will belong to (defaults to 'VNet_SH_PKG_MIRRORS')
+```
+
+Once the script is run, it will create external and internal mirrors of the PyPI and CRAN package repositories.
+A cronjob (2nd of each month) inside each of the external mirrors will update them from the remote repository.
+A second cronjob (1st of each month) inside each of the external mirrors will push their data to the internal mirror.
+This ensures that the internal mirror is always between one and two months behind the current version of these mirrors at any time.
+
+The internal mirrors run webservers which allow them to produce the expected behaviour of a PyPI or CRAN server.
+The VNet created when these mirrors are set up must be paired to each of the DSG environments for them to be able to use it.
