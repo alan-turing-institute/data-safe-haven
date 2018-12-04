@@ -200,5 +200,5 @@ rm cloud-init-compute-vm-specific.yaml*
 sleep 30
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0].ipAddress" | xargs echo)
+PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
 echo -e "${BOLD}This new VM can be accessed with remote desktop at ${BLUE}${PRIVATEIP}${END}"
