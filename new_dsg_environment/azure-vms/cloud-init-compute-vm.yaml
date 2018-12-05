@@ -30,4 +30,8 @@ runcmd:
   - cp /etc/profile ~USERNAME/.bashrc
   # Restart xrdp to reflect changes made above
   - service xrdp restart
+  # Take ownership of anaconda directory
+  - chown -R USERNAME /opt/anaconda3/bin
+  # Activate py36 by default
+  - echo "source activate py36" >> ~USERNAME/.bashrc
 
