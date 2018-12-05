@@ -31,7 +31,7 @@
 - Select "Users" from "Manage" section
 - Select "Multi-Factor Authentication" button
 - Check the users you want to apply MFA to
-- Change the Multi-factor Auth status drop down to "Enable" and click "Bulk Update"
+- Click to "Enable"
 - Close MFA console
 - Users are now ready to reset password and set up MFA
 
