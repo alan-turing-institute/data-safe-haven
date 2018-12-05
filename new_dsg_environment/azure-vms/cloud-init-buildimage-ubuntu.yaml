@@ -303,9 +303,9 @@ runcmd:
   - echo "*** Creating py27 environment... ***"
   - conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES
   - echo "*** Creating py35 environment... ***"
-  - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub
+  - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Creating py36 environment... ***"
-  - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub
+  - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Cleanup... ***"
   - conda clean -a
   - echo "*** Final conda environments... ***"
