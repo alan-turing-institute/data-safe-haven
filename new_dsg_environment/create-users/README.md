@@ -4,18 +4,35 @@
 - Make a new copy of `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
   - Account name (log in username **without** the @domain bit)
-  - First name
-  - Last name
+  - First name (GivenName)
+  - Last name (Surname)
   - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one MFA method must work at Turing.
+  - Set description field to "Research User"
  - Send the file to IT
 
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run `CreateUser.ps1 -Environment <Testing | Production> -UserFilePath <PathToUserFile>` (e.g. `CreateUser.ps1 -Environment Testing -UserFilePath ./20181205-1423_UserCreate.csv`
-- In 15 mins users will be on Azure AD
-- Add "Active directory premium P2" licence to users (could likely be scripted but will be manual bulk operation in portal) Q: Can we selectively apply licence to new batches of users if we don't add everyone at once?
-- Enable MFA on all user (could likely be scripted but will be manual bulk operation in portal)
+- Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
+- Note: OU path must be in quotes
+- Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
+
+## Azure Portal
+- Login into Azure Portal and connect to the correct AAD subscription
+- Open "Azure Active Directory"
+- Location "Licenses" under "Manage" section
+- Open "All Products" under "Manage"
+- Click "Azure Active Directory Premium P2"
+- Click "Assign"
+- Click "Users and groups"
+- Select the users you have recently created and click "Select"
+- Click "Assign" to complete the process
+- Return to "Azure Active Directory" pane
+- Select "Users" from "Manage" section
+- Select "Multi-Factor Authentication" button
+- Check the users you want to apply MFA to
+- Change the Multi-factor Auth status drop down to "Enable" and click "Bulk Update"
+- Close MFA console
 - Users are now ready to reset password and set up MFA
 
 ## User activation
