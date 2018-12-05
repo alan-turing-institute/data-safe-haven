@@ -286,9 +286,9 @@ runcmd:
   # Install latest anaconda version (download is ~640MB)
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
-  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
-  - rm Anaconda3-5.3.0-Linux-x86_64.sh
+  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.1-Linux-x86_64.sh
+  - bash Anaconda3-5.3.1-Linux-x86_64.sh -b -p /opt/anaconda3
+  - rm Anaconda3-5.3.1-Linux-x86_64.sh
   - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
   - export PATH=$PATH:/opt/anaconda3/bin
   # Add channels
@@ -306,6 +306,8 @@ runcmd:
   - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Creating py36 environment... ***"
   - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
+  - echo "*** Creating py37 environment... ***"
+  - conda create -y --verbose --name py37 python=3.7 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Cleanup... ***"
   - conda clean -a
   - echo "*** Final conda environments... ***"
@@ -314,6 +316,7 @@ runcmd:
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
