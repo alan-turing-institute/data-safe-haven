@@ -4,7 +4,6 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
-TORCH_ENABLED=0
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -20,15 +19,14 @@ LOCATION="westeurope" # have to build in West Europe in order to use Shared Imag
 print_usage_and_exit() {
     echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription"
     echo "  -h                 display help"
-    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
+    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
     echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
     echo "  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
-    echo "  -t                 compile Torch during image building, which will add a couple of hours to the build time (disabled by default)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:t" opt; do
+while getopts "hi:r:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -41,9 +39,6 @@ while getopts "hi:r:s:t" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
-            ;;
-        t)
-            TORCH_ENABLED=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -133,20 +128,21 @@ fi
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
 # If anything else is requested then print usage message and exit.
 # If using the Data Science VM then the terms will be automatically accepted.
-if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
+if [[ "$SOURCEIMAGE" = *"Ubuntu"* ]]; then
     MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
-    SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
-    DISKSIZEGB="40"
-    if [ $TORCH_ENABLED -eq 1 ]; then
+    if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
         echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
+        MACHINENAME="${MACHINENAME}-UbuntuTorch1804Base"
         TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
         TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
         rm $TMP_CLOUD_CONFIG_PREFIX
         sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
         INITSCRIPT="$TMP_CLOUD_CONFIG_YAML"
     fi
-elif [ "$SOURCEIMAGE" == "DataScience" ]; then
+    SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
+    DISKSIZEGB="40"
+elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
     INITSCRIPT="cloud-init-buildimage-datascience.yaml"
@@ -154,6 +150,7 @@ elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
 else
+    echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
 fi
 
