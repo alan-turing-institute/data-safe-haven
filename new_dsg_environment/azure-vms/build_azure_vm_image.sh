@@ -4,6 +4,7 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
+TORCH_ENABLED=0
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -22,11 +23,12 @@ print_usage_and_exit() {
     echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
     echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
     echo "  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+    echo "  -t                 compile Torch during image building, which will add a couple of hours to the build time (disabled by default)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:" opt; do
+while getopts "hi:r:s:t" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -39,6 +41,9 @@ while getopts "hi:r:s:" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
+            ;;
+        t)
+            TORCH_ENABLED=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -133,6 +138,14 @@ if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
     DISKSIZEGB="40"
+    if [ $TORCH_ENABLED -eq 1 ]; then
+        echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
+        TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
+        TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
+        rm $TMP_CLOUD_CONFIG_PREFIX
+        sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
+        INITSCRIPT="$TMP_CLOUD_CONFIG_YAML"
+    fi
 elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
@@ -164,6 +177,9 @@ az vm create \
   --admin-username atiadmin \
   --generate-ssh-keys # will use ~/.ssh/id_rsa if available and otherwise generate a new key
                       # the key will be removed from the build machine at the end of VM creation
+
+# Remove temporary init file if it exists
+rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
