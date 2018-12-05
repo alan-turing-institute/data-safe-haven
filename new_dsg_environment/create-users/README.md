@@ -3,11 +3,12 @@
 ## Create new user file (Project Investigator or Research Co-ordinator)
 - Make a new copy of `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
-  - Account name (log in username **without** the @domain bit)
-  - First name
-  - Last name
-  - Phone number (office or mobile - used for initial password reset + MFA setup). Can add app during MFA setup but at least one MFA method must work at Turing.
- - Send the file to IT
+  - `SamAccountName`: Log in username **without** the @domain bit). Use "firstname.lastname" format
+  - `GivenName`: User's first / given name
+  - `Surname`: User's last name / surname
+  - `Mobile`: Phone number to use for initial password reset. This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA. They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+   - `SecondaryEmail`: An existing organisational email address for the user. Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation emails with the right usernames to the right email addresses.
+ - Send the file to IT (dsgsupport@turing.ac.uk)
 
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
