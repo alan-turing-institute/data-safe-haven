@@ -262,27 +262,27 @@ runcmd:
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
-  # Install torch
-  - echo "*** Installing torch... ***"
-  - mkdir -p /opt/torch
-  - cd /opt/torch
-  - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  - sed -i '/python-software-properties/s/^/#/g' install-deps
-  - bash install-deps
-  # Switch compilers to gcc-6 and g++-6 or compilation will fail
-  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
-  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
-  # Build with half-operators disabled as these are included in CUDA 9
-  - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
-  - bash install.sh -b
-  # ... and now switch them back
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/torch/install/bin
-  - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
+  # # Install torch
+  # - echo "*** Installing torch... ***"
+  # - mkdir -p /opt/torch
+  # - cd /opt/torch
+  # - git clone https://github.com/torch/distro.git /opt/torch --recursive
+  # - sed -i '/python-software-properties/s/^/#/g' install-deps
+  # - bash install-deps
+  # # Switch compilers to gcc-6 and g++-6 or compilation will fail
+  # - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
+  # - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
+  # - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
+  # - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
+  # # Build with half-operators disabled as these are included in CUDA 9
+  # - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
+  # - bash install.sh -b
+  # # ... and now switch them back
+  # - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
+  # - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
+  # - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
+  # - export PATH=$PATH:/opt/torch/install/bin
+  # - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
   - echo "*** Installing Anaconda... ***"
@@ -300,16 +300,21 @@ runcmd:
   # Prepare environments
   - echo "*** Initial conda environments... ***"
   - conda env list
+  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
   - echo "*** Creating py27 environment... ***"
-  - conda create -y -n py27 python=2.7 ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
+  - conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES
   - echo "*** Creating py35 environment... ***"
-  - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterhub-ldapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
+  - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub
   - echo "*** Creating py36 environment... ***"
-  - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterhub-dapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
+  - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub
   - echo "*** Cleanup... ***"
   - conda clean -a
   - echo "*** Final conda environments... ***"
   - conda env list
+  - chmod ugo+rwx /opt/anaconda3/ # give full permissions to everyone for anaconda directory
+  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"

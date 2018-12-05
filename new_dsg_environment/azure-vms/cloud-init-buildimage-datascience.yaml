@@ -144,9 +144,9 @@ runcmd:
   - echo "*** Working on py27 environment... ***"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y -n py27 python=2.7 $PYTHONPACKAGES; else conda install -y -n py27 $PYTHONPACKAGES; fi
   - echo "*** Working on py35 environment... ***"
-  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y -n py35 python=3.5 jupyterhub jupyterhub-ldapauthentication $PYTHONPACKAGES; else conda install -y -n py35 jupyterhub $PYTHONPACKAGES; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y -n py35 python=3.5 jupyterhub $PYTHONPACKAGES; else conda install -y -n py35 jupyterhub $PYTHONPACKAGES; fi
   - echo "*** Working on py36 environment... ***"
-  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y -n py36 python=3.6 jupyterhub jupyterhub-ldapauthentication $PYTHONPACKAGES; else conda install -y -n py36 jupyterhub $PYTHONPACKAGES; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y -n py36 python=3.6 jupyterhub $PYTHONPACKAGES; else conda install -y -n py36 jupyterhub $PYTHONPACKAGES; fi
   - echo "*** Final conda environments... ***"
   - conda env list
   - conda clean -a
