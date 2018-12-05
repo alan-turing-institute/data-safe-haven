@@ -1,2 +1,2 @@
-SamAccountName,GivenName,Surname,Mobile
-TestUser1,Test,User1,+44 07700900000
+SamAccountName,GivenName,Surname,Mobile, Description
+TestUser1,Test,User1,+44 07700900000, Research User
