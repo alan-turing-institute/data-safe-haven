@@ -414,7 +414,7 @@ runcmd:
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
-  - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
+  #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   # Check for missing packages
