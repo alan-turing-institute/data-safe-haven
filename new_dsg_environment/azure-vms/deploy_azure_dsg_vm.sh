@@ -28,7 +28,7 @@ print_usage_and_exit() {
     echo "usage: $0 -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-n machine_name] [-r resource_group] [-u user_name]"
     echo "  -h                        display help"
     echo "  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')"
-    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'"
+    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
     echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')"
     echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
     echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
@@ -97,6 +97,8 @@ fi
 az account set --subscription "$SUBSCRIPTIONSOURCE"
 if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
     IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
+elif [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
+    IMAGE_DEFINITION="ComputeVM-UbuntuTorch1804Base"
 elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     IMAGE_DEFINITION="ComputeVM-DataScienceBase"
 else
