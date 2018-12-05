@@ -92,8 +92,6 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     fi
     FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-    echo FEATURE_STATE
-    echo $RESOURCE_METADATA
 done
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
@@ -170,5 +168,5 @@ az vm create \
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${RED}This process will take several hours to complete.${END}"
-echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
+echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

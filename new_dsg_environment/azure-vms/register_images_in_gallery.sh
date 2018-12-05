@@ -15,7 +15,7 @@ END="\033[0m"
 
 # Other constants
 SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base")
-GALLERYNAME="SIG_DSG_COMPUTE"
+GALLERYNAME="SIG_SH_COMPUTE"
 VERSIONMAJOR="0"
 VERSIONMINOR="0"
 
@@ -102,8 +102,6 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     fi
     FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-    echo FEATURE_STATE
-    echo $RESOURCE_METADATA
 done
 
 # Create image gallery if it doesn't already exist
