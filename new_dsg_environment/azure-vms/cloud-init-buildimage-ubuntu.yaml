@@ -310,7 +310,11 @@ runcmd:
   - conda clean -a
   - echo "*** Final conda environments... ***"
   - conda env list
-  - chmod -R ugo+rwx /opt/anaconda3/ # give full permissions to everyone for anaconda directory
+  # # Allow everyone to use conda by giving full permissions to everyone for anaconda directory
+  # - chmod -R ugo+rwx /opt/anaconda3/
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - chgrp -R plugdev /opt/anaconda3/
+  - chmod -R g=u /opt/anaconda3/
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
