@@ -253,9 +253,8 @@ packages:
   - sssd
   - sssd-tools
   - xfce4
+  - xfce4-terminal
   - xrdp
-  - xubuntu-default-settings
-  - xubuntu-desktop
 
 runcmd:
   # Clean up installation
