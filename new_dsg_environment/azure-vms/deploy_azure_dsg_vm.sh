@@ -128,7 +128,7 @@ echo ""
 # Switch subscription and setup resource group if it does not already exist
 # -------------------------------------------------------------------------
 az account set --subscription "$SUBSCRIPTIONTARGET"
-if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
+if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
