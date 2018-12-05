@@ -146,14 +146,11 @@ runcmd:
   - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; else conda install -y --verbose --name py35 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
   - echo "*** Working on py36 environment... ***"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
-  - echo "*** Working on py37 environment... ***"
-  - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; else conda install -y --verbose --name py37 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
   - echo "*** Final conda environments... **--verbose --name
   - conda env list
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
   - conda clean -a
 
   # Ensure that R packages are installed

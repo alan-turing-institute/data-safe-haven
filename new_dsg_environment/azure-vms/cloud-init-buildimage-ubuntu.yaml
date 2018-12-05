@@ -306,8 +306,6 @@ runcmd:
   - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Creating py36 environment... ***"
   - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
-  - echo "*** Creating py37 environment... ***"
-  - conda create -y --verbose --name py37 python=3.7 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
   - echo "*** Cleanup... ***"
   - conda clean -a
   - echo "*** Final conda environments... ***"
@@ -316,7 +314,6 @@ runcmd:
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
