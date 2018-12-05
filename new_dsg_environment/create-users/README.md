@@ -8,15 +8,31 @@
   - `Surname`: User's last name / surname
   - `Mobile`: Phone number to use for initial password reset. This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA. They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
    - `SecondaryEmail`: An existing organisational email address for the user. Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation emails with the right usernames to the right email addresses.
- - Send the file to IT (dsgsupport@turing.ac.uk)
+ - Send the file to IT
 
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run `CreateUser.ps1 -Environment <Testing | Production> -UserFilePath <PathToUserFile>` (e.g. `CreateUser.ps1 -Environment Testing -UserFilePath ./20181205-1423_UserCreate.csv`
-- In 15 mins users will be on Azure AD
-- Add "Active directory premium P2" licence to users (could likely be scripted but will be manual bulk operation in portal) Q: Can we selectively apply licence to new batches of users if we don't add everyone at once?
-- Enable MFA on all user (could likely be scripted but will be manual bulk operation in portal)
+- Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
+- Note: OU path must be in quotes
+- Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
+
+## Azure Portal
+- Login into Azure Portal and connect to the correct AAD subscription
+- Open "Azure Active Directory"
+- Location "Licenses" under "Manage" section
+- Open "All Products" under "Manage"
+- Click "Azure Active Directory Premium P2"
+- Click "Assign"
+- Click "Users and groups"
+- Select the users you have recently created and click "Select"
+- Click "Assign" to complete the process
+- Return to "Azure Active Directory" pane
+- Select "Users" from "Manage" section
+- Select "Multi-Factor Authentication" button
+- Check the users you want to apply MFA to
+- Change the Multi-factor Auth status drop down to "Enable" and click "Bulk Update"
+- Close MFA console
 - Users are now ready to reset password and set up MFA
 
 ## User activation

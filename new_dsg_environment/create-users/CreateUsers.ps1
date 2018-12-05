@@ -1,43 +1,40 @@
 Param (
-    [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, 
+             HelpMessage="Path to the CSV file of users")]
         [ValidateNotNullOrEmpty()]
-        [string]$Environment,
-    [Parameter(Mandatory=$true)]
+        [string]$UserFilePath,
+
+        [Parameter(Mandatory=$true, 
+             HelpMessage="FQDN of the domain i.e. TuringSafeHaven.ac.uk")]
         [ValidateNotNullOrEmpty()]
-        [string]$UserFilePath
+        [string]$domain,
+
+        [Parameter(Mandatory=$true, 
+             HelpMessage="OU path of the user container, MUST be in quotes! i.e OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk")]
+        [ValidateNotNullOrEmpty()]
+        [string]$UserOUPath
  )
 
-Switch($Environment) {
-    "Testing" {
-        $ManagementSubscriptionName = "Safe Haven Management Testing"
-        $ActiveDirectoryDomain = "dsgroupdev.co.uk"
-        $Department = "OU=Safe Haven Research Users"
-        $Path = "DC=dsgroupdev,DC=co,DC=uk"
-    }
-    default { Throw "Environment " + $Environment + " not supported" }
-
-}
-Write-Host "Using subscription " + $ManagementSubscriptionName
-Set-AzContext -Subscription $ManagementSubscriptionName
-
 Add-Type -AssemblyName System.Web
+$Description = "Research User"
 
 Import-Csv $UserFilePath | foreach-object {
-$UserPrincipalName = $_.SamAccountName + "@" + $ActiveDirectoryDomain
-New-ADUser  -SamAccountName $_.SamAccountName `
+$UserPrincipalName = $_.AccountName + "@" + "$domain"
+$password = [System.Web.Security.Membership]::GeneratePassword(12,3)
+New-ADUser  -SamAccountName $_.AccountName `
             -UserPrincipalName $UserPrincipalName `
-            -Name $_.displayname `
-            -DisplayName $_.GivenName + " " + $_.SurName  `
-            -GivenName $_.cn `
-            -SurName $_.sn `
+            -Name "$($_.GivenName) $($_.Surname)" `
+            -DisplayName "$($_.GivenName) $($_.Surname)" `
+            -GivenName $_.GivenName `
+            -SurName $_.Surname `
             -Department $Department `
-            -Description $_.DisplayName `
-            -Path $_.Path `
-            -AccountPassword (ConvertTo-SecureString [System.Web.Security.Membership]::GeneratePassword(12,3)
- -AsPlainText -force) `
+            -Description $Description `
+            -Path $UserOUPath `
             -Enabled $True `
+            -AccountPassword (ConvertTo-SecureString $Password -AsPlainText -force) `
             -PasswordNeverExpires $False `
             -PassThru `
             -Mobile $_.Mobile `
-            -Email $UserPrincipalName
-             }
+            -Email $UserPrincipalName `
+            -Country GB
+    }
