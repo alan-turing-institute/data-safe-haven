@@ -18,6 +18,12 @@ write_files:
       startxfce4
 
 runcmd:
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - chgrp -R plugdev /anaconda/
+  - chmod -R g=u /anaconda/
+  - chmod -R go-w /anaconda/
+  # Set py36 as default environment when launching a new shell
+  - echo "source activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default session to xfce4

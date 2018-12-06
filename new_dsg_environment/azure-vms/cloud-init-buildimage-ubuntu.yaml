@@ -287,11 +287,11 @@ runcmd:
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
   - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.1-Linux-x86_64.sh
-  - bash Anaconda3-5.3.1-Linux-x86_64.sh -b -p /opt/anaconda3
+  - bash Anaconda3-5.3.1-Linux-x86_64.sh -b -p /anaconda
   - rm Anaconda3-5.3.1-Linux-x86_64.sh
-  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/anaconda3/bin
-  - echo "export PATH=$PATH:/opt/anaconda3/bin" >> /etc/bash.bashrc
+  - sed -i 's|\(.*\)"|\1:/anaconda/bin"|' /etc/environment
+  - export PATH=$PATH:/anaconda/bin
+  - echo "export PATH=$PATH:/anaconda/bin" >> /etc/bash.bashrc
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels anaconda
@@ -314,14 +314,6 @@ runcmd:
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
-  - chgrp -R plugdev /opt/anaconda3/
-  - chmod -R g=u /opt/anaconda3/
-  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  # Set py36 as default environment
-  - echo "source activate py36" >> /etc/bash.bashrc
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
@@ -435,7 +427,7 @@ runcmd:
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
   # # Set up default shell paths
-  # - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
+  # - echo "export PATH=$PATH:/anaconda/bin/:/anaconda/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
 
   # Deprovision
   - waagent -deprovision+user -force
