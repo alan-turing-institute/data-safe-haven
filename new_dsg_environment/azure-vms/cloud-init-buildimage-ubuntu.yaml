@@ -284,11 +284,12 @@ runcmd:
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
+  - export ANACONDA_INSTALL_SCRIPT="Anaconda3-5.3.1-Linux-x86_64.sh"
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.1-Linux-x86_64.sh
-  - bash Anaconda3-5.3.1-Linux-x86_64.sh -b -p /anaconda
-  - rm Anaconda3-5.3.1-Linux-x86_64.sh
+  - curl -O https://repo.anaconda.com/archive/ANACONDA_INSTALL_SCRIPT
+  - bash ANACONDA_INSTALL_SCRIPT -b -p /anaconda
+  - rm ANACONDA_INSTALL_SCRIPT
   - sed -i 's|\(.*\)"|\1:/anaconda/bin"|' /etc/environment
   - export PATH=$PATH:/anaconda/bin
   - echo "export PATH=$PATH:/anaconda/bin" >> /etc/bash.bashrc
