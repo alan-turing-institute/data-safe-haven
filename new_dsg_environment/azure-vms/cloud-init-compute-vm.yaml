@@ -103,7 +103,7 @@ runcmd:
   # -----------------------
   # Add information to hosts file
   - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
-  - sed "/127.0.0.1/ $HOST_INFORMATION" /etc/hosts
+  - sed "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
   # Set timezone
   - timedatectl set-timezone Europe/London
   # Create a blank sssd.conf file
@@ -125,10 +125,9 @@ runcmd:
   - systemctl restart sssd
   # Edit the pam session configuration file
   - PAM_INFORMATION="$(echo -e 'session_required\tpam_mkhomedir.so\tskel=/etc/skel umask=0022')"
-  - sed "/pam_unix/ $HOST_INFORMATION" /etc/pam.d/common-session
-
-# Change the following lines
-# use_fully_qualified_names = False
-# fallback_homedir = /home/%u
+  - sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session
+  # Change the following lines
+  # use_fully_qualified_names = False
+  # fallback_homedir = /home/%u
  
 
