@@ -309,7 +309,7 @@ runcmd:
   - echo "*** Working on py36 environment... ***"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
   - echo "*** Cleanup... ***"
-  - conda clean -a
+  - conda clean -a -y
   - echo "*** Final conda environments... **
   - conda env list
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
