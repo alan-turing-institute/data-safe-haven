@@ -41,4 +41,6 @@ runcmd:
   # Add information to hosts file
   - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
   - sed "/127.0.0.1/ $HOST_INFORMATION" /etc/hosts
+  # Set timezone
+  - timedatectl set-timezone Europe/London
 
