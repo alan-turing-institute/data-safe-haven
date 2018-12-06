@@ -174,8 +174,10 @@ az vm create \
   --nsg NSG_IMAGE_BUILD \
   --size Standard_DS2_v2 \
   --admin-username atiadmin \
-  --generate-ssh-keys # will use ~/.ssh/id_rsa if available and otherwise generate a new key
-                      # the key will be removed from the build machine at the end of VM creation
+  --generate-ssh-keys
+
+# --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
+# the key will be removed from the build machine at the end of VM creation
 
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
