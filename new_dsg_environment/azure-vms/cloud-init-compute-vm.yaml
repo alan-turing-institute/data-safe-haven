@@ -43,4 +43,6 @@ runcmd:
   - sed "/127.0.0.1/ $HOST_INFORMATION" /etc/hosts
   # Set timezone
   - timedatectl set-timezone Europe/London
+  # Create a blank sssd.conf file
+  - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
 
