@@ -36,4 +36,9 @@ runcmd:
   - chown -R USERNAME ~USERNAME
   # Restart xrdp to reflect changes made above
   - service xrdp restart
+  # Set up Active Directory
+  # -----------------------
+  # Add information to hosts file
+  - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
+  - sed "/127.0.0.1/ $HOST_INFORMATION" /etc/hosts
 
