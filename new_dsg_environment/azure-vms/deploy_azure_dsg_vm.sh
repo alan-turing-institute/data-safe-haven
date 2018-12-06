@@ -188,8 +188,8 @@ echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute
 # Set up secret file with password in it
 VAULT_NAME="sh-management-testing"
 LDAP_SECRET_NAME="ldap-secret"
-LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME -n $LDAP_SECRET_NAME --query "[?attributes.enabled].id" -o tsv)
-VM_SECRET=$(az vm secret format --secret "LDAP_SECRET")
+LDAP_SECRET=$(az keyvault secret list-versions --subscription "$SUBSCRIPTIONSOURCE" --vault-name $VAULT_NAME -n $LDAP_SECRET_NAME --query "[?attributes.enabled].id" -o tsv)
+VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
 
 STARTTIME=$(date +%s)
 az vm create ${PLANDETAILS} \

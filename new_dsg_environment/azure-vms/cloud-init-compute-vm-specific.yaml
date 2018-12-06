@@ -1,0 +1,134 @@
+#cloud-config
+package_upgrade: true
+
+packages:
+  - xfce4
+  - xfce4-terminal
+  - xrdp
+
+write_files:
+  - path: "/startwm.sh"
+    content: |
+      #!/bin/sh
+      if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG LANGUAGE
+      fi
+      # Start xfce4
+      startxfce4
+  - path: "/etc/ldap.conf"
+    content: |
+      # The distinguished name of the search base.
+      base ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk
+
+      # Another way to specify your LDAP server is to provide an
+      uri ldap://mgmtdevdc.dsgroupdev.co.uk:389
+
+      # The LDAP version to use (defaults to 3
+      # if supported by client library)
+      ldap_version 3
+
+      # The distinguished name to bind to the server with
+      # if the effective user ID is root. Password is
+      # stored in /etc/ldap.secret (mode 600)
+      rootbinddn cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk
+
+      # Do not hash the password at all; presume
+      # the directory server will do it, if
+      # necessary. This is the default.
+      pam_password md5
+
+  - path: "/krb5.conf"
+    content: |
+      [libdefaults]
+        default_realm = DSGROUPDEV.CO.UK
+
+      # The following krb5.conf variables are only for MIT Kerberos.
+        krb4_config = /etc/krb.conf
+        krb4_realms = /etc/krb.realms
+        kdc_timesync = 1
+        ccache_type = 4
+        forwardable = true
+        proxiable = true
+
+      # The following libdefaults parameters are only for Heimdal Kerberos.
+        v4_instance_resolve = false
+        v4_name_convert = {
+          host = {
+            rcmd = host
+            ftp = ftp
+          }
+          plain = {
+            something = something-else
+          }
+        }
+        fcc-mit-ticketflags = true
+
+      [realms]
+          DSGROUPDEV.CO.UK = {
+              kdc = MGMTDEVDC.DSGROUPDEV.CO.UK:88
+              admin_server = MGMTDEVDC.DSGROUPDEV.CO.UK
+              default_domain = DSGROUPDEV.CO.UK
+              }
+      
+      [domain_realm]
+            .dsgroupdev.co.uk = DSGROUPDEV.CO.UK
+            dsgroupdev.co.uk = DSGROUPDEV.CO.UK
+
+      [login]
+        krb4_convert = true
+        krb4_get_tickets = false
+
+
+runcmd:
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - chgrp -R plugdev /anaconda/
+  - chmod -R g=u /anaconda/
+  - chmod -R go-w /anaconda/
+  # Set py36 as default environment when launching a new shell
+  - echo "source activate py36" >> /etc/bash.bashrc
+  # Disable light-locker which can cause irritating error messages
+  - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  # Set default session to xfce4
+  - mv /startwm.sh /etc/xrdp/startwm.sh
+  - chmod 0755 /etc/xrdp/startwm.sh
+  - echo xfce4-session > ~atiadmin/.xsession
+  # Set default terminal for xfce
+  - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
+  # Ensure that user owns their directory
+  - chown -R atiadmin ~atiadmin
+  # Restart xrdp to reflect changes made above
+  - service xrdp restart
+  # Set up Active Directory
+  # -----------------------
+  # Add information to hosts file
+  - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
+  - sed "/127.0.0.1/ $HOST_INFORMATION" /etc/hosts
+  # Set timezone
+  - timedatectl set-timezone Europe/London
+  # Create a blank sssd.conf file
+  - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+  # GET LDAP SECRET FROM AZURE
+  - ls /var/lib/waagent/
+  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
+  - echo "Found secret named $KEYNAME"
+  - cat /var/lib/waagent/$KEYNAME.prv
+  - touch /etc/ldap.secret
+  - chmod 0600 /etc/ldap.secret
+  # Edit Kerberos config
+  - cp /krb5.conf /etc/krb5.conf
+  # Join the VM to the domain
+  - realm join -U dsgpuldap dsgroupdev.co.uk
+  # Replace the sssd.conf file
+  - mv /sssd.conf /etc/sssd/sssd.conf
+  # Restart the sssd daemon
+  - systemctl restart sssd
+  # Edit the pam session configuration file
+  - PAM_INFORMATION="session_required\x09pam_mkhomedir.so\x09skel=/etc/skel umask=0022)"
+  - sed "/pam_unix/ $PAM_INFORMATION" /etc/pam.d/common-session
+
+# Change the following lines
+# use_fully_qualified_names = False
+# fallback_homedir = /home/%u
+ 
+
