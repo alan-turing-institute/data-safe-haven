@@ -301,18 +301,19 @@ runcmd:
   - echo "*** Initial conda environments... ***"
   - conda env list
   - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
-  - echo "*** Creating py27 environment... ***"
-  - conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES
-  - echo "*** Creating py35 environment... ***"
-  - conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
-  - echo "*** Creating py36 environment... ***"
-  - conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator
+  - echo "*** Working on py27 environment... ***"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES; else conda install -y --verbose --name py27 $PYTHONPACKAGES; fi
+  - echo "*** Working on py35 environment... ***"
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py35 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
+  - echo "*** Working on py36 environment... ***"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
   - echo "*** Cleanup... ***"
   - conda clean -a
-  - echo "*** Final conda environments... ***"
+  - echo "*** Final conda environments... **
   - conda env list
-  # # Allow everyone to use conda by giving full permissions to everyone for anaconda directory
-  # - chmod -R ugo+rwx /opt/anaconda3/
+  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
   # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
   - chgrp -R plugdev /opt/anaconda3/
   - chmod -R g=u /opt/anaconda3/
