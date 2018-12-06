@@ -291,7 +291,7 @@ runcmd:
   - rm Anaconda3-5.3.1-Linux-x86_64.sh
   - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
   - export PATH=$PATH:/opt/anaconda3/bin
-  - echo "export PATH=$PATH:/opt/anaconda3/bin" >> /etc/profile
+  - echo "export PATH=$PATH:/opt/anaconda3/bin" >> /etc/bash.bashrc
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels anaconda
@@ -320,7 +320,7 @@ runcmd:
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
   # Set py36 as default environment
-  - echo "source activate py36" >> /etc/profile
+  - echo "source activate py36" >> /etc/bash.bashrc
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
@@ -356,7 +356,7 @@ runcmd:
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
-  - echo "export PATH=$PATH:/opt/julia/julia-1.0.1/bin" >> /etc/profile
+  - echo "export PATH=$PATH:/opt/julia/julia-1.0.1/bin" >> /etc/bash.bashrc
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -374,7 +374,7 @@ runcmd:
   - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
   - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
   - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
-  - echo "export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
+  - echo "export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install azcopy
@@ -394,7 +394,7 @@ runcmd:
   - rm -f previous-StorageExplorer-linux-x64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
   - export PATH=$PATH:/opt/azurestorage/
-  - echo "export PATH=$PATH:/opt/azurestorage/" >> /etc/profile
+  - echo "export PATH=$PATH:/opt/azurestorage/" >> /etc/bash.bashrc
   - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
 
   # Check for successful installations
@@ -434,8 +434,7 @@ runcmd:
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
   # # Set up default shell paths
-  # - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
-  # - echo "source activate py36" >> /etc/profile
+  # - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
 
   # Deprovision
   - waagent -deprovision+user -force
