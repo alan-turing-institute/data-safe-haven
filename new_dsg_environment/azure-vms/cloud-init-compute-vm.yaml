@@ -28,15 +28,6 @@ runcmd:
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that user owns their directory
   - chown -R USERNAME ~USERNAME
-  # and has a sensible PATH
-  # - echo "export PATH=$PATH:/anaconda/bin/:/opt/anaconda3/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/profile
-  # - echo "source activate py36" >> /etc/profile
-  # - cp /etc/profile ~USERNAME/.bashrc
   # Restart xrdp to reflect changes made above
   - service xrdp restart
-  # # Take ownership of anaconda directory
-  # - chown -R USERNAME /opt/anaconda3/
-  # Activate py36 by default
-  # - echo "source activate py36" >> ~USERNAME/.bashrc
-
 
