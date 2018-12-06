@@ -17,11 +17,11 @@ LOCATION="westeurope" # have to build in West Europe in order to use Shared Imag
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-n machine_name] [-r resource_group]"
     echo "  -h                 display help"
-    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+    echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
+    echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
     exit 1
 }
 
