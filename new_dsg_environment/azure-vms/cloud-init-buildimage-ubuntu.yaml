@@ -525,7 +525,3 @@ runcmd:
 
 final_message:
   "The system is setup and deprovisioned, after $UPTIME seconds"
-
-
-  # object ‘path’ is not exported by 'namespace:Rsamtools'
-  # "ballgown"     "DMRcate"      "maftools"
