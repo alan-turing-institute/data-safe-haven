@@ -67,4 +67,7 @@ runcmd:
   - timedatectl set-timezone Europe/London
   # Create a blank sssd.conf file
   - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+  # GET LDAP SECRET FROM AZURE
+  - touch /etc/ldap.secret
+  - chmod 0600 /etc/ldap.secret
 
