@@ -184,6 +184,13 @@ sed -i -e 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm-specific.yaml
 # -------------------------------------------------
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
+
+# Set up secret file with password in it
+VAULT_NAME="sh-management-testing"
+LDAP_SECRET_NAME="ldap-secret"
+LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME -n $LDAP_SECRET_NAME --query "[?attributes.enabled].id" -o tsv)
+VM_SECRET=$(az vm secret format --secret "LDAP_SECRET")
+
 STARTTIME=$(date +%s)
 az vm create ${PLANDETAILS} \
   --resource-group $RESOURCEGROUP \
@@ -194,9 +201,12 @@ az vm create ${PLANDETAILS} \
   --public-ip-address "" \
   --custom-data cloud-init-compute-vm-specific.yaml \
   --size $VM_SIZE \
+  --secrets "$VM_SECRET" \
   --admin-username $USERNAME \
   --admin-password $PASSWORD
 rm cloud-init-compute-vm-specific.yaml*
+
+
 
 # allow some time for the system to finish initialising
 sleep 30
