@@ -128,7 +128,7 @@ fi
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
 # If anything else is requested then print usage message and exit.
 # If using the Data Science VM then the terms will be automatically accepted.
-if [ "$SOURCEIMAGE" = "Ubuntu" ] -o [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
+if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
         echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
         # Make a temporary config file with the Torch lines uncommented
