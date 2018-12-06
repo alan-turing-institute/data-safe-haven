@@ -426,9 +426,6 @@ runcmd:
   - echo "Bioconductor packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
-  # # Set up default shell paths
-  # - echo "export PATH=$PATH:/anaconda/bin/:/anaconda/bin:/opt/julia/julia-1.0.1/bin:/dsvm/tools/torch/bin:/opt/torch/install/bin:/opt/azurestorage/:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
-
   # Deprovision
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
