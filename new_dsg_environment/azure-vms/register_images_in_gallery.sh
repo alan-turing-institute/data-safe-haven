@@ -5,6 +5,7 @@ MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION=""
+VERSIONSUFFIX=""
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -26,11 +27,12 @@ print_usage_and_exit() {
     echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
     echo "  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_SH_IMAGEGALLERY')"
     echo "  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+    echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc."
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:n:r:s:" opt; do
+while getopts "hi:n:r:s:v:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -46,6 +48,9 @@ while getopts "hi:n:r:s:" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
+            ;;
+        v)
+            VERSIONSUFFIX=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -172,14 +177,16 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
         IMAGEVERSIONBASE=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')
         EXISTINGIMAGES=$(az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE --query "[].name" -o tsv | grep $IMAGEVERSIONBASE | sort)
         # Iterate through possible version suffices until finding one that has not been used
-        for VERSIONSUFFIX in $(seq -w 0 20); do
-            IMAGEVERSION=${IMAGEVERSIONBASE}${VERSIONSUFFIX}
-            ALREADYUSED=0
-            for EXISTINGIMAGE in $EXISTINGIMAGES; do
-                if [ "$IMAGEVERSION" = "$EXISTINGIMAGE" ]; then ALREADYUSED=1; fi
+        if [ "$VERSIONSUFFIX" = "" ]; then
+            for TESTVERSIONSUFFIX in $(seq -w 0 99); do
+                IMAGEVERSION=${IMAGEVERSIONBASE}${TESTVERSIONSUFFIX}
+                ALREADYUSED=0
+                for EXISTINGIMAGE in $EXISTINGIMAGES; do
+                    if [ "$IMAGEVERSION" = "$EXISTINGIMAGE" ]; then ALREADYUSED=1; fi
+                done
+                if [ $ALREADYUSED -eq 0 ]; then VERSIONSUFFIX=$TESTVERSIONSUFFIX; break; fi
             done
-            if [ $ALREADYUSED -eq 0 ]; then break; fi
-        done
+        fi
         echo -e "${BOLD}Preparing to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
         echo -e "${RED}Please note, this may take more than 30 minutes to complete${END}"
         az sig image-version create \
