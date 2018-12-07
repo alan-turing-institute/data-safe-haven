@@ -4,6 +4,8 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
+VMSIZE="Standard_F2s_v2"
+
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -14,19 +16,21 @@ END="\033[0m"
 # Other constants
 MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+NSGNAME="NSG_IMAGE_BUILD"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-n machine_name] [-r resource_group]"
     echo "  -h                 display help"
-    echo "  -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    echo "  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+    echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
+    echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
+    echo "  -z vm_size (optional)  Size of the VM to use for build (defaults to 'Standard_F2s_v2')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:" opt; do
+while getopts "hi:r:s:z:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -39,6 +43,9 @@ while getopts "hi:r:s:" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
+            ;;
+        z)
+            VMSIZE=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -92,17 +99,15 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     fi
     FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-    echo FEATURE_STATE
-    echo $RESOURCE_METADATA
 done
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
+    az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
@@ -114,7 +119,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUI
         --priority 100
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name DenyAll \
         --description "Deny all" \
@@ -130,12 +135,23 @@ fi
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
 # If anything else is requested then print usage message and exit.
 # If using the Data Science VM then the terms will be automatically accepted.
-if [ "$SOURCEIMAGE" == "Ubuntu" ]; then
-    MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
+if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
+    if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
+        echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
+        # Make a temporary config file with the Torch lines uncommented
+        TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
+        TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
+        rm $TMP_CLOUD_CONFIG_PREFIX
+        sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
+        MACHINENAME="${MACHINENAME}-UbuntuTorch1804Base"
+        INITSCRIPT="$TMP_CLOUD_CONFIG_YAML"
+    else
+        MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
+        INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
+    fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
     DISKSIZEGB="40"
-elif [ "$SOURCEIMAGE" == "DataScience" ]; then
+elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
     INITSCRIPT="cloud-init-buildimage-datascience.yaml"
@@ -143,6 +159,7 @@ elif [ "$SOURCEIMAGE" == "DataScience" ]; then
     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
 else
+    echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
 fi
 
@@ -161,14 +178,19 @@ az vm create \
   --image $SOURCEIMAGE \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
-  --nsg NSG_IMAGE_BUILD \
-  --size Standard_DS2_v2 \
+  --nsg $NSGNAME \
+  --size $VMSIZE \
   --admin-username atiadmin \
-  --generate-ssh-keys # will use ~/.ssh/id_rsa if available and otherwise generate a new key
-                      # the key will be removed from the build machine at the end of VM creation
+  --generate-ssh-keys
+
+# --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
+# the key will be removed from the build machine at the end of VM creation
+
+# Remove temporary init file if it exists
+rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${RED}This process will take several hours to complete.${END}"
-echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh azureuser@${PUBLICIP}${END}."
+echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

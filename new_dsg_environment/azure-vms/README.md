@@ -7,30 +7,32 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/ins
 
 ## Running the build script
 Before running the build script, make sure you have setup the Azure cli with `az login`.
-You can then run `./build_azure_vm_image.sh` without options in order to use the defaults.
+You can then run `./build_azure_vm_image.sh`.
 The available options for configuring the base image, resource group and name of the VM can be seen by running `./build_azure_vm_image.sh -h`.
 Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 1.5 hours.
 Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
 
 ```
-usage: build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
-    -h                 display help"
-    -i source_image    specify source_image: either 'Ubuntu' (default) or 'DataScience'"
-    -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_DSG_IMAGEGALLERY')"
-    -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+
+usage: ./build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
+  -h                 display help
+  -i source image    specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')
+  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')
+
 ```
 
 ### Build examples
 Build an image based off Ubuntu 18.04 (used by default if not specified) called `UbuntuVM`
 
 ```bash
-./build_azure_vm_image.sh -i Ubuntu
+./build_azure_vm_image.sh -i Ubuntu -s "Safe Haven Management Testing"
 ```
 
 Build an image based off the Microsoft Data Science VM in the `TestBuild` resource group
 
 ```bash
-./build_azure_vm_image.sh -i DataScience -r TestBuild
+./build_azure_vm_image.sh -i DataScience -r TestBuild -s "Safe Haven Management Testing"
 ```
 
 ## Registering VMs in the image gallery
@@ -41,7 +43,7 @@ Once the build has finished, it can be registered in the image gallery using the
 This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
 
 ```
-usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] [-s subscription] [-v version_suffix]
+usage: register_images_in_gallery.sh -s subscription [-h] [-i source_image] [-n machine_name] [-r resource_group] [-v version_suffix]
   -h                  display help
   -i source_image     specify an already existing image to add to the gallery.
   -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this.
@@ -54,22 +56,34 @@ usage: register_images_in_gallery.sh [-h] [-i source_image] [-n machine_name] [-
 For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like.
 
 ```bash
-./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941
+./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941 -s "Safe Haven Management Testing"
 ```
 
-## Deploying a VM from the image gallery
+## Creating a DSG environment
+At the moment this is not scripted (environments have been created by Rob). Watch this space...
+
+## Deploying a VM from the image gallery into a DSG environment
 VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
-At the moment this does not deploy into a correctly set up environment (eg. with NSG rules/VNETs etc.).
-This may be separated into two scripts in future - one to set up a new environment and one to deploy VMs into it.
+This deploys from an image stored in a gallery in `subscription_source` into a resource group in `subscription_target`.
+This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
 
 ```
-usage: $0 [-h] [-i source_image] [-n machine_name] [-p ip_range] [-r resource_group] -s subscription -t subscription [-u user_name]
+usage: deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-n machine_name] [-r resource_group] [-u user_name]
   -h                        display help
+  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
   -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'
   -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')
-  -p ip_range               specify IP range for this subnet (defaults to '10.0.2.0/24')
-  -r resource_group         specify resource group for deploying the VM image- will be created if it does not already exist (defaults to 'RS_DSG_TEST')
-  -s subscription_source    specify source subscription for this DSG required]. (Test using 'Safe Haven Management Testing')
-  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
+  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults tG_TEST')
   -u user_name              specify a username for the admin account (defaults to 'atiadmin')
+  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')
+  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
+  -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
+  -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')
+  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
+```
+
+Example usage
+
+```bash
+./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
 ```

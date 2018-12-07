@@ -5,7 +5,7 @@ MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION=""
-VERSIONSUFFIX="00"
+VERSIONSUFFIX=""
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -14,8 +14,8 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Other constants
-SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base")
-GALLERYNAME="SIG_DSG_COMPUTE"
+SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base")
+GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
 VERSIONMAJOR="0"
 VERSIONMINOR="0"
 
@@ -27,7 +27,7 @@ print_usage_and_exit() {
     echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
     echo "  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_SH_IMAGEGALLERY')"
     echo "  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
-    echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc."
+    echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc."
     exit 1
 }
 
@@ -78,15 +78,15 @@ FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 
 RESOURCE="galleries/images/versions"
 RESOURCE_METADATA_QUERY="resourceTypes[?resourceType=='$RESOURCE']"
 RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-
-echo "Ensuring $FEATURE feature is registered and $RESOURCE resource is present in namespace $NAMESPACE (this may take some time)."
-echo "Current $FEATURE feature state is $FEATURE_STATE."
+# Print out current status
+echo -e "${BOLD}Ensuring namespace ${BLUE}$NAMESPACE${END} ${BOLD}contains ${BLUE}$FEATURE${END} ${BOLD}feature and ${BLUE}$RESOURCE${END} ${BOLD}(this may take some time).${END}"
+echo -e "${BOLD}Current ${BLUE}$FEATURE${END} ${BOLD}feature state is ${BLUE}$FEATURE_STATE.${END}"
 if [ "$RESOURCE_METADATA" = "[]" ]; then
-    echo "Resource $RESOURCE is not present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is ${RED}not${END} ${BOLD}present.${END}"
 else
-    echo "Resource $RESOURCE is present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is present.${END}"
 fi
-
+# Loop until features are present
 while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     if [ "$FEATURE_STATE" = "NotRegistered" ]; then
         # Register feature
@@ -102,8 +102,6 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     fi
     FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 'properties.state' | xargs)"
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-    echo FEATURE_STATE
-    echo $RESOURCE_METADATA
 done
 
 # Create image gallery if it doesn't already exist
@@ -175,8 +173,21 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
         IMAGETYPE=$(echo $SUPPORTEDIMAGE | cut -d'-' -f1)
         SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
         RESOURCEID="$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --query 'id' | xargs)" # use xargs default echo to strip extraneous quotation marks
-        IMAGEVERSION=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')${VERSIONSUFFIX}
-        echo -e "${BOLD}Trying to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
+        # Determine lowest image version that has not already been used
+        IMAGEVERSIONBASE=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')
+        EXISTINGIMAGES=$(az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE --query "[].name" -o tsv | grep $IMAGEVERSIONBASE | sort)
+        # Iterate through possible version suffices until finding one that has not been used
+        if [ "$VERSIONSUFFIX" = "" ]; then
+            for TESTVERSIONSUFFIX in $(seq -w 0 99); do
+                IMAGEVERSION=${IMAGEVERSIONBASE}${TESTVERSIONSUFFIX}
+                ALREADYUSED=0
+                for EXISTINGIMAGE in $EXISTINGIMAGES; do
+                    if [ "$IMAGEVERSION" = "$EXISTINGIMAGE" ]; then ALREADYUSED=1; fi
+                done
+                if [ $ALREADYUSED -eq 0 ]; then VERSIONSUFFIX=$TESTVERSIONSUFFIX; break; fi
+            done
+        fi
+        echo -e "${BOLD}Preparing to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
         echo -e "${RED}Please note, this may take more than 30 minutes to complete${END}"
         az sig image-version create \
             --resource-group $RESOURCEGROUP \

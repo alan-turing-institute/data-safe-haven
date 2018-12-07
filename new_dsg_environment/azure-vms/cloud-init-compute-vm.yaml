@@ -1,0 +1,39 @@
+#cloud-config
+package_upgrade: true
+
+packages:
+  - xfce4
+  - xfce4-terminal
+  - xrdp
+
+write_files:
+  - path: "/startwm.sh"
+    content: |
+      #!/bin/sh
+      if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG LANGUAGE
+      fi
+      # Start xfce4
+      startxfce4
+
+runcmd:
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - chgrp -R plugdev /anaconda/
+  - chmod -R g=u /anaconda/
+  - chmod -R go-w /anaconda/
+  # Set py36 as default environment when launching a new shell
+  - echo "source activate py36" >> /etc/bash.bashrc
+  # Disable light-locker which can cause irritating error messages
+  - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  # Set default session to xfce4
+  - mv /startwm.sh /etc/xrdp/startwm.sh
+  - chmod 0755 /etc/xrdp/startwm.sh
+  - echo xfce4-session > ~USERNAME/.xsession
+  # Set default terminal for xfce
+  - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
+  # Ensure that user owns their directory
+  - chown -R USERNAME ~USERNAME
+  # Restart xrdp to reflect changes made above
+  - service xrdp restart
+
