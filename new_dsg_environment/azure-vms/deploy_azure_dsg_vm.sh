@@ -22,6 +22,7 @@ END="\033[0m"
 IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 IMAGES_GALLERY="SIG_SH_COMPUTE"
 LOCATION="uksouth"
+LDAP_RESOURCEGROUP="RG_SH_LDAP"
 LDAP_VAULT_NAME="kvldap"
 LDAP_SECRET_NAME="ldap-secret"
 
@@ -109,48 +110,65 @@ else
     print_usage_and_exit
 fi
 
-# List available versions
+# List available versions and set the last one in the list as default
 echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
-az sig image-version list \
-    --resource-group $IMAGES_RESOURCEGROUP \
-    --gallery-name $IMAGES_GALLERY \
-    --gallery-image-definition $IMAGE_DEFINITION \
-    --query "[].name" -o table
-echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]${END}"
+VERSIONS=$(az sig image-version list \
+            --resource-group $IMAGES_RESOURCEGROUP \
+            --gallery-name $IMAGES_GALLERY \
+            --gallery-image-definition $IMAGE_DEFINITION \
+            --query "[].name" -o table)
+echo -e "$VERSIONS"
+DEFAULT_VERSION=$(echo -e "$VERSIONS" | tail -n1)
+echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]. To accept the default ${BLUE}$DEFAULT_VERSION${END} ${BOLD}simply press [ENTER]${END}"
 read VERSION
+if [ "$VERSION" = "" ]; then VERSION=$DEFAULT_VERSION; fi
 
 # Check that this is a valid version and then get the image ID
+echo -e "${BOLD}Finding ID for image ${BLUE}${VERSION}${END}${BOLD}...${END}"
 if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Version $VERSION could not be found.${END}"
     print_usage_and_exit
 fi
 IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
 
-# Switch subscription and setup resource group if it does not already exist
-# -------------------------------------------------------------------------
+# Switch subscription and setup resource groups if they do not already exist
+# --------------------------------------------------------------------------
 az account set --subscription "$SUBSCRIPTIONTARGET"
 if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
-    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
+fi
+if [ "$(az group exists --name $LDAP_RESOURCEGROUP)" != "true" ]; then
+    echo -e "${BOLD}Creating resource group ${BLUE}$LDAP_RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
+    az group create --name $LDAP_RESOURCEGROUP --location $LOCATION
 fi
 
 # Create keyvault for secrets if it does not already exist
 # -------------------------------------------------------
 # Create keyvault if it does not already exist
 if [ "$(az keyvault list | grep $LDAP_VAULT_NAME)" = "" ]; then
-    echo -e "${BOLD}Creating keyvault ${BLUE}$LDAP_VAULT_NAME${END}"
-    az keyvault create --name ${LDAP_VAULT_NAME} --resource-group ${RESOURCEGROUP} --enabled-for-deployment true
+    echo -e "${BOLD}Creating keyvault ${BLUE}$LDAP_VAULT_NAME${END} ${BOLD}in ${BLUE}$LDAP_RESOURCEGROUP${END}"
+    az keyvault create --name ${LDAP_VAULT_NAME} --resource-group ${LDAP_RESOURCEGROUP} --enabled-for-deployment true
 fi
 # Wait for DNS propagation of keyvault
 sleep 10
 
+# Add password to vault
+az keyvault secret list --vault-name $LDAP_VAULT_NAME 
+if [ "$(az keyvault secret list --vault-name $LDAP_VAULT_NAME --query "[].id" | grep $LDAP_SECRET_NAME)" = "" ]; then
+    read -s -p "Enter LDAP password for this DSG (only needs to be done once): " LDAP_PASSWORD
+    echo ""
+    echo -e "${BOLD}Storing password in keyvault ${BLUE}$LDAP_VAULT_NAME${END}"
+    az keyvault secret set --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --value "$LDAP_PASSWORD"
+fi
+
+LDAP_SECRET=$(az keyvault secret list-versions --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --value)
+echo $LDAP_SECRET
+VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
+echo $VM_SECRET
+
 exit 1
 
-# if [ "$(az keyvault secret --vault-name $LDAP_VAULT_NAME)" = "" ]; then
-# # Get up secret file with password in it
-# read -s -p "Enter password for this user: " PASSWORD
-# LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME --name $LDAP_SECRET_NAME --value)
-# VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
 
 # Check that NSG exists
 # ---------------------
@@ -193,9 +211,9 @@ if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
 fi
 
-# Prompt for a password
+# Prompt for a user password
 echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
-read -s -p "Enter password for this user: " PASSWORD
+read -s -p "Enter password for this user: " USER_PASSWORD
 echo ""
 
 # Create a new config file with the appropriate username
@@ -203,6 +221,11 @@ TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
 TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
 rm $TMP_CLOUD_CONFIG_PREFIX
 sed 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
+
+# Get LDAP secret file with password in it
+LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME --name $LDAP_SECRET_NAME --value)
+echo $LDAP_SECRET
+VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
@@ -220,7 +243,7 @@ az vm create ${PLANDETAILS} \
   --size $VM_SIZE \
   --secrets "$VM_SECRET" \
   --admin-username $USERNAME \
-  --admin-password $PASSWORD
+  --admin-password $USER_PASSWORD
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
