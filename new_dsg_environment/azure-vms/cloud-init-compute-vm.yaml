@@ -138,7 +138,7 @@ runcmd:
   # Edit Kerberos config
   - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
-  - realm join -U dsgpuldap dsgroupdev.co.uk --install=/
+  - echo LDAP_SECRET_PLAINTEXT | realm join -U dsgpuldap dsgroupdev.co.uk --install=/
   # Check the sssd.conf file
   - cat /etc/sssd/sssd.conf
   # Restart the sssd daemon
