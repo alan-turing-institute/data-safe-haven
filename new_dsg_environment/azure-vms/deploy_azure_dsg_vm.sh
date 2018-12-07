@@ -226,7 +226,6 @@ sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_P
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
 STARTTIME=$(date +%s)
-echo $USER_PASSWORD
 az vm create ${PLANDETAILS} \
   --resource-group $RESOURCEGROUP \
   --name $MACHINENAME \
@@ -243,8 +242,6 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # allow some time for the system to finish initialising
 sleep 30
-
-# az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group MyNewNsg
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
