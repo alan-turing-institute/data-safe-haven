@@ -434,6 +434,8 @@ runcmd:
 
   # Install RStudio
   - echo "*** Installing RStudio... ***"
+  # Ensure RStudio picks up system R rather than Conda R for all users
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   - cd /tmp
   - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
   - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb

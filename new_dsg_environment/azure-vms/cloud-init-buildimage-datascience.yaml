@@ -179,6 +179,9 @@ runcmd:
   - echo "BioConductor packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
 
+  # Ensure RStudio picks up system R rather than Conda R for all users
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
+
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
