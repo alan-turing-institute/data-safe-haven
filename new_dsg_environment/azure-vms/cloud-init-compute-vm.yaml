@@ -1,17 +1,6 @@
 #cloud-config
 package_upgrade: false
 
-# packages:
-#   # move all these to build if possible
-#   - xfce4
-#   - xfce4-terminal
-#   - xrdp
-#   - sssd-tools
-#   - sssd
-#   - libnss-sss
-#   - libpam-sss
-#   - adcli
-
 write_files:
   - path: "/startwm.sh"
     content: |
@@ -43,7 +32,6 @@ write_files:
       # the directory server will do it, if
       # necessary. This is the default.
       pam_password md5
-
   - path: "/krb5.conf"
     content: |
       [libdefaults]
@@ -85,16 +73,15 @@ write_files:
         krb4_convert = true
         krb4_get_tickets = false
 
-
 runcmd:
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
-  # # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
-  # - echo "Change ownership of /anaconda/"
-  # - chgrp -R plugdev /anaconda/
-  # - chmod -R g=u /anaconda/
-  # - chmod -R go-w /anaconda/
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - echo "Change ownership of /anaconda/"
+  - chgrp -R plugdev /anaconda/
+  - chmod -R g=u /anaconda/
+  - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
   - echo "source activate py36" >> /etc/bash.bashrc
@@ -157,6 +144,6 @@ runcmd:
   - echo "Updating PAM configuration"
   - PAM_INFORMATION="$(echo -e 'session_required\tpam_mkhomedir.so\tskel=/etc/skel umask=0022')"
   - sed -i "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session
-  # - shutdown -r now
+  - shutdown -r now
  
 
