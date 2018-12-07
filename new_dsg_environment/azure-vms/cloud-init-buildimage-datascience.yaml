@@ -163,7 +163,7 @@ runcmd:
 
   # Set number of cores R should use to install packages to the number of cores available on the VM
   # (R buolds a lot of packages from source so we can get a decent speedup here)
-  -  RScript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
+  -  Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
   
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
