@@ -420,6 +420,10 @@ runcmd:
   - echo "BioConductor packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
 
+  # Install R packages from custom repos
+  - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
+  - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
+
   # Install RStudio
   - echo "*** Installing RStudio... ***"
   - cd /tmp
