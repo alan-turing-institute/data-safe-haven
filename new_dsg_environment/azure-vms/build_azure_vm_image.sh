@@ -4,6 +4,7 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
+VMSIZE=
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -173,7 +174,7 @@ az vm create \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
   --nsg $NSGNAME \
-  --size  \
+  --size Standard_F72s_v2 \
   --admin-username atiadmin \
   --generate-ssh-keys
 
