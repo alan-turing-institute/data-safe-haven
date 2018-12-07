@@ -87,26 +87,42 @@ write_files:
 
 
 runcmd:
+  # Make sure that sssd is running
+  - echo "Restart sssd service"
+  - service sssd restart
   # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - echo "Change ownership of /anaconda/"
   - chgrp -R plugdev /anaconda/
   - chmod -R g=u /anaconda/
   - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
+  - echo "Add py36 as default conda environment"
   - echo "source activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
+  - echo "Disable screen lock"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default session to xfce4
+  - echo "Set default session to xfce4"
   - mv /startwm.sh /etc/xrdp/startwm.sh
   - chmod 0755 /etc/xrdp/startwm.sh
   - echo xfce4-session > ~USERNAME/.xsession
   # Set default terminal for xfce
+  - echo "Set default xfce terminal"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
-  # Ensure that user owns their directory
+  # Ensure that user owns their home directory
+  - echo "Ensure that user owns their home directory"
+  - whoami
   - chown -R USERNAME ~USERNAME
   # Restart xrdp to reflect changes made above
+  - echo "Restart xrdp"
   - service xrdp restart
+
   # Set up Active Directory
   # -----------------------
+  - echo "Set up Active Directory"
+  # Ensure that sssd is running
+  - echo "Ensure that sssd is running"
+  - systemctl status sssd.service
   # Add information to hosts file
   - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
   - sed "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
@@ -122,7 +138,7 @@ runcmd:
   # Edit Kerberos config
   - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
-  - realm join -U dsgpuldap dsgroupdev.co.uk
+  - realm join -U dsgpuldap dsgroupdev.co.uk --install=/
   # Check the sssd.conf file
   - cat /etc/sssd/sssd.conf
   # Restart the sssd daemon
