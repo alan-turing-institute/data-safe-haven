@@ -4,7 +4,8 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
-VMSIZE=
+VMSIZE="Standard_F2s_v2"
+
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -24,11 +25,12 @@ print_usage_and_exit() {
     echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
     echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
     echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
+    echo "  -c vm_size (optional)  VM size code to use for build (defaults to 'Standard_F2s_v2')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:" opt; do
+while getopts "hi:r:s:c" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -41,6 +43,9 @@ while getopts "hi:r:s:" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
+            ;;
+        c)
+            VMSIZE=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -174,7 +179,7 @@ az vm create \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
   --nsg $NSGNAME \
-  --size Standard_F72s_v2 \
+  --size $VMSIZE \
   --admin-username atiadmin \
   --generate-ssh-keys
 
