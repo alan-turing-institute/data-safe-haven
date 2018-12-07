@@ -205,20 +205,18 @@ fi
 
 # Prompt for a user password
 echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
-USER_PASSWORD="n00fn4gustL4zP07k7K5"
-# read -s -p "Enter password for this user: " USER_PASSWORD
-# echo ""
+read -s -p "Enter password for this user: " USER_PASSWORD
+echo ""
 
 # Get LDAP secret file with password in it (can't pass as a secret at VM creation)
 LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
-echo $LDAP_SECRET_PLAINTEXT
 
 # Create a new config file with the appropriate username and LDAP password
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
+TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")   
 rm $TMP_CLOUD_CONFIG_PREFIX
-sed 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
-sed 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' $TMP_CLOUD_CONFIG_YAML
+sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
+# sed -i 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------

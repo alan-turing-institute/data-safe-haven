@@ -90,13 +90,13 @@ runcmd:
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
-  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
-  - echo "Change ownership of /anaconda/"
-  - chgrp -R plugdev /anaconda/
-  - chmod -R g=u /anaconda/
-  - chmod -R go-w /anaconda/
+  # # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  # - echo "Change ownership of /anaconda/"
+  # - chgrp -R plugdev /anaconda/
+  # - chmod -R g=u /anaconda/
+  # - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
-  - echo "Add py36 as default conda environment"
+  - echo "Add py36 conda environment setup to global bashrc"
   - echo "source activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
   - echo "Disable screen lock"
@@ -138,7 +138,8 @@ runcmd:
   # Edit Kerberos config
   - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
-  - echo LDAP_SECRET_PLAINTEXT | realm join -U dsgpuldap dsgroupdev.co.uk --install=/
+  # - echo LDAP_SECRET_PLAINTEXT | realm join -U dsgpuldap dsgroupdev.co.uk --install=/
+  - realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
   # Check the sssd.conf file
   - cat /etc/sssd/sssd.conf
   # Restart the sssd daemon
