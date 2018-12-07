@@ -22,6 +22,9 @@ END="\033[0m"
 IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 IMAGES_GALLERY="SIG_SH_COMPUTE"
 LOCATION="uksouth"
+LDAP_VAULT_NAME="kvldap"
+LDAP_SECRET_NAME="ldap-secret"
+
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -123,16 +126,6 @@ if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --galle
 fi
 IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
 
-echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
-read -s -p "Enter password for this user: " PASSWORD
-echo ""
-
-# Get up secret file with password in it
-VAULT_NAME="sh-management-testing"
-LDAP_SECRET_NAME="ldap-secret"
-LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME -n $LDAP_SECRET_NAME --query "[?attributes.enabled].id" -o tsv)
-VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
-
 # Switch subscription and setup resource group if it does not already exist
 # -------------------------------------------------------------------------
 az account set --subscription "$SUBSCRIPTIONTARGET"
@@ -140,6 +133,24 @@ if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
+
+# Create keyvault for secrets if it does not already exist
+# -------------------------------------------------------
+# Create keyvault if it does not already exist
+if [ "$(az keyvault list | grep $LDAP_VAULT_NAME)" = "" ]; then
+    echo -e "${BOLD}Creating keyvault ${BLUE}$LDAP_VAULT_NAME${END}"
+    az keyvault create --name ${LDAP_VAULT_NAME} --resource-group ${RESOURCEGROUP} --enabled-for-deployment true
+fi
+# Wait for DNS propagation of keyvault
+sleep 10
+
+exit 1
+
+# if [ "$(az keyvault secret --vault-name $LDAP_VAULT_NAME)" = "" ]; then
+# # Get up secret file with password in it
+# read -s -p "Enter password for this user: " PASSWORD
+# LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME --name $LDAP_SECRET_NAME --value)
+# VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
 
 # Check that NSG exists
 # ---------------------
@@ -182,9 +193,16 @@ if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
 fi
 
-# Set appropriate username
-cp cloud-init-compute-vm.yaml cloud-init-compute-vm-specific.yaml
-sed -i -e 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm-specific.yaml
+# Prompt for a password
+echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
+read -s -p "Enter password for this user: " PASSWORD
+echo ""
+
+# Create a new config file with the appropriate username
+TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
+TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
+rm $TMP_CLOUD_CONFIG_PREFIX
+sed 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
@@ -198,14 +216,13 @@ az vm create ${PLANDETAILS} \
   --subnet $DSG_SUBNET_ID \
   --nsg $DSG_NSG_ID \
   --public-ip-address "" \
-  --custom-data cloud-init-compute-vm-specific.yaml \
+  --custom-data $TMP_CLOUD_CONFIG_YAML \
   --size $VM_SIZE \
   --secrets "$VM_SECRET" \
   --admin-username $USERNAME \
   --admin-password $PASSWORD
-rm cloud-init-compute-vm-specific.yaml*
-
-
+# Remove temporary init file if it exists
+rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # allow some time for the system to finish initialising
 sleep 30
