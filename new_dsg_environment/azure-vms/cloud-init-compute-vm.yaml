@@ -123,10 +123,9 @@ runcmd:
   - echo "Ensure that sssd is running"
   - systemctl status sssd.service
   # Add information to hosts file
-  - echo "Hostname is $(hostname -I) $HOSTNAME"
-  - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
+  - echo "Hostname is $(hostname -I) MACHINENAME"
+  - HOST_INFORMATION="$(hostname -I) MACHINENAME MACHINENAME.dsgroupdev.co.uk"
   - sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
-  - cat /etc/hosts
   # Set timezone
   - echo "Set timezone"
   - timedatectl set-timezone Europe/London
@@ -144,17 +143,20 @@ runcmd:
   - echo "Update Kerberos config"
   - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
-  # - realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
-  - echo LDAP_SECRET_PLAINTEXT | realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
+  - echo "Joining VM to the domain"
+  - cat /etc/ldap.secret | realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
   # Check the sssd.conf file
+  - echo "Updating sssd settings"
+  - sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
+  - sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
   - cat /etc/sssd/sssd.conf
   # Restart the sssd daemon
+  - echo "Restarting sssd"
   - systemctl restart sssd
   # Edit the pam session configuration file
+  - echo "Updating PAM configuration"
   - PAM_INFORMATION="$(echo -e 'session_required\tpam_mkhomedir.so\tskel=/etc/skel umask=0022')"
-  - sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session
-  # Change the following lines
-  # use_fully_qualified_names = False
-  # fallback_homedir = /home/%u
+  - sed -i "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session
+  # - shutdown -r now
  
 

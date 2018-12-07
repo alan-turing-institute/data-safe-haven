@@ -7,8 +7,7 @@ RESOURCEGROUP="RS_DSG_TEST"
 SUBSCRIPTIONSOURCE="" # must be provided
 SUBSCRIPTIONTARGET="" # must be provided
 USERNAME="atiadmin"
-DSG_NSG="NSG_Linux_Servers"
-# INSECURE_NSG="DSGComputeTest-nsg" # completely open FOR TESTING ONLY
+DSG_NSG="NSG_Linux_Servers" # NB. this will disallow internet connection during deployment
 DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
@@ -215,8 +214,7 @@ LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $LDAP_VAULT_NAME --
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
 TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")   
 rm $TMP_CLOUD_CONFIG_PREFIX
-sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
-# sed -i 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' $TMP_CLOUD_CONFIG_YAML
+sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' -e 's/MACHINENAME/'${MACHINENAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
