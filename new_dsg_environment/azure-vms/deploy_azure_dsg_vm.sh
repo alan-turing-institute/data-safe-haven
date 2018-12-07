@@ -8,6 +8,7 @@ SUBSCRIPTIONSOURCE="" # must be provided
 SUBSCRIPTIONTARGET="" # must be provided
 USERNAME="atiadmin"
 DSG_NSG="NSG_Linux_Servers"
+INSECURE_NSG="DSGComputeTest-nsg" # completely open FOR TESTING ONLY
 DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
@@ -154,21 +155,12 @@ fi
 sleep 10
 
 # Add password to vault
-az keyvault secret list --vault-name $LDAP_VAULT_NAME 
 if [ "$(az keyvault secret list --vault-name $LDAP_VAULT_NAME --query "[].id" | grep $LDAP_SECRET_NAME)" = "" ]; then
     read -s -p "Enter LDAP password for this DSG (only needs to be done once): " LDAP_PASSWORD
     echo ""
     echo -e "${BOLD}Storing password in keyvault ${BLUE}$LDAP_VAULT_NAME${END}"
     az keyvault secret set --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --value "$LDAP_PASSWORD"
 fi
-
-LDAP_SECRET=$(az keyvault secret list-versions --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --value)
-echo $LDAP_SECRET
-VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
-echo $VM_SECRET
-
-exit 1
-
 
 # Check that NSG exists
 # ---------------------
@@ -213,19 +205,20 @@ fi
 
 # Prompt for a user password
 echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
-read -s -p "Enter password for this user: " USER_PASSWORD
-echo ""
+USER_PASSWORD="n00fn4gustL4zP07k7K5"
+# read -s -p "Enter password for this user: " USER_PASSWORD
+# echo ""
 
-# Create a new config file with the appropriate username
+# Get LDAP secret file with password in it (can't pass as a secret at VM creation)
+LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
+echo $LDAP_SECRET_PLAINTEXT
+
+# Create a new config file with the appropriate username and LDAP password
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
 TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
 rm $TMP_CLOUD_CONFIG_PREFIX
 sed 's/USERNAME/'${USERNAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
-
-# Get LDAP secret file with password in it
-LDAP_SECRET=$(az keyvault secret list-versions --vault-name $VAULT_NAME --name $LDAP_SECRET_NAME --value)
-echo $LDAP_SECRET
-VM_SECRET=$(az vm secret format --secret "$LDAP_SECRET")
+sed 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
@@ -241,7 +234,6 @@ az vm create ${PLANDETAILS} \
   --public-ip-address "" \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
   --size $VM_SIZE \
-  --secrets "$VM_SECRET" \
   --admin-username $USERNAME \
   --admin-password $USER_PASSWORD
 # Remove temporary init file if it exists
@@ -249,6 +241,8 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # allow some time for the system to finish initialising
 sleep 30
+
+# az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group MyNewNsg
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)

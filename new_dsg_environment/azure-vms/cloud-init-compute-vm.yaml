@@ -1,10 +1,16 @@
 #cloud-config
-package_upgrade: true
+package_upgrade: false
 
-packages:
-  - xfce4
-  - xfce4-terminal
-  - xrdp
+# packages:
+#   # move all these to build if possible
+#   - xfce4
+#   - xfce4-terminal
+#   - xrdp
+#   - sssd-tools
+#   - sssd
+#   - libnss-sss
+#   - libpam-sss
+#   - adcli
 
 write_files:
   - path: "/startwm.sh"
@@ -16,7 +22,7 @@ write_files:
       fi
       # Start xfce4
       startxfce4
-  - path: "/etc/ldap.conf"
+  - path: "/ldap.conf"
     content: |
       # The distinguished name of the search base.
       base ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk
@@ -108,19 +114,17 @@ runcmd:
   - timedatectl set-timezone Europe/London
   # Create a blank sssd.conf file
   - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
-  # GET LDAP SECRET FROM AZURE
-  - ls /var/lib/waagent/
-  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
-  - echo "Found secret named $KEYNAME"
-  - cat /var/lib/waagent/$KEYNAME.prv
-  - touch /etc/ldap.secret
+  # Edit LDAP config
+  - mv /ldap.conf /etc/ldap.conf
+  # Store LDAP secret
+  - echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
   - chmod 0600 /etc/ldap.secret
   # Edit Kerberos config
-  - cp /krb5.conf /etc/krb5.conf
+  - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
   - realm join -U dsgpuldap dsgroupdev.co.uk
-  # Replace the sssd.conf file
-  - mv /sssd.conf /etc/sssd/sssd.conf
+  # Check the sssd.conf file
+  - cat /etc/sssd/sssd.conf
   # Restart the sssd daemon
   - systemctl restart sssd
   # Edit the pam session configuration file
