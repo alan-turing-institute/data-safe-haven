@@ -14,6 +14,7 @@ END="\033[0m"
 # Other constants
 MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+NSGNAME="NSG_IMAGE_BUILD"
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -95,12 +96,12 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
 done
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
+    az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
@@ -112,7 +113,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUI
         --priority 100
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name DenyAll \
         --description "Deny all" \
@@ -171,8 +172,8 @@ az vm create \
   --image $SOURCEIMAGE \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
-  --nsg NSG_IMAGE_BUILD \
-  --size Standard_F72s_v2 \
+  --nsg $NSGNAME \
+  --size  \
   --admin-username atiadmin \
   --generate-ssh-keys
 
