@@ -105,30 +105,34 @@ runcmd:
 
   # Set up Active Directory
   # -----------------------
-  - echo "Set up Active Directory"
+  - echo "Setting up Active Directory..."
   # Ensure that sssd is running
-  - echo "Ensure that sssd is running"
+  - echo "Ensuring that sssd is running"
   - systemctl status sssd.service
   # Add information to hosts file
-  - echo "Hostname is $(hostname -I) MACHINENAME"
+  - echo "Adding MACHINENAME [$(hostname -I)] to /etc/hosts"
   - HOST_INFORMATION="$(hostname -I) MACHINENAME MACHINENAME.dsgroupdev.co.uk"
   - sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
   # Set timezone
-  - echo "Set timezone"
+  - echo "Setting timezone"
   - timedatectl set-timezone Europe/London
   # Create a default sssd.conf file
-  - echo "Create sssd config"
+  - echo "Creating sssd config"
   - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+  - cat /etc/sssd/sssd.conf
   # Edit LDAP config
-  - echo "Create LDAP config"
+  - echo "Creating LDAP config"
   - mv /ldap.conf /etc/ldap.conf
+  - cat /etc/ldap.conf
   # Store LDAP secret
-  - echo "Store LDAP secret"
+  - echo "Storing LDAP secret"
   - echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
   - chmod 0600 /etc/ldap.secret
+  - cat /etc/ldap.secret
   # Edit Kerberos config
-  - echo "Update Kerberos config"
+  - echo "Updating Kerberos config"
   - mv /krb5.conf /etc/krb5.conf
+  - cat /etc/krb5.conf
   # Join the VM to the domain
   - echo "Joining VM to the domain"
   - cat /etc/ldap.secret | realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
@@ -144,6 +148,7 @@ runcmd:
   - echo "Updating PAM configuration"
   - PAM_INFORMATION="$(echo -e 'session_required\tpam_mkhomedir.so\tskel=/etc/skel umask=0022')"
   - sed -i "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session
+  - cat /etc/pam.d/common-session
   - shutdown -r now
  
 

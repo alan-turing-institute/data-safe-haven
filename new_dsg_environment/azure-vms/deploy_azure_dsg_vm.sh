@@ -221,6 +221,7 @@ sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_P
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
 STARTTIME=$(date +%s)
+echo $USER_PASSWORD
 az vm create ${PLANDETAILS} \
   --resource-group $RESOURCEGROUP \
   --name $MACHINENAME \
