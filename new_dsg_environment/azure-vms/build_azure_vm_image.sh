@@ -4,6 +4,8 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
+VMSIZE="Standard_F2s_v2"
+
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -14,6 +16,7 @@ END="\033[0m"
 # Other constants
 MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+NSGNAME="NSG_IMAGE_BUILD"
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -22,11 +25,12 @@ print_usage_and_exit() {
     echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
     echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
     echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
+    echo "  -z vm_size (optional)  Size of the VM to use for build (defaults to 'Standard_F2s_v2')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:" opt; do
+while getopts "hi:r:s:z:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -39,6 +43,9 @@ while getopts "hi:r:s:" opt; do
             ;;
         s)
             SUBSCRIPTION=$OPTARG
+            ;;
+        z)
+            VMSIZE=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -95,12 +102,12 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
 done
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating NSG for image build: ${BLUE}NSG_IMAGE_BUILD${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUILD
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
+    az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
@@ -112,7 +119,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name NSG_IMAGE_BUI
         --priority 100
     az network nsg rule create \
         --resource-group $RESOURCEGROUP \
-        --nsg-name NSG_IMAGE_BUILD \
+        --nsg-name $NSGNAME \
         --direction Inbound \
         --name DenyAll \
         --description "Deny all" \
@@ -171,8 +178,8 @@ az vm create \
   --image $SOURCEIMAGE \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
-  --nsg NSG_IMAGE_BUILD \
-  --size Standard_F72s_v2 \
+  --nsg $NSGNAME \
+  --size $VMSIZE \
   --admin-username atiadmin \
   --generate-ssh-keys
 
