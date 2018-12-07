@@ -2,7 +2,7 @@
 
 # Options which are configurable at the command line
 SOURCEIMAGE="Ubuntu"
-MACHINENAME="DSGComputeMachineVM"
+MACHINENAME=""
 RESOURCEGROUP="RS_DSG_TEST"
 SUBSCRIPTIONSOURCE="" # must be provided
 SUBSCRIPTIONTARGET="" # must be provided
@@ -33,7 +33,7 @@ print_usage_and_exit() {
     echo "  -h                        display help"
     echo "  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')"
     echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
-    echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')"
+    echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')"
     echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
     echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
     echo "  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')"
@@ -85,6 +85,11 @@ while getopts "g:hi:n:r:u:s:t:v:w:z:" opt; do
             ;;
     esac
 done
+
+# Set default subscription
+if [ "$MACHINENAME" = "" ]; then
+    MACHINENAME="DSG$(date '+%Y%m%d%H%M')"
+fi
 
 # Check that a source subscription has been provided
 if [ "$SUBSCRIPTIONSOURCE" = "" ]; then
