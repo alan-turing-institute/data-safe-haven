@@ -172,7 +172,7 @@ az vm create \
   --os-disk-size-gb $DISKSIZEGB \
   --custom-data $INITSCRIPT \
   --nsg NSG_IMAGE_BUILD \
-  --size Standard_DS2_v2 \
+  --size Standard_F72s_v2 \
   --admin-username atiadmin \
   --generate-ssh-keys
 
