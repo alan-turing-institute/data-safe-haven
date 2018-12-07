@@ -298,6 +298,10 @@ runcmd:
   - conda config --add channels anaconda
   - conda config --add channels pytorch
   - conda config --add channels r
+  # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
+  - conda config --set remote_connect_timeout_secs 30
+  - conda config --set remote_max_retries 10
+  - conda config --set remote_read_timeout_secs 120
   # Prepare environments
   - echo "*** Initial conda environments... ***"
   - conda env list
@@ -314,6 +318,10 @@ runcmd:
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+
+  # Set number of cores R should use to install packages to the number of cores available on the VM
+  # (R buolds a lot of packages from source so we can get a decent speedup here)
+  -  Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
