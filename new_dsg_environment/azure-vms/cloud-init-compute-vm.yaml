@@ -111,7 +111,6 @@ runcmd:
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that user owns their home directory
   - echo "Ensure that user owns their home directory"
-  - whoami
   - chown -R USERNAME ~USERNAME
   # Restart xrdp to reflect changes made above
   - echo "Restart xrdp"
@@ -124,18 +123,25 @@ runcmd:
   - echo "Ensure that sssd is running"
   - systemctl status sssd.service
   # Add information to hosts file
+  - echo "Hostname is $(hostname -I) $HOSTNAME"
   - HOST_INFORMATION="$(hostname -I) $HOSTNAME $HOSTNAME.dsgroupdev.co.uk"
-  - sed "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
+  - sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
+  - cat /etc/hosts
   # Set timezone
+  - echo "Set timezone"
   - timedatectl set-timezone Europe/London
-  # Create a blank sssd.conf file
+  # Create a default sssd.conf file
+  - echo "Create sssd config"
   - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
   # Edit LDAP config
+  - echo "Create LDAP config"
   - mv /ldap.conf /etc/ldap.conf
   # Store LDAP secret
+  - echo "Store LDAP secret"
   - echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
   - chmod 0600 /etc/ldap.secret
   # Edit Kerberos config
+  - echo "Update Kerberos config"
   - mv /krb5.conf /etc/krb5.conf
   # Join the VM to the domain
   # - echo LDAP_SECRET_PLAINTEXT | realm join -U dsgpuldap dsgroupdev.co.uk --install=/
