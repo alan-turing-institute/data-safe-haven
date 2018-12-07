@@ -143,7 +143,7 @@ runcmd:
   # Prepare environments
   - echo "*** Initial conda environments... ***"
   - conda env list
-  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
+  - export PYTHONPACKAGES="dtw gmplot graph_tool ipykernel jupyter_client jupyterlab keras notebook pandas-profiling pyLDAvis pystan python-geohash python-louvain pytorch rpy2 r-irkernel spacy tensorflow torchvision wordcloud"
   - echo "*** Working on py27 environment... ***"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES; else conda install -y --verbose --name py27 $PYTHONPACKAGES; fi
   - echo "*** Working on py35 environment... ***"
