@@ -153,6 +153,6 @@ runcmd:
   - cat /etc/pam.d/common-session
   - PAM_INFORMATION="session_required|pam_mkhomedir.so|skel=/etc/skel|umask=0022"
   - sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
-  - mv common-session /etc/pam.d/common-session
+  # - mv common-session /etc/pam.d/common-session
   - cat /etc/pam.d/common-session
   - reboot

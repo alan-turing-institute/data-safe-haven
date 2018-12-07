@@ -246,3 +246,14 @@ sleep 30
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
 echo -e "${BOLD}This new VM can be accessed with remote desktop at ${BLUE}${PRIVATEIP}${END}"
+
+# # Wait until it reboots and then reset the atiadmin password
+# echo -e "${BOLD}Waiting for 10 minutes then resetting admin password${END}"
+# sleep 600
+
+# # Reset the atiadmin password
+# az vm extension set --name VMAccessForLinux \
+#     --publisher Microsoft.OSTCExtensions \
+#     --version 1.4 \
+#     --vm-name $MACHINENAME \
+#     --resource-group $RESOURCEGROUP \--protected-settings '{"username":"atiadmin", "password":"$USER_PASSWORD","expiration":"2099-01-01"}' 
