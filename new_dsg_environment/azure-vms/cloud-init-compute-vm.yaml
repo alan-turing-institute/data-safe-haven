@@ -124,7 +124,7 @@ write_files:
       # Restart the sssd daemon
       echo "Restarting sssd"
       systemctl restart sssd
-  - path: "/active_directory_step05_update_pam"
+  - path: "/active_directory_step04_update_pam"
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
@@ -165,8 +165,8 @@ runcmd:
   - echo "Restart xrdp"
   - service xrdp restart
   # Add execute permission to the Active Directory set up scripts
-  - chmod +x /active_directory_step01_pre
-  - chmod +x /active_directory_step02_realm_join
-  - chmod +x /active_directory_step03_update_sssd
-  - chmod +x /active_directory_step05_update_pam
+  - sudo chmod +x /active_directory_step01_pre
+  - sudo chmod +x /active_directory_step02_realm_join
+  - sudo chmod +x /active_directory_step03_update_sssd
+  - sudo chmod +x /active_directory_step04_update_pam
 
