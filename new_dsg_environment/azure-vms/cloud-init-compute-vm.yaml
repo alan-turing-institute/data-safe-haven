@@ -72,6 +72,67 @@ write_files:
       [login]
         krb4_convert = true
         krb4_get_tickets = false
+  - path: "/active_directory_step01_pre"
+    content: |
+      #!/bin/sh
+      # Set up Active Directory
+      # -----------------------
+      echo "Setting up Active Directory..."
+      # Ensure that sssd is running
+      echo "Ensuring that sssd is running"
+      systemctl status sssd.service
+      # Add information to hosts file
+      echo "Setting hostname"
+      echo "MACHINENAME" > /etc/hostname
+      cat /etc/hostname
+      echo "Adding MACHINENAME [$(hostname -I)] to /etc/hosts"
+      HOST_INFORMATION="$(hostname -I) MACHINENAME MACHINENAME.dsgroupdev.co.uk"
+      sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
+      cat /etc/hosts
+      # Set timezone
+      echo "Setting timezone"
+      timedatectl set-timezone Europe/London
+      # Create a default sssd.conf file
+      echo "Creating sssd config"
+      cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+      cat /etc/sssd/sssd.conf
+      # Edit LDAP config
+      echo "Creating LDAP config"
+      mv /ldap.conf /etc/ldap.conf
+      cat /etc/ldap.conf
+      # Store LDAP secret
+      echo "Storing LDAP secret"
+      echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
+      chmod 0600 /etc/ldap.secret
+      cat /etc/ldap.secret
+      # Edit Kerberos config
+      echo "Updating Kerberos config"
+      mv /krb5.conf /etc/krb5.conf
+      cat /etc/krb5.conf
+  - path: "/active_directory_step02_realm_join"
+    content: |
+      # Join the VM to the domain
+      echo "Joining VM to the domain"
+      cat /etc/ldap.secret | realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
+  - path: "/active_directory_step03_post"
+    content: |
+      # Check the sssd.conf file
+      echo "Updating sssd settings"
+      sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
+      sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
+      cat /etc/sssd/sssd.conf
+      # Restart the sssd daemon
+      echo "Restarting sssd"
+      systemctl restart sssd
+      # Edit the pam session configuration file
+      echo "Updating PAM configuration"
+      cat /etc/pam.d/common-session
+      PAM_INFORMATION="session_required|pam_mkhomedir.so|skel=/etc/skel|umask=0022"
+      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
+      cat common-session
+      mv common-session /etc/pam.d/common-session
+      cat /etc/pam.d/common-session
+      # reboot
 
 runcmd:
   # Make sure that sssd is running
@@ -103,57 +164,3 @@ runcmd:
   - echo "Restart xrdp"
   - service xrdp restart
 
-  # Set up Active Directory
-  # -----------------------
-  - echo "Setting up Active Directory..."
-  # Ensure that sssd is running
-  - echo "Ensuring that sssd is running"
-  - systemctl status sssd.service
-  # Add information to hosts file
-  - echo "Setting hostname"
-  - echo "MACHINENAME" > /etc/hostname
-  - cat /etc/hostname
-  - echo "Adding MACHINENAME [$(hostname -I)] to /etc/hosts"
-  - HOST_INFORMATION="$(hostname -I) MACHINENAME MACHINENAME.dsgroupdev.co.uk"
-  - sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
-  - cat /etc/hosts
-  # Set timezone
-  - echo "Setting timezone"
-  - timedatectl set-timezone Europe/London
-  # Create a default sssd.conf file
-  - echo "Creating sssd config"
-  - cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
-  - cat /etc/sssd/sssd.conf
-  # Edit LDAP config
-  - echo "Creating LDAP config"
-  - mv /ldap.conf /etc/ldap.conf
-  - cat /etc/ldap.conf
-  # Store LDAP secret
-  - echo "Storing LDAP secret"
-  - echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
-  - chmod 0600 /etc/ldap.secret
-  - cat /etc/ldap.secret
-  # Edit Kerberos config
-  - echo "Updating Kerberos config"
-  - mv /krb5.conf /etc/krb5.conf
-  - cat /etc/krb5.conf
-  # Join the VM to the domain
-  - echo "Joining VM to the domain"
-  - cat /etc/ldap.secret | realm join --verbose -U dsgpuldap dsgroupdev.co.uk --install=/
-  # Check the sssd.conf file
-  - echo "Updating sssd settings"
-  - sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
-  - sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
-  - cat /etc/sssd/sssd.conf
-  # Restart the sssd daemon
-  - echo "Restarting sssd"
-  - systemctl restart sssd
-  # Edit the pam session configuration file
-  - echo "Updating PAM configuration"
-  - cat /etc/pam.d/common-session
-  - PAM_INFORMATION="session_required|pam_mkhomedir.so|skel=/etc/skel|umask=0022"
-  - sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
-  - cat common-session
-  - mv common-session /etc/pam.d/common-session
-  - cat /etc/pam.d/common-session
-  - reboot
