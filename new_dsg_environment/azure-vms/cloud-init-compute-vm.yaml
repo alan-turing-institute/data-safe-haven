@@ -129,7 +129,7 @@ write_files:
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
       cat /etc/pam.d/common-session
-      PAM_INFORMATION="session_required|pam_mkhomedir.so|skel=/etc/skel|umask=0022"
+      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
       cat common-session
       mv common-session /etc/pam.d/common-session
@@ -169,4 +169,11 @@ runcmd:
   - sudo chmod +x /active_directory_step02_realm_join
   - sudo chmod +x /active_directory_step03_update_sssd
   - sudo chmod +x /active_directory_step04_update_pam
+  # Run the Active Directory set up scripts
+  - sudo /active_directory_step01_pre
+  - sudo /active_directory_step02_realm_join
+  - sudo /active_directory_step03_update_sssd
+  - sudo /active_directory_step04_update_pam
+  # Reboot
+  - reboot
 
