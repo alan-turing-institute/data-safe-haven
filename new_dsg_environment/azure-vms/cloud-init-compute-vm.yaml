@@ -163,4 +163,8 @@ runcmd:
   # Restart xrdp to reflect changes made above
   - echo "Restart xrdp"
   - service xrdp restart
+  # Add execute permission to the Active Directory set up scripts
+  - chmod +x /active_directory_step01_pre
+  - chmod +x /active_directory_step02_realm_join
+  - chmod +x /active_directory_step03_post
 
