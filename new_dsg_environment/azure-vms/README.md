@@ -68,12 +68,13 @@ This deploys from an image stored in a gallery in `subscription_source` into a r
 This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
 
 ```
-usage: deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-n machine_name] [-r resource_group] [-u user_name]
+usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]
   -h                        display help
   -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
-  -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'
-  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')
-  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults tG_TEST')
+  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)
+  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')
+  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
   -u user_name              specify a username for the admin account (defaults to 'atiadmin')
   -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')
   -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')

@@ -3,7 +3,7 @@
 # Options which are configurable at the command line
 SOURCEIMAGE="Ubuntu"
 MACHINENAME=""
-RESOURCEGROUP="RS_DSG_TEST"
+RESOURCEGROUP="RG_DSG_COMPUTE"
 SUBSCRIPTIONSOURCE="" # must be provided
 SUBSCRIPTIONTARGET="" # must be provided
 USERNAME="atiadmin"
@@ -36,7 +36,7 @@ print_usage_and_exit() {
     echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
     echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
     echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')"
-    echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
+    echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')"
     echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
     echo "  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')"
     echo "  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')"
