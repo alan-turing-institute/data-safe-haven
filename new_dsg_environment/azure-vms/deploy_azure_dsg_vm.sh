@@ -30,10 +30,11 @@ LDAP_SECRET_NAME="ldap-secret"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-n machine_name] [-r resource_group] [-u user_name]"
+    echo "usage: $0 -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]"
     echo "  -h                        display help"
     echo "  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')"
     echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
+    echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
     echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')"
     echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RS_DSG_TEST')"
     echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
@@ -46,7 +47,7 @@ print_usage_and_exit() {
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:n:r:u:s:t:v:w:z:x:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -56,6 +57,9 @@ while getopts "g:hi:n:r:u:s:t:v:w:z:x:" opt; do
             ;;
         i)
             SOURCEIMAGE=$OPTARG
+            ;;
+        x)
+            VERSION=$OPTARG
             ;;
         n)
             MACHINENAME=$OPTARG
@@ -80,9 +84,6 @@ while getopts "g:hi:n:r:u:s:t:v:w:z:x:" opt; do
             ;;
         z)
             VM_SIZE=$OPTARG
-            ;;
-        x)
-            VERSION=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
