@@ -88,12 +88,4 @@ Example usage
 ./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
 ```
 
-### Setting up Active Directory
-- Log into the VM as admin
-- Run the working steps as scripts
-  - sudo ./active_directory_step01_pre
-  - sudo ./active_directory_step02_realm_join
-  - sudo ./active_directory_step03_update_sssd
-- Display the contents of the step that doesn't work
-  - sudo cat /active_directory_step05_update_pam
-- Run each line by hand
+
