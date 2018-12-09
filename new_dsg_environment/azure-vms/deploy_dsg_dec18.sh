@@ -2,7 +2,7 @@
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version]"
+    echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]"
     echo "  -h                        display help"
     echo "  -d dsg_group_id            specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
     echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
