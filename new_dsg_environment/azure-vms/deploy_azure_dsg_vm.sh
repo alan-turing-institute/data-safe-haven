@@ -246,7 +246,7 @@ for RG in $(az group list --query "[].name" -o tsv); do
     fi
 done
 if [ "$DSG_SUBNET_RG" = "" ]; then
-    echo -e "${RED}Could not find subnet ${BLUE}$DSG_SUBNET${END} ${RED}in any resource group${END}"
+    echo -e "${RED}Could not find subnet ${BLUE}$DSG_SUBNET${END} ${RED}in vnet ${BLUE}$DSG_VNET${END} in ${RED}any resource group${END}"
     print_usage_and_exit
 else
     echo -e "${BOLD}Found subnet ${BLUE}$DSG_SUBNET${END} ${BOLD}as part of VNET ${BLUE}$DSG_VNET${END} ${BOLD}in resource group ${BLUE}$DSG_SUBNET_RG${END}"

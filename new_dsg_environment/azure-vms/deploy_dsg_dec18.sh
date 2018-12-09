@@ -101,15 +101,12 @@ if [ "$DSG_ID_UPPER" = "2" ]; then
     IP_PREFIX="10.250.10."
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
-    DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.18."
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
-    DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.26."
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
-    DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.42."
 fi
 
