@@ -11,6 +11,7 @@ DSG_NSG="NSG_Linux_Servers" # NB. this will disallow internet connection during 
 DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
+VERSION=""
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -45,7 +46,7 @@ print_usage_and_exit() {
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:n:r:u:s:t:v:w:z:" opt; do
+while getopts "g:hi:n:r:u:s:t:v:w:z:x:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -79,6 +80,9 @@ while getopts "g:hi:n:r:u:s:t:v:w:z:" opt; do
             ;;
         z)
             VM_SIZE=$OPTARG
+            ;;
+        x)
+            VERSION=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -115,21 +119,24 @@ else
     print_usage_and_exit
 fi
 
-# List available versions and set the last one in the list as default
-echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
-VERSIONS=$(az sig image-version list \
-            --resource-group $IMAGES_RESOURCEGROUP \
-            --gallery-name $IMAGES_GALLERY \
-            --gallery-image-definition $IMAGE_DEFINITION \
-            --query "[].name" -o table)
-echo -e "$VERSIONS"
-DEFAULT_VERSION=$(echo -e "$VERSIONS" | tail -n1)
-echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]. To accept the default ${BLUE}$DEFAULT_VERSION${END} ${BOLD}simply press [ENTER]${END}"
-read VERSION
-if [ "$VERSION" = "" ]; then VERSION=$DEFAULT_VERSION; fi
+# Prompt user to select version if not already supplied
+if [ "$VERSION" = "" ]; then
+    # List available versions and set the last one in the list as default
+    echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
+    VERSIONS=$(az sig image-version list \
+                --resource-group $IMAGES_RESOURCEGROUP \
+                --gallery-name $IMAGES_GALLERY \
+                --gallery-image-definition $IMAGE_DEFINITION \
+                --query "[].name" -o table)
+    echo -e "$VERSIONS"
+    DEFAULT_VERSION=$(echo -e "$VERSIONS" | tail -n1)
+    echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]. To accept the default ${BLUE}$DEFAULT_VERSION${END} ${BOLD}simply press [ENTER]${END}"
+    read VERSION
+    if [ "$VERSION" = "" ]; then VERSION=$DEFAULT_VERSION; fi
+fi
 
 # Check that this is a valid version and then get the image ID
-echo -e "${BOLD}Finding ID for image ${BLUE}${VERSION}${END}${BOLD}...${END}"
+echo -e "${BOLD}Finding ID for image ${BLUE}${IMAGE_DEFINITION}${END} version ${BLUE}${VERSION}${END}${BOLD}...${END}"
 if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Version $VERSION could not be found.${END}"
     print_usage_and_exit
