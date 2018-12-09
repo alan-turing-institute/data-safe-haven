@@ -244,7 +244,8 @@ az vm create ${PLANDETAILS} \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
   --size $VM_SIZE \
   --admin-username $USERNAME \
-  --admin-password $USER_PASSWORD
+  --admin-password $USER_PASSWORD \
+  --os-disk-size-gb 1024
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
