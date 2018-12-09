@@ -4,15 +4,16 @@
 print_usage_and_exit() {
     echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]"
     echo "  -h                        display help"
-    echo "  -d dsg_group_id            specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
+    echo "  -d dsg_group_id           specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
     echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
     echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
     echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
+    echo "  -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "d:hi:x:z:" opt; do
+while getopts "d:hi:x:z:q:" opt; do
     case $opt in
         d)
             DSG_ID=$OPTARG
@@ -28,6 +29,9 @@ while getopts "d:hi:x:z:" opt; do
             ;;
         z)
             VM_SIZE=$OPTARG
+            ;;
+        q)
+            FIXED_IP=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -76,6 +80,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    IP_PREFIX="10.250.250."
 else
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
@@ -86,14 +91,37 @@ else
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_LOWER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
 fi
-# Overwite defaults for DSG 1 and 2
+# Overwite defaults for per-DSG settings
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
+    IP_PREFIX="10.250.2."
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
+    IP_PREFIX="10.250.10."
+fi
+if [ "$DSG_ID_UPPER" = "3" ]; then
+    DSG_VNET="DSG_NEWS_VNET1"
+    IP_PREFIX="10.250.18."
+fi
+if [ "$DSG_ID_UPPER" = "4" ]; then
+    DSG_VNET="DSG_NEWS_VNET1"
+    IP_PREFIX="10.250.26."
+fi
+if [ "$DSG_ID_UPPER" = "6" ]; then
+    DSG_VNET="DSG_NEWS_VNET1"
+    IP_PREFIX="10.250.42."
 fi
 
-./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
- -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
- -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN"
+
+if [ "$FIXED_IP" = "" ]; then
+    ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
+        -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
+        -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN"
+else
+    IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
+    ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
+        -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
+        -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
+        -q "$IP_ADDRESS"
+fi

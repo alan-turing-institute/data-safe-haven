@@ -48,11 +48,12 @@ print_usage_and_exit() {
     echo "  -a ad_dc_name             specify Active Directory Domain Controller name (required)"
     echo "  -b ldap_base_dn           specify LDAP base DN"
     echo "  -c ldap_bind_dn           specify LDAP bind DN"
+    echo "  -q ip_address             specify a specific IP address to deploy the VM to (required)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -113,6 +114,9 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:" opt; do
             ;;
         c)
             LDAP_BIND_DN=$OPTARG
+            ;;
+        q)
+            IP_ADDRESS=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -290,18 +294,37 @@ sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" 
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
 STARTTIME=$(date +%s)
-az vm create ${PLANDETAILS} \
-  --resource-group $RESOURCEGROUP \
-  --name $MACHINENAME \
-  --image $IMAGE_ID \
-  --subnet $DSG_SUBNET_ID \
-  --nsg $DSG_NSG_ID \
-  --public-ip-address "" \
-  --custom-data $TMP_CLOUD_CONFIG_YAML \
-  --size $VM_SIZE \
-  --admin-username $USERNAME \
-  --admin-password $ADMIN_PASSWORD \
-  --os-disk-size-gb 1024
+
+if [ "$IP_ADDRESS" = "" ]; then
+    echo "${BOLD}Requesting a Dynamic IP address${END}"
+    az vm create ${PLANDETAILS} \
+      --resource-group $RESOURCEGROUP \
+      --name $MACHINENAME \
+      --image $IMAGE_ID \
+      --subnet $DSG_SUBNET_ID \
+      --nsg $DSG_NSG_ID \
+      --public-ip-address "" \
+      --custom-data $TMP_CLOUD_CONFIG_YAML \
+      --size $VM_SIZE \
+      --admin-username $USERNAME \
+      --admin-password $ADMIN_PASSWORD \
+      --os-disk-size-gb 1024
+else
+    echo "${BOLD}Creating VM with static IP address ${BLUE}${IP_ADDRESS}${END}"
+    az vm create ${PLANDETAILS} \
+          --resource-group $RESOURCEGROUP \
+          --name $MACHINENAME \
+          --image $IMAGE_ID \
+          --subnet $DSG_SUBNET_ID \
+          --nsg $DSG_NSG_ID \
+          --public-ip-address "" \
+          --custom-data $TMP_CLOUD_CONFIG_YAML \
+          --size $VM_SIZE \
+          --admin-username $USERNAME \
+          --admin-password $ADMIN_PASSWORD \
+          --os-disk-size-gb 1024 \
+          --private-ip-address $IP_ADDRESS
+fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
