@@ -24,9 +24,6 @@ IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 IMAGES_GALLERY="SIG_SH_COMPUTE"
 LOCATION="uksouth"
 LDAP_RESOURCEGROUP="RG_SH_LDAP"
-LDAP_VAULT_NAME="kvldap"
-LDAP_SECRET_NAME="ldap-secret"
-
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -43,11 +40,14 @@ print_usage_and_exit() {
     echo "  -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')"
     echo "  -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')"
     echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
+    echo "  -m management_vault_name  specify name of KeyVault containing management secrets (required)"
+    echo "  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)"
+    echo "  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -85,13 +85,22 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:" opt; do
         z)
             VM_SIZE=$OPTARG
             ;;
+        m)
+            MANAGEMENT_VAULT_NAME=$OPTARG
+            ;;
+        l)
+            LDAP_SECRET_NAME=$OPTARG
+            ;;
+        p)
+            ADMIN_PASSWORD_SECRET_NAME=$OPTARG
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             ;;
     esac
 done
 
-# Set default subscription
+# Set default machine name
 if [ "$MACHINENAME" = "" ]; then
     MACHINENAME="DSG$(date '+%Y%m%d%H%M')"
 fi
@@ -101,6 +110,26 @@ if [ "$SUBSCRIPTIONSOURCE" = "" ]; then
     echo -e "${RED}Source subscription is a required argument!${END}"
     print_usage_and_exit
 fi
+
+# Check that a management KeyVault name has been provided
+if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
+    echo -e "${RED}Management KeyVault name is a required argument!${END}"
+    print_usage_and_exit
+fi
+
+
+# Check that an admin password KeyVault secret name has been provided
+if [ "$LDAP_SECRET_NAME" = "" ]; then
+    echo -e "${RED}LDAP secret KeyVault secret name is a required argument!${END}"
+    print_usage_and_exit
+fi
+
+# Check that an admin password KeyVault secret name has been provided
+if [ "$ADMIN_PASSWORD_SECRET_NAME" = "" ]; then
+    echo -e "${RED}Admin password KeyVault secret name is a required argument!${END}"
+    print_usage_and_exit
+fi
+
 # Check that a target subscription has been provided
 if [ "$SUBSCRIPTIONTARGET" = "" ]; then
     echo -e "${RED}Target subscription is a required argument!${END}"
@@ -156,24 +185,6 @@ if [ "$(az group exists --name $LDAP_RESOURCEGROUP)" != "true" ]; then
     az group create --name $LDAP_RESOURCEGROUP --location $LOCATION
 fi
 
-# Create keyvault for secrets if it does not already exist
-# -------------------------------------------------------
-# Create keyvault if it does not already exist
-if [ "$(az keyvault list | grep $LDAP_VAULT_NAME)" = "" ]; then
-    echo -e "${BOLD}Creating keyvault ${BLUE}$LDAP_VAULT_NAME${END} ${BOLD}in ${BLUE}$LDAP_RESOURCEGROUP${END}"
-    az keyvault create --name ${LDAP_VAULT_NAME} --resource-group ${LDAP_RESOURCEGROUP} --enabled-for-deployment true
-fi
-# Wait for DNS propagation of keyvault
-sleep 10
-
-# Add password to vault
-if [ "$(az keyvault secret list --vault-name $LDAP_VAULT_NAME --query "[].id" | grep $LDAP_SECRET_NAME)" = "" ]; then
-    read -s -p "Enter LDAP password for this DSG (only needs to be done once): " LDAP_PASSWORD
-    echo ""
-    echo -e "${BOLD}Storing password in keyvault ${BLUE}$LDAP_VAULT_NAME${END}"
-    az keyvault secret set --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --value "$LDAP_PASSWORD"
-fi
-
 # Check that NSG exists
 # ---------------------
 DSG_NSG_RG=""
@@ -215,13 +226,11 @@ if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
 fi
 
-# Prompt for a user password
-echo -e "${BOLD}Admin username will be: ${BLUE}${USERNAME}${END}"
-read -s -p "Enter password for this user: " USER_PASSWORD
-echo ""
+# Retrieve admin password from keyvault
+ADMIN_PASSWORD=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
 
 # Get LDAP secret file with password in it (can't pass as a secret at VM creation)
-LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $LDAP_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
+LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
 
 # Create a new config file with the appropriate username and LDAP password
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
@@ -244,7 +253,7 @@ az vm create ${PLANDETAILS} \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
   --size $VM_SIZE \
   --admin-username $USERNAME \
-  --admin-password $USER_PASSWORD \
+  --admin-password $ADMIN_PASSWORD \
   --os-disk-size-gb 1024
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
