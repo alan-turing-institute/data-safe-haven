@@ -81,6 +81,12 @@ usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-
   -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
   -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')
   -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -m management_vault_name  specify name of KeyVault containing management secrets (required)
+  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)
+  -j ldap_user              specify the LDAP user (required)
+  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)
+  -d domain                 specify domain name for safe haven (required)
+
 ```
 
 Example usage

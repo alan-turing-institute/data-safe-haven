@@ -42,12 +42,17 @@ print_usage_and_exit() {
     echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
     echo "  -m management_vault_name  specify name of KeyVault containing management secrets (required)"
     echo "  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)"
+    echo "  -j ldap_user              specify the LDAP user (required)"
     echo "  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)"
+    echo "  -d domain                 specify domain name for safe haven (required)"
+    echo "  -a ad_dc_name             specify Active Directory Domain Controller name (required)"
+    echo "  -b ldap_base_dn           specify LDAP base DN"
+    echo "  -c ldap_bind_dn           specify LDAP bind DN"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -94,6 +99,21 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:" opt; do
         p)
             ADMIN_PASSWORD_SECRET_NAME=$OPTARG
             ;;
+        j)
+            LDAP_USER=$OPTARG
+            ;;
+        d)
+            DOMAIN=$OPTARG
+            ;;
+        a)
+            AD_DC_NAME=$OPTARG
+            ;;
+        b)
+            LDAP_BASE_DN=$OPTARG
+            ;;
+        c)
+            LDAP_BIND_DN=$OPTARG
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             ;;
@@ -118,9 +138,21 @@ if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
 fi
 
 
-# Check that an admin password KeyVault secret name has been provided
+# Check that an LDAP secret KeyVault secret name has been provided
 if [ "$LDAP_SECRET_NAME" = "" ]; then
     echo -e "${RED}LDAP secret KeyVault secret name is a required argument!${END}"
+    print_usage_and_exit
+fi
+
+# Check that an LDAP username has been provided
+if [ "$LDAP_USER" = "" ]; then
+    echo -e "${RED}LDAP user is a required argument!${END}"
+    print_usage_and_exit
+fi
+
+# Check that an domain has been provided
+if [ "$DOMAIN" = "" ]; then
+    echo -e "${RED}Daomain is a required argument!${END}"
     print_usage_and_exit
 fi
 
@@ -180,10 +212,6 @@ if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
-if [ "$(az group exists --name $LDAP_RESOURCEGROUP)" != "true" ]; then
-    echo -e "${BOLD}Creating resource group ${BLUE}$LDAP_RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
-    az group create --name $LDAP_RESOURCEGROUP --location $LOCATION
-fi
 
 # Check that NSG exists
 # ---------------------
@@ -226,6 +254,8 @@ if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
     PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
 fi
 
+# Construct the cloud-init yaml file for the target subscription
+# --------------------------------------------------------------
 # Retrieve admin password from keyvault
 ADMIN_PASSWORD=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
 
@@ -234,9 +264,26 @@ LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_N
 
 # Create a new config file with the appropriate username and LDAP password
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")   
+TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
 rm $TMP_CLOUD_CONFIG_PREFIX
-sed -e 's/USERNAME/'${USERNAME}'/g' -e 's/LDAP_SECRET_PLAINTEXT/'${LDAP_SECRET_PLAINTEXT}'/g' -e 's/MACHINENAME/'${MACHINENAME}'/g' cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
+DOMAIN_UPPER=$(echo "$DOMAIN" | tr '[:lower:]' '[:upper:]')
+DOMAIN_LOWER=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')
+AD_DC_NAME_UPPER=$(echo "$AD_DC_NAME" | tr '[:lower:]' '[:upper:]')
+AD_DC_NAME_LOWER=$(echo "$AD_DC_NAME" | tr '[:upper:]' '[:lower:]')
+
+# Define regexes
+USERNAME_REGEX="s/USERNAME/"${USERNAME}"/g"
+LDAP_SECRET_REGEX="s/LDAP_SECRET_PLAINTEXT/"${LDAP_SECRET_PLAINTEXT}"/g"
+MACHINE_NAME_REGEX="s/MACHINENAME/${MACHINENAME}/g"
+LDAP_USER_REGEX="s/LDAP_USER/${LDAP_USER}/g"
+DOMAIN_LOWER_REGEX="s/DOMAIN_LOWER/${DOMAIN_LOWER}/g"
+DOMAIN_UPPER_REGEX="s/DOMAIN_UPPER/${DOMAIN_UPPER}/g"
+LDAP_BASE_DN_REGEX="s/LDAP_BASE_DN/${LDAP_BASE_DN}/g"
+LDAP_BIND_DN_REGEX="s/LDAP_BIND_DN/${LDAP_BIND_DN}/g"
+AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
+AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
+# Substitute regexes
+sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" cloud-init-compute-vm.yaml > $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
