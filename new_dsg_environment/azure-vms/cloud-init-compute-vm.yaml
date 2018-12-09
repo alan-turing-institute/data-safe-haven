@@ -175,6 +175,11 @@ runcmd:
   - sudo /active_directory_step02_realm_join
   - sudo /active_directory_step03_update_sssd
   - sudo /active_directory_step04_update_pam
+  # Remove the Active Directory set up scripts (as these contain secrets and are world readable
+  - sudo rm /active_directory_step01_pre
+  - sudo rm /active_directory_step02_realm_join
+  - sudo rm /active_directory_step03_update_sssd
+  - sudo rm /active_directory_step04_update_pam
   # Reboot
   - reboot
 
