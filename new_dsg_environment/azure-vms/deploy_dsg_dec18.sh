@@ -18,6 +18,7 @@ while getopts "d:hz:q:" opt; do
             ;;
         h)
             print_usage_and_exit
+            ;;
         z)
             VM_SIZE=$OPTARG
             ;;
@@ -45,8 +46,6 @@ if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "
 fi
 
 # Gallery image details
-SOURCEIMAGE="Ubuntu"
-BASE_VERSION="0.0.2018120701"
 
 # Deployed VM parameters
 VM_SIZE="Standard_DS2_v2"
@@ -87,34 +86,40 @@ fi
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     IP_PREFIX="10.250.250."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
     IP_PREFIX="10.250.2."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.10."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
     # Only change settings below here during a DSG
-    VERSION=BASE_VERSION
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 
 
