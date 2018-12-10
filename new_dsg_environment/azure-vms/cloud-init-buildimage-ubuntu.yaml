@@ -375,7 +375,8 @@ runcmd:
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
-  - export ANACONDA_INSTALL_SCRIPT="Anaconda3-5.3.1-Linux-x86_64.sh"
+  # - export ANACONDA_INSTALL_SCRIPT="Anaconda3-5.3.1-Linux-x86_64.sh"
+  - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
   - curl -O https://repo.anaconda.com/archive/${ANACONDA_INSTALL_SCRIPT}
@@ -397,16 +398,27 @@ runcmd:
   # Prepare environments
   - echo "*** Initial conda environments... ***"
   - conda env list
-  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pandas pandas-datareader pandas-profiling pandasql pystan pytorch r-irkernel scikit-image scikit-learn tensorflow torchvision"
-  - export PYTHON27EXTRA="monocle"
-  - export PYTHON35EXTRA="jupyterhub jupyterhub-ldapauthenticator"
-  - export PYTHON36EXTRA="jupyterhub jupyterhub-ldapauthenticator"
+  # Explicitly requested packages
+  - export PYALLREQUESTEDPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pandas pandas-datareader pandas-profiling pandasql pystan pytorch r-irkernel scikit-image scikit-learn tensorflow torchvision"
+  - export PY27REQUESTEDPACKAGES="monocle"
+  - export PY35REQUESTEDPACKAGES="jupyterhub jupyterhub-ldapauthenticator"
+  - export PY36REQUESTEDPACKAGES="jupyterhub jupyterhub-ldapauthenticator"
+  # Packages from Anaconda recommendations
+  - export PYALLANACONDAPACKAGES="alabaster asn1crypto astroid astropy attrs babel backports backports.shutil_get_terminal_size beautifulsoup4 bitarray bkcharts blas blaze bleach blosc bokeh boto bottleneck bzip2 ca-certificates cairo certifi cffi chardet click cloudpickle clyent colorama contextlib2 cryptography curl cycler cython cytoolz dask dask-core datashape dbus decorator distributed docutils entrypoints et_xmlfile expat fastcache filelock flask flask-cors fontconfig freetype get_terminal_size gevent glib glob2 gmp gmpy2 graphite2 greenlet gst-plugins-base gstreamer h5py harfbuzz hdf5 heapdict html5lib icu idna imageio imagesize intel-openmp ipython ipython_genutils ipywidgets isort itsdangerous jbig jdcal jedi jinja2 jpeg jsonschema jupyter jupyter_console jupyter_core jupyterlab_launcher kiwisolver lazy-object-proxy libcurl libedit libffi libgcc-ng libgfortran-ng libpng libsodium libssh2 libstdcxx-ng libtiff libtool libxcb libxml2 libxslt llvmlite locket lxml lzo markupsafe matplotlib mccabe mistune mkl mkl-service mkl_fft mkl_random more-itertools mpc mpfr mpmath msgpack-python multipledispatch navigator-updater nbconvert nbformat ncurses networkx nltk nose numba numexpr numpy numpy-base numpydoc odo olefile openpyxl openssl packaging pandoc pandocfilters pango parso partd patchelf path.py pathlib2 patsy pcre pep8 pexpect pickleshare pillow pip pixman pkginfo pluggy ply prompt_toolkit psutil ptyprocess py pycodestyle pycosat pycparser pycrypto pycurl pyflakes pygments pylint pyodbc pyopenssl pyparsing pyqt pysocks pytables pytest python-dateutil pytz pywavelets pyyaml pyzmq qt qtawesome qtconsole qtpy readline requests rope ruamel_yaml scipy seaborn send2trash setuptools simplegeneric singledispatch sip six snappy snowballstemmer sortedcollections sortedcontainers sphinx sphinxcontrib sphinxcontrib-websupport spyder sqlalchemy sqlite statsmodels sympy tblib terminado testpath tk toolz tornado traitlets unicodecsv unixodbc urllib3 wcwidth webencodings werkzeug wheel widgetsnbextension wrapt xlrd xlsxwriter xlwt xz yaml zeromq zict zlib"
+  - export PY27ANACONDAPACKAGES="appdirs atomicwrites automat backports.functools_lru_cache backports_abc cdecimal configparser constantly defusedxml enum34 fribidi funcsigs functools32 futures grin hyperlink incremental ipaddress libuuid linecache2 monocle prometheus_client pyasn1 pyasn1-modules pycairo scandir service_identity spyder-kernels ssl_match_hostname subprocess32 tqdm traceback2 twisted typing unittest2 zlib zope zope.interface"
+  - export PY35ANACONDAPACKAGES="backcall pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata typing zlib"
+  - export PY36ANACONDAPACKAGES="appdirs atomicwrites automat backcall constantly defusedxml fribidi hyperlink incremental jeepney keyring libuuid prometheus_client pyasn1 pyasn1-modules pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata secretstorage service_identity spyder-kernels tqdm twisted typed-ast zlib zope zope.interface"
+  # Packages from other recommendations....
+  # None yet
   - echo "*** Working on py27 environment... ***"
-  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES $PYTHON27EXTRA; else conda install -y --verbose --name py27 $PYTHONPACKAGES $PYTHON27EXTRA; fi
+  - export PYTHON27PACKAGES="$PYALLREQUESTEDPACKAGES $PY27REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY27ANACONDAPACKAGES"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
   - echo "*** Working on py35 environment... ***"
-  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES $PYTHON35EXTRA; else conda install -y --verbose --name py35 $PYTHONPACKAGES $PYTHON35EXTRA; fi
+  - export PYTHON35PACKAGES="$PYALLREQUESTEDPACKAGES $PY35REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY35ANACONDAPACKAGES"
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHON35PACKAGES; else conda install -y --verbose --name py35 $PYTHON35PACKAGES; fi
   - echo "*** Working on py36 environment... ***"
-  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES $PYTHON36EXTRA; else conda install -y --verbose --name py36 $PYTHONPACKAGES $PYTHON36EXTRA; fi
+  - export PYTHON36PACKAGES="$PYALLREQUESTEDPACKAGES $PY36REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY36ANACONDAPACKAGES"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
   - echo "*** Skipping conda cleanup to permit new virtual environments to be created by users... ***"
   - echo "*** Final conda environments... ***"
   - conda env list
