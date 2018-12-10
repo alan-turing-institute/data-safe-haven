@@ -243,8 +243,8 @@ else
     echo -e "${BOLD}Found NSG ${BLUE}$DSG_NSG${END} ${BOLD}in resource group ${BLUE}$DSG_NSG_RG${END}"
 fi
 
-# Ensure that insecure NSG exists (used for deployment only)
-# ----------------------------------------------------------
+# Ensure that NSG with outbound internet access exists (used for deployment only)
+# -------------------------------------------------------------------------------
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG

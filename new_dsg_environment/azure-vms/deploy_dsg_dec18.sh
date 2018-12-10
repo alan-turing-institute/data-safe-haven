@@ -97,6 +97,7 @@ fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
     IP_PREFIX="10.250.2."
+    CLOUD_INIT_YAML=""
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -104,24 +105,28 @@ fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.10."
+    CLOUD_INIT_YAML=""
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
+    CLOUD_INIT_YAML=""
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-4.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
+    CLOUD_INIT_YAML=""
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
