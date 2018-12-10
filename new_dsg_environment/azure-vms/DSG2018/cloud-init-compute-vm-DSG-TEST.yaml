@@ -104,7 +104,6 @@ write_files:
       echo "Storing LDAP secret"
       echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
       chmod 0600 /etc/ldap.secret
-      cat /etc/ldap.secret
       # Edit Kerberos config
       echo "Updating Kerberos config"
       mv /krb5.conf /etc/krb5.conf
