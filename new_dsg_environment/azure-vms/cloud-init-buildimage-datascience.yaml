@@ -137,6 +137,7 @@ runcmd:
   - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels anaconda
+  - conda config --add channels auto
   - conda config --add channels conda-forge
   - conda config --add channels pytorch
   - conda config --add channels r
@@ -148,12 +149,15 @@ runcmd:
   - echo "*** Initial conda environments... ***"
   - conda env list
   - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pandas pandas-datareader pandas-profiling pandasql pystan pytorch r-irkernel scikit-image scikit-learn tensorflow torchvision"
+  - export PYTHON27EXTRA="monocle"
+  - export PYTHON35EXTRA="jupyterhub jupyterhub-ldapauthenticator"
+  - export PYTHON36EXTRA="jupyterhub jupyterhub-ldapauthenticator"
   - echo "*** Working on py27 environment... ***"
-  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES; else conda install -y --verbose --name py27 $PYTHONPACKAGES; fi
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES $PYTHON27EXTRA; else conda install -y --verbose --name py27 $PYTHONPACKAGES $PYTHON27EXTRA; fi
   - echo "*** Working on py35 environment... ***"
-  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py35 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES $PYTHON35EXTRA; else conda install -y --verbose --name py35 $PYTHONPACKAGES $PYTHON35EXTRA; fi
   - echo "*** Working on py36 environment... ***"
-  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES $PYTHON36EXTRA; else conda install -y --verbose --name py36 $PYTHONPACKAGES $PYTHON36EXTRA; fi
   - echo "*** Skipping conda cleanup to permit new virtual environments to be created by users... ***"
   - echo "*** Final conda environments... ***"
   - conda env list
