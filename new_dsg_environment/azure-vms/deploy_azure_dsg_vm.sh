@@ -310,7 +310,7 @@ if [ "$IP_ADDRESS" = "" ]; then
       --admin-password $ADMIN_PASSWORD \
       --os-disk-size-gb 1024
 else
-    echo "${BOLD}Creating VM with static IP address ${BLUE}${IP_ADDRESS}${END}"
+    echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
     az vm create ${PLANDETAILS} \
           --resource-group $RESOURCEGROUP \
           --name $MACHINENAME \
