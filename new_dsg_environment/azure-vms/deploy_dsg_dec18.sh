@@ -5,28 +5,19 @@ print_usage_and_exit() {
     echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]"
     echo "  -h                        display help"
     echo "  -d dsg_group_id           specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
-    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
-    echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
     echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
     echo "  -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "d:hi:x:z:q:" opt; do
+while getopts "d:hz:q:" opt; do
     case $opt in
         d)
             DSG_ID=$OPTARG
             ;;
         h)
             print_usage_and_exit
-            ;;
-        i)
-            SOURCEIMAGE=$OPTARG
-            ;;
-        x)
-            VERSION=$OPTARG
-            ;;
         z)
             VM_SIZE=$OPTARG
             ;;
@@ -55,14 +46,14 @@ fi
 
 # Gallery image details
 SOURCEIMAGE="Ubuntu"
-VERSION="0.0.2018120701"
-RESOURCEGROUP="RG_DSG_COMPUTE"
+BASE_VERSION="0.0.2018120701"
 
 # Deployed VM parameters
 VM_SIZE="Standard_DS2_v2"
 USERNAME="atiadmin"
 
 # Deployment environment
+RESOURCEGROUP="RG_DSG_COMPUTE"
 DSG_SUBNET="Subnet-Data"
 DSG_NSG="NSG_Linux_Servers"
 
@@ -71,6 +62,7 @@ MANAGEMENT_VAULT_NAME="dsg-management-test"
 LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
 ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
+# Set defaults for test and production environments
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     DSG_VNET="DSG_DSGROUPTEST_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
@@ -80,7 +72,6 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
-    IP_PREFIX="10.250.250."
 else
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
@@ -91,23 +82,39 @@ else
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_LOWER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
 fi
+
 # Overwite defaults for per-DSG settings
+if [ "$DSG_ID_UPPER" = "TEST" ]; then
+    IP_PREFIX="10.250.250."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
+fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
     IP_PREFIX="10.250.2."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.10."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
+    # Only change settings below here during a DSG
+    VERSION=BASE_VERSION
 fi
 
 
