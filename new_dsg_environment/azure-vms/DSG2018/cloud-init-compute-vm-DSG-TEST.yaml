@@ -140,9 +140,11 @@ runcmd:
   - echo "Installing bluesky"
   - echo "*** Working on py35 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py35 pyopengl pyopengl-accelerate
+  - /anaconda/envs/py35/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install bluesky-simulator
   - echo "*** Working on py36 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
+  - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================

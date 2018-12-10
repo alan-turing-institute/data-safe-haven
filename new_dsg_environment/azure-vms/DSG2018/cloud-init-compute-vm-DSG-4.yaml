@@ -104,7 +104,6 @@ write_files:
       echo "Storing LDAP secret"
       echo "LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
       chmod 0600 /etc/ldap.secret
-      cat /etc/ldap.secret
       # Edit Kerberos config
       echo "Updating Kerberos config"
       mv /krb5.conf /etc/krb5.conf
@@ -129,10 +128,8 @@ write_files:
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
-      cat /etc/pam.d/common-session
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
-      cat common-session
       mv common-session /etc/pam.d/common-session
       cat /etc/pam.d/common-session
 
@@ -143,9 +140,11 @@ runcmd:
   - echo "Installing bluesky"
   - echo "*** Working on py35 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py35 pyopengl pyopengl-accelerate
+  - /anaconda/envs/py35/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install bluesky-simulator
   - echo "*** Working on py36 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
+  - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
