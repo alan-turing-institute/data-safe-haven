@@ -1,7 +1,4 @@
 alabaster
-anaconda-client
-anaconda-navigator
-anaconda-project
 appdirs
 asn1crypto
 astroid
@@ -35,9 +32,6 @@ click
 cloudpickle
 clyent
 colorama
-conda
-conda-build
-conda-env
 configparser
 constantly
 contextlib2
