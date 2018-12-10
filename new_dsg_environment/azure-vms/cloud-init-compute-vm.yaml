@@ -128,10 +128,8 @@ write_files:
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
-      cat /etc/pam.d/common-session
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
-      cat common-session
       mv common-session /etc/pam.d/common-session
       cat /etc/pam.d/common-session
 
