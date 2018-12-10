@@ -353,7 +353,7 @@ echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute
 STARTTIME=$(date +%s)
 
 if [ "$IP_ADDRESS" = "" ]; then
-    echo -e "${BOLD}Requesting a Dynamic IP address${END}"
+    echo -e "${BOLD}Requesting a dynamic IP address${END}"
     az vm create ${PLANDETAILS} \
       --resource-group $RESOURCEGROUP \
       --name $MACHINENAME \
@@ -395,7 +395,6 @@ while true; do
     if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
     sleep 10
 done
-az vm nic show --resource-group $RESOURCEGROUP --vm-name $MACHINENAME --nic "${MACHINENAME}VMNic"
 
 # Switch NSG and restart
 echo -e "${BOLD}Switching to secure NSG: ${BLUE}${DSG_NSG}${END}"
@@ -405,4 +404,4 @@ az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
-echo -e "${BOLD}This new VM can be accessed with remote desktop at ${BLUE}${PRIVATEIP}${END}"
+echo -e "${BOLD}This new VM can be accessed with SSH or remote desktop at ${BLUE}${PRIVATEIP}${END}"
