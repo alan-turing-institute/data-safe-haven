@@ -30,7 +30,7 @@ print_usage_and_exit() {
     echo "usage: $0 -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]"
     echo "  -h                        display help"
     echo "  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')"
-    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'"
+    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
     echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
     echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')"
     echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')"
@@ -172,7 +172,7 @@ if [ "$SUBSCRIPTIONTARGET" = "" ]; then
     print_usage_and_exit
 fi
 
-# Search for available images and prompt user to select one
+# Look up specified image definition
 az account set --subscription "$SUBSCRIPTIONSOURCE"
 if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
     IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
@@ -180,6 +180,8 @@ elif [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     IMAGE_DEFINITION="ComputeVM-UbuntuTorch1804Base"
 elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     IMAGE_DEFINITION="ComputeVM-DataScienceBase"
+elif [ "$SOURCEIMAGE" = "DSG" ]; then
+    IMAGE_DEFINITION="ComputeVM-DsgBase"
 else
     echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
     print_usage_and_exit
