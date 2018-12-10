@@ -82,6 +82,8 @@ else
     LDAP_BIND_DN="CN=DSG${DSG_ID_LOWER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
 fi
 
+# ComputeVM-DsgBase version 0.0.2018121000 is a direct copy of Ubuntu version 0.0.2018120701 (/subscriptions/1e79c270-3126-43de-b035-22c3118dd488/resourceGroups/RG_SH_IMAGEGALLERY/providers/Microsoft.Compute/images/ImageComputeVM-Ubuntu1804Base-201812071437)
+
 # Overwite defaults for per-DSG settings
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     IP_PREFIX="10.250.250."
