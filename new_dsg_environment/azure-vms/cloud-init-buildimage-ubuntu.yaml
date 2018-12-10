@@ -379,7 +379,7 @@ runcmd:
   - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/${ANACONDA_INSTALL_SCRIPT}
+  - curl -O https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
   - sed -i 's|\(.*\)"|\1:/anaconda/bin"|' /etc/environment
