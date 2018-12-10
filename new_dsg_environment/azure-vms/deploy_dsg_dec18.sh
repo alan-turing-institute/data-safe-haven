@@ -88,8 +88,8 @@ fi
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     IP_PREFIX="10.250.250."
     # Only change settings below here during a DSG
-    SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    SOURCEIMAGE="DSG"
+    VERSION="0.0.2018121000"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
