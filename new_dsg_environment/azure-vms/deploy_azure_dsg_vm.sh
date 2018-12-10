@@ -298,7 +298,7 @@ echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute
 STARTTIME=$(date +%s)
 
 if [ "$IP_ADDRESS" = "" ]; then
-    echo "${BOLD}Requesting a Dynamic IP address${END}"
+    echo -e "${BOLD}Requesting a Dynamic IP address${END}"
     az vm create ${PLANDETAILS} \
       --resource-group $RESOURCEGROUP \
       --name $MACHINENAME \
