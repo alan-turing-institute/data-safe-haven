@@ -269,7 +269,6 @@ singledispatch
 sip
 six
 six
-smart-open
 snappy
 snowballstemmer
 sortedcollections
