@@ -198,11 +198,11 @@ jupyter-core
 jupyterhub
 jupyterlab
 jupyterlab-launcher
-Keras
-Keras-Applications
-Keras-Preprocessing
+keras
+keras-applications
+keras-preprocessing
 kiwisolver
-Lasagne
+lasagne
 lazy-object-proxy
 librosa
 lightgbm

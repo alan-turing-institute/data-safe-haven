@@ -10,9 +10,9 @@ astropy
 attrs
 babel
 backports
+backports_abc
 backports.functools_lru_cache
 backports.shutil_get_terminal_size
-backports_abc
 beautifulsoup4
 bitarray
 bkcharts
@@ -64,10 +64,10 @@ fastcache
 ffmpeg
 filelock
 flask
-Flask
+flask
 flask-cors
-Flask-SocketIO
-Flask-WTF
+flask-SocketIO
+flask-WTF
 fontconfig
 freeglut
 freetype
@@ -156,9 +156,9 @@ matplotlib
 mccabe
 mistune
 mkl
-mkl-service
 mkl_fft
 mkl_random
+mkl-service
 more-itertools
 mpc
 mpfr
@@ -201,8 +201,6 @@ pep8
 pexpect
 pickleshare
 pillow
-Pillow
-pip
 pip
 pixman
 pkginfo
@@ -292,7 +290,7 @@ tornado
 traitlets
 typing
 unicodecsv
-Unidecode
+unidecode
 unixodbc
 urllib3
 wcwidth
@@ -301,7 +299,7 @@ werkzeug
 wheel
 widgetsnbextension
 wrapt
-WTForms
+wtforms
 xlrd
 xlsxwriter
 xlwt

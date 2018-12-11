@@ -60,7 +60,9 @@ jsonpickle
 jsonschema
 jupyter_client
 jupyter_core
-Keras
+keras
+keras-applications
+keras-preprocessing
 kiwisolver
 libedit
 libffi
@@ -74,7 +76,7 @@ libuuid
 libxcb
 libxml2
 lightgbm
-Markdown
+markdown
 markupsafe
 matplotlib
 mistune
@@ -118,8 +120,8 @@ pyasn1
 pyasn1-modules
 pycparser
 pygments
-PyJWT
-PyNaCl
+pyjwt
+pynacl
 pyopenssl
 pyparsing
 pyqt
@@ -127,7 +129,7 @@ python
 python-dateutil
 pytorch
 pytz
-PyYAML
+pyyaml
 pyzmq
 qt
 readline
@@ -136,7 +138,7 @@ requests-oauthlib
 ruamel.yaml
 scikit-learn
 scipy
-SecretStorage
+secretstorage
 send2trash
 service_identity
 setuptools
@@ -164,7 +166,7 @@ urllib3
 wcwidth
 webencodings
 websocket-client
-Werkzeug
+werkzeug
 wheel
 wheel
 widgetsnbextension
