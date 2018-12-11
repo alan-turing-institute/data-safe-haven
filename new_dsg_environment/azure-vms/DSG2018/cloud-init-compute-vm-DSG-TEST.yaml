@@ -142,7 +142,7 @@ runcmd:
   - /anaconda/envs/py27/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install --upgrade pip
-  # Install pandas and sklearn to python environments
+  # Install python packages: (list below)
   - echo "Installing pandas and sklearn"
   - echo "*** Working on py27 environment... ***"
   - export PYTHONPACKAGES="basemap bokeh fbprophet geopandas gpflow keras matplotlib numpy pandas pandas_profiling scikit-learn seaborn tensorflow tsfresh"
@@ -154,16 +154,19 @@ runcmd:
   - echo "*** Working on py36 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   - /anaconda/bin/conda update --all --name py36
+  # Install R packages: fbprophet
+  - echo "Installing facebook prophet"
+  - Rscript -e "install.packages('prophet')"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
-  # # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
-  # - echo "Change ownership of /anaconda/"
-  # - chgrp -R plugdev /anaconda/
-  # - chmod -R g=u /anaconda/
-  # - chmod -R go-w /anaconda/
+  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  - echo "Change ownership of /anaconda/"
+  - chgrp -R plugdev /anaconda/
+  - chmod -R g=u /anaconda/
+  - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
   - echo "source activate py36" >> /etc/bash.bashrc
