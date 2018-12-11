@@ -136,6 +136,32 @@ write_files:
 runcmd:
   # ==========================================
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
+  # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
+  # Upgrade pip in anticipation of using it to install some packages
+  - echo "Upgrading pip"
+  - /anaconda/envs/py27/bin/pip install --upgrade pip
+  - /anaconda/envs/py36/bin/pip install --upgrade pip
+  - /anaconda/envs/py35/bin/pip install --upgrade pip
+  # Install python packages: (list below)
+  - echo "Installing additional python packages"
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet geopandas keras matplotlib numpy pandas pandas-profiling scikit-learn seaborn tensorflow tsfresh"
+  - export PYTHON27PACKAGES=""
+  - export PYTHON35PACKAGES="gpflow"
+  - export PYTHON36PACKAGES="gpflow"
+  # Remove packages that cause conflicts with desired packages
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON27PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
+  # - echo "*** Working on py35 environment... ***"
+  # - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON35PACKAGES"
+  # - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
+  - echo "*** Working on py36 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
+  # Install R packages: fbprophet
+  - echo "Installing additional R packages"
+  - Rscript -e "install.packages('prophet')"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Make sure that sssd is running

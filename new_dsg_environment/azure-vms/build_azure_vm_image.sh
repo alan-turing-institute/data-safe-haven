@@ -21,11 +21,11 @@ NSGNAME="NSG_IMAGE_BUILD"
 # Document usage for this script
 print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image] [-n machine_name] [-r resource_group]"
-    echo "  -h                 display help"
+    echo "  -h                            display help"
     echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
     echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
     echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -z vm_size (optional)  Size of the VM to use for build (defaults to 'Standard_F2s_v2')"
+    echo "  -z vm_size (optional)         size of the VM to use for build (defaults to 'Standard_F2s_v2')"
     exit 1
 }
 
