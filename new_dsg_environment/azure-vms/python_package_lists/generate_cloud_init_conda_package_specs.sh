@@ -55,50 +55,10 @@ echo "  - export PY35ANACONDA_PACKAGES=\"${CONDA_35}\"" >> $OUTFILE
 echo "  - export PY36ANACONDA_PACKAGES=\"${CONDA_36}\"" >> $OUTFILE
 echo "" >> $OUTFILE
 
-# Insert packages installed in the Microsoft Azure Data Science VM
-# Python 2.7 (conda): Package name only from output of "conda list" in "base" conda environment in DSVM
-# Python 3.5 (conda): Package name only from output of "conda list" in "py35" conda environment in DSVM
-# Python 3.6 (conda): Package name only from output of "conda list" in "py36" conda environment in DSVM
-
-# Consolidate packages common to all environments
-COMMON_27_35=$(mktemp)
-comm -12 dsvm-conda-27.list dsvm-conda-35.list > $COMMON_27_35
-COMMON_27_35_36=$(mktemp)
-comm -12 $COMMON_27_35 dsvm-conda-36.list > $COMMON_27_35_36
-DSVM_COMMON=$(tr '\n' ' ' < $COMMON_27_35_36)
-
-# Generate list in Python 2.7 but not in common list (comm -13 shows only entries unique to file 2)
-EXTRA_27=$(mktemp)
-comm -13 $COMMON_27_35_36 dsvm-conda-27.list > $EXTRA_27
-DSVM_27=$(tr '\n' ' ' < $EXTRA_27)
-# Generate list in Python 3.5 but not in common list (comm -13 shows only entries unique to file 2)
-EXTRA_35=$(mktemp)
-comm -13 $COMMON_27_35_36 dsvm-conda-35.list > $EXTRA_35
-DSVM_35=$(tr '\n' ' ' < $EXTRA_35)
-# Generate list in Python 3.6 but not in common list (comm -13 shows only entries unique to file 2)
-EXTRA_36=$(mktemp)
-comm -13 $COMMON_27_35_36 dsvm-conda-36.list > $EXTRA_36
-DSVM_36=$(tr '\n' ' ' < $EXTRA_36)
-
-# Tidy up temp files
-rm $COMMON_27_35
-rm $COMMON_27_35_36
-rm $EXTRA_27
-rm $EXTRA_35
-rm $EXTRA_36
-
-# Insert Azure DSVM conda packages
-echo "  # Azure DSVM conda packages" >> $OUTFILE
-echo "  - export PYALLDSVM_PACKAGES=\"${DSVM_COMMON}\"" >> $OUTFILE
-echo "  - export PY27DSVM_PACKAGES=\"${DSVM_27}\"" >> $OUTFILE
-echo "  - export PY35DSVM_PACKAGES=\"${DSVM_35}\"" >> $OUTFILE
-echo "  - export PY36DSVM_PACKAGES=\"${DSVM_36}\"" >> $OUTFILE
-echo "" >> $OUTFILE
-
 echo "  # Consolidate package lists for each Python version" >> $OUTFILE
-echo "  - export PYTHON27PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY27REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY27ANACONDAPACKAGES \$PYALLDSVM_PACKAGES \$PY27DSVM_PACKAGES\"" >> $OUTFILE
-echo "  - export PYTHON35PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY35REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY35ANACONDAPACKAGES \$PYALLDSVM_PACKAGES \$PY35DSVM_PACKAGES\"" >> $OUTFILE
-echo "  - export PYTHON36PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY36REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY36ANACONDAPACKAGES \$PYALLDSVM_PACKAGES \$PY36DSVM_PACKAGES\"" >> $OUTFILE
+echo "  - export PYTHON27PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY27REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY27ANACONDAPACKAGES\"" >> $OUTFILE
+echo "  - export PYTHON35PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY35REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY35ANACONDAPACKAGES\"" >> $OUTFILE
+echo "  - export PYTHON36PACKAGES=\"\$PYALLREQUESTEDPACKAGES \$PY36REQUESTEDPACKAGES \$PYALLANACONDAPACKAGES \$PY36ANACONDAPACKAGES\"" >> $OUTFILE
 
 #Insert block footer
 echo "  # ***** END DEFINING PACKAGES FOR ANACONDA ***" >> $OUTFILE
