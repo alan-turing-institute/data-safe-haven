@@ -136,16 +136,23 @@ write_files:
 runcmd:
   # ==========================================
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
-  # Install bluesky to python environments - use explicit paths as cloud-init runs in /bin/sh not /bin/bash
+  # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
+  # Upgrade pip in anticipation of using it to install some packages
+  - echo "Upgraading pip"
+  - /anaconda/envs/py27/bin/pip install --upgrade pip
+  - /anaconda/envs/py36/bin/pip install --upgrade pip
+  - /anaconda/envs/py35/bin/pip install --upgrade pip
+  # Install bluesky to python environments
   - echo "Installing bluesky"
   - echo "*** Working on py35 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py35 pyopengl pyopengl-accelerate
-  - /anaconda/envs/py35/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install bluesky-simulator
   - echo "*** Working on py36 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
-  - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
+  # Install facebook prophet
+  - echo "Installing facbook prophet"
+  - Rscript -e "install.packages('prophet')"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Make sure that sssd is running
