@@ -289,7 +289,7 @@ fi
         --name OutboundAllowLDAP \
         --description "Outbound allow LDAP" \
         --access "Allow" \
-        --source-address-prefixes "*" \
+        --source-address-prefixes VirtualNetwork \
         --source-port-ranges "*" \
         --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
         --destination-port-ranges 88 389 636 \
