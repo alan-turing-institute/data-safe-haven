@@ -145,13 +145,15 @@ runcmd:
   # Install pandas and sklearn to python environments
   - echo "Installing pandas and sklearn"
   - echo "*** Working on py27 environment... ***"
-  # - export PYTHONPACKAGES="basemap bokeh fbprophet geopandas gpflow keras matplotlib numpy pandas pandas_profiling scikit-learn seaborn tensorflow tsfresh"
-  - export PYTHONPACKAGES="pandas scikit-learn"
+  - export PYTHONPACKAGES="basemap bokeh fbprophet geopandas gpflow keras matplotlib numpy pandas pandas_profiling scikit-learn seaborn tensorflow tsfresh"
   - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
+  - /anaconda/bin/conda update --all --name py27
   - echo "*** Working on py35 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
+  - /anaconda/bin/conda update --all --name py35
   - echo "*** Working on py36 environment... ***"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
+  - /anaconda/bin/conda update --all --name py36
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Make sure that sssd is running

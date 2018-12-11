@@ -248,7 +248,6 @@ fi
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
-fi
     if [ "$SUBSCRIPTIONTARGET" == "Data Study Group Testing" ]; then
         LDAP_SERVER_IP_RANGE="10.220.1.0/24"
     else
@@ -308,7 +307,7 @@ fi
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 3000
-# fi
+fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
 echo -e "${RED}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${RED}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
 
