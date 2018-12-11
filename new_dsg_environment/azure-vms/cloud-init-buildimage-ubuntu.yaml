@@ -416,7 +416,7 @@ runcmd:
   - export PYALLANACONDA_PACKAGES="alabaster asn1crypto astroid astropy attrs babel backports backports.shutil_get_terminal_size beautifulsoup4 bitarray bkcharts blas blaze bleach blosc bokeh boto bottleneck bzip2 ca-certificates cairo certifi cffi chardet click cloudpickle clyent colorama contextlib2 cryptography curl cycler cython cytoolz dask dask-core datashape dbus decorator distributed docutils entrypoints et_xmlfile expat fastcache filelock flask flask-cors fontconfig freetype get_terminal_size gevent glib glob2 gmp gmpy2 graphite2 greenlet gst-plugins-base gstreamer h5py harfbuzz hdf5 heapdict html5lib icu idna imageio imagesize intel-openmp ipykernel ipython ipython_genutils ipywidgets isort itsdangerous jbig jdcal jedi jinja2 jpeg jsonschema jupyter jupyter_client jupyter_console jupyter_core jupyterlab jupyterlab_launcher keras kiwisolver lazy-object-proxy libcurl libedit libffi libgcc-ng libgfortran-ng libpng libsodium libssh2 libstdcxx-ng libtiff libtool libxcb libxml2 libxslt llvmlite locket lxml lzo markupsafe matplotlib mccabe mistune mkl mkl-service mkl_fft mkl_random more-itertools mpc mpfr mpmath msgpack-python multipledispatch navigator-updater nbconvert nbformat ncurses networkx nltk nose notebook numba numexpr numpy numpy-base numpydoc odo olefile openpyxl openssl packaging pandas pandas-datareader pandas-profiling pandasql pandoc pandocfilters pango parso partd patchelf path.py pathlib2 patsy pcre pep8 pexpect pickleshare pillow pip pixman pkginfo pluggy ply prompt_toolkit psutil ptyprocess py pycodestyle pycosat pycparser pycrypto pycurl pyflakes pygments pylint pyodbc pyopenssl pyparsing pyqt pysocks pystan pytables pytest python python-dateutil pytorch pytz pywavelets pyyaml pyzmq qt qtawesome qtconsole qtpy r-irkernel readline requests rope ruamel_yaml scikit-image scikit-learn scipy seaborn send2trash setuptools simplegeneric singledispatch sip six snappy snowballstemmer sortedcollections sortedcontainers sphinx sphinxcontrib sphinxcontrib-websupport spyder sqlalchemy sqlite statsmodels sympy tblib tensorflow terminado testpath tk toolz torchvision tornado traitlets unicodecsv unixodbc urllib3 wcwidth webencodings werkzeug wheel widgetsnbextension wrapt xlrd xlsxwriter xlwt xz yaml zeromq zict zlib "
   - export PY27ANACONDA_PACKAGES="appdirs atomicwrites automat backports.functools_lru_cache backports_abc cdecimal configparser constantly defusedxml enum34 fribidi funcsigs functools32 futures grin hyperlink incremental ipaddress libuuid linecache2 monocle prometheus_client pyasn1 pyasn1-modules pycairo scandir service_identity spyder-kernels ssl_match_hostname subprocess32 tqdm traceback2 twisted typing unittest2 zope zope.interface "
   - export PY35ANACONDA_PACKAGES="backcall jupyterhub jupyterhub-ldapauthenticator pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata typing "
-  - export PY36ANACONDA_PACKAGES="_ipyw_jlab_nb_ext_conf appdirs atomicwrites automat backcall constantly defusedxml fribidi hyperlink incremental jeepney jupyterhub jupyterhub-ldapauthenticator keyring libuuid prometheus_client pyasn1 pyasn1-modules pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata secretstorage service_identity spyder-kernels tqdm twisted typed-ast zope zope.interface "
+  - export PY36ANACONDA_PACKAGES="appdirs atomicwrites automat backcall constantly defusedxml fribidi hyperlink incremental jeepney jupyterhub jupyterhub-ldapauthenticator keyring libuuid prometheus_client pyasn1 pyasn1-modules pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata secretstorage service_identity spyder-kernels tqdm twisted typed-ast zope zope.interface "
 
   # Consolidate package lists for each Python version
   - export PYTHON27PACKAGES="$PYALLREQUESTEDPACKAGES $PY27REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY27ANACONDAPACKAGES"
@@ -425,18 +425,27 @@ runcmd:
   # ***** END DEFINING PACKAGES FOR ANACONDA ***
 
   # Create or install conda environments
+  # Python 2.7
   - echo "*** Working on py27 environment... ***"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
+  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
+  - conda activate py27
+  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
+  # Python 3.5
   - echo "*** Working on py35 environment... ***"
   - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHON35PACKAGES; else conda install -y --verbose --name py35 $PYTHON35PACKAGES; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
+  - conda activate py35
+  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
+  # Python 3.6
   - echo "*** Working on py36 environment... ***"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+  - conda activate py36
+  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
   - echo "*** Skipping conda cleanup to permit new virtual environments to be created by users... ***"
   - echo "*** Final conda environments... ***"
   - conda env list
-  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
 
   # Ensure that R packages are installed
   # Set number of cores R should use to install packages to the number of cores available on the VM
@@ -543,7 +552,6 @@ runcmd:
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
