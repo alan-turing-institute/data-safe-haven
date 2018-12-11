@@ -19,6 +19,7 @@ SAS_PERMISSIONS="rw"
 SAS_SERVICES="b"
 SAS_RESOURCE_TYPES="co"
 
+REQUEST_DELAY=0.5
 # Transfer netflow data (2-90)
 echo ""
 echo "Transferring netflow data"
@@ -41,6 +42,8 @@ for i in $(seq -f "%02g" 2 90); do
         COPY_STATUS=$(az storage blob show --account-name $STORAGE_ACCOUNT --container-name $STORAGE_CONTAINER --name $BLOB_NAME --query "join(' - copied ', [properties.copy.status, properties.copy.progress])" | xargs echo)
         echo "skipping (copy status: $COPY_STATUS)"
     fi
+    # Throttle requests to avoid failures due to Azure throttling us
+    sleep REQUEST_DELAY
 done
 
 # Transfer wls data (1-90)
@@ -65,4 +68,6 @@ for i in $(seq -f "%02g" 1 90); do
         COPY_STATUS=$(az storage blob show --account-name $STORAGE_ACCOUNT --container-name $STORAGE_CONTAINER --name $BLOB_NAME --query "join(' - copied ', [properties.copy.status, properties.copy.progress])" | xargs echo)
         echo "skipping (copy status: $COPY_STATUS)"
     fi
+    # Throttle requests to avoid failures due to Azure throttling us
+    sleep REQUEST_DELAY
 done
