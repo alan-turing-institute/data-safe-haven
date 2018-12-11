@@ -263,7 +263,7 @@ fi
         --description "Inbound allow LDAP" \
         --access "Allow" \
         --source-address-prefixes $LDAP_SERVER_IP_RANGE \
-        --source-port-ranges 88 389 636 749 \
+        --source-port-ranges 88 389 636 \
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
         --protocol "*" \
@@ -292,7 +292,7 @@ fi
         --source-address-prefixes VirtualNetwork \
         --source-port-ranges "*" \
         --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
-        --destination-port-ranges 88 389 636 749 \
+        --destination-port-ranges "*" \
         --protocol "*" \
         --priority 2000
     az network nsg rule create \
