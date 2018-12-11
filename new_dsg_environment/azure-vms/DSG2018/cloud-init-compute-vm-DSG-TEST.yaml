@@ -138,21 +138,20 @@ runcmd:
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
   # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
   # Upgrade pip in anticipation of using it to install some packages
-  - echo "Upgraading pip"
+  - echo "Upgrading pip"
   - /anaconda/envs/py27/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install --upgrade pip
-  # Install bluesky to python environments
-  - echo "Installing bluesky"
+  # Install pandas and sklearn to python environments
+  - echo "Installing pandas and sklearn"
+  - echo "*** Working on py27 environment... ***"
+  # - export PYTHONPACKAGES="basemap bokeh fbprophet geopandas gpflow keras matplotlib numpy pandas pandas_profiling scikit-learn seaborn tensorflow tsfresh"
+  - export PYTHONPACKAGES="pandas scikit-learn"
+  - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
   - echo "*** Working on py35 environment... ***"
-  - /anaconda/bin/conda install -y --verbose --name py35 pyopengl pyopengl-accelerate
-  - /anaconda/envs/py35/bin/pip install bluesky-simulator
+  - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
   - echo "*** Working on py36 environment... ***"
-  - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
-  - /anaconda/envs/py36/bin/pip install bluesky-simulator
-  # Install facebook prophet
-  - echo "Installing facbook prophet"
-  - Rscript -e "install.packages('prophet')"
+  - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Make sure that sssd is running

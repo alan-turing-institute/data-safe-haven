@@ -138,7 +138,7 @@ runcmd:
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
   # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
   # Upgrade pip in anticipation of using it to install some packages
-  - echo "Upgraading pip"
+  - echo "Upgrading pip"
   - /anaconda/envs/py27/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install --upgrade pip
@@ -151,7 +151,7 @@ runcmd:
   - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
   # Install facebook prophet
-  - echo "Installing facbook prophet"
+  - echo "Installing facebook prophet"
   - Rscript -e "install.packages('prophet')"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================

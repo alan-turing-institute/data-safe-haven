@@ -248,24 +248,13 @@ fi
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
+fi
     if [ "$SUBSCRIPTIONTARGET" == "Data Study Group Testing" ]; then
         LDAP_SERVER_IP_RANGE="10.220.1.0/24"
     else
         LDAP_SERVER_IP_RANGE="10.251.0.0/24"
     fi
-    az network nsg rule create \
-        --resource-group $DSG_NSG_RG \
-        --nsg-name $DEPLOYMENT_NSG \
-        --direction Inbound \
-        --name InboundDenyAll \
-        --description "Inbound deny all" \
-        --access "Deny" \
-        --source-address-prefixes "*" \
-        --source-port-ranges "*" \
-        --destination-address-prefixes "*" \
-        --destination-port-ranges "*" \
-        --protocol "*" \
-        --priority 3000
+    # Inbound: allow LDAP then deny all
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
         --nsg-name $DEPLOYMENT_NSG \
@@ -279,7 +268,47 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 2000
-fi
+    az network nsg rule create \
+        --resource-group $DSG_NSG_RG \
+        --nsg-name $DEPLOYMENT_NSG \
+        --direction Inbound \
+        --name InboundDenyAll \
+        --description "Inbound deny all" \
+        --access "Deny" \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*" \
+        --destination-address-prefixes "*" \
+        --destination-port-ranges "*" \
+        --protocol "*" \
+        --priority 3000
+    # Outbound: allow LDAP then deny all Virtual Network
+    az network nsg rule create \
+        --resource-group $DSG_NSG_RG \
+        --nsg-name $DEPLOYMENT_NSG \
+        --direction Outbound \
+        --name OutboundAllowLDAP \
+        --description "Outbound allow LDAP" \
+        --access "Allow" \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*" \
+        --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --destination-port-ranges 88 389 636 \
+        --protocol "*" \
+        --priority 2000
+    az network nsg rule create \
+        --resource-group $DSG_NSG_RG \
+        --nsg-name $DEPLOYMENT_NSG \
+        --direction Outbound \
+        --name OutboundDenyVNet \
+        --description "Outbound deny virtual network" \
+        --access "Deny" \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*" \
+        --destination-address-prefixes VirtualNetwork \
+        --destination-port-ranges "*" \
+        --protocol "*" \
+        --priority 3000
+# fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
 echo -e "${RED}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${RED}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
 
@@ -347,32 +376,32 @@ STARTTIME=$(date +%s)
 if [ "$IP_ADDRESS" = "" ]; then
     echo -e "${BOLD}Requesting a dynamic IP address${END}"
     az vm create ${PLANDETAILS} \
-      --resource-group $RESOURCEGROUP \
-      --name $MACHINENAME \
-      --image $IMAGE_ID \
-      --subnet $DSG_SUBNET_ID \
-      --nsg $DEPLOYMENT_NSG_ID \
-      --public-ip-address "" \
-      --custom-data $TMP_CLOUD_CONFIG_YAML \
-      --size $VM_SIZE \
-      --admin-username $USERNAME \
-      --admin-password $ADMIN_PASSWORD \
-      --os-disk-size-gb 1024
+        --resource-group $RESOURCEGROUP \
+        --name $MACHINENAME \
+        --image $IMAGE_ID \
+        --subnet $DSG_SUBNET_ID \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --public-ip-address "" \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --size $VM_SIZE \
+        --admin-username $USERNAME \
+        --admin-password $ADMIN_PASSWORD \
+        --os-disk-size-gb 1024
 else
     echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
     az vm create ${PLANDETAILS} \
-          --resource-group $RESOURCEGROUP \
-          --name $MACHINENAME \
-          --image $IMAGE_ID \
-          --subnet $DSG_SUBNET_ID \
-          --nsg $DEPLOYMENT_NSG_ID \
-          --public-ip-address "" \
-          --custom-data $TMP_CLOUD_CONFIG_YAML \
-          --size $VM_SIZE \
-          --admin-username $USERNAME \
-          --admin-password $ADMIN_PASSWORD \
-          --os-disk-size-gb 1024 \
-          --private-ip-address $IP_ADDRESS
+        --resource-group $RESOURCEGROUP \
+        --name $MACHINENAME \
+        --image $IMAGE_ID \
+        --subnet $DSG_SUBNET_ID \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --public-ip-address "" \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --size $VM_SIZE \
+        --admin-username $USERNAME \
+        --admin-password $ADMIN_PASSWORD \
+        --os-disk-size-gb 1024 \
+        --private-ip-address $IP_ADDRESS
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
