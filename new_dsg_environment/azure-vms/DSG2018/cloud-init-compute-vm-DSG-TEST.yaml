@@ -145,13 +145,20 @@ runcmd:
   # Install python packages: (list below)
   - echo "Installing pandas and sklearn"
   - echo "*** Working on py27 environment... ***"
-  - export PYTHONPACKAGES="basemap bokeh fbprophet geopandas gpflow keras matplotlib numpy pandas pandas_profiling scikit-learn seaborn tensorflow tsfresh"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet geopandas keras matplotlib numpy pandas pandas-profiling scikit-learn seaborn tensorflow tsfresh"
+  - export PYTHON27PACKAGES=""
+  - export PYTHON35PACKAGES="gpflow"
+  - export PYTHON36PACKAGES="gpflow"
+  # Remove packages that cause conflicts with desired packages
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON27PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
   - /anaconda/bin/conda update --all --name py27
   - echo "*** Working on py35 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON35PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
   - /anaconda/bin/conda update --all --name py35
   - echo "*** Working on py36 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   - /anaconda/bin/conda update --all --name py36
   # Install R packages: fbprophet
