@@ -418,10 +418,13 @@ runcmd:
   - export PY35ANACONDA_PACKAGES="backcall jupyterhub jupyterhub-ldapauthenticator pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata typing "
   - export PY36ANACONDA_PACKAGES="_ipyw_jlab_nb_ext_conf appdirs atomicwrites automat backcall constantly defusedxml fribidi hyperlink incremental jeepney jupyterhub jupyterhub-ldapauthenticator keyring libuuid prometheus_client pyasn1 pyasn1-modules pytest-arraydiff pytest-astropy pytest-doctestplus pytest-openfiles pytest-remotedata secretstorage service_identity spyder-kernels tqdm twisted typed-ast zope zope.interface "
 
+  # Anaconda meta packages
+  - export ANACONDAMETAPACKAGES = "anaconda-client anaconda-navigator anaconda-project conda conda-build conda-env"
+
   # Consolidate package lists for each Python version
-  - export PYTHON27PACKAGES="$PYALLREQUESTEDPACKAGES $PY27REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY27ANACONDAPACKAGES"
-  - export PYTHON35PACKAGES="$PYALLREQUESTEDPACKAGES $PY35REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY35ANACONDAPACKAGES"
-  - export PYTHON36PACKAGES="$PYALLREQUESTEDPACKAGES $PY36REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY36ANACONDAPACKAGES"
+  - export PYTHON27PACKAGES="$PYALLREQUESTEDPACKAGES $PY27REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY27ANACONDAPACKAGES $ANACONDAMETAPACKAGES"
+  - export PYTHON35PACKAGES="$PYALLREQUESTEDPACKAGES $PY35REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY35ANACONDAPACKAGES $ANACONDAMETAPACKAGES"
+  - export PYTHON36PACKAGES="$PYALLREQUESTEDPACKAGES $PY36REQUESTEDPACKAGES $PYALLANACONDAPACKAGES $PY36ANACONDAPACKAGES $ANACONDAMETAPACKAGES"
   # ***** END DEFINING PACKAGES FOR ANACONDA ***
 
   # Create or install conda environments
