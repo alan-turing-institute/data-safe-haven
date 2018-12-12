@@ -13,14 +13,14 @@ asn1crypto
 astor
 astroid
 astropy
-async-generator
+async_generator
 attrs
 audioread
 autovizwidget
 babel
 backcall
 backports
-backports.shutil-get-terminal-size
+backports.shutil_get_terminal_size
 beautifulsoup4
 bitarray
 bitstring
@@ -76,7 +76,6 @@ docutils
 easydict
 entrypoints
 enum34
-et-xmlfile
 et_xmlfile
 expat
 fastcache
@@ -125,7 +124,6 @@ imutils
 intel-openmp
 ipykernel
 ipython
-ipython-genutils
 ipython_genutils
 ipywidgets
 isodate
@@ -140,15 +138,11 @@ joblib
 jpeg
 jsonschema
 jupyter
-jupyter-client
-jupyter-console
-jupyter-core
 jupyter_client
 jupyter_console
 jupyter_core
 jupyterhub
 jupyterlab
-jupyterlab-launcher
 jupyterlab_launcher
 keras
 keras-applications
@@ -186,8 +180,6 @@ matplotlib
 mccabe
 mistune
 mkl
-mkl-fft
-mkl-random
 mkl-service
 mkl_fft
 mkl_random
@@ -205,9 +197,6 @@ msrestazure
 multipledispatch
 mxnet
 mxnet-model-server
-nb-anacondacloud
-nb-conda
-nb-conda-kernels
 nb_anacondacloud
 nb_conda
 nb_conda_kernels
@@ -263,8 +252,7 @@ plotly
 pluggy
 ply
 progressbar33
-prometheus-client
-prompt-toolkit
+prometheus_client
 prompt_toolkit
 protobuf
 psutil
@@ -304,7 +292,6 @@ pytest-doctestplus
 pytest-openfiles
 pytest-remotedata
 pytest-runner
-python
 python-dateutil
 python-editor
 python-oauth2
@@ -328,9 +315,7 @@ requests-toolbelt
 resampy
 retrying
 rope
-ruamel-yaml
 ruamel.yaml
-ruamel_yaml
 s3transfer
 scikit-image
 scikit-learn
@@ -342,7 +327,7 @@ simplegeneric
 singledispatch
 sip
 six
-smart-open
+smart_open
 snappy
 snowballstemmer
 sortedcollections
@@ -350,7 +335,7 @@ sortedcontainers
 soundFile
 sparkmagic
 sphinx
-sphinx-rtd-theme
+sphinx_rtd_theme
 sphinxcontrib
 sphinxcontrib-websupport
 spyder
