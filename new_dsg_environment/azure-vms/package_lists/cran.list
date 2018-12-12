@@ -63,11 +63,11 @@ foreach
 forecast
 foreign
 Formula
+gamlss
 gamlss.dist
 gamlss.mx
 gamlss.nl
 gamlss.spatial
-gamlss
 gbm
 gdata
 GGally
@@ -85,6 +85,7 @@ grid
 gridExtra
 gtable
 h2o
+here
 highr
 Hmisc
 htmltools
@@ -94,6 +95,7 @@ igraph
 irace
 IRdisplay
 iterators
+janitor
 jsonlite
 kernlab
 KernSmooth
@@ -143,6 +145,7 @@ plyr
 polycor
 pomp
 PReMiuM
+prophet
 pscl
 purrr
 pvclust
@@ -155,12 +158,12 @@ RCurl
 readr
 readtext
 readxl
+realxl
 repr
 reshape
 reshape2
 revealjs
 rgdal
-realxl
 rgeos
 rgl
 rJava
@@ -197,6 +200,7 @@ stringr
 surveillance
 survival
 synthpop
+tableone
 tcltk2
 testthat
 text2vec
@@ -221,6 +225,7 @@ vcd
 vioplot
 viridis
 visNetwork
+wavethresh
 wordcloud
 xgboost
 XLConnect
