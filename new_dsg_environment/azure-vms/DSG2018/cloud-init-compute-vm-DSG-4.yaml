@@ -145,10 +145,10 @@ runcmd:
   # Install python packages: (list below)
   - echo "Installing additional python packages"
   - echo "*** Working on py27 environment... ***"
-  - export PYTHONALLPACKAGES="basemap bokeh fbprophet geopandas keras matplotlib numpy pandas pandas-profiling scikit-learn seaborn tsfresh"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet gensim geopandas keras matplotlib numpy pandas pandas-profiling pyLDAvis pymc3 scikit-learn seaborn tsfresh"
   - export PYTHON27PACKAGES="tensorflow"
-  - export PYTHON35PACKAGES="gpflow pyopengl pyopengl-accelerate pygpu tensorflow-gpu"
-  - export PYTHON36PACKAGES="gpflow pyopengl pyopengl-accelerate pygpu tensorflow-gpu"
+  - export PYTHON35PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
+  - export PYTHON36PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
   # Remove packages that cause conflicts with desired packages
   - echo "*** Working on py27 environment... ***"
   - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON27PACKAGES"
@@ -161,9 +161,9 @@ runcmd:
   - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
-  # Install facebook prophet
-  - echo "Installing facebook prophet"
-  - Rscript -e "install.packages('prophet')"
+  # Install R packages: fbprophet
+  - echo "Installing additional R packages"
+  - Rscript -e "install.packages(c('here', 'prophet', 'janitor', 'tableone', 'wavethresh'))"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Create shared data folder and grant all users access
