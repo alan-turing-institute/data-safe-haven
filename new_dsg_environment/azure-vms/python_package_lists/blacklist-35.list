@@ -18,6 +18,7 @@ gym
 horovod
 importlib2
 imutils
+lasagne
 libcurl
 libedit
 libffi
