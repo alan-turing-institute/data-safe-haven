@@ -2,6 +2,7 @@ anaconda
 anaconda-client
 anaconda-project
 applicationinsights
+audioread
 autovizwidget
 bitstring
 blobxfer
@@ -35,6 +36,7 @@ libxcb
 libxml2
 libxslt
 msgpack
+mxnet
 mxnet-model-server
 onnx-chainer
 onnx-mxnet
