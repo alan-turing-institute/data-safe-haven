@@ -145,7 +145,7 @@ runcmd:
   # Install python packages: (list below)
   - echo "Installing additional python packages"
   - echo "*** Working on py27 environment... ***"
-  - export PYTHONALLPACKAGES="basemap bokeh fbprophet geopandas keras matplotlib numpy pandas pandas-profiling pymc3 scikit-learn seaborn tsfresh"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet gensim geopandas keras matplotlib numpy pandas pandas-profiling pyLDAvis pymc3 scikit-learn seaborn tsfresh"
   - export PYTHON27PACKAGES="tensorflow"
   - export PYTHON35PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
   - export PYTHON36PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
