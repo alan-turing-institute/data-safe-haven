@@ -16,6 +16,7 @@ gym
 horovod
 importlib2
 imutils
+msgpack
 mxnet-model-server
 onnx-chainer
 onnx-mxnet
