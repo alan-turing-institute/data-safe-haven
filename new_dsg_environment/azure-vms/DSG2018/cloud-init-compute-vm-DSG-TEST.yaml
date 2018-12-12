@@ -156,6 +156,7 @@ runcmd:
   # - echo "*** Working on py35 environment... ***"
   # - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON35PACKAGES"
   # - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
+  # - /anaconda/envs/py35/bin/pip install bluesky-simulator
   - echo "*** Working on py36 environment... ***"
   - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
