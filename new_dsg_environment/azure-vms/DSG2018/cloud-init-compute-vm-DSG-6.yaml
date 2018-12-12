@@ -164,9 +164,6 @@ runcmd:
   - Rscript -e "install.packages('prophet')"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
-  # Create shared data folder and grant all users access
-  - sudo mkdir /data
-  - sudo chmod go+rw /data
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart

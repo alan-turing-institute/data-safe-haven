@@ -142,13 +142,24 @@ runcmd:
   - /anaconda/envs/py27/bin/pip install --upgrade pip
   - /anaconda/envs/py36/bin/pip install --upgrade pip
   - /anaconda/envs/py35/bin/pip install --upgrade pip
-  # Install bluesky to python environments
-  - echo "Installing bluesky"
-  - echo "*** Working on py35 environment... ***"
-  - /anaconda/bin/conda install -y --verbose --name py35 pyopengl pyopengl-accelerate
-  - /anaconda/envs/py35/bin/pip install bluesky-simulator
+  # Install python packages: (list below)
+  - echo "Installing additional python packages"
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet geopandas keras matplotlib numpy pandas pandas-profiling scikit-learn seaborn tensorflow tsfresh"
+  - export PYTHON27PACKAGES=""
+  - export PYTHON35PACKAGES="gpflow pyopengl pyopengl-accelerate"
+  - export PYTHON36PACKAGES="gpflow pyopengl pyopengl-accelerate"
+  # Remove packages that cause conflicts with desired packages
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON27PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
+  # - echo "*** Working on py35 environment... ***"
+  # - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON35PACKAGES"
+  # - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
+  # - /anaconda/envs/py35/bin/pip install bluesky-simulator
   - echo "*** Working on py36 environment... ***"
-  - /anaconda/bin/conda install -y --verbose --name py36 pyopengl pyopengl-accelerate
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
   # Install facebook prophet
   - echo "Installing facebook prophet"
