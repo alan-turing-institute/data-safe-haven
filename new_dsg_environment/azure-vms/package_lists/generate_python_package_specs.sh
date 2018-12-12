@@ -2,7 +2,7 @@
 
 # Insert block header
 echo "  # ***** START DEFINING PACKAGES FOR ANACONDA ***"
-echo "  # DO NOT EDIT BY HAND: Update the generate_cloud_init_conda_package_specs.sh script and run it to re-generate this section"
+echo "  # DO NOT EDIT BY HAND: Update the requested-<python version> lists then run generate_python_package_specs.sh to re-generate this section"
 
 # Construct combined lists
 # These consist of
