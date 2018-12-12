@@ -329,8 +329,6 @@ protobuf
 psutil
 psycopg2
 ptyprocess
-py
-pyOpenSSL
 pyasn1
 pyasn1-modules
 pyaudio

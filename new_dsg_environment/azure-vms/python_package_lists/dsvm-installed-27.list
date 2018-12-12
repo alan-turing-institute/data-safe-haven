@@ -205,7 +205,6 @@ prompt_toolkit
 protobuf
 psutil
 ptyprocess
-py
 py-opencv
 pycairo
 pycodestyle

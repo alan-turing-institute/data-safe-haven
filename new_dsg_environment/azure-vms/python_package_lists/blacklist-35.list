@@ -2,6 +2,7 @@ anaconda
 anaconda-client
 anaconda-project
 applicationinsights
+bitstring
 blobxfer
 chainercv
 chainermn
@@ -9,6 +10,7 @@ chainerrl
 cntk-gpu
 color
 databricks-cli
+easydict
 enum34
 gym
 horovod

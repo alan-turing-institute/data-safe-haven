@@ -98,6 +98,7 @@ horovod
 importlib2
 imutils
 jupyterlab-launcher
+msgpack
 mxnet-model-server
 onnx-chainer
 onnx-mxnet
