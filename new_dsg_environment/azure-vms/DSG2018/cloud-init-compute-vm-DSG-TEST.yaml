@@ -162,7 +162,7 @@ runcmd:
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
   # Install R packages: fbprophet
   - echo "Installing additional R packages"
-  - Rscript -e "install.packages(c('here', 'prophet', 'janitor', 'tableone', 'wavefresh'))"
+  - Rscript -e "install.packages(c('here', 'prophet', 'janitor', 'tableone', 'wavethresh'))"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Create shared data folder and grant all users access
