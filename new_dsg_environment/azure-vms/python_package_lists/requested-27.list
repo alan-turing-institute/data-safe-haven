@@ -19,8 +19,6 @@ plotly
 pygpu
 pyLDAvis
 pymc3
-pyopengl
-pyopengl-accelerate
 pystan
 pytorch
 r-irkernel
