@@ -43,6 +43,7 @@ onnx-chainer
 onnx-mxnet
 onnxmltools
 onnxruntime
+progressbar33
 pycuda
 pydocumentdb
 pydot-ng

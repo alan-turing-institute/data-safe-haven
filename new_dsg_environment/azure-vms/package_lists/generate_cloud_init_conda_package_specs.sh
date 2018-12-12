@@ -27,21 +27,13 @@ echo "  - export PY_COMMON_PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xa
 echo "  - export PY_27_PACKAGES=\"$(comm -23 $COMBINED_27 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
 echo "  - export PY_35_PACKAGES=\"$(comm -23 $COMBINED_35 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
 echo "  - export PY_36_PACKAGES=\"$(comm -23 $COMBINED_36 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
-# rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
+rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
 
 # Use lists to construct appropriate environment variables
 echo "  # Consolidate package lists for each Python version"
 echo "  - export PYTHON27PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_27_PACKAGES\""
 echo "  - export PYTHON35PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_35_PACKAGES\""
 echo "  - export PYTHON36PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_36_PACKAGES\""
-
-echo -e "\n\n"
-echo "export PYTHON27PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs) $(comm -23 $COMBINED_27 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
-echo -e "\n\n"
-echo "export PYTHON35PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs) $(comm -23 $COMBINED_35 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
-echo -e "\n\n"
-echo "export PYTHON36PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs) $(comm -23 $COMBINED_36 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
-rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
 
 # Insert block footer
 echo "  # ***** END DEFINING PACKAGES FOR ANACONDA ***"

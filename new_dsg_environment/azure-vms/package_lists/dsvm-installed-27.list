@@ -65,7 +65,7 @@ ffmpeg
 filelock
 flask
 flask-cors
-flask-socketiO
+flask-socketio
 flask-wtf
 fontconfig
 freeglut
