@@ -8,7 +8,6 @@ anaconda-client
 anaconda-project
 appdirs
 applicationinsights
-argparse
 asn1crypto
 astor
 astroid
@@ -258,7 +257,6 @@ protobuf
 psutil
 psycopg2
 ptyprocess
-py
 pyaudio
 pycodestyle
 pycosat
