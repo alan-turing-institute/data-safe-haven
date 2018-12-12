@@ -107,6 +107,7 @@ onnxmltools
 onnxruntime
 pycuda
 pydocumentdb
+pydot-ng
 pygame
 soundfile
 tables

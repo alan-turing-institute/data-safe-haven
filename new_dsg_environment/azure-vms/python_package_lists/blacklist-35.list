@@ -28,3 +28,4 @@ pygame
 soundfile
 tables
 tf2onnx
+typing-extensions
