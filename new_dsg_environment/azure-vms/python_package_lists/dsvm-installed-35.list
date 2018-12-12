@@ -85,7 +85,6 @@ filelock
 flake8
 flaky
 flask
-flask-Cors
 flask-cors
 fontconfig
 freetype

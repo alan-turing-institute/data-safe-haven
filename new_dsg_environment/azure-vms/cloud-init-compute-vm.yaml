@@ -64,7 +64,7 @@ write_files:
               admin_server = AD_DC_NAME_UPPER.DOMAIN_UPPER
               default_domain = DOMAIN_UPPER
               }
-      
+
       [domain_realm]
             .DOMAIN_LOWER = DOMAIN_UPPER
             DOMAIN_LOWER = DOMAIN_UPPER
@@ -147,7 +147,7 @@ runcmd:
   - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
-  - echo "source activate py36" >> /etc/bash.bashrc
+  - echo "conda activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
   - echo "Disable screen lock"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop

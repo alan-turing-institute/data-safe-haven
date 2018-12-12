@@ -35,7 +35,7 @@ echo "  - export PYTHON27PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_27_PACKAGES\""
 echo "  - export PYTHON35PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_35_PACKAGES\""
 echo "  - export PYTHON36PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_36_PACKAGES\""
 
-
+echo -e "\n\n"
 echo "export PYTHON27PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs) $(comm -23 $COMBINED_27 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
 echo -e "\n\n"
 echo "export PYTHON35PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs) $(comm -23 $COMBINED_35 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
