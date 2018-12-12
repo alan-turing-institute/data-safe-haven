@@ -64,9 +64,9 @@ fastcache
 ffmpeg
 filelock
 flask
-flask-SocketIO
-flask-WTF
 flask-cors
+flask-socketiO
+flask-wtf
 fontconfig
 freeglut
 freetype

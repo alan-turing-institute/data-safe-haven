@@ -332,7 +332,7 @@ snappy
 snowballstemmer
 sortedcollections
 sortedcontainers
-soundFile
+soundfile
 sparkmagic
 sphinx
 sphinx_rtd_theme
@@ -357,7 +357,6 @@ theano
 thrift
 tk
 toolz
-torch
 torchvision
 tornado
 tqdm
@@ -383,4 +382,4 @@ xz
 yaml
 zeromq
 zict
-zlibabsl-py
+zlib

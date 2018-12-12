@@ -16,6 +16,7 @@ pandas-datareader
 pandas-profiling
 pandasql
 plotly
+pymc3
 pystan
 pytorch
 r-irkernel

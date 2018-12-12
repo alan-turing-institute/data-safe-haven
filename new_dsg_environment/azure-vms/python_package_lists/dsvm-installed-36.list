@@ -218,9 +218,6 @@ jpeg
 jsonpickle
 jsonschema
 jupyter
-jupyter-client
-jupyter-console
-jupyter-core
 jupyter_client
 jupyter_core
 jupyterhub
@@ -410,7 +407,7 @@ smart_open
 snowballstemmer
 sortedcollections
 sortedcontainers
-soundFile
+soundfile
 sparkmagic
 sphinx
 sphinx_rtd_theme
@@ -434,7 +431,6 @@ theano
 thrift
 tk
 toolz
-torch
 torchvision
 tornado
 tqdm
