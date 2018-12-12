@@ -345,7 +345,7 @@ LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_N
 
 # Create a new config file with the appropriate username and LDAP password
 TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
+TMP_CLOUD_CONFIG_YAML="${TMP_CLOUD_CONFIG_PREFIX}.yaml"
 rm $TMP_CLOUD_CONFIG_PREFIX
 DOMAIN_UPPER=$(echo "$DOMAIN" | tr '[:lower:]' '[:upper:]')
 DOMAIN_LOWER=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')
