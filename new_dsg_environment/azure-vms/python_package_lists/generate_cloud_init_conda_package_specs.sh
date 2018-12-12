@@ -12,12 +12,13 @@ echo "  # DO NOT EDIT BY HAND: Update the generate_cloud_init_conda_package_spec
 #     Python 3.5: https://docs.anaconda.com/anaconda/packages/py3.5_linux-64/
 #     Python 3.6: https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/
 #  3. packages present in the Microsoft DataScience VM
+#  4. removal of any packages on the blacklist
 COMBINED_27=$(mktemp)
-cat requested-27.list anaconda-in-installer-27.list dsvm-installed-27.list | sort | uniq > $COMBINED_27
+cat requested-27.list anaconda-in-installer-27.list dsvm-installed-27.list | sort | uniq | comm -23 - blacklist-27.list > $COMBINED_27
 COMBINED_35=$(mktemp)
-cat requested-35.list anaconda-in-installer-35.list dsvm-installed-35.list | sort | uniq  > $COMBINED_35
+cat requested-35.list anaconda-in-installer-35.list dsvm-installed-35.list | sort | uniq | comm -23 - blacklist-35.list > $COMBINED_35
 COMBINED_36=$(mktemp)
-cat requested-36.list anaconda-in-installer-36.list dsvm-installed-36.list | sort | uniq  > $COMBINED_36
+cat requested-36.list anaconda-in-installer-36.list dsvm-installed-36.list | sort | uniq | comm -23 - blacklist-36.list > $COMBINED_36
 COMMON_REQUESTED=$(mktemp)
 comm -12 $COMBINED_27 $COMBINED_35 | comm -12 - $COMBINED_36 > $COMMON_REQUESTED
 

@@ -415,7 +415,7 @@ runcmd:
   - export PYTHON35PACKAGES="$PY_COMMON_PACKAGES $PY_35_PACKAGES"
   - export PYTHON36PACKAGES="$PY_COMMON_PACKAGES $PY_36_PACKAGES"
   # ***** END DEFINING PACKAGES FOR ANACONDA ***
-  
+
   # Create or install conda environments
   # Python 2.7
   - echo "*** Working on py27 environment... ***"
