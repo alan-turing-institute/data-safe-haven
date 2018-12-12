@@ -379,3 +379,5 @@ yaml
 zeromq
 zict
 zlib
+zope
+zope.interface
