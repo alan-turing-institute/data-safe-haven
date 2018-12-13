@@ -161,7 +161,7 @@ runcmd:
   - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
   - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
   - /anaconda/envs/py36/bin/pip install bluesky-simulator
-  # Install R packages: fbprophet
+  # Install R packages:
   - echo "Installing additional R packages"
   - Rscript -e "install.packages(c('anomalize', 'caTools', 'gdata', 'gplots', 'gtools', 'here', 'KernSmooth', 'plsgenomics', 'prophet', 'janitor', 'tableone', 'wavethresh'))"
   # *** END OF DSG-SPECIFIC COMMANDS ***
