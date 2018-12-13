@@ -9,6 +9,7 @@ jupyterlab
 keras
 matplotlib
 monocle
+networkx
 notebook
 numpy
 pandas
