@@ -4,7 +4,8 @@
 SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_F2s_v2"
+# VMSIZE="Standard_F2s_v2"
+VMSIZE="Standard_DS3_v2"
 
 
 # Constants for colourised output
