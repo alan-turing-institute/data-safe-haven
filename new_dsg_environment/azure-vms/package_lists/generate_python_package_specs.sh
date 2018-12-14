@@ -47,6 +47,10 @@ echo "export PYTHON35PACKAGES=\"$(cat $COMBINED_35 | xargs)\""
 echo -e "\n\n"
 PYTHON36PACKAGES="$(echo $COMBINED_36 | sort)"
 echo "export PYTHON36PACKAGES=\"$(cat $COMBINED_36 | xargs)\""
+
+
+comm $COMBINED_35 $COMBINED_36
+
 rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
 
 
