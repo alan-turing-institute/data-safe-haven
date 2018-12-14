@@ -151,7 +151,7 @@ if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
         INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    DISKSIZEGB="40"
+    DISKSIZEGB="60"
 elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
