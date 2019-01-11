@@ -6,6 +6,9 @@ conda
 conda-build
 conda-env
 conda-verify
+dtw
+gmplot
+graph-tool
 libcurl
 libedit
 libffi

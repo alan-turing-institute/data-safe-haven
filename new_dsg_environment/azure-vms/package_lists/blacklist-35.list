@@ -12,8 +12,11 @@ chainerrl
 cntk-gpu
 color
 databricks-cli
+dtw
 easydict
 enum34
+gmplot
+graph-tool
 gym
 horovod
 importlib2
