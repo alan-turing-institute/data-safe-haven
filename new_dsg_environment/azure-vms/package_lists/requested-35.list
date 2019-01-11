@@ -1,7 +1,10 @@
 basemap
 bokeh
+dtw
 fbprophet
 geopandas
+gmplot
+graph_tool
 ipykernel
 jupyter
 jupyter_client
@@ -18,12 +21,15 @@ pandas-datareader
 pandas-profiling
 pandasql
 plotly
-pygpu
 pyLDAvis
+pygpu
 pymc3
 pystan
+python-geohash
+python-louvain
 pytorch
 r-irkernel
+rpy2
 scikit-image
 scikit-learn
 seaborn
@@ -31,3 +37,4 @@ spacy
 tensorflow-gpu
 torchvision
 tsfresh
+wordcloud

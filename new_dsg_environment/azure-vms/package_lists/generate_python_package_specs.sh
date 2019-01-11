@@ -27,7 +27,6 @@ echo "  - export PY_COMMON_PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xa
 echo "  - export PY_27_PACKAGES=\"$(comm -23 $COMBINED_27 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
 echo "  - export PY_35_PACKAGES=\"$(comm -23 $COMBINED_35 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
 echo "  - export PY_36_PACKAGES=\"$(comm -23 $COMBINED_36 $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""
-# rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
 
 # Use lists to construct appropriate environment variables
 echo "  # Consolidate package lists for each Python version"
@@ -38,18 +37,15 @@ echo "  - export PYTHON36PACKAGES=\"\$PY_COMMON_PACKAGES \$PY_36_PACKAGES\""
 # Insert block footer
 echo "  # ***** END DEFINING PACKAGES FOR ANACONDA ***"
 
-echo -e "\n\n"
-PYTHON27PACKAGES="$(echo $COMBINED_27 | sort)"
-echo "export PYTHON27PACKAGES=\"$(cat $PYTHON27PACKAGES | xargs)\""
-echo -e "\n\n"
-PYTHON35PACKAGES="$(echo $COMBINED_35 | sort)"
-echo "export PYTHON35PACKAGES=\"$(cat $COMBINED_35 | xargs)\""
-echo -e "\n\n"
-PYTHON36PACKAGES="$(echo $COMBINED_36 | sort)"
-echo "export PYTHON36PACKAGES=\"$(cat $COMBINED_36 | xargs)\""
-
-
-comm $COMBINED_35 $COMBINED_36
+# echo -e "\n\n"
+# PYTHON27PACKAGES="$(echo $COMBINED_27 | sort)"
+# echo "export PYTHON27PACKAGES=\"$(cat $PYTHON27PACKAGES | xargs)\""
+# echo -e "\n\n"
+# PYTHON35PACKAGES="$(echo $COMBINED_35 | sort)"
+# echo "export PYTHON35PACKAGES=\"$(cat $COMBINED_35 | xargs)\""
+# echo -e "\n\n"
+# PYTHON36PACKAGES="$(echo $COMBINED_36 | sort)"
+# echo "export PYTHON36PACKAGES=\"$(cat $COMBINED_36 | xargs)\""
 
 rm $COMBINED_27 $COMBINED_35 $COMBINED_36 $COMMON_REQUESTED
 
