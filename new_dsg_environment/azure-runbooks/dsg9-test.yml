@@ -1,6 +1,7 @@
 general:
   short_name: "DSG9"
   long_name: "DSGROUP9"
+  domain: "dsgroup9.co.uk"
   base_ip_address: "10.250.64.0"
   admin_user: "atiadmin"
 vnet:
