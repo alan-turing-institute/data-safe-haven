@@ -10,5 +10,12 @@ vnet:
   subnet_rds: "10.250.65.0/24"
   subnet_data: "10.250.66.0/24"
   subnet_gateway: "10.250.71.0/27"
+ldap_users:
+  - gitlab
+  - hackmd
+  - testuser
+  - dsgpu
+  
+  
  
   
