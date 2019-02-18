@@ -5,6 +5,7 @@ general:
   base_ip_address: "10.250.64.0"
   dc_ip_address: "10.250.64.250"
   admin_user: "atiadmin"
+  location: "uksouth"
 vnet:
   address_space: "10.250.64.0/21"
   subnet_identity: "10.250.64.0/24"
