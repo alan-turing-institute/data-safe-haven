@@ -2,16 +2,11 @@ general:
   short_name: "DSG9"
   long_name: "DSGROUP9"
   domain: "dsgroup9.co.uk"
-  base_ip_address: "10.250.64.0"
+  ip_prefix: "10.250"
+  ip_third_octet: "64"
   dc_ip_address: "10.250.64.250"
   admin_user: "atiadmin"
   location: "uksouth"
-vnet:
-  address_space: "10.250.64.0/21"
-  subnet_identity: "10.250.64.0/24"
-  subnet_rds: "10.250.65.0/24"
-  subnet_data: "10.250.66.0/24"
-  subnet_gateway: "10.250.71.0/27"
 ldap_users:
   - gitlab
   - hackmd
