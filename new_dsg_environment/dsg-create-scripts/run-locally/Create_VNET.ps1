@@ -1,5 +1,6 @@
 Import-Module Az
 
+$environment = Read-Host -Prompt "Enter"
 $addressSpacePrefix12 = Read-Host -Prompt "Enter first two octets of address space e.g. 10.250"
 $addressSpacePrefix3 = Read-Host -Prompt "Enter the third octet of address space e.g. the x in 10.250.x"
 $dsgId = Read-Host -Prompt "Enter DSG ID (usually a number e.g DSG9 = 9)"
@@ -28,7 +29,7 @@ $params = @{
  "DNS Server IP Address" = $dnsServerIP
 }
 
-# Write-Output $params
+Write-Output $params
 
 New-AzResourceGroup -Name $resourceGroupName -Location uksouth
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
