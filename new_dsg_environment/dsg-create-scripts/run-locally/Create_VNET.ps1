@@ -13,7 +13,7 @@ $subnetRdsPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 1)
 $subnetDataPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 2) + ".0/24"
 $subnetGatewayPrefix =  $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 7) + ".0/27"
 $dnsServerIP =  $addressSpacePrefix + ".250"
-$certBytes = Get-Content "./DSG_P2S_RootCert.cer" -Encoding Byte
+$certBytes = Get-Content "./secrets/DSG_P2S_RootCert.cer" -AsByteStream
 $cert = [System.Convert]::ToBase64String($certBytes)
 
 
