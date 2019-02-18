@@ -9,7 +9,7 @@
                 "Description": "Enter name of virtual network i.e. DSG_DSGROUP2_VNET1"
             }
         },
-        "P2S VPN Certifciate": {
+        "P2S VPN Certificate": {
             "type": "string",
             "metadata": {
                 "description": "Paste certificate into dialogue box"
@@ -121,7 +121,7 @@
                         {
                             "name": "DSG_P2S_RootCert.cer",
                             "properties": {
-                                "publicCertData": "[parameters('P2S VPN Certifciate')]"
+                                "publicCertData": "[parameters('P2S VPN Certificate')]"
                             }
                         }
                     ],
