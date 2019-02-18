@@ -32,4 +32,4 @@ $params = @{
 
 New-AzResourceGroup -Name $resourceGroupName -Location uksouth
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
-  -TemplateFile ./arm-templates/VNet/vnet-master-template.json @params
+  -TemplateFile ./arm-templates/VNet/vnet-master-template.json @params -Verbose
