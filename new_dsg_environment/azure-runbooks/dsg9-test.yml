@@ -3,6 +3,7 @@ general:
   long_name: "DSGROUP9"
   domain: "dsgroup9.co.uk"
   base_ip_address: "10.250.64.0"
+  dc_ip_address: "10.250.64.250"
   admin_user: "atiadmin"
 vnet:
   address_space: "10.250.64.0/21"
