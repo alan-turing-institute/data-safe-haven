@@ -6,7 +6,7 @@
             "defaultValue": "RDS",
             "type": "string"
         },
-        "RDS Gatway VM Size": {
+        "RDS Gateway VM Size": {
             "type": "string",
             "defaultValue": "Standard_F8s_v2",
             "allowedValues": [
@@ -142,7 +142,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('RDS Gatway VM Size')]"
+                    "vmSize": "[parameters('RDS Gateway VM Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
