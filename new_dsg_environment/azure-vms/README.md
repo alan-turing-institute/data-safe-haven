@@ -68,18 +68,25 @@ This deploys from an image stored in a gallery in `subscription_source` into a r
 This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
 
 ```
-usage: deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-n machine_name] [-r resource_group] [-u user_name]
+usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]
   -h                        display help
   -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
-  -i source_image           specify source_image: either 'Ubuntu' (default) or 'DataScience'
-  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGComputeMachineVM')
-  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults tG_TEST')
+  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)
+  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')
+  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
   -u user_name              specify a username for the admin account (defaults to 'atiadmin')
   -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')
   -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
   -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
   -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')
   -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -m management_vault_name  specify name of KeyVault containing management secrets (required)
+  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)
+  -j ldap_user              specify the LDAP user (required)
+  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)
+  -d domain                 specify domain name for safe haven (required)
+
 ```
 
 Example usage
@@ -88,4 +95,4 @@ Example usage
 ./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
 ```
 
-
+For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
