@@ -7,6 +7,7 @@ general:
   dc_ip_address: "10.250.64.250"
   admin_user: "atiadmin"
   location: "uksouth"
+  management_domain_npm: "10.220.1.249"
 ldap_users:
   - gitlab
   - hackmd
