@@ -174,7 +174,6 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
     echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
-        # --public-ip-address "" \
 fi
 
 

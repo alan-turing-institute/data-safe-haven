@@ -23,7 +23,7 @@ write_files:
   - path: "/home/mirrordaemon/push_to_internal.sh"
     content: |
       #! /bin/bash
-      rsync -e "ssh -o StrictHostKeyChecking=no" -rtlzv --delete --progress /datadrive/* mirrordaemon@10.0.1.4:/datadrive
+      rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@10.0.1.4:/datadrive
   - path: "/home/mirrordaemon/update_mirror.sh"
     content: |
       #! /bin/bash
@@ -78,7 +78,7 @@ runcmd:
   - apt-get -y upgrade
   - apt-get clean
 
-  # Set up disk
+  # Set up and partition data disk
   - echo "*** Setting up local disk... ***"
   - (echo n; echo 1; echo ; echo ; echo ; echo w; echo Y) | gdisk /dev/sdc
   - mkfs -t ext4 /dev/sdc1
@@ -88,11 +88,7 @@ runcmd:
   - mv fstab.tmp /etc/fstab
   - chown -R mirrordaemon /datadrive
 
-  # Ensure that mirrordaemon owns the synchronisation scripts
-  - chown mirrordaemon ~mirrordaemon/*.sh
-  - chgrp mirrordaemon ~mirrordaemon/*.sh
-
-  # Add public and private keys
+  # Convert the PyPI KeyVault secret into public and private RSA keys
   - ls /var/lib/waagent/
   - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
   - echo "Found secret named $KEYNAME"
@@ -104,8 +100,6 @@ runcmd:
   - ssh-keygen -f sshkey.pem -y > id_rsa.pub
   - mkdir -p ~mirrordaemon/.ssh
   - cp id_rsa* ~mirrordaemon/.ssh/
-  - chown -R mirrordaemon ~mirrordaemon
-  - chgrp -R mirrordaemon ~mirrordaemon
   - chmod 0600 ~mirrordaemon/.ssh/id_rsa
   - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
   - rm -f ${KEYNAME}.* sshkey.*
@@ -118,7 +112,16 @@ runcmd:
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
-  - echo "*** Adding external update (rsync) job to crontab (2am on 2nd of each month)... ***"
-  - echo "0 2 2 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
+  - echo "*** Adding external update (rsync) job to crontab (2am on 3rd of each month)... ***"
+  - echo "0 2 3 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
   - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
   - echo "0 2 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab
+
+  # Register fingerprint of remote machine (internal mirror)
+  - echo "*** Registering fingerprint of internal mirror ***"
+  - ssh-keyscan -H 10.0.1.4 >> ~mirrordaemon/.ssh/known_hosts
+  - cat ~mirrordaemon/.ssh/known_hosts
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon ~mirrordaemon
+  - chgrp -R mirrordaemon ~mirrordaemon
