@@ -145,5 +145,45 @@ The links to download the app for iOS, Android and Window mobile are:
 6. Click “Set it up now” when prompted
 7. On the “Additional security verification” screen you have three options on how the system will contact you for verification.  Click the drop down next under “Step 1” and select the option you wish to use.
 
-*Insert pic 1*
-*Insert pic 2*
+![](MFA_Step1.png)
+
+**Option 1**: Authentication by phone
+
+This option will call your mobile phone.
+The service is automated, and you’ll be requested to press the # key to confirm the request 
+Note: some people get a call that says, "press the pound key" and others receive "press the hash key" – both mean hit the "#"
+
+1.	Select your country from the drop down
+2.	Enter your mobile number
+3.	Click "Next"
+4.	Answer your phone and follow the instructions
+5.	Click "Done" to finish the process
+
+After completing the process you can close your browser.
+
+**Option 2**: Mobile app
+
+If you have installed the Microsoft Authenticator app then this is the option to select.
+
+1.	Select the "Receive notifications for verification" radio button
+2.	Click on "Set up"
+3.	Open your Microsoft Authenticator app on your phone and select "Add an account"
+4.	Select "Work or School" account
+5.	Scan the QR code on the screen
+6.	Click "Next" to start verification
+7.	Click "Next" again to test the app, you will get a verification on your app.
+8.	Enter your mobile phone number to enable password recovery
+9.	Click "Done" to finish
+
+After completing the process you can close your browser
+
+#### Top tips regarding MFA
+
+***If at first you don’t succeed: do the exact same thing a few more times!***
+
+Sometimes the MFA steps can be buggy.
+We’ve collected a few top tips here, but really, the answer is to be patient and just try again with the exact steps you just completed!
+
+* :sparkles: TOP TIP :sparkles:: Verifying your account in the Authenticator app can be weirdly buggy. Sometimes it doesn’t work the first time, but for the facilitators we all connected after somewhere between 1 and 10 attempts. 
+* :sparkles: TOP TIP :sparkles:: Make sure you allow notifications on your authenticator app, and check you don’t have Do not Disturb mode on
+* :sparkles: TOP TIP :sparkles:: You have to be SUPER FAST at acknowledging the notification on your app! I think within the 30 seconds that each of the access codes update. If at first you don’t succeed…
