@@ -96,19 +96,23 @@ packages:
   - libasound2
   - libcanberra-gtk0
   - libgconf-2-4
-  - libgconf-2-4
   - libgit2-dev
+  - libgmp-dev
   - libgnome-keyring0
+  - libgsl-dev
   - libgtk-3-0
   - libhdf5-serial-dev
   - liblmdb-dev
   - libmariadb-client-lgpl-dev
+  - libmpfr-dev
   - libnss-ldap
   - libnss-sss
   - libnss3
   - libpam-ldap
   - libpam-sss
+  - libpoppler-cpp-dev
   - libpq-dev
+  - librsvg2-dev
   - libssl-dev
   - libudunits2-dev
   - libxss1
@@ -123,29 +127,45 @@ packages:
   - r-base
   - r-base-core
   - r-base-dev
+  - r-bioc-biobase
   - r-bioc-cummerbund
   - r-bioc-deseq2
   - r-bioc-ebseq
+  - r-bioc-graph
+  - r-bioc-gviz
   - r-bioc-interactivedisplaybase
   - r-bioc-limma
   - r-bioc-metagenomeseq
   - r-bioc-phyloseq
   - r-bioc-rbgl
+  - r-cran-abind
   - r-cran-ada
+  - r-cran-akima
+  - r-cran-ape
   - r-cran-assertthat
   - r-cran-backports
   - r-cran-bbmisc
+  - r-cran-biocmanager
   - r-cran-bitops
+  - r-cran-boot
+  - r-cran-brms
   - r-cran-car
   - r-cran-care
   - r-cran-caret
   - r-cran-checkmate
   - r-cran-chron
+  - r-cran-class
+  - r-cran-cluster
+  - r-cran-coda
+  - r-cran-codetools
   - r-cran-colorramps
   - r-cran-colorspace
+  - r-cran-corrplot
+  - r-cran-cowplot
   - r-cran-coxboost
   - r-cran-crayon
   - r-cran-cvst
+  - r-cran-cvtools
   - r-cran-data.table
   - r-cran-dbi
   - r-cran-deepnet
@@ -153,54 +173,98 @@ packages:
   - r-cran-diagrammer
   - r-cran-dichromat
   - r-cran-digest
+  - r-cran-directlabels
+  - r-cran-dlm
+  - r-cran-doby
   - r-cran-doparallel
   - r-cran-dplyr
+  - r-cran-dppackage
   - r-cran-dt
+  - r-cran-dtw
+  - r-cran-dummies
   - r-cran-dygraphs
   - r-cran-e1071
+  - r-cran-emulator
   - r-cran-evaluate
+  - r-cran-factominer
+  - r-cran-fda
+  - r-cran-fields
   - r-cran-foreach
+  - r-cran-forecast
+  - r-cran-foreign
+  - r-cran-formula
+  - r-cran-gamlss
+  - r-cran-gamlss.dist
+  - r-cran-gamlss.mx
   - r-cran-gbm
   - r-cran-gdata
+  - r-cran-ggally
+  - r-cran-ggforce
   - r-cran-ggmap
   - r-cran-ggplot2
+  - r-cran-ggridges
   - r-cran-ggvis
   - r-cran-glmnet
   - r-cran-googlevis
+  - r-cran-gplots
+  - r-cran-gridextra
   - r-cran-gtable
   - r-cran-highr
   - r-cran-hmisc
   - r-cran-htmltools
   - r-cran-httpuv
   - r-cran-httr
+  - r-cran-igraph
   - r-cran-irace
   - r-cran-iterators
   - r-cran-jsonlite
   - r-cran-kernlab
+  - r-cran-kernsmooth
   - r-cran-kknn
+  - r-cran-kml
   - r-cran-knitr
   - r-cran-labeling
+  - r-cran-lattice
   - r-cran-lazyeval
   - r-cran-leaflet
   - r-cran-lme4
+  - r-cran-loo
   - r-cran-lubridate
   - r-cran-magrittr
   - r-cran-maps
   - r-cran-maptools
   - r-cran-markdown
+  - r-cran-mass
+  - r-cran-matrix
+  - r-cran-matrixstats
   - r-cran-mboost
+  - r-cran-mclust
+  - r-cran-mcmcpack
+  - r-cran-mcspatial
+  - r-cran-mgcv
   - r-cran-mime
+  - r-cran-mlbench
   - r-cran-mlr
   - r-cran-multcomp
   - r-cran-munsell
+  - r-cran-ndtv
+  - r-cran-network
   - r-cran-neuralnet
+  - r-cran-nlme
+  - r-cran-nnet
   - r-cran-parallelmap
   - r-cran-paramhelpers
   - r-cran-party
   - r-cran-pbdzmq
   - r-cran-pls
   - r-cran-plyr
+  - r-cran-polycor
+  - r-cran-pomp
+  - r-cran-premium
+  - r-cran-pscl
   - r-cran-purrr
+  - r-cran-pvclust
+  - r-cran-quanteda
   - r-cran-quantmod
   - r-cran-r6
   - r-cran-randomforest
@@ -212,34 +276,61 @@ packages:
   - r-cran-rcppeigen
   - r-cran-rcurl
   - r-cran-readr
+  - r-cran-readxl
   - r-cran-repr
   - r-cran-reshape
   - r-cran-reshape2
+  - r-cran-rgdal
+  - r-cran-rgeos
   - r-cran-rgl
   - r-cran-rjava
   - r-cran-rmarkdown
   - r-cran-rmysql
+  - r-cran-rocr
   - r-cran-roxygen2
+  - r-cran-rpart
   - r-cran-rpostgresql
+  - r-cran-rpython
   - r-cran-rsqlite
   - r-cran-rstan
+  - r-cran-runjags
   - r-cran-rweka
   - r-cran-scales
   - r-cran-shiny
+  - r-cran-slam
+  - r-cran-sna
+  - r-cran-snowballc
   - r-cran-sourcetools
   - r-cran-sp
+  - r-cran-spacyr
+  - r-cran-spatial
   - r-cran-sqldf
+  - r-cran-stargazer
+  - r-cran-stm
   - r-cran-stringi
   - r-cran-stringr
+  - r-cran-surveillance
+  - r-cran-survival
+  - r-cran-synthpop
   - r-cran-tcltk2
   - r-cran-testthat
+  - r-cran-text2vec
   - r-cran-tgp
   - r-cran-threejs
   - r-cran-tibble
   - r-cran-tidyr
+  - r-cran-tidytext
   - r-cran-tidyverse
+  - r-cran-tmap
+  - r-cran-topicmodels
+  - r-cran-urca
   - r-cran-uuid
+  - r-cran-vars
   - r-cran-vcd
+  - r-cran-vioplot
+  - r-cran-viridis
+  - r-cran-visnetwork
+  - r-cran-wordcloud
   - r-cran-xgboost
   - r-cran-xlsx
   - r-cran-xml
@@ -253,80 +344,98 @@ packages:
   - sssd
   - sssd-tools
   - xfce4
+  - xfce4-terminal
   - xrdp
-  - xubuntu-default-settings
-  - xubuntu-desktop
 
 runcmd:
   # Clean up installation
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
-  # Install torch
-  - echo "*** Installing torch... ***"
-  - mkdir -p /opt/torch
-  - cd /opt/torch
-  - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  - sed -i '/python-software-properties/s/^/#/g' install-deps
-  - bash install-deps
-  # Switch compilers to gcc-6 and g++-6 or compilation will fail
-  - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
-  - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
-  # Build with half-operators disabled as these are included in CUDA 9
-  - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
-  - bash install.sh -b
-  # ... and now switch them back
-  - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
-  - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/torch/install/bin
-  - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
+  #IF_TORCH_ENABLED # Install torch
+  #IF_TORCH_ENABLED - echo "*** Installing torch... ***"
+  #IF_TORCH_ENABLED - mkdir -p /opt/torch
+  #IF_TORCH_ENABLED - cd /opt/torch
+  #IF_TORCH_ENABLED - git clone https://github.com/torch/distro.git /opt/torch --recursive
+  #IF_TORCH_ENABLED - sed -i '/python-software-properties/s/^/#/g' install-deps
+  #IF_TORCH_ENABLED - bash install-deps
+  #IF_TORCH_ENABLED # Switch compilers to gcc-6 and g++-6 or compilation will fail
+  #IF_TORCH_ENABLED - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
+  #IF_TORCH_ENABLED - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
+  #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
+  #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
+  #IF_TORCH_ENABLED # Build with half-operators disabled as these are included in CUDA 9
+  #IF_TORCH_ENABLED - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
+  #IF_TORCH_ENABLED - bash install.sh -b
+  #IF_TORCH_ENABLED # ... and now switch them back
+  #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
+  #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
+  #IF_TORCH_ENABLED - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
+  #IF_TORCH_ENABLED - export PATH=$PATH:/opt/torch/install/bin
+  #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
+  - export ANACONDA_INSTALL_SCRIPT="Anaconda3-5.3.1-Linux-x86_64.sh"
   - echo "*** Installing Anaconda... ***"
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/Anaconda3-5.3.0-Linux-x86_64.sh
-  - bash Anaconda3-5.3.0-Linux-x86_64.sh -b -p /opt/anaconda3
-  - rm Anaconda3-5.3.0-Linux-x86_64.sh
-  - sed -i 's|\(.*\)"|\1:/opt/anaconda3/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/anaconda3/bin
+  - curl -O https://repo.anaconda.com/archive/${ANACONDA_INSTALL_SCRIPT}
+  - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
+  - rm $ANACONDA_INSTALL_SCRIPT
+  - sed -i 's|\(.*\)"|\1:/anaconda/bin"|' /etc/environment
+  - export PATH=$PATH:/anaconda/bin
+  - echo "export PATH=$PATH:/anaconda/bin" >> /etc/bash.bashrc
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels anaconda
   - conda config --add channels pytorch
   - conda config --add channels r
+  # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
+  - conda config --set remote_connect_timeout_secs 30
+  - conda config --set remote_max_retries 10
+  - conda config --set remote_read_timeout_secs 120
   # Prepare environments
   - echo "*** Initial conda environments... ***"
   - conda env list
-  - echo "*** Creating py27 environment... ***"
-  - conda create -y -n py27 python=2.7 ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Creating py35 environment... ***"
-  - conda create -y -n py35 python=3.5 ipykernel jupyter_client jupyterhub jupyterhub-ldapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Creating py36 environment... ***"
-  - conda create -y -n py36 python=3.6 ipykernel jupyter_client jupyterhub jupyterhub-dapauthentication jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision
-  - echo "*** Cleanup... ***"
-  - conda clean -a
+  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
+  - echo "*** Working on py27 environment... ***"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES; else conda install -y --verbose --name py27 $PYTHONPACKAGES; fi
+  - echo "*** Working on py35 environment... ***"
+  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py35 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
+  - echo "*** Working on py36 environment... ***"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
+  - echo "*** Skipping conda cleanup to permit new virtual environments to be created by users... ***"
   - echo "*** Final conda environments... ***"
   - conda env list
+  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+
+  # Set number of cores R should use to install packages to the number of cores available on the VM
+  # (R buolds a lot of packages from source so we can get a decent speedup here)
+  -  Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
 
   # Ensure that R packages are installed
   - echo "*** Installing additional R packages... ***"
-  - echo "Previously installed R packages:"
+  - echo "Previously installed CRAN packages:"
   - Rscript -e "installed.packages()[,'Package']"
-  - export RPACKAGES="'ada', 'assertthat', 'AUC', 'backports', 'BBmisc', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'compiler', 'corrplot', 'CoxBoost', 'crayon', 'CVST', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'dirichletprocess', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dygraphs', 'e1071', 'evaluate', 'factoextra', 'FactoMineR', 'foreach', 'foreign', 'gbm', 'gdata', 'ggmap', 'ggplot2', 'ggvis', 'glmnet', 'googleVis', 'graphics', 'grDevices', 'grid', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'methods', 'mgcv', 'mime', 'mlr', 'multcomp', 'munsell', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'PReMiuM', 'purrr', 'quantmod', 'R6', 'randomForest', 'randomForestSRC', 'ranger', 'RColorBrewer', 'Rcpp', 'RcppArmadillo', 'RcppEigen', 'RCurl', 'readr', 'repr', 'reshape', 'reshape2', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'RSQLite', 'rstan', 'RWeka', 'scales', 'shiny', 'sourcetools', 'sp', 'spatial', 'splines', 'sqldf', 'stats', 'stats4', 'stringi', 'stringr', 'survival', 'synthpop', 'tcltk2', 'testthat', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyverse', 'tools', 'traj', 'utils', 'uuid', 'varbvs', 'vcd', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
-  - echo "R packages remaining to be installed:"
-  - Rscript -e "list.of.packages <- c($RPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  - export CRANPACKAGES="'abind', 'ada', 'akima', 'ape', 'assertthat', 'AUC', 'backports', 'BBmisc', 'bedr', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'COMBAT', 'compiler', 'corrgram', 'corrplot', 'cowplot', 'CoxBoost', 'crayon', 'CVST', 'cvTools', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'directlabels', 'dirichletprocess', 'dlm', 'doBy', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dtw', 'dummies', 'dygraphs', 'e1071', 'emulator', 'evaluate', 'factoextra', 'FactoMineR', 'fda', 'fields', 'fmsb', 'foreach', 'forecast', 'foreign', 'Formula', 'gamlss.dist', 'gamlss.mx', 'gamlss.nl', 'gamlss.spatial', 'gamlss', 'gbm', 'gdata', 'GGally', 'ggforce', 'ggmap', 'ggplot2', 'ggridges', 'ggvis', 'glmnet', 'googleVis', 'gplots', 'graphics', 'grDevices', 'grid', 'gridExtra', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'igraph', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'LDAvis', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'McSpatial', 'methods', 'mgcv', 'mime', 'mlbench', 'mlr', 'multcomp', 'munsell', 'ndtv', 'network', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'polycor', 'pomp', 'PReMiuM', 'pscl', 'purrr', 'pvclust', 'quanteda', 'quantmod', 'R6', 'randomForest', 'RColorBrewer', 'RCurl', 'readr', 'readtext', 'readxl', 'repr', 'reshape', 'reshape2', 'revealjs', 'rgdal', 'realxl', 'rgeos', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'rPython', 'RSQLite', 'rstan', 'runjags', 'RWeka', 'Scale', 'scales', 'shiny', 'slam', 'sna', 'SnowballC', 'sourcetools', 'sp', 'spacyr', 'spatial', 'splines', 'sqldf', 'stargazer', 'stats', 'stats4', 'stm', 'stringi', 'stringr', 'surveillance', 'survival', 'synthpop', 'tcltk2', 'testthat', 'text2vec', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyr', 'tidytext', 'tidyverse', 'tmap', 'tools', 'topicmodels', 'traj', 'tsne', 'urca', 'utils', 'uuid', 'varbvs', 'vars', 'vcd', 'vioplot', 'viridis', 'visNetwork', 'wordcloud', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
+  - echo "CRAN packages remaining to be installed:"
+  - Rscript -e "list.of.packages <- c($CRANPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
   # Bioconductor
-  - echo "Previously installed Bioconductor packages:"
-  - export BIOCPACKAGES="'apeglm', 'ballgown', 'ChemmineR', 'clusterProfiler', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'treeio'"
+  - echo "Previously installed BioConductor packages:"
+  - export BIOCPACKAGES="'apeglm', 'ballgown', 'Biobase', 'ChemmineR', 'clusterProfiler', 'ComplexHeatmap', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'Gviz', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'TimeSeriesExperiment', 'topGO', 'treeio'"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
-  - echo "Bioconductor packages remaining to be installed:"
+  - echo "BioConductor packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
+
+  # Install R packages from custom repos
+  - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
+  - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
 
   # Install RStudio
   - echo "*** Installing RStudio... ***"
+  # Ensure RStudio picks up system R rather than Conda R for all users
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   - cd /tmp
   - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
   - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
@@ -345,6 +454,7 @@ runcmd:
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
+  - echo "export PATH=$PATH:/opt/julia/julia-1.0.1/bin" >> /etc/bash.bashrc
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -362,6 +472,7 @@ runcmd:
   - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
   - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
   - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
+  - echo "export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install azcopy
@@ -381,6 +492,7 @@ runcmd:
   - rm -f previous-StorageExplorer-linux-x64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
   - export PATH=$PATH:/opt/azurestorage/
+  - echo "export PATH=$PATH:/opt/azurestorage/" >> /etc/bash.bashrc
   - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
 
   # Check for successful installations
@@ -410,12 +522,12 @@ runcmd:
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
-  - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
+  #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   # Check for missing packages
-  - echo "R packages that could not be installed:"
-  - Rscript -e "list.of.packages <- c($RPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - echo "CRAN packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($CRANPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
   - echo "Bioconductor packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 

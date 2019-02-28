@@ -1,17 +1,18 @@
 #! /bin/bash
 
-# Options which are configurable at the command line
-IP_RANGE_EXTERNAL="10.0.0.0/24"
-IP_RANGE_INTERNAL="10.0.1.0/24"
-RESOURCEGROUP="RG_SH_PKG_MIRRORS"
-SUBSCRIPTION=""
-VNETNAME="VNet_SH_PKG_MIRRORS"
-
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
+
+
+# Options which are configurable at the command line
+SUBSCRIPTION="" # must be provided
+IP_RANGE_EXTERNAL="10.0.0.0/24"
+IP_RANGE_INTERNAL="10.0.1.0/24"
+RESOURCEGROUP="RG_SH_PKG_MIRRORS"
+VNETNAME="VNet_SH_PKG_MIRRORS"
 
 # Other constants
 VAULTNAME="kvdsgpkgmirrors"
@@ -19,14 +20,14 @@ SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
 LOCATION="uksouth"
 
 # Document usage for this script
-usage() {
-    echo "usage: $0 [-h] [-r resource_group] -s subscription [-v vnet_name]"
-    echo "  -h                  display help"
-    echo "  -e external_ip      specify IP range for external mirror servers (defaults to '10.0.0.0/24')"
-    echo "  -i internal_ip      specify IP range for internal mirror servers (defaults to '10.0.1.0/24')"
-    echo "  -r resource_group   specify resource group - will be created if it does not already exist (defaults to 'RG_SH_PKG_MIRRORS')"
-    echo "  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
-    echo "  -v vnet_name        specify name for VNet that mirror servers will belong to (defaults to 'VNet_SH_PKG_MIRRORS')"
+print_usage_and_exit() {
+    echo "usage: $0 [-h] -s subscription [-e external_ip] [-i internal_ip] [-r resource_group] [-v vnet_name]"
+    echo "  -h                           display help"
+    echo "  -s subscription [required]   specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
+    echo "  -e external_ip               specify IP range for external mirror servers (defaults to '10.0.0.0/24')"
+    echo "  -i internal_ip               specify IP range for internal mirror servers (defaults to '10.0.1.0/24')"
+    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -v vnet_name                 specify name for VNet that mirror servers will belong to (defaults to '${VNETNAME}')"
     exit 1
 }
 

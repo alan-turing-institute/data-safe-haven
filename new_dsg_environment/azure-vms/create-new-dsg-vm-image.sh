@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 # Constants for colourised output
 BOLD="\033[1m"
@@ -9,27 +9,30 @@ END="\033[0m"
 # Options which are configurable at the command line
 SUBSCRIPTION="" # must be provided
 SOURCEIMAGE="Ubuntu"
+VERSION=""
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-VMSIZE="Standard_F2s_v2"
+USERNAME="atiadmin"
 
 # Other constants
-MACHINENAME="ComputeVM"
+IMAGES_GALLERY="SIG_SH_COMPUTE"
+VM_SIZE="Standard_DS2_v2"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 NSGNAME="NSG_IMAGE_BUILD"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-x source_image_version] [-r resource_group] [-u user_name]"
+    echo "  -s subscription [required]   specify subscription to use"
     echo "  -h                           display help"
-    echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
-    echo "  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
-    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
-    echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
+    echo "  -i source_image              specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
+    echo "  -x source_image_version      specify the version of the source image to use (defaults to prompting to select from available versions)"
+    echo "  -r resource_group            specify resource group for deploying the VM image - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -u user_name                 specify a username for the admin account (defaults to '${USERNAME}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:z:" opt; do
+while getopts "g:hi:x:r:u:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -37,14 +40,17 @@ while getopts "hi:r:s:z:" opt; do
         i)
             SOURCEIMAGE=$OPTARG
             ;;
+        x)
+            VERSION=$OPTARG
+            ;;
         r)
             RESOURCEGROUP=$OPTARG
             ;;
+        u)
+            USERNAME=$OPTARG
+            ;;
         s)
             SUBSCRIPTION=$OPTARG
-            ;;
-        z)
-            VMSIZE=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -52,20 +58,69 @@ while getopts "hi:r:s:z:" opt; do
     esac
 done
 
-# Check that a subscription has been provided
+# Set default machine name
+if [ "$MACHINENAME" = "" ]; then
+    MACHINENAME="ComputeVM-DSGBase"
+fi
+
+# Check that a source subscription has been provided
 if [ "$SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
 
-# Switch subscription and setup resource group if it does not already exist
-# - have to build in West Europe in order to use Shared Image Gallery
+# Look up specified image definition
 az account set --subscription "$SUBSCRIPTION"
-if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
-    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
+if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
+    IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
+elif [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
+    IMAGE_DEFINITION="ComputeVM-UbuntuTorch1804Base"
+elif [ "$SOURCEIMAGE" = "DataScience" ]; then
+    IMAGE_DEFINITION="ComputeVM-DataScienceBase"
+elif [ "$SOURCEIMAGE" = "DSG" ]; then
+    IMAGE_DEFINITION="ComputeVM-DsgBase"
+else
+    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
+    print_usage_and_exit
+fi
+
+# Prompt user to select version if not already supplied
+if [ "$VERSION" = "" ]; then
+    # List available versions and set the last one in the list as default
+    echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
+    VERSIONS=$(az sig image-version list \
+                --resource-group $RESOURCEGROUP \
+                --gallery-name $IMAGES_GALLERY \
+                --gallery-image-definition $IMAGE_DEFINITION \
+                --query "[].name" -o table)
+    echo -e "$VERSIONS"
+    DEFAULT_VERSION=$(echo -e "$VERSIONS" | tail -n1)
+    echo -e "${BOLD}Please type the version you would like to use, followed by [ENTER]. To accept the default ${BLUE}$DEFAULT_VERSION${END} ${BOLD}simply press [ENTER]${END}"
+    read VERSION
+    if [ "$VERSION" = "" ]; then VERSION=$DEFAULT_VERSION; fi
+fi
+
+# Check that this is a valid version and then get the image ID
+echo -e "${BOLD}Finding ID for image ${BLUE}${IMAGE_DEFINITION}${END} version ${BLUE}${VERSION}${END}${BOLD}...${END}"
+if [ "$(az sig image-version show --resource-group $RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
+    echo -e "${RED}Version $VERSION could not be found.${END}"
+    print_usage_and_exit
+fi
+IMAGE_ID=$(az sig image-version show --resource-group $RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
+
+# Switch subscription and setup resource groups if they do not already exist
+# --------------------------------------------------------------------------
+az account set --subscription "$SUBSCRIPTION"
+if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
+    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
 
+# If using the Data Science VM then the terms must be added before creating the VM
+PLANDETAILS=""
+if [[ "$SOURCEIMAGE" == *"DataScienceBase"* ]]; then
+    PLANDETAILS="--plan-name linuxdsvmubuntubyol --plan-publisher microsoft-ads --plan-product linux-data-science-vm-ubuntu"
+fi
 
 # Ensure required features for shared image galleries are enabled for this subscription
 FEATURE="GalleryPreview"
@@ -131,65 +186,22 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --priority 3000
 fi
 
-# Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
-# If anything else is requested then print usage message and exit.
-# If using the Data Science VM then the terms will be automatically accepted.
-if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-    if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-        echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
-        # Make a temporary config file with the Torch lines uncommented
-        TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-        TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
-        rm $TMP_CLOUD_CONFIG_PREFIX
-        sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
-        MACHINENAME="${MACHINENAME}-UbuntuTorch1804Base"
-        INITSCRIPT="$TMP_CLOUD_CONFIG_YAML"
-    else
-        MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
-        INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
-    fi
-    SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    DISKSIZEGB="40"
-elif [ "$SOURCEIMAGE" = "DataScience" ]; then
-    MACHINENAME="${MACHINENAME}-DataScienceBase"
-    SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-    INITSCRIPT="cloud-init-buildimage-datascience.yaml"
-    DISKSIZEGB="60"
-    echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
-    az vm image accept-terms --urn $SOURCEIMAGE
-else
-    echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
-    print_usage_and_exit
-fi
-
-# Append timestamp to allow unique naming
-TIMESTAMP="$(date '+%Y%m%d%H%M')"
-BASENAME="Generalized${MACHINENAME}-${TIMESTAMP}"
-
 # Create the VM based off the selected source image
+# Append timestamp to allow unique naming
+DISKSIZEGB=60
+BASENAME="Generalized${MACHINENAME}-$(date '+%Y%m%d%H%M')"
 echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
 echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
-echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
+echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END} ($IMAGE_ID)"
 STARTTIME=$(date +%s)
+
 az vm create \
   --resource-group $RESOURCEGROUP \
   --name $BASENAME \
-  --image $SOURCEIMAGE \
+  --image $IMAGE_ID \
   --os-disk-size-gb $DISKSIZEGB \
-  --custom-data $INITSCRIPT \
   --nsg $NSGNAME \
-  --size $VMSIZE \
-  --admin-username atiadmin \
+  --size $VM_SIZE \
+  --admin-username $USERNAME \
   --generate-ssh-keys
 
-# --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
-# the key will be removed from the build machine at the end of VM creation
-
-# Remove temporary init file if it exists
-rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
-
-# Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
-echo -e "${RED}This process will take several hours to complete.${END}"
-echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
-echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

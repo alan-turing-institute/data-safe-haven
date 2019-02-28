@@ -1,0 +1,251 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Virtual Network Name": {
+            "defaultValue": "DSG_DSGROUPX_VNET1",
+            "type": "string",
+            "metadata": {
+                "Description": "Enter name of virtual network i.e. DSG_DSGROUP2_VNET1"
+            }
+        },
+        "P2S VPN Certifciate": {
+            "type": "string",
+            "metadata": {
+                "description": "Paste certificate into dialogue box"
+            }
+        },
+        "Virtual Network Address Space": {
+            "type": "string",
+            "defaultValue": "10.250.x.x",
+            "metadata": {
+                "description": "Enter IP address space for the virtual network i.e. 10.250.10.0/21"
+            }
+        },
+        "Subnet-Identity Address Prefix": {
+            "type": "string",
+            "defaultValue": "10.250.x.x",
+            "metadata": {
+                "description": "Enter IP subnet prefix i.e. 10.250.10.0/24"
+            }
+        },
+        "Subnet-RDS Address Prefix": {
+            "type": "string",
+            "defaultValue": "10.250.x.x",
+            "metadata": {
+                "description": "Enter IP subnet prefix i.e. 10.250.11./24"
+            }
+         },
+        "Subnet-Data Address Prefix": {
+            "type": "string",
+            "defaultValue": "10.250.x.x",
+            "metadata": {
+                "description": "Enter IP subnet prefix i.e. 10.250.12.0/24"
+            }
+        },
+         "Subnet-Gateway Address Prefix": {
+            "type": "string",
+            "defaultValue": "10.250.x.x",
+            "metadata": {
+                "description": "Enter IP subnet prefix for the gateway i.e. 10.250.13.0/27"
+            }
+         },
+         "DNS Server IP Address": {
+            "type": "string",
+            "defaultValue": "10.250.x.250",
+            "metadata": {
+                "description": "Enter IP of the DNS server (this is the DC within the DSG i.e. 10.250.x.250"
+            }
+         }
+        },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "name": "DSG_VNET1_GW_PIP",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "DSG_VNET1_GW",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "dsggwipconf",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                            }
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "VpnGw1",
+                    "tier": "VpnGw1",
+                    "capacity": 2
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": false,
+                "activeActive": false,
+                "vpnClientConfiguration": {
+                    "vpnClientAddressPool": {
+                        "addressPrefixes": [
+                            "172.16.201.0/24"
+                        ]
+                    },
+                    "vpnClientProtocols": [
+                        "SSTP",
+                        "IkeV2"
+                    ],
+                    "vpnClientRootCertificates": [
+                        {
+                            "name": "DSG_P2S_RootCert.cer",
+                            "properties": {
+                                "publicCertData": "[parameters('P2S VPN Certifciate')]"
+                            }
+                        }
+                    ],
+                    "vpnClientRevokedCertificates": [],
+                    "vpnClientIpsecPolicies": []
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('Virtual Network Name')]",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('Virtual Network Address Space')]"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": [
+                        "[parameters('DNS Server IP Address')]",
+                        "8.8.8.8"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Subnet-Identity",
+                        "properties": {
+                            "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",
+                            "serviceEndpoints": [],
+                            "delegations": []
+                        }
+                    },
+                    {
+                        "name": "Subnet-RDS",
+                        "properties": {
+                            "addressPrefix": "[parameters('Subnet-RDS Address Prefix')]",
+                            "serviceEndpoints": [],
+                            "delegations": []
+                        }
+                    },
+                    {
+                        "name": "Subnet-Data",
+                        "properties": {
+                            "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                            "serviceEndpoints": [],
+                            "delegations": []
+                        }
+                    },
+                    {
+                        "name": "GatewaySubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Subnet-Gateway Address Prefix')]",
+                            "serviceEndpoints": [],
+                            "delegations": []
+                        }
+                    }
+                ],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-Identity')]",
+            "apiVersion": "2018-10-01",
+            "scale": null,
+            "properties": {
+                "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",
+                "serviceEndpoints": [],
+                "delegations": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-RDS')]",
+            "apiVersion": "2018-10-01",
+            "scale": null,
+            "properties": {
+                "addressPrefix": "[parameters('Subnet-RDS Address Prefix')]",
+                "serviceEndpoints": [],
+                "delegations": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-Data')]",
+            "apiVersion": "2018-10-01",
+            "scale": null,
+            "properties": {
+                "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                "serviceEndpoints": [],
+                "delegations": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('Virtual Network Name'), '/', 'GatewaySubnet')]",
+            "apiVersion": "2018-10-01",
+            "scale": null,
+            "properties": {
+                "addressPrefix": "[parameters('Subnet-Gateway Address Prefix')]",
+                "serviceEndpoints": [],
+                "delegations": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+            ]
+        }
+    ]
+}
