@@ -135,89 +135,6 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
         --name SBNT_PKG_MIRRORS_INTERNAL
 fi
 
-
-# Set up PyPI external mirror
-# ---------------------------
-VMNAME="VMExternalMirrorPyPI"
-SUBNET="SBNT_PKG_MIRRORS_EXTERNAL"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
-    INITSCRIPT="cloud-init-mirror-external-pypi.yaml"
-
-    # Create the VM based off the selected source image
-    echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
-    KEY_SECRET=$(az keyvault secret list-versions --vault-name $VAULTNAME -n keyPyPI --query "[?attributes.enabled].id" -o tsv)
-    VM_SECRET=$(az vm secret format -s "$KEY_SECRET")
-
-    # Create the data disk
-    echo -e "${RED}Creating 4TB datadisk${END}"
-    DISKNAME=${VMNAME}_DATADISK
-    az disk create \
-        --resource-group $RESOURCEGROUP \
-        --name $DISKNAME \
-        --size-gb 4095 \
-        --location $LOCATION
-
-    echo -e "${RED}Creating VM...${END}"
-    az vm create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
-        --subnet $SUBNET \
-        --name $VMNAME \
-        --image $SOURCEIMAGE \
-        --custom-data $INITSCRIPT \
-        --admin-username atiadmin \
-        --attach-data-disks $DISKNAME \
-        --nsg "" \
-        --public-ip-address "" \
-        --secrets "$VM_SECRET" \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS
-    echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
-fi
-
-
-# Set up CRAN external mirror
-# ---------------------------
-VMNAME="VMExternalMirrorCRAN"
-SUBNET="SBNT_PKG_MIRRORS_EXTERNAL"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
-    INITSCRIPT="cloud-init-mirror-external-cran.yaml"
-
-    # Create the VM based off the selected source image
-    echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
-    KEY_SECRET=$(az keyvault secret list-versions --vault-name $VAULTNAME -n keyCRAN --query "[?attributes.enabled].id" -o tsv)
-    VM_SECRET=$(az vm secret format -s "$KEY_SECRET")
-
-    # Create the data disk
-    echo -e "${RED}Creating 4TB datadisk${END}"
-    DISKNAME=${VMNAME}_DATADISK
-    az disk create \
-        --resource-group $RESOURCEGROUP \
-        --name $DISKNAME \
-        --size-gb 4095 \
-        --location $LOCATION
-
-    echo -e "${RED}Creating VM...${END}"
-    az vm create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
-        --subnet $SUBNET \
-        --name $VMNAME \
-        --image $SOURCEIMAGE \
-        --custom-data $INITSCRIPT \
-        --admin-username atiadmin \
-        --attach-data-disks $DISKNAME \
-        --nsg "" \
-        --public-ip-address "" \
-        --secrets "$VM_SECRET" \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS
-    echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
-fi
-
-
 # Set up PyPI internal mirror
 # ---------------------------
 VMNAME="VMInternalMirrorPyPI"
@@ -266,6 +183,86 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
     INITSCRIPT="cloud-init-mirror-internal-cran.yaml"
 
     # Create the VM based off the selected source image, opening port 443 for the webserver
+    echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
+    KEY_SECRET=$(az keyvault secret list-versions --vault-name $VAULTNAME -n keyCRAN --query "[?attributes.enabled].id" -o tsv)
+    VM_SECRET=$(az vm secret format -s "$KEY_SECRET")
+
+    # Create the data disk
+    echo -e "${RED}Creating 4TB datadisk${END}"
+    DISKNAME=${VMNAME}_DATADISK
+    az disk create \
+        --resource-group $RESOURCEGROUP \
+        --name $DISKNAME \
+        --size-gb 4095 \
+        --location $LOCATION
+
+    echo -e "${RED}Creating VM...${END}"
+    az vm create \
+        --resource-group $RESOURCEGROUP \
+        --vnet-name $VNETNAME \
+        --subnet $SUBNET \
+        --name $VMNAME \
+        --image $SOURCEIMAGE \
+        --custom-data $INITSCRIPT \
+        --admin-username atiadmin \
+        --attach-data-disks $DISKNAME \
+        --nsg "" \
+        --public-ip-address "" \
+        --secrets "$VM_SECRET" \
+        --size Standard_F4s_v2 \
+        --storage-sku Standard_LRS
+    echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
+fi
+
+# Set up PyPI external mirror
+# ---------------------------
+VMNAME="VMExternalMirrorPyPI"
+SUBNET="SBNT_PKG_MIRRORS_EXTERNAL"
+if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
+    INITSCRIPT="cloud-init-mirror-external-pypi.yaml"
+
+    # Create the VM based off the selected source image
+    echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
+    KEY_SECRET=$(az keyvault secret list-versions --vault-name $VAULTNAME -n keyPyPI --query "[?attributes.enabled].id" -o tsv)
+    VM_SECRET=$(az vm secret format -s "$KEY_SECRET")
+
+    # Create the data disk
+    echo -e "${RED}Creating 4TB datadisk${END}"
+    DISKNAME=${VMNAME}_DATADISK
+    az disk create \
+        --resource-group $RESOURCEGROUP \
+        --name $DISKNAME \
+        --size-gb 4095 \
+        --location $LOCATION
+
+    echo -e "${RED}Creating VM...${END}"
+    az vm create \
+        --resource-group $RESOURCEGROUP \
+        --vnet-name $VNETNAME \
+        --subnet $SUBNET \
+        --name $VMNAME \
+        --image $SOURCEIMAGE \
+        --custom-data $INITSCRIPT \
+        --admin-username atiadmin \
+        --attach-data-disks $DISKNAME \
+        --nsg "" \
+        --public-ip-address "" \
+        --secrets "$VM_SECRET" \
+        --size Standard_F4s_v2 \
+        --storage-sku Standard_LRS
+    echo -e "${RED}Deployed new ${BLUE}$VMNAME${RED} server${END}"
+fi
+
+# Set up CRAN external mirror
+# ---------------------------
+VMNAME="VMExternalMirrorCRAN"
+SUBNET="SBNT_PKG_MIRRORS_EXTERNAL"
+if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME)" = "" ]; then
+    INITSCRIPT="cloud-init-mirror-external-cran.yaml"
+
+    # Create the VM based off the selected source image
     echo -e "${RED}Creating VM ${BLUE}$VMNAME${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
     echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
     KEY_SECRET=$(az keyvault secret list-versions --vault-name $VAULTNAME -n keyCRAN --query "[?attributes.enabled].id" -o tsv)
