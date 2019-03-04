@@ -18,7 +18,7 @@
 - Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
 
 ### Troubleshooting
-#### Uer exists with that name
+#### User exists with that name
 First check if that user actually already exists!
 
 If the new user should definitely be a different user, then the following fields need to be unique for all users in the Active Directory. If they are not you will may get a "Name already in use" error.

@@ -14,7 +14,7 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Other constants
-SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base")
+SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base" "ComputeVM-DsgBase")
 GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
 VERSIONMAJOR="0"
 VERSIONMINOR="0"
