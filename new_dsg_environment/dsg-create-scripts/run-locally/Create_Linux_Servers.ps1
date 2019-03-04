@@ -18,7 +18,7 @@ $adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "admin-dsg9-t
 $securePassword = ConvertTo-SecureString $adminPassword –asplaintext –force
 $vnetName = "DSG_DSGROUP" + $dsgId + "_VNET1"
 $vnetResourceGroupName = "RG_DSG_VNET"
-$vnetSubnet = "Subnet-Identity"
+$vnetSubnet = "Subnet-Data"
 $resourceGroupName = "RG_DSG_RDS"
 
 $params = @{
