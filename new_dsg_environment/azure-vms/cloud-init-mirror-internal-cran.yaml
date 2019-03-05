@@ -13,9 +13,14 @@ packages:
   - rsync
   - apache2
 
+# Add the mirrordaemon user
 users:
   - name: mirrordaemon
     sudo: False
+
+# Authorise the SSH key for the external CRAN mirror
+ssh_authorized_keys:
+  - EXTERNAL_SSH_KEY_PLACEHOLDER
 
 write_files:
   - path: /000-default.conf
@@ -46,22 +51,6 @@ runcmd:
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
   - chown -R mirrordaemon /datadrive
-
-  # Add authorized public key
-  - ls /var/lib/waagent/
-  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
-  - echo "Found secret named $KEYNAME"
-  - cd
-  - cp /var/lib/waagent/${KEYNAME}.crt /var/lib/waagent/${KEYNAME}.prv .
-  - "openssl pkcs12 -export -passout pass: -in ${KEYNAME}.crt -inkey ${KEYNAME}.prv -out sshkey.pfx"
-  - "openssl pkcs12 -passin pass: -in sshkey.pfx -out sshkey.pem -nocerts -nodes"
-  - ssh-keygen -f sshkey.pem -y > sshkey.pub
-  - mkdir ~mirrordaemon/.ssh
-  - cp sshkey.pub ~mirrordaemon/.ssh/authorized_keys
-  - chown -R mirrordaemon ~mirrordaemon
-  - chgrp -R mirrordaemon ~mirrordaemon
-  - chmod 0644 ~mirrordaemon/.ssh/authorized_keys
-  - rm -f ${KEYNAME}.* sshkey.*
 
   # Set up apache
   - echo "*** Setting up apache server pointing to local disk... ***"

@@ -27,6 +27,15 @@ write_files:
       rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive
 
 runcmd:
+  # Generate SSH keys for connecting to the internal mirror
+  # - do this early since it is pulled out of the VM by the deployment script
+  - echo "*** Generating SSH keys for connecting to the internal mirror"
+  - ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - mkdir -p ~mirrordaemon/.ssh
+  - mv id_rsa id_rsa.pub ~mirrordaemon/.ssh/
+  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
+  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+
   # Upgrade installation then clean up
   - echo "*** Upgrade and clean up apt-get packages... ***"
   - apt-get -y upgrade
@@ -42,22 +51,6 @@ runcmd:
   - mv fstab.tmp /etc/fstab
   - chown -R mirrordaemon /datadrive
 
-  # Convert the CRAN KeyVault secret into public and private RSA keys
-  - ls /var/lib/waagent/
-  - KEYNAME=$(find /var/lib/waagent/ -name "*.prv" | cut -c -57 | cut -d'/' -f5)
-  - echo "Found secret named $KEYNAME"
-  - cd
-  - cp /var/lib/waagent/${KEYNAME}.crt /var/lib/waagent/${KEYNAME}.prv .
-  - "openssl pkcs12 -export -passout pass: -in ${KEYNAME}.crt -inkey ${KEYNAME}.prv -out sshkey.pfx"
-  - "openssl pkcs12 -passin pass: -in sshkey.pfx -nocerts -nodes | openssl rsa > id_rsa"
-  - "openssl pkcs12 -passin pass: -in sshkey.pfx -out sshkey.pem -nocerts -nodes"
-  - ssh-keygen -f sshkey.pem -y > id_rsa.pub
-  - mkdir -p ~mirrordaemon/.ssh
-  - cp id_rsa* ~mirrordaemon/.ssh/
-  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
-  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
-  - rm -f ${KEYNAME}.* sshkey.* id_rsa*
-
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
   - echo "*** Adding external update (bandersnatch) job to crontab (2am on 3rd of each month)... ***"
@@ -66,8 +59,7 @@ runcmd:
   - echo "0 2 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab
 
   # Register fingerprint of remote machine (internal mirror)
-  - echo "*** Registering fingerprint of internal mirror ***"
-  - ssh-keyscan -H 10.0.1.5 >> ~mirrordaemon/.ssh/known_hosts
+  - echo "*** Checking fingerprint of internal mirror ***"
   - cat ~mirrordaemon/.ssh/known_hosts
 
   # Fix permissions so that mirrordaemon owns its files
