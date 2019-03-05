@@ -13,14 +13,14 @@ packages:
   - rsync
   - apache2
 
-# Add the mirrordaemon user
+# Add the atiadmin (default) and mirrordaemon users
 users:
+  - default
   - name: mirrordaemon
+    lock_passwd: True
     sudo: False
-
-# Authorise the SSH key for the external CRAN mirror
-ssh_authorized_keys:
-  - EXTERNAL_SSH_KEY_PLACEHOLDER
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
 
 write_files:
   - path: /000-default.conf

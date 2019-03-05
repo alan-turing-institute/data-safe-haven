@@ -15,15 +15,18 @@ packages:
   - python3-pip
   - python3-venv
 
+# Add the atiadmin (default) and mirrordaemon users
 users:
+  - default
   - name: mirrordaemon
+    lock_passwd: True
     sudo: False
 
 write_files:
   - path: "/home/mirrordaemon/push_to_internal.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@10.0.1.4:/datadrive
+      rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@IP_TRIPLET_INTERNAL.4:/datadrive
   - path: "/home/mirrordaemon/update_mirror.sh"
     content: |
       #! /bin/bash
@@ -77,6 +80,7 @@ runcmd:
   # - do this early since it is pulled out of the VM by the deployment script
   - echo "*** Generating SSH keys for connecting to the internal mirror"
   - ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - sed -i 's/root@/mirrordaemon@/' id_rsa.pub
   - mkdir -p ~mirrordaemon/.ssh
   - mv id_rsa id_rsa.pub ~mirrordaemon/.ssh/
   - chmod 0600 ~mirrordaemon/.ssh/id_rsa
@@ -105,15 +109,16 @@ runcmd:
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
-  - echo "*** Adding external update (rsync) job to crontab (2am on 3rd of each month)... ***"
-  - echo "0 2 3 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
-  - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
-  - echo "0 2 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab
-
-  # Register fingerprint of remote machine (internal mirror)
-  - echo "*** Checking fingerprint of internal mirror ***"
-  - cat ~mirrordaemon/.ssh/known_hosts
+  - echo "*** Adding external update (rsync) job to crontab (3am on 4th of each month)... ***"
+  - echo "0 3 4 * * mirrordaemon ~mirrordaemon/update_mirror.sh" >> /etc/crontab
+  - echo "*** Adding internal mirror update job to crontab (3am on 1st of each month)... ***"
+  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon ~mirrordaemon
   - chgrp -R mirrordaemon ~mirrordaemon
+
+  # Run initial update as mirrordaemon
+  - sudo -H -u mirrordaemon bash -c 'echo "I am $USER, with uid $UID"'
+  # - sudo -H -u mirrordaemon bash -c 'source ~mirrordaemon/update_mirror.sh"'
+  # - sudo -H -u mirrordaemon bash -c 'source ~mirrordaemon/push_to_internal.sh"'

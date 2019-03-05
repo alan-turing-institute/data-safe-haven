@@ -105,13 +105,13 @@ We use a separate resource group and associated VNet to contain all of the exter
 This can be created and deployed using `deploy_azure_mirror_servers.sh`.
 
 ```
-usage: ./deploy_azure_mirror_servers.sh [-h] -s subscription [-e external_ip] [-i internal_ip] [-r resource_group] [-v vnet_name]
+usage: ./deploy_azure_mirror_servers.sh [-h] -s subscription [-e external_ip] [-i internal_ip] [-k keyvault_name] [-r resource_group]
   -h                           display help
   -s subscription [required]   specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')
   -e external_ip               specify IP range for external mirror servers (defaults to '10.0.0.0/24')
   -i internal_ip               specify IP range for internal mirror servers (defaults to '10.0.1.0/24')
+  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')"
   -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_PKG_MIRRORS')
-  -v vnet_name                 specify name for VNet that mirror servers will belong to (defaults to 'VNet_SH_PKG_MIRRORS')
 ```
 
 Once the script is run, it will create external and internal mirrors of the PyPI and CRAN package repositories.

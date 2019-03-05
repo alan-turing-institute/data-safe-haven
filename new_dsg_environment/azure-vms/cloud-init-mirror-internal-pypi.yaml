@@ -13,9 +13,14 @@ packages:
   - python3-pip
   - python3-venv
 
+# Add the atiadmin (default) and mirrordaemon users
 users:
+  - default
   - name: mirrordaemon
+    lock_passwd: True
     sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
 
 write_files:
   - path: "/etc/systemd/system/pypiserver.service"

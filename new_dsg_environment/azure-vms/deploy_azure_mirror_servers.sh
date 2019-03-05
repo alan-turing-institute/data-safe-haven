@@ -10,15 +10,15 @@ END="\033[0m"
 SUBSCRIPTION="" # must be provided
 IP_TRIPLET_EXTERNAL="10.0.0"
 IP_TRIPLET_INTERNAL="10.0.1"
+KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SH_PKG_MIRRORS"
-VNETNAME="VNET_SH_PKG_MIRRORS"
 
 # Other constants
-KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
 LOCATION="uksouth"
 NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
 NSG_INTERNAL="NSG_SH_PKG_MIRRORS_INTERNAL"
+VNET_NAME="VNET_SH_PKG_MIRRORS"
 SUBNET_EXTERNAL="SBNT_SH_PKG_MIRRORS_EXTERNAL"
 SUBNET_INTERNAL="SBNT_SH_PKG_MIRRORS_INTERNAL"
 VM_PREFIX_EXTERNAL="MirrorVMExternal"
@@ -26,18 +26,18 @@ VM_PREFIX_INTERNAL="MirrorVMInternal"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-e external_ip] [-i internal_ip] [-r resource_group] [-v vnet_name]"
+    echo "usage: $0 [-h] -s subscription [-e external_ip] [-i internal_ip] [-k keyvault_name] [-r resource_group]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
     echo "  -e external_ip               specify initial IP triplet for external mirror servers (defaults to '${IP_TRIPLET_EXTERNAL}')"
     echo "  -i internal_ip               specify initial IP triplet for internal mirror servers (defaults to '${IP_TRIPLET_INTERNAL}')"
+    echo "  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
-    echo "  -v vnet_name                 specify name for VNet that mirror servers will belong to (defaults to '${VNETNAME}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "he:i:r:s:v:" opt; do
+while getopts "he:i:k:r:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -48,14 +48,14 @@ while getopts "he:i:r:s:v:" opt; do
         i)
             IP_TRIPLET_INTERNAL=$OPTARG
             ;;
+        k)
+            KEYVAULT_NAME=$OPTARG
+            ;;
         r)
             RESOURCEGROUP=$OPTARG
             ;;
         s)
             SUBSCRIPTION=$OPTARG
-            ;;
-        v)
-            VNETNAME=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -122,27 +122,26 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
 fi
 
 # Create VNet if it does not already exist
-if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNETNAME)" = "" ]; then
-    echo -e "${RED}Creating VNet ${BLUE}$VNETNAME${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME
+if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
+    echo -e "${RED}Creating VNet ${BLUE}$VNET_NAME${END}"
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNET_NAME
 fi
-az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME
 
 # Create subnets if they do not already exist
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating subnet ${BLUE}$SUBNET_EXTERNAL${END}"
     az network vnet subnet create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --network-security-group $NSG_EXTERNAL \
         --address-prefix $IP_RANGE_EXTERNAL \
         --name $SUBNET_EXTERNAL
 fi
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --network-security-group $NSG_INTERNAL \
         --address-prefix $IP_RANGE_INTERNAL \
         --name $SUBNET_INTERNAL
@@ -156,6 +155,10 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
     CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-pypi"
 
+    # Construct a new cloud-init YAML file with the appropriate SSH key included
+    TMPCLOUDINITYAML="$(mktemp).yaml"
+    sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
         echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
@@ -177,31 +180,28 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --size-gb 4095 \
         --location $LOCATION
 
-    # TODO: restore --public-ip-address "" \
-
     echo -e "${RED}Creating VM...${END}"
     OSDISKNAME=${VMNAME_EXTERNAL}_OSDISK
     PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.4
     az vm create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --subnet $SUBNET_EXTERNAL \
         --name $VMNAME_EXTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
+        --custom-data $TMPCLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
         --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
+    rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
-    echo -e "${RED}Password is ${BLUE}'$ADMIN_PASSWORD'${END}"
-    # # Wait for the first stages of deployment to begin so that we can extract the ssh key
-    # sleep 30
 fi
 
 
@@ -212,6 +212,12 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
     CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-cran"
 
+    # Construct a new cloud-init YAML file with the appropriate SSH key included
+    TMPCLOUDINITYAMLPREFIX=$(mktemp)
+    TMPCLOUDINITYAML="${TMPCLOUDINITYAMLPREFIX}.yaml"
+    rm $TMPCLOUDINITYAMLPREFIX
+    sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
         echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
@@ -233,31 +239,28 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --size-gb 4095 \
         --location $LOCATION
 
-    # TODO: restore --public-ip-address "" \
-
     echo -e "${RED}Creating VM...${END}"
     OSDISKNAME=${VMNAME_EXTERNAL}_OSDISK
     PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.5
     az vm create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --subnet $SUBNET_EXTERNAL \
         --name $VMNAME_EXTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
+        --custom-data $TMPCLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
         --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
+    rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
-    echo -e "${RED}Password is ${BLUE}'$ADMIN_PASSWORD'${END}"
-    # # Wait for the first stages of deployment to begin so that we can extract the ssh key
-    # sleep 30
 fi
 
 
@@ -266,22 +269,17 @@ fi
 VMNAME_INTERNAL="${VM_PREFIX_INTERNAL}PyPI"
 VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "" ]; then
-    BASECLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
+    CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-pypi"
 
     # Construct a new cloud-init YAML file with the appropriate SSH key included
-    CLOUDINITYAMLPREFIX=$(mktemp)
-    CLOUDINITYAML="${CLOUDINITYAMLPREFIX}.yaml"
-    rm $CLOUDINITYAMLPREFIX
-    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" | cut -d'\' -f3 | sed "s/^n//" > external_key.pub
-    echo "tsv output..."
-    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" -o tsv
-    sed -e "s|EXTERNAL_SSH_KEY_PLACEHOLDER|$(cat external_key.pub)|" $BASECLOUDINITYAML > $CLOUDINITYAML
-    rm external_key.pub
+    TMPCLOUDINITYAML="$(mktemp).yaml"
+    EXTERNAL_PUBLIC_SSH_KEY=$(az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" -o tsv | grep "^ssh")
+    sed -e "s|EXTERNAL_PUBLIC_SSH_KEY|${EXTERNAL_PUBLIC_SSH_KEY}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
+        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_INTERNAL${END}"
         az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(date +%s | sha256sum | base64 | head -c 32)
     fi
     # Retrieve admin password from keyvault
@@ -300,33 +298,33 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "
         --size-gb 4095 \
         --location $LOCATION
 
-    # TODO: restore --public-ip-address "" \
     echo -e "${RED}Creating VM...${END}"
     OSDISKNAME=${VMNAME_INTERNAL}_OSDISK
     PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.4
     az vm create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --subnet $SUBNET_INTERNAL \
         --name $VMNAME_INTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
+        --custom-data $TMPCLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
-        --authentication-type all \
+        --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
+    rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_INTERNAL${RED} server${END}"
-    echo -e "${RED}Password is ${BLUE}'$ADMIN_PASSWORD'${END}"
 
     # Update known hosts on the external server to allow connections to the internal server
     echo -e "${RED}Update known hosts on ${BLUE}$VMNAME_EXTERNAL${RED} to allow connections to ${BLUE}$VMNAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${VMNAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
-    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old"
+    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
     echo -e "${RED}Finished updating ${BLUE}$VMNAME_EXTERNAL${END}"
 fi
 
@@ -335,20 +333,17 @@ fi
 VMNAME_INTERNAL="${VM_PREFIX_INTERNAL}CRAN"
 VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}CRAN"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "" ]; then
-    BASECLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
+    CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-cran"
 
     # Construct a new cloud-init YAML file with the appropriate SSH key included
-    CLOUDINITYAMLPREFIX=$(mktemp)
-    CLOUDINITYAML="${CLOUDINITYAMLPREFIX}.yaml"
-    rm $CLOUDINITYAMLPREFIX
-    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" | cut -d'\' -f3 | sed "s/^n//" > external_key.pub
-    sed -e "s|EXTERNAL_SSH_KEY_PLACEHOLDER|$(cat external_key.pub)|" $BASECLOUDINITYAML > $CLOUDINITYAML
-    rm external_key.pub
+    TMPCLOUDINITYAML="$(mktemp).yaml"
+    EXTERNAL_PUBLIC_SSH_KEY=$(az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" -o tsv | grep "^ssh")
+    sed -e "s|EXTERNAL_PUBLIC_SSH_KEY|${EXTERNAL_PUBLIC_SSH_KEY}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
+        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_INTERNAL${END}"
         az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(date +%s | sha256sum | base64 | head -c 32)
     fi
     # Retrieve admin password from keyvault
@@ -367,33 +362,32 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "
         --size-gb 4095 \
         --location $LOCATION
 
-    # TODO: restore --public-ip-address "" \
-
     echo -e "${RED}Creating VM...${END}"
     OSDISKNAME=${VMNAME_INTERNAL}_OSDISK
     PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.5
     az vm create \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME \
+        --vnet-name $VNET_NAME \
         --subnet $SUBNET_INTERNAL \
         --name $VMNAME_INTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
+        --custom-data $TMPCLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
-        --authentication-type all \
+        --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
+    rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_INTERNAL${RED} server${END}"
-    echo -e "${RED}Password is ${BLUE}'$ADMIN_PASSWORD'${END}"
 
     # Update known hosts on the external server to allow connections to the internal server
     echo -e "${RED}Update known hosts on ${BLUE}$VMNAME_EXTERNAL${RED} to allow connections to ${BLUE}$VMNAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${VMNAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
-    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old"
+    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
     echo -e "${RED}Finished updating ${BLUE}$VMNAME_EXTERNAL${END}"
 fi
