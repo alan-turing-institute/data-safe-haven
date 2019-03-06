@@ -155,9 +155,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
     CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-pypi"
 
-    # Construct a new cloud-init YAML file with the appropriate SSH key included
-    TMPCLOUDINITYAML="$(mktemp).yaml"
-    sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+    # # Construct a new cloud-init YAML file with the appropriate SSH key included
+    # TMPCLOUDINITYAML="$(mktemp).yaml"
+    # sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -189,20 +189,20 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --subnet $SUBNET_EXTERNAL \
         --name $VMNAME_EXTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $TMPCLOUDINITYAML \
+        --custom-data $CLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
         --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
-        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
-    rm $TMPCLOUDINITYAML
+    # rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
 fi
+        # --public-ip-address "" \
 
 
 # Set up CRAN external mirror
@@ -212,11 +212,11 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
     CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-cran"
 
-    # Construct a new cloud-init YAML file with the appropriate SSH key included
-    TMPCLOUDINITYAMLPREFIX=$(mktemp)
-    TMPCLOUDINITYAML="${TMPCLOUDINITYAMLPREFIX}.yaml"
-    rm $TMPCLOUDINITYAMLPREFIX
-    sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+    # # Construct a new cloud-init YAML file with the appropriate SSH key included
+    # TMPCLOUDINITYAMLPREFIX=$(mktemp)
+    # TMPCLOUDINITYAML="${TMPCLOUDINITYAMLPREFIX}.yaml"
+    # rm $TMPCLOUDINITYAMLPREFIX
+    # sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -248,20 +248,20 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --subnet $SUBNET_EXTERNAL \
         --name $VMNAME_EXTERNAL \
         --image $SOURCEIMAGE \
-        --custom-data $TMPCLOUDINITYAML \
+        --custom-data $CLOUDINITYAML \
         --admin-username atiadmin \
         --admin-password $ADMIN_PASSWORD \
         --authentication-type password \
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
-        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
-    rm $TMPCLOUDINITYAML
+    # rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
 fi
+        # --public-ip-address "" \
 
 
 # Set up PyPI internal mirror
@@ -325,6 +325,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "
     echo -e "${RED}Update known hosts on ${BLUE}$VMNAME_EXTERNAL${RED} to allow connections to ${BLUE}$VMNAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${VMNAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+    # Update known IP addresses on the external server to schedule pushing to the internal server
+    echo -e "${RED}Registering IP address ${BLUE}$PRIVATEIPADDRESS${RED} with ${BLUE}$VMNAME_EXTERNAL${RED} as the location of ${BLUE}$VMNAME_INTERNAL${END}"
+    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
     echo -e "${RED}Finished updating ${BLUE}$VMNAME_EXTERNAL${END}"
 fi
 
@@ -389,5 +392,8 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "
     echo -e "${RED}Update known hosts on ${BLUE}$VMNAME_EXTERNAL${RED} to allow connections to ${BLUE}$VMNAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${VMNAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+    # Update known IP addresses on the external server to schedule pushing to the internal server
+    echo -e "${RED}Registering IP address ${BLUE}$PRIVATEIPADDRESS${RED} with ${BLUE}$VMNAME_EXTERNAL${RED} as the location of ${BLUE}$VMNAME_INTERNAL${END}"
+    az vm run-command invoke --name $VMNAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
     echo -e "${RED}Finished updating ${BLUE}$VMNAME_EXTERNAL${END}"
 fi

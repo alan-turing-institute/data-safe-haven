@@ -23,10 +23,14 @@ users:
     sudo: False
 
 write_files:
+  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    content: |
   - path: "/home/mirrordaemon/push_to_internal_mirror.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@IP_TRIPLET_INTERNAL.4:/datadrive
+      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@${IP_ADDRESS}:/datadrive
+      done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
       #! /bin/bash
@@ -121,5 +125,10 @@ runcmd:
   # Run initial update - this must be done as mirrordaemon
   - echo "*** Populating external mirror for the first time ***"
   - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/pull_from_internet.sh'
-  - echo "*** Performing first push to the internal mirror ***"
+  - echo "*** Performing first push to the following internal mirrors ***"
+  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
   - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/push_to_internal_mirror.sh'
+
+  # Print out some diagnostic information
+  - echo "*** This server is currently aware of internal mirrors at the following locations ***"
+  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
