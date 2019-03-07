@@ -25,7 +25,7 @@ users:
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     content: |
-  - path: "/home/mirrordaemon/push_to_internal_mirror.sh"
+  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     content: |
       #! /bin/bash
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
@@ -116,7 +116,7 @@ runcmd:
   - echo "*** Adding external update (rsync) job to crontab (3am on 15th of each month)... ***"
   - echo "0 3 15 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
   - echo "*** Adding internal mirror update job to crontab (3am on 1st of each month)... ***"
-  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirror.sh" >> /etc/crontab
+  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon ~mirrordaemon
@@ -127,7 +127,7 @@ runcmd:
   - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/pull_from_internet.sh'
   - echo "*** Performing first push to the following internal mirrors ***"
   - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
-  - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/push_to_internal_mirror.sh'
+  - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/push_to_internal_mirrors.sh'
 
   # Print out some diagnostic information
   - echo "*** This server is currently aware of internal mirrors at the following locations ***"
