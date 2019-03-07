@@ -104,9 +104,6 @@ fi
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating NSG for external mirrors: ${BLUE}$NSG_EXTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
-    # TODO: Remove this once we're happy with the setup
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name TmpManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
-    # ^^^^^^^^
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
 
@@ -168,13 +165,13 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
     # rm $TMPCLOUDINITYAML
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
 fi
-        # --public-ip-address "" \
 
 
 # Set up CRAN external mirror
@@ -221,9 +218,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "
         --attach-data-disks $DISKNAME \
         --os-disk-name $OSDISKNAME \
         --nsg "" \
+        --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS
     echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
 fi
-        # --public-ip-address "" \

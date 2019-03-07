@@ -147,9 +147,6 @@ fi
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
-    # # TODO: Remove this once we're happy with the setup
-    # az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name TmpManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
-    # # ^^^^^^^^
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name http --description "Allow ports 80 and 8080 for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 8080 --protocol TCP --destination-address-prefixes "*" --priority 300
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
