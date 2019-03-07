@@ -1246,3 +1246,15 @@ For monitoring deployments without SSH access, enable "Boot Diagnostics" for tha
 - GITLAB\_NIC1
 
 - HACKMD\_NIC1
+
+## Sever administration
+
+- The following servers are created as a result of these instructions:
+  - DSGxDC (domain controller)
+  - DATASERVER
+  - HACKMD
+  - GITLAB
+  - RDS
+  - RDSSH1
+  - RDSSH2
+  
