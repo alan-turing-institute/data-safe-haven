@@ -23,7 +23,7 @@ First check if that user actually already exists!
 
 If the new user should definitely be a different user, then the following fields need to be unique for all users in the Active Directory. If they are not you will may get a "Name already in use" error.
 - `SamAccountName`: Specified explicitly in the CSV file, so update to `firstname.middle.initials.lastname`
-- `DistinguishedName`: Formed of `CN=<DisplayName>.<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
 
 ## Azure Portal
 - Login into Azure Portal and connect to the correct AAD subscription
