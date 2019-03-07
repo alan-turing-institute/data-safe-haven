@@ -75,7 +75,7 @@ There is an Azure Key Vault in the Safe Haven Management subscription called "ds
 
 The following secrets should already exist.
 
-VPN P2S SSL Certificate (used for connecting to the domain controller). Stored under "Certificates" as "DSG-P2S-\<environment\>-
+VPN P2S SSL Certificate (used for connecting to the domain controller). Stored under "Certificates" as "DSG-P2S-\<environment\>-"
 
 ### Create environment specific secrets
 
@@ -159,7 +159,7 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
 
  | **Command**|                                     **Parameters**|   **Description**|
  |--|--|--|
-| Create\_New\_DSG\_User\_Service\_Accounts.ps1 |  -dsg      |       DSG NetBIOS name i.e. DSGROUP10 |
+| `Create_New_DSG_User_Service_Accounts.ps1` |  -dsg      |       DSG NetBIOS name i.e. DSGROUP10 |
   
 
 When prompted enter the passwords for the service accounts (see Prepare Secrets).
@@ -171,7 +171,7 @@ Update the DNS with the new DSG environment details by running the following com
 
   | **Command** | **Parameters** |  **Description** |
   | --- | --- | --- |
-|  Add\_New\_DSG\_To\_DNS.ps1 |   -SubnetIdentity |   First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
+|  `Add_New_DSG_To_DNS.ps1` |   -SubnetIdentity |   First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
 | | -SubnetRDS | First 3 octets of the RDS subnet IP address space i.e. 10.250.0 |
 | | -SubnetData |       First 3 octets of the Data subnet IP address space i.e. 10.250.0 |
 | | -Domain |          DSG NetBIOS name i.e. DSG10 |
@@ -191,13 +191,13 @@ Update the DNS with the new DSG environment details by running the following com
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Run the "./Create\_VNET.ps1" script, providing the following information when prompted.
+- Run the `./Create_VNET.ps1` script, providing the following information when prompted.
 
-- First two octets of the address range (e.g. "10.250")
+  - First two octets of the address range (e.g. "10.250")
 
-- Third octet of the address range (e.g. "64" for "10.250.64")
+  - Third octet of the address range (e.g. "64" for "10.250.64")
 
-- DSG ID, usually a number (e.g. for DSG9 this is just "9")
+  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
@@ -219,7 +219,7 @@ Update the DNS with the new DSG environment details by running the following com
 
   - Virtual Network: Select the newly created virtual network
 
-- Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **[un]{.underline}**checked
+- Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
 
 ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1c7f094.PNG](images/media/image2.png)
 
@@ -235,7 +235,7 @@ Update the DNS with the new DSG environment details by running the following com
 
 Virtual Network: Select correct virtual network
 
-Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **[un]{.underline}**checked
+Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
 
 ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1d02087.PNG](images/media/image3.png)
 
@@ -275,7 +275,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Run the "./Create\_AD\_DC.ps1" script, providing the following information when prompted.
+- Run the `./Create_AD_DC.ps1` script, providing the following information when prompted.
 
 - The environment ('test' or 'prod')
 
@@ -297,18 +297,18 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
-- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
+- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
 - Open a PowerShell command window with elevated privileges
 
-- Change to C:\\Scripts
+- Change to `C:\Scripts`
 
 - Set the VM to United Kingdom/GMT timezone by running the following command:
 
   
   | **Command**       |      **Parameters** |  **Description** |
   | -- | -- | -- |
-  | Set\_OS\_Language.ps1  |  n/a  |             n/a |
+  |`Set_OS_Language.ps1`  |  n/a  |             n/a |
   
 
 - Setup the accounts on the Active Directory by running the following command with these parameters.
@@ -316,14 +316,14 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
  
 |  **Command**            |          **Parameters**  |  **Description** |
 | -- | -- | -- |
-| Create\_Users\_Groups\_OUs.ps1  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
+| `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
 
 
 - Configure the DNS on the server by running the following command with these parameters
 
 | **Command** |     **Parameters** |   **Description** |
 | -- | -- | -- |
-|  ConfigureDNS.ps1  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
+|  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
 | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space i.e. 10.250.1 |
 | |                      -SubnetData        | First 3 octets of the Identity subnet IP address space i.e. 10.250.2 |
 | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
@@ -332,11 +332,10 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 Configure Active Directory group polices, to install the polices run the following command with these parameters
 
-  ------------------- ---------------- ----------------------------------------------------------------------------------------------------------------------
-  **Command**         **Parameters**   **Description**
-  ConfigureGPOs.ps1   -backuppath      C:\\Scripts\\GPOs -- this is the default path, if you copy the scripts to another folder you'll need to change this.
-                      -domain          DSG NetBIOS name i.e. DSGROUP10
-  ------------------- ---------------- ----------------------------------------------------------------------------------------------------------------------
+|  **Command** |        **Parameters**|   **Description** |
+| -- | -- | -- |
+|  `ConfigureGPOs.ps1` |  -backuppath |     `C:\Scripts\GPOs` -- this is the default path, if you copy the scripts to another folder you'll need to change this. \
+| |                       -domain |          DSG NetBIOS name i.e. DSGROUP10 |
 
 - Open the "Group Policy Management" MMC
 
@@ -386,9 +385,9 @@ The "Administrators Properties" box will now look like this
 
 - Click "OK" when done and close all Group Policy windows.
 
-- Open C:\\Scripts in "File Explorer" and copy the "ServerStartMenu" folder
+- Open `C:\Scripts` in "File Explorer" and copy the "ServerStartMenu" folder
 
-- Navigate to F:\\SYSVOL\\domain\\scripts and copy the "ServerStartMenu" folder here. Close "File Explorer"
+- Navigate to `F:\SYSVOL\domain\scripts` and copy the "ServerStartMenu" folder here. Close "File Explorer"
 
 - Restart the server
 
@@ -442,7 +441,7 @@ The "Administrators Properties" box will now look like this
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Run the "./Create\_RDS\_Servers.ps1" script, providing the following information when prompted.
+- Run the `./Create_RDS_Servers.ps1` script, providing the following information when prompted.
 
   - The environment ('test' or 'prod')
 
@@ -498,14 +497,14 @@ The "Administrators Properties" box will now look like this
 
 - Open a PowerShell command window with elevated privileges
 
-- Change to C:\\Scripts
+- Change to `C:\Scripts`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
 
   
   | **Command**   | **Parameters** |  **Description** |
   | -- | -- | -- |
-  | OS\_Prep.ps1  | -domain  |        Enter the NetBIOS name of the domain i.e. DSGROUP10
+  | `OS_Prep.ps1`  | -domain  |        Enter the NetBIOS name of the domain i.e. DSGROUP10
   | |                 -mgmtdomain |     Enter the FQDN of the management domain i.e. turingsafehaven.ac.uk |
   -------------- ---------------- --------------------------------------------------------------------
 
@@ -550,7 +549,7 @@ The "Administrators Properties" box will now look like this
 
 | **Command**              | **Parameters** | **Description**                                                                                |
 | -- | -- | -- |
-| DeployRDSEnvironment.ps1 | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP9x§                                            |
+| `DeployRDSEnvironment.ps1` | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP9x§                                            |
 |                          | -dsg           | Enter the DSG name i.e. DSGROUP9                                                                |
 |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test) 
 |                          | -ipaddress     | Enter the first three octets of the Subnet-Data subnet as per the checklist i.e. 10.250.x+2     (where x is the base address)                                                                   |
@@ -593,7 +592,7 @@ The "Administrators Properties" box will now look like this
 
 -   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
 
--   \`certbot \--config-dir \~/tsh-certbot/config \--work-dir \~/tsh-certbot/work \--logs-dir \~/tsh-certbot/logs certonly \--manual \--preferred-challenges \"dns\" \--agree-tos -m \<email-for-expiry-notifications\> -d \<dsg-domain\> \--csr \<path-to-csr\>\`
+-   `\certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <dsg-domain> --csr <path-to-csr>`
 
 -   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties
 
@@ -607,9 +606,9 @@ The "Administrators Properties" box will now look like this
 
 -   Wait for Let\'s Encrypt to verify the challenge
 
--   Copy \`\~/tsh-certbot/config/live/\<dsg-fq-domain\>/fullchain.pem\` from your computer to the RDS server
+-   Copy `~/tsh-certbot/config/live/<dsg-fq-domain\>/fullchain.pem` from your computer to the RDS server
 
--   Securely delete the \`\~/tsh-certbot\` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the \`accounts\` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
+-   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
 
  -  Once the certificate has been issued by the CA this needs to be installed onto the server.
 
@@ -646,9 +645,9 @@ The "Administrators Properties" box will now look like this
 -   Add the new certificate to the Remote Desktop service by running the following command:
 
 
-|  **Command** |     **Parameters ** |   **Description** |
+|  **Command** |     **Parameters** |   **Description** |
 | -- | -- | -- |
-|  AddSSLCert.ps1  | -Sslpassword |     The private key password |
+|  `AddSSLCert.ps1`  | -Sslpassword |     The private key password |
 | |                   -domain |          Enter the NetBIOS name of the domain i.e. DSGROUP10 |
 | |                   -certpath |        The path to the certificate file i.e. c:\\temp\\cert.pfx |
 
@@ -831,7 +830,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 
 |  **Command** |                 **Parameters** |   **Description** |
 | -- | -- | -- |
- | Configure\_DataServer.ps1 |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. TURINGSAFEHAVEN |
+ | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. TURINGSAFEHAVEN |
 | |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP10 |
 | |                              -dsg |             Enter the DSG name i.e. DSG2 |
 
@@ -869,7 +868,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 
 | **Command**          | **Actions**                                                      |
 | -- | -- |
-| sudo nano /etc/hosts | Add the line:                                                     \<Subnet-Data\>.152 hackmd hackmd.dsgroupX.co.uk                 
+| `sudo nano /etc/hosts` | Add the line:                                                     \<Subnet-Data\>.152 hackmd hackmd.dsgroupX.co.uk                 
 |                      |                                                                  |
 |                      | \<Subnet-Data\> = IP Address of the Subnet-Data as per checklist (Change X for correct group number)
 
@@ -884,17 +883,17 @@ To make this Remote Desktop Service accessible from the internet a A record will
 ### Install Docker
 
   **Command**
-  sudo apt-get update
-  sudo apt upgrade
-  sudo apt install apt-transport-https ca-certificates curl software-properties-common
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg \| sudo apt-key add -
-  sudo add-apt-repository \"deb \[arch=amd64\] https://download.docker.com/linux/ubuntu artful stable\"
-  sudo apt update
-  sudo apt install docker-ce
-  sudo docker run hello-world
-  sudo apt install docker-compose
-  sudo git clone https://github.com/hackmdio/docker-hackmd.git
-
+```console
+> sudo apt-get update
+> sudo apt upgrade
+> sudo apt install apt-transport-https ca-certificates curl software-properties-common
+> curl -fsSL https://download.docker.com/linux/ubuntu/gpg \| sudo apt-key add -
+> sudo add-apt-repository \"deb \[arch=amd64\] https://download.docker.com/linux/ubuntu artful stable\"
+> sudo apt update
+> sudo apt install docker-ce
+> sudo docker run hello-world
+> sudo apt install docker-compose
+> sudo git clone https://github.com/hackmdio/docker-hackmd.git```
 
 ### Configure HackMD
 
@@ -1111,6 +1110,108 @@ sudo gitlab-rake gitlab:ldap:check
   sudo apt upgrade
   sudo gitlab-ctl reconfigure
   sudo gitlab-ctl restart
+  
+## Installing Compute VMs 
+
+Create VM image with full analysis environment as detailed in the [analysis environment design](https://github.com/alan-turing-institute/data-safe-haven/wiki/AnalysisEnvironmentDesign) wiki.
+The scripts referred to in this section are run locally and are in ```new_dsg_environment/azure-vms```
+
+## Pre-requisites
+In order to run `build_azure_vm_image.sh` you will need to install the Azure Command Line tools on the machine you are using.
+See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for more details about how to do this.
+
+## Running the build script
+Before running the build script, make sure you have setup the Azure cli with `az login`.
+You can then run `./build_azure_vm_image.sh`.
+The available options for configuring the base image, resource group and name of the VM can be seen by running `./build_azure_vm_image.sh -h`.
+Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 1.5 hours.
+Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
+
+```
+
+usage: ./build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
+  -h                 display help
+  -i source image    specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')
+  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')
+
+```
+
+### Build examples
+Build an image based off Ubuntu 18.04 (used by default if not specified) called `UbuntuVM`
+
+```bash
+./build_azure_vm_image.sh -i Ubuntu -s "Safe Haven Management Testing"
+```
+
+Build an image based off the Microsoft Data Science VM in the `TestBuild` resource group
+
+```bash
+./build_azure_vm_image.sh -i DataScience -r TestBuild -s "Safe Haven Management Testing"
+```
+
+## Registering VMs in the image gallery
+After running `./build_azure_vm_image.sh` script, you should wait several hours for the build to complete.
+Information about how to monitor the build using ssh is given at the end of `./build_azure_vm_image.sh`.
+
+Once the build has finished, it can be registered in the image gallery using the `./register_images_in_gallery.sh` script.
+This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
+
+```
+usage: register_images_in_gallery.sh -s subscription [-h] [-i source_image] [-n machine_name] [-r resource_group] [-v version_suffix]
+  -h                  display help
+  -i source_image     specify an already existing image to add to the gallery.
+  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this.
+  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_DSG_IMAGEGALLERY')
+  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
+  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc.
+```
+
+### Registration examples
+For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like.
+
+```bash
+./register_images_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941 -s "Safe Haven Management Testing"
+```
+
+## Creating a DSG environment
+At the moment this is not scripted (environments have been created by Rob). Watch this space...
+
+## Deploying a VM from the image gallery into a DSG environment
+VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
+This deploys from an image stored in a gallery in `subscription_source` into a resource group in `subscription_target`.
+This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
+
+```
+usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]
+  -h                        display help
+  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
+  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)
+  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')
+  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
+  -u user_name              specify a username for the admin account (defaults to 'atiadmin')
+  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')
+  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
+  -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
+  -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')
+  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -m management_vault_name  specify name of KeyVault containing management secrets (required)
+  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)
+  -j ldap_user              specify the LDAP user (required)
+  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)
+  -d domain                 specify domain name for safe haven (required)
+
+```
+
+Example usage
+
+```bash
+./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
+```
+
+For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
+
 
 ## Network Lock Down
 
