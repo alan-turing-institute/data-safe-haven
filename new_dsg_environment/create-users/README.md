@@ -16,6 +16,8 @@
 - Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
 - Note: OU path must be in quotes
 - Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
+- To force a sync to AAD first ensure that the ADSync module is installed: `Import-Module ADSync`
+- Run `Start-ADSyncSyncCycle -PolicyType Delta` (sync may still take ~5 minutes)
 
 ### Troubleshooting
 #### User exists with that name
