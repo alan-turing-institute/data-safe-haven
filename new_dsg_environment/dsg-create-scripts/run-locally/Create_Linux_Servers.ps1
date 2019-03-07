@@ -5,11 +5,15 @@ $addressSpacePrefix = Read-Host -Prompt "Enter first three octets of address spa
 $dsgId = Read-Host -Prompt "Enter DSG ID (usually a number e.g DSG9 = 9)"
 
 $gitlabName = "GITLAB"
-$gitlabVMSize = "Standard_DS2_v2"
+$gitlabVMSizeTest = "Standard_DS2_v2"
+$gitlaVbMSizeProd = "Standard_DS2_v2"
+$gitlabVMSize = If ($environment == "test") {$gitlabVMSizeTest} Else {$gitlabVMSizeProd}
 $gitlabIP = $addressSpacePrefix + ".151"
 
 $hackmdName = "HACKMD"
-$hackmdVMSize = "Standard_DS2_v2"
+$hackmdVMSizeTest = "Standard_DS2_v2"
+$hackmdVMSizeProd = "Standard_DS2_v2"
+$hackmdVMSize = If ($environment == "test") {$hackmdVMSizeTest} Else {$hackmdVMSizeProd}
 $hackmdIP = $addressSpacePrefix + ".152"
 
 $vaultName = "dsg-management-" + $environment

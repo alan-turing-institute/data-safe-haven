@@ -18,6 +18,9 @@ $vnetSubnet = "Subnet-Data"
 $domainName = "DSGROUP" + $dsgId + ".CO.UK"
 $ipAddress = $addressSpacePrefix + ".100"
 $vmSize = "Standard_DS2_v2"
+$vmSizeTest = "Standard_DS2_v2"
+$vmSizeProd = "Standard_DS2_v2"
+$vmSize = If ($environment == "test") {$vmSizeTest} Else {$vmSizeProd}
 $resourceGroupName = "RG_DSG_RDS"
 
 
