@@ -61,8 +61,8 @@ runcmd:
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
-  - echo "*** Adding external update (bandersnatch) job to crontab (3am on 4th of each month)... ***"
-  - echo "0 3 4 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "*** Adding external update (bandersnatch) job to crontab (3am on 15th of each month)... ***"
+  - echo "0 3 15 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
   - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
   - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirror.sh" >> /etc/crontab
 

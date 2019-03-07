@@ -102,28 +102,47 @@ For monitoring deployments without SSH access, enable "Boot Diagnostics" for tha
 
 ## Deploying the mirror servers
 We use a separate resource group and associated VNet to contain all of the external and internal package repository mirrors.
-This can be created and deployed using `deploy_azure_mirror_servers.sh`.
+This can be created and deployed using `deploy_azure_external_mirror_servers.sh` and `deploy_azure_internal_mirror_servers.sh`.
 
+### Deploy external mirrors
 ```
-usage: ./deploy_azure_mirror_servers.sh [-h] -s subscription [-e external_ip] [-i internal_ip] [-k keyvault_name] [-r resource_group]
+usage: ./deploy_azure_external_mirror_servers.sh [-h] -s subscription [-e external_ip] [-k keyvault_name] [-r resource_group]
   -h                           display help
-  -s subscription [required]   specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')
-  -e external_ip               specify IP range for external mirror servers (defaults to '10.0.0.0/24')
-  -i internal_ip               specify IP range for internal mirror servers (defaults to '10.0.1.0/24')
-  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')"
+  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')
+  -e external_ip               specify initial IP triplet for external mirror servers (defaults to '10.0.0')
+  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')
   -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_PKG_MIRRORS')
 ```
 
-Once the script is run, it will create external and internal mirrors of the PyPI and CRAN package repositories.
-A cronjob (2nd of each month) inside each of the external mirrors will update them from the remote repository.
-A second cronjob (1st of each month) inside each of the external mirrors will push their data to the internal mirror.
-This ensures that the internal mirror is always between one and two months behind the current version of these mirrors at any time.
-
-The internal mirrors run webservers which allow them to produce the expected behaviour of a PyPI or CRAN server.
+Once the script is run, it will create external mirrors of the PyPI and CRAN package repositories.
+A cronjob (3am on the 15th of each month) inside each of the external mirrors will update them from the remote repository.
+A second cronjob (3am on the 1st of each month) inside each of the external mirrors will push their data to any internal mirrors that have been configured.
+This ensures that the internal mirror is always between two and six weeks behind the current version of these mirrors at any time.
 The VNet created when these mirrors are set up must be paired to each of the DSG environments for them to be able to use it.
 
-Example usage
+Example usage:
 
 ```bash
-./deploy_azure_mirror_servers.sh -s "Safe Haven Management Testing"
+./deploy_azure_external_mirror_servers.sh -s "Safe Haven Management Testing"
+```
+
+
+### Deploy an internal mirror set
+```
+usage: ./deploy_azure_internal_mirror_servers.sh [-h] -s subscription [-i internal_ip] [-k keyvault_name] [-r resource_group] [-x name_suffix]
+  -h                           display help
+  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')
+  -i internal_ip               specify initial IP triplet for internal mirror servers (defaults to '10.0.1')
+  -k keyvault_name             specify name for keyvault that already contains admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')
+  -r resource_group            specify resource group that contains the external mirror servers (defaults to 'RG_SH_PKG_MIRRORS')
+  -x name_suffix               specify (optional) suffix that will be used to distinguish these internal mirror servers from any others (defaults to '')
+```
+
+This script deploys a set of internal mirrors which will use the IP range given by `-i`.
+The internal mirrors run webservers which allow them to produce the expected behaviour of a PyPI or CRAN server.
+
+Example usage:
+
+```bash
+./deploy_azure_internal_mirror_servers.sh -s "Safe Haven Management Testing" -i 10.0.1 -x DSG1
 ```
