@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Options which are configurable at the command line
+DSG_ID=""
+FIXED_IP=""
+VM_SIZE="Standard_DS2_v2"
+
 # Document usage for this script
 print_usage_and_exit() {
     echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]"
@@ -45,10 +50,7 @@ if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "
     print_usage_and_exit
 fi
 
-# Gallery image details
-
 # Deployed VM parameters
-VM_SIZE="Standard_DS2_v2"
 USERNAME="atiadmin"
 
 # Deployment environment
@@ -87,13 +89,15 @@ fi
 # Overwite defaults for per-DSG settings
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     IP_PREFIX="10.250.250."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-TEST.yaml"
     # Only change settings below here during a DSG
-    SOURCEIMAGE="DSG"
-    VERSION="0.0.2018121000"
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
     IP_PREFIX="10.250.2."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-1.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -101,24 +105,28 @@ fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.10."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-2.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-3.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-4.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
+    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-6.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -128,11 +136,12 @@ fi
 if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
-        -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN"
+        -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
+        -y $CLOUD_INIT_YAML
 else
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS"
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML
 fi
