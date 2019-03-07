@@ -8,42 +8,40 @@ END="\033[0m"
 
 # Options which are configurable at the command line
 SUBSCRIPTION="" # must be provided
-IP_TRIPLET_EXTERNAL="10.0.0"
 IP_TRIPLET_INTERNAL="10.0.1"
-KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
+KEYVAULT_NAME="kv-sh-pkg-mirrors" # must match what was used for the external mirrors
 RESOURCEGROUP="RG_SH_PKG_MIRRORS"
 
 # Other constants
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
 LOCATION="uksouth"
-NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
-NSG_INTERNAL="NSG_SH_PKG_MIRRORS_INTERNAL"
 VNET_NAME="VNET_SH_PKG_MIRRORS"
+NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
 SUBNET_EXTERNAL="SBNT_SH_PKG_MIRRORS_EXTERNAL"
-SUBNET_INTERNAL="SBNT_SH_PKG_MIRRORS_INTERNAL"
 VM_PREFIX_EXTERNAL="MirrorVMExternal"
-VM_PREFIX_INTERNAL="MirrorVMInternal"
+NAME_SUFFIX=""
+
 
 # Document usage for this script
+# ------------------------------
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-e external_ip] [-i internal_ip] [-k keyvault_name] [-r resource_group]"
+    echo "usage: $0 [-h] -s subscription [-i internal_ip] [-k keyvault_name] [-r resource_group] [-x name_suffix]"
     echo "  -h                           display help"
-    echo "  -s subscription [required]   specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
-    echo "  -e external_ip               specify initial IP triplet for external mirror servers (defaults to '${IP_TRIPLET_EXTERNAL}')"
+    echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
     echo "  -i internal_ip               specify initial IP triplet for internal mirror servers (defaults to '${IP_TRIPLET_INTERNAL}')"
-    echo "  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
-    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -k keyvault_name             specify name for keyvault that contains admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
+    echo "  -r resource_group            specify resource group that contains the external mirror servers (defaults to '${RESOURCEGROUP}')"
+    echo "  -x name_suffix               specify (optional) suffix that will be used to distinguish these internal mirror servers from any others (defaults to '${NAME_SUFFIX}')"
     exit 1
 }
 
+
 # Read command line arguments, overriding defaults where necessary
-while getopts "he:i:k:r:s:" opt; do
+# ----------------------------------------------------------------
+while getopts "he:i:k:r:s:x:" opt; do
     case $opt in
         h)
             print_usage_and_exit
-            ;;
-        e)
-            IP_TRIPLET_EXTERNAL=$OPTARG
             ;;
         i)
             IP_TRIPLET_INTERNAL=$OPTARG
@@ -57,86 +55,109 @@ while getopts "he:i:k:r:s:" opt; do
         s)
             SUBSCRIPTION=$OPTARG
             ;;
+        x)
+            NAME_SUFFIX=$OPTARG
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             ;;
     esac
 done
 
-# Check that a subscription has been provided
+# Check that a subscription has been provided and switch to it
+# ------------------------------------------------------------
 if [ "$SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
+az account set --subscription "$SUBSCRIPTION"
 
-# Set IP ranges from triplet information
-if [ "$IP_TRIPLET_EXTERNAL" = "$IP_TRIPLET_INTERNAL" ]; then
-    echo -e "${RED}Internal and external IP triplets must be different!${END}"
+# Ensure that the external mirrors have been set up
+# -------------------------------------------------
+# Ensure that resource group exists
+if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
+    echo -e "${RED}Resource group ${BLUE}$RESOURCEGROUP${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
-IP_RANGE_EXTERNAL="${IP_TRIPLET_EXTERNAL}.0/24"
-IP_RANGE_INTERNAL="${IP_TRIPLET_INTERNAL}.0/24"
 
-# Set up subscription and vnet
-# --------------------------------
-# Switch subscription and setup resource group if it does not already exist
-az account set --subscription "$SUBSCRIPTION"
-if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
-    echo -e "${RED}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
-    az group create --name $RESOURCEGROUP --location $LOCATION
-fi
-
-
-# Create keyvault for storing passwords
-# -------------------------------------
-# Create keyvault if it does not already exist
+# Ensure that keyvault exists
 if [ "$(az keyvault list --resource-group $RESOURCEGROUP | grep $KEYVAULT_NAME)" = "" ]; then
-    echo -e "${RED}Creating keyvault ${BLUE}$KEYVAULT_NAME${END}"
-    az keyvault create --name $KEYVAULT_NAME --resource-group $RESOURCEGROUP --enabled-for-deployment true
-    # Wait for DNS propagation of keyvault
-    sleep 10
+    echo -e "${RED}Keyvault ${BLUE}$KEYVAULT_NAME${RED} not found! Have you deployed the external mirrors?${END}"
+    print_usage_and_exit
 fi
 
+# Ensure that VNet exists
+if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
+    echo -e "${RED}VNet ${BLUE}$VNET_NAME${RED} not found! Have you deployed the external mirrors?${END}"
+    print_usage_and_exit
+fi
 
-# Set up the NSGs, VNet and subnets
-# ---------------------------------
-# Create NSGs if they do not already exist
+# Ensure that external NSG exists
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL 2> /dev/null)" = "" ]; then
-    echo -e "${RED}Creating NSG for external mirrors: ${BLUE}$NSG_EXTERNAL${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
-    # TODO: Remove this once we're happy with the setup
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name TmpManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
-    # ^^^^^^^^
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_INTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    echo -e "${RED}External NSG ${BLUE}$NSG_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
+    print_usage_and_exit
 fi
+
+# Ensure that external subnet exists
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
+    echo -e "${RED}External subnet ${BLUE}$SUBNET_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
+    print_usage_and_exit
+fi
+
+
+# Construct and validate IP ranges
+# --------------------------------
+# Validate triplet against IP ranges set during external mirror deployment
+for EXISTING_IP_RANGE in $(az network vnet show --resource-group $RESOURCEGROUP --name $VNET_NAME --query "subnets[].addressPrefix" -o tsv); do
+    EXISTING_IP_TRIPLET=$(echo $EXISTING_IP_RANGE | cut -d'.' -f1-3)
+    if [ "$IP_TRIPLET_INTERNAL" = "$EXISTING_IP_TRIPLET" ]; then
+        echo -e "${RED}IP triplet ${BLUE}$IP_TRIPLET_INTERNAL${RED} is already in use!${END}"
+        print_usage_and_exit
+    fi
+done
+IP_RANGE_INTERNAL="${IP_TRIPLET_INTERNAL}.0/24"
+IP_RANGE_EXTERNAL=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --name $SUBNET_EXTERNAL --query "addressPrefix" | xargs)
+echo -e "${RED}Will deploy internal mirrors in the IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
+
+# Setup internal names to match the external names
+# ------------------------------------------------
+NSG_INTERNAL="$(echo $NSG_EXTERNAL | sed 's/EXTERNAL/INTERNAL/')"
+SUBNET_INTERNAL="$(echo $SUBNET_EXTERNAL | sed 's/EXTERNAL/INTERNAL/')"
+VM_PREFIX_INTERNAL="$(echo $VM_PREFIX_EXTERNAL | sed 's/External/Internal/')"
+# Add name suffix if needed
+if [ "$NAME_SUFFIX" != "" ]; then
+    SUBNET_INTERNAL="${SUBNET_INTERNAL}_${NAME_SUFFIX}"
+    VM_PREFIX_INTERNAL="$(echo $VM_PREFIX_EXTERNAL | sed 's/External/Internal/')${NAME_SUFFIX}"
+fi
+
+# Set up the internal NSG and configure the external NSG
+# ------------------------------------------------------
+# Update external NSG to allow connections to this IP range
+echo -e "${RED}Updating NSG ${BLUE}$NSG_EXTERNAL${RED} to allow connections to IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
+# ... if rsync rule does not exist then we create it
+if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsync 2> /dev/null)" = "" ]; then
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_INTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
+# ... otherwise we update it, extracting the existing IP ranges first
+else
+    EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsync --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsync --source-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_INTERNAL
+fi
+
+# Create internal NSG if it does not already exist
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
-    # TODO: Remove this once we're happy with the setup
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name TmpManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
-    # ^^^^^^^^
+    # # TODO: Remove this once we're happy with the setup
+    # az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name TmpManualConfigSSH --description "Allow port 22 for management over ssh" --source-address-prefixes 193.60.220.253 --destination-port-ranges 22 --protocol TCP --destination-address-prefixes "*" --priority 100
+    # # ^^^^^^^^
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name http --description "Allow ports 80 and 8080 for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 8080 --protocol TCP --destination-address-prefixes "*" --priority 300
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
 
-# Create VNet if it does not already exist
-if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
-    echo -e "${RED}Creating VNet ${BLUE}$VNET_NAME${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNET_NAME
-fi
 
-# Create subnets if they do not already exist
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
-    echo -e "${RED}Creating subnet ${BLUE}$SUBNET_EXTERNAL${END}"
-    az network vnet subnet create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNET_NAME \
-        --network-security-group $NSG_EXTERNAL \
-        --address-prefix $IP_RANGE_EXTERNAL \
-        --name $SUBNET_EXTERNAL
-fi
+# Create internal subnet if it does not already exist
+# ---------------------------------------------------
 if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
@@ -147,123 +168,6 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
         --name $SUBNET_INTERNAL
 fi
 
-
-# Set up PyPI external mirror
-# ---------------------------
-VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}PyPI"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "" ]; then
-    CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-pypi"
-
-    # # Construct a new cloud-init YAML file with the appropriate SSH key included
-    # TMPCLOUDINITYAML="$(mktemp).yaml"
-    # sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
-
-    # Ensure that admin password is available
-    if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
-        az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(date +%s | sha256sum | base64 | head -c 32)
-    fi
-    # Retrieve admin password from keyvault
-    ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
-
-    # Create the VM based off the selected source image
-    echo -e "${RED}Creating VM ${BLUE}$VMNAME_EXTERNAL${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
-
-    # Create the data disk
-    echo -e "${RED}Creating 4TB datadisk...${END}"
-    DISKNAME=${VMNAME_EXTERNAL}_DATADISK
-    az disk create \
-        --resource-group $RESOURCEGROUP \
-        --name $DISKNAME \
-        --size-gb 4095 \
-        --location $LOCATION
-
-    echo -e "${RED}Creating VM...${END}"
-    OSDISKNAME=${VMNAME_EXTERNAL}_OSDISK
-    PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.4
-    az vm create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNET_NAME \
-        --subnet $SUBNET_EXTERNAL \
-        --name $VMNAME_EXTERNAL \
-        --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
-        --admin-username atiadmin \
-        --admin-password $ADMIN_PASSWORD \
-        --authentication-type password \
-        --attach-data-disks $DISKNAME \
-        --os-disk-name $OSDISKNAME \
-        --nsg "" \
-        --private-ip-address $PRIVATEIPADDRESS \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS
-    # rm $TMPCLOUDINITYAML
-    echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
-fi
-        # --public-ip-address "" \
-
-
-# Set up CRAN external mirror
-# ---------------------------
-VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}CRAN"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_EXTERNAL)" = "" ]; then
-    CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-cran"
-
-    # # Construct a new cloud-init YAML file with the appropriate SSH key included
-    # TMPCLOUDINITYAMLPREFIX=$(mktemp)
-    # TMPCLOUDINITYAML="${TMPCLOUDINITYAMLPREFIX}.yaml"
-    # rm $TMPCLOUDINITYAMLPREFIX
-    # sed -e "s|@IP_TRIPLET_INTERNAL|@${IP_TRIPLET_INTERNAL}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
-
-    # Ensure that admin password is available
-    if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-        echo -e "${RED}Creating admin password for ${BLUE}$VMNAME_EXTERNAL${END}"
-        az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(date +%s | sha256sum | base64 | head -c 32)
-    fi
-    # Retrieve admin password from keyvault
-    ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
-
-    # Create the VM based off the selected source image
-    echo -e "${RED}Creating VM ${BLUE}$VMNAME_EXTERNAL${RED} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${RED}This will be based off the ${BLUE}$SOURCEIMAGE${RED} image${END}"
-
-    # Create the data disk
-    echo -e "${RED}Creating 4TB datadisk...${END}"
-    DISKNAME=${VMNAME_EXTERNAL}_DATADISK
-    az disk create \
-        --resource-group $RESOURCEGROUP \
-        --name $DISKNAME \
-        --size-gb 4095 \
-        --location $LOCATION
-
-    echo -e "${RED}Creating VM...${END}"
-    OSDISKNAME=${VMNAME_EXTERNAL}_OSDISK
-    PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.5
-    az vm create \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNET_NAME \
-        --subnet $SUBNET_EXTERNAL \
-        --name $VMNAME_EXTERNAL \
-        --image $SOURCEIMAGE \
-        --custom-data $CLOUDINITYAML \
-        --admin-username atiadmin \
-        --admin-password $ADMIN_PASSWORD \
-        --authentication-type password \
-        --attach-data-disks $DISKNAME \
-        --os-disk-name $OSDISKNAME \
-        --nsg "" \
-        --private-ip-address $PRIVATEIPADDRESS \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS
-    # rm $TMPCLOUDINITYAML
-    echo -e "${RED}Deployed new ${BLUE}$VMNAME_EXTERNAL${RED} server${END}"
-fi
-        # --public-ip-address "" \
-
-
 # Set up PyPI internal mirror
 # ---------------------------
 VMNAME_INTERNAL="${VM_PREFIX_INTERNAL}PyPI"
@@ -271,6 +175,9 @@ VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-pypi"
+    if [ "$NAME_SUFFIX" != "" ]; then
+        ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
+    fi
 
     # Construct a new cloud-init YAML file with the appropriate SSH key included
     TMPCLOUDINITYAML="$(mktemp).yaml"
@@ -331,6 +238,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "
     echo -e "${RED}Finished updating ${BLUE}$VMNAME_EXTERNAL${END}"
 fi
 
+
 # Set up CRAN internal mirror
 # ---------------------------
 VMNAME_INTERNAL="${VM_PREFIX_INTERNAL}CRAN"
@@ -338,6 +246,9 @@ VMNAME_EXTERNAL="${VM_PREFIX_EXTERNAL}CRAN"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $VMNAME_INTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-cran"
+    if [ "$NAME_SUFFIX" != "" ]; then
+        ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
+    fi
 
     # Construct a new cloud-init YAML file with the appropriate SSH key included
     TMPCLOUDINITYAML="$(mktemp).yaml"
