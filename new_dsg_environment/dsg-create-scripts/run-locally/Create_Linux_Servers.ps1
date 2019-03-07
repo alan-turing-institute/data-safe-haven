@@ -23,7 +23,7 @@ $securePassword = ConvertTo-SecureString $adminPassword –asplaintext –force
 $vnetName = "DSG_DSGROUP" + $dsgId + "_VNET1"
 $vnetResourceGroupName = "RG_DSG_VNET"
 $vnetSubnet = "Subnet-Data"
-$resourceGroupName = "RG_DSG_RDS"
+$resourceGroupName = "RG_DSG_LINUX"
 
 $params = @{
 "GITLab Server Name" = $gitlabName
