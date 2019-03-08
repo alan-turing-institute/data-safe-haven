@@ -134,22 +134,27 @@ fi
 # ------------------------------------------------------
 # Update external NSG to allow connections to this IP range
 echo -e "${RED}Updating NSG ${BLUE}$NSG_EXTERNAL${RED} to allow connections to IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
-# ... if rsync rule does not exist then we create it
-if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsync 2> /dev/null)" = "" ]; then
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_INTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
-# ... otherwise we update it, extracting the existing IP ranges first
+# ... if rsync rules do not exist then we create them
+if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncInbound 2> /dev/null)" = "" ]; then
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_INTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_EXTERNAL --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_INTERNAL --priority 200
+# ... otherwise we update them, extracting the existing IP ranges first
 else
-    EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsync --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
-    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsync --source-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_INTERNAL
+    EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsyncInbound --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncInbound --source-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_INTERNAL
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_INTERNAL
 fi
 
 # Create internal NSG if it does not already exist
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${RED}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsync --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name http --description "Allow ports 80 and 8080 for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 8080 --protocol TCP --destination-address-prefixes "*" --priority 300
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name DenyAll --description "Deny all" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name httpInbound --description "Allow ports 80 and 8080 for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 8080 --protocol TCP --destination-address-prefixes "*" --priority 300
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name DenyAllInbound --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes "*" --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_EXTERNAL --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name httpOutbound --description "Allow ports 80 and 8080 for webservices" --source-address-prefixes "*" --destination-port-ranges 80 8080 --protocol TCP --destination-address-prefixes VirtualNetwork --priority 300
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name DenyAllOutbound --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
 
 
