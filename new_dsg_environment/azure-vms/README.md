@@ -77,6 +77,12 @@ usage: ./deploy_compute_vm_to_turing_dsg.sh -g dsg_group_id [-h] [-i source_imag
   -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)
 ```
 
+Example usage
+
+```bash
+./deploy_compute_vm_to_turing_dsg.sh -g test -q 160
+```
+
 
 ## Deploying a VM from the image gallery into a DSG environment
 During development, VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script with more granular control over configuration parameters.
@@ -112,7 +118,7 @@ usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-
 Example usage
 
 ```bash
-./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
+./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing"
 ```
 
 For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
