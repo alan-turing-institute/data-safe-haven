@@ -64,7 +64,7 @@ LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
 ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
 # Set defaults for test and production environments
-if [ "$DSG_ID_UPPER" = "TEST" ] || [ "$DSG_ID_UPPER" = "9" ] ; then
+if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     DSG_VNET="DSG_DSGROUPTEST_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="Data Study Group Testing"
@@ -74,6 +74,17 @@ if [ "$DSG_ID_UPPER" = "TEST" ] || [ "$DSG_ID_UPPER" = "9" ] ; then
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+elif [ "$DSG_ID_UPPER" = "9" ] ; then
+    DSG_VNET="DSG_DSGROUPTEST_VNet1"
+    SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
+    SUBSCRIPTIONTARGET="DSG Template Testing"
+    LDAP_USER="dsgpuldap"
+    DOMAIN="dsgroupdev.co.uk"
+    AD_DC_NAME="MGMTDEVDC"
+    LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+
 else
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
