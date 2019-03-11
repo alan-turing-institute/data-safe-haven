@@ -133,6 +133,13 @@ if [ "$DSG_ID_UPPER" = "6" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
+if [ "$DSG_ID_UPPER" = "9" ]; then
+    IP_PREFIX="10.250.66."
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-9.yaml"
+    # Only change settings below here during a DSG
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2018120701"
+fi
 
 
 if [ "$FIXED_IP" = "" ]; then
