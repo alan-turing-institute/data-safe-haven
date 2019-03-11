@@ -922,7 +922,7 @@ Add the following lines under "environment:"
 | \- HMD\_LDAP\_SEARCHBASE=      | OU Path to the Research Users OU i.e.                                             |
 |                                |                                                                                   |
 |                                | OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk                       |
-| \- HMD\_LDAP\_SEARCHFILTER=    | (userPrincipalName={{username}})                                                  |
+| \- HMD\_LDAP\_SEARCHFILTER=    | (&(objectClass=user)(memberOf=CN=SG DSGROUP9 Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk)(userPrincipalName={{username}}))                                                  |
 | \- HMD\_USECDN=                | false                                                                             |
 | \- HMD\_EMAIL=                 | false                                                                             |
 | \- HMD\_ALLOW\_FREEURL=        | true                                                                              |
