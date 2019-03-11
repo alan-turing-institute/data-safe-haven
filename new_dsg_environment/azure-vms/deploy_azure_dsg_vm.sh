@@ -120,7 +120,7 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
         c)
             LDAP_BIND_DN=$OPTARG
             ;;
-        c)
+        f)
             LDAP_FILTER=$OPTARG
             ;;
         q)
