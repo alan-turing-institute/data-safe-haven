@@ -38,12 +38,12 @@ write_files:
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          rsync -rtlzv --delete --progress /datadrive/* mirrordaemon@${IP_ADDRESS}:/datadrive
+          rsync -rtlzv --delete --progress /datadrive/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/www/cran
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive
+      rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive/www/cran
 
 runcmd:
   # Generate SSH keys for connecting to the internal mirror
@@ -69,6 +69,7 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/www/cran
   - chown -R mirrordaemon /datadrive
 
   # Set up mirroring

@@ -27,9 +27,9 @@ write_files:
   - path: /000-default.conf
     content: |
       <VirtualHost *:80>
-        DocumentRoot "/datadrive/"
-        <Directory "/datadrive">
-            Options Indexes FollowSymLinks Includes ExecCGI
+        DocumentRoot "/datadrive/www/cran"
+        <Directory "/datadrive/www/cran">
+            Options Indexes FollowSymLinks Includes
             AllowOverride All
             Order allow,deny
             Allow from all
@@ -51,10 +51,12 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/www/cran
   - chown -R mirrordaemon /datadrive
 
   # Set up apache
   - echo "*** Setting up apache server pointing to local disk... ***"
   - sed -i "s|/var/www/html|/datadrive|" /etc/apache2/sites-enabled/000-default.conf
   - mv /000-default.conf /etc/apache2/sites-enabled/000-default.conf
+  - sudo a2enmod rewrite
   - service apache2 reload

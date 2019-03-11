@@ -36,12 +36,12 @@ write_files:
       User=mirrordaemon
       Group=mirrordaemon
 
-      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . /datadrive/web/packages
+      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . /datadrive/pypi/web/packages
       ExecStop=/bin/kill -TERM $MAINPID
       ExecReload=/bin/kill -HUP $MAINPID
       Restart=always
 
-      WorkingDirectory=/datadrive/web/packages
+      WorkingDirectory=/datadrive/pypi/web/packages
 
       TimeoutStartSec=3
       RestartSec=5
@@ -59,6 +59,7 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/pypi
   - chown -R mirrordaemon /datadrive
 
   # Install pypiserver with pip
