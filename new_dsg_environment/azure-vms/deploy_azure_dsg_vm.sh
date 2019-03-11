@@ -58,7 +58,7 @@ print_usage_and_exit() {
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:f:q:y:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
