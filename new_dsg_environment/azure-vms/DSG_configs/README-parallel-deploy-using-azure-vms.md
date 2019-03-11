@@ -33,8 +33,8 @@
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
 - Connect to the VM using `ssh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in "Safe Haven Management Testing" subscription)
 - Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/azure-vms/`
-- Checkout the deployment branch for the December 2018 Data Study Groups using `git checkout DSG-DEC2018`
+- Checkout the master branch using `git checkout master`
 - Ensure you have the latest changes locally using `git pull`
 - Ensure you are authenticated in the Azure CLI using `az login`
-- Deploy a new VM into a DSG environment using the `deploy_dsg_dec18.sh` script
+- Deploy a new VM into a DSG environment using the `deploy_compute_vm_to_turing_dsg.sh` script
 

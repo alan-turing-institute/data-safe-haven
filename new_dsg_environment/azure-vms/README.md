@@ -60,18 +60,33 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 ```
 
 ## Creating a DSG environment
-At the moment this is not scripted (environments have been created by Rob). Watch this space...
+See [../azure-runbooks/Data Study Environment Build Instructions.md](DSG Build instructions).
+
+## Safe deployment to a Turing DSG environment
+VMs can be safely deployed into one of the existing Turing DSG environments using the `./deploy_compute_vm_to_turing_dsg.sh` script.
+This script knows the config parameters for the existing Turing DSGs and only needs to be provided with the DSG ID, VM size and the last octet of the IP address the deployed compute VM should receive.
+The IP address range available for the compute VMs in deployed DSG environemnts is `160-199`.
+By convention, CPU-based VM sizes are deployed in the range `160-179` and GPU-based VM images are deployed in the range `180-199`.
+For testing, the IP address can be omitted and the machine will receive a dynamic IP that is not guaranteed to be persistent across reboots.
+
+```
+usage: ./deploy_compute_vm_to_turing_dsg.sh -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]
+  -h                        display help
+  -d dsg_group_id           specify the DSG group to deploy to ('TEST' for test or 1-6 for production)
+  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)
+```
+
 
 ## Deploying a VM from the image gallery into a DSG environment
-VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
-This deploys from an image stored in a gallery in `subscription_source` into a resource group in `subscription_target`.
-This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
+During development, VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script with more granular control over configuration parameters.
+However, it is strongly recommended that the core configuration parameters for each new DSG are added to the safer `./deploy_compute_vm_to_turing_dsg.sh` script as soon as the DSG environment is created, and that all compute VMs are deployed using this script instead (see section above).
 
 ```
 usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]
   -h                        display help
   -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
-  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
+  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)
   -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)
   -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')
   -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
@@ -86,7 +101,12 @@ usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-
   -j ldap_user              specify the LDAP user (required)
   -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)
   -d domain                 specify domain name for safe haven (required)
-
+  -a ad_dc_name             specify Active Directory Domain Controller name (required)
+  -b ldap_base_dn           specify LDAP base DN
+  -c ldap_bind_dn           specify LDAP bind DN
+  -f ldap_filter            specify LDAP filter
+  -q ip_address             specify a specific IP address to deploy the VM to (required)
+  -y yaml_cloud_init        specify a custom cloud-init YAML script
 ```
 
 Example usage
