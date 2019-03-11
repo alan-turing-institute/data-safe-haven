@@ -887,8 +887,8 @@ To make this Remote Desktop Service accessible from the internet a A record will
 > sudo apt-get update
 > sudo apt upgrade
 > sudo apt install apt-transport-https ca-certificates curl software-properties-common
-> curl -fsSL https://download.docker.com/linux/ubuntu/gpg \| sudo apt-key add -
-> sudo add-apt-repository \"deb \[arch=amd64\] https://download.docker.com/linux/ubuntu artful stable\"
+> curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+> sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
 > sudo apt update
 > sudo apt install docker-ce
 > sudo docker run hello-world
@@ -912,13 +912,13 @@ Change Version to 2
 Add the following lines under "environment:"
 
 | **Command**                    | **Value**                                                                         |
-| -- | -- |
+|-- | -- |
 | \- HMD\_LDAP\_PROVIDERNAME=    | NetBIOS name of management domain i.e. turingsafehaven (lowercase)                |
 | \- HMD\_LDAP\_URL=             | LDAP connection URL i.e. ldap://shmdc1.turingsafehaven.ac.uk                      |
 | \- HMD\_LDAP\_BINDDN=          | Bind Path for LDAP user i.e.                                                      |
 |                                |                                                                                   |
 |                                | CN=DSGx HackMD LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk |
-| \- HMD\_LDAP\_BINDCREDENTIALS= | Password for the LDAP account above                                               |
+| - HMD\_LDAP\_BINDCREDENTIALS= | Password for the LDAP account above                                               |
 | \- HMD\_LDAP\_SEARCHBASE=      | OU Path to the Research Users OU i.e.                                             |
 |                                |                                                                                   |
 |                                | OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk                       |
@@ -1229,23 +1229,23 @@ For monitoring deployments without SSH access, enable "Boot Diagnostics" for tha
 
 - RDS Servers
 
-- Open "NSG\_SessionHosts"
+  - Open "NSG\_SessionHosts"
 
-- Associate the following NICs to this NSG
+  - Associate the following NICs to this NSG
 
-- RDSSH1\_NIC1
+    - RDSSH1\_NIC1
 
-- RDSSH2\_NIC2
+    - RDSSH2\_NIC2
 
 - Linux Servers
 
-- Open NSG\_Linux\_Servers
+  - Open NSG\_Linux\_Servers
 
-- Associate the following NICs to this NSG
+  - Associate the following NICs to this NSG
 
-- GITLAB\_NIC1
+    - GITLAB\_NIC1
 
-- HACKMD\_NIC1
+    - HACKMD\_NIC1
 
 ## Sever administration
 
