@@ -64,7 +64,7 @@ LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
 ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
 # Set defaults for test and production environments
-if [ "$DSG_ID_UPPER" = "TEST" ]; then
+if [ "$DSG_ID_UPPER" = "TEST" ] || [ "$DSG_ID_UPPER" = "9" ] ; then
     DSG_VNET="DSG_DSGROUPTEST_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="Data Study Group Testing"
@@ -73,6 +73,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 else
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
@@ -81,7 +82,8 @@ else
     DOMAIN="turingsafehaven.ac.uk"
     AD_DC_NAME="SHMDC1"
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
-    LDAP_BIND_DN="CN=DSG${DSG_ID_LOWER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
+    LDAP_BIND_DN="CN=DSG${DSG_ID_UPPER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk))"
 fi
 
 # ComputeVM-DsgBase version 0.0.2018121000 is a direct copy of Ubuntu version 0.0.2018120701 (/subscriptions/1e79c270-3126-43de-b035-22c3118dd488/resourceGroups/RG_SH_IMAGEGALLERY/providers/Microsoft.Compute/images/ImageComputeVM-Ubuntu1804Base-201812071437)
@@ -89,7 +91,7 @@ fi
 # Overwite defaults for per-DSG settings
 if [ "$DSG_ID_UPPER" = "TEST" ]; then
     IP_PREFIX="10.250.250."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-TEST.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-TEST.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -97,7 +99,7 @@ fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
     IP_PREFIX="10.250.2."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-1.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-1.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -105,28 +107,28 @@ fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
     IP_PREFIX="10.250.10."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-2.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-2.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-3.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-3.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-4.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-4.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
-    CLOUD_INIT_YAML="DSG2018/cloud-init-compute-vm-DSG-6.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-6.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
@@ -137,11 +139,11 @@ if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -y $CLOUD_INIT_YAML
+        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER"
 else
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER"
 fi

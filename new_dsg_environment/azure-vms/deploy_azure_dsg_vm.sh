@@ -51,6 +51,7 @@ print_usage_and_exit() {
     echo "  -a ad_dc_name             specify Active Directory Domain Controller name (required)"
     echo "  -b ldap_base_dn           specify LDAP base DN"
     echo "  -c ldap_bind_dn           specify LDAP bind DN"
+    echo "  -f ldap_filter            specify LDAP filter"
     echo "  -q ip_address             specify a specific IP address to deploy the VM to (required)"
     echo "  -y yaml_cloud_init        specify a custom cloud-init YAML script"
     exit 1
@@ -118,6 +119,9 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
             ;;
         c)
             LDAP_BIND_DN=$OPTARG
+            ;;
+        c)
+            LDAP_FILTER=$OPTARG
             ;;
         q)
             IP_ADDRESS=$OPTARG
@@ -361,10 +365,11 @@ DOMAIN_LOWER_REGEX="s/DOMAIN_LOWER/${DOMAIN_LOWER}/g"
 DOMAIN_UPPER_REGEX="s/DOMAIN_UPPER/${DOMAIN_UPPER}/g"
 LDAP_BASE_DN_REGEX="s/LDAP_BASE_DN/${LDAP_BASE_DN}/g"
 LDAP_BIND_DN_REGEX="s/LDAP_BIND_DN/${LDAP_BIND_DN}/g"
+LDAP_FILTER_REGEX="s/LDAP_FILTER/${LDAP_FILTER}/g"
 AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
 AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
 # Substitute regexes
-sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
+sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
