@@ -45,7 +45,7 @@ fi
 DSG_ID_UPPER=$(echo "$DSG_ID" | tr '[:lower:]' '[:upper:]')
 DSG_ID_LOWER=$(echo "$DSG_ID" | tr '[:upper:]' '[:lower:]')
 if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "2" -a "$DSG_ID_UPPER" != "3" \
- -a "$DSG_ID_UPPER" != "4" -a "$DSG_ID_UPPER" != "5" -a "$DSG_ID_UPPER" != "6" ]; then
+ -a "$DSG_ID_UPPER" != "4" -a "$DSG_ID_UPPER" != "5" -a "$DSG_ID_UPPER" != "6" -a "$DSG_ID_UPPER" != "9" ]; then
     echo -e "${RED}DSG Group ID is not valid!${END}"
     print_usage_and_exit
 fi
