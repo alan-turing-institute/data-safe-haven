@@ -75,10 +75,10 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
-    DSG_VNET="DSG_DSGROUPTEST_VNet1"
+    DSG_VNET="DSG_DSGROUP9_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="DSG Template Testing"
-    LDAP_USER="dsgpuldap"
+    LDAP_USER="ldap-dsg9-test-dsgpu"
     DOMAIN="dsgroupdev.co.uk"
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
