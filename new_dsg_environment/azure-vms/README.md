@@ -60,7 +60,7 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 ```
 
 ## Creating a DSG environment
-See [../azure-runbooks/Data Study Environment Build Instructions.md](DSG Build instructions).
+See [DSG Build instructions](../azure-runbooks/dsg_build_instructions.md).
 
 ## Safe deployment to a Turing DSG environment
 VMs can be safely deployed into one of the existing Turing DSG environments using the `./deploy_compute_vm_to_turing_dsg.sh` script.
