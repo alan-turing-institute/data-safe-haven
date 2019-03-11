@@ -13,12 +13,16 @@ packages:
   - rsync
 
 # Add the atiadmin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
 users:
   - default
   - name: mirrordaemon
     lock_passwd: True
     sudo: False
 
+# Initialise an empty file `internal_mirror_ip_addresses.txt`
+# When internal mirrors are deployed, they add their IP address to this file
+# Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     content: |
