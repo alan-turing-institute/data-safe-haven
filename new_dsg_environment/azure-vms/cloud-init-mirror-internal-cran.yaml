@@ -45,7 +45,7 @@ runcmd:
 
   # Set up disk
   - echo "*** Setting up local disk... ***"
-  - (echo n; echo 1; echo ; echo ; echo ; echo w; echo Y) | gdisk /dev/sdc
+  - parted /dev/sdc mkpart primary ext4 0% 100%
   - mkfs -t ext4 /dev/sdc1
   - mkdir /datadrive && mount /dev/sdc1 /datadrive
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
