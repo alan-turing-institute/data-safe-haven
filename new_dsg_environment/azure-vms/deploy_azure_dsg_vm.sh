@@ -115,7 +115,7 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:e:b:c:f:q:y:" opt; do
         a)
             AD_DC_NAME=$OPTARG
             ;;
-        a)
+        e)
             MGMNT_SUBNET_IP_RANGE=$OPTARG
             ;;
         b)
