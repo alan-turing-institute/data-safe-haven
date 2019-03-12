@@ -190,12 +190,12 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 
 ## Section 4. Using the safe haven
 
-### Section 4.1. Readying access credentials
+### Section 4.1. Access credentials
 
 From the user registration process as in Section 3, you should have the following ready:
-A user name – firstname.lastname, we refer to this as [UID] below
-A user password – you choose this in the registration/MFA set-up process, [pw] below
-A safe haven internal VM IP – 10.250.sth.sth. or similar, your facilitator will pass on, [IP] below. 
+* A user name – firstname.lastname, we refer to this as [UID] below
+* A user password – you choose this in the registration/MFA set-up process, [pw] below
+* A safe haven internal VM (IP – 10.250.sth.sth. or similar), your facilitator will pass on, [IP] below. 
 Those can be accessed by clicking on the custom VM icon.
 
 ### Section 4.2. Logging into the Windows Azure environment
@@ -221,7 +221,8 @@ NOTE: due to the security tier, there is no internet access from inside any of t
 You will now receive a call/text/push notification for the MFA to confirm. 
 For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
 After success, you’ll see the following screen:
-**INSERT IMAGE RDS_app_selection_options.png** 
+
+![](RDS_app_selection_options.png)
 
 4. Follow the steps in [Section 4.3](#section-43-First-time-set-up) if this is the first time you are logging in.
 Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections. 
@@ -241,14 +242,18 @@ In order to set up your user account on the VM, you need to follow the below ste
 (Note, the cursor will not move while you are typing your password)
 Confirm the below security alert with “yes” (this only happens on the first log in). 
 Once you have confirmed log in, you can close this window.
-**insert image 1st_logon_putty.png"
+
+![](1st_logon_putty.png)
 
 2. run the “Shared VM (Desktop)” app. 
 Log in with [UID]@turingsafehaven.ac.uk and [pw]. 
 Check the box in the security alert below and confirm by clicking the “yes” button. 
-**insert image 1st_logon_sharedVMdesktop.png**
-Insert your credentials in the box below
-**insert logon_VMdesktop.png **
+
+![](1st_logon_sharedVMdesktop.png)
+
+Insert your credentials as per the example below:
+
+![](logon_VMdesktop.png)
 
 ## Section 4.4. Using the data analytics VM
 
@@ -266,36 +271,46 @@ Note that all the custom R packages requested have been installed in the system 
 This VM can also be used to directly access GitLab and HackMD
 1.	E.g. point firefox to url provided by the resource dashboard for GitLab/HackMD
 2.	Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
-**insert repository_url_copy_icon.png **
 
-**insert gitlab_screenshot.png **
+![](repository_url_copy_icon.png)
+
+![](gitlab_screenshot.png)
 
 ## Section 4.5. Accessing GitLab and storing code
 
 GitLab is an open source version of GitHub. 
+
 It allows you to version control all the code that you write for any of the Data Study Group challenges. 
 There is a local GitLab installation within the Work Resources. 
+
 If you have not used GitLab before – do feel free to ask your group colleagues for help, ask in the Slack channel for help.
+
 Everything that is not stored in a GitLab repository on Friday lunchtime will be DESTROYED FOR EVER.
 Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
+
 You can access the same GitLab repositories from the Work Resources page. **(or via the sahared VM desktop?)
 
 Login with user name [UID] and password [pw].
-**insert gitlab_screenshot_login.png **
 
-Please make all your repositories public so they are easy to share within your group. (Note that they are not really public as the server is only available inside your team’s virtual environment.)
+![](gitlab_screenshot_login.png)
+
+Please make all your repositories public so they are easy to share within your group. 
+(Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
 ## Section 4.6. Accessing HackMD and writing the report
 
 HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report. 
-It uses markdown which is a simple way to format your text so that it renders nicely in full html. Y
-ou can find a really great markdown cheat sheet at
+It uses markdown which is a simple way to format your text so that it renders nicely in full html. 
+
+You can find a really great markdown cheat sheet at
 [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) 
+
 You can access a local installation of HackMD from the Work Resources page. 
 Login with your user name [UID]@turingsafehaven.ac.uk and password [pw], as below.
-**insert hackmd_logon.png **
+![](hackmd_logon.png)
 
 We have provided some example report templates for you which outline a structure we recommend.
+
 Please make all your documents public so they are easy to share within your group. 
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 We recommend that one person start the document, then let everyone know the URL text after the “/”
@@ -306,7 +321,7 @@ Anyone who has it can now click the little blue pen to go back to the editable v
 
 * :sparkles: TOP TIP :sparkles:: a lower case “L” and an upper case “I” will look the same! [ I /= l ]Try the one you didn’t try first time round if you don’t get to the right place.
 
-**insert hackmd_screenshot.png **
+![](hackmd_screenshot.png)
 
 If you are working on a challenge that is below Tier 2, the environment is open so you do not have to use HackMD and can use other tools such as Overleaf, if you prefer. 
 You can use our HackMD templates to help you structure the report.
@@ -315,24 +330,30 @@ You can use our HackMD templates to help you structure the report.
 
 The data can be found in the R drive on the Windows Azure environment.
 Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory. You can use Windows File Explorer to move data within the Windows environment.
+
 You can transfer the data to the Linux environment using the WinSCP app. (See Appendix A)
 To access the data science VM’s file system, enter user name [UID] and password [pw] into the login mask, as shown below, and confirm with “login”.
-**insert WinSCP_logon.png **
+![](WinSCP_logon.png)
 
 * :sparkles: TOP TIP :sparkles:: Although the default says not to save the password – you’re in a super secure environment so your life will be easier if you do save it.
+
 You can now drag and drop any files between the data science VM and the Windows Azure environment, as in the screenshot below.
-**insert WinSCP_screenshot.png **
+![](WinSCP_screenshot.png)
 
 ## Section 4.8. Creating and presenting the report-out slides for Friday
 
 If you are in one of the Tier 2 level challenges:
 To create the presentation slides, go to the “Presentation server” on the Work Resources list and then open the Open Office icon on the Windows desktop.
 An example template is provided for you in the windows Azure environment (shared drive).
-You won't be able to access the compute virtual machines from the windows desktop. That means all figures etc needed for the presentation must be moved off the compute VM(s) onto the network fileshares.
+
+You won't be able to access the compute virtual machines from the windows desktop. 
+That means all figures etc needed for the presentation must be moved off the compute VM(s) onto the network fileshares.
 As a nice side effect of this move to the network file shares, you'll also be moving the outputs you want to save to persistent storage! Once the compute virtual machines are gone - on Friday afternoon - they will be gone forever. 
 Please do this early and often through the week (not just for the presentation.)
-The presentations on Friday will be given from inside the secure environment. 
+
+The presentations on Friday will be given from *inside* the secure environment. 
 This means you don't have to be too careful about protecting any sensitive analyses or results you have created. It also means you can show live demos if needed.
+
 It’s important to note that the presentation will probably be slightly laggy (there will be a lot of people using the wifi in the Enigma room during your presentation). 
 It probably won't be a problem for your slides, but if you show movies or demo code there's a risk - as always - that they won't play as well as you'd hoped. 
 Be prepared for this outcome and be able to talk about what the audience would see. 
@@ -374,7 +395,3 @@ Three options to transfer files:
 * Use WinSCP for drag-and-drop file transfer, as in Section 4.7. First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
 * Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
 * Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
-
-
-
-
