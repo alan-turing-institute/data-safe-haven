@@ -119,7 +119,7 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
 
 ### Export the Gateway root certificate
 
-- When you install the client certificate, an intermediate root certificate will also be installed, named "DAG-P2S-\<environment\>-RootCert.cer".
+- When you install the client certificate, an intermediate root certificate will also be installed, named "DSG-P2S-\<environment\>-RootCert.cer".
 
 - Export this root certificate into a new "secrets" folder within the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" folder of the Safe Haven repository, after pulling the latest changes from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
