@@ -65,6 +65,7 @@ ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
 # Set defaults for test and production environments
 if [ "$DSG_ID_UPPER" = "TEST" ] ; then
+    MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUPTEST_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="Data Study Group Testing"
@@ -75,6 +76,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user))"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
+    MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUP9_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="DSG Template Testing"
@@ -85,6 +87,8 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     LDAP_BIND_DN="cn=DSGGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user))"
 else
+    # Production DSGs have uniform settings
+    MGMNT_SUBNET_IP_RANGE="10.220.0.0/24"
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="Data Study Group ${DSG_ID_LOWER}"
@@ -156,11 +160,11 @@ if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER"
+        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE"
 else
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER"
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE"
 fi

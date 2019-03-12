@@ -49,6 +49,7 @@ print_usage_and_exit() {
     echo "  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)"
     echo "  -d domain                 specify domain name for safe haven (required)"
     echo "  -a ad_dc_name             specify Active Directory Domain Controller name (required)"
+    echo "  -e mgmnt_subnet_ip_range  specify IP range for safe haven management subnet (required)"
     echo "  -b ldap_base_dn           specify LDAP base DN"
     echo "  -c ldap_bind_dn           specify LDAP bind DN"
     echo "  -f ldap_filter            specify LDAP filter"
@@ -58,7 +59,7 @@ print_usage_and_exit() {
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:f:q:y:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:e:b:c:f:q:y:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -113,6 +114,9 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:f:q:y:" opt; do
             ;;
         a)
             AD_DC_NAME=$OPTARG
+            ;;
+        a)
+            MGMNT_SUBNET_IP_RANGE=$OPTARG
             ;;
         b)
             LDAP_BASE_DN=$OPTARG
@@ -252,11 +256,7 @@ fi
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
-    if [ "$SUBSCRIPTIONTARGET" == "Data Study Group Testing" ]; then
-        LDAP_SERVER_IP_RANGE="10.220.1.0/24"
-    else
-        LDAP_SERVER_IP_RANGE="10.251.0.0/24"
-    fi
+
     # Inbound: allow LDAP then deny all
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
@@ -265,7 +265,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --name InboundAllowLDAP \
         --description "Inbound allow LDAP" \
         --access "Allow" \
-        --source-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --source-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --source-port-ranges 88 389 636 \
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
@@ -294,7 +294,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --access "Allow" \
         --source-address-prefixes VirtualNetwork \
         --source-port-ranges "*" \
-        --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --destination-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 2000
