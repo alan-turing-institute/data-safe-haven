@@ -74,7 +74,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_FILTER="(&(objectClass=user))"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
     MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUP9_VNet1"
@@ -85,7 +85,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=DSGGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_FILTER="(&(objectClass=user))"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 else
     # Production DSGs have uniform settings
     MGMNT_SUBNET_IP_RANGE="10.220.0.0/24"
@@ -97,7 +97,7 @@ else
     AD_DC_NAME="SHMDC1"
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_UPPER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
-    LDAP_FILTER="(&(objectClass=user))"
+    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk))"
 fi
 
 # ComputeVM-DsgBase version 0.0.2018121000 is a direct copy of Ubuntu version 0.0.2018120701 (/subscriptions/1e79c270-3126-43de-b035-22c3118dd488/resourceGroups/RG_SH_IMAGEGALLERY/providers/Microsoft.Compute/images/ImageComputeVM-Ubuntu1804Base-201812071437)
