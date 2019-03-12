@@ -185,7 +185,7 @@ Update the DNS with the new DSG environment details by running the following com
 
 - Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/02_create_vnet/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -201,7 +201,7 @@ Update the DNS with the new DSG environment details by running the following com
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
-## Create Peer Connection
+### Create Peer Connection
 
 - Once the virtual network is created, a peer connection is required between the management and DSG virtual networks
 
@@ -269,7 +269,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/03_create_dc/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -287,7 +287,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
-## Configure Active Directory
+### Configure Active Directory
 
 - Connect to the new Domain controller via Remote Desktop client over the VPN connection at the IP address \<first-three-octets\>.250 (e.g. 10.250.x.250)
 
@@ -391,7 +391,7 @@ The "Administrators Properties" box will now look like this
 
 - Restart the server
 
-## Create Domain Trust
+### Create Domain Trust
 
 - To enable authentication to pass from the DSG to the management active directory we need to establish a trust.
 
@@ -431,11 +431,81 @@ The "Administrators Properties" box will now look like this
 
 - Close the "Active Directory Domains and Trust" MMC
 
-- Deploy Remote Desktop Service Environment
+## Deploy Data Server
+
+- Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/04_create_dataserver/" directory
+
+- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+
+- Run the "./Create\_Data\_Server.ps1" script, providing the following information when prompted.
+
+  - First two octets of the address range (e.g. "10.250")
+
+  - Third octet of the address range (e.g. "64" for "10.250.64")
+
+  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
+
+- The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
+
+- The deployment will take around 15 minutes to complete
+
+- Connect to the DSG Domain controller via Remote Desktop client over the VPN connection
+
+- Login with the admin credentials you entered with you provisioned the VM previously
+
+- Open the "Active Directory Users and Computers" MMC
+
+- Expand the "Computers" Container
+
+- Drag the "DATASERVER" computer object to the "\<DSG NAME\> Data Servers" OU, click "YES" to the warning
+
+![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)
+
+- Connect to the new **Data Server** via Remote Desktop client over the VPN connection
+
+- Login with the admin credentials you entered with you provisioned the VM previously
+
+- Navigate to the DSG artifacts storage account in the Safe Haven Management Test subscription via "RG\_DSG\_ARTIFACTS -\> dsgxartifacts".
+
+ Generate a new account level SAS token with the following permissions (see screenshot below)
+
+- Services: 'blob', 'file' only
+
+- Allowed resource types: 'Service', 'Container', 'Object'
+
+- Allowed permissions: 'Read', 'List' only
+
+- End date: 8 hours in the future is fine (the default)
+
+> ![image5.png](images/media/image5.png)
+
+- Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+
+- You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
+
+- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
+
+- Open a PowerShell command window with elevated privileges
+
+- Change to C:\\Scripts
+
+- Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
+
+|  **Command** |                 **Parameters** |   **Description** |
+| -- | -- | -- |
+ | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. TURINGSAFEHAVEN |
+| |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP10 |
+| |                              -dsg |             Enter the DSG name i.e. DSG2 |
+
+## Deploy Remote Desktop Service Environment
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/05_create_rds/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -453,7 +523,7 @@ The "Administrators Properties" box will now look like this
 
 - The deployment will take around 10 minutes to complete.
 
-## Configuring Remote Desktop Services
+### Configuring Remote Desktop Services
 
 - Connect to the new Domain controller via Remote Desktop client over the VPN connection (??)
 
@@ -651,7 +721,7 @@ The "Administrators Properties" box will now look like this
 | |                   -domain |          Enter the NetBIOS name of the domain i.e. DSGROUP10 |
 | |                   -certpath |        The path to the certificate file i.e. c:\\temp\\cert.pfx |
 
-## Configure Remote Desktop Web Client
+### Configure Remote Desktop Web Client
 
 - From the same PowerShell command window as used above run the following command to update PowerShell cmdlets.
 
@@ -688,7 +758,7 @@ The "Administrators Properties" box will now look like this
    Publish-RDWebClientPackage -Type Production -Latest
 
 
-## Adding new RDS Server to Global NPS server
+### Adding new RDS Server to Global NPS server
 
 
 -   Log in to the global NPS server
@@ -711,7 +781,7 @@ The "Administrators Properties" box will now look like this
 
 -   Click "OK" to finish
 
-## Remote Desktop Security Configuration
+### Remote Desktop Security Configuration
 
 
 - On the RDS server open "Server Manager" -\> "Tools" -\> "Remote Desktop Services" -\> "Remote Desktop Gateway Manager"
@@ -760,87 +830,17 @@ The "Administrators Properties" box will now look like this
 
 - Repeat the process you did for the "RDG\_AllDomainComputers" policy and add the correct Research Users security group.
 
-## Domain Name Update
+### Domain Name Update
 
 To make this Remote Desktop Service accessible from the internet a A record will need to be added to the external domain name servers. The A record must match the FQDN of the server i.e. RDS.DSGROUP10.CO.UK. The IP address for this record is the external IP address that is assigned to the RDS\_NIC1 resource within the Azure Portal.
 
-### Deploy Data Server
-
-- Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" directory
-
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
-
-- Run the "./Create\_Data\_Server.ps1" script, providing the following information when prompted.
-
-  - First two octets of the address range (e.g. "10.250")
-
-  - Third octet of the address range (e.g. "64" for "10.250.64")
-
-  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
-
-- The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
-
-- The deployment will take around 15 minutes to complete
-
-- Connect to the DSG Domain controller via Remote Desktop client over the VPN connection
-
-- Login with the admin credentials you entered with you provisioned the VM previously
-
-- Open the "Active Directory Users and Computers" MMC
-
-- Expand the "Computers" Container
-
-- Drag the "DATASERVER" computer object to the "\<DSG NAME\> Data Servers" OU, click "YES" to the warning
-
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)
-
-- Connect to the new **Data Server** via Remote Desktop client over the VPN connection
-
-- Login with the admin credentials you entered with you provisioned the VM previously
-
-- Navigate to the DSG artifacts storage account in the Safe Haven Management Test subscription via "RG\_DSG\_ARTIFACTS -\> dsgxartifacts".
-
- Generate a new account level SAS token with the following permissions (see screenshot below)
-
-- Services: 'blob', 'file' only
-
-- Allowed resource types: 'Service', 'Container', 'Object'
-
-- Allowed permissions: 'Read', 'List' only
-
-- End date: 8 hours in the future is fine (the default)
-
-> ![image5.png](images/media/image5.png)
-
-- Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
-
-- You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
-
-- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
-
-- Open a PowerShell command window with elevated privileges
-
-- Change to C:\\Scripts
-
-- Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
-
-|  **Command** |                 **Parameters** |   **Description** |
-| -- | -- | -- |
- | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. TURINGSAFEHAVEN |
-| |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP10 |
-| |                              -dsg |             Enter the DSG name i.e. DSG2 |
-
-### Deploy Linux Servers
+## Deploy Linux Servers
 
 - Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/06_create_shared_servers/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -859,7 +859,6 @@ To make this Remote Desktop Service accessible from the internet a A record will
 - The deployment will take around 15 minutes to complete
 
 ### Configure HackMD Server
-
 
 - Connect to the HackMD server with Putty (or any SSH client) Login with the admin credentials you entered with you provisioned the VM previously
 
@@ -880,7 +879,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 | sudo dpkg-reconfigure tzdata | Select -\> "Europe" |                              |                     |
 |                              | Select -\> "London" |
 
-### Install Docker
+#### Install Docker
 
   **Command**
 ```console
@@ -896,7 +895,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 > sudo git clone https://github.com/hackmdio/docker-hackmd.git
 ```
 
-### Configure HackMD
+##### Configure HackMD
 
 - Change to ./docker-hackmd
 
@@ -936,7 +935,7 @@ Add the following lines under "environment:"
   sudo docker-compose up -d
 
 
-## Configure GitLab Server
+### Configure GitLab Server
 
 
 - Connect to the GitLab server with Putty (or any SSH client) Login with the admin credentials you entered with you provisioned the VM previously
@@ -1118,7 +1117,7 @@ Do an LDAP check:
 > sudo gitlab-ctl restart
 ```
 
-## Deploying Compute VMs 
+## Deploy sahred Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
 - Ensure you have carried out the steps in the "Pre-requistites" section
 - Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
