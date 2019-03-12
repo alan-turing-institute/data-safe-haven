@@ -78,7 +78,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     DSG_VNET="DSG_DSGROUP9_VNet1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="DSG Template Testing"
-    LDAP_USER="DSGROUP9dsgpuldap"
+    LDAP_USER="DSGGROUP9dsgpuldap"
     DOMAIN="dsgroupdev.co.uk"
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
