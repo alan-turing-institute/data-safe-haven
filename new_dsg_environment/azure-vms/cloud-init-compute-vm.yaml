@@ -16,9 +16,6 @@ write_files:
       # The distinguished name of the search base.
       base LDAP_BASE_DN
 
-      # Restrict users to those in the securioty group of this DSG
-      filter LDAP_FILTER
-
       # Another way to specify your LDAP server is to provide an
       uri ldap://AD_DC_NAME_LOWER.DOMAIN_LOWER:389
 
