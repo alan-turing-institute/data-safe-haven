@@ -82,7 +82,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     DOMAIN="dsgroupdev.co.uk"
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_BIND_DN="cn=DSGGROUP9 Data Science,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_BIND_DN="cn=DSGGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 else
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
