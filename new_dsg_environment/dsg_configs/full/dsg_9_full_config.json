@@ -1,76 +1,91 @@
 {
   "shm": {
-    "id": "test",
+    "subscriptionName": "Safe Haven Management Testing",
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
         "accountName": "dsgxartifacts"
       }
     },
-    "domain": {
-      "netbiosName": "DSGROUPDEV",
-      "fqdn": "dsgroupdev.co.uk",
-      "dn": "DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
+    "keyVault": {
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      },
+      "name": "dsg-management-test"
     },
-    "subscriptionName": "Safe Haven Management Testing",
+    "dc": {
+      "ip": "10.220.1.250",
+      "hostname": "MGMTDEVDC"
+    },
+    "id": "test",
     "network": {
+      "vnet": {
+        "cidr": "10.220.1.0/21"
+      },
       "subnets": {
         "identity": {
           "prefix": "10.220.1",
           "cidr": "10.220.1.0/24"
         }
-      },
-      "vnet": {
-        "cidr": "10.220.1.0/21"
       }
     },
-    "keyVault": {
-      "name": "dsg-management-test",
-      "secretNames": {
-        "p2sRootCert": "sh-management-p2s-root-cert"
-      }
-    },
-    "dc": {
-      "ip": "10.220.1.250",
-      "hostname": "MGMTDEVDC"
+    "domain": {
+      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
+      "netbiosName": "DSGROUPDEV",
+      "fqdn": "dsgroupdev.co.uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=dsgroupdev,DC=co,DC=uk"
     }
   },
   "dsg": {
-    "id": "9",
-    "domain": {
-      "netbiosName": "DSGROUP9",
-      "dn": "DC=dsgroup9,DC=co,DC=uk",
-      "securityGroups": {
-        "researchUsers": {
-          "name": "SG DSGROUP9 Research Users",
-          "description": "SG DSGROUP9 Research Users"
-        }
-      },
-      "fqdn": "dsgroup9.co.uk"
+    "subscriptionName": "DSG Template Testing",
+    "keyVault": {
+      "name": "dsg-management-test"
     },
+    "dc": {
+      "hostname": "DSG9DC",
+      "rg": "RG_DSG_DC",
+      "admin": {
+        "passwordSecretName": "dsg9-dc-admin-password",
+        "username": "atiadmin"
+      },
+      "ip": "10.250.64.250"
+    },
+    "id": "9",
     "users": {
       "ldap": {
-        "dsvm": {
-          "name": "DSGROUP9 DSVM LDAP",
-          "samAccountName": "dsgroup9_dsvm_ldap"
+        "gitlab": {
+          "name": "DSGROUP9 Gitlab LDAP",
+          "samAccountName": "dsgroup9_gitlab_ldap"
         },
         "hackmd": {
           "name": "DSGROUP9 HackMD LDAP",
           "samAccountName": "dsgroup9_hackmd_ldap"
         },
-        "gitlab": {
-          "name": "DSGROUP9 Gitlab LDAP",
-          "samAccountName": "dsgroup9_gitlab_ldap"
+        "dsvm": {
+          "name": "DSGROUP9 DSVM LDAP",
+          "samAccountName": "dsgroup9_dsvm_ldap"
         }
       },
       "research": {}
     },
-    "subscriptionName": "DSG Template Testing",
     "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "cidr": "10.250.64.0/21",
+        "name": "DSG_DSGROUP9_VNET1"
+      },
       "subnets": {
+        "gateway": {
+          "prefix": "10.250.71",
+          "cidr": "10.250.65.0/24"
+        },
+        "identity": {
+          "cidr": "10.250.64.0/24",
+          "prefix": "10.250.64",
+          "name": "Subnet-Identity"
+        },
         "data": {
           "prefix": "10.250.66",
           "cidr": "10.250.66.0/24"
@@ -78,34 +93,19 @@
         "rds": {
           "prefix": "10.250.65",
           "cidr": "10.250.65.0/24"
-        },
-        "identity": {
-          "name": "Subnet-Identity",
-          "cidr": "10.250.64.0/24",
-          "prefix": "10.250.64"
-        },
-        "gateway": {
-          "prefix": "10.250.71",
-          "cidr": "10.250.65.0/24"
         }
-      },
-      "vnet": {
-        "name": "DSG_DSGROUP9_VNET1",
-        "cidr": "10.250.64.0/21",
-        "rg": "RG_DSG_VNET"
       }
     },
-    "keyVault": {
-      "name": "dsg-management-test"
-    },
-    "dc": {
-      "hostname": "DSG9DC",
-      "admin": {
-        "passwordSecretName": "dsg9-dc-admin-password",
-        "username": "atiadmin"
+    "domain": {
+      "dn": "DC=dsgroup9,DC=co,DC=uk",
+      "netbiosName": "DSGROUP9",
+      "securityGroups": {
+        "researchUsers": {
+          "description": "SG DSGROUP9 Research Users",
+          "name": "SG DSGROUP9 Research Users"
+        }
       },
-      "rg": "RG_DSG_DC",
-      "ip": "10.250.64.250"
+      "fqdn": "dsgroup9.co.uk"
     }
   }
 }
