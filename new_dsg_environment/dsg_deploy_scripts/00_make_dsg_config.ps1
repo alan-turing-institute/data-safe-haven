@@ -1,17 +1,17 @@
 
 param(
-    [string]$shm_id,
-    [string]$dsg_id
+    [string]$shmId,
+    [string]$dsgId
 )
 $configRootDIr = Join-Path ".." "dsg_configs" -Resolve
 
-$shmCoreConfigFilename = "shm_" + $shm_id + "_core_config.json"  
+$shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"  
 $shmCoreConfigPath = Join-Path $configRootDIr "core" $shmCoreConfigFilename -Resolve
 
-$dsgCoreConfigFilename = "dsg_" + $dsg_id + "_core_config.json"  
+$dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"  
 $dsgCoreConfigPath = Join-Path $configRootDIr "core" $dsgCoreConfigFilename -Resolve
 
-$dsgFullConfigFilename = "dsg_" + $dsg_id + "_full_config.json"  
+$dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"  
 $dsgFullConfigPath = Join-Path $configRootDIr "full" $dsgFullConfigFilename
 
 # Use hash table for config
