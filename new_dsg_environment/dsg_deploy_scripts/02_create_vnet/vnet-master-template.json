@@ -10,7 +10,7 @@
             }
         },
         "P2S VPN Certificate": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Paste certificate into dialogue box"
             }

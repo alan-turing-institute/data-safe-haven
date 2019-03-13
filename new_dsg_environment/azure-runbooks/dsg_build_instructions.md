@@ -117,12 +117,6 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
 
 - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
 
-### Export the Gateway root certificate
-
-- When you install the client certificate, an intermediate root certificate will also be installed, named "DSG-P2S-\<environment\>-RootCert.cer".
-
-- Export this root certificate into a new "secrets" folder within the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/" folder of the Safe Haven repository, after pulling the latest changes from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
-
 ### Configure a VPN connection
 
 - Navigate to the management VNET gateway in the Safe Haven Management subscription via "Resource Groups -\> RG\_DSG\_VNET -\> DSG\_VNET1\_GW". Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).

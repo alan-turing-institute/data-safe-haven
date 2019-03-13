@@ -13,9 +13,7 @@ $subnetRdsPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 1)
 $subnetDataPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 2) + ".0/24"
 $subnetGatewayPrefix =  $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 7) + ".0/27"
 $dnsServerIP =  $addressSpacePrefix + ".250"
-$certBytes = Get-Content "./secrets/DSG_P2S_RootCert.cer" -AsByteStream
-$cert = [System.Convert]::ToBase64String($certBytes)
-
+$cert = (Get-AzKeyVaultSecret -Name "sh-management-p2s-root-cert" -VaultName "dsg-management-test").SecretValue
 
 $params = @{
  "Virtual Network Name" = $virtualNetworkName
@@ -32,4 +30,4 @@ Write-Output $params
 
 New-AzResourceGroup -Name $resourceGroupName -Location uksouth
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
-  -TemplateFile ./arm-templates/VNet/vnet-master-template.json @params -Verbose
+  -TemplateFile vnet-master-template.json @params -Verbose
