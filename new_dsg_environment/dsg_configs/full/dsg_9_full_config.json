@@ -1,0 +1,48 @@
+{
+  "shm": {
+    "id": "test",
+    "domain": {
+      "netbiosName": "DSGROUPDEV",
+      "fqdn": "dsgroupdev.co.uk",
+      "dn": "DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
+    },
+    "subscriptionName": "Safe Haven Management Testing",
+    "network": {
+      "subnets": "System.Collections.Hashtable",
+      "vnet": "System.Collections.Hashtable"
+    },
+    "keyVault": {
+      "name": "dsg-management-test",
+      "secretNames": "System.Collections.Hashtable"
+    },
+    "dc": {
+      "ip": "10.220.1.250",
+      "hostname": "MGMTDEVDC"
+    }
+  },
+  "dsg": {
+    "id": "9",
+    "domain": {
+      "netbiosName": "DSGROUP9",
+      "dn": "DC=dsgroup9,DC=co,DC=uk",
+      "securityGroups": "System.Collections.Hashtable",
+      "fqdn": "dsgroup9.co.uk"
+    },
+    "users": {
+      "ldap": "System.Collections.Hashtable",
+      "research": "System.Collections.Hashtable"
+    },
+    "subscriptionName": "DSG Template Testing",
+    "network": {
+      "subnets": "System.Collections.Hashtable",
+      "vnet": "System.Collections.Hashtable"
+    },
+    "dc": {
+      "ip": "10.250.64.250",
+      "hostname": "DSGROUP9_DC"
+    }
+  }
+}
