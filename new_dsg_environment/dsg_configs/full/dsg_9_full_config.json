@@ -1,5 +1,5 @@
 {
-  "mgmt": {
+  "shm": {
     "id": "test",
     "domain": {
       "netbiosName": "DSGROUPDEV",
@@ -15,7 +15,7 @@
       "vnet": "System.Collections.Hashtable"
     },
     "keyVault": {
-      "name": "sh-management-test",
+      "name": "dsg-management-test",
       "secretNames": "System.Collections.Hashtable"
     },
     "dc": {
@@ -28,6 +28,7 @@
     "domain": {
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
+      "securityGroups": "System.Collections.Hashtable",
       "fqdn": "dsgroup9.co.uk"
     },
     "users": {

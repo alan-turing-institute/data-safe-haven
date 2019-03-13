@@ -1,12 +1,12 @@
 
 param(
-    [string]$mgmt_id,
+    [string]$shm_id,
     [string]$dsg_id
 )
 $configRootDIr = Join-Path ".." "dsg_configs" -Resolve
 
-$mgmtCoreConfigFilename = "mgmt_" + $mgmt_id + "_core_config.json"  
-$mgmtCoreConfigPath = Join-Path $configRootDIr "core" $mgmtCoreConfigFilename -Resolve
+$shmCoreConfigFilename = "shm_" + $shm_id + "_core_config.json"  
+$shmCoreConfigPath = Join-Path $configRootDIr "core" $shmCoreConfigFilename -Resolve
 
 $dsgCoreConfigFilename = "dsg_" + $dsg_id + "_core_config.json"  
 $dsgCoreConfigPath = Join-Path $configRootDIr "core" $dsgCoreConfigFilename -Resolve
@@ -16,53 +16,53 @@ $dsgFullConfigPath = Join-Path $configRootDIr "full" $dsgFullConfigFilename
 
 # Use hash table for config
 $config = @{
-    mgmt = @{}
+    shm = @{}
     dsg = @{}
 }
 # === SH MANAGEMENT CONFIG ===
 # Import minimal management config parameters from JSON config file - we can derive the rest from these
-$mgmtConfigBase = Get-Content -Path $mgmtCoreConfigPath -Raw | ConvertFrom-Json
-Write-Host $mgmtConfigBase
-$mgmtPrefix = $mgmtConfigBase.ipPrefix
+$shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
+Write-Host $shmConfigBase
+$shmPrefix = $shmConfigBase.ipPrefix
 
 # Deconstruct VNet address prefix to allow easy construction of IP based parameters
-$mgmtPrefixOctets = $mgmtPrefix.Split('.')
-$mgmtBasePrefix = $mgmtPrefixOctets[0] + "." + $mgmtPrefixOctets[1]
-$mgmtThirdOctet = ([int] $mgmtPrefixOctets[2])
+$shmPrefixOctets = $shmPrefix.Split('.')
+$shmBasePrefix = $shmPrefixOctets[0] + "." + $shmPrefixOctets[1]
+$shmThirdOctet = ([int] $shmPrefixOctets[2])
 
 # --- Top-level config ---
-$config.mgmt.subscriptionName = $mgmtConfigBase.subscriptionName
-$config.mgmt.id = $mgmtConfigBase.shId
+$config.shm.subscriptionName = $shmConfigBase.subscriptionName
+$config.shm.id = $shmConfigBase.shId
 
 # --- Network config ---
-$config.mgmt.network = @{
+$config.shm.network = @{
     vnet = @{}
     subnets = @{}
 }
-$config.mgmt.network.vnet.cidr = $mgmtBasePrefix + "." + $mgmtThirdOctet + ".0/21"
-$config.mgmt.network.subnets.identity = @{}
-$config.mgmt.network.subnets.identity.prefix = $mgmtBasePrefix + "." + $mgmtThirdOctet
-$config.mgmt.network.subnets.identity.cidr = $config.mgmt.network.subnets.identity.prefix + ".0/24"
+$config.shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+$config.shm.network.subnets.identity = @{}
+$config.shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
+$config.shm.network.subnets.identity.cidr = $config.shm.network.subnets.identity.prefix + ".0/24"
 
 # --- Domain config ---
-$config.mgmt.domain = @{}
-$config.mgmt.domain.fqdn = $mgmtConfigBase.domain
-$config.mgmt.domain.netbiosName = $config.mgmt.domain.fqdn.Split('.')[0].ToUpper()
-$config.mgmt.domain.dn = "DC=" + ($config.mgmt.domain.fqdn.replace('.',',DC='))
-$config.mgmt.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $config.mgmt.domain.dn
-$config.mgmt.domain.userOuPath = "OU=Safe Haven Research Users," + $config.mgmt.domain.dn
-$config.mgmt.domain.securityOuPath = "OU=Safe Haven Security Groups," + $config.mgmt.domain.dn
+$config.shm.domain = @{}
+$config.shm.domain.fqdn = $shmConfigBase.domain
+$config.shm.domain.netbiosName = $config.shm.domain.fqdn.Split('.')[0].ToUpper()
+$config.shm.domain.dn = "DC=" + ($config.shm.domain.fqdn.replace('.',',DC='))
+$config.shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $config.shm.domain.dn
+$config.shm.domain.userOuPath = "OU=Safe Haven Research Users," + $config.shm.domain.dn
+$config.shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $config.shm.domain.dn
 
 # --- Domain controller config ---
-$config.mgmt.dc = @{}
-$config.mgmt.dc.hostname = $mgmtConfigBase.dcHostname
-$config.mgmt.dc.ip = $config.mgmt.network.subnets.identity.prefix + ".250"
+$config.shm.dc = @{}
+$config.shm.dc.hostname = $shmConfigBase.dcHostname
+$config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
 
 # -- Secrets config ---
-$config.mgmt.keyVault = @{}
-$config.mgmt.keyVault.name = "dsg-management-" + $config.mgmt.id
-$config.mgmt.keyVault.secretNames = @{}
-$config.mgmt.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+$config.shm.keyVault = @{}
+$config.shm.keyVault.name = "dsg-management-" + $config.shm.id
+$config.shm.keyVault.secretNames = @{}
+$config.shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
 
 # === DSG configuration parameters ===
 # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
@@ -103,6 +103,9 @@ $config.dsg.domain = @{}
 $config.dsg.domain.fqdn = $dsgConfigBase.domain
 $config.dsg.domain.netbiosName = $config.dsg.domain.fqdn.Split('.')[0].ToUpper()
 $config.dsg.domain.dn = "DC=" + ($config.dsg.domain.fqdn.replace('.',',DC='))
+$config.dsg.domain.securityGroups = @{
+    researchUsers = @{}
+}
 $config.dsg.domain.securityGroups.researchUsers.name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
 $config.dsg.domain.securityGroups.researchUsers.description = $config.dsg.domain.securityGroups.researchUsers.name
 
