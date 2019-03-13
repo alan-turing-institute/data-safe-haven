@@ -63,14 +63,17 @@ runcmd:
 
   # Set up and partition data disk
   - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
   - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
   - mkfs -t ext4 /dev/sdc1
-  - mkdir /datadrive && mount /dev/sdc1 /datadrive
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
   - mkdir -p /datadrive/www/cran
-  - chown -R mirrordaemon /datadrive
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
@@ -80,16 +83,22 @@ runcmd:
   - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
-  - chown -R mirrordaemon ~mirrordaemon
-  - chgrp -R mirrordaemon ~mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon /datadrive
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
-  # Run initial update - this must be done as mirrordaemon
-  - echo "*** Populating external mirror for the first time ***"
-  - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/pull_from_internet.sh'
-  - echo "*** Performing first push to the following internal mirrors ***"
-  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
-  - sudo -H -u mirrordaemon bash -c 'echo "This job is running as $USER"; source ~mirrordaemon/push_to_internal_mirrors.sh'
+  # Schedule initial update for next boot
+  - echo "*** Schedule mirror update jobs for next boot... ***"
+  - echo "@reboot mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "@reboot mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
 
   # Print out some diagnostic information
   - echo "*** This server is currently aware of internal mirrors at the following locations ***"
   - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

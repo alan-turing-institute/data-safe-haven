@@ -53,14 +53,21 @@ write_files:
 runcmd:
   # Set up disk
   - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
   - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
   - mkfs -t ext4 /dev/sdc1
-  - mkdir /datadrive && mount /dev/sdc1 /datadrive
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
-  - mkdir -p /datadrive/pypi
-  - chown -R mirrordaemon /datadrive
+  - mkdir -p /datadrive/pypi/web/packages
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon:mirrordaemon /datadrive
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Install pypiserver with pip
   - echo "*** Installing pypiserver... ***"
@@ -69,5 +76,14 @@ runcmd:
 
   # Set up pypiserver
   - echo "*** Setting up pypiserver pointing to local disk... ***"
+  - systemctl enable pypiserver.service
   - systemctl start pypiserver.service
   - systemctl status pypiserver.service
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

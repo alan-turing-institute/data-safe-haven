@@ -45,18 +45,34 @@ runcmd:
 
   # Set up disk
   - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
   - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
   - mkfs -t ext4 /dev/sdc1
-  - mkdir /datadrive && mount /dev/sdc1 /datadrive
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
   - mkdir -p /datadrive/www/cran
-  - chown -R mirrordaemon /datadrive
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon:mirrordaemon /datadrive
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Set up apache
   - echo "*** Setting up apache server pointing to local disk... ***"
-  - sed -i "s|/var/www/html|/datadrive|" /etc/apache2/sites-enabled/000-default.conf
   - mv /000-default.conf /etc/apache2/sites-enabled/000-default.conf
-  - sudo a2enmod rewrite
-  - service apache2 reload
+  - a2enmod rewrite
+  - systemctl enable apache2.service
+  - systemctl restart apache2.service
+  - systemctl status apache2.service
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True
