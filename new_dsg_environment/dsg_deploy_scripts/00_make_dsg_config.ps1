@@ -60,10 +60,9 @@ $config.mgmt.dc.ip = $config.mgmt.network.subnets.identity.prefix + ".250"
 
 # -- Secrets config ---
 $config.mgmt.keyVault = @{}
-$config.mgmt.keyVault.name = "sh-management-" + $config.mgmt.id
+$config.mgmt.keyVault.name = "dsg-management-" + $config.mgmt.id
 $config.mgmt.keyVault.secretNames = @{}
-$config.mgmt.keyVault.secretNames.p2sRootCert= "DSG-P2S-test-RootCert"
-$config.mgmt.keyVault.secretNames.p2sClientCert = "DSG-P2S-test-ClientCert"
+$config.mgmt.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
 
 # === DSG configuration parameters ===
 # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
