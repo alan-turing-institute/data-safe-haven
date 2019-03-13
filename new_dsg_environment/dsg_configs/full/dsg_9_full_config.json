@@ -1,6 +1,12 @@
 {
   "shm": {
     "id": "test",
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgxartifacts"
+      }
+    },
     "domain": {
       "netbiosName": "DSGROUPDEV",
       "fqdn": "dsgroupdev.co.uk",
@@ -11,12 +17,21 @@
     },
     "subscriptionName": "Safe Haven Management Testing",
     "network": {
-      "subnets": "System.Collections.Hashtable",
-      "vnet": "System.Collections.Hashtable"
+      "subnets": {
+        "identity": {
+          "prefix": "10.220.1",
+          "cidr": "10.220.1.0/24"
+        }
+      },
+      "vnet": {
+        "cidr": "10.220.1.0/21"
+      }
     },
     "keyVault": {
       "name": "dsg-management-test",
-      "secretNames": "System.Collections.Hashtable"
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      }
     },
     "dc": {
       "ip": "10.220.1.250",
@@ -28,21 +43,69 @@
     "domain": {
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
-      "securityGroups": "System.Collections.Hashtable",
+      "securityGroups": {
+        "researchUsers": {
+          "name": "SG DSGROUP9 Research Users",
+          "description": "SG DSGROUP9 Research Users"
+        }
+      },
       "fqdn": "dsgroup9.co.uk"
     },
     "users": {
-      "ldap": "System.Collections.Hashtable",
-      "research": "System.Collections.Hashtable"
+      "ldap": {
+        "dsvm": {
+          "name": "DSGROUP9 DSVM LDAP",
+          "samAccountName": "dsgroup9_dsvm_ldap"
+        },
+        "hackmd": {
+          "name": "DSGROUP9 HackMD LDAP",
+          "samAccountName": "dsgroup9_hackmd_ldap"
+        },
+        "gitlab": {
+          "name": "DSGROUP9 Gitlab LDAP",
+          "samAccountName": "dsgroup9_gitlab_ldap"
+        }
+      },
+      "research": {}
     },
     "subscriptionName": "DSG Template Testing",
     "network": {
-      "subnets": "System.Collections.Hashtable",
-      "vnet": "System.Collections.Hashtable"
+      "subnets": {
+        "data": {
+          "prefix": "10.250.66",
+          "cidr": "10.250.66.0/24"
+        },
+        "rds": {
+          "prefix": "10.250.65",
+          "cidr": "10.250.65.0/24"
+        },
+        "identity": {
+          "name": "Subnet-Identity",
+          "cidr": "10.250.64.0/24",
+          "prefix": "10.250.64"
+        },
+        "gateway": {
+          "prefix": "10.250.71",
+          "cidr": "10.250.65.0/24"
+        }
+      },
+      "vnet": {
+        "name": "DSG_DSGROUP9_VNET1",
+        "cidr": "10.250.64.0/21",
+        "rg": "RG_DSG_VNET"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-test"
     },
     "dc": {
-      "ip": "10.250.64.250",
-      "hostname": "DSGROUP9_DC"
+      "hostname": "DSG9DC",
+      "admin": {
+        "passwordSecretName": "dsg9-dc-admin-password",
+        "username": "atiadmin"
+      },
+      "rg": "RG_DSG_DC",
+      "ip": "10.250.64.250"
     }
   }
 }
