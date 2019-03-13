@@ -34,7 +34,7 @@
             }    
         },
         "Administrator Password": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Enter name for VM Administrator Password"
             }    
@@ -67,7 +67,7 @@
             }
         },
         "Artifacts Location SAS Token": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
             }
