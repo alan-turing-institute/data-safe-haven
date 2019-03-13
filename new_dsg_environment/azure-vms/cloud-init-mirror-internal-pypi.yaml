@@ -36,12 +36,12 @@ write_files:
       User=mirrordaemon
       Group=mirrordaemon
 
-      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . --log-file /datadrive/pypiserver.log /datadrive/pypi/web/packages
+      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
       ExecStop=/bin/kill -TERM $MAINPID
       ExecReload=/bin/kill -HUP $MAINPID
       Restart=always
 
-      WorkingDirectory=/datadrive/pypi/web/packages
+      WorkingDirectory=/datadrive/mirrordaemon/pypi/web/packages
 
       TimeoutStartSec=3
       RestartSec=5
@@ -63,10 +63,10 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
-  - mkdir -p /datadrive/pypi/web/packages
+  - mkdir -p /datadrive/mirrordaemon/pypi/web/packages
 
   # Fix permissions so that mirrordaemon owns its files
-  - chown -R mirrordaemon:mirrordaemon /datadrive
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
   - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Install pypiserver with pip

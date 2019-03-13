@@ -41,7 +41,7 @@ write_files:
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          rsync -rtlzv --delete --progress /datadrive/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/pypi
+          rsync -rtlzv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
@@ -51,7 +51,7 @@ write_files:
     content: |
         [mirror]
         ; The directory where the mirror data will be stored.
-        directory = /datadrive/pypi
+        directory = /datadrive/mirrordaemon/pypi
 
         ; Save JSON metadata into the web tree
         ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
@@ -119,7 +119,7 @@ runcmd:
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
-  - mkdir -p /datadrive/pypi
+  - mkdir -p /datadrive/mirrordaemon/pypi
 
   # Install bandersnatch with pip
   - echo "*** Installing bandersnatch... ***"
@@ -135,7 +135,7 @@ runcmd:
   - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
-  - chown -R mirrordaemon:mirrordaemon /datadrive
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
   - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Schedule initial update for next boot
