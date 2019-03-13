@@ -8,14 +8,14 @@ function New-Password {
     param(
         [int]$length = 20
     )
-    [string] $password = ""
-    [int] $index = 0
+    [string] $password = "";
+    [int] $index = 0;
 
-    $buf = [System.Byte[]]::CreateInstance([System.Byte],$length)
-    $cBuf = [System.Char[]]::CreateInstance([System.Char],$length)
+    $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
+    $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
 
-    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $cryptoRng.GetBytes($buf)
+    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create();
+    $cryptoRng.GetBytes($buf);
 
     $numericEnd = 10
     $alphaUpperEnd = 36
@@ -23,38 +23,38 @@ function New-Password {
 
     # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
     for([int]$iter=0; $iter -lt $length; $iter++) {
-        [int]$i = [int] ($buf[$iter] % $numCharsInSet)
+        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
         if ($i -lt $numericEnd) {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'0')) + $i)
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'0')) + $i);
         }
         elseif ($i -lt $alphaUpperEnd ) {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd)
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
         }
         else {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd)
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
         }
     }
-    $password = -join $cBuf
+    $password = -join $cBuf;
 
     # Require at least one of each character class
-    $numNumeric = 0
-    $numAlphaUpper = 0
-    $numAlphaLower = 0
+    $numNumeric = 0;
+    $numAlphaUpper = 0;
+    $numAlphaLower = 0;
     for([int]$iter=0; $iter -lt $length; $iter++) {
-        [int]$i = [int] ($buf[$iter] % $numCharsInSet)
+        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
         if ($i -lt $numericEnd) {
-            $numNumeric++
+            $numNumeric++;
         }
         elseif ($i -lt $alphaUpperEnd ) {
-            $numAlphaUpper++
+            $numAlphaUpper++;
         }
         else {
-            $numAlphaLower++
+            $numAlphaLower++;
         }
     }
     if(($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
-        $password = New-Password($length)
+        $password = New-Password($length);
     }
-    return $password
+    return $password;
 }
 Export-ModuleMember -Function New-Password
