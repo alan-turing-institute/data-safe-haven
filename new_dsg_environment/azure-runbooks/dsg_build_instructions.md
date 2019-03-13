@@ -121,7 +121,7 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
 
 - When you install the client certificate, an intermediate root certificate will also be installed, named "DSG-P2S-\<environment\>-RootCert.cer".
 
-- Export this root certificate into a new "secrets" folder within the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/run-locally/" folder of the Safe Haven repository, after pulling the latest changes from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
+- Export this root certificate into a new "secrets" folder within the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/" folder of the Safe Haven repository, after pulling the latest changes from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
 ### Configure a VPN connection
 
@@ -185,7 +185,7 @@ Update the DNS with the new DSG environment details by running the following com
 
 - Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/02_create_vnet/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/02_create_vnet/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -269,7 +269,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/03_create_dc/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/03_create_dc/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -435,7 +435,7 @@ The "Administrators Properties" box will now look like this
 
 - Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/04_create_dataserver/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/04_create_dataserver/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -505,7 +505,7 @@ The "Administrators Properties" box will now look like this
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/05_create_rds/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/05_create_rds/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
@@ -840,7 +840,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg-create-scripts/06_create_shared_servers/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/06_create_shared_servers/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
