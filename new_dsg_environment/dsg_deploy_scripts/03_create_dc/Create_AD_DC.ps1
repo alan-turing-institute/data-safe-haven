@@ -6,6 +6,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../GeneratePassword.psm1
 Import-Module $PSScriptRoot/../DsgConfig.psm1
+Import-Module $PSScriptRoot/../GenerateSasToken.psm1
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -24,13 +25,11 @@ if ($null -eq $adminPassword) {
 }
 $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
-# Switch to management subscription and get SAS token to fetch post-deployment setup scripts from artifact blob storage
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
-$artifactResourceGroup = $config.shm.storage.artifacts.rg;
+# Get SAS token
 $artifactLocation = "https://" + $config.shm.storage.artifacts.accountName + ".blob.core.windows.net";
-$storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $artifactResourceGroup -AccountName $config.shm.storage.artifacts.accountName).Value[0];
-$storageAccountContext = (New-AzStorageContext -StorageAccountName $config.shm.storage.artifacts.accountName -StorageAccountKey $storageAccountKey);
-$artifactSasToken = (New-AzStorageAccountSASToken -Service Blob,File -ResourceType Service,Container,Object -Permission "rl" -Context $storageAccountContext);
+$artifactSasToken = New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
+  -accountName $config.shm.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
+  -permission "rl";
 $artifactSasToken = ConvertTo-SecureString $artifactSasToken -AsPlainText -Force;
 
 # Switch to DSG subscription and deploy
