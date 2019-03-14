@@ -345,9 +345,7 @@ ADMIN_PASSWORD=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --n
 LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
 
 # Create a new config file with the appropriate username and LDAP password
-TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-TMP_CLOUD_CONFIG_YAML="${TMP_CLOUD_CONFIG_PREFIX}.yaml"
-rm $TMP_CLOUD_CONFIG_PREFIX
+TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 DOMAIN_UPPER=$(echo "$DOMAIN" | tr '[:lower:]' '[:upper:]')
 DOMAIN_LOWER=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')
 AD_DC_NAME_UPPER=$(echo "$AD_DC_NAME" | tr '[:lower:]' '[:upper:]')
@@ -417,7 +415,7 @@ while true; do
     sleep 10
 done
 
-# Switch NSG and restart
+# VM must be off for us to switch NSG. Once done we restart
 echo -e "${BOLD}Switching to secure NSG: ${BLUE}${DSG_NSG}${END}"
 az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID
 echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"

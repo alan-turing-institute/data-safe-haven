@@ -253,14 +253,15 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     done
 
     # Switch NSG and restart
+    PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.4
     echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_INTERNAL}${END}"
     NIC_NAME="${MACHINENAME_INTERNAL}VMNic"
-    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME
+    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME  --private-ip-address $PRIVATEIPADDRESS
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
     # Update known hosts on the external server to allow connections to the internal server
-    PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
+    # PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
@@ -339,14 +340,15 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     done
 
     # Switch NSG and restart
+    PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.5
     echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_INTERNAL}${END}"
     NIC_NAME="${MACHINENAME_INTERNAL}VMNic"
-    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME
+    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME  --private-ip-address $PRIVATEIPADDRESS
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
     # Update known hosts on the external server to allow connections to the internal server
-    PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
+    # PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv

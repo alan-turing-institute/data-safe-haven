@@ -9,8 +9,8 @@ END="\033[0m"
 # Options which are configurable at the command line
 IP_TRIPLET_DEPLOYMENT="10.0.0"
 IP_TRIPLET_EXTERNAL="10.0.1"
-KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
-RESOURCEGROUP="RG_SH_PKG_MIRRORS"
+KEYVAULT_NAME="kv-sh-pkg-mirrors-1038" # must be globally unique
+RESOURCEGROUP="RG_SH_PKG_MIRRORS_1038"
 SUBSCRIPTION="" # must be provided
 
 # Other constants
@@ -155,6 +155,10 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
 fi
 
 
+az network vnet subnet show -g $RESOURCEGROUP -n $SUBNET_EXTERNAL --vnet-name $VNET_NAME
+az network vnet subnet show -g $RESOURCEGROUP -n $SUBNET_DEPLOYMENT --vnet-name $VNET_NAME
+
+
 # Set up PyPI external mirror
 # ---------------------------
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
@@ -185,6 +189,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
 
     echo -e "${BOLD}Creating VM...${END}"
     OSDISKNAME=${MACHINENAME_EXTERNAL}_OSDISK
+    PRIVATEIPADDRESS=${IP_TRIPLET_DEPLOYMENT}.4
     az vm create \
         --admin-password $ADMIN_PASSWORD \
         --admin-username $ADMIN_USERNAME \
@@ -196,6 +201,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --nsg "" \
         --os-disk-name $OSDISKNAME \
         --public-ip-address "" \
+        --private-ip-address $PRIVATEIPADDRESS \
         --resource-group $RESOURCEGROUP \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
@@ -211,12 +217,16 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         sleep 10
     done
 
-    # Switch NSG and restart
-    echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
-    NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
-    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_EXTERNAL}" --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME
+    # VM must be on for the subnet change to work
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
+
+    # Switch IP and subnet
+    PRIVATEIPADDRESS=$(echo $PRIVATEIPADDRESS | sed "s/${IP_TRIPLET_DEPLOYMENT}/${IP_TRIPLET_EXTERNAL}/")
+    NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
+    IPCONFIG_NAME=$(az network nic show --resource-group $RESOURCEGROUP --name $NIC_NAME --query ipConfigurations[].name -o tsv)
+    echo -e "${BOLD}Switching to IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} inside secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
+    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name $IPCONFIG_NAME --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME --private-ip-address $PRIVATEIPADDRESS
 fi
 
 
@@ -250,6 +260,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
 
     echo -e "${BOLD}Creating VM...${END}"
     OSDISKNAME=${MACHINENAME_EXTERNAL}_OSDISK
+    PRIVATEIPADDRESS=${IP_TRIPLET_DEPLOYMENT}.5
     az vm create \
         --admin-password $ADMIN_PASSWORD \
         --admin-username $ADMIN_USERNAME \
@@ -261,6 +272,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --nsg "" \
         --os-disk-name $OSDISKNAME \
         --public-ip-address "" \
+        --private-ip-address $PRIVATEIPADDRESS \
         --resource-group $RESOURCEGROUP \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
@@ -276,10 +288,14 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         sleep 10
     done
 
-    # Switch NSG and restart
-    echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
-    NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
-    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_EXTERNAL}" --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME
+    # VM must be on for the subnet change to work
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
+
+    # Switch IP and subnet
+    PRIVATEIPADDRESS=$(echo $PRIVATEIPADDRESS | sed "s/${IP_TRIPLET_DEPLOYMENT}/${IP_TRIPLET_EXTERNAL}/")
+    NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
+    IPCONFIG_NAME=$(az network nic show --resource-group $RESOURCEGROUP --name $NIC_NAME --query ipConfigurations[].name -o tsv)
+    echo -e "${BOLD}Switching to IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} inside secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
+    az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name $IPCONFIG_NAME --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME --private-ip-address $PRIVATEIPADDRESS
 fi
