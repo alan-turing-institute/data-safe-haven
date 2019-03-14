@@ -16,6 +16,7 @@
     "dc": {
       "hostname": "MGMTDEVDC",
       "rg": "RG_DSG_DC",
+      "vmName": "DC",
       "ip": "10.220.1.250"
     },
     "id": "test",
@@ -51,6 +52,7 @@
         "passwordSecretName": "dsg9-dc-admin-password",
         "username": "atiadmin"
       },
+      "vmName": "DSG9DC",
       "ip": "10.250.64.250"
     },
     "id": "9",

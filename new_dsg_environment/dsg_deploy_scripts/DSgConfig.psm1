@@ -58,6 +58,7 @@ function Add-DsgConfig {
     # --- Domain controller config ---
     $config.shm.dc = @{}
     $config.shm.dc.rg = "RG_DSG_DC"
+    $config.shm.dc.vmName = "DC"
     $config.shm.dc.hostname = $shmConfigBase.dcHostname
     $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
 
@@ -130,7 +131,8 @@ function Add-DsgConfig {
     # --- Domain controller ---
     $config.dsg.dc = @{}
     $config.dsg.dc.rg = "RG_DSG_DC"
-    $config.dsg.dc.hostname = "DSG" + $config.dsg.id + "DC" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DC"
+    $config.dsg.dc.vmName = "DSG" + $config.dsg.id + "DC" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DC"
+    $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
     $config.dsg.dc.admin = @{
         username = "atiadmin"
