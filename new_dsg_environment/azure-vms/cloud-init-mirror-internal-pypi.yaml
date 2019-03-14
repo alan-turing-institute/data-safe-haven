@@ -36,7 +36,7 @@ write_files:
       User=mirrordaemon
       Group=mirrordaemon
 
-      ExecStart=/pypiserver/bin/pypi-server -p 8080 -P . -a . --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
+      ExecStart=/pypiserver/bin/pypi-server -p 3128 -P . -a . --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
       ExecStop=/bin/kill -TERM $MAINPID
       ExecReload=/bin/kill -HUP $MAINPID
       Restart=always
