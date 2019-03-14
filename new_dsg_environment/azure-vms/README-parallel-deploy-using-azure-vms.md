@@ -15,9 +15,20 @@
 - Open port 22 in the network settings at the bottom of the initial "Basic" configuration tab
 - Select "Review + deploy"
 - Deploy the VM
+- Wait for deployment to complete
+- Navigate to the VM in the portal, select the "Networking" option in the left hand sidebar and add the following **inbound** rule for [mosh](https://mosh.org/) 
+  - Name: `mosh`
+  - Source: `Any`
+  - Source port ranges: `*`
+  - Destination: `Virtual network`
+  - Destination port ranges: `60000-61000`
+  - Protocol: `UDP`
+  - Action: `Allow`
+  - Priority: `310`
 
 ### Install the latest Azure CLI
 - Connect to the VM using `ssh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in "Safe Haven Management Testing" subscription)
+- Install [mosh](https://mosh.org/) for more stable SSH via `sudo apt-get install mosh` 
 - Install pip via `sudo apt install python-pip -y`
 - Install the Azure CLI via `pip2 install azure-cli` (system python is 2.7)
 - You may need to logout of the SSH session and log in again to get `pip2` working.
@@ -31,7 +42,8 @@
 
 ## Use a deployment VM to deploy to the Safe Haven
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
-- Connect to the VM using `ssh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in "Safe Haven Management Testing" subscription)
+- Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
+- Connect to the VM using `mosh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in "Safe Haven Management Testing" subscription)
 - Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/azure-vms/`
 - Checkout the master branch using `git checkout master`
 - Ensure you have the latest changes locally using `git pull`
