@@ -7,7 +7,7 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-IP_TRIPLET_INTERNAL="10.1.1"
+# IP_TRIPLET_INTERNAL="10.1.1"
 KEYVAULT_NAME="kv-sh-pkg-mirrors" # must match what was used for the external mirrors
 RESOURCEGROUP="RG_SH_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
@@ -25,10 +25,9 @@ VNET_NAME="VNET_SH_PKG_MIRRORS"
 # Document usage for this script
 # ------------------------------
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i internal_ip] [-k keyvault_name] [-r resource_group] [-x name_suffix]"
+    echo "usage: $0 [-h] -s subscription [-k keyvault_name] [-r resource_group] [-x name_suffix]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
-    echo "  -i internal_ip               specify initial IP triplet for internal mirror servers (defaults to '${IP_TRIPLET_INTERNAL}')"
     echo "  -k keyvault_name             specify name for keyvault that already contains admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group that contains the external mirror servers (defaults to '${RESOURCEGROUP}')"
     echo "  -x name_suffix               specify (optional) suffix that will be used to distinguish these internal mirror servers from any others (defaults to '${NAME_SUFFIX}')"
@@ -38,13 +37,10 @@ print_usage_and_exit() {
 
 # Read command line arguments, overriding defaults where necessary
 # ----------------------------------------------------------------
-while getopts "hi:k:r:s:x:" opt; do
+while getopts "hk:r:s:x:" opt; do
     case $opt in
         h)
             print_usage_and_exit
-            ;;
-        i)
-            IP_TRIPLET_INTERNAL=$OPTARG
             ;;
         k)
             KEYVAULT_NAME=$OPTARG
@@ -68,9 +64,7 @@ done
 # Setup internal names to match the external names
 # ------------------------------------------------
 NSG_INTERNAL="$(echo $NSG_EXTERNAL | sed 's/EXTERNAL/INTERNAL/')"
-# NSG_DEPLOYMENT="$(echo $NSG_EXTERNAL | sed 's/EXTERNAL/DEPLOYMENT/')"
 SUBNET_INTERNAL="$(echo $SUBNET_EXTERNAL | sed 's/EXTERNAL/INTERNAL/')"
-# SUBNET_DEPLOYMENT="$(echo $SUBNET_EXTERNAL | sed 's/EXTERNAL/DEPLOYMENT/')"
 MACHINENAME_PREFIX_INTERNAL="$(echo $MACHINENAME_PREFIX_EXTERNAL | sed 's/External/Internal/')"
 # Add name suffix if needed
 if [ "$NAME_SUFFIX" != "" ]; then
@@ -107,24 +101,14 @@ if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
     echo -e "${RED}VNet ${BLUE}$VNET_NAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
-
-# # Ensure that deployment NSG exists
-# if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_DEPLOYMENT 2> /dev/null)" = "" ]; then
-#     echo -e "${RED}Deployment NSG ${BLUE}$NSG_DEPLOYMENT${RED} not found! Have you deployed the external mirrors?${END}"
-#     print_usage_and_exit
-# fi
+IP_TRIPLET_VNET=$(az network vnet show --resource-group $RESOURCEGROUP --name $VNET_NAME --query "addressSpace.addressPrefixes" -o tsv | cut -d'.' -f1-3)
+IP_RANGE_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
 
 # Ensure that external NSG exists
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${RED}External NSG ${BLUE}$NSG_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
-
-# # Ensure that deployment subnet exists
-# if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_DEPLOYMENT}" 2> /dev/null)" = "" ]; then
-#     echo -e "${RED}Deployment subnet ${BLUE}$SUBNET_DEPLOYMENT${RED} not found! Have you deployed the external mirrors?${END}"
-#     print_usage_and_exit
-# fi
 
 # Ensure that external subnet exists
 if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
@@ -133,22 +117,27 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
 fi
 
 
-# Construct and validate IP ranges
-# --------------------------------
-# Validate triplet against IP ranges set during external mirror deployment
-for EXISTING_IP_RANGE in $(az network vnet show --resource-group $RESOURCEGROUP --name $VNET_NAME --query "subnets[].addressPrefix" -o tsv); do
-    EXISTING_IP_TRIPLET=$(echo $EXISTING_IP_RANGE | cut -d'.' -f1-3)
-    if [ "$IP_TRIPLET_INTERNAL" = "$EXISTING_IP_TRIPLET" ]; then
-        echo -e "${RED}IP triplet ${BLUE}$IP_TRIPLET_INTERNAL${BOLD} is already in use!${END}"
-        print_usage_and_exit
+# Find the next valid IP range for this subnet
+# --------------------------------------------
+IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --query "[].addressPrefix" -o tsv)
+for FOURTH_OCTET in $(seq 0 16 240); do
+    IP_RANGE_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
+    ALREADY_IN_USE=0
+    for IP_ADDRESS_PREFIX in $IP_ADDRESS_PREFIXES; do
+        if [ "$IP_RANGE_INTERNAL" == "$IP_ADDRESS_PREFIX" ]; then
+            ALREADY_IN_USE=1
+        fi
+    done
+    if [ $ALREADY_IN_USE -eq 0 ]; then
+        break
     fi
 done
-IP_RANGE_INTERNAL="${IP_TRIPLET_INTERNAL}.0/24"
-IP_RANGE_EXTERNAL=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --name $SUBNET_EXTERNAL --query "addressPrefix" | xargs)
-echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
-
-# IP_RANGE_DEPLOYMENT=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --name $SUBNET_DEPLOYMENT --query "addressPrefix" | xargs)
-# echo -e "${BOLD}Will deploy internal mirrors in the IP range ${BLUE}$IP_RANGE_DEPLOYMENT${END}${BOLD} before moving them to ${BLUE}$IP_RANGE_INTERNAL${END}"
+if [ $ALREADY_IN_USE -eq 0 ]; then
+    echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
+else
+    echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNET_NAME${END}"
+    print_usage_and_exit
+fi
 
 
 # Set up the internal NSG and configure the external NSG
@@ -214,15 +203,15 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
 
     # Create the VM based off the selected source image, opening port 443 for the webserver
     echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${BOLD} image${END}"
+    echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
 
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
     az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
 
-    # Temporarily allow outbound internet connections through the NSG from this IP address only
-    PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.4
+    # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
+    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
 
@@ -261,16 +250,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
-    # # Switch NSG and restart
-    # PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.4
-    # echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_INTERNAL}${END}"
-    # NIC_NAME="${MACHINENAME_INTERNAL}VMNic"
-    # az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME  --private-ip-address $PRIVATEIPADDRESS
-    # echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
-    # az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
-
     # Update known hosts on the external server to allow connections to the internal server
-    # PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
@@ -315,8 +295,8 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
     az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
 
-    # Temporarily allow outbound internet connections through the NSG from this IP address only
-    PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.5
+    # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
+    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
 
@@ -355,16 +335,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
-    # # Switch NSG and restart
-    # PRIVATEIPADDRESS=${IP_TRIPLET_INTERNAL}.5
-    # echo -e "${BOLD}Switching to secure subnet: ${BLUE}${SUBNET_INTERNAL}${END}"
-    # NIC_NAME="${MACHINENAME_INTERNAL}VMNic"
-    # az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name "ipconfig${MACHINENAME_INTERNAL}" --subnet $SUBNET_INTERNAL --vnet-name $VNET_NAME  --private-ip-address $PRIVATEIPADDRESS
-    # echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
-    # az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
-
     # Update known hosts on the external server to allow connections to the internal server
-    # PRIVATEIPADDRESS=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "[].virtualMachine.network.privateIpAddresses[]" -o tsv)
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv

@@ -7,7 +7,7 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-IP_TRIPLET_EXTERNAL="10.1.0"
+IP_TRIPLET_VNET="10.1.0"
 KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SH_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
@@ -25,24 +25,25 @@ VNET_NAME="VNET_SH_PKG_MIRRORS"
 # Document usage for this script
 # ------------------------------
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-e external_ip] [-k keyvault_name] [-r resource_group]"
+    echo "usage: $0 [-h] -s subscription [-i vnet_ip] [-k keyvault_name] [-r resource_group]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
-    echo "  -e external_ip               specify initial IP triplet for external mirror servers (defaults to '${IP_TRIPLET_EXTERNAL}')"
+    echo "  -i vnet_ip                   specify initial IP triplet for the mirror VNet (defaults to '${IP_TRIPLET_VNET}')"
     echo "  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     exit 1
 }
 
+
 # Read command line arguments, overriding defaults where necessary
 # ----------------------------------------------------------------
-while getopts "he:k:r:s:" opt; do
+while getopts "hi:k:r:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
             ;;
-        e)
-            IP_TRIPLET_EXTERNAL=$OPTARG
+        i)
+            IP_TRIPLET_VNET=$OPTARG
             ;;
         k)
             KEYVAULT_NAME=$OPTARG
@@ -69,12 +70,6 @@ fi
 az account set --subscription "$SUBSCRIPTION"
 
 
-# Set IP range from triplet information
-# -------------------------------------
-IP_RANGE_EXTERNAL="${IP_TRIPLET_EXTERNAL}.0/24"
-echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_EXTERNAL${END}"
-
-
 # Setup resource group if it does not already exist
 # -------------------------------------------------------------------------
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
@@ -95,10 +90,14 @@ fi
 
 # Set up the VNet as well as the subnet and NSG for external mirrors
 # ------------------------------------------------------------------
+# Define IP address ranges
+IP_RANGE_VNET="${IP_TRIPLET_VNET}.0/24"
+IP_RANGE_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
+
 # Create VNet if it does not already exist
 if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
-    echo -e "${BOLD}Creating VNet ${BLUE}$VNET_NAME${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNET_NAME --address-prefixes
+    echo -e "${BOLD}Creating mirror VNet ${BLUE}$VNET_NAME${END}${BOLD} using the IP range ${BLUE}$IP_RANGE_VNET${END}"
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNET_NAME --address-prefixes $IP_RANGE_VNET
 fi
 
 # Create external NSG if it does not already exist
@@ -120,6 +119,7 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
         --resource-group $RESOURCEGROUP \
         --vnet-name $VNET_NAME
 fi
+echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_EXTERNAL${END}"
 
 
 # Set up PyPI external mirror
@@ -147,7 +147,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
-    PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.4
+    PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.4
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
 
@@ -185,18 +185,6 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
-
-
-    # # VM must be on for the subnet change to work
-    # echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
-    # az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
-
-    # # Switch IP and subnet
-    # PRIVATEIPADDRESS=$(echo $PRIVATEIPADDRESS | sed "s/${IP_TRIPLET_DEPLOYMENT}/${IP_TRIPLET_EXTERNAL}/")
-    # NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
-    # IPCONFIG_NAME=$(az network nic show --resource-group $RESOURCEGROUP --name $NIC_NAME --query ipConfigurations[].name -o tsv)
-    # echo -e "${BOLD}Switching to IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} inside secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
-    # az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name $IPCONFIG_NAME --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME --private-ip-address $PRIVATEIPADDRESS
 fi
 
 
@@ -225,7 +213,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
-    PRIVATEIPADDRESS=${IP_TRIPLET_EXTERNAL}.5
+    PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
 
@@ -263,15 +251,4 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
-
-    # # VM must be on for the subnet change to work
-    # echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
-    # az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
-
-    # # Switch IP and subnet
-    # PRIVATEIPADDRESS=$(echo $PRIVATEIPADDRESS | sed "s/${IP_TRIPLET_DEPLOYMENT}/${IP_TRIPLET_EXTERNAL}/")
-    # NIC_NAME="${MACHINENAME_EXTERNAL}VMNic"
-    # IPCONFIG_NAME=$(az network nic show --resource-group $RESOURCEGROUP --name $NIC_NAME --query ipConfigurations[].name -o tsv)
-    # echo -e "${BOLD}Switching to IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} inside secure subnet: ${BLUE}${SUBNET_EXTERNAL}${END}"
-    # az network nic ip-config update --resource-group $RESOURCEGROUP --nic-name $NIC_NAME --name $IPCONFIG_NAME --subnet $SUBNET_EXTERNAL --vnet-name $VNET_NAME --private-ip-address $PRIVATEIPADDRESS
 fi
