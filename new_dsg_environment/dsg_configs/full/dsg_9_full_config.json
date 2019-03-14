@@ -14,8 +14,9 @@
       "name": "dsg-management-test"
     },
     "dc": {
-      "ip": "10.220.1.250",
-      "hostname": "MGMTDEVDC"
+      "hostname": "MGMTDEVDC",
+      "rg": "RG_DSG_DC",
+      "ip": "10.220.1.250"
     },
     "id": "test",
     "network": {

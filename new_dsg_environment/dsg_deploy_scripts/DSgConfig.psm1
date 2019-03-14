@@ -57,6 +57,7 @@ function Add-DsgConfig {
 
     # --- Domain controller config ---
     $config.shm.dc = @{}
+    $config.shm.dc.rg = "RG_DSG_DC"
     $config.shm.dc.hostname = $shmConfigBase.dcHostname
     $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
 
