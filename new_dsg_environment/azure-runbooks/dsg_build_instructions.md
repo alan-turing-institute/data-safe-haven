@@ -129,6 +129,14 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
 
 - Continue to follow the instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (\<environment\>)".
 
+## Generate full configuration for DSG
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Generate a new full configuration file for the new DSG using the following commands.
+  - `Import-Module ./DsgConfig.psm1 -Force`
+  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. "9" for "DSG9"), 
+
 ## Prepare Safe Haven Management Domain
 
 ### Connect to the Safe Haven management domain controller
@@ -247,37 +255,15 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 ## Deploy DSG Domain Controller
 
-- Navigate to the DSG artifacts storage account in the Safe Haven Management Test subscription via "RG\_DSG\_ARTIFACTS -\> dsgxartifacts".
-
-- Generate a new account level SAS token with the following permissions (see screenshot below)
-
-- Services: 'blob', 'file' only
-
-- Allowed resource types: 'Service', 'Container', 'Object'
-
-- Allowed permissions: 'Read', 'List' only
-
-- End date: 8 hours in the future is fine (the default)
-
-> ![image5.png](images/media/image5.png)
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/03_create_dc/" directory
+- Change to the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory
 
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<DSG-Subscription-Name>"`
 
-- Run the `./Create_AD_DC.ps1` script, providing the following information when prompted.
-
-- The environment ('test' or 'prod')
-
-- First three octets of the address range (e.g. "10.250.x")
-
-- DSG ID, usually a number (e.g. for DSG9 this is just "9")
-
-- The SAS token you generated above (starting "?sv="). Paste the string exactly as copied. Do not surround it with quotes.
+- Run the `./Create_AD_DC.ps1` script
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
@@ -286,6 +272,10 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 - Connect to the new Domain controller via Remote Desktop client over the VPN connection at the IP address \<first-three-octets\>.250 (e.g. 10.250.x.250)
 
 - Login with the admin credentials from the secret named "admin-dsg\<X\>-\<environment\>-dc" in the Safe Haven Management KeyVault (created in the "Prepare secrets" section above
+
+- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"`
 
 - Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
