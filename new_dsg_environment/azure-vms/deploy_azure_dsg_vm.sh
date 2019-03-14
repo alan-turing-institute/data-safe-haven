@@ -299,6 +299,19 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --resource-group $DSG_NSG_RG \
         --nsg-name $DEPLOYMENT_NSG \
         --direction Outbound \
+        --name OutboundAllowUpdates \
+        --description "Outbound allow updates for conda/pip" \
+        --access "Allow" \
+        --source-address-prefixes VirtualNetwork \
+        --source-port-ranges "*" \
+        --destination-address-prefixes Internet \
+        --destination-port-ranges 80 443 3128 \
+        --protocol TCP \
+        --priority 2500
+    az network nsg rule create \
+        --resource-group $DSG_NSG_RG \
+        --nsg-name $DEPLOYMENT_NSG \
+        --direction Outbound \
         --name OutboundDenyVNet \
         --description "Outbound deny virtual network" \
         --access "Deny" \
