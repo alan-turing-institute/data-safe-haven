@@ -5,6 +5,8 @@
   [string]$dsg
 )
 
+Import-Module $PSScriptRoot/../GeneratePassword.psm1
+
 #Set account OU Paths
 $serviceoupath = "OU=Safe Haven Service Accounts,DC=DSGROUPDEV,DC=co,DC=uk"
 $usersoupath = "OU=Safe Haven Research Users,DC=DSGROUPDEV,DC=co,DC=uk"
