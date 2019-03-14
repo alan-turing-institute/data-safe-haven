@@ -28,7 +28,7 @@
 
 ### Install the latest Azure CLI
 - Connect to the VM using `ssh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in "Safe Haven Management Testing" subscription)
-- Install [mosh](https://mosh.org/) for more stable SSH via `sudo apt-get install mosh` 
+- Install [mosh](https://mosh.org/) for more stable SSH via `sudo apt-get install mosh -y`
 - Install pip via `sudo apt install python-pip -y`
 - Install the Azure CLI via `pip2 install azure-cli` (system python is 2.7)
 - You may need to logout of the SSH session and log in again to get `pip2` working.
