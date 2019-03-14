@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g DSG9 = 9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
   [string]$dsgId
 )
 
@@ -36,7 +36,7 @@ $artifactSasToken = ConvertTo-SecureString $artifactSasToken -AsPlainText -Force
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $params = @{
- "DC Name" = $config.dsg.dc.hostname
+ "DC Name" = $config.dsg.dc.vmName
  "VM Size" = $vmSize
  "IP Address" = $config.dsg.dc.ip
  "Administrator User" = $config.dsg.dc.admin.username
