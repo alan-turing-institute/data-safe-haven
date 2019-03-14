@@ -21,7 +21,7 @@ function New-AccountSasToken {
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
     $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
-    # Switch back to previous context
+    # Switch back to previous subscription
     Set-AzContext -Context $prevContext
 
     return $sasToken
