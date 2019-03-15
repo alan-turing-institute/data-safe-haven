@@ -76,41 +76,43 @@
     },
     "id": "9",
     "keyVault": {
-      "name": "dsg-management-"
+      "name": "dsg-management-test"
     }
   },
   "shm": {
     "network": {
       "vnet": {
-        "cidr": "..0/21"
+        "cidr": "10.220.1.0/21"
       },
       "subnets": {
         "identity": {
-          "cidr": "..0/24",
-          "prefix": "."
+          "cidr": "10.220.1.0/24",
+          "prefix": "10.220.1"
         }
       }
     },
     "domain": {
-      "fqdn": null,
-      "serviceOuPath": "OU=Safe Haven Service Accounts,",
+      "fqdn": "dsgroupdev.co.uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
+      "netbiosName": "DSGROUPDEV",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
           "description": "SG Data Science LDAP Users"
         }
       },
-      "userOuPath": "OU=Safe Haven Research Users,",
-      "securityOuPath": "OU=Safe Haven Security Groups,"
+      "dn": "DC=dsgroupdev,DC=co,DC=uk"
     },
-    "subscriptionName": null,
+    "subscriptionName": "Safe Haven Management Testing",
     "keyVault": {
-      "name": "dsg-management-",
+      "name": "dsg-management-test",
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
     },
-    "id": null,
+    "id": "test",
     "storage": {
       "artifacts": {
         "accountName": "dsgxartifacts",
@@ -118,10 +120,10 @@
       }
     },
     "dc": {
-      "hostname": null,
+      "hostname": "MGMTDEVDC",
       "rg": "RG_DSG_DC",
       "vmName": "DC",
-      "ip": "..250"
+      "ip": "10.220.1.250"
     }
   }
 }

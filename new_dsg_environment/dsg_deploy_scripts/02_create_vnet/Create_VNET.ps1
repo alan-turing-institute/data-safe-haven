@@ -9,7 +9,7 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 # Get P2S Root certificate for VNet Gateway
-$cert = (Get-AzKeyVaultSecret -Name "sh-management-p2s-root-cert" -VaultName "dsg-management-test").SecretValue
+$cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.p2sRootCert -VaultName $config.shm.keyVault.name).SecretValue
 
 $params = @{
  "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -23,7 +23,7 @@ $params = @{
 }
 
 Write-Output $params
-
+Exit 2
 New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location uksouth
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
   -TemplateFile vnet-master-template.json @params -Verbose
