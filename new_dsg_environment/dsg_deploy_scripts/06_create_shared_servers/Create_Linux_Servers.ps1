@@ -20,7 +20,7 @@ $hackmdIP = $addressSpacePrefix + ".152"
 
 $vaultName = "dsg-management-" + $environment
 $adminUser = "atiadmin"
-$adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "admin-dsg9-test-dc").SecretValueText
+$adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "dsg9-dc-admin-password").SecretValueText
 $securePassword = ConvertTo-SecureString $adminPassword –asplaintext –force
 $vnetName = "DSG_DSGROUP" + $dsgId + "_VNET1"
 $vnetResourceGroupName = "RG_DSG_VNET"

@@ -10,7 +10,7 @@ $dsgId = Read-Host -Prompt "Enter DSG ID (usually a number e.g DSG9 = 9)"
 $dsName = "DATASERVER" # "DSG" + $dsgId + "DS"
 $vaultName = "dsg-management-" + $environment
 $adminUser = "atiadmin"
-$adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "admin-dsg9-test-dc").SecretValueText
+$adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "dsg9-dc-admin-password").SecretValueText
 $securePassword = ConvertTo-SecureString $adminPassword –asplaintext –force
 $vnetName = "DSG_DSGROUP" + $dsgId + "_VNET1"
 $vnetResourceGroupName = "RG_DSG_VNET"

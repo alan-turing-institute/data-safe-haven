@@ -11,7 +11,7 @@ $resourceGroupName = "RG_DSG_RDS"
 $domainName = "DSGROUP" + $dsgId + ".CO.UK"
 $adminUser = "atiadmin"
 $vaultName = "dsg-management-" + $environment
-$adminPasswordSecretName = "admin-dsg9-test-dc"
+$adminPasswordSecretName = "dsg9-dc-admin-password"
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name $adminPasswordSecretName).SecretValueText
 
 # RDS Gateway parameters

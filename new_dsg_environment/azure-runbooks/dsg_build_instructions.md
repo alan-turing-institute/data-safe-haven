@@ -354,7 +354,7 @@ The "Administrators Properties" box will now look like this
 | Trust Type:                                           | External Trust                                                                                                          |
 | Direction of trust:                                   | Two-way                                                                                                                 |
 | Sides of trust:                                       | Both this domain and the specified domain                                                                               |
-| User name and password:                               | Domain admin user on the DSG domain.                                                         Format: \<DOMAIN\\Username\>. User is "atiadmin ". See "admin-dsg9-test-dc" secret in management KeyVault for password. |
+| User name and password:                               | Domain admin user on the DSG domain.                                                         Format: \<DOMAIN\\Username\>. User is "atiadmin ". See "dsg9-dc-admin-password" secret in management KeyVault for password. |
 | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication                                                                                              |
 | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication                                                                                              |
 
