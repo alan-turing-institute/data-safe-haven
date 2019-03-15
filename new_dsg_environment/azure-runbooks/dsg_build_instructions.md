@@ -235,7 +235,26 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
-- Open a PowerShell command window with elevated privileges
+- Open a PowerShell command window with elevated privileges - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 - Change to `C:\Scripts`
 
@@ -405,7 +424,26 @@ The "Administrators Properties" box will now look like this
 
 - Login with the admin credentials you entered with you provisioned the VM previously
 
-- Open a PowerShell command prompt with elevated privileges.
+- Open a PowerShell command prompt with elevated privileges  - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 - Download the "RDS-RDS.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
@@ -413,7 +451,26 @@ The "Administrators Properties" box will now look like this
 
 - Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
 
-- Open a PowerShell command window with elevated privileges
+- Open a PowerShell command window with elevated privileges - - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 - Change to `C:\Scripts`
 
@@ -452,7 +509,26 @@ The "Administrators Properties" box will now look like this
 
 - Once installed logout of the server
 
-- Connect to the "Remote Desktop Gateway Server" (RDS) via Remote Desktop and open a PowerShell command window with elevated privileges
+- Connect to the "Remote Desktop Gateway Server" (RDS) via Remote Desktop and open a PowerShell command window with elevated privileges  - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 - Change to C:\\Scripts
 
@@ -550,7 +626,26 @@ The "Administrators Properties" box will now look like this
 
 - Click "Next" -\> "No, do not export the private key" -\> Select "DER encoded binary X.509" -\> "Next" -\> rob1"Browse" -\> select a location to save the certificate and provide a name. Click "Next" -\> "Finish"
 
--  On the "Remote Desktop Gateway" (RDS) open a PowerShell command window with elevated privilege
+-  On the "Remote Desktop Gateway" (RDS) open a PowerShell command window with elevated privilege  - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 -   Navigate to C:\\Scripts
 
@@ -573,7 +668,7 @@ The "Administrators Properties" box will now look like this
 
 - Enter "Y" when prompted
 
-- Exit the PowerShell window and re-open a new one (with elevated permissions)
+- Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell version)
 
 - Run the following command to install the Remote Desktop Web Client PowerShell Module
 
@@ -741,7 +836,26 @@ To make this Remote Desktop Service accessible from the internet a A record will
 
 - Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
 
-- Open a PowerShell command window with elevated privileges
+- Open a PowerShell command window with elevated privileges  - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+
+```shell
+> echo $pshome
+```
+
+the correct application should output
+
+```shell
+C:\Windows\System32\WindowsPowerShell\v1.0
+
+```
+
+whereas
+
+```shell
+C:\Windows\SysWOW64\WindowsPowerShell\v1.0
+```
+
+indicates the wrong application is running.
 
 - Change to C:\\Scripts
 
