@@ -11,18 +11,19 @@ function New-AccountSasToken {
         [Parameter(Position=4, Mandatory = $true, HelpMessage = "Enter resource type(s) - one or more of Service,Container,Object")]
         $resourceType,
         [Parameter(Position=5, Mandatory = $true, HelpMessage = "Enter permission string")]
-        [string]$permission
+        [string]$permission,
+        [Parameter(Position=6, Mandatory = $true, HelpMessage = "Provide current Azure subscription context")]
+        [string]$prevSubscription
     )
 
     # Temporarily switch to storage account subscription
-    $prevContext = Get-AzContext
-    Set-AzContext -SubscriptionId $subscriptionName;
+    Set-AzContext -Subscription $subscriptionName;
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
     $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
     # Switch back to previous subscription
-    Set-AzContext -Context $prevContext
+    Set-AzContext -Subscription $prevSubscription
 
     return $sasToken
 }

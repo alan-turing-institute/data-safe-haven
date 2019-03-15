@@ -29,7 +29,7 @@ $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 $artifactLocation = "https://" + $config.shm.storage.artifacts.accountName + ".blob.core.windows.net";
 $artifactSasToken = New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
   -accountName $config.shm.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl";
+  -permission "rl" -currentContext Get-AzContext;
 $artifactSasToken = ConvertTo-SecureString $artifactSasToken -AsPlainText -Force;
 
 # Switch to DSG subscription and deploy
