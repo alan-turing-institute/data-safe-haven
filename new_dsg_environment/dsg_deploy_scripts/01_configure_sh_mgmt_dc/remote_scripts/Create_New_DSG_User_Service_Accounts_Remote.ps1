@@ -6,11 +6,15 @@
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
   $configJson,
-  $hackMdPassword,
-  $gitlabPassword,
-  $dsvmPassword,
-  $testResearcherPassword
+  [string]$hackMdPassword,
+  [string]$gitlabPassword,
+  [string]$dsvmPassword,
+  [string]$testResearcherPassword
 )
+
+# We should really pass the passwords in as secure strings but we get a conversion error if we do.
+# Error: Cannot convert the "System.Security.SecureString" value of type "System.String" to type 
+#        "System.Security.SecureString".
 
 # For some reason, passing a JSON string as the -Parameter value for Invoke-AzVMRunCommand
 # results in the double quotes in the JSON string being stripped in transit
@@ -19,61 +23,66 @@ param(
 # being stripped in transit, but we can then replace the backticks with double quotes 
 # at this end to recover a valid JSON string.
 $config =  ($configJson.Replace("``","`"") | ConvertFrom-Json)
-Write-Host $config.shm.domain.securityOuPath
+
 # Create DSG Security Group
-New-ADGroup -Name $config.dsg.domain.securityGroups.researchUsers.name -GroupScope Global -Description $config.dsg.domain.securityGroups.researchUsers.description -GroupCategory Security -Path $config.shm.domain.securityOuPath
+New-ADGroup -Name ($config.dsg.domain.securityGroups.researchUsers.name) -GroupScope Global -Description ($config.dsg.domain.securityGroups.researchUsers.description) -GroupCategory Security -Path ($config.shm.domain.securityOuPath)
 
 # ---- Create Service Accounts for DSG ---
 # Hack MD user
 $hackMdPrincipalName = $config.dsg.users.ldap.hackmd.samAccountName + "@" + $config.dsg.domain.fqdn;
-New-ADUser  -Name $config.dsg.users.ldap.hackmd.name `
-            -UserPrincipalName $hackMdPrincipalName `
-            -Path $config.shm.domain.serviceOuPath `
-            -SamAccountName $config.dsg.users.ldap.hackmd.samAccountName `
-            -DisplayName $config.dsg.users.ldap.hackmd.name `
-            -Description $config.dsg.users.ldap.hackmd.name `
-            -AccountPassword $hackMdPassword `
-            -Enabled $true `
-            -PasswordNeverExpires $true
+Write-Host $hackMdPrincipalName
+Write-Host $config.dsg.users.ldap.hackmd.name
+Write-Host $config.shm.domain.serviceOuPath
+Write-Host $config.dsg.users.ldap.hackmd.samAccountName
+
+New-ADUser -Name $config.dsg.users.ldap.hackmd.name `
+           -UserPrincipalName $hackMdPrincipalName `
+           -Path $config.shm.domain.serviceOuPath `
+           -SamAccountName $config.dsg.users.ldap.hackmd.samAccountName `
+           -DisplayName $config.dsg.users.ldap.hackmd.name `
+           -Description $config.dsg.users.ldap.hackmd.name `
+           -AccountPassword (ConvertTo-SecureString $hackMdPassword -AsPlainText -Force) `
+           -Enabled $true `
+           -PasswordNeverExpires $true
 
 # Gitlab user
 $gitlabPrincipalName = $config.dsg.users.ldap.gitlab.samAccountName + "@" + $config.dsg.domain.fqdn;
-New-ADUser  -Name $config.dsg.users.ldap.gitlab.name `
-            -UserPrincipalName $gitlabPrincipalName `
-            -Path $config.shm.domain.serviceOuPath `
-            -SamAccountName $config.dsg.users.ldap.gitlab.samAccountName `
-            -DisplayName $config.dsg.users.ldap.gitlab.name `
-            -Description $config.dsg.users.ldap.gitlab.name `
-            -AccountPassword $gitlabPassword `
-            -Enabled $true `
-            -PasswordNeverExpires $true
+New-ADUser -Name $config.dsg.users.ldap.gitlab.name `
+           -UserPrincipalName $gitlabPrincipalName `
+           -Path $config.shm.domain.serviceOuPath `
+           -SamAccountName $config.dsg.users.ldap.gitlab.samAccountName `
+           -DisplayName $config.dsg.users.ldap.gitlab.name `
+           -Description $config.dsg.users.ldap.gitlab.name `
+           -AccountPassword (ConvertTo-SecureString $gitlabPassword -AsPlainText -Force) `
+           -Enabled $true `
+           -PasswordNeverExpires $true
 
 # DSVM user
 $dsvmPrincipalName = $config.dsg.users.ldap.dsvm.samAccountName + "@" + $config.dsg.domain.fqdn;
-New-ADUser  -Name $config.dsg.users.ldap.dsvm.name `
-            -UserPrincipalName $dsvmPrincipalName `
-            -Path $config.shm.domain.serviceOuPath `
-            -SamAccountName $config.dsg.users.ldap.dsvm.samAccountName `
-            -DisplayName $config.dsg.users.ldap.dsvm.name `
-            -Description $config.dsg.users.ldap.dsvm.name `
-            -AccountPassword $dsvmPassword `
-            -Enabled $true `
-            -PasswordNeverExpires $true
+New-ADUser -Name $config.dsg.users.ldap.dsvm.name `
+           -UserPrincipalName $dsvmPrincipalName `
+           -Path $config.shm.domain.serviceOuPath `
+           -SamAccountName $config.dsg.users.ldap.dsvm.samAccountName `
+           -DisplayName $config.dsg.users.ldap.dsvm.name `
+           -Description $config.dsg.users.ldap.dsvm.name `
+           -AccountPassword (ConvertTo-SecureString $dsvmPassword -AsPlainText -Force) `
+           -Enabled $true `
+           -PasswordNeverExpires $true
 
 # Test Research user
 $testResearcherPrincipalName = $config.dsg.users.researchers.test.samAccountName + "@" + $config.dsg.domain.fqdn;
-New-ADUser  -Name $config.dsg.users.researchers.test.name `
-            -UserPrincipalName $testResearcherPrincipalName `
-            -Path $config.shm.domain.userOuPath `
-            -SamAccountName $config.dsg.users.researchers.test.samAccountName `
-            -DisplayName $config.dsg.users.researchers.test.name `
-            -Description $config.dsg.users.researchers.test.name `
-            -AccountPassword $testResearcherPassword `
-            -Enabled $true `
-            -PasswordNeverExpires $true
+New-ADUser -Name $config.dsg.users.researchers.test.name `
+           -UserPrincipalName $testResearcherPrincipalName `
+           -Path $config.shm.domain.userOuPath `
+           -SamAccountName $config.dsg.users.researchers.test.samAccountName `
+           -DisplayName $config.dsg.users.researchers.test.name `
+           -Description $config.dsg.users.researchers.test.name `
+           -AccountPassword (ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force) `
+           -Enabled $true `
+           -PasswordNeverExpires $true
 
 #Add Data Science LDAP users to SG Data Science LDAP Users security group
 Add-ADGroupMember $config.shm.domain.securityGroups.dsvmLdapUsers.name $config.dsg.users.ldap.dsvm.samAccountName
 
 #Add DSG test users to the relative Security Groups
-Add-ADGroupMember $config.dsg.domain.securityGroups.researchUsers.name $config.dsg.users.ldap.dsvm.samAccountName
+Add-ADGroupMember $config.dsg.domain.securityGroups.researchUsers.name $config.dsg.users.researchers.test.samAccountName

@@ -18,7 +18,6 @@ if ($null -eq $hackMdPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.hackmd.passwordSecretName -SecretValue $newPassword;
   $hackMdPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
 }
-$hackMdPassword = ConvertTo-SecureString $hackMdPassword -AsPlainText -Force;
 
 # Fetch Gitlab password (or create if not present)
 $gitlabPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
@@ -29,7 +28,6 @@ if ($null -eq $gitlabPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.gitlab.passwordSecretName -SecretValue $newPassword;
   $gitlabPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
 }
-$gitlabPassword = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force;
 
 # Fetch DSVM password (or create if not present)
 $dsvmPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.dsvm.passwordSecretName).SecretValueText;
@@ -40,7 +38,6 @@ if ($null -eq $dsvmPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.dsvm.passwordSecretName -SecretValue $newPassword;
   $dsvmPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.ldap.dsvm.passwordSecretName).SecretValueText;
 }
-$dsvmPassword = ConvertTo-SecureString $dsvmPassword -AsPlainText -Force;
 
 # Fetch test research user password (or create if not present)
 $testResearcherPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.researchers.test.passwordSecretName).SecretValueText;
@@ -51,7 +48,6 @@ if ($null -eq $testResearcherPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.researchers.test.passwordSecretName -SecretValue $newPassword;
   $testResearcherPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.researchers.test.passwordSecretName).SecretValueText;
 }
-$testResearcherPassword = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force;
 
 # Temporarily switch to management subscription
 $prevContext = Get-AzContext
@@ -67,9 +63,17 @@ $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_New_DSG_User_Serv
 # at the other end to recover a valid JSON string.
 $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```"")
 
+$params = @{
+  configJson = $configJson
+  hackMdPassword = $hackMdPassword
+  gitlabPassword = $gitlabPassword
+  dsvmPassword = $dsvmPassword
+  testResearcherPassword = $testResearcherPassword
+}
+
 Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
-    -Parameter @{configJson=$configJson; hackMdPassword=$hackMdPassword; gitlabPassword=$gitlabPassword; dsvmPassword=$dsvmPassword; testResearcherPassword=$testResearcherPassword};
+    -Parameter $params
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
