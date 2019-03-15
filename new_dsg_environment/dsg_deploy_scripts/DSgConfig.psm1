@@ -44,6 +44,12 @@ function Add-DsgConfig {
     $config.shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $config.shm.domain.dn
     $config.shm.domain.userOuPath = "OU=Safe Haven Research Users," + $config.shm.domain.dn
     $config.shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $config.shm.domain.dn
+    $config.shm.domain.securityGroups = @{
+        dsvmLdapUsers = @{}
+    }
+    $config.shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users" 
+    $config.shm.domain.securityGroups.dsvmLdapUsers.description = $config.shm.domain.securityGroups.dsvmLdapUsers.name
+
 
     # --- Network config ---
     $config.shm.network = @{
@@ -146,14 +152,22 @@ function Add-DsgConfig {
             hackmd = @{}
             dsvm = @{}
         }
-        research = @{}
+        researchers = @{
+            test = @{}
+        }
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "_gitlab_ldap"
+    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-gitlab-ldap"
+    $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.users.ldap.gitlab.samAccountName + "-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "_hackmd_ldap"
+    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-hackmd-ldap"
+    $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.users.ldap.hackmd.samAccountName + "-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "_dsvm_ldap"
+    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-dsvm-ldap"
+    $config.dsg.users.ldap.dsvm.passwordSecretName =  $config.dsg.users.ldap.dsvm.samAccountName + "-password"
+    $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName.ToLower() + " Test Researcher"
+    $config.dsg.users.researchers.test.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-test-researcher"
+    $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
 
     # --- Secure servers ---
 
