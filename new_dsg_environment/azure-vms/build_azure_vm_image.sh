@@ -1,22 +1,24 @@
 #! /bin/bash
 
-# Options which are configurable at the command line
-SOURCEIMAGE="Ubuntu"
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_DS3_v2"
-
-
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
 
+# Options which are configurable at the command line
+SOURCEIMAGE="Ubuntu"
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+SUBSCRIPTION="" # must be provided
+VMSIZE="Standard_DS3_v2"
+
 # Other constants
+ADMIN_USERNAME="atiadmin"
 MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 NSGNAME="NSG_IMAGE_BUILD"
+VNETNAME="VNET_IMAGE_BUILD"
+IP_RANGE="10.0.0.0/16" # take the Azure default for the moment. This may need to be changed in future to avoid clashes with other deployments
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -101,6 +103,12 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
 done
 
+# Create a VNet for the deployment
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP | grep $VNETNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating VNet for image building: ${BLUE}$VNETNAME${END}"
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE
+fi
+
 # Add an NSG group to deny inbound connections except Turing-based SSH
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
@@ -180,15 +188,17 @@ echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
 STARTTIME=$(date +%s)
 az vm create \
-  --resource-group $RESOURCEGROUP \
-  --name $BASENAME \
-  --image $SOURCEIMAGE \
-  --os-disk-size-gb $DISKSIZEGB \
+  --admin-username $ADMIN_USERNAME \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
+  --generate-ssh-keys \
+  --image $SOURCEIMAGE \
+  --name $BASENAME \
   --nsg $NSGNAME \
+  --os-disk-name "${BASENAME}OSDISK" \
+  --os-disk-size-gb $DISKSIZEGB \
+  --resource-group $RESOURCEGROUP \
   --size $VMSIZE \
-  --admin-username atiadmin \
-  --generate-ssh-keys
+  --vnet-name $VNETNAME
 
 # --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
 # the key will be removed from the build machine at the end of VM creation
