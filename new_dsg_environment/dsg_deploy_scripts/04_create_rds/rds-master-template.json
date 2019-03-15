@@ -97,7 +97,7 @@
             }    
         },
         "Administrator Password": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Enter name for VM Administrator Password"
             }    
