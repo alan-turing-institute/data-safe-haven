@@ -146,7 +146,6 @@ fi
 echo -e "${BOLD}Updating NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} to allow connections to IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
 if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncInbound 2> /dev/null)" = "" ]; then
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_INTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_EXTERNAL --priority 200
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_INTERNAL --priority 200
 # ... otherwise we update them, extracting the existing IP ranges first
 else
@@ -214,6 +213,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
 
     # Create the VM
     echo -e "${BOLD}Creating VM...${END}"
@@ -248,6 +248,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     # Delete the configuration NSG rule and restart the VM
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary
+    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
     # Update known hosts on the external server to allow connections to the internal server
@@ -299,6 +300,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
 
     # Create the VM
     echo -e "${BOLD}Creating VM...${END}"
@@ -333,6 +335,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     # Delete the configuration NSG rule and restart the VM
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary
+    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
     # Update known hosts on the external server to allow connections to the internal server
