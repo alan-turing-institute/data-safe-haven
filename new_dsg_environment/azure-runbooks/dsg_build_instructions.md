@@ -232,7 +232,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<DSG-Subscription-Name>"`
 
-- Run the `./Create_AD_DC.ps1` script
+- Run the `./Create_AD_DC.ps1` script, entering the DSG ID when prompted
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
