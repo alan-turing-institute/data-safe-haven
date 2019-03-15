@@ -27,13 +27,16 @@ $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
 # Get SAS token
 $artifactLocation = "https://" + $config.shm.storage.artifacts.accountName + ".blob.core.windows.net";
-$artifactSasToken = New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
+$currentSubscription = (Get-AzContext).Subscription.Name
+Write-Host $currentSubscription 
+$artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
   -accountName $config.shm.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -currentContext Get-AzContext;
-$artifactSasToken = ConvertTo-SecureString $artifactSasToken -AsPlainText -Force;
+  -permission "rl" -prevSubscription $currentSubscription);
+ Write-Host $artifactSasToken.GetType()
+$artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
 # Switch to DSG subscription and deploy
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName; # Assign to dummy variable to avoid conmtext being returned
 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName

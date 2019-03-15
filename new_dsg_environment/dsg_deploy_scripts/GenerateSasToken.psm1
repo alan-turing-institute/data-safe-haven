@@ -17,13 +17,14 @@ function New-AccountSasToken {
     )
 
     # Temporarily switch to storage account subscription
-    Set-AzContext -Subscription $subscriptionName;
+    $_ = Set-AzContext -Subscription $subscriptionName; # Assign to dummy variable to avoid conmtext being returned
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
     $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
+
     # Switch back to previous subscription
-    Set-AzContext -Subscription $prevSubscription
+    $_ = Set-AzContext -Subscription $prevSubscription; # Assign to dummy variable to avoid conmtext being returned
 
     return $sasToken
 }
