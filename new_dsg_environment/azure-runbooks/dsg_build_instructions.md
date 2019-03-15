@@ -243,7 +243,7 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 - Login with the admin credentials from the secret named "admin-dsg\<X\>-\<environment\>-dc" in the Safe Haven Management KeyVault (created in the "Prepare secrets" section above
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"`
 
 - Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
@@ -423,7 +423,7 @@ The "Administrators Properties" box will now look like this
 - Login with the admin credentials you entered with you provisioned the VM previously
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"`
 
 - Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
@@ -489,7 +489,7 @@ The "Administrators Properties" box will now look like this
 - Open a PowerShell command prompt with elevated privileges.
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"`
 
 - Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>)  (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
