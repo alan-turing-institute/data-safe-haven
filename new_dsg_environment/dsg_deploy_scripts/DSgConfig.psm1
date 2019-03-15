@@ -191,6 +191,12 @@ function Add-DsgConfig {
     # --- Secure servers ---
 
     # Data server
+    $config.dataserver = @{}
+    $config.dataserver.rg = "RG_DSG_DATA"
+    $config.dataserver.vmName = "DATASERVER" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DATASERVER"
+    $config.dataserver.hostname = $config.dataserver.vmName
+    $config.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
+
 
     # Gitlab server
 

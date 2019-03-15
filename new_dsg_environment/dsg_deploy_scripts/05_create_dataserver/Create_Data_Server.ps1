@@ -1,39 +1,30 @@
+param(
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$dsgId
+)
+
 Import-Module Az
+Import-Module $PSScriptRoot/../DsgConfig.psm1
 
-$environment = Read-Host -Prompt "Enter environment name ('test' or 'prod')"
-# $addressSpacePrefix = Read-Host -Prompt "Enter first three octets of address space e.g. 10.250.x"
-$addressSpacePrefix12 = Read-Host -Prompt "Enter first two octets of address space e.g. 10.250"
-$addressSpacePrefix3 = Read-Host -Prompt "Enter the third octet of address space e.g. the x in 10.250.x"
-$addressSpacePrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 2)
-$dsgId = Read-Host -Prompt "Enter DSG ID (usually a number e.g DSG9 = 9)"
+# Get DSG config
+$config = Get-DsgConfig($dsgId)
 
-$dsName = "DATASERVER" # "DSG" + $dsgId + "DS"
-$vaultName = "dsg-management-" + $environment
-$adminUser = "atiadmin"
-$adminPassword = (Get-AzKeyVaultSecret -vaultName $vaultName -name "dsg9-dc-admin-password").SecretValueText
-$securePassword = ConvertTo-SecureString $adminPassword –asplaintext –force
-$vnetName = "DSG_DSGROUP" + $dsgId + "_VNET1"
-$vnetResourceGroupName = "RG_DSG_VNET"
-$vnetSubnet = "Subnet-Data"
-$domainName = "DSGROUP" + $dsgId + ".CO.UK"
-$ipAddress = $addressSpacePrefix + ".100"
+# Admin user credentials (must be same as for DSG DC for now)
+$adminUser = $config.dsg.dc.admin.username
+$adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
+
 $vmSize = "Standard_DS2_v2"
-$vmSizeTest = "Standard_DS2_v2"
-$vmSizeProd = "Standard_DS2_v2"
-$vmSize = If ($environment == "test") {$vmSizeTest} Else {$vmSizeProd}
-$resourceGroupName = "RG_DSG_RDS"
-
 
 $params = @{
-"Data Server Name" = $dsName
-"Domain Name" = $domainName
+"Data Server Name" = $config.dataserver.vmName
+"Domain Name" = $config.dsg.domain.fqdn
 "VM Size" = $vmSize
-"IP Address" = $ipAddress
+"IP Address" = $config.dataserver.ip
 "Administrator User" = $adminUser
-"Administrator Password" = $securePassword
-"Virtual Network Name" = $vnetName
-"Virtual Network Resource Group" = $vnetResourceGroupName
-"Virtual Network Subnet" = $vnetSubnet
+"Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
+"Virtual Network Name" = $config.dsg.network.vnet.name
+"Virtual Network Resource Group" = $config.dsg.network.vnet.rg
+"Virtual Network Subnet" = $config.dsg.network.subnets.data.name
 }
 
 Write-Output $params

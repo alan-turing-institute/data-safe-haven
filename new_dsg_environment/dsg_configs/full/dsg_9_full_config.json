@@ -128,6 +128,12 @@
       "ip": "10.220.1.250"
     }
   },
+  "dataserver": {
+    "hostname": "DATASERVER",
+    "rg": "RG_DSG_DATA",
+    "vmName": "DATASERVER",
+    "ip": "10.250.66.250"
+  },
   "rds": {
     "gateway": {
       "hostname": "RDS",
