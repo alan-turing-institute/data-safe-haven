@@ -83,18 +83,6 @@ Generate the following passwords and store then in the Safe Haven Management Key
 
 Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new) to generate passwords. These should contain at least one uppercase letter, one lowercase letter and one digit with a length of 20 characters. We avoid special characters to avoid issues in config files. For more details refer to [https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements](https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements).
 
-- HackMD LDAP account password -- Generate and store as "ldap-dsg\<X\>-\<environment\>-hackmd"
-
-- Gitlab LDAP account password -- Generate and store as "ldap-dsg\<X\>-\<environment\>-gitlab"
-
-- TestUser LDAP account password -- Generate and store as "ldap-dsg\<X\>-\<environment\>-testuser"
-
-- DSGPU (Compute VM) LDAP account password -- Generate and store as "ldap-dsg\<X\>-\<environment\>-dsgpu"
-
-- DSG DC admin account password -- Generate and store as "admin-dsg\<X\>-\<environment\>-dc"
-
-- DSG RDS admin account password -- Generate and store as "admin-dsg\<X\>-\<environment\>-rds"
-
 - DSG RDS certificate encryption password - Generate and store as dsg\<x\>-\<environment\>-cert-password"
 
 ## Install and configure PowerShell for Azure
