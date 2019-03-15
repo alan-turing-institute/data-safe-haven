@@ -138,48 +138,17 @@ Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https:/
   - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. "9" for "DSG9"), 
 
 ## Prepare Safe Haven Management Domain
+- Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
-### Connect to the Safe Haven management domain controller
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/02_create_vnet/" directory
 
-- Connect to the Safe Haven Management VPN. On OSX do this by opening System preferences -\> Network and clicking on the VPN connection and then the "connect" button.
+- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
-- (The gateway is not IP restricted so user authentication problems may be due to not setting the Local ID field correctly)
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Connect to the Domain controller using Microsoft's Remote Desktop app, connecting to the IP address of the management segment Domain Controller using the following details:
+- Add new DSG users and security group to the AD by running `Create_New_DSG_User_Service_Accounts_Local.ps1`, entering the DSG ID when prompted
 
-  - Computer name / IP address: 10.220.1.250 (for the test environment)
-
-  - Username: See "sh-management-dc-admin-user" secret in "dsg-management-\<environment\>" KeyVault (click "current version" then "show secret value")
-
-  - Password: See "sh-management-dc-admin-password" secret in "dsg-management-\<environment\>" KeyVault (click "current version" then "show secret value")
-
-- Open a PowerShell command window with elevated permissions (click the magnifying glass search icon in the bottom left of the screen, enter "Powershell" and right click and select "Run as administrator")
-
-- Locate the "Scripts" folder in the root of C:
-
-- Add new DSG users and security group to the AD by running the following command with these parameters.
-
- | **Command**|                                     **Parameters**|   **Description**|
- |--|--|--|
-| `Create_New_DSG_User_Service_Accounts.ps1` |  -dsg      |       DSG NetBIOS name i.e. DSGROUP10 |
-  
-
-When prompted enter the passwords for the service accounts (see Prepare Secrets).
-
-- At this point if the script throws an error, abort the script and run again
-
-Update the DNS with the new DSG environment details by running the following command with these parameters ().
-
-
-  | **Command** | **Parameters** |  **Description** |
-  | --- | --- | --- |
-|  `Add_New_DSG_To_DNS.ps1` |   -SubnetIdentity |   First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
-| | -SubnetRDS | First 3 octets of the RDS subnet IP address space i.e. 10.250.0 |
-| | -SubnetData |       First 3 octets of the Data subnet IP address space i.e. 10.250.0 |
-| | -Domain |          DSG NetBIOS name i.e. DSG10 |
-| | -fqdn |            Fully qualified domain name i.e. dsgroup10.co.uk |
-| | -dcip  |            IP address of the DC that will be created in the DSG i.e. 10.250.2.250 |
-
+- Add new DSG DNS record to the AD by running `CAdd_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
 
 ## Deploy Virtual Network
 
