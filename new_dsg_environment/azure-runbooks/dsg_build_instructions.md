@@ -407,7 +407,7 @@ The "Administrators Properties" box will now look like this
 
 - Open a PowerShell command prompt with elevated privileges.
 
-- Download the "RDS-DC.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the "RDS-RDS.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
