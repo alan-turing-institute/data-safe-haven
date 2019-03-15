@@ -14,6 +14,7 @@
         },
         "data": {
           "cidr": "10.250.66.0/24",
+          "name": "Subnet-Data",
           "prefix": "10.250.66"
         },
         "gateway": {
@@ -22,6 +23,7 @@
         },
         "rds": {
           "cidr": "10.250.65.0/24",
+          "name": "Subnet-RDS",
           "prefix": "10.250.65"
         }
       }
@@ -124,6 +126,24 @@
       "rg": "RG_DSG_DC",
       "vmName": "DC",
       "ip": "10.220.1.250"
+    }
+  },
+  "rds": {
+    "gateway": {
+      "hostname": "RDS",
+      "vmName": "RDS",
+      "ip": "10.250.65.250"
+    },
+    "sessionHost2": {
+      "hostname": "RDSSH2",
+      "vmName": "RDSSH2",
+      "ip": "10.250.65.248"
+    },
+    "rg": "RG_DSG_RDS",
+    "sessionHost1": {
+      "hostname": "RDSSH1",
+      "vmName": "RDSSH1",
+      "ip": "10.250.65.249"
     }
   }
 }

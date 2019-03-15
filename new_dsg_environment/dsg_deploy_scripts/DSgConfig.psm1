@@ -122,8 +122,10 @@ function Add-DsgConfig {
     $config.dsg.network.subnets.identity.name = "Subnet-Identity"
     $config.dsg.network.subnets.identity.prefix =  $dsgBasePrefix + "." + $dsgThirdOctet
     $config.dsg.network.subnets.identity.cidr = $config.dsg.network.subnets.identity.prefix + ".0/24"
+    $config.dsg.network.subnets.rds.name = "Subnet-RDS"
     $config.dsg.network.subnets.rds.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 1)
     $config.dsg.network.subnets.rds.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
+    $config.dsg.network.subnets.data.name = "Subnet-Data"
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
     $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24" 
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
@@ -169,6 +171,23 @@ function Add-DsgConfig {
     $config.dsg.users.researchers.test.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-test-researcher"
     $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
 
+    # --- RDS Servers ---
+    $config.rds = @{
+        gateway = @{}
+        sessionHost1 = @{}
+        sessionHost2 = @{}
+    }
+    $config.rds.rg = "RG_DSG_RDS"
+    $config.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
+    $config.rds.gateway.hostname = $config.rds.gateway.vmName
+    $config.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
+    $config.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
+    $config.rds.sessionHost1.hostname = $config.rds.sessionHost1.vmName
+    $config.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
+    $config.rds.sessionHost2.vmName = "RDSSH2" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH2"
+    $config.rds.sessionHost2.hostname = $config.rds.sessionHost2.vmName
+    $config.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
+
     # --- Secure servers ---
 
     # Data server
@@ -179,7 +198,7 @@ function Add-DsgConfig {
 
     # Compute server
 
-    # --- RDS Servers ---
+    
 
     $jsonOut = ($config | ConvertTo-Json -depth 10 )
     Write-Host $jsonOut
