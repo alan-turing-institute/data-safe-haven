@@ -86,6 +86,11 @@ write_files:
         ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
         delete-packages = true
 
+        ; To enable whitelisting, you need to uncomment both the [blacklist] and [whitelist] sections
+        ; [blacklist]
+        ; plugins =
+        ;     whitelist_project
+
         ; [whitelist]
         ; packages =
         ;     numpy
