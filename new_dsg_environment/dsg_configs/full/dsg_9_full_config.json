@@ -134,6 +134,19 @@
     "vmName": "DATASERVER",
     "ip": "10.250.66.250"
   },
+  "linux": {
+    "gitlab": {
+      "hostname": "GITLAB",
+      "vmName": "GITLAB",
+      "ip": "10.250.66.151"
+    },
+    "hackmd": {
+      "hostname": "HACKMD",
+      "vmName": "HACKMD",
+      "ip": "10.250.66.152"
+    },
+    "rg": "RG_DSG_LINUX"
+  },
   "rds": {
     "gateway": {
       "hostname": "RDS",

@@ -197,8 +197,18 @@ function Add-DsgConfig {
     $config.dataserver.hostname = $config.dataserver.vmName
     $config.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
 
-
-    # Gitlab server
+    # HackMD and Gitlab servers
+    $config.linux = @{
+        gitlab = @{}
+        hackmd = @{}
+    }
+    $config.linux.rg = "RG_DSG_LINUX"
+    $config.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
+    $config.linux.gitlab.hostname = $config.linux.gitlab.vmName
+    $config.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
+    $config.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
+    $config.linux.hackmd.hostname = $config.linux.hackmd.vmName
+    $config.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
     # HackMD server
 
