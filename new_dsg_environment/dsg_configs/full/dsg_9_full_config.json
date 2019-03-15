@@ -39,19 +39,28 @@
     },
     "subscriptionName": "DSG Template Testing",
     "users": {
-      "research": {},
       "ldap": {
         "gitlab": {
+          "samAccountName": "dsgroup9-gitlab-ldap",
           "name": "DSGROUP9 Gitlab LDAP",
-          "samAccountName": "dsgroup9_gitlab_ldap"
+          "passwordSecretName": "dsgroup9-gitlab-ldap-password"
         },
         "hackmd": {
+          "samAccountName": "dsgroup9-hackmd-ldap",
           "name": "DSGROUP9 HackMD LDAP",
-          "samAccountName": "dsgroup9_hackmd_ldap"
+          "passwordSecretName": "dsgroup9-hackmd-ldap-password"
         },
         "dsvm": {
+          "samAccountName": "dsgroup9-dsvm-ldap",
           "name": "DSGROUP9 DSVM LDAP",
-          "samAccountName": "dsgroup9_dsvm_ldap"
+          "passwordSecretName": "dsgroup9-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "samAccountName": "dsgroup9-test-researcher",
+          "name": "dsgroup9 Test Researcher",
+          "passwordSecretName": "dsgroup9-test-researcher-password"
         }
       }
     },
@@ -88,6 +97,12 @@
       "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
       "netbiosName": "DSGROUPDEV",
       "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      },
       "dn": "DC=dsgroupdev,DC=co,DC=uk"
     },
     "subscriptionName": "Safe Haven Management Testing",
