@@ -61,6 +61,17 @@ while getopts "hs:t:c:m:v:w:" opt; do
     esac
 done
 
+# Check that subscriptions have been provided
+# -------------------------------------------
+if [ "$SUBSCRIPTION_COMPUTE" = "" ]; then
+    echo -e "${RED}Compute subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+if [ "$SUBSCRIPTION_MIRROR" = "" ]; then
+    echo -e "${RED}Mirror subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+
 # Get VNet IDs
 COMPUTE_VNET_ID=$(az network vnet show --resource-group $RESOURCE_GROUP_COMPUTE --name $VNET_NAME_COMPUTE --subscription "$SUBSCRIPTION_COMPUTE" --query id --out tsv)
 MIRROR_VNET_ID=$(az network vnet show --resource-group $RESOURCE_GROUP_MIRROR --name $VNET_NAME_MIRROR --subscription "$SUBSCRIPTION_MIRROR" --query id --out tsv)
