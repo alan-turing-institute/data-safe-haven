@@ -135,6 +135,7 @@ runcmd:
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Add channels
+  - conda config --add channels auto
   - conda config --add channels bioconda
   - conda config --add channels conda-forge
   - conda config --add channels imperial-college-research-computing
@@ -155,27 +156,31 @@ runcmd:
   # Create or install conda environments
   # Python 2.7 - add 'auto' channel for monocle only, then remove it
   - echo "*** Working on py27 environment. Will take approximately 30 minutes... ***"
-  - conda config --add channels auto
+  - echo "Starting at $(date --rfc-3339=seconds)"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
-  - conda config --remove channels auto
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
+  - echo "Finished at $(date --rfc-3339=seconds)"
   # Python 3.5
   - echo "*** Working on py35 environment. Will take approximately 90 minutes... ***"
+  - echo "Starting at $(date --rfc-3339=seconds)"
   - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHON35PACKAGES; else conda install -y --verbose --name py35 $PYTHON35PACKAGES; fi
   - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py35; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py35; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py35 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.5 environment!"; exit 1; fi
+  - echo "Finished at $(date --rfc-3339=seconds)"
   # Python 3.6
   - echo "*** Working on py36 environment. Will take approximately 40 minutes... ***"
+  - echo "Starting at $(date --rfc-3339=seconds)"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
+  - echo "Finished at $(date --rfc-3339=seconds)"
   # List environments
   - echo "*** Final conda environments... ***"
   - conda env list
