@@ -102,7 +102,7 @@ if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
     print_usage_and_exit
 fi
 IP_TRIPLET_VNET=$(az network vnet show --resource-group $RESOURCEGROUP --name $VNET_NAME --query "addressSpace.addressPrefixes" -o tsv | cut -d'.' -f1-3)
-IP_RANGE_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
+IP_RANGE_SBNT_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
 
 # Ensure that external NSG exists
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL 2> /dev/null)" = "" ]; then
@@ -121,10 +121,10 @@ fi
 # --------------------------------------------
 IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --query "[].addressPrefix" -o tsv)
 for FOURTH_OCTET in $(seq 0 16 240); do
-    IP_RANGE_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
+    IP_RANGE_SUBNET_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
     ALREADY_IN_USE=0
     for IP_ADDRESS_PREFIX in $IP_ADDRESS_PREFIXES; do
-        if [ "$IP_RANGE_INTERNAL" == "$IP_ADDRESS_PREFIX" ]; then
+        if [ "$IP_RANGE_SUBNET_INTERNAL" == "$IP_ADDRESS_PREFIX" ]; then
             ALREADY_IN_USE=1
         fi
     done
@@ -133,7 +133,7 @@ for FOURTH_OCTET in $(seq 0 16 240); do
     fi
 done
 if [ $ALREADY_IN_USE -eq 0 ]; then
-    echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
+    echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 else
     echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNET_NAME${END}"
     print_usage_and_exit
@@ -143,21 +143,21 @@ fi
 # Set up the internal NSG and configure the external NSG
 # ------------------------------------------------------
 # Update external NSG to allow connections to this IP range
-echo -e "${BOLD}Updating NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} to allow connections to IP range ${BLUE}$IP_RANGE_INTERNAL${END}"
+echo -e "${BOLD}Updating NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} to allow connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
 if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncInbound 2> /dev/null)" = "" ]; then
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_INTERNAL --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 200
 # ... otherwise we update them, extracting the existing IP ranges first
 else
     EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsyncInbound --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
-    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_INTERNAL
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL
 fi
 
 # Create internal NSG if it does not already exist
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name mirrorRequestsInbound --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes "*" --priority 300
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
@@ -169,7 +169,7 @@ fi
 if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
-        --address-prefix $IP_RANGE_INTERNAL \
+        --address-prefix $IP_RANGE_SUBNET_INTERNAL \
         --name $SUBNET_INTERNAL \
         --network-security-group $NSG_INTERNAL \
         --resource-group $RESOURCEGROUP \
@@ -210,7 +210,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
-    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
+    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
@@ -297,7 +297,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
-    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
+    PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_INTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200

@@ -92,7 +92,7 @@ fi
 # ------------------------------------------------------------------
 # Define IP address ranges
 IP_RANGE_VNET="${IP_TRIPLET_VNET}.0/24"
-IP_RANGE_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
+IP_RANGE_SBNT_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
 
 # Create VNet if it does not already exist
 if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
@@ -105,7 +105,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
     echo -e "${BOLD}Creating NSG for external mirrors: ${BLUE}$NSG_EXTERNAL${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name updateOutbound --description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" --access "Allow" --source-address-prefixes $IP_RANGE_EXTERNAL --destination-port-ranges 443 873 --protocol TCP --destination-address-prefixes Internet --priority 300
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name updateOutbound --description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" --access "Allow" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 443 873 --protocol TCP --destination-address-prefixes Internet --priority 300
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
 fi
 
@@ -113,13 +113,13 @@ fi
 if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_EXTERNAL${END}"
     az network vnet subnet create \
-        --address-prefix $IP_RANGE_EXTERNAL \
+        --address-prefix $IP_RANGE_SBNT_EXTERNAL \
         --name $SUBNET_EXTERNAL \
         --network-security-group $NSG_EXTERNAL \
         --resource-group $RESOURCEGROUP \
         --vnet-name $VNET_NAME
 fi
-echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_EXTERNAL${END}"
+echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
 
 # Set up PyPI external mirror
