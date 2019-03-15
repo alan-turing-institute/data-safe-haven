@@ -136,9 +136,9 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = http://10.1.0.20:3128
-      index-url = http://10.1.0.20:3128/simple
-      trusted-host = 10.1.0.20
+      index = http://PYPI_MIRROR_IP:3128
+      index-url = http://PYPI_MIRROR_IP:3128/simple
+      trusted-host = PYPI_MIRROR_IP
 
 runcmd:
   # ==========================================
