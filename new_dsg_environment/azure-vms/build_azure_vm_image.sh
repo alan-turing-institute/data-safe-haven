@@ -7,10 +7,10 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-SOURCEIMAGE="Ubuntu"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+SOURCEIMAGE="Ubuntu"
 SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_DS3_v2"
+VMSIZE="Standard_F2s_v2"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
@@ -23,12 +23,12 @@ IP_RANGE="10.0.0.0/16" # take the Azure default for the moment. This may need to
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i source_image] [-n machine_name] [-r resource_group]"
-    echo "  -h                            display help"
-    echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
-    echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
-    echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -z vm_size (optional)         size of the VM to use for build (defaults to 'Standard_F2s_v2')"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
+    echo "  -h                           display help"
+    echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
+    echo "  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
     exit 1
 }
 
