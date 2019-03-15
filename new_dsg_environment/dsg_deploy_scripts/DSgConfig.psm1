@@ -127,7 +127,7 @@ function Add-DsgConfig {
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
     $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24" 
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
-    $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
+    $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
 
     # --- Secrets ---
     $config.dsg.keyVault = @{

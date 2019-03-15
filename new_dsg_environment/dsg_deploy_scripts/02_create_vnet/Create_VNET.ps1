@@ -1,9 +1,13 @@
-Import-Module Az
+param(
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$dsgId
+)
 
-$addressSpacePrefix12 = Read-Host -Prompt "Enter first two octets of address space e.g. 10.250"
-$addressSpacePrefix3 = Read-Host -Prompt "Enter the third octet of address space e.g. the x in 10.250.x"
-$dsgId = Read-Host -Prompt "Enter DSG ID (usually a number e.g DSG9 = 9)"
-$resourceGroupName = "RG_DSG_VNET"
+Import-Module Az
+Import-Module $PSScriptRoot/../DsgConfig.psm1
+
+# Get DSG config
+$config = Get-DsgConfig($dsgId)
 
 $virtualNetworkName = "DSG_DSGROUP" + $dsgId + "_VNET1"
 $addressSpacePrefix = $addressSpacePrefix12 + "." + $addressSpacePrefix3
@@ -16,18 +20,18 @@ $dnsServerIP =  $addressSpacePrefix + ".250"
 $cert = (Get-AzKeyVaultSecret -Name "sh-management-p2s-root-cert" -VaultName "dsg-management-test").SecretValue
 
 $params = @{
- "Virtual Network Name" = $virtualNetworkName
+ "Virtual Network Name" = $config.dsg.network.vnet.name
  "P2S VPN Certificate" = $cert
- "Virtual Network Address Space" = $virtualNetworkAddressSpace
- "Subnet-Identity Address Prefix" = $subnetIdentityPrefix
- "Subnet-RDS Address Prefix" = $subnetRdsPrefix
- "Subnet-Data Address Prefix" = $subnetDataPrefix
- "Subnet-Gateway Address Prefix" = $subnetGatewayPrefix
- "DNS Server IP Address" = $dnsServerIP
+ "Virtual Network Address Space" = $config.dsg.network.vnet.cidr
+ "Subnet-Identity Address Prefix" = $config.dsg.network.subnets.identity.cidr
+ "Subnet-RDS Address Prefix" = $config.dsg.network.subnets.rds.cidr 
+ "Subnet-Data Address Prefix" = $config.dsg.network.subnets.data.cidr 
+ "Subnet-Gateway Address Prefix" = $config.dsg.network.subnets.gateway.cidr
+ "DNS Server IP Address" =  $config.dsg.dc.ip
 }
 
 Write-Output $params
 
-New-AzResourceGroup -Name $resourceGroupName -Location uksouth
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
+New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location uksouth
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
   -TemplateFile vnet-master-template.json @params -Verbose
