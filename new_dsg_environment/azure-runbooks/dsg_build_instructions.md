@@ -717,15 +717,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "DSG Template Testing"`
 
-- Run the `./Create_Data_Server.ps1` script, providing the following information when prompted.
-
-  - First two octets of the address range (e.g. "10.250")
-
-  - Third octet of the address range (e.g. "64" for "10.250.64")
-
-  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
-
-- The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
+- Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 - The deployment will take around 15 minutes to complete
 
