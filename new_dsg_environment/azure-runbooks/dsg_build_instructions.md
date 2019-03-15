@@ -224,17 +224,18 @@ Set "Allow virtual network access" to "Enabled" and leave the remaining checkbox
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
+- Once deployment is complet, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+
+
 ### Configure Active Directory
 
 - Connect to the new Domain controller via Remote Desktop client over the VPN connection at the IP address \<first-three-octets\>.250 (e.g. 10.250.x.250)
 
 - Login with the admin credentials from the secret named "admin-dsg\<X\>-\<environment\>-dc" in the Safe Haven Management KeyVault (created in the "Prepare secrets" section above
 
-- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
-
-- Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -386,6 +387,10 @@ The "Administrators Properties" box will now look like this
 
 - The deployment will take around 10 minutes to complete.
 
+- Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+
 ### Configuring Remote Desktop Services
 
 - Connect to the new Domain controller via Remote Desktop client over the VPN connection (??)
@@ -408,11 +413,7 @@ The "Administrators Properties" box will now look like this
 
 - Open a PowerShell command prompt with elevated privileges.
 
-- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
-
-- Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>)  (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the "RDS-DC.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -431,35 +432,29 @@ The "Administrators Properties" box will now look like this
   | |                 -mgmtdomain |     Enter the FQDN of the management domain i.e. turingsafehaven.ac.uk |
   -------------- ---------------- --------------------------------------------------------------------
 
-- [Repeat the above process on the "RDS Session Server 1" (RDSSH1) and "RDS Session Server 2" (RDSSH2) and run the "OS\_Prep.ps1" before proceeding to the next step]{.underline}
+- Repeat the above process on the "RDS Session Server 1" (RDSSH1) and "RDS Session Server 2" (RDSSH2) and run the "OS\_Prep.ps1" before proceeding to the next step
 
 - Connect to the "Remote Desktop Session Server 1" (RDSSH1) via Remote Desktop
 
-- Open the network location created earlier and copy the "Packages" folder to the root of C:\\
+- Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-- Navigate to C:\\Packages and install the applications (accept default configuration)
+- Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Putty
+- Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - WinSCP
+- Install the downloaded packages
 
-  - GoogleChrome
-
-  - Once installed logout of the server
+- Once installed logout of the server
 
 - Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
 
-- Open the network location created earlier and copy the "Packages" folder to the root of C:\\
+- Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-- Navigate to C:\\Packages and install the applications (accept default configuration)
+- Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Putty
+- Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - WinSCP
-
-  - GoogleChrome
-
-  - Apache\_OpenOffice
+- Install the downloaded packages
 
 - Once installed logout of the server
 
@@ -687,17 +682,42 @@ The "Administrators Properties" box will now look like this
 
 To make this Remote Desktop Service accessible from the internet a A record will need to be added to the external domain name servers. The A record must match the FQDN of the server i.e. RDS.DSGROUP10.CO.UK. The IP address for this record is the external IP address that is assigned to the RDS\_NIC1 resource within the Azure Portal.
 
-## Deploy Data Server
+### Install software on report writing VM (RDSSSH2)
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/05_create_dataserver/" directory
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/04_create_rds/" directory
 
 - Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Run the "./Create\_Data\_Server.ps1" script, providing the following information when prompted.
+- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+
+- Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
+
+- Download OpenOffice using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+
+- Download TexLive using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+
+- Download WinEdt using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+
+- Install the downloaded packages
+
+- Once installed logout of the server
+
+## Deploy Data Server
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/05_create_dataserver/" directory
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "DSG Template Testing"`
+
+- Run the `./Create_Data_Server.ps1` script, providing the following information when prompted.
 
   - First two octets of the address range (e.g. "10.250")
 
@@ -729,7 +749,7 @@ To make this Remote Desktop Service accessible from the internet a A record will
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
 
-- Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form [https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip\<sas-token>](https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip%25253csas-token>) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>`(append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
