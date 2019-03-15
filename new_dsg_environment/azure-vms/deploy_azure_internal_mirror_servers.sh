@@ -145,11 +145,11 @@ fi
 # Update external NSG to allow connections to this IP range
 echo -e "${BOLD}Updating NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} to allow connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
-if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncInbound 2> /dev/null)" = "" ]; then
+if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound 2> /dev/null)" = "" ]; then
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 200
 # ... otherwise we update them, extracting the existing IP ranges first
 else
-    EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsyncInbound --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
+    EXISTING_IP_RANGES=$(az network nsg rule show --resource-group RG_SH_PKG_MIRRORS --nsg-name NSG_SH_PKG_MIRRORS_EXTERNAL --name rsyncOutbound --query "[sourceAddressPrefix, sourceAddressPrefixes]" -o tsv | xargs)
     az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL
 fi
 
