@@ -316,7 +316,7 @@ The "Administrators Properties" box will now look like this
 
 - Within the "Group Policy Management" MMC right click on "Session Servers -- Remote Desktop Control" and click "Edit"
 
-- Expand "User Configuration" -\> "Administrative Templates" click "Start Menu & Taskbar"
+- Expand "User Configuration" -\> "Policies" -\> "Administrative Templates" click "Start Menu & Taskbar"
 
 - Double click "Start Layout" located in the right window
 
@@ -382,15 +382,7 @@ The "Administrators Properties" box will now look like this
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
 
-- Run the `./Create_RDS_Servers.ps1` script, providing the following information when prompted.
-
-  - The environment ('test' or 'prod')
-
-  - First two octets of the address range (e.g. "10.250")
-
-  - Third octet of the address range (e.g. "64" for "10.250.64")
-
-  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
+- Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
 - The deployment will take around 10 minutes to complete.
 
