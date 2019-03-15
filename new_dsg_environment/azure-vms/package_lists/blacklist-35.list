@@ -1,3 +1,4 @@
+_nb_ext_conf
 anaconda
 anaconda-client
 anaconda-project
@@ -51,6 +52,7 @@ pycuda
 pydocumentdb
 pydot-ng
 pygame
+python-geohash
 ruamel_yaml
 soundfile
 tables

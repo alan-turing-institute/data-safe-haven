@@ -1,3 +1,4 @@
+_ipyw_jlab_nb_ext_conf
 anaconda
 anaconda-client
 anaconda-navigator
@@ -30,3 +31,5 @@ libxcb
 libxcb
 libxml2
 libxslt
+backports.functools_lru_cache
+backports.shutil_get_terminal_size
