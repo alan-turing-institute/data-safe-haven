@@ -132,6 +132,13 @@ write_files:
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
       mv common-session /etc/pam.d/common-session
       cat /etc/pam.d/common-session
+  - path: "/etc/pip.conf"
+    content: |
+      # Add the PyPI mirror to our global settings
+      [global]
+      index = http://10.1.0.20:3128
+      index-url = http://10.1.0.20:3128/simple
+      trusted-host = 10.1.0.20
 
 runcmd:
   # ==========================================
