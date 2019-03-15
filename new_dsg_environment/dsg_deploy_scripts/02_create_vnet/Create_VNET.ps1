@@ -8,15 +8,7 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
-
-$virtualNetworkName = "DSG_DSGROUP" + $dsgId + "_VNET1"
-$addressSpacePrefix = $addressSpacePrefix12 + "." + $addressSpacePrefix3
-$virtualNetworkAddressSpace = $addressSpacePrefix + ".0/21"
-$subnetIdentityPrefix = $addressSpacePrefix + ".0/24"
-$subnetRdsPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 1) + ".0/24"
-$subnetDataPrefix = $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 2) + ".0/24"
-$subnetGatewayPrefix =  $addressSpacePrefix12 + "." + ([int]$addressSpacePrefix3 + 7) + ".0/27"
-$dnsServerIP =  $addressSpacePrefix + ".250"
+# Get P2S Root certificate for VNet Gateway
 $cert = (Get-AzKeyVaultSecret -Name "sh-management-p2s-root-cert" -VaultName "dsg-management-test").SecretValue
 
 $params = @{
