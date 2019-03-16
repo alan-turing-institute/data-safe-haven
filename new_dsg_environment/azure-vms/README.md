@@ -13,13 +13,12 @@ Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) t
 Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
 
 ```
-
-usage: ./build_azure_vm_image.sh [-h] [-i source_image] [-n machine_name] [-r resource_group] -s subscription
-  -h                 display help
-  -i source image    specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience'
-  -r resource_group  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')
-  -s subscription    specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')
-
+usage: ./build_azure_vm_image.sh [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]
+  -h                           display help
+  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')
+  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)
+  -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')
+  -z vm_size                   size of the VM to use for build (defaults to 'Standard_F2s_v2')
 ```
 
 ### Build examples
@@ -43,13 +42,13 @@ Once the build has finished, it can be registered in the image gallery using the
 This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
 
 ```
-usage: register_images_in_gallery.sh -s subscription [-h] [-i source_image] [-n machine_name] [-r resource_group] [-v version_suffix]
-  -h                  display help
-  -i source_image     specify an already existing image to add to the gallery.
-  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this.
-  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_DSG_IMAGEGALLERY')
-  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
-  -v version_suffix   this is needed if we build more than one image in a day. Defaults to '00' and should follow the pattern 01, 02, 03 etc.
+usage: ./register_images_in_gallery.sh [-h] -s subscription [-i source_image | -n machine_name] [-r resource_group] [-v version_suffix]
+  -h                                        display help
+  -s subscription [required]                specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')
+  -i source_image [this or '-n' required]   specify an already existing image to add to the gallery [either this or machine_name are required].
+  -n machine_name [this or '-i' required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required].
+  -r resource_group                         specify resource group - must match the one where the machine/image already exists (defaults to 'RG_SH_IMAGEGALLERY')
+  -v version_suffix                         this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc.
 ```
 
 ### Registration examples
@@ -70,14 +69,15 @@ By convention, CPU-based VM sizes are deployed in the range `160-179` and GPU-ba
 For testing, the IP address can be omitted and the machine will receive a dynamic IP that is not guaranteed to be persistent across reboots.
 
 ```
-usage: ./deploy_compute_vm_to_turing_dsg.sh -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]
-  -h                        display help
-  -d dsg_group_id           specify the DSG group to deploy to ('TEST' for test or 1-6 for production)
-  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
-  -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)
+usage: ./deploy_compute_vm_to_turing_dsg.sh [-h] -d dsg_group_id [-z vm_size] [-q fixed_ip]
+  -h                           display help
+  -d dsg_group_id [required]   specify the DSG group to deploy to ('TEST' for test or 1-6 for production)
+  -z vm_size                   specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -q fixed_ip                  last part of IP address (first three parts are fixed for each DSG group)
 ```
 
 Example usage
+To deploy the intial shared CPU-based compute VM for the `test` DSG.
 
 ```bash
 ./deploy_compute_vm_to_turing_dsg.sh -g test -q 160
@@ -89,30 +89,32 @@ During development, VMs can be deployed into a DSG environment using the `./depl
 However, it is strongly recommended that the core configuration parameters for each new DSG are added to the safer `./deploy_compute_vm_to_turing_dsg.sh` script as soon as the DSG environment is created, and that all compute VMs are deployed using this script instead (see section above).
 
 ```
-usage: ./deploy_azure_dsg_vm.sh -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]
-  -h                        display help
-  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
-  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)
-  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)
-  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')
-  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
-  -u user_name              specify a username for the admin account (defaults to 'atiadmin')
-  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')
-  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')
-  -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
-  -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')
-  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')
-  -m management_vault_name  specify name of KeyVault containing management secrets (required)
-  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)
-  -j ldap_user              specify the LDAP user (required)
-  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)
-  -d domain                 specify domain name for safe haven (required)
-  -a ad_dc_name             specify Active Directory Domain Controller name (required)
-  -b ldap_base_dn           specify LDAP base DN
-  -c ldap_bind_dn           specify LDAP bind DN
-  -f ldap_filter            specify LDAP filter
-  -q ip_address             specify a specific IP address to deploy the VM to (required)
-  -y yaml_cloud_init        specify a custom cloud-init YAML script
+usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]
+  -h                                    display help
+  -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')
+  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')
+  -m management_vault_name [required]   specify name of KeyVault containing management secrets
+  -l ldap_secret_name [required]        specify name of KeyVault secret containing LDAP secret
+  -j ldap_user [required]               specify the LDAP user
+  -p password_secret_name [required]    specify name of KeyVault secret containing VM admin password
+  -d domain [required]                  specify domain name for safe haven
+  -a ad_dc_name [required]              specify Active Directory Domain Controller name
+  -q ip_address [required]              specify a specific IP address to deploy the VM to
+  -e mgmnt_subnet_ip_range [required]   specify IP range for safe haven management subnet
+  -g nsg_name                           specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
+  -i source_image                       specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)
+  -x source_image_version               specify the version of the source image to use (defaults to prompting to select from available versions)
+  -n machine_name                       specify name of created VM, which must be unique in this resource group (defaults to 'DSG201903161520')
+  -r resource_group                     specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
+  -u user_name                          specify a username for the admin account (defaults to 'atiadmin')
+  -v vnet_name                          specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
+  -w subnet_name                        specify a subnet to connect to (defaults to 'Subnet-Data')
+  -z vm_size                            specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -b ldap_base_dn                       specify LDAP base DN
+  -c ldap_bind_dn                       specify LDAP bind DN
+  -f ldap_filter                        specify LDAP filter
+  -y yaml_cloud_init                    specify a custom cloud-init YAML script
+  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '')
 ```
 
 Example usage
@@ -122,3 +124,49 @@ Example usage
 ```
 
 For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
+
+## Deploying the mirror servers
+We use a separate resource group and associated VNet to contain all of the external and internal package repository mirrors.
+This can be created and deployed using `deploy_azure_external_mirror_servers.sh` and `deploy_azure_internal_mirror_servers.sh`.
+
+### Deploy external mirrors
+```
+usage: ./deploy_azure_external_mirror_servers.sh [-h] -s subscription [-i vnet_ip] [-k keyvault_name] [-r resource_group]
+  -h                           display help
+  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')
+  -i vnet_ip                   specify initial IP triplet for the mirror VNet (defaults to '10.1.0')
+  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')
+  -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_PKG_MIRRORS')
+```
+
+Once the script is run, it will create external mirrors of the PyPI and CRAN package repositories.
+A cronjob (3am on the 15th of each month) inside each of the external mirrors will update them from the remote repository.
+A second cronjob (3am on the 1st of each month) inside each of the external mirrors will push their data to any internal mirrors that have been configured.
+This ensures that the internal mirror is always between two and six weeks behind the current version of these mirrors at any time.
+The VNet created when these mirrors are set up must be paired to each of the DSG environments for them to be able to use it.
+
+Example usage:
+
+```bash
+./deploy_azure_external_mirror_servers.sh -s "Safe Haven Management Testing"
+```
+
+
+### Deploy an internal mirror set
+```
+usage: ./deploy_azure_internal_mirror_servers.sh [-h] -s subscription [-k keyvault_name] [-r resource_group] [-x name_suffix]
+  -h                           display help
+  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')
+  -k keyvault_name             specify name for keyvault that already contains admin passwords for the mirror servers (defaults to 'kv-sh-pkg-mirrors')
+  -r resource_group            specify resource group that contains the external mirror servers (defaults to 'RG_SH_PKG_MIRRORS')
+  -x name_suffix               specify (optional) suffix that will be used to distinguish these internal mirror servers from any others (defaults to '')
+```
+
+This script deploys a set of internal mirrors which will use an appropriate IP range inside the VNet where the external mirrors were deployed.
+The internal mirrors run webservers which allow them to produce the expected behaviour of a PyPI or CRAN server.
+
+Example usage:
+
+```bash
+./deploy_azure_internal_mirror_servers.sh -s "Safe Haven Management Testing" -x DSG1
+```

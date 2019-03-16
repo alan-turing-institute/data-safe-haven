@@ -6,23 +6,28 @@ RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
 
+# Options which are configurable at the command line
+SUBSCRIPTION="" # must be provided
 SOURCEIMAGE="Ubuntu"
+VERSION=""
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+USERNAME="atiadmin"
+
+# Other constants
 IMAGES_GALLERY="SIG_SH_COMPUTE"
 VM_SIZE="Standard_DS2_v2"
-
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 NSGNAME="NSG_IMAGE_BUILD"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 -s subscription [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]"
-    echo "  -s subscription           specify subscription to use"
-    echo "  -h                        display help"
-    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
-    echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
-    echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-x source_image_version] [-r resource_group] [-u user_name]"
+    echo "  -s subscription [required]   specify subscription to use"
+    echo "  -h                           display help"
+    echo "  -i source_image              specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
+    echo "  -x source_image_version      specify the version of the source image to use (defaults to prompting to select from available versions)"
+    echo "  -r resource_group            specify resource group for deploying the VM image - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -u user_name                 specify a username for the admin account (defaults to '${USERNAME}')"
     exit 1
 }
 
@@ -197,6 +202,6 @@ az vm create \
   --os-disk-size-gb $DISKSIZEGB \
   --nsg $NSGNAME \
   --size $VM_SIZE \
-  --admin-username atiadmin \
+  --admin-username $USERNAME \
   --generate-ssh-keys
 

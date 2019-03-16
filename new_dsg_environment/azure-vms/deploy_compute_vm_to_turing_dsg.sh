@@ -5,13 +5,19 @@ DSG_ID=""
 FIXED_IP=""
 VM_SIZE="Standard_DS2_v2"
 
+# Other constants
+USERNAME="atiadmin"
+RESOURCEGROUP="RG_DSG_COMPUTE"
+DSG_SUBNET="Subnet-Data"
+DSG_NSG="NSG_Linux_Servers"
+
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 -g dsg_group_id [-h] [-i source_image] [-x source_image_version] [-z vm_size]"
-    echo "  -h                        display help"
-    echo "  -d dsg_group_id           specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
-    echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
-    echo "  -q fixed_ip               Last part of IP address (first three parts are fixed for each DSG group)"
+    echo "usage: $0 [-h] -d dsg_group_id [-z vm_size] [-q fixed_ip]"
+    echo "  -h                           display help"
+    echo "  -d dsg_group_id [required]   specify the DSG group to deploy to ('TEST' for test or 1-6 for production)"
+    echo "  -z vm_size                   specify a VM size to use (defaults to '${VM_SIZE}')"
+    echo "  -q fixed_ip                  last part of IP address (first three parts are fixed for each DSG group)"
     exit 1
 }
 
@@ -41,6 +47,7 @@ if [ "$DSG_ID" = "" ]; then
     echo -e "${RED}DSG Group ID is a required argument!${END}"
     print_usage_and_exit
 fi
+
 # Check DSG group ID is valid
 DSG_ID_UPPER=$(echo "$DSG_ID" | tr '[:lower:]' '[:upper:]')
 DSG_ID_LOWER=$(echo "$DSG_ID" | tr '[:upper:]' '[:lower:]')
@@ -49,14 +56,6 @@ if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "
     echo -e "${RED}DSG Group ID is not valid!${END}"
     print_usage_and_exit
 fi
-
-# Deployed VM parameters
-USERNAME="atiadmin"
-
-# Deployment environment
-RESOURCEGROUP="RG_DSG_COMPUTE"
-DSG_SUBNET="Subnet-Data"
-DSG_NSG="NSG_Linux_Servers"
 
 # Secrets
 MANAGEMENT_VAULT_NAME="dsg-management-test"
@@ -109,6 +108,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP="10.1.0.20"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
@@ -117,6 +117,7 @@ if [ "$DSG_ID_UPPER" = "1" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
@@ -125,6 +126,7 @@ if [ "$DSG_ID_UPPER" = "2" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
@@ -132,6 +134,7 @@ if [ "$DSG_ID_UPPER" = "3" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
@@ -139,6 +142,7 @@ if [ "$DSG_ID_UPPER" = "4" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
@@ -153,6 +157,7 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
+    PYPI_MIRROR_IP=""
 fi
 
 
@@ -160,11 +165,11 @@ if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE"
+        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
 else
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE"
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
 fi
