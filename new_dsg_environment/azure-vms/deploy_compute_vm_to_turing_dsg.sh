@@ -157,7 +157,7 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
-    PYPI_MIRROR_IP=""
+    PYPI_MIRROR_IP="10.1.0.20"
 fi
 
 
