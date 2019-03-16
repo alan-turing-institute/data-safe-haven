@@ -18,15 +18,15 @@ $rdsGatewayVmSize = "Standard_DS2_v2"
 $rdsHostVmSize = "Standard_DS2_v2"
 
 $params = @{
- "RDS Gateway Name" = $config.rds.gateway.vmName
+ "RDS Gateway Name" = $config.dsg.rds.gateway.vmName
  "RDS Gateway VM Size" = $rdsGatewayVmSize
- "RDS Gateway IP Address" = $config.rds.gateway.ip
- "RDS Session Host 1 Name" = $config.rds.sessionHost1.vmName
+ "RDS Gateway IP Address" = $config.dsg.rds.gateway.ip
+ "RDS Session Host 1 Name" = $config.dsg.rds.sessionHost1.vmName
  "RDS Session Host 1 VM Size" = $rdsHostVmSize
- "RDS Session Host 1 IP Address" = $config.rds.sessionHost1.ip 
- "RDS Session Host 2 Name" = $config.rds.sessionHost2.vmName
+ "RDS Session Host 1 IP Address" = $config.dsg.rds.sessionHost1.ip 
+ "RDS Session Host 2 Name" = $config.dsg.rds.sessionHost2.vmName
  "RDS Session Host 2 VM Size" = $rdsHostVmSize
- "RDS Session Host 2 IP Address" = $config.rds.sessionHost2.ip
+ "RDS Session Host 2 IP Address" = $config.dsg.rds.sessionHost2.ip
  "Administrator User" = $adminUser
  "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
  "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -39,6 +39,6 @@ Write-Output $params
 
 $templatePath = Join-Path $PSScriptRoot "rds-master-template.json"
 
-New-AzResourceGroup -Name $config.rds.rg  -Location uksouth
-New-AzResourceGroupDeployment -ResourceGroupName $config.rds.rg `
+New-AzResourceGroup -Name $config.dsg.rds.rg  -Location uksouth
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.rds.rg `
   -TemplateFile $templatePath  @params -Verbose

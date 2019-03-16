@@ -16,10 +16,10 @@ $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -nam
 $vmSize = "Standard_DS2_v2"
 
 $params = @{
-"Data Server Name" = $config.dataserver.vmName
+"Data Server Name" = $config.dsg.dataserver.vmName
 "Domain Name" = $config.dsg.domain.fqdn
 "VM Size" = $vmSize
-"IP Address" = $config.dataserver.ip
+"IP Address" = $config.dsg.dataserver.ip
 "Administrator User" = $adminUser
 "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
 "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -31,6 +31,6 @@ Write-Output $params
 
 $templatePath = Join-Path $PSScriptRoot "dataserver-master-template.json"
 
-New-AzResourceGroup -Name $config.dataserver.rg -Location uksouth
-New-AzResourceGroupDeployment -ResourceGroupName  $config.dataserver.rg `
+New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location uksouth
+New-AzResourceGroupDeployment -ResourceGroupName  $config.dsg.dataserver.rg `
   -TemplateFile $templatePath @params -Verbose

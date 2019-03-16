@@ -1,170 +1,170 @@
 {
   "dsg": {
+    "dataserver": {
+      "vmName": "DATASERVER",
+      "rg": "RG_DSG_DATA",
+      "ip": "10.250.66.250",
+      "hostname": "DATASERVER"
+    },
     "location": "uksouth",
-    "network": {
-      "vnet": {
-        "cidr": "10.250.64.0/21",
-        "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUP9_VNET1"
+    "id": "9",
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "ip": "10.250.66.151"
       },
-      "subnets": {
-        "identity": {
-          "cidr": "10.250.64.0/24",
-          "name": "Subnet-Identity",
-          "prefix": "10.250.64"
-        },
-        "data": {
-          "cidr": "10.250.66.0/24",
-          "name": "Subnet-Data",
-          "prefix": "10.250.66"
-        },
-        "gateway": {
-          "cidr": "10.250.71.0/27",
-          "prefix": "10.250.71"
-        },
-        "rds": {
-          "cidr": "10.250.65.0/24",
-          "name": "Subnet-RDS",
-          "prefix": "10.250.65"
-        }
+      "rg": "RG_DSG_LINUX",
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "ip": "10.250.66.152"
       }
     },
-    "domain": {
-      "fqdn": "dsgroup9.co.uk",
-      "netbiosName": "DSGROUP9",
-      "dn": "DC=dsgroup9,DC=co,DC=uk",
-      "securityGroups": {
-        "researchUsers": {
-          "name": "SG DSGROUP9 Research Users",
-          "description": "SG DSGROUP9 Research Users"
-        }
-      }
-    },
-    "subscriptionName": "DSG Template Testing",
     "users": {
       "ldap": {
         "gitlab": {
-          "samAccountName": "dsgroup9-gitlab-ldap",
           "name": "DSGROUP9 Gitlab LDAP",
+          "samAccountName": "dsgroup9-gitlab-ldap",
           "passwordSecretName": "dsgroup9-gitlab-ldap-password"
         },
-        "hackmd": {
-          "samAccountName": "dsgroup9-hackmd-ldap",
-          "name": "DSGROUP9 HackMD LDAP",
-          "passwordSecretName": "dsgroup9-hackmd-ldap-password"
-        },
         "dsvm": {
-          "samAccountName": "dsgroup9-dsvm-ldap",
           "name": "DSGROUP9 DSVM LDAP",
+          "samAccountName": "dsgroup9-dsvm-ldap",
           "passwordSecretName": "dsgroup9-dsvm-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP9 HackMD LDAP",
+          "samAccountName": "dsgroup9-hackmd-ldap",
+          "passwordSecretName": "dsgroup9-hackmd-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "samAccountName": "dsgroup9-test-researcher",
           "name": "dsgroup9 Test Researcher",
+          "samAccountName": "dsgroup9-test-researcher",
           "passwordSecretName": "dsgroup9-test-researcher-password"
         }
       }
     },
+    "subscriptionName": "DSG Template Testing",
+    "network": {
+      "vnet": {
+        "name": "DSG_DSGROUP9_VNET1",
+        "rg": "RG_DSG_VNET",
+        "cidr": "10.250.64.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "cidr": "10.250.64.0/24",
+          "prefix": "10.250.64"
+        },
+        "gateway": {
+          "prefix": "10.250.71",
+          "cidr": "10.250.71.0/27"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "cidr": "10.250.65.0/24",
+          "prefix": "10.250.65"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "cidr": "10.250.66.0/24",
+          "prefix": "10.250.66"
+        }
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-test"
+    },
+    "domain": {
+      "securityGroups": {
+        "researchUsers": {
+          "description": "SG DSGROUP9 Research Users",
+          "name": "SG DSGROUP9 Research Users"
+        }
+      },
+      "fqdn": "dsgroup9.co.uk",
+      "dn": "DC=dsgroup9,DC=co,DC=uk",
+      "netbiosName": "DSGROUP9"
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "ip": "10.250.65.250"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "ip": "10.250.65.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "ip": "10.250.65.248"
+      },
+      "rg": "RG_DSG_RDS"
+    },
     "dc": {
-      "hostname": "DSG9DC",
-      "rg": "RG_DSG_DC",
       "vmName": "DSG9DC",
+      "rg": "RG_DSG_DC",
       "ip": "10.250.64.250",
+      "hostname": "DSG9DC",
       "admin": {
         "passwordSecretName": "dsg9-dc-admin-password",
         "username": "atiadmin"
       }
-    },
-    "id": "9",
-    "location": "uksouth",
-    "keyVault": {
-      "name": "dsg-management-test"
     }
   },
   "shm": {
+    "location": "uksouth",
+    "id": "test",
+    "keyVault": {
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      },
+      "name": "dsg-management-test"
+    },
+    "subscriptionName": "Safe Haven Management Testing",
     "network": {
       "vnet": {
         "cidr": "10.220.1.0/21"
       },
       "subnets": {
         "identity": {
-          "cidr": "10.220.1.0/24",
-          "prefix": "10.220.1"
+          "prefix": "10.220.1",
+          "cidr": "10.220.1.0/24"
         }
       }
     },
-    "domain": {
-      "fqdn": "dsgroupdev.co.uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
-      "netbiosName": "DSGROUPDEV",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
-      "securityGroups": {
-        "dsvmLdapUsers": {
-          "name": "SG Data Science LDAP Users",
-          "description": "SG Data Science LDAP Users"
-        }
-      },
-      "dn": "DC=dsgroupdev,DC=co,DC=uk"
-    },
-    "subscriptionName": "Safe Haven Management Testing",
-    "keyVault": {
-      "name": "dsg-management-test",
-      "secretNames": {
-        "p2sRootCert": "sh-management-p2s-root-cert"
-      }
-    },
-    "id": "test",
     "storage": {
       "artifacts": {
         "accountName": "dsgxartifacts",
         "rg": "RG_DSG_ARTIFACTS"
       }
     },
+    "domain": {
+      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "description": "SG Data Science LDAP Users",
+          "name": "SG Data Science LDAP Users"
+        }
+      },
+      "dn": "DC=dsgroupdev,DC=co,DC=uk",
+      "netbiosName": "DSGROUPDEV",
+      "fqdn": "dsgroupdev.co.uk"
+    },
     "dc": {
-      "hostname": "MGMTDEVDC",
-      "rg": "RG_DSG_DC",
       "vmName": "DC",
-      "ip": "10.220.1.250"
-    }
-  },
-  "dataserver": {
-    "hostname": "DATASERVER",
-    "rg": "RG_DSG_DATA",
-    "vmName": "DATASERVER",
-    "ip": "10.250.66.250"
-  },
-  "linux": {
-    "gitlab": {
-      "hostname": "GITLAB",
-      "vmName": "GITLAB",
-      "ip": "10.250.66.151"
-    },
-    "hackmd": {
-      "hostname": "HACKMD",
-      "vmName": "HACKMD",
-      "ip": "10.250.66.152"
-    },
-    "rg": "RG_DSG_LINUX"
-  },
-  "rds": {
-    "gateway": {
-      "hostname": "RDS",
-      "vmName": "RDS",
-      "ip": "10.250.65.250"
-    },
-    "sessionHost2": {
-      "hostname": "RDSSH2",
-      "vmName": "RDSSH2",
-      "ip": "10.250.65.248"
-    },
-    "rg": "RG_DSG_RDS",
-    "sessionHost1": {
-      "hostname": "RDSSH1",
-      "vmName": "RDSSH1",
-      "ip": "10.250.65.249"
+      "rg": "RG_DSG_DC",
+      "ip": "10.220.1.250",
+      "hostname": "MGMTDEVDC"
     }
   }
 }

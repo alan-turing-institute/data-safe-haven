@@ -174,43 +174,43 @@ function Add-DsgConfig {
     $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
 
     # --- RDS Servers ---
-    $config.rds = @{
+    $config.dsg.rds = @{
         gateway = @{}
         sessionHost1 = @{}
         sessionHost2 = @{}
     }
-    $config.rds.rg = "RG_DSG_RDS"
-    $config.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
-    $config.rds.gateway.hostname = $config.rds.gateway.vmName
-    $config.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
-    $config.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
-    $config.rds.sessionHost1.hostname = $config.rds.sessionHost1.vmName
-    $config.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.rds.sessionHost2.vmName = "RDSSH2" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH2"
-    $config.rds.sessionHost2.hostname = $config.rds.sessionHost2.vmName
-    $config.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
+    $config.dsg.rds.rg = "RG_DSG_RDS"
+    $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
+    $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
+    $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
+    $config.dsg.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
+    $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
+    $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
+    $config.dsg.rds.sessionHost2.vmName = "RDSSH2" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH2"
+    $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
+    $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
 
     # --- Secure servers ---
 
     # Data server
-    $config.dataserver = @{}
-    $config.dataserver.rg = "RG_DSG_DATA"
-    $config.dataserver.vmName = "DATASERVER" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DATASERVER"
-    $config.dataserver.hostname = $config.dataserver.vmName
-    $config.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
+    $config.dsg.dataserver = @{}
+    $config.dsg.dataserver.rg = "RG_DSG_DATA"
+    $config.dsg.dataserver.vmName = "DATASERVER" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DATASERVER"
+    $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
+    $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
-    $config.linux = @{
+    $config.dsg.linux = @{
         gitlab = @{}
         hackmd = @{}
     }
-    $config.linux.rg = "RG_DSG_LINUX"
-    $config.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
-    $config.linux.gitlab.hostname = $config.linux.gitlab.vmName
-    $config.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
-    $config.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
-    $config.linux.hackmd.hostname = $config.linux.hackmd.vmName
-    $config.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
+    $config.dsg.linux.rg = "RG_DSG_LINUX"
+    $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
+    $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
+    $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
+    $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
+    $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
+    $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
     # HackMD server
 
