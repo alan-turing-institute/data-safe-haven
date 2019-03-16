@@ -1,5 +1,6 @@
 {
   "dsg": {
+    "location": "uksouth",
     "network": {
       "vnet": {
         "cidr": "10.250.64.0/21",
@@ -77,6 +78,7 @@
       }
     },
     "id": "9",
+    "location": "uksouth",
     "keyVault": {
       "name": "dsg-management-test"
     }

@@ -35,6 +35,7 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.shm.subscriptionName = $shmConfigBase.subscriptionName
     $config.shm.id = $shmConfigBase.shId
+    $config.shm.location = $shmConfigBase.location
 
     # --- Domain config ---
     $config.shm.domain = @{}
@@ -94,6 +95,7 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
+    $config.dsg.location = $config.shm.location 
 
     # -- Domain config ---
     $config.dsg.domain = @{}
