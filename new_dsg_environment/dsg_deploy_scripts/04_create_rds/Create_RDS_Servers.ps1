@@ -39,6 +39,6 @@ Write-Output $params
 
 $templatePath = Join-Path $PSScriptRoot "rds-master-template.json"
 
-New-AzResourceGroup -Name $config.dsg.rds.rg  -Location uksouth
+New-AzResourceGroup -Name $config.dsg.rds.rg  -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.rds.rg `
   -TemplateFile $templatePath  @params -Verbose

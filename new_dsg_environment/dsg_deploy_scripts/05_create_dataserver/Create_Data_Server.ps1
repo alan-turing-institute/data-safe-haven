@@ -31,6 +31,6 @@ Write-Output $params
 
 $templatePath = Join-Path $PSScriptRoot "dataserver-master-template.json"
 
-New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location uksouth
+New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName  $config.dsg.dataserver.rg `
   -TemplateFile $templatePath @params -Verbose

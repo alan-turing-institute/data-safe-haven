@@ -23,6 +23,6 @@ $params = @{
 }
 
 Write-Output $params
-New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location uksouth
+New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
   -TemplateFile vnet-master-template.json @params -Verbose

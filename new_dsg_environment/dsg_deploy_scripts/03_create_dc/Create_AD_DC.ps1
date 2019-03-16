@@ -56,6 +56,6 @@ $templatePath = Join-Path $PSScriptRoot "dc-master-template.json"
 
 Write-Output ($params | ConvertTo-JSON -depth 10)
 
-New-AzResourceGroup -Name $config.dsg.dc.rg -Location uksouth
+New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg `
   -TemplateFile $templatePath @params -Verbose
