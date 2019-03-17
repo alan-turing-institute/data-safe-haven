@@ -22,7 +22,13 @@
         "Administrator Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter name for VM Administrator Password"
+                "description": "Enter VM Administrator Password"
+            }    
+        },
+        "SafeMode Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter SafeMode Password"
             }    
         },
         "Virtual Network Name": {
@@ -200,8 +206,9 @@
                               "adminCreds": {
                                     "UserName": "[parameters('Administrator User')]",
                                     "Password": "[parameters('Administrator Password')]"
-                                    }
-                                },
+                                    },
+                              "SafeModePW": "[parameters('SafeMode Password')]"
+                              },
                             "configurationUrlSasToken": "[parameters('Artifacts Location SAS Token')]"
                         }
                     }
