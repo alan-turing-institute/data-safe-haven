@@ -130,27 +130,27 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Add new DSG DNS record to the AD by running `Add_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
 
-## Deploy Virtual Network
+## 1. Deploy Virtual Network
 
 ### Create the virtual network
 
-- Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/02_create_vnet/" directory
+- Change to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Create_VNET.ps1` script, providing the DSG ID when prompted.
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
-### Create Peer Connection
+### Create Peering Connection with the management virtual network
 
 - Once the virtual network is created, a peer connection is required between the management and DSG virtual networks
 
-- From the Azure portal go to the management subscription and locate the Management virtual network under the "RG\_DSG\_VNET" resource group (the VNET is named "DSG\_DSGROUPDEV\_VNET1" for the test environment management subscription) and open the VNET resource.
+- From the Azure portal go to the **SHM subscription** and open the management virtual network at `Resource Groups -> RG_SHM_VNET -> DSG_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
 
 - Select "**Peerings"** from the left-hand navigation
 
@@ -158,43 +158,45 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Configure the Peering as follows:
 
-  - Name: "PEER\_DSG\_DSGROUPX\_VNET1" (replacing the X for the DSG number)
+  - Name: `PEER_DSG_DSGROUP<dsg-id>_VNET1`
 
   - Subscription: Select the new DSG subscription
 
-  - Virtual Network: Select the newly created virtual network
+  - Virtual Network: Select the newly created virtual network (`DSG_DSGROUP<dsg-id>_VNET1`)
 
-- Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
+  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1c7f094.PNG](images/media/image2.png)
+    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1c7f094.PNG](images/media/image2.png)
 
-- Change to the new DSG subscription, open the virtual network under the "RG\_DSG\_VNET" resource group and select "**Peerings**" from the left-hand navigation
+- Change to the new **DSG subscription**, open the virtual network at `Resource groups -> RG_DSG_VNET -> DSG_DSGROUP<dsg-id>_VNET1`
+
+- Select "**Peerings"** from the left-hand navigation
 
 - Add a new "Peering"
 
 - Configure the Peering as follows:
 
-- Name: "PEER\_SHM\_VNET1" (replace "SHM" with "DSG\_DSGROUPDEV" for the test environment)
+  - Name: `PEER_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
 
-- Subscription: Select the Safe Haven management subscription
+  - Subscription: Select the Safe Haven management subscription
 
-Virtual Network: Select correct virtual network
+  - Virtual Network: Select the SHM virtual network (`DSG_<shm-slug>_VNET1`)
 
-Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
+  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1d02087.PNG](images/media/image3.png)
+    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1d02087.PNG](images/media/image3.png)
 
 - Once provisioned the networks will be connected.
 
-- Navigate to: Home \> Subscriptions \> \<dsg-subscription\> \> RGDSG\_VNET \> DSG\_VNET1\_GW - Point to Site Configuration
+- In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`
+  
+  - Select "**Point to Site Configuration**" fromt he left-hand navigation
 
-- **NOTE: This is NOT the Safehaven management subscription**
+  - Download the VPN client from the "Point to Site configuration" menu
 
-- Download the VPN client from the "Point to Site configuration" menu
+    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1dfd680.PNG](images/media/image4.png)
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1dfd680.PNG](images/media/image4.png)
-
-- Install the VPN on your PC and test. See the "Configure a VPN connection" section above for instructions. You can re-use the same client certificate as used for the management segment gateway.
+  - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
 ## Deploy DSG Domain Controller
 
@@ -259,36 +261,36 @@ indicates the wrong application is running.
   
 
 - Setup the accounts on the Active Directory by running the following command with these parameters.
-
  
-|  **Command**            |          **Parameters**  |  **Description** |
-| -- | -- | -- |
-| `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
+ 
+  |  **Command**            |          **Parameters**  |  **Description** |
+  | -- | -- | -- |
+  | `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
 
 
 - Configure the DNS on the server by running the following command with these parameters
 
-| **Command** |     **Parameters** |   **Description** |
-| -- | -- | -- |
+  | **Command** |     **Parameters** |   **Description** |
+  | -- | -- | -- |
 |  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
 | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space i.e. 10.250.1 |
 | |                      -SubnetData        | First 3 octets of the Identity subnet IP address space i.e. 10.250.2 |
-| |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
-| |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.220.0.250 (production) or 10.220.1.250 (test)|
+  | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
+  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.220.0.250 (production) or 10.220.1.250 (test)|
 
 
 Configure Active Directory group polices, to install the polices run the following command with these parameters
 
-|  **Command** |        **Parameters**|   **Description** |
-| -- | -- | -- |
-|  `ConfigureGPOs.ps1` |  -backuppath |     `C:\Scripts\GPOs` -- this is the default path, if you copy the scripts to another folder you'll need to change this. \
-| |                       -domain |          DSG NetBIOS name i.e. DSGROUP10 |
+  |  **Command** |        **Parameters**|   **Description** |
+  | -- | -- | -- |
+  |  `ConfigureGPOs.ps1` |  -backuppath |     `C:\Scripts\GPOs` -- this is the default path, if you copy the scripts to another folder you'll need to change this. \
+  | |                       -domain |          DSG NetBIOS name i.e. DSGROUP10 |
 
 - Open the "Group Policy Management" MMC
 
 - Expand the tree until you open the "Group Policy Objects" branch
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML223b755.PNG](images/media/image6.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML223b755.PNG](images/media/image6.png)
 
 - Right click on "All Servers - Local Administrators" and select "Edit"
 
@@ -304,9 +306,9 @@ Configure Active Directory group polices, to install the polices run the followi
 
 - Enter:
 
-  - SG DSGROUPx Server Administrators
+    - SG DSGROUPx Server Administrators
 
-  - Domain Admins
+    - Domain Admins
 
 Click the "Check Names" button to resolve the names
 
@@ -328,7 +330,7 @@ The "Administrators Properties" box will now look like this
 
 - Update the path shown to reflect the correct FQDN
 
- ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML233aaa5.PNG](images/media/image10.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML233aaa5.PNG](images/media/image10.png)
 
 - Click "OK" when done and close all Group Policy windows.
 
@@ -350,27 +352,27 @@ The "Administrators Properties" box will now look like this
 
 - Click on "Trusts" tab -\> click "New Trust"
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML5eb57b.PNG](images/media/image11.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML5eb57b.PNG](images/media/image11.png)
 
 - Click "Next"
 
-| | |
-| -- | -- |
-| Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk | 
-| Trust Type:                                           | External Trust                                                                                                          |
-| Direction of trust:                                   | Two-way                                                                                                                 |
-| Sides of trust:                                       | Both this domain and the specified domain                                                                               |
+  | | |
+  | -- | -- |
+  | Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk | 
+  | Trust Type:                                           | External Trust |
+  | Direction of trust:                                   | Two-way |
+  | Sides of trust:                                       | Both this domain and the specified domain |
 | User name and password:                               | Domain admin user on the DSG domain.                                                         Format: \<DOMAIN\\Username\>. User is "atiadmin ". See "dsg9-dc-admin-password" secret in management KeyVault for password. |
-| Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication                                                                                              |
-| Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication                                                                                              |
+  | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
+  | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
 
 - Click "Next" -\> "Next"
 
- - Select "Yes, confirm the outgoing trust" -\> "Next"
+  - Select "Yes, confirm the outgoing trust" -\> "Next"
 
-- Select "Yes, confirm the incoming trust" -\> "Next"
+  - Select "Yes, confirm the incoming trust" -\> "Next"
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML71798f.PNG](images/media/image12.png)
+    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML71798f.PNG](images/media/image12.png)
 
 - Click "Finish" upon successful trust creation.
 
@@ -570,11 +572,11 @@ indicates the wrong application is running.
 
 -   \[Install Certbot\](https://certbot.eff.org/) on your computer if required
 
--   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
+  -   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
 
 -   `\certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <dsg-domain> --csr <path-to-csr>`
 
--   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties
+  -   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties
 
 -   \*\*Name:\*\* First section of the name provided by Certbot (e.g. \`\_acme-challenge\`)
 
@@ -584,11 +586,11 @@ indicates the wrong application is running.
 
 -   \*\*Value:\*\* The value provided by Certbot (a long random looking string)
 
--   Wait for Let\'s Encrypt to verify the challenge
+    -   Wait for Let\'s Encrypt to verify the challenge
 
--   Copy `~/tsh-certbot/config/live/<dsg-fq-domain\>/fullchain.pem` from your computer to the RDS server
+    -   Copy `~/tsh-certbot/config/live/<dsg-fq-domain\>/fullchain.pem` from your computer to the RDS server
 
--   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
+    -   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
 
  -  Once the certificate has been issued by the CA this needs to be installed onto the server.
 
@@ -596,9 +598,9 @@ indicates the wrong application is running.
 
    -  Browse to the certificate file provided by the CA.
 
-   - The friendly name should match the common name you provided in the certificate request.
+- The friendly name should match the common name you provided in the certificate request.
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1f92aff.PNG](images/media/image18.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1f92aff.PNG](images/media/image18.png)
 
 - Click "OK" to complete the process
 
