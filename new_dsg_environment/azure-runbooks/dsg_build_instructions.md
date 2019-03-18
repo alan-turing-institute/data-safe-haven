@@ -812,88 +812,75 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ### Configure HackMD Server
 
-- Connect to the HackMD server with Putty (or any SSH client) Login with the admin credentials you entered with you provisioned the VM previously
+- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
+
+- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
 - Update the local host file
 
+  | **Command**          | **Actions**                                                      |
+  | -- | -- |
+  | `sudo nano /etc/hosts` | Add the line: `<DSG-Subnet-Data-Prefix>.152 hackmd hackmd.dsgroup<dsg-id>.co.uk` |
 
-| **Command**          | **Actions**                                                      |
-| -- | -- |
-| `sudo nano /etc/hosts` | Add the line:                                                     \<Subnet-Data\>.152 hackmd hackmd.dsgroupX.co.uk                 
-|                      |                                                                  |
-|                      | \<Subnet-Data\> = IP Address of the Subnet-Data as per checklist (Change X for correct group number)
+- Update the time-zone
 
--Update the time-zone
-
-
-| **Command**                  | **Actions**         |
-| -- | -- |
-| sudo dpkg-reconfigure tzdata | Select -\> "Europe" |                              |                     |
-|                              | Select -\> "London" |
+  | **Command**                  | **Actions**         |
+  | -- | -- |
+  | `sudo dpkg-reconfigure tzdata` | Select `Europe -> London` |
 
 #### Install Docker
+Install Docker using the following commands
 
-  **Command**
 ```console
-> sudo apt-get update
-> sudo apt upgrade
-> sudo apt install apt-transport-https ca-certificates curl software-properties-common
-> curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-> sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
-> sudo apt update
-> sudo apt install docker-ce
-> sudo docker run hello-world
-> sudo apt install docker-compose
-> sudo git clone https://github.com/hackmdio/docker-hackmd.git
+sudo apt-get update
+sudo apt upgrade
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
+sudo apt update
+sudo apt install docker-ce
+sudo docker run hello-world
+sudo apt install docker-compose
+sudo git clone https://github.com/hackmdio/docker-hackmd.git
 ```
 
 ##### Configure HackMD
 
-- Change to ./docker-hackmd
+- Change to `./docker-hackmd`
 
-- Run command
+- Run `sudo nano docker-compose.yml` and make the following edits:
 
-  **Command**
-  sudo nano docker-compose.yml
+  - Change Version to 2
 
-Change Version to 2
+    ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML2235a31.PNG](images/media/image29.png)
 
-> ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML2235a31.PNG](images/media/image29.png)
+  - Add the following lines under the `app: -> environment:` section 
 
-Add the following lines under "environment:"
+    | **Property**                    | **Value**                                                                         |
+    |-- | -- |
+    | `- HMD_LDAP_PROVIDERNAME=`    | NetBIOS name of management domain i.e. `turingsafehaven` for production and `dsgroupdev` for test |
+    | `- HMD_LDAP_URL=`             | LDAP connection URL i.e. `ldap://shmdc1.turingsafehaven.ac.uk` for production and `ldap://mgmtdevdc.dsgroupdev.co.uk` |
+    | `- HMD_LDAP_BINDDN=`          | Bind Path for LDAP user i.e.                                                      |
+    |                                | "`CN=DSGROUP<dsg-id> HackMD LDAP,OU=Safe Haven Service Accounts,<shm-domain-dn>`" |
+    |                                | where `<shm-domain-dn>` is `DC=turingsafehaven,DC=ac,DC=uk` for production and `DC=dsgroupdev,DC=co,DC=uk` for test |                                                                                |
+    | `- HMD_LDAP_BINDCREDENTIALS=`  | Password for the HackMD LDAP account (from the SHM KeyVault) |
+    | `- HMD_LDAP_SEARCHBASE=`      | OU Path to the Research Users OU i.e. |         
+    |                                | "`OU=Safe Haven Research Users,<shm-domain-dn>`", where `<shm-domain-dn>` is as above |
+    | `- HMD_LDAP_SEARCHFILTER=`    | `(&(objectClass=user)(memberOf=CN=SG DSGROUP<dsg-id> Research Users,OU=Safe Haven Security Groups,<shm-domain-dn>)(userPrincipalName={{username}}))`, where `<shm-domain-dn>` is as above |
+    | `- HMD_USECDN=`                | `false`                                                                             |
+    | `- HMD_EMAIL=`                 | `false`                                                                             |
+    | `- HMD_ALLOW_FREEURL=`        | `true`                                                                              |
+    | `- HMD_ALLOW_ANONYMOUS=`      | `false`                                                                             |
 
-| **Command**                    | **Value**                                                                         |
-|-- | -- |
-| \- HMD\_LDAP\_PROVIDERNAME=    | NetBIOS name of management domain i.e. turingsafehaven (lowercase)                |
-| \- HMD\_LDAP\_URL=             | LDAP connection URL i.e. ldap://shmdc1.turingsafehaven.ac.uk                      |
-| \- HMD\_LDAP\_BINDDN=          | Bind Path for LDAP user i.e.                                                      |
-|                                |                                                                                   |
-|                                | CN=DSGx HackMD LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk |
-| - HMD\_LDAP\_BINDCREDENTIALS= | Password for the LDAP account above                                               |
-| \- HMD\_LDAP\_SEARCHBASE=      | OU Path to the Research Users OU i.e.                                             |
-|                                |                                                                                   |
-|                                | OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk                       |
-| \- HMD\_LDAP\_SEARCHFILTER=    | (&(objectClass=user)(memberOf=CN=SG DSGROUP9 Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk)(userPrincipalName={{username}}))                                                  |
-| \- HMD\_USECDN=                | false                                                                             |
-| \- HMD\_EMAIL=                 | false                                                                             |
-| \- HMD\_ALLOW\_FREEURL=        | true                                                                              |
-| \- HMD\_ALLOW\_ANONYMOUS=      | false                                                                             |
+    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2840785.PNG](images/media/image30.png)
 
-> ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2840785.PNG](images/media/image30.png)
-
-- Start HackMD container
-
-  **Command**
-  sudo docker-compose up -d
-
+- Start HackMD container via `sudo docker-compose up -d`
 
 ### Configure GitLab Server
-
 
 - Connect to the GitLab server with Putty (or any SSH client) Login with the admin credentials you entered with you provisioned the VM previously
 
 - Update the local host file
-
 
 | **Command**          | **Actions**                                                      |
 | -- | -- |
@@ -904,7 +891,6 @@ Add the following lines under "environment:"
 |                      | \<Subnet-Data\> = IP Address of the Subnet-Data as per checklist |
 |                      |                                                                  |
 |                      | Change X for correct group number                                |
-
 
 Update the time-zone
 
