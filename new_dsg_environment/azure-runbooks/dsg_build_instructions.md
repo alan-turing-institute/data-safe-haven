@@ -808,7 +808,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
 
-- The deployment will take around 15 minutes to complete
+- The deployment will take a few minutes to complete
 
 ### Configure HackMD Server
 
