@@ -733,7 +733,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Once installed logout of the server
 
-## Deploy Data Server
+## 5. Deploy Data Server
 
 ### Create Dataserver VM
 
@@ -794,19 +794,19 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   | |                              -dsg |             Enter the DSG name i.e. DSGROUP`<dsg-id>` |
 
 
-## Deploy Web Application Servers (Gitlab and HackMD)
+## 6. Deploy Web Application Servers (Gitlab and HackMD)
 
 - Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_shared_servers/` directory of the Safe Haven repository.
+- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./Create_Linux_Servers.ps1` script, providing the DSG ID when prompted
+- Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
 
 - The deployment will take around 15 minutes to complete
 
