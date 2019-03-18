@@ -5,23 +5,16 @@ echo "  # To add additional packages update package_lists/requested-<python vers
 
 # Construct combined lists using:
 #   1. include requested packages
-#   2. include packages marked as "In installer" on Anaconda website package lists
-#        Python 2.7: https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/
-#        Python 3.6: https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/
-#        Python 3.7: https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/
-#   3. include packages present in the Microsoft DataScience VM
-#   4. remove any packages on the blacklist
+#   2. include any packages from the utility list
+#   3. remove any packages from the non-conda list which will be installed with pip
 COMBINED_27=$(mktemp)
-# cat requested-27.list anaconda-in-installer-27.list dsvm-installed-27.list | sort | uniq | comm -23 - blacklist-27.list > $COMBINED_27
-cat requested-27.list | sort | uniq | comm -23 - non-conda-27.list > $COMBINED_27
+cat requested-27.list utility-packages-27.list| sort | uniq | comm -23 - non-conda-27.list > $COMBINED_27
 COMBINED_36=$(mktemp)
-# cat requested-36.list anaconda-in-installer-36.list dsvm-installed-36.list | sort | uniq | comm -23 - blacklist-36.list > $COMBINED_36
-cat requested-36.list | sort | uniq | comm -23 - non-conda-36.list > $COMBINED_36
+cat requested-36.list utility-packages-36.list | sort | uniq | comm -23 - non-conda-36.list > $COMBINED_36
 COMBINED_37=$(mktemp)
-# cat requested-37.list anaconda-in-installer-37.list dsvm-installed-37.list | sort | uniq | comm -23 - blacklist-37.list > $COMBINED_37
-cat requested-37.list | sort | uniq | comm -23 - non-conda-37.list > $COMBINED_37
+cat requested-37.list utility-packages-37.list | sort | uniq | comm -23 - non-conda-37.list > $COMBINED_37
 COMMON_REQUESTED=$(mktemp)
-comm -12 $COMBINED_27 $COMBINED_35 | comm -12 - $COMBINED_36 > $COMMON_REQUESTED
+comm -12 $COMBINED_27 $COMBINED_36 | comm -12 - $COMBINED_37 > $COMMON_REQUESTED
 
 # Construct minimal common and environment specific lists
 echo "  - export PY_COMMON_PACKAGES=\"$(cat $COMMON_REQUESTED | tr '\n' ' ' | xargs)\""

@@ -16,6 +16,8 @@ matplotlib
 networkx
 notebook
 numpy
+numpy-base
+numpydoc
 pandas
 pandas-datareader
 pandas-profiling
