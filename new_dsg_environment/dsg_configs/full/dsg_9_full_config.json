@@ -14,7 +14,8 @@
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
           "description": "SG Data Science LDAP Users"
-        }
+        },
+        "serverAdmins": "SG DSGROUPDEV Server Administrators"
       }
     },
     "network": {
@@ -56,6 +57,7 @@
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
       "securityGroups": {
+        "serverAdmins": {},
         "researchUsers": {
           "name": "SG DSGROUP9 Research Users",
           "description": "SG DSGROUP9 Research Users"

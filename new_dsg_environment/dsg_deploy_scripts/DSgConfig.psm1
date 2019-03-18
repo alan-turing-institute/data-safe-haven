@@ -48,7 +48,7 @@ function Add-DsgConfig {
     $config.shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{}
     }
-    $config.shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users" 
+    $config.shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users"
     $config.shm.domain.securityGroups.dsvmLdapUsers.description = $config.shm.domain.securityGroups.dsvmLdapUsers.name
 
 
@@ -103,8 +103,11 @@ function Add-DsgConfig {
     $config.dsg.domain.netbiosName = $config.dsg.domain.fqdn.Split('.')[0].ToUpper()
     $config.dsg.domain.dn = "DC=" + ($config.dsg.domain.fqdn.replace('.',',DC='))
     $config.dsg.domain.securityGroups = [ordered]@{
+        serverAdmins = [ordered]@{}
         researchUsers = [ordered]@{}
     }
+    $config.shm.domain.securityGroups.serverAdmins = ("SG " + $config.shm.domain.netbiosName + " Server Administrators")
+    $config.shm.domain.securityGroups.serverAdmins.description = $config.shm.domain.securityGroups.serverAdmins.name
     $config.dsg.domain.securityGroups.researchUsers.name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
     $config.dsg.domain.securityGroups.researchUsers.description = $config.dsg.domain.securityGroups.researchUsers.name
 

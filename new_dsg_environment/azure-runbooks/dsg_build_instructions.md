@@ -769,6 +769,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)\
 
 #### Configure Dataserver
+[TODO: Replace with remote script execution (untested local and remote `Configure_Dataserver_*.ps1` scripts already in version control)]
 
 - Connect to the new **Data Server** via Remote Desktop client over the DSG VPN connection
 
