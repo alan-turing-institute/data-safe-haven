@@ -735,9 +735,11 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ## Deploy Data Server
 
+### Create Dataserver VM
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/05_create_dataserver/" directory
+- Change to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -747,62 +749,48 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - The deployment will take around 15 minutes to complete
 
-- Connect to the DSG Domain controller via Remote Desktop client over the VPN connection
+### Generate temporary SAS token
+- Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
 
-- Login with the admin credentials you entered with you provisioned the VM previously
+### Configure Dataserver on Domain Controller
 
-- Open the "Active Directory Users and Computers" MMC
+- Connect to the **DSG Domain Controller** via Remote Desktop client over the DSG VPN connection
+
+- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
+
+- In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 
 - Expand the "Computers" Container
 
-- Drag the "DATASERVER" computer object to the "\<DSG NAME\> Data Servers" OU, click "YES" to the warning
+- Drag the "DATASERVER" computer object to the "DSGROUP`<dsg-id>` Data Servers" OU, click "YES" to the warning
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)\
 
-- Connect to the new **Data Server** via Remote Desktop client over the VPN connection
+#### Configure Dataserver
 
-- Login with the admin credentials you entered with you provisioned the VM previously
+- Connect to the new **Data Server** via Remote Desktop client over the DSG VPN connection
 
-- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
-- Download the "DSG-DATASERVER .zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>`(append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>`(append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
-- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just "C:\\Scripts".
+- Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new `DSG-DATASERVER` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
-- Open a PowerShell command window with elevated privileges  - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
-```shell
-> echo $pshome
-```
-
-the correct application should output
-
-```shell
-C:\Windows\System32\WindowsPowerShell\v1.0
-
-```
-
-whereas
-
-```shell
-C:\Windows\SysWOW64\WindowsPowerShell\v1.0
-```
-
-indicates the wrong application is running.
-
-- Change to C:\\Scripts
+- Change to `C:\Scripts`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
 
-|  **Command** |                 **Parameters** |   **Description** |
-| -- | -- | -- |
- | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. TURINGSAFEHAVEN |
-| |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP10 |
-| |                              -dsg |             Enter the DSG name i.e. DSG2 |
+  |  **Command** |                 **Parameters** |   **Description** |
+  | -- | -- | -- |
+  | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. "dsgroupdev" for test or TURINGSAFEHAVEN for production |
+  | |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
+  | |                              -dsg |             Enter the DSG name i.e. DSGROUP`<dsg-id>` |
 
 
 ## Deploy Linux Servers
