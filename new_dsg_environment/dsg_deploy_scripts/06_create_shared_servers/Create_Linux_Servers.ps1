@@ -33,7 +33,7 @@ $params = @{
 
 Write-Output $params
 
-$templatePath = Join-Path $PSScriptRoot "inux-master-template.json"
+$templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
 New-AzResourceGroupDeployment -ResourceGroupName $config.linux.rg `
   -TemplateFile $templatePath @params -Verbose
