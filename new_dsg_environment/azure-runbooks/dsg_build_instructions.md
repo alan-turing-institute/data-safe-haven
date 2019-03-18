@@ -1,142 +1,134 @@
 
 # Data Study Environment Build Instructions
 
-## Prerequisites:
+## Prerequisites
 
-- Access to the Safe Haven Management Azure subscription
+### Access to required Safe Haven Management resources
 
-- Access to a new Azure subscript for where the DSG will be deployed to
+- Access to the relevant Safe Haven Management Azure subscription
 
-- Administrative access to the Safe Haven Management Active Directory Domain
+- Administrative access to the relevant Safe Haven Management Active Directory Domain
 
-- Administrative access to the Safe Haven Management VMs
+- Administrative access to the relevant Safe Haven Management VMs
 
-- Completed the "DSG Environment Configuration Checklist"
+- #### Download a client VPN certificate for the Safe Haven Management VNet
 
-- Access to a public routable domain name and its name servers
+  - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_DSG_SECRETS -> dsg-management-<shm-id>`, where `<shm-id>` is `prod` for the production SHM environment and `test` for the test SHM environment.
 
-- DSG Client VPN certificate
+  - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 
-## Build Process:
+  - Click on the certificate named `DSG-P2S-<shm-id>-ClientCert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 
-1. Complete the "DSG Environment Configuration Checklist"
+  - To install, double click on the downloaded certificate, leaving the password field blank.
 
-2. Prepare the management environment for the new DSG
+  - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
 
-    a. Create accounts
+  -  This certificate will also allow you to connect via VPN to the DSG VNet once deployed.
 
-    b. Update DNS
+- #### Configure a VPN connection to the Safe Haven Management VNet
 
-3. Deploy DSG Virtual Network
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 
-4. Create network peering between DSG and management virtual network
+  - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-5. Deploy DSG Domain Controller
+  - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
-6. Create Domain Trust
+    ![image1.png](images/media/image1.png)
 
-7. Deploy Remote Desktop Services environment
+  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is `prod` for the production SHM environment and `test` for the test SHM environment.
 
-8. Deploy Data Server
+### Access to required DSG resources
 
-9. Deploy Linux Servers (GitLab, HackMD)
+- Access to a new Azure subscription which the DSG will be deployed to
 
-10. Network Lock Down
+- Access to a public routable domain name for the DSG and its name servers
 
-## Completing the DSG Environment Configuration Checklist
+### Install and configure PowerShell for Azure
 
-This spreadsheet requires completion before proceeding with the deployment of the DSG environment. The spreadsheet once completed will contain all the information required to successfully deploy a DSG environment into an existing Safe Haven. Due to the nature of the contents of this file it is recommended that it is only accessible by administrators of the DSG/Safe Haven environments.
+- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
 
-On opening the "DSG Environment Configuration Checklist" you will see there are 3 separate worksheets, these are:
+- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 
-### IP Addressing
+## Build Process
 
-> The DSGs are assigned their own unique IP address space, it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a DSG and capacity to add additional subnets should that be required in the future.
->
-> Within the DSG Environment Configuration Checklist the items that need attention are highlighted in RED. Some cells will update automatically to save user input. The names provided are standard for an Alan Turing Deployment.
+0. Define DSG configuration
 
-### User and Service Accounts
+1. Prepare the management environment for the new DSG
 
-The DSG uses a number of service accounts to provide services to the various systems within the environment. Along with the service accounts there are some additional secrets required to ensure a successful deployment.
+2. Deploy DSG Virtual Network
 
-### Management Environment
+3. Deploy DSG Domain Controller
 
-Within the scripts and templates the Management environment is referenced, use this worksheet to record the key information that will be required by the scripts.
+4. Deploy Remote Desktop Services environment
 
-### Azure Configuration
+5. Deploy Data Server
 
-The deployment utilises Azure Storage Accounts to provide additional configuration scripts. The storage account is set to "Private" which necessitates the need for secure access. The default resource group for this storage account is called "RG\_DSG\_Artifacts", the storage account us used to host both blob and files. You will need both a SAS token and "Files" connection string. Both are obtainable from the Azure Portal.
+6. Deploy Support Servers (GitLab, HackMD)
 
-## Prepare secrets
+7. Deploy initial shared compute VM
 
-There is an Azure Key Vault in the Safe Haven Management subscription called "dsg-management" (for production) and "dsg-management-test" (for test). There are some existing shared secrets that need to be accessed and some environment specific shared secrets that need to be created when deploying a new environment.
+8. Network Lock Down
 
-### Pre-existing secrets
+## 0. Define DSG configuration
 
-The following secrets should already exist.
+The full configuration details for a new DSG are generated by defining a few "core" properties for the new DSG and the management environment in which it will be deployed.
 
-VPN P2S SSL Certificate (used for connecting to the domain controller). Stored under "Certificates" as "DSG-P2S-\<environment\>-"
+### Core SHM configuration properties
+The core properties for the relevant pre-existing Safe Haven Management (SHM) environment must be present in the `dsg_configs/core` folder.
+The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`.
 
-### Create environment specific secrets
+```json
+{
+    "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
+    "domain": "The fully qualified domain name for the management environment",
+    "shId": "A short ID to identify the management environment",
+    "location": "The Azure location in which the management environment VMs are deployed",
+    "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt",
+    "dcHostname": "The hostname of the managment environemtn Active Directory Domain Controller"
+}
+```
 
-Generate the following passwords and store then in the Safe Haven Management KeyVault for testing or production environment as appropriate.
+### Core DSG configuration properties
 
-Use [https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new](https://www.random.org/passwords/?num=5&len=20&format=html&rnd=new) to generate passwords. These should contain at least one uppercase letter, one lowercase letter and one digit with a length of 20 characters. We avoid special characters to avoid issues in config files. For more details refer to [https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements](https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements).
+The core properties for the new DSG environment must be present in the `dsg_configs/core` folder.
+The following core DSG properties must be defined in a JSON file named `dsg_<dsg-id>_core_config.json`.
 
-- DSG RDS certificate encryption password - Generate and store as dsg\<x\>-\<environment\>-cert-password"
+```json
+{
+    "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
+    "dsgId": "A short ID to identify the management environment",
+    "domain": "The fully qualified domain name for the DSG environment",
+    "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt"
+}
+```
 
-## Install and configure PowerShell for Azure
+#### DSG IP Address prefix
 
-- Install PowerShell v 6.0 or above -- see [https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
+Each DSG must be assigned it's own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a DSG and capacity to add additional subnets should that be required in the future.
 
-- Install the PowerShell Azure commandlet -- [https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
-
-## Set up VPN connection
-
-### Get a client certificate
-
-- Navigate to the dsg-management KeyVault in the Safe Haven Management subscription via "Resource Groups -\> RG\_DSG\_SECRETS -\> dsg-management" (production) or "dsg-management-test" (test).
-
-- Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-
-- Click on the certificate named "DSG-P2S-\<environment\>-ClientCert", click on the "current version" and click the "Download in PFX/PEM format" link.
-
-- To install, double click on the downloaded certificate, leaving the password field blank.
-
-- **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
-
-### Configure a VPN connection
-
-- Navigate to the management VNET gateway in the Safe Haven Management subscription via "Resource Groups -\> RG\_DSG\_VNET -\> DSG\_VNET1\_GW". Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-
-- Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the instructions at [[https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert]{.underline}](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
-
-- Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
-
-![image1.png](images/media/image1.png)
-
-- Continue to follow the instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (\<environment\>)".
-
-## Generate full configuration for DSG
+### Generate full configuration for DSG
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
+- Navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
+
 - Generate a new full configuration file for the new DSG using the following commands.
   - `Import-Module ./DsgConfig.psm1 -Force`
-  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. "9" for "DSG9"), 
+  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`),
+  - A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
 
-## Prepare Safe Haven Management Domain
+## 0. Prepare Safe Haven Management Domain
 - Ensure you have the latest version of the Safe Haven repository from [[https://github.com/alan-turing-institute/data-safe-haven]{.underline}](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/02_create_vnet/" directory
+- Change to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"` [TODO: Write a small script to pick this up from the DSG config file (or have all DSG scripts switch subscriptions when they run)]
 
 - Add new DSG users and security group to the AD by running `Create_New_DSG_User_Service_Accounts_Local.ps1`, entering the DSG ID when prompted
 
-- Add new DSG DNS record to the AD by running `CAdd_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
+- Add new DSG DNS record to the AD by running `Add_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
 
 ## Deploy Virtual Network
 
