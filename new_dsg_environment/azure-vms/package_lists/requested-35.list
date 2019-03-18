@@ -32,6 +32,7 @@ r-irkernel
 rpy2
 scikit-image
 scikit-learn
+scipy
 seaborn
 spacy
 tensorflow-gpu
