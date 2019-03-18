@@ -794,27 +794,19 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   | |                              -dsg |             Enter the DSG name i.e. DSGROUP`<dsg-id>` |
 
 
-## Deploy Linux Servers
+## Deploy Web Application Servers (Gitlab and HackMD)
 
 - Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/06_create_shared_servers/" directory
+- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_shared_servers/` directory of the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the "./Create\_Linux\_Servers.ps1" script, providing the following information when prompted.
-
-  - First two octets of the address range (e.g. "10.250")
-
-  - Third octet of the address range (e.g. "64" for "10.250.64")
-
-  - DSG ID, usually a number (e.g. for DSG9 this is just "9")
-
-- The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
+- Run the `./Create_Linux_Servers.ps1` script, providing the DSG ID when prompted
 
 - The deployment will take around 15 minutes to complete
 

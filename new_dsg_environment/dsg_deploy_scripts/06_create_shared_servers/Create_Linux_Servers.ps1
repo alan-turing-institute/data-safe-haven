@@ -18,12 +18,12 @@ $hackMdVmSize = "Standard_DS2_v2"
 $gitlabVmSize = "Standard_DS2_v2"
 
 $params = @{
-"GITLab Server Name" = $config.linux.gitlab.vmName
+"GITLab Server Name" = $config.dsg.linux.gitlab.vmName
 "GITLab VM Size" = $gitlabVMSize
-"GITLab IP Address" =  $config.linux.gitlab.ip 
-"HACKMD Server Name" = $config.linux.hackmd.vmName
+"GITLab IP Address" =  $config.dsg.linux.gitlab.ip 
+"HACKMD Server Name" = $config.dsg.linux.hackmd.vmName
 "HACKMD VM Size" = $hackmdVMSize
-"HACKMD IP Address" = $config.linux.hackmd.ip
+"HACKMD IP Address" = $config.dsg.linux.hackmd.ip
 "Administrator User" = $adminUser
 "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
 "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -35,5 +35,6 @@ Write-Output $params
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
-New-AzResourceGroupDeployment -ResourceGroupName $config.linux.rg `
+New-AzResourceGroup -Name $config.dsg.linux.rg -Location $config.dsg.location
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.linux.rg `
   -TemplateFile $templatePath @params -Verbose
