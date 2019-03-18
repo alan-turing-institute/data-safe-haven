@@ -198,57 +198,41 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
-## Deploy DSG Domain Controller
+## 3. Deploy DSG Domain Controller
+
+### Deploy DC VM
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory
+- Change to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<DSG-Subscription-Name>"`
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Create_AD_DC.ps1` script, entering the DSG ID when prompted
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
-- Once deployment is complet, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+### Create temporary SAS token
 
+- Once deployment is complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
+  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
 
 ### Configure Active Directory
 
-- Connect to the new Domain controller via Remote Desktop client over the VPN connection at the IP address \<first-three-octets\>.250 (e.g. 10.250.x.250)
+- Connect to the new Domain controller via Remote Desktop client over the VPN connection at the IP address `<dsg-identity-subnet-prefix>.250` (e.g. 10.250.x.250)
 
-- Login with the admin credentials from the secret named "admin-dsg\<X\>-\<environment\>-dc" in the Safe Haven Management KeyVault (created in the "Prepare secrets" section above
+- Login with the admin credentials for the DSG DC, which were created and stored in the Safe Haven Management KeyVault by the DC deployment script
 
-- Download the "DSG-DC.zip" scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
-- Create a folder called "Scripts" in the root of C:\\ and copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new "DSG-DC" folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
+- Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the `Scripts` folder (**not** to a new `DSG-DC` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
-- Open a PowerShell command window with elevated privileges - make sure this is the Windows PowerShell application, not Windows PowerShell (x86). This can be checked by running
-
-```shell
-> echo $pshome
-```
-
-the correct application should output
-
-```shell
-C:\Windows\System32\WindowsPowerShell\v1.0
-
-```
-
-whereas
-
-```shell
-C:\Windows\SysWOW64\WindowsPowerShell\v1.0
-```
-
-indicates the wrong application is running.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
 
@@ -259,34 +243,31 @@ indicates the wrong application is running.
   | -- | -- | -- |
   |`Set_OS_Language.ps1`  |  n/a  |             n/a |
   
-
 - Setup the accounts on the Active Directory by running the following command with these parameters.
- 
  
   |  **Command**            |          **Parameters**  |  **Description** |
   | -- | -- | -- |
   | `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
 
-
 - Configure the DNS on the server by running the following command with these parameters
 
   | **Command** |     **Parameters** |   **Description** |
   | -- | -- | -- |
-|  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space i.e. 10.250.0 |
-| |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space i.e. 10.250.1 |
-| |                      -SubnetData        | First 3 octets of the Identity subnet IP address space i.e. 10.250.2 |
+  |  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space e.g. 10.250.0 |
+  | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space e.g. 10.250.1 |
+  | |                     -SubnetData        | First 3 octets of the Identity subnet IP address space e.g. 10.250.2 |
   | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
   | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.220.0.250 (production) or 10.220.1.250 (test)|
 
 
-Configure Active Directory group polices, to install the polices run the following command with these parameters
+- Configure Active Directory group polices, to install the polices run the following command with these parameters
 
   |  **Command** |        **Parameters**|   **Description** |
   | -- | -- | -- |
   |  `ConfigureGPOs.ps1` |  -backuppath |     `C:\Scripts\GPOs` -- this is the default path, if you copy the scripts to another folder you'll need to change this. \
   | |                       -domain |          DSG NetBIOS name i.e. DSGROUP10 |
 
-- Open the "Group Policy Management" MMC
+- From the "Server Management" application, select `Tools -> Group Policy Management`
 
 - Expand the tree until you open the "Group Policy Objects" branch
 
@@ -294,37 +275,33 @@ Configure Active Directory group polices, to install the polices run the followi
 
 - Right click on "All Servers - Local Administrators" and select "Edit"
 
-- Expand "Computer Configuration" -\> "Policies" -\> "Windows Settings" -\> "Security Settings" click on "Restricted Groups"
+- Expand `Computer Configuration -> Policies -> Windows Settings -> Security Settings` and click on "Restricted Groups"
 
 - Double click on "Administrators" shown under "Group Name" on the right side of the screen
 
 - Select both of the entries in the "Members of this group" and click "Remove"
 
-> ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2275d0c.PNG](images/media/image7.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2275d0c.PNG](images/media/image7.png)
 
-- Click "Add" -\> "Browse"
+- Click `Add -> Browse` and enter:
 
-- Enter:
-
-    - SG DSGROUPx Server Administrators
+    - SG DSGROUP`<dsg-id>` Server Administrators
 
     - Domain Admins
 
-Click the "Check Names" button to resolve the names
+- Click the "Check Names" button to resolve the names
 
-> ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22a31c7.PNG](images/media/image8.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22a31c7.PNG](images/media/image8.png)
 
-- Click "OK" -\> "OK"
+- Click `OK -> OK`. The "Administrators Properties" box will now look like this
 
-The "Administrators Properties" box will now look like this
-
-> ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22adcec.PNG](images/media/image9.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22adcec.PNG](images/media/image9.png)
 
 - Click "OK" and close the policy window
 
-- Within the "Group Policy Management" MMC right click on "Session Servers -- Remote Desktop Control" and click "Edit"
+- Right click on `Session Servers -> Remote Desktop Control` and click "Edit"
 
-- Expand "User Configuration" -\> "Policies" -\> "Administrative Templates" click "Start Menu & Taskbar"
+- Expand `User Configuration -> Policies -> Administrative Templates` and click "Start Menu & Taskbar"
 
 - Double click "Start Layout" located in the right window
 
@@ -350,7 +327,7 @@ The "Administrators Properties" box will now look like this
 
 - Right click the management domain name and select "Properties"
 
-- Click on "Trusts" tab -\> click "New Trust"
+- Click on "Trusts" tab then click "New Trust"
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML5eb57b.PNG](images/media/image11.png)
 
@@ -362,11 +339,11 @@ The "Administrators Properties" box will now look like this
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
-| User name and password:                               | Domain admin user on the DSG domain.                                                         Format: \<DOMAIN\\Username\>. User is "atiadmin ". See "dsg9-dc-admin-password" secret in management KeyVault for password. |
+  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<DOMAIN\Username>. User is "atiadmin ". See DSG DC admin secret in management KeyVault for password. |
   | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
   | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
 
-- Click "Next" -\> "Next"
+- Click `Next -> Next`
 
   - Select "Yes, confirm the outgoing trust" -\> "Next"
 
