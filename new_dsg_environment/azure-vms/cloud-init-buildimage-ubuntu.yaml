@@ -362,7 +362,8 @@ runcmd:
   # 201903191218 was with Standard_E8s_v3
   # 201903191401 was with graph-tool from ostrokach-forge
   # 201903191414 was with restored list of packages
-  # 201903191548 was with tensorflow-gpu moved to pip for 3.7
+  # 201903191547 was with tensorflow-gpu moved to pip for 3.7
+  # 201903191654 was with expanded lists
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -435,7 +436,8 @@ runcmd:
   # Create or install conda environments
   # Python 2.7
   - echo "*** Working on py27 environment. Will take approximately 150 minutes... ***"
-  - echo "Starting at $(date --rfc-3339=seconds)"
+  - START_TIME=$(date --rfc-3339=seconds)
+  - echo "Starting at ${START_TIME}"
   - echo "Preparing environment for $PYTHON27PACKAGES"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
@@ -444,10 +446,11 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
-  - echo "Finished at $(date --rfc-3339=seconds)"
+  - echo "Finished py27 enviroment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
   # Python 3.6
   - echo "*** Working on py36 environment. Will take approximately 40 minutes... ***"
-  - echo "Starting at $(date --rfc-3339=seconds)"
+  - START_TIME=$(date --rfc-3339=seconds)
+  - echo "Starting at ${START_TIME}"
   - echo "Preparing environment for $PYTHON36PACKAGES"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
@@ -456,10 +459,11 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
-  - echo "Finished at $(date --rfc-3339=seconds)"
+  - echo "Finished py36 environment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
   # Python 3.7
   - echo "*** Working on py37 environment. Will take approximately 40 minutes... ***"
-  - echo "Starting at $(date --rfc-3339=seconds)"
+  - START_TIME=$(date --rfc-3339=seconds)
+  - echo "Starting at ${START_TIME}"
   - echo "Preparing environment for $PYTHON37PACKAGES"
   - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37PACKAGES; else conda install -y --verbose --name py37 $PYTHON37PACKAGES; fi
   - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
@@ -468,7 +472,7 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
-  - echo "Finished at $(date --rfc-3339=seconds)"
+  - echo "Finished py37 environment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
   # List environments
   - echo "*** Final conda environments... ***"
   - conda env list
