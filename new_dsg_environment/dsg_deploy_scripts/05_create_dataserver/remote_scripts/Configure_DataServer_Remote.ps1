@@ -33,7 +33,7 @@ Start-Service ShellHWDetection
 Write-Host -ForegroundColor Green "Creating data share" 
 Mkdir "F:\Data"
 $researcherUserSg = ($config.shm.domain.netbiosName + "\" + $config.dsg.domain.securityGroups.researchUsers.name) 
-$serverAdminSg = ($config.dsg.domain.netbiosName + "\" + $config.shm.domain.securityGroups.serverAdmins)
+$serverAdminSg = ($config.dsg.domain.netbiosName + "\" + $config.dsg.domain.securityGroups.serverAdmins)
 New-SmbShare -Path "F:\Data" -Name "Data" -ChangeAccess $researcherUserSg -FullAccess $serverAdminSg
 
 #Set language and time-zone
