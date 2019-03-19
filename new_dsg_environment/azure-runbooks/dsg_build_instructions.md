@@ -859,11 +859,11 @@ sudo git clone https://github.com/hackmdio/docker-hackmd.git
     | **Property**                    | **Value**                                                                         |
     |-- | -- |
     | `- HMD_LDAP_PROVIDERNAME=`    | NetBIOS name of management domain i.e. `turingsafehaven` for production and `dsgroupdev` for test |
-    | `- HMD_LDAP_URL=`             | LDAP connection URL i.e. `ldap://shmdc1.turingsafehaven.ac.uk` for production and `ldap://mgmtdevdc.dsgroupdev.co.uk` |
+    | `- HMD_LDAP_URL=`             | LDAP connection URL i.e. `ldap://shmdc1.turingsafehaven.ac.uk` for production and `ldap://mgmtdevdc.dsgroupdev.co.uk` for test |
     | `- HMD_LDAP_BINDDN=`          | Bind Path for LDAP user i.e.                                                      |
     |                                | "`CN=DSGROUP<dsg-id> HackMD LDAP,OU=Safe Haven Service Accounts,<shm-domain-dn>`" |
     |                                | where `<shm-domain-dn>` is `DC=turingsafehaven,DC=ac,DC=uk` for production and `DC=dsgroupdev,DC=co,DC=uk` for test |                                                                                |
-    | `- HMD_LDAP_BINDCREDENTIALS=`  | Password for the HackMD LDAP account (from the SHM KeyVault) |
+    | `- HMD_LDAP_BINDCREDENTIALS=`  | Password for the HackMD LDAP account from the SHM KeyVault |
     | `- HMD_LDAP_SEARCHBASE=`      | OU Path to the Research Users OU i.e. |         
     |                                | "`OU=Safe Haven Research Users,<shm-domain-dn>`", where `<shm-domain-dn>` is as above |
     | `- HMD_LDAP_SEARCHFILTER=`    | `(&(objectClass=user)(memberOf=CN=SG DSGROUP<dsg-id> Research Users,OU=Safe Haven Security Groups,<shm-domain-dn>)(userPrincipalName={{username}}))`, where `<shm-domain-dn>` is as above |
@@ -876,186 +876,169 @@ sudo git clone https://github.com/hackmdio/docker-hackmd.git
 
 - Start HackMD container via `sudo docker-compose up -d`
 
+- You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
+
 ### Configure GitLab Server
 
-- Connect to the GitLab server with Putty (or any SSH client) Login with the admin credentials you entered with you provisioned the VM previously
+- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
+
+- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
 - Update the local host file
 
-| **Command**          | **Actions**                                                      |
-| -- | -- |
-| `sudo nano /etc/hosts` | Add the line:                                                    |
-|                      |                                                                  |
-|                      | \<Subnet-Data\>.151 gitlab gitlab.dsgroupX.co.uk                 |
-|                      |                                                                  |
-|                      | \<Subnet-Data\> = IP Address of the Subnet-Data as per checklist |
-|                      |                                                                  |
-|                      | Change X for correct group number                                |
+  | **Command**          | **Actions**                                                      |
+  | -- | -- |
+  | `sudo nano /etc/hosts` | Add the line: `<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk` |
 
-Update the time-zone
+- Update the time-zone
 
+  | **Command**                  | **Actions**         |
+  | -- | -- |
+  | `sudo dpkg-reconfigure tzdata` | Select `Europe -> London` |
 
-| **Command**                  | **Actions**         |
-| -- | -- |
-| `sudo dpkg-reconfigure tzdata` | Select -\> "Europe" |
-|                              |                     |
-|                              | Select -\> "London" |
+- Identify the data disk (the one with no partitions on it), noting ID with `sudo lshw -C disk`
 
-- Identify the data disk, noting ID
+- Create partition on the data drive
 
+  | **Command**         | **Detail**                                 |
+  | -- | -- |
+  | `sudo fdisk /dev/xxx` | \- xxx = disk name as noted above (likely `sdc`) |
+  |                     |                                            |
+  |                     | \- Command: n                              |
+  |                     |                                            |
+  |                     | \- Partition type: Primary                 |
+  |                     |                                            |
+  |                     | \- Partition number: 1                     |
+  |                     |                                            |
+  |                     | \- First Sector: (accept default)          |
+  |                     |                                            |
+  |                     | \- Last Sector: (accept default)           |
+  |                     |                                            |
+  |                     | \- Command: W                              |
 
-  **Command**
-  sudo lshw -C disk
+- Format Partition with `sudo mkfs.ext4 /dev/xxx1 -L DataDrive` (xxx = disk name as noted above)
 
-Create partition on the data drive
+- Capture Partition UUID with `sudo blkid`
 
+  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML84a1ac.PNG](images/media/image31.png)
 
-| **Command**         | **Detail**                                 |
-| -- | -- |
-| `sudo fdisk /dev/xxx` | \- xxx = disk name as noted above i.e. sdc |
-|                     |                                            |
-|                     | \- Command: n                              |
-|                     |                                            |
-|                     | \- Partition type: Primary                 |
-|                     |                                            |
-|                     | \- Partition number: 1                     |
-|                     |                                            |
-|                     | \- First Sector: (accept default)          |
-|                     |                                            |
-|                     | \- Last Sector: (accept default)           |
-|                     |                                            |
-|                     | \- Command: W                              |
-+---------------------+--------------------------------------------+
+- Backup FSTAB file with `sudo cp /etc/fstab /etc/fstab.$(date +%Y-%m-%d)`
 
-Format Partition:
+- Open FSTAB file for editing with `sudo nano /etc/fstab`
 
-```console
-> sudo mkfs.ext4 /dev/sdc1 -L DataDrive
-  ```
+- Add the following lines (Change UUID to that captured above)
 
-Capture Partition UUID
+  `UUID=<UUID CAPTURED ABOVE> /media/gitdata ext4 defaults 0 2`
 
-  ```console
-  > sudo blkid
-```
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29309ce.PNG](images/media/image32.png)
 
+- Create home folder mount point with `sudo mkdir /media/gitdata`
 
-> ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML84a1ac.PNG](images/media/image31.png)
+- Mount drive with `sudo mount -a`
 
-Backup FSTAB file
+- Edit Gitlab config file with `sudo nano /etc/gitlab/gitlab.rb`
 
- ```console 
->  sudo cp /etc/fstab /etc/fstab.\$(date +%Y-%m-%d)
-```
+- Uncomment the LDAP configuration lines (excluding the "EE only" and "secondary" subsections)
 
+- Update the following properties:
 
-Open FSTAB file for editing:
+  | **Command**                    | **Value** |
+  | -- | -- |
+  | `Gitlabrails['ldap_enabled']`  | `true` |
+  | `Host`                         | DSG DC FQDN i.e. `shmdc1.turingsafehaven.ac.uk` for production and `mgmtdevdc.dsgroupdev.co.uk` for test |
+  | `Method`                         | `Plain`|
+  | `bind_dn`                       | "`CN=DSGROUP<dsg-id> Gitlab LDAP,OU=Safe Haven Service Accounts,<shm-domain-dn>`" |
+  |                                | where `<shm-domain-dn>` is `DC=turingsafehaven,DC=ac,DC=uk` for production and `DC=dsgroupdev,DC=co,DC=uk` for test | 
+  | `password`                       | Password of GitLab LDAP service account from SHM KeyVault |
+  | `active_directory`              | `true` |
+  | `allow user name or email login` | `true` |
+  | `block_auto_created_users`    | `false` |
+  | `base`                           | OU Path to the Research Users OU i.e. |         
+  |                                | "`OU=Safe Haven Research Users,<shm-domain-dn>`", where `<shm-domain-dn>` is as above |
+  | `user_filter`                   | `(&(objectClass=user)(memberOf=CN=SG DSGROUP<dsg-id> Research Users,OU=Safe Haven Security Groups,<shm-domain-dn>))`, where `<shm-domain-dn>` is as above |
 
- ```console
- >  sudo nano /etc/fstab
-```
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29c3cf8.PNG](images/media/image33.png)
 
+- Ensure that the `EOS` line at the end of the LDAP block is uncommented.
 
-Add the following lines (Change UUID)
-
-
-`UUID=\<ID CAPTURED ABOVE\> /media/gitdata ext4 defaults 0 2`
-
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29309ce.PNG](images/media/image32.png)
-
-Create home folder mount point
-
- ```console
-> sudo mkdir /media/gitdata
-```
-
-Mount drive:
-
- ```console
-> sudo mount -a
-```
-Edit config file:
-
- ``` console
-> sudo nano /etc/gitlab/gitlab.rb
-  ```
-
-| **Command**                    | **Value**                                                                                                              |
-| -- | -- |
-| Gilabrails\['ldap\_enabled'\]  | true                                                                                                                   |
-| Host                           | dc.turingsafehaven.ac.uk                                                                                               |
-|                                |                                                                                                                        |
-|                                | DC = within the management domain                                                                                      |
-| Method                         | Plain                                                                                                                  |
-| bind\_dn                       | CN=DSGx GITLAB LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk                                      |
-|                                |                                                                                                                        |
-|                                | Replace X with DSG Number                                                                                              |
-| password                       | Password of GitLab LDAP service account                                                                                |
-| active\_directory              | true                                                                                                                   |
-| allow user name or email login | true                                                                                                                   |
-| block\_auto\_created\_users    | false                                                                                                                  |
-| base                           | OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk                                                            |
-| User\_filter                   | (&(objectClass=user)(memberOf=CN=SG DSGx Research Users,OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk)) |
-
-Note: Change domain where applicable
-
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29c3cf8.PNG](images/media/image33.png)
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1aee41b.PNG](images/media/image35.png)
 
 - Scroll down to "For setting up different data storing directory"
 
-- Add the following under the "git\_data\_dir" entry
+- Add the following under the `git_data_dir` entry
 
-` git\_data\_dirs({ \"default\" =\> { \"path\" =\> \"/media/gitdata\" } })`
- 
+  `git_data_dirs({ "default" => { "path" => "/media/gitdata" } })`
 
-![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML205637a.PNG](images/media/image34.png)
+  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML205637a.PNG](images/media/image34.png)
 
-- Insure that EOS is at the end of the file and save it.
+- Save the Gitlab config file and close it
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1aee41b.PNG](images/media/image35.png)
+- Run the following command to reconfigure server: `sudo gitlab-ctl reconfigure`
 
-- Run the following command to reconfigure server:
+- Do an LDAP check: `sudo gitlab-rake gitlab:ldap:check`
 
-```console
-> sudo gitlab-ctl reconfigure
- ```
+  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML194a8c6.PNG](images/media/image36.png)
 
-Do an LDAP check:
+### Configure the Gitlab Web Application
 
-```console
-> sudo gitlab-rake gitlab:ldap:check
-```
+#### Set the root (admin) password
 
-![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML194a8c6.PNG](images/media/image36.png)
+- Go to the Gitlab server via the browser. The first password prompt sets the password for the `root` (admin) user.
+  
+  - Generate a root password using https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1
+  
+  - Store this root password in the SHM KeyVault with secret name `dsg-<dsg-id>-gitlab-root-password`
 
-- Login to server via browser, the first password prompt sets the Root password
+  - Copy the password from the KeyVault secret and enter it at the password prompt on the Gitlab page
 
-- Go to settings and switch off user sign up
+#### Configure the Web Application
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e3d554.PNG](images/media/image37.png)
+- Log in as the `root` user using the "Standard" login tab
 
-- Set restricted domain to FQDN of domain, ensure that the local DSG domain and management domain are added.
+- Go to the "admin area" by clicking on the spanner icon at the top left
 
-![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29f04c3.PNG](images/media/image38.png)
+- Click the "settings" item in the lefthand sidebar
 
-- Upgrade GitLab
+-  Disable user sign up in the "Sign-in restrictions" section
 
- ```console
-> sudo apt-get update
-> sudo apt-get install gitlab-ce=9.5.6-ce.0
-> sudo gitlab-ctl reconfigure
-> sudo gitlab-ctl restart
-> sudo apt-get update
-> sudo apt-get install gitlab-ce=10.8.7-ce.0
-> sudo gitlab-ctl reconfigure
-> sudo gitlab-ctl restart
-> sudo apt-get update
-> sudo apt upgrade
-> sudo gitlab-ctl reconfigure
-> sudo gitlab-ctl restart
-```
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e3d554.PNG](images/media/image37.png)
 
-## Deploy sahred Compute VM
+- Add FQDN of DSG and SHM domains to the "Restricted domains for sign-ups" box, one domain per line.
+
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29f04c3.PNG](images/media/image38.png)
+
+- Scroll to the bottom of the settings page and press "Save"
+
+- Log out of Gitlab using the signout icon in the top left
+
+#### Upgrade Gitlab on the Gitlab VM
+
+- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
+
+- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
+
+- Upgrade GitLab:
+
+  ```console
+  sudo apt-get update
+  sudo apt-get install gitlab-ce=9.5.6-ce.0
+  sudo gitlab-ctl reconfigure
+  sudo gitlab-ctl restart
+  sudo apt-get update
+  sudo apt-get install gitlab-ce=10.8.7-ce.0
+  sudo gitlab-ctl reconfigure
+  sudo gitlab-ctl restart
+  sudo apt-get update
+  sudo apt upgrade
+  sudo gitlab-ctl reconfigure
+  sudo gitlab-ctl restart
+  ```
+
+- If prompted to update `waagent.conf` enter `N` (default) [TODO: Check if this should be another option].
+
+- You can test Gitlab independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
+
+## Deploy initial shared Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
 - Ensure you have carried out the steps in the "Pre-requistites" section
 - Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
@@ -1064,7 +1047,6 @@ See the [Compute VM build and deployment guide](../azure-vms/README.md).
   - Amend the "Overwite defaults for per-DSG settings" section to set the right DSG specific parameter values
 - Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
 as per the "Safe deployment to a Turing DSG environment" section
-
 
 ## Network Lock Down
 
@@ -1084,7 +1066,7 @@ as per the "Safe deployment to a Turing DSG environment" section
 
     - RDSSH2_NIC2
 
-- Linux Servers
+- Web application Servers
 
   - Open NSG_Linux_Servers
 
@@ -1094,10 +1076,10 @@ as per the "Safe deployment to a Turing DSG environment" section
 
     - HACKMD_NIC1
 
-## Sever administration
+## Server administration
 
 - The following servers are created as a result of these instructions:
-  - DSGxDC (domain controller)
+  - DSG`<dsg-id>`DC (domain controller)
   - DATASERVER
   - HACKMD
   - GITLAB
