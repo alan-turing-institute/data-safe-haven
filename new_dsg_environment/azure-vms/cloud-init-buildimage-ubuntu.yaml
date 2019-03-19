@@ -363,7 +363,8 @@ runcmd:
   # 201903191401 was with graph-tool from ostrokach-forge
   # 201903191414 was with restored list of packages
   # 201903191547 was with tensorflow-gpu moved to pip for 3.7
-  # 201903191654 was with expanded lists
+  # 201903191654 was with expanded lists and better timing information
+  # 201903191822 was with better logging
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -438,7 +439,7 @@ runcmd:
   - echo "*** Working on py27 environment. Will take approximately 150 minutes... ***"
   - START_TIME=$(date --rfc-3339=seconds)
   - echo "Starting at ${START_TIME}"
-  - echo "Preparing environment for $PYTHON27PACKAGES"
+  - echo "Asking conda for the following packages - $PYTHON27PACKAGES"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
   - echo "Installing additional packages with pip"
@@ -451,7 +452,7 @@ runcmd:
   - echo "*** Working on py36 environment. Will take approximately 40 minutes... ***"
   - START_TIME=$(date --rfc-3339=seconds)
   - echo "Starting at ${START_TIME}"
-  - echo "Preparing environment for $PYTHON36PACKAGES"
+  - echo "Asking conda for the following packages - $PYTHON36PACKAGES"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
   - echo "Installing additional packages with pip"
@@ -464,7 +465,7 @@ runcmd:
   - echo "*** Working on py37 environment. Will take approximately 40 minutes... ***"
   - START_TIME=$(date --rfc-3339=seconds)
   - echo "Starting at ${START_TIME}"
-  - echo "Preparing environment for $PYTHON37PACKAGES"
+  - echo "Asking conda for the following packages - $PYTHON37PACKAGES"
   - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37PACKAGES; else conda install -y --verbose --name py37 $PYTHON37PACKAGES; fi
   - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
   - echo "Installing additional packages with pip"
