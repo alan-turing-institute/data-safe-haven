@@ -1,12 +1,3 @@
-beautifulsoup4
-cython
 enum34
-html5lib
-lxml
-pillow
-pytables
-pytest
-six
-sqlite
-sympy
-yaml
+pytorch
+torchvision
