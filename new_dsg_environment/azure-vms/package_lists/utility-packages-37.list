@@ -1,2 +1,11 @@
-pytorch
-torchvision
+beautifulsoup4
+cython
+html5lib
+lxml
+pillow
+pytables
+pytest
+six
+sqlite
+sympy
+yaml
