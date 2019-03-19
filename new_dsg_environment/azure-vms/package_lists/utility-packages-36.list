@@ -28,6 +28,7 @@ nose
 numba
 pillow
 pycodestyle
+markdown
 pycosat
 pytables
 pytest

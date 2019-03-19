@@ -365,6 +365,7 @@ runcmd:
   # 201903191547 was with tensorflow-gpu moved to pip for 3.7
   # 201903191654 was with expanded lists and better timing information
   # 201903191822 was with better logging
+  # 201903191850 was with tensorflow dependencies included in 3.7
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
