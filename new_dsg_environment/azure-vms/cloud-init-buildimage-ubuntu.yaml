@@ -357,6 +357,10 @@ runcmd:
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
+  # 201903191041 was with Standard_F4s_v2
+  # 201903191106 was with Standard_F8s_v2
+  # 2019031912XX was with Standard_E8s_v3
+
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
   - apt-get install -y --no-install-recommends nvidia-driver-410
