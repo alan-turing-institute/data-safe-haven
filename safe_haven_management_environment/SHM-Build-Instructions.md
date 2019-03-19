@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Completed [checklist](https://stuff.co.uk) with the exception of the SAS and File share detail for which you'll capture when the storage account is created
+- Completed [checklist](https://github.com/alan-turing-institute/data-safe-haven/blob/214-safe-haven-managment-deployment/safe_haven_management_environment/supplementary/SHM%20Configuration%20Checklist.xlsx) with the exception of the SAS and File share detail for which you'll capture when the storage account is created
 - Azure Active Directory with P1 licenses, for MFA with custom domain set as default
 - Azure Subscription to build the environment in
 - Self signed certificate for Azure Point to Site VPN service [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-certificates-point-to-site)
@@ -12,7 +12,7 @@
 - Create an Azure storage account within the subscription that is going to host the SHM VMs
  - Create Blob storage container called "dsc" and copy the files from here to it
  - Create the following Azure "File Shares" and populate as shown below.
-   - scripts - copy the files from [here](https://www.c.u) to it
+   - scripts - copy the files from [here](https://github.com/alan-turing-institute/data-safe-haven/tree/214-safe-haven-managment-deployment/safe_haven_management_environment/scripts) to it
    - sqlserver - download the SQL Express 2017 from [here](https://go.microsoft.com/fwlink/?linkid=853017) and Microsoft SQL Studio from [here](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017).  The SQL server installation files should be expanded
 - Capture the URL and create a SAS token for the blob account and copy into the checklist
 - Capture the connection string for SQL and Scripts folders on the Files account and add to the checklist
