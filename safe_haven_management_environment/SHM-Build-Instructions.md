@@ -162,7 +162,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 - Click "Install"
 - Click "Exit"
 
-#### Additional AAD Connect Configuration
+### Additional AAD Connect Configuration
 
 - Open the "Synchronization Rules Editor" from the "Start menu"
 - Change the "Direction" drop down to "Outbound"
@@ -192,4 +192,4 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 - Enter your Azure Active directory ID (Note: if you see a service principal error here this is because you don't have any valid P1 licenses, purchase licenses and then re-run the commands in this section)
 - Enter "Y" when prompted
 
-## Installation of Safe Haven Management environment complete.
+#### Installation of Safe Haven Management environment complete.
