@@ -4,7 +4,6 @@ dtw
 fbprophet
 geopandas
 gmplot
-graph-tool
 ipykernel
 jupyter
 jupyter_client
