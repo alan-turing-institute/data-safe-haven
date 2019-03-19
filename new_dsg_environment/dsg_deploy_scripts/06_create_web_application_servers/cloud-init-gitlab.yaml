@@ -1,0 +1,21 @@
+package_upgrade: false
+
+#write_files:
+runcmd:
+  - echo "`<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk" >> /etc/hosts
+  - echo "Europe/London" > /etc/timezone    
+  - dpkg-reconfigure -f noninteractive tzdata
+  - sudo fdisk /dev/sdc
+  - | (echo o # Create a new empty DOS partition table
+  echo n # Add a new partition
+  echo p # Primary partition
+  echo 1 # Partition number
+  echo   # First sector (Accept default: 1)
+  echo   # Last sector (Accept default: varies)
+  echo w # Write changes
+  ) | sudo fdisk
+  - mkfs.ext4 /dev/sdc1 -L DataDrive
+  - cp /etc/fstab /etc/fstab.$(date +%Y-%m-%d)
+  - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
+  - mkdir /media/gitdata
+  
