@@ -14,8 +14,7 @@
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
           "description": "SG Data Science LDAP Users"
-        },
-        "serverAdmins": "SG DSGROUPDEV Server Administrators"
+        }
       }
     },
     "network": {
@@ -33,6 +32,7 @@
       "rg": "RG_DSG_DC",
       "vmName": "DC",
       "hostname": "MGMTDEVDC",
+      "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
       "ip": "10.220.1.250"
     },
     "storage": {
@@ -57,7 +57,7 @@
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": {},
+        "serverAdmins": "SG DSGROUP9 Server Administrators",
         "researchUsers": {
           "name": "SG DSGROUP9 Research Users",
           "description": "SG DSGROUP9 Research Users"
@@ -99,6 +99,7 @@
       "rg": "RG_DSG_DC",
       "vmName": "DSG9DC",
       "hostname": "DSG9DC",
+      "fqdn": "DSG9DC.dsgroup9.co.uk",
       "ip": "10.250.64.250",
       "admin": {
         "username": "atiadmin",
@@ -135,16 +136,19 @@
       "gateway": {
         "vmName": "RDS",
         "hostname": "RDS",
+        "fqdn": "RDS.dsgroup9.co.uk",
         "ip": "10.250.65.250"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
         "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup9.co.uk",
         "ip": "10.250.65.249"
       },
       "sessionHost2": {
         "vmName": "RDSSH2",
         "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup9.co.uk",
         "ip": "10.250.65.248"
       },
       "rg": "RG_DSG_RDS"
@@ -153,17 +157,20 @@
       "rg": "RG_DSG_DATA",
       "vmName": "DATASERVER",
       "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup9.co.uk",
       "ip": "10.250.66.250"
     },
     "linux": {
       "gitlab": {
         "vmName": "GITLAB",
         "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup9.co.uk",
         "ip": "10.250.66.151"
       },
       "hackmd": {
         "vmName": "HACKMD",
         "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup9.co.uk",
         "ip": "10.250.66.152"
       },
       "rg": "RG_DSG_LINUX"
