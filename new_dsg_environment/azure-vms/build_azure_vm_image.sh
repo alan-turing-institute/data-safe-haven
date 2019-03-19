@@ -10,7 +10,7 @@ END="\033[0m"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SOURCEIMAGE="Ubuntu"
 SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_F2s_v2"
+VMSIZE="Standard_F4s_v2"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
