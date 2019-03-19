@@ -46,7 +46,7 @@
                 }    
             },
             "Domain Name": {
-                "defaultValue": "TURINGSAFEHAVEN.CO.UK",
+                "defaultValue": "TURINGSAFEHAVEN.AC.UK",
                 "type": "string",
                 "metadata": {
                     "description": "Enter domain name"
@@ -54,7 +54,7 @@
             }    
         },
     "variables": {
-        "npsname": "SHMDC1",
+        "npsname": "SHMNPS",
         "npsnic": "[concat(variables('npsname'),'_','NIC1')]",
         "npsipaddress": "10.251.0.248",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",

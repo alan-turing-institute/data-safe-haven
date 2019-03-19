@@ -9,7 +9,7 @@ configuration CreateADPDC
         [System.Management.Automation.PSCredential]$Admincreds,
 
         [Parameter(Mandatory)]
-        [System.Management.Automation.PSCredential]$SafeModePW,
+        [System.Management.Automation.PSCredential]$SafeModeAdminCreds,
 
         [Int]$RetryCount=20,
         [Int]$RetryIntervalSec=30
@@ -25,12 +25,13 @@ configuration CreateADPDC
         LocalConfigurationManager
         {
             RebootNodeIfNeeded = $true
+            ConfigurationMode = 'ApplyOnly'
         }
 
         WindowsFeature DNS
         {
-            Ensure = "Present"
-            Name = "DNS"
+            Ensure              = "Present"
+            Name                = "DNS"
         }
 
         Script EnableDNSDiags
@@ -39,74 +40,74 @@ configuration CreateADPDC
                 Set-DnsServerDiagnostics -All $true
                 Write-Verbose -Verbose "Enabling DNS client diagnostics"
             }
-            GetScript =  { @{} }
-            TestScript = { $false }
-            DependsOn = "[WindowsFeature]DNS"
+            GetScript           =  { @{} }
+            TestScript          = { $false }
+            DependsOn           = "[WindowsFeature]DNS"
         }
 
         WindowsFeature DnsTools
         {
-            Ensure = "Present"
-            Name = "RSAT-DNS-Server"
-            DependsOn = "[WindowsFeature]DNS"
+            Ensure              = "Present"
+            Name                = "RSAT-DNS-Server"
+            DependsOn           = "[WindowsFeature]DNS"
         }
 
         xDnsServerAddress DnsServerAddress
         {
-            Address        = '127.0.0.1'
-            InterfaceAlias = $InterfaceAlias
-            AddressFamily  = 'IPv4'
-            DependsOn = "[WindowsFeature]DNS"
+            Address             = '127.0.0.1'
+            InterfaceAlias      = $InterfaceAlias
+            AddressFamily       = 'IPv4'
+            DependsOn           = "[WindowsFeature]DNS"
         }
 
         xWaitforDisk Disk2
         {
-            DiskNumber = 2
-            RetryIntervalSec =$RetryIntervalSec
-            RetryCount = $RetryCount
+            DiskNumber          = 2
+            RetryIntervalSec    = $RetryIntervalSec
+            RetryCount          = $RetryCount
         }
 
         xDisk ADDataDisk {
-            DiskNumber = 2
-            DriveLetter = "F"
-            DependsOn = "[xWaitForDisk]Disk2"
+            DiskNumber          = 2
+            DriveLetter         = "F"
+            DependsOn           = "[xWaitForDisk]Disk2"
         }
 
         WindowsFeature ADDSInstall
         {
-            Ensure = "Present"
-            Name = "AD-Domain-Services"
-            DependsOn="[WindowsFeature]DNS"
+            Ensure              = "Present"
+            Name                = "AD-Domain-Services"
+            DependsOn           = "[WindowsFeature]DNS"
         }
 
         WindowsFeature ADDSTools
         {
-            Ensure = "Present"
-            Name = "RSAT-ADDS-Tools"
-            DependsOn = "[WindowsFeature]ADDSInstall"
+            Ensure              = "Present"
+            Name                = "RSAT-ADDS-Tools"
+            DependsOn           = "[WindowsFeature]ADDSInstall"
         }
 
         WindowsFeature ADAdminCenter
         {
-            Ensure = "Present"
-            Name = "RSAT-AD-AdminCenter"
-            DependsOn = "[WindowsFeature]ADDSTools"
+            Ensure              = "Present"
+            Name                = "RSAT-AD-AdminCenter"
+            DependsOn           = "[WindowsFeature]ADDSTools"
         }
 
         xADDomain FirstDS
         {
             DomainName = $DomainName
-            DomainAdministratorCredential = $DomainCreds
-            SafemodeAdministratorPassword = $SafeModePW
-            DatabasePath = "F:\NTDS"
-            LogPath = "F:\NTDS"
-            SysvolPath = "F:\SYSVOL"
-            DependsOn = @("[WindowsFeature]ADDSInstall", "[xDisk]ADDataDisk")
+            DomainAdministratorCredential   = $DomainCreds
+            SafemodeAdministratorPassword   = $SafeModeAdminCreds
+            DatabasePath                    = "F:\NTDS"
+            LogPath                         = "F:\NTDS"
+            SysvolPath                      = "F:\SYSVOL"
+            DependsOn                       = @("[WindowsFeature]ADDSInstall", "[xDisk]ADDataDisk")
         }
 
         xPendingReboot RebootAfterPromotion{
-            Name = "RebootAfterPromotion"
-            DependsOn = "[xADDomain]FirstDS"
+            Name            = "RebootAfterPromotion"
+            DependsOn       = "[xADDomain]FirstDS"
         }
 
    }

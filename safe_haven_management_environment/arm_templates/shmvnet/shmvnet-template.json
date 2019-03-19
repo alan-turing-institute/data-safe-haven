@@ -283,6 +283,24 @@
                         }
                     },
                     {
+                        "name": "Active_Directory_Web_Services",
+                        "properties": {
+                            "description": "Active Directory Web Services",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "9389",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 214,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
                         "name": "RADIUS_Authenitcation_RDS_to_NPS",
                         "properties": {
                             "description": "Allows RDS servers to connection to NPS server for MFA",

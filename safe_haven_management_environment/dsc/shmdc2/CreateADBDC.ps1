@@ -10,7 +10,7 @@ configuration CreateADBDC {
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds,
         [Parameter(Mandatory)]
-        [System.Management.Automation.PSCredential]$SafeModePW,
+        [System.Management.Automation.PSCredential]$SafeModeAdminCreds,
 
 
         [Int]$RetryCount = 500,
@@ -65,7 +65,7 @@ configuration CreateADBDC {
         xADDomainController BDC {
             DomainName                    = $DomainName
             DomainAdministratorCredential = $DomainCreds
-            SafemodeAdministratorPassword = $SafeModePW
+            SafemodeAdministratorPassword = $SafeModeAdminCreds
             DatabasePath                  = "F:\NTDS"
             LogPath                       = "F:\NTDS"
             SysvolPath                    = "F:\SYSVOL"

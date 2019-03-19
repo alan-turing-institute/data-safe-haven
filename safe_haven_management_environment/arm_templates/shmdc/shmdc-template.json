@@ -4,7 +4,7 @@
     "parameters": {
         "VM Size": {
         "type": "string",
-        "defaultValue": "Standard_F4s_v2",
+        "defaultValue": "Standard_DS2_v2",
         "allowedValues": [
             "Standard_F4s_v2",
             "Standard_DS2_v2"                
@@ -203,12 +203,15 @@
                         },
                         "protectedSettings": {
                             "configurationArguments": {
-                              "adminCreds": {
-                                    "UserName": "[parameters('Administrator User')]",
-                                    "Password": "[parameters('Administrator Password')]"
-                                    },
-                              "SafeModePW": "[parameters('SafeMode Password')]"
-                              },
+                                "adminCreds": {
+                                        "UserName": "[parameters('Administrator User')]",
+                                        "Password": "[parameters('Administrator Password')]"
+                                        },
+                                "SafeModeAdminCreds" :{
+                                        "UserName": "[parameters('Administrator User')]",
+                                        "Password": "[parameters('SafeMode Password')]"
+                                        }
+                                },
                             "configurationUrlSasToken": "[parameters('Artifacts Location SAS Token')]"
                         }
                     }
@@ -369,10 +372,14 @@
                         },
                         "protectedSettings": {
                             "configurationArguments": {
-                              "adminCreds": {
+                                "adminCreds": {
                                     "UserName": "[parameters('Administrator User')]",
                                     "Password": "[parameters('Administrator Password')]"
-                                    }
+                                    },
+                                "SafeModeAdminCreds" :{
+                                    "UserName": "[parameters('Administrator User')]",
+                                    "Password": "[parameters('SafeMode Password')]"
+                                    }   
                                 },
                             "configurationUrlSasToken": "[parameters('Artifacts Location SAS Token')]"
                         }
