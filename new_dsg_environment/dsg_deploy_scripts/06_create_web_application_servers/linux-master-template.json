@@ -19,7 +19,7 @@
         },
         "GITLab IP Address": {
             "type": "string",
-            "defaultValue": "10.250.x.151",
+            "defaultValue": "10.250.x.153",
             "metadata": {
                 "description": "Enter IP address for VM, must end in 151"
             }    
@@ -41,7 +41,7 @@
         },
         "HACKMD IP Address": {
             "type": "string",
-            "defaultValue": "10.250.x.152",
+            "defaultValue": "10.250.x.154",
             "metadata": {
                 "description": "Enter IP address for VM, must end in 152"
             }    
