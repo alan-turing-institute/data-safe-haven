@@ -83,7 +83,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     DOMAIN="dsgroupdev.co.uk"
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_BIND_DN="cn=DSGGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_BIND_DN="cn=DSGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 else
     # Production DSGs have uniform settings
@@ -153,11 +153,12 @@ if [ "$DSG_ID_UPPER" = "6" ]; then
 fi
 if [ "$DSG_ID_UPPER" = "9" ]; then
     IP_PREFIX="10.250.66."
-    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-9.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-${DSG_ID_LOWER}.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP="10.1.0.20"
+    LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
 fi
 
 
