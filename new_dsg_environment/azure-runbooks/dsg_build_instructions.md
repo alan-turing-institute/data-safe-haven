@@ -139,9 +139,13 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
 
 - Generate a new full configuration file for the new DSG using the following commands.
+
   - `Import-Module ./DsgConfig.psm1 -Force`
-  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `production`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`),
+
+
   - A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
+
+  - Commit this new full configuration file to the Safe Haven repository
 
 ## 0. Prepare Safe Haven Management Domain
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
