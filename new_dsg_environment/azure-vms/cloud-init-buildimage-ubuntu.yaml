@@ -366,6 +366,7 @@ runcmd:
   # 201903191654 was with expanded lists and better timing information
   # 201903191822 was with better logging
   # 201903191850 was with tensorflow dependencies included in 3.7
+  # 201903201004 was with conflicts removed
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -438,8 +439,8 @@ runcmd:
   # Create or install conda environments
   # Python 2.7
   - echo "*** Working on py27 environment. Will take approximately 150 minutes... ***"
-  - START_TIME=$(date --rfc-3339=seconds)
-  - echo "Starting at ${START_TIME}"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Asking conda for the following packages - $PYTHON27PACKAGES"
   - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
@@ -448,11 +449,14 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
-  - echo "Finished py27 enviroment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
+  - END_TIME=$(date +%s)
+  - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py27 environment took $ELAPSED"
   # Python 3.6
   - echo "*** Working on py36 environment. Will take approximately 40 minutes... ***"
-  - START_TIME=$(date --rfc-3339=seconds)
-  - echo "Starting at ${START_TIME}"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Asking conda for the following packages - $PYTHON36PACKAGES"
   - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
@@ -461,11 +465,12 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
-  - echo "Finished py36 environment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py36 environment took $ELAPSED"
   # Python 3.7
   - echo "*** Working on py37 environment. Will take approximately 40 minutes... ***"
-  - START_TIME=$(date --rfc-3339=seconds)
-  - echo "Starting at ${START_TIME}"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Asking conda for the following packages - $PYTHON37PACKAGES"
   - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37PACKAGES; else conda install -y --verbose --name py37 $PYTHON37PACKAGES; fi
   - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
@@ -474,7 +479,8 @@ runcmd:
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
-  - echo "Finished py37 environment at $(date --rfc-3339=seconds) (started at ${START_TIME})"
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py37 environment took $ELAPSED"
   # List environments
   - echo "*** Final conda environments... ***"
   - conda env list
