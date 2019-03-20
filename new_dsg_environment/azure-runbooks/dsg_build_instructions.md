@@ -777,6 +777,18 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Once installed logout of the server
 
+### Lock down RDS Network configuration
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
+
+- Run the `./SecureRdsServers.ps1` script, providing the DSG ID when prompted
+
 ## 5. Deploy Data Server
 
 ### Create Dataserver VM
@@ -1082,6 +1094,17 @@ sudo git clone https://github.com/hackmdio/docker-hackmd.git
 
 - You can test Gitlab independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
+### Lock down Web Application Server Network configuration
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
+
+- Run the `./SecureWebAppServers.ps1` script, providing the DSG ID when prompted
 ## Deploy initial shared Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
 - Ensure you have carried out the steps in the "Pre-requisites" section
@@ -1092,35 +1115,7 @@ See the [Compute VM build and deployment guide](../azure-vms/README.md).
 - Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
 as per the "Safe deployment to a Turing DSG environment" section
 
-## Network Lock Down
-
-- Once all the VMs have been deployed and updated before the DSG is ready the network on the RDS Session servers and Linux servers needs locking down to prevent them from accessing the internet.
-
-- Open the Azure Portal
-
-- Locate the "Network Security Groups" management pane.
-
-- RDS Servers
-
-  - Open "NSG_SessionHosts"
-
-  - Associate the following NICs to this NSG
-
-    - RDSSH1_NIC1
-
-    - RDSSH2_NIC2
-
-- Web application Servers
-
-  - Open NSG_Linux_Servers
-
-  - Associate the following NICs to this NSG
-
-    - GITLAB_NIC1
-
-    - HACKMD_NIC1
-
-## Server administration
+## Server list
 
 - The following servers are created as a result of these instructions:
   - DSG`<dsg-id>`DC (domain controller)

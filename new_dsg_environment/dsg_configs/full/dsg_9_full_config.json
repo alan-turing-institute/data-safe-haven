@@ -151,7 +151,8 @@
         "fqdn": "RDSSH2.dsgroup9.co.uk",
         "ip": "10.250.65.248"
       },
-      "rg": "RG_DSG_RDS"
+      "rg": "RG_DSG_RDS",
+      "nsg": "NSG_RDS_Server"
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
@@ -173,7 +174,8 @@
         "fqdn": "HACKMD.dsgroup9.co.uk",
         "ip": "10.250.66.152"
       },
-      "rg": "RG_DSG_LINUX"
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
     }
   }
 }

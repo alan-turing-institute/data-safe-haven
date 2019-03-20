@@ -185,6 +185,7 @@ function Add-DsgConfig {
         sessionHost2 = [ordered]@{}
     }
     $config.dsg.rds.rg = "RG_DSG_RDS"
+    $config.dsg.rds.nsg = "NSG_RDS_Server"
     $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
@@ -214,6 +215,7 @@ function Add-DsgConfig {
         hackmd = [ordered]@{}
     }
     $config.dsg.linux.rg = "RG_DSG_LINUX"
+    $config.dsg.linux.nsg = "NSG_Linux_Servers"
     $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
