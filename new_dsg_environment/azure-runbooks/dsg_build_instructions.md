@@ -5,11 +5,13 @@
 
 ### Access to required Safe Haven Management resources
 
-- Access to the relevant Safe Haven Management Azure subscription
+- You need to be a member of the relevant "Safe Haven `<shm-id>` Admins" Security Group, where `<shm-id>` is `test` for test and `production` for production. This will give you the following access:
 
-- Administrative access to the relevant Safe Haven Management Active Directory Domain
+  - Administrative access to the relevant Safe Haven Management Azure subscription
 
-- Administrative access to the relevant Safe Haven Management VMs
+  - Administrative access to the relevant Safe Haven Management Active Directory Domain
+
+  - Administrative access to the relevant Safe Haven Management VMs
 
 - #### Download a client VPN certificate for the Safe Haven Management VNet
 
@@ -27,21 +29,45 @@
 
 - #### Configure a VPN connection to the Safe Haven Management VNet
 
-  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_<shm-slug>_VNET -> <shm-slug>_VNET1_GW`, where `<dsg-slug>` is `DSG` for test and `SHM` for production. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 
   - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+
+  - On Windows you may get a "|Windows protected your PC" pop up. If so, click `More info -> Run anyway`
+
+  - If the default name for the VPN connection does not make it clear which SHM or DSG environment you are connecting to, select the VPN, click "advanced options" and rename to include the SHM or DSG IDs
 
   - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
     ![image1.png](images/media/image1.png)
 
-  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is `prod` for the production SHM environment and `test` for the test SHM environment.
+  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is `prod` for the production SHM environment and `test` for the test SHM environment (or "DSG `<dsg-id>` (`<shm-id>`)" for VPNs to DSG VNets).
 
 ### Access to required DSG resources
 
 - Access to a new Azure subscription which the DSG will be deployed to
+  
+  - If a subscription does not exist, create one with the name `Data Study Group <dsg-id> (<shm-id>)`, picking a DSG ID that is not yet in use and setting `<shm-id>` to `test` for test and `prod` for production.
+
+  - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
+
+  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG suubscription
 
 - Access to a public routable domain name for the DSG and its name servers
+
+  - This should be called `dsgroup<dsg-id>.co.uk` and Rob Clarke can buy a new one if required
+
+  - A DNS for this domain must exist in the Safe Haven Management subscription, in the `RG_SHM_DNS` resource group. To create a new DNS zone:
+   
+    - From within the resource group click `"+" Add -> DNS Zone` and click "create"
+
+    - Set the **Name** field to the DSG domain (i.e. `dsgroup<dsg-id>.co.uk`)
+
+    - Click "create and review"
+
+    - View the new Azure DNS zone and copy the 4 nameservers in the "NS" record.
+    
+    - Send the nameservers to Rob Clarke to add the domain's DNS record at the domain registrar
 
 ### Install and configure PowerShell for Azure
 
@@ -114,7 +140,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Generate a new full configuration file for the new DSG using the following commands.
   - `Import-Module ./DsgConfig.psm1 -Force`
-  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`),
+  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `production`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`),
   - A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
 
 ## 0. Prepare Safe Haven Management Domain
@@ -494,7 +520,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 To make this Remote Desktop Service accessible from the internet an `A` record will need to be added to the DNS Zone for the domain associated with the DSG.
 
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SH_DNS -> dgroup<dsg-id>.co.uk`. - Create an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal. 
+- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal. 
 
 #### Configuration of SSL on RDS Gateway
 
