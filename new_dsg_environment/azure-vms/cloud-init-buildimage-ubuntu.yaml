@@ -370,7 +370,7 @@ runcmd:
   # 201903201126 was with package list sorted
   # 201903201204 was with updated package list sorting
   # 201903201357 was with increased verbosity
-  # 201903201420 was with changed IP range and tidied code (post review with Martin)
+  # 201903201424 was with changed IP range and tidied code (post review with Martin)
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"

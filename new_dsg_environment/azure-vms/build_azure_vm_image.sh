@@ -124,7 +124,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --direction Inbound \
         --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
-        --source-address-prefixes 193.60.220.240,193.60.220.253 \
+        --source-address-prefixes 193.60.220.240 193.60.220.253 \
         --source-port-ranges "*" \
         --destination-address-prefixes "*" \
         --destination-port-ranges 22 \
