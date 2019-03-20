@@ -1084,7 +1084,7 @@ sudo git clone https://github.com/hackmdio/docker-hackmd.git
 
 ## Deploy initial shared Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
-- Ensure you have carried out the steps in the "Pre-requistites" section
+- Ensure you have carried out the steps in the "Pre-requisites" section
 - Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
   - Add the new <dsg-id> to the "Check DSG group ID is valid" line
   - Amend the "Set defaults for test and production environments" section to set the right defaults for the new DSG
