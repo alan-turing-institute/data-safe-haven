@@ -734,6 +734,20 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Repeat the process you did for the "RDG_AllDomainComputers" policy and add the correct Research Users security group.
 
+- In "Server Manager", select `Tools -> Network Policy Server`
+
+- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
+
+  ![](images/media/rds_local_nps_remote_server_selection.png)
+
+-	Highlight the server shown in the “RADIUS Server” column and click “Edit”
+
+-	Change to the “Load Balancing” tab and change the parameters to match the screen below
+
+    ![](images/media/rds_local_nps_remote_server_timeouts.png)
+
+-	Click “OK” twice and close “Network Policy Server” MMC
+
 ### Install software on Presentation VM (RDSSSH2)
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
