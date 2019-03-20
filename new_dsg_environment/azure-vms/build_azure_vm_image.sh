@@ -19,7 +19,7 @@ LOCATION="westeurope" # have to build in West Europe in order to use Shared Imag
 NSGNAME="NSG_IMAGE_BUILD"
 VNETNAME="VNET_IMAGE_BUILD"
 SUBNETNAME="SBNET_IMAGE_BUILD"
-IP_RANGE="10.0.0.0/16" # take the Azure default for the moment. This may need to be changed in future to avoid clashes with other deployments
+IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 
 # Document usage for this script
 print_usage_and_exit() {
