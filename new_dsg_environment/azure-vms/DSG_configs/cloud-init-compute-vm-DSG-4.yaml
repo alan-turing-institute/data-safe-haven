@@ -135,19 +135,43 @@ write_files:
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
       mv common-session /etc/pam.d/common-session
       cat /etc/pam.d/common-session
-  - path: "/etc/pip.conf"
-    content: |
-      # Add the PyPI mirror to our global settings
-      [global]
-      index = http://PYPI_MIRROR_IP:3128
-      index-url = http://PYPI_MIRROR_IP:3128/simple
-      trusted-host = PYPI_MIRROR_IP
 
 runcmd:
   # ==========================================
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
+  # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
+  # Upgrade pip in anticipation of using it to install some packages
+  - echo "Upgrading pip"
+  - /anaconda/envs/py27/bin/pip install --upgrade pip
+  - /anaconda/envs/py36/bin/pip install --upgrade pip
+  - /anaconda/envs/py35/bin/pip install --upgrade pip
+  # Install python packages: (list below)
+  - echo "Installing additional python packages"
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONALLPACKAGES="basemap bokeh fbprophet gensim geopandas keras matplotlib networkx numpy pandas pandas-profiling pyLDAvis pymc3 scikit-learn seaborn tsfresh"
+  - export PYTHON27PACKAGES="tensorflow"
+  - export PYTHON35PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
+  - export PYTHON36PACKAGES="gpflow pygpu pyopengl pyopengl-accelerate tensorflow-gpu"
+  # Remove packages that cause conflicts with desired packages
+  - echo "*** Working on py27 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON27PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py27 $PYTHONPACKAGES
+  # - echo "*** Working on py35 environment... ***"
+  # - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON35PACKAGES"
+  # - /anaconda/bin/conda install -y --verbose --name py35 $PYTHONPACKAGES
+  # - /anaconda/envs/py35/bin/pip install bluesky-simulator
+  - echo "*** Working on py36 environment... ***"
+  - export PYTHONPACKAGES="$PYTHONALLPACKAGES $PYTHON36PACKAGES"
+  - /anaconda/bin/conda install -y --verbose --name py36 $PYTHONPACKAGES
+  - /anaconda/envs/py36/bin/pip install bluesky-simulator
+  # Install R packages:
+  - echo "Installing additional R packages"
+  - Rscript -e "install.packages(c('anomalize', 'caTools', 'gdata', 'gplots', 'gtools', 'here', 'KernSmooth', 'plsgenomics', 'prophet', 'janitor', 'tableone', 'wavethresh'))"
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
+  # Create shared data folder and grant all users access
+  - sudo mkdir /data
+  - sudo chmod go+rw /data
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart

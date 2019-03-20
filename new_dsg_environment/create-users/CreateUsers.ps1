@@ -19,9 +19,12 @@ Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
 Import-Csv $UserFilePath | foreach-object {
-$UserPrincipalName = $_.AccountName + "@" + "$domain"
+Write-Host $_
+
+$UserPrincipalName = $_.SamAccountName + "@" + "$domain"
+Write-Host "UserPrincipalName = " $UserPrincipalName
 $password = [System.Web.Security.Membership]::GeneratePassword(12,3)
-New-ADUser  -SamAccountName $_.AccountName `
+New-ADUser  -SamAccountName $_.SamAccountName `
             -UserPrincipalName $UserPrincipalName `
             -Name "$($_.GivenName) $($_.Surname)" `
             -DisplayName "$($_.GivenName) $($_.Surname)" `

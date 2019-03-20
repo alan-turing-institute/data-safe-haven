@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "Safe Haven Management Testing",
+    "domain": "dsgroupdev.co.uk",
+    "shId": "test",
+    "location": "uksouth",
+    "ipPrefix": "10.220.1",
+    "dcHostname": "MGMTDEVDC"
+}

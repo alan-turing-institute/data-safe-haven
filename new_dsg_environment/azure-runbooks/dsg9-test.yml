@@ -1,0 +1,19 @@
+general:
+  short_name: "DSG9"
+  long_name: "DSGROUP9"
+  domain: "dsgroup9.co.uk"
+  ip_prefix: "10.250"
+  ip_third_octet: "64"
+  dc_ip_address: "10.250.64.250"
+  admin_user: "atiadmin"
+  location: "uksouth"
+  management_domain_npm: "10.220.1.249"
+ldap_users:
+  - gitlab
+  - hackmd
+  - testuser
+  - dsgpu
+  
+  
+ 
+  

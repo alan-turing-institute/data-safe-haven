@@ -1,1 +1,4 @@
 .idea/
+
+# All secrets folders, no matter how nested
+secrets/

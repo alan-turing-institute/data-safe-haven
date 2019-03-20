@@ -1,0 +1,8 @@
+{
+    "subscriptionName": "Safe Haven Management",
+    "domain": "turingsafehaven.ac.uk",
+    "shId": "prod",
+    "location": "uksouth",
+    "ipPrefix": "10.220.0",
+    "dcHostname": "SHMDC1"
+}

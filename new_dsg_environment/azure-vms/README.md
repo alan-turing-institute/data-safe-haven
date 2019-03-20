@@ -59,15 +59,37 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 ```
 
 ## Creating a DSG environment
-At the moment this is not scripted (environments have been created by Rob). Watch this space...
+See [DSG Build instructions](../azure-runbooks/dsg_build_instructions.md).
 
-## Deploying a VM from the image gallery into a DSG environment
-VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script.
-This deploys from an image stored in a gallery in `subscription_source` into a resource group in `subscription_target`.
-This deployment should be into a pre-created environment, so the `nsg_name`, `vnet_name` and `subnet_name` must all exist before this script is run.
+## Safe deployment to a Turing DSG environment
+VMs can be safely deployed into one of the existing Turing DSG environments using the `./deploy_compute_vm_to_turing_dsg.sh` script.
+This script knows the config parameters for the existing Turing DSGs and only needs to be provided with the DSG ID, VM size and the last octet of the IP address the deployed compute VM should receive.
+The IP address range available for the compute VMs in deployed DSG environemnts is `160-199`.
+By convention, CPU-based VM sizes are deployed in the range `160-179` and GPU-based VM images are deployed in the range `180-199`.
+For testing, the IP address can be omitted and the machine will receive a dynamic IP that is not guaranteed to be persistent across reboots.
 
 ```
-usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-y yaml_cloud_init ]
+usage: ./deploy_compute_vm_to_turing_dsg.sh [-h] -d dsg_group_id [-z vm_size] [-q fixed_ip]
+  -h                           display help
+  -d dsg_group_id [required]   specify the DSG group to deploy to ('TEST' for test or 1-6 for production)
+  -z vm_size                   specify a VM size to use (defaults to 'Standard_DS2_v2')
+  -q fixed_ip                  last part of IP address (first three parts are fixed for each DSG group)
+```
+
+Example usage
+To deploy the intial shared CPU-based compute VM for the `test` DSG.
+
+```bash
+./deploy_compute_vm_to_turing_dsg.sh -g test -q 160
+```
+
+
+## Deploying a VM from the image gallery into a DSG environment
+During development, VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script with more granular control over configuration parameters.
+However, it is strongly recommended that the core configuration parameters for each new DSG are added to the safer `./deploy_compute_vm_to_turing_dsg.sh` script as soon as the DSG environment is created, and that all compute VMs are deployed using this script instead (see section above).
+
+```
+usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]
   -h                                    display help
   -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')
   -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')
@@ -78,10 +100,11 @@ usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_targ
   -d domain [required]                  specify domain name for safe haven
   -a ad_dc_name [required]              specify Active Directory Domain Controller name
   -q ip_address [required]              specify a specific IP address to deploy the VM to
+  -e mgmnt_subnet_ip_range [required]   specify IP range for safe haven management subnet
   -g nsg_name                           specify which NSG to connect to (defaults to 'NSG_Linux_Servers')
   -i source_image                       specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)
   -x source_image_version               specify the version of the source image to use (defaults to prompting to select from available versions)
-  -n machine_name                       specify name of created VM, which must be unique in this resource group (defaults to 'DSG201902281129')
+  -n machine_name                       specify name of created VM, which must be unique in this resource group (defaults to 'DSG201903161520')
   -r resource_group                     specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')
   -u user_name                          specify a username for the admin account (defaults to 'atiadmin')
   -v vnet_name                          specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')
@@ -89,13 +112,15 @@ usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_targ
   -z vm_size                            specify a VM size to use (defaults to 'Standard_DS2_v2')
   -b ldap_base_dn                       specify LDAP base DN
   -c ldap_bind_dn                       specify LDAP bind DN
+  -f ldap_filter                        specify LDAP filter
   -y yaml_cloud_init                    specify a custom cloud-init YAML script
+  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '')
 ```
 
 Example usage
 
 ```bash
-./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing" -i Ubuntu -r RS_DSG_TEST
+./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing"
 ```
 
 For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.

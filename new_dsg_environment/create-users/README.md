@@ -16,6 +16,8 @@
 - Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
 - Note: OU path must be in quotes
 - Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
+- To force a sync to AAD first ensure that the ADSync module is installed: `Import-Module ADSync`
+- Run `Start-ADSyncSyncCycle -PolicyType Delta` (sync may still take ~5 minutes)
 
 ### Troubleshooting
 #### User exists with that name
@@ -23,7 +25,7 @@ First check if that user actually already exists!
 
 If the new user should definitely be a different user, then the following fields need to be unique for all users in the Active Directory. If they are not you will may get a "Name already in use" error.
 - `SamAccountName`: Specified explicitly in the CSV file, so update to `firstname.middle.initials.lastname`
-- `DistinguishedName`: Formed of `CN=<DisplayName>.<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
 
 ## Azure Portal
 - Login into Azure Portal and connect to the correct AAD subscription

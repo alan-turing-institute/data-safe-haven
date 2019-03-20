@@ -25,7 +25,7 @@ DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
 CLOUD_INIT_YAML="cloud-init-compute-vm.yaml"
-PYPI_MIRROR_IP="10.1.0.20"
+PYPI_MIRROR_IP=""
 
 # Other constants
 IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
@@ -37,7 +37,7 @@ DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connectio
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-y yaml_cloud_init ] [-k pypi_mirror_ip]"
+    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]"
     echo "  -h                                    display help"
     echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')"
     echo "  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')"
@@ -48,6 +48,7 @@ print_usage_and_exit() {
     echo "  -d domain [required]                  specify domain name for safe haven"
     echo "  -a ad_dc_name [required]              specify Active Directory Domain Controller name"
     echo "  -q ip_address [required]              specify a specific IP address to deploy the VM to"
+    echo "  -e mgmnt_subnet_ip_range [required]   specify IP range for safe haven management subnet"
     echo "  -g nsg_name                           specify which NSG to connect to (defaults to '${DSG_NSG}')"
     echo "  -i source_image                       specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
     echo "  -x source_image_version               specify the version of the source image to use (defaults to prompting to select from available versions)"
@@ -59,13 +60,14 @@ print_usage_and_exit() {
     echo "  -z vm_size                            specify a VM size to use (defaults to '${VM_SIZE}')"
     echo "  -b ldap_base_dn                       specify LDAP base DN"
     echo "  -c ldap_bind_dn                       specify LDAP bind DN"
+    echo "  -f ldap_filter                        specify LDAP filter"
     echo "  -y yaml_cloud_init                    specify a custom cloud-init YAML script"
-    echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}'"
+    echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:k:" opt; do
+while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:e:b:c:f:q:y:k:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -121,11 +123,17 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:k:" opt; do
         a)
             AD_DC_NAME=$OPTARG
             ;;
+        e)
+            MGMNT_SUBNET_IP_RANGE=$OPTARG
+            ;;
         b)
             LDAP_BASE_DN=$OPTARG
             ;;
         c)
             LDAP_BIND_DN=$OPTARG
+            ;;
+        f)
+            LDAP_FILTER=$OPTARG
             ;;
         q)
             IP_ADDRESS=$OPTARG
@@ -254,11 +262,7 @@ fi
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
-    if [ "$SUBSCRIPTIONTARGET" == "Data Study Group Testing" ]; then
-        LDAP_SERVER_IP_RANGE="10.220.1.0/24"
-    else
-        LDAP_SERVER_IP_RANGE="10.251.0.0/24"
-    fi
+
     # Inbound: allow LDAP then deny all
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
@@ -267,7 +271,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --name InboundAllowLDAP \
         --description "Inbound allow LDAP" \
         --access "Allow" \
-        --source-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --source-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --source-port-ranges 88 389 636 \
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
@@ -296,7 +300,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --access "Allow" \
         --source-address-prefixes VirtualNetwork \
         --source-port-ranges "*" \
-        --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --destination-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 2000
@@ -365,11 +369,15 @@ DOMAIN_LOWER_REGEX="s/DOMAIN_LOWER/${DOMAIN_LOWER}/g"
 DOMAIN_UPPER_REGEX="s/DOMAIN_UPPER/${DOMAIN_UPPER}/g"
 LDAP_BASE_DN_REGEX="s/LDAP_BASE_DN/${LDAP_BASE_DN}/g"
 LDAP_BIND_DN_REGEX="s/LDAP_BIND_DN/${LDAP_BIND_DN}/g"
+# Escape ampersand in the LDAP filter as it is a special character for sed
+LDAP_FILTER_ESCAPED=${LDAP_FILTER/"&"/"\&"}
+LDAP_FILTER_REGEX="s/LDAP_FILTER/${LDAP_FILTER_ESCAPED}/g"
 AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
 AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
 PYPI_MIRROR_IP_REGEX="s/PYPI_MIRROR_IP/${PYPI_MIRROR_IP}/"
 # Substitute regexes
-sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
+sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
+
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
