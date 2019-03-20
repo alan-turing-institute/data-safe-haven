@@ -369,6 +369,7 @@ runcmd:
   # 201903201004 was with conflicts removed
   # 201903201126 was with package list sorted
   # 201903201204 was with updated package list sorting
+  # 201903201357 was with increased verbosity
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -440,14 +441,16 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo "*** Working on py27 environment. Will take approximately 150 minutes... ***"
+  - echo "*** Working on py27 environment. Will take approximately 90 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-  - echo "Asking conda for the following packages - $(echo $PYTHON27PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27PACKAGES; else conda install -y --verbose --name py27 $PYTHON27PACKAGES; fi
+  - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON27_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27_CONDA_PACKAGES; else conda install -y --verbose --name py27 $PYTHON27_CONDA_PACKAGES; fi
   - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
-  - echo "Installing additional packages with pip"
-  - /anaconda/envs/py27/bin/pip install $PY_27_PIP_PACKAGES
+  - echo "Installing $(echo $PYTHON27_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON27_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py27/bin/pip install $PYTHON27_PIP_PACKAGES
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
@@ -456,28 +459,32 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo "*** Building py27 environment took $ELAPSED"
   # Python 3.6
-  - echo "*** Working on py36 environment. Will take approximately 40 minutes... ***"
+  - echo "*** Working on py36 environment. Will take approximately 45 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-  - echo "Asking conda for the following packages - $(echo $PYTHON36PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36PACKAGES; else conda install -y --verbose --name py36 $PYTHON36PACKAGES; fi
+  - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON36_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36_CONDA_PACKAGES; else conda install -y --verbose --name py36 $PYTHON36_CONDA_PACKAGES; fi
   - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  - echo "Installing additional packages with pip"
-  - /anaconda/envs/py36/bin/pip install $PY_36_PIP_PACKAGES
+  - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo "*** Building py36 environment took $ELAPSED"
   # Python 3.7
-  - echo "*** Working on py37 environment. Will take approximately 40 minutes... ***"
+  - echo "*** Working on py37 environment. Will take approximately 15 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-  - echo "Asking conda for the following packages - $(echo $PYTHON37PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-  - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37PACKAGES; else conda install -y --verbose --name py37 $PYTHON37PACKAGES; fi
+  - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON37_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37_CONDA_PACKAGES; else conda install -y --verbose --name py37 $PYTHON37_CONDA_PACKAGES; fi
   - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
-  - echo "Installing additional packages with pip"
-  - /anaconda/envs/py37/bin/pip install $PY_37_PIP_PACKAGES
+  - echo "Installing $(echo $PYTHON37_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON37_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py37/bin/pip install $PYTHON37_PIP_PACKAGES
   - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi

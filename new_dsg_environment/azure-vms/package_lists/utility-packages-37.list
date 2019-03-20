@@ -37,10 +37,12 @@ nose
 numba
 pbr
 pillow
+protobuf
 pycodestyle
 pycosat
 pytables
 pytest
+setuptools-git
 six
 sphinx
 sqlite
