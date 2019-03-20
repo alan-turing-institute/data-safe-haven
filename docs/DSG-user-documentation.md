@@ -365,6 +365,25 @@ If you are in one of the Tier 0/1 level challenges:
 You do not need to use the above instructions as it is an open environment.  
 Your facilitator has an example presentation template which your team can use. 
 
+## Section 4.9. Outputs from the week
+
+We will close down the compute virtual machines on the Friday afternoon.
+
+That means that anything that is a valuable output of the week should be stored in the persistent storage area - shared drive - rather than your local user storage, OR in the GitLab repository.
+
+Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
+**Should we be encourgaing people to put data in GitLab...?**
+
+Everything that is not stored in a GitLab repository on Friday lunchtime will be DESTROYED FOR EVER.
+
+Please do this early and often through the week (not just for the presentation.)
+
+The folders will be:
+* Presentation
+* Transformed data/derived data
+* Report
+* ???? **UPDATE**
+
 ## Acknowledgments
 
 Based on an initial document by Kirstie Whitaker.
