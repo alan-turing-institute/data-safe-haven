@@ -371,6 +371,7 @@ runcmd:
   # 201903201204 was with updated package list sorting
   # 201903201357 was with increased verbosity
   # 201903201424 was with changed IP range and tidied code (post review with Martin)
+  # 201903201535 was with increased verbosity for R
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -492,7 +493,9 @@ runcmd:
   # (R builds a lot of packages from source so we can get a decent speedup here)
   - Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
   # CRAN
-  - echo "*** Installing additional R packages... ***"
+  - echo "*** Installing additional R packages. Will take approximately XX minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
   - Rscript -e "installed.packages()[,'Package']"
   - echo "CRAN packages remaining to be installed:"
@@ -508,12 +511,15 @@ runcmd:
   # Install RStudio
   - echo "*** Installing RStudio... ***"
   # Ensure RStudio picks up system R rather than Conda R for all users
+  - export RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   - cd /tmp
-  - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
-  - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
-  - rm -f rstudio-xenial-1.1.463-amd64.deb
+  - wget https://download1.rstudio.org/${RSTUDIO_DEB}
+  - gdebi --non-interactive ${RSTUDIO_DEB}
+  - rm -f ${RSTUDIO_DEB}
   - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Installing R packages and RStudio took $ELAPSED"
 
   # Install latest julia version
   - echo "*** Installing Julia... ***"
