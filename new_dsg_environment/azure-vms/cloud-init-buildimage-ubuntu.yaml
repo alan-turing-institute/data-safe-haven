@@ -372,6 +372,7 @@ runcmd:
   # 201903201357 was with increased verbosity
   # 201903201424 was with changed IP range and tidied code (post review with Martin)
   # 201903201535 was with increased verbosity for R
+  # 201903201733 was a rebuild
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
@@ -615,4 +616,5 @@ runcmd:
   # - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 final_message:
-  "The system is setup and deprovisioned, after $UPTIME seconds"
+  "The system is setup and deprovisioned, after $(date -d@$UPTIME -u +'%Hh %Mm %Ss')"
+
