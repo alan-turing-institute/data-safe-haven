@@ -136,7 +136,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
 
 - Generate a new full configuration file for the new DSG using the following commands.
   - `Import-Module ./DsgConfig.psm1 -Force`
