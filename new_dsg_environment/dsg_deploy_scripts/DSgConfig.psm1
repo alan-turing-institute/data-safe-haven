@@ -5,7 +5,7 @@ function Add-DsgConfig {
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
         $dsgId
     )
-    $configRootDir = Join-Path $PSScriptRoot ".." "dsg_configs" -Resolve
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
 
     $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"  
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
