@@ -2,7 +2,7 @@ package_upgrade: false
 
 #write_files:
 runcmd:
-  - echo "`<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk" >> /etc/hosts
+  - echo "<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
   - dpkg-reconfigure -f noninteractive tzdata
   - sudo fdisk /dev/sdc
