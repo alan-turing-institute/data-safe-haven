@@ -357,23 +357,6 @@ runcmd:
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
-  # 201903191041 was with Standard_F4s_v2
-  # 201903191106 was with Standard_F8s_v2
-  # 201903191218 was with Standard_E8s_v3
-  # 201903191401 was with graph-tool from ostrokach-forge
-  # 201903191414 was with restored list of packages
-  # 201903191547 was with tensorflow-gpu moved to pip for 3.7
-  # 201903191654 was with expanded lists and better timing information
-  # 201903191822 was with better logging
-  # 201903191850 was with tensorflow dependencies included in 3.7
-  # 201903201004 was with conflicts removed
-  # 201903201126 was with package list sorted
-  # 201903201204 was with updated package list sorting
-  # 201903201357 was with increased verbosity
-  # 201903201424 was with changed IP range and tidied code (post review with Martin)
-  # 201903201535 was with increased verbosity for R
-  # 201903201733 was a rebuild
-
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
   - apt-get install -y --no-install-recommends nvidia-driver-410
@@ -411,11 +394,11 @@ runcmd:
   - curl -O $ANACONDA_INSTALLER_URL
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
+  # Update conda
+  - conda update -n base -c defaults conda
   # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
-  # Update conda
-  - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels pytorch # for pytorch, torchvision
@@ -618,4 +601,3 @@ runcmd:
 
 final_message:
   "The system is setup and deprovisioned, after $UPTIME seconds ($RUNTIME)"
-
