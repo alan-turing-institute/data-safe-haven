@@ -599,7 +599,7 @@ runcmd:
   # Fix internet connectivity that is broken by waagent deprovisioning
   - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   # Calculate full run time
-  - export RUNTIME="$(date -d@$UPTIME -u +'%Hh %Mm %Ss')"
+  - echo "The build took $(date -d@$UPTIME -u +'%Hh %Mm %Ss')"
 
 final_message:
-  "The system is setup and deprovisioned, after $UPTIME seconds ($RUNTIME)"
+  "The system is setup and deprovisioned, after $UPTIME seconds"
