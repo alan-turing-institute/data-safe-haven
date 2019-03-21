@@ -386,6 +386,7 @@ runcmd:
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
+  - echo "*** Installing conda... ***"
   - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - export ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "*** Installing Anaconda ***"
@@ -398,6 +399,7 @@ runcmd:
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda
+  - echo "*** Updating conda installation... ***"
   - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge

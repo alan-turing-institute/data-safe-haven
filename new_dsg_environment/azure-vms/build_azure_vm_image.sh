@@ -151,7 +151,7 @@ fi
 TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-        echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
+        echo -e "${BOLD}Enabling ${BLUE}Torch${END}${BOLD} compilation${END}"
         # Make a temporary config file with the Torch lines uncommented
         sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
         MACHINENAME="${MACHINENAME}-UbuntuTorch1804Base"
