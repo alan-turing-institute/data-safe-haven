@@ -73,7 +73,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+    # LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
     MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUP9_VNet1"
