@@ -394,11 +394,11 @@ runcmd:
   - curl -O $ANACONDA_INSTALLER_URL
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
-  # Update conda
-  - conda update -n base -c defaults conda
   # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
+  # Update conda
+  - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge
   - conda config --add channels pytorch # for pytorch, torchvision
