@@ -56,6 +56,12 @@ while getopts "hi:r:s:z:" opt; do
     esac
 done
 
+# Check that source image is "Ubuntu"
+if [ "$SOURCEIMAGE" != "Ubuntu" ]; then
+    echo -e "${RED}At the moment we only support building the Ubuntu Compute VM${END}"
+    print_usage_and_exit
+fi
+
 # Check that a subscription has been provided and switch to it
 if [ "$SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
@@ -69,7 +75,6 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
-
 
 # Ensure required features for shared image galleries are enabled for this subscription
 FEATURE="GalleryPreview"
