@@ -169,22 +169,22 @@ runcmd:
   - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo "*** Building py27 environment took $ELAPSED"
-  # # Python 3.6
-  # - echo "*** Working on py36 environment. Will take approximately 45 minutes... ***"
-  # - START_TIME=$(date +%s)
-  # - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-  # - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
-  # - echo "$(echo $PYTHON36_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-  # - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36_CONDA_PACKAGES; else conda install -y --verbose --name py36 $PYTHON36_CONDA_PACKAGES; fi
-  # - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
-  # - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
-  # - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-  # - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
-  # - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
-  # - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
-  # - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
-  # - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  # - echo "*** Building py36 environment took $ELAPSED"
+  # Python 3.6
+  - echo "*** Working on py36 environment. Will take approximately 45 minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON36_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36_CONDA_PACKAGES; else conda install -y --verbose --name py36 $PYTHON36_CONDA_PACKAGES; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+  - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
+  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
+  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
+  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py36 environment took $ELAPSED"
   # Python 3.7
   - echo "*** Working on py37 environment. Will take approximately 15 minutes... ***"
   - START_TIME=$(date +%s)
