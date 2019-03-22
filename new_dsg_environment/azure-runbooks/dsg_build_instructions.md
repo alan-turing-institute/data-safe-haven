@@ -924,7 +924,7 @@ sudo git clone https://github.com/hackmdio/docker-hackmd.git
 
 ### Configure GitLab Server
 
-- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
+- Connect to the **Gitlab** server at `<DSG-Subnet-Data-Prefix>.151` with Putty (or any SSH client)
 
 - Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
