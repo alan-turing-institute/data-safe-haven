@@ -18,7 +18,7 @@ $sh1NicName = $config.dsg.rds.sessionHost1.vmName + "_NIC1";
 $sh2NicName = $config.dsg.rds.sessionHost2.vmName + "_NIC1";
 
 # Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
-$nsg = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg;
+$nsg = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.sessionHosts;
 $sh1Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh1NicName;
 $sh2Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh2NicName;
 

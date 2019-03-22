@@ -152,7 +152,10 @@
         "ip": "10.250.65.248"
       },
       "rg": "RG_DSG_RDS",
-      "nsg": "NSG_RDS_Server"
+      "nsg": {
+        "gateway": "NSG_RDS_Server",
+        "sessionHosts": "NSG_SessionHosts"
+      }
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
