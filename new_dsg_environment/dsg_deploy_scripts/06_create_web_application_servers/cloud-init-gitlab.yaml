@@ -1,3 +1,4 @@
+#cloud-config
 package_upgrade: false
 
 write_files:
