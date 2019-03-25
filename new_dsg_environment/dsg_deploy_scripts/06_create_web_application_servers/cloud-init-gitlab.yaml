@@ -30,8 +30,7 @@ write_files:
       git_data_dirs({ "default" => { "path" => "/media/gitdata" } })          
   
 runcmd:
-  - echo "script running"
-  - touch /root/running
+  - echo "Gitlab cloud-init script running"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
   - dpkg-reconfigure -f noninteractive tzdata
