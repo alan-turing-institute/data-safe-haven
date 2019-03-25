@@ -24,7 +24,7 @@ $gitlabFqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.dsg.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-# Fetch HackMD password (or create if not present)
+# Fetch Gitlab root user password (or create if not present)
 $gitlabRootPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
 if ($null -eq $gitlabRootPassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
