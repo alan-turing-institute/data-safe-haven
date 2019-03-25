@@ -13,13 +13,13 @@ write_files:
           port: 389
           uid: 'sAMAccountName'
           method: 'plain' # "tls" or "ssl" or "plain"
-          bind_dn: 'CN=DSGROUP<gitlab-rb-dsgroup> Gitlab LDAP,OU=Safe Haven Service Accounts,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>'
+          bind_dn: '<gitlab-rb-bind-dn>'
           password: '<gitlab-rb-pw>'
           active_directory: true
           allow_username_or_email_login: true
           block_auto_created_users: false
-          base: 'OU=Safe Haven Research Users,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>'
-          user_filter: '(&(objectClass=user)(memberOf=CN=SG DSGROUP<gitlab-rb-dsgroup> Research Users,OU=Safe Haven Security Groups,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>))' 
+          base: '<gitlab-rb-base>'
+          user_filter: '<gitlab-rb-user-filter>'
       attributes:
         username: ['uid', 'userid', 'sAMAccountName']
         email:    ['mail', 'email', 'userPrincipalName']
