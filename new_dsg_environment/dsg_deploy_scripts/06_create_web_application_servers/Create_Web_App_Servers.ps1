@@ -16,7 +16,10 @@ $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -nam
 # VM sizes
 $hackMdVmSize = "Standard_DS2_v2"
 $gitlabVmSize = "Standard_DS2_v2"
-$InputFile = "./cloud-init-gitlab.yaml"
+$inputFilePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
+$customData = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($inputFilePath))
+#$customData = (Get-Content -Path $inputFilePath) -join '\n'
+Write-Output $customData
 
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
@@ -29,8 +32,8 @@ $params = @{
 "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
-    "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
-    "customData" = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($InputFile))
+"Virtual Network Subnet" = $config.dsg.network.subnets.data.name
+"customData" = $customData
 }
 
 Write-Output $params
