@@ -43,8 +43,7 @@ runcmd:
   - mount -a
   # Configure Gitlab
   - echo "Configuring Gitlab"
-  - export GITLAB_ROOT_PASSWORD=<gitlab-root-password>
-  - echo $GITLAB_ROOT_PASSWORD
+  - echo 'user = User.find_by(username: "root");user.password=user.password_confirmation="<gitlab-root-password>";user.password_automatically_set=false;user.save!;exit;' | sudo gitlab-rails console production
   # Update Gitlab
   # - echo "Updating Gitlab"
   # - sudo apt-get update
