@@ -21,12 +21,11 @@ $gitlabVmSize = "Standard_DS2_v2"
 ## -- GITLAB --
 ## Read template into string array (one entry per line in file)
 $gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
-$gitlabCloudInitTemplate = (Get-Content -Path $gitlabCloudInitTemplatePath)
+$gitlabCloudInitTemplate = (Get-Content -Raw -Path $gitlabCloudInitTemplatePath)
 ## Patch template with DSG specific values (do nothing for now while we check that our refactor works)
-$gitlabCloudInit = $gitlabCloudInitTemplate 
-## Join lines with newline character and encode as base64
-$gitlabCloudInit = ($gitlabCloudInit -join '\n') + '\n'
+$gitlabCloudInit = $gitlabCloudInitTemplate
 Write-Output $gitlabCloudInit
+## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 Write-Output $gitlabCustomData
 
