@@ -44,6 +44,7 @@ runcmd:
   # Configure Gitlab
   - echo "Configuring Gitlab"
   - export GITLAB_ROOT_PASSWORD=<gitlab-root-password>
+  - echo $GITLAB_ROOT_PASSWORD
   # Update Gitlab
   # - echo "Updating Gitlab"
   # - sudo apt-get update
