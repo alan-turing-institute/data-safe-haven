@@ -163,6 +163,8 @@ if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
 fi
 
 # Check that the machine name is valid
+# NOTE: It looks like passing a blank string for machine name gives an "option requires and argument"
+# error and the default value for $MACHINENAME set at the top of the script is preserved.
 if [ "$MACHINENAME" = "" ]; then
     echo -e "${RED}Machine name cannot be blank!${END}"
     print_usage_and_exit
