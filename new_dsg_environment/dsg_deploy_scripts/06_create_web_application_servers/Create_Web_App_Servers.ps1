@@ -16,10 +16,19 @@ $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -nam
 # VM sizes
 $hackMdVmSize = "Standard_DS2_v2"
 $gitlabVmSize = "Standard_DS2_v2"
-$inputFilePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
-$customData = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($inputFilePath))
-#$customData = (Get-Content -Path $inputFilePath) -join '\n'
-Write-Output $customData
+
+# Patch cloud init templates
+## -- GITLAB --
+## Read template into string array (one entry per line in file)
+$gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
+$gitlabCloudInitTemplate = (Get-Content -Path $gitlabCloudInitTemplatePath)
+## Patch template with DSG specific values (do nothing for now while we check that our refactor works)
+$gitlabCloudInit = $gitlabCloudInitTemplate 
+## Join lines with newline character and encode as base64
+$gitlabCloudInit = ($gitlabCloudInit -join '\n') + '\n'
+Write-Output $gitlabCloudInit
+$gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
+Write-Output $gitlabCustomData
 
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
@@ -33,7 +42,7 @@ $params = @{
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
 "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
-"customData" = $customData
+"customData" = $gitlabCustomData
 }
 
 Write-Output $params

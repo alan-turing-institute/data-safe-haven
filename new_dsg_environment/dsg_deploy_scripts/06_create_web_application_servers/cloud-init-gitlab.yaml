@@ -41,5 +41,3 @@ runcmd:
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
   - mkdir /media/gitdata
   - mount -a
-
-
