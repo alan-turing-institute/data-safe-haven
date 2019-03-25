@@ -162,6 +162,13 @@ if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
     print_usage_and_exit
 fi
 
+# Check that the machine name is valid
+# NOTE: It looks like passing a blank string for machine name gives an "option requires and argument"
+# error and the default value for $MACHINENAME set at the top of the script is preserved.
+if [ "$MACHINENAME" = "" ]; then
+    echo -e "${RED}Machine name cannot be blank!${END}"
+    print_usage_and_exit
+fi
 
 # Check that an LDAP secret KeyVault secret name has been provided
 if [ "$LDAP_SECRET_NAME" = "" ]; then
@@ -195,6 +202,11 @@ fi
 
 # Look up specified image definition
 az account set --subscription "$SUBSCRIPTIONSOURCE"
+if [ "$(az account show --query 'name' | xargs)" != "$SUBSCRIPTIONSOURCE" ]; then
+    echo -e "${RED}Could not set source subscription to ${BLUE}'${SUBSCRIPTIONSOURCE}'${END}${RED}. Are you a member? Current subscription is ${BLUE}'$(az account show --query 'name' | xargs)'${END}"
+    print_usage_and_exit
+fi
+
 if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
     IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
 elif [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
@@ -235,6 +247,11 @@ IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --ga
 # Switch subscription and setup resource groups if they do not already exist
 # --------------------------------------------------------------------------
 az account set --subscription "$SUBSCRIPTIONTARGET"
+if [ "$(az account show --query 'name' | xargs)" != "$SUBSCRIPTIONTARGET" ]; then
+    echo -e "${RED}Could not set target subscription to ${BLUE}'${SUBSCRIPTIONTARGET}'${END}${RED}. Are you a member? Current subscription is ${BLUE}'$(az account show --query 'name' | xargs)'${END}"
+    print_usage_and_exit
+fi
+
 if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
@@ -388,32 +405,34 @@ STARTTIME=$(date +%s)
 if [ "$IP_ADDRESS" = "" ]; then
     echo -e "${BOLD}Requesting a dynamic IP address${END}"
     az vm create ${PLANDETAILS} \
-        --resource-group $RESOURCEGROUP \
-        --name $MACHINENAME \
-        --image $IMAGE_ID \
-        --subnet $DSG_SUBNET_ID \
-        --nsg $DEPLOYMENT_NSG_ID \
-        --public-ip-address "" \
-        --custom-data $TMP_CLOUD_CONFIG_YAML \
-        --size $VM_SIZE \
-        --admin-username $USERNAME \
         --admin-password $ADMIN_PASSWORD \
-        --os-disk-size-gb 1024
+        --admin-username $USERNAME \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --image $IMAGE_ID \
+        --name $MACHINENAME \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --os-disk-name "${MACHINENAME}OSDISK" \
+        --os-disk-size-gb 1024 \
+        --public-ip-address "" \
+        --resource-group $RESOURCEGROUP \
+        --size $VM_SIZE \
+        --subnet $DSG_SUBNET_ID
 else
     echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
     az vm create ${PLANDETAILS} \
-        --resource-group $RESOURCEGROUP \
-        --name $MACHINENAME \
-        --image $IMAGE_ID \
-        --subnet $DSG_SUBNET_ID \
-        --nsg $DEPLOYMENT_NSG_ID \
-        --public-ip-address "" \
-        --custom-data $TMP_CLOUD_CONFIG_YAML \
-        --size $VM_SIZE \
-        --admin-username $USERNAME \
         --admin-password $ADMIN_PASSWORD \
+        --admin-username $USERNAME \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --image $IMAGE_ID \
+        --name $MACHINENAME \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --os-disk-name "${MACHINENAME}OSDISK" \
         --os-disk-size-gb 1024 \
-        --private-ip-address $IP_ADDRESS
+        --private-ip-address $IP_ADDRESS \
+        --public-ip-address "" \
+        --resource-group $RESOURCEGROUP \
+        --size $VM_SIZE \
+        --subnet $DSG_SUBNET_ID
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null

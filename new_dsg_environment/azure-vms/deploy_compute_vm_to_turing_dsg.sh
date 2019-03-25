@@ -167,7 +167,7 @@ if [ "$FIXED_IP" = "" ]; then
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
         -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
 else
-    MACHINENAME="${SOURCEIMAGE}-${FIXED_IP}"
+    MACHINENAME="DSG$(date '+%Y%m%d%H%M')-${FIXED_IP}"
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
