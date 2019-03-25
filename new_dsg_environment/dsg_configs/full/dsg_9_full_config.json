@@ -157,14 +157,14 @@
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB",
+        "vmName": "GITLAB-TESTING",
         "hostname": "GITLAB",
-        "ip": "10.250.66.151"
+        "ip": "10.250.66.153"
       },
       "hackmd": {
-        "vmName": "HACKMD",
+        "vmName": "HACKMD-TESTING",
         "hostname": "HACKMD",
-        "ip": "10.250.66.152"
+        "ip": "10.250.66.154"
       },
       "rg": "RG_DSG_LINUX"
     }
