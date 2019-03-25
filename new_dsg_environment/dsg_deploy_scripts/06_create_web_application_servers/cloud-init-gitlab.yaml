@@ -32,7 +32,7 @@ write_files:
 runcmd:
   - echo "script running"
   - touch /root/running
-  - echo "10.250.66.153 gitlab-testing gitlab.dsgroup9.co.uk" >> /etc/hosts
+  - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
   - dpkg-reconfigure -f noninteractive tzdata
   - (echo o; echo n; echo p; echo 1; echo  ; echo  ; echo w) | fdisk /dev/sdc

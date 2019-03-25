@@ -20,6 +20,7 @@ $gitlabVmSize = "Standard_DS2_v2"
 # Patch cloud init templates
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 ## -- GITLAB --
+$gitlabFqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.dsg.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
@@ -31,7 +32,10 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
                                             replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
                                             replace('<gitlab-rb-pw>',$gitlabUserPassword).
                                             replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
-                                            replace('<gitlab-rb-user-filter>',$gitlabUserFilter)
+                                            replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
+                                            replace('<gitlab-ip>',$config.dsg.linux.gitlab.ip).
+                                            replace('<gitlab-hostname>',$config.dsg.linux.gitlab.hostname).
+                                            replace('<gitlab-fqdn>',$gitlabFqdn)
 Write-Output $gitlabCloudInit
 ## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
