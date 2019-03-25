@@ -162,6 +162,11 @@ if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
     print_usage_and_exit
 fi
 
+# Check that the machine name is valid
+if [ "$MACHINENAME" = "" ]; then
+    echo -e "${RED}Machine name cannot be blank!${END}"
+    print_usage_and_exit
+fi
 
 # Check that an LDAP secret KeyVault secret name has been provided
 if [ "$LDAP_SECRET_NAME" = "" ]; then
