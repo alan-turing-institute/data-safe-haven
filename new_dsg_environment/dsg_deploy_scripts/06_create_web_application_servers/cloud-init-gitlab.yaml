@@ -34,6 +34,7 @@ runcmd:
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
   - dpkg-reconfigure -f noninteractive tzdata
+  - (echo o; echo n; echo p; echo 1; echo  ; echo  ; echo w) | fdisk /dev/sdc
   - mkfs.ext4 /dev/sdc1 -L DataDrive
   - cp /etc/fstab /etc/fstab.$(date +%Y-%m-%d)
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
