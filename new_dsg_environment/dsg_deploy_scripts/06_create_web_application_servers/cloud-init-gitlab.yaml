@@ -40,3 +40,17 @@ runcmd:
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
   - mkdir /media/gitdata
   - mount -a
+  - echo "Updating Gitlab"
+  - sudo apt-get update
+  - sudo apt-get install gitlab-ce=9.5.6-ce.0
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - sudo apt-get update
+  - sudo apt-get install gitlab-ce=10.8.7-ce.0
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - sudo apt-get update
+  - sudo apt upgrade
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - echo "Gitlab updated"
