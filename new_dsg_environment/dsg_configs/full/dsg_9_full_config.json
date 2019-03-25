@@ -159,7 +159,8 @@
       "gitlab": {
         "vmName": "GITLAB-TESTING",
         "hostname": "GITLAB-TESTING",
-        "ip": "10.250.66.153"
+        "ip": "10.250.66.153",
+        "rootPasswordSecretName": "dsg9-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD-TESTING",

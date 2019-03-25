@@ -24,6 +24,15 @@ $gitlabFqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.dsg.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
+# Fetch HackMD password (or create if not present)
+$gitlabRootPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
+if ($null -eq $gitlabRootPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName -SecretValue $newPassword;
+  $gitlabRootPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
+}
 ## Read template into string array (one entry per line in file)
 $gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
 $gitlabCloudInitTemplate = (Get-Content -Raw -Path $gitlabCloudInitTemplatePath)
@@ -35,7 +44,8 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
                                             replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
                                             replace('<gitlab-ip>',$config.dsg.linux.gitlab.ip).
                                             replace('<gitlab-hostname>',$config.dsg.linux.gitlab.hostname).
-                                            replace('<gitlab-fqdn>',$gitlabFqdn)
+                                            replace('<gitlab-fqdn>',$gitlabFqdn).
+                                            replace('<gitlab-root-password>',$gitlabRootPassword)
 Write-Output $gitlabCloudInit
 ## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))

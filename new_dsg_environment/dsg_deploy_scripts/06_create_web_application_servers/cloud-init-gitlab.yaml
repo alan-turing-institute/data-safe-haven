@@ -30,7 +30,8 @@ write_files:
       git_data_dirs({ "default" => { "path" => "/media/gitdata" } })          
   
 runcmd:
-  - echo "Gitlab cloud-init script running"
+  # Configure server
+  - echo "Configuring server"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
   - dpkg-reconfigure -f noninteractive tzdata
@@ -40,6 +41,9 @@ runcmd:
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
   - mkdir /media/gitdata
   - mount -a
+  # Configure Gitlab
+  - echo "Configuring Gitlab"
+  - export GITLAB_ROOT_PASSWORD=<gitlab-root-password>
   - echo "Updating Gitlab"
   - sudo apt-get update
   - sudo apt-get install gitlab-ce=9.5.6-ce.0

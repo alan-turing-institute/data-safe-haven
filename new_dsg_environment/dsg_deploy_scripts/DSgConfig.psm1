@@ -211,6 +211,7 @@ function Add-DsgConfig {
     $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
+    $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
     $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
