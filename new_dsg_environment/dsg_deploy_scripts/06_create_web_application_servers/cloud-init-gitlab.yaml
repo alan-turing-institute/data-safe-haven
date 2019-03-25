@@ -1,6 +1,33 @@
 package_upgrade: false
 
-#write_files:
+write_files:
+  - content: |
+    external_url 'http://gitlab-ce.hxakzvpf0otezeojz3wqhme5wg.cx.internal.cloudapp.net'
+    gitlab_rails['ldap_enabled'] = true
+    gitlab_rails['ldap_servers'] = YAML.load <<-'EOS' 
+      main: # 'main' is the GitLab 'provider ID' of this LDAP server
+        label: 'LDAP'
+        host: '<gitlab-rb-host>'
+        port: 389
+        uid: 'sAMAccountName'
+        method: 'plain' # "tls" or "ssl" or "plain"
+        bind_dn: 'CN=DSGROUP<gitlab-rb-dsgroup> Gitlab LDAP,OU=Safe Haven Service Accounts,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>'
+        password: '<gitlab-rb-pw>'
+        active_directory: true
+        allow_username_or_email_login: true
+        block_auto_created_users: false
+        base: 'OU=Safe Haven Research Users,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>'
+        user_filter: '(&(objectClass=user)(memberOf=CN=SG DSGROUP<gitlab-rb-dsgroup> Research Users,OU=Safe Haven Security Groups,DC=<gitlab-rb-dc1>,DC=<gitlab-rb-dc2>,DC=<gitlab-rb-dc3>))' 
+    attributes:
+      username: ['uid', 'userid', 'sAMAccountName']
+      email:    ['mail', 'email', 'userPrincipalName']
+      name:       'cn'
+      first_name: 'givenName'
+      last_name:  'sn'
+EOS
+git_data_dirs({ "default" => { "path" => "/media/gitdata" } })      
+    path: /etc/gitlab/gitlab.rb
+  
 runcmd:
   - echo "<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone    
@@ -11,5 +38,5 @@ runcmd:
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
   - mkdir /media/gitdata
   - mount -a
-  - sed -i "$(grep -nr 'ldap_enabled' /etc/gitlab/gitlab.rb | cut -d : -f 1) ,$(grep -nr 'last_name: ' /etc/gitlab/gitlab.rb | head -1 | cut -d : -f 1) s/^#*//" /etc/gitlab/gitlab.rb
-  - sed -i "$(($(grep -nr 'sync_ssh_keys' /etc/gitlab/gitlab.rb | tail -1 | cut -d : -f 1)+1)), $(($(grep -nr 'sync_ssh_keys' /etc/gitlab/gitlab.rb | tail -1 | cut -d : -f 1)+1))  s/^#* //" /etc/gitlab/gitlab.rb
+
+
