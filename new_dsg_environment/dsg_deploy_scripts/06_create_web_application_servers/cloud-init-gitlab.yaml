@@ -12,4 +12,4 @@ runcmd:
   - mkdir /media/gitdata
   - mount -a
   - sed -i "$(grep -nr 'ldap_enabled' /etc/gitlab/gitlab.rb | cut -d : -f 1) ,$(grep -nr 'last_name: ' /etc/gitlab/gitlab.rb | head -1 | cut -d : -f 1) s/^#*//" /etc/gitlab/gitlab.rb
-  - sed -i "$(grep -nr 'sync_ssh_keys' /etc/gitlab/gitlab.rb | tail -1 | cut -d : -f 1)+1 s/^#*//" /etc/gitlab/gitlab.rb
+  - sed -i "$(($(grep -nr 'sync_ssh_keys' /etc/gitlab/gitlab.rb | tail -1 | cut -d : -f 1)+1)), $(($(grep -nr 'sync_ssh_keys' /etc/gitlab/gitlab.rb | tail -1 | cut -d : -f 1)+1))  s/^#*//" /etc/gitlab/gitlab.rb
