@@ -23,8 +23,8 @@ runcmd:
   - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_SEARCHFILTER=<hack-md-user-filter>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_BINDCREDETIALS=<hackmd-bind-creds>" /src/docker-hackmd/docker-compose.yml
-    - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_BINDDN=<hackmd-bind-dn>" /src/docker-hackmd/docker-compose.yml
+  - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_BINDDN=<hackmd-bind-dn>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_URL=<hackmd-ldap-url>" /src/docker-hackmd/docker-compose.yml
-    - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-bios>" /src/docker-hackmd/docker-compose.yml
-    - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
+  - sed -i "$ENVLOC i\ \ \ \ \ \ \ \ - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-bios>" /src/docker-hackmd/docker-compose.yml
+  - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
   
