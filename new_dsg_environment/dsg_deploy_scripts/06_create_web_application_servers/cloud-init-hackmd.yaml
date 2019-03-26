@@ -21,7 +21,7 @@ runcmd:
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_ALLOW_ANONYMOUS=false" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_ALLOW_FREEURL=true" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_EMAIL=false" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_USERCDN=false" /src/docker-hackmd/docker-compose.yml
+  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_USECDN=false" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_BINDCREDETIALS=<hackmd-bind-creds>" /src/docker-hackmd/docker-compose.yml
