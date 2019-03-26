@@ -57,6 +57,8 @@ function Add-DsgConfig {
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
+    $config.shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $config.shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $config.shm.domain.netbiosName + "_VNET1"
     $config.shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $config.shm.network.subnets.identity = [ordered]@{}
     $config.shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
@@ -218,6 +220,7 @@ function Add-DsgConfig {
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
+    $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
     $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn

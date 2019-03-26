@@ -17,6 +17,39 @@ $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -nam
 $hackMdVmSize = "Standard_DS2_v2"
 $gitlabVmSize = "Standard_DS2_v2"
 
+# Patch cloud init templates
+$shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
+## -- GITLAB --
+$gitlabFqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
+$gitlabLdapUserDn = "CN=" + $config.dsg.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
+$gitlabUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.gitlab.passwordSecretName).SecretValueText;
+$gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
+# Fetch Gitlab root user password (or create if not present)
+$gitlabRootPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
+if ($null -eq $gitlabRootPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName -SecretValue $newPassword;
+  $gitlabRootPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
+}
+## Read template cloud-init file
+$gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
+$gitlabCloudInitTemplate = (Get-Content -Raw -Path $gitlabCloudInitTemplatePath)
+## Patch template with DSG specific values
+$gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFqdn).
+                                            replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
+                                            replace('<gitlab-rb-pw>',$gitlabUserPassword).
+                                            replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
+                                            replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
+                                            replace('<gitlab-ip>',$config.dsg.linux.gitlab.ip).
+                                            replace('<gitlab-hostname>',$config.dsg.linux.gitlab.hostname).
+                                            replace('<gitlab-fqdn>',$gitlabFqdn).
+                                            replace('<gitlab-root-password>',$gitlabRootPassword).
+                                            replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
+## Encode as base64
+$gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
+
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
 "GITLab VM Size" = $gitlabVMSize
@@ -29,6 +62,7 @@ $params = @{
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
 "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
+"gitlabCustomData" = $gitlabCustomData
 }
 
 Write-Output $params

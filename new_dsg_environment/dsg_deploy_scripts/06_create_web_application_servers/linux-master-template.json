@@ -19,7 +19,7 @@
         },
         "GITLab IP Address": {
             "type": "string",
-            "defaultValue": "10.250.x.151",
+            "defaultValue": "10.250.x.153",
             "metadata": {
                 "description": "Enter IP address for VM, must end in 151"
             }    
@@ -41,7 +41,7 @@
         },
         "HACKMD IP Address": {
             "type": "string",
-            "defaultValue": "10.250.x.152",
+            "defaultValue": "10.250.x.154",
             "metadata": {
                 "description": "Enter IP address for VM, must end in 152"
             }    
@@ -77,8 +77,14 @@
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
             }    
-        }
-   
+        },
+       "gitlabCustomData": {
+         "type": "string",
+         "defaultValue": "",
+         "metadata": {
+           "description": "String passed down to the Virtual Machine."
+         }   
+       }
     },
     "variables": {
         "gitlabnic": "[concat(parameters('GITLab Server Name'),'_','NIC1')]",
@@ -137,15 +143,16 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('GITLab Server Name')]",
-                    "adminUsername": "[parameters('Administrator User')]",
-                    "adminPassword": "[parameters('Administrator Password')]",
-                    "linuxConfiguration": {
-                        "disablePasswordAuthentication": false,
-                        "provisionVMAgent": true
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true
+                  "computerName": "[parameters('GITLab Server Name')]",
+                  "adminUsername": "[parameters('Administrator User')]",
+                  "adminPassword": "[parameters('Administrator Password')]",
+                  "linuxConfiguration": {
+                    "disablePasswordAuthentication": false,
+                    "provisionVMAgent": true
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true,
+                  "customData": "[parameters('gitlabCustomData')]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [

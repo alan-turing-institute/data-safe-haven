@@ -19,6 +19,8 @@
     },
     "network": {
       "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUPDEV_VNET1",
         "cidr": "10.220.1.0/21"
       },
       "subnets": {
@@ -168,7 +170,8 @@
         "vmName": "GITLAB",
         "hostname": "GITLAB",
         "fqdn": "GITLAB.dsgroup9.co.uk",
-        "ip": "10.250.66.151"
+        "ip": "10.250.66.151",
+        "rootPasswordSecretName": "dsg9-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD",
