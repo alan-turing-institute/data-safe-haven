@@ -47,10 +47,8 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
                                             replace('<gitlab-fqdn>',$gitlabFqdn).
                                             replace('<gitlab-root-password>',$gitlabRootPassword).
                                             replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
-Write-Output $gitlabCloudInit
 ## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
-Write-Output $gitlabCustomData
 
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
