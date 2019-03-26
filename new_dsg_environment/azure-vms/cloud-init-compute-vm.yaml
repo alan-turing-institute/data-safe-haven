@@ -162,10 +162,10 @@ runcmd:
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Move CRAN mirror config to appropriate locations
-  - mv /Rprofile.site /etc/R/Rprofile.site
-  - cp /etc/R/Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
-  - cp /etc/R/Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
-  - cp /etc/R/Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /etc/R/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
