@@ -278,12 +278,16 @@ This VM can also be used to directly access GitLab and HackMD
 
 ## Section 4.5. Accessing GitLab and storing code
 
-GitLab is an open source version of GitHub. 
+GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
 
-It allows you to version control all the code that you write for any of the Data Study Group challenges. 
+It also allows you to version control all the code that you write for any of the Data Study Group challenges. 
 There is a local GitLab installation within the Work Resources. 
 
-If you have not used GitLab before – do feel free to ask your group colleagues for help, ask in the Slack channel for help.
+If you have not used GitLab before:
+- There is a small tutorial below
+- You can find the official documentation [in the GitLab website] (https://docs.gitlab.com/ee/gitlab-basics/README.html)
+- Ask your group colleagues for help
+- Ask in the Slack channel for help.
 
 Everything that is not stored in a GitLab repository on Friday lunchtime will be DESTROYED FOR EVER.
 Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
@@ -296,6 +300,34 @@ Login with user name [UID] and password [pw].
 
 Please make all your repositories public so they are easy to share within your group. 
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
+
+### Section 4.5.2 Repositories
+A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
+
+During the Data Study Group Week, you will be accessing and adding files to the same project repository.
+
+### Section 4.5.2 Command Line Basics
+In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
+
+When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up. While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
+
+![](project_clone_url.png)
+
+Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
+'''
+git clone PASTE HTTPS OR SSH HERE
+'''
+
+
+### Section 4.5.3 Branches
+Branching is the way to work on different versions of a repository at one time.
+
+By default your repository has one branch named `master` which is considered to be the definitive branch. We use branches to experiment and make edits before committing them to `master`.
+
+When you create a branch off the `master` branch, you’re making a copy, or snapshot, of `master` as it was at that point in time. If someone else made changes to the `master` branch while you were working on your branch, you could pull in those updates.
+
+__To create a branch__:
+
 
 ## Section 4.6. Accessing HackMD and writing the report
 
