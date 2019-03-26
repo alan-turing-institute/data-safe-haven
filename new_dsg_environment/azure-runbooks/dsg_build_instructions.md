@@ -221,7 +221,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with the admin credentials for the DSG DC, which were created and stored in the Safe Haven Management KeyVault by the DC deployment script
 
-- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>`, where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -230,6 +230,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run  `Set-executionpolicy Unrestricted` 
 
 - Set the VM to United Kingdom/GMT timezone by running the following command:
 
