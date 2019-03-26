@@ -107,7 +107,7 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-TEST.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
@@ -156,7 +156,7 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-${DSG_ID_LOWER}.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
     LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
 fi
