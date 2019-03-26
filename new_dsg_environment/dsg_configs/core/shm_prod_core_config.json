@@ -4,5 +4,7 @@
     "shId": "prod",
     "location": "uksouth",
     "ipPrefix": "10.220.0",
-    "dcHostname": "SHMDC1"
+    "dcHostname": "SHMDC1",
+    "vnetRG":"RG_SHM_VNET",
+    "vnetName":"SHM_VNET1"
 }
