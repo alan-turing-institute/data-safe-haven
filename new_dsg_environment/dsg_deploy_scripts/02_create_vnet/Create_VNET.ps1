@@ -72,5 +72,5 @@ $dsgPeeringParams = @{
 Write-Output $dsgPeeringParams
 Add-AzVirtualNetworkPeering @dsgPeeringParams
 
-# Switch back to origianl subscription
+# Switch back to original subscription
 Set-AzContext -Context $prevContext;
