@@ -181,6 +181,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The VNet peerings may take a few minutes to provision after the script completes.
 
+### Set up a VPN connection to the DSG
+
 - In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`
   
   - Select "**Point to Site Configuration**" fromt he left-hand navigation
