@@ -157,15 +157,15 @@
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB-TESTING",
-        "hostname": "GITLAB-TESTING",
-        "ip": "10.250.66.153",
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "ip": "10.250.66.151",
         "rootPasswordSecretName": "dsg9-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD-TESTING",
-        "hostname": "HACKMD-TESTING",
-        "ip": "10.250.66.154"
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "ip": "10.250.66.152"
       },
       "rg": "RG_DSG_LINUX"
     }
