@@ -5,6 +5,7 @@
     "location": "uksouth",
     "ipPrefix": "10.220.0",
     "dcHostname": "SHMDC1",
-    "vnetRG":"RG_SHM_VNET",
+    "dcRgName": "RG_SHM_VM_DC",
+    "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1"
 }

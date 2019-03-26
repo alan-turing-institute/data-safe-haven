@@ -5,6 +5,7 @@
     "location": "uksouth",
     "ipPrefix": "10.220.1",
     "dcHostname": "MGMTDEVDC",
-    "vnetRG":"RG_DSG_VNET",
+    "dcRgName": "RG_DSG_DC",
+    "vnetRgName": "RG_DSG_VNET",
     "vnetName":"DSG_DSGROUPDEV_VNET1"
 }
