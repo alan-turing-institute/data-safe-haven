@@ -58,7 +58,7 @@ Write-Output $shmPeeringParams
 Add-AzVirtualNetworkPeering @shmPeeringParams
 
 # Switch back to DSG subscription
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Add Peering to DSG Vnet
 $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.shm.network.vnet.name
