@@ -179,47 +179,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
-### Create Peering Connection with the management virtual network
-
-- Once the virtual network is created, a peer connection is required between the management and DSG virtual networks
-
-- From the Azure portal go to the **SHM subscription** and open the management virtual network at `Resource Groups -> RG_SHM_VNET -> DSG_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
-
-- Select "**Peerings"** from the left-hand navigation
-
-- Add a new "Peering"
-
-- Configure the Peering as follows:
-
-  - Name: `PEER_DSG_DSGROUP<dsg-id>_VNET1`
-
-  - Subscription: Select the new DSG subscription
-
-  - Virtual Network: Select the newly created virtual network (`DSG_DSGROUP<dsg-id>_VNET1`)
-
-  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1c7f094.PNG](images/media/image2.png)
-
-- Change to the new **DSG subscription**, open the virtual network at `Resource groups -> RG_DSG_VNET -> DSG_DSGROUP<dsg-id>_VNET1`
-
-- Select "**Peerings"** from the left-hand navigation
-
-- Add a new "Peering"
-
-- Configure the Peering as follows:
-
-  - Name: `PEER_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
-
-  - Subscription: Select the Safe Haven management subscription
-
-  - Virtual Network: Select the SHM virtual network (`DSG_<shm-slug>_VNET1`)
-
-  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1d02087.PNG](images/media/image3.png)
-
-- Once provisioned the networks will be connected.
+- The VNet peerings may take a few minutes to provision after the script completes.
 
 - In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`
   
