@@ -107,7 +107,7 @@ function Add-DsgConfig {
         serverAdmins = [ordered]@{}
         researchUsers = [ordered]@{}
     }
-    $config.dsg.domain.securityGroups.serverAdmins = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
+    $config.dsg.domain.securityGroups.serverAdmins.name = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
     $config.dsg.domain.securityGroups.serverAdmins.description = $config.dsg.domain.securityGroups.serverAdmins.name
     $config.dsg.domain.securityGroups.researchUsers.name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
     $config.dsg.domain.securityGroups.researchUsers.description = $config.dsg.domain.securityGroups.researchUsers.name
