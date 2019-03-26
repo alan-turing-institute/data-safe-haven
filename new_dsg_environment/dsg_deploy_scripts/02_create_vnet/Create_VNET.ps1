@@ -8,6 +8,11 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
+
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Get P2S Root certificate for VNet Gateway
 $cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.p2sRootCert -VaultName $config.shm.keyVault.name).SecretValue
 
@@ -24,7 +29,6 @@ $vnetCreateParams = @{
 
 Write-Output $vnetCreateParams
 
-
 $templatePath = Join-Path $PSScriptRoot "vnet-master-template.json"
 
 New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location $config.dsg.location
@@ -36,9 +40,8 @@ $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
                                 -ResourceGroupName $config.dsg.network.vnet.rg 
 
 # Temporarily switch to management subscription
-$prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.shm.subscriptionName;
-# FEtch SHM Vnet
+# Fetch SHM Vnet
 $shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name `
                                 -ResourceGroupName $config.shm.network.vnet.rg 
 # Add Peering to SHM Vnet
@@ -54,8 +57,8 @@ $shmPeeringParams = @{
 Write-Output $shmPeeringParams
 Add-AzVirtualNetworkPeering @shmPeeringParams
 
-# Switch back to previous subscription
-Set-AzContext -Context $prevContext;
+# Switch back to DSG subscription
+Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # Add Peering to DSG Vnet
 $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.shm.network.vnet.name
@@ -68,3 +71,6 @@ $dsgPeeringParams = @{
 }
 Write-Output $dsgPeeringParams
 Add-AzVirtualNetworkPeering @dsgPeeringParams
+
+# Switch back to origianl subscription
+Set-AzContext -Context $prevContext;
