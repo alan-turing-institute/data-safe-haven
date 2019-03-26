@@ -41,6 +41,21 @@ runcmd:
   - echo "UUID=$(blkid -s UUID -o value /dev/sdc1) /media/gitdata ext4 defaults 0 2" >> /etc/fstab
   - mkdir /media/gitdata
   - mount -a
+  # Update Gitlab
+  - echo "Updating Gitlab"
+  - sudo apt-get update
+  - sudo apt-get install gitlab-ce=9.5.6-ce.0
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - sudo apt-get update
+  - sudo apt-get install gitlab-ce=10.8.7-ce.0
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - sudo apt-get update
+  - sudo apt upgrade
+  - sudo gitlab-ctl reconfigure
+  - sudo gitlab-ctl restart
+  - echo "Gitlab updated"
   # Configure Gitlab
   - echo "Configuring Gitlab"
   # Set root password and don't prompt for it to be reset when web app first loaded
@@ -49,25 +64,12 @@ runcmd:
   # Turn off user account creation
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
-  # Restrict login to SHM domain
+    # Reload Gitlab configuration and restart Gitlab
+  - sudo gitlab-ctl reconfigure
+  
+    # Restrict login to SHM domain (must be done AFTER Gitlab update)
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-login-domain>'])"
-    # Reload Gitlab configuration and restart
+    # Reload Gitlab configuration and restart Gitlab
   - sudo gitlab-ctl reconfigure
-  # Update Gitlab
-  # - echo "Updating Gitlab"
-  # - sudo apt-get update
-  # - sudo apt-get install gitlab-ce=9.5.6-ce.0
-  # - sudo gitlab-ctl reconfigure
-  # - sudo gitlab-ctl restart
-  # - sudo apt-get update
-  # - sudo apt-get install gitlab-ce=10.8.7-ce.0
-  # - sudo gitlab-ctl reconfigure
-  # - sudo gitlab-ctl restart
-  # - sudo apt-get update
-  # - sudo apt upgrade
-  # - sudo gitlab-ctl reconfigure
-  # - sudo gitlab-ctl restart
-  # - echo "Gitlab updated"
-
-
+  - echo "Gitlab configured"
