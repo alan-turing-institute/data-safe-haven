@@ -166,6 +166,9 @@ runcmd:
   - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+  # Create shared data folder and grant all users access
+  - sudo mkdir /data
+  - sudo chmod go+rw /data
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
