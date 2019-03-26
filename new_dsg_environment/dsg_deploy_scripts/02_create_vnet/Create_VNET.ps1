@@ -46,10 +46,10 @@ $shmPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
   "VirtualNetwork" = $shmVnet
   "RemoteVirtualNetworkId" = $dsgVnet.Id
-  "BlockVirtualNetworkAccess" = false
-  "AllowForwardedTraffic" = false
-  "AllowGatewayTransit" = false
-  "UseRemoteGateways" = false
+  "BlockVirtualNetworkAccess" = $FALSE
+  "AllowForwardedTraffic" = $FALSE
+  "AllowGatewayTransit" = $FALSE
+  "UseRemoteGateways" = $FALSE
 }
 Write-Output $shmPeeringParams
 Add-AzVirtualNetworkPeering @shmPeeringParams
@@ -61,10 +61,10 @@ $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.shm.network.vnet.name
   "VirtualNetwork" = $dsgVnet
   "RemoteVirtualNetworkId" = $shmVnet.Id
-  "BlockVirtualNetworkAccess" = false
-  "AllowForwardedTraffic" = false
-  "AllowGatewayTransit" = false
-  "UseRemoteGateways" = false
+  "BlockVirtualNetworkAccess" = $FALSE
+  "AllowForwardedTraffic" = $FALSE
+  "AllowGatewayTransit" = $FALSE
+  "UseRemoteGateways" = $FALSE
 }
 Write-Output $dsgPeeringParams
 Add-AzVirtualNetworkPeering @dsgPeeringParams
