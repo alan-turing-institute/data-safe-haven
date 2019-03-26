@@ -4,7 +4,7 @@ package_upgrade: false
 write_files:
   - path: /etc/gitlab/gitlab.rb
     content: |
-      external_url 'http://gitlab-ce.hxakzvpf0otezeojz3wqhme5wg.cx.internal.cloudapp.net'
+      external_url 'http://<gitlab-ip>'
       gitlab_rails['ldap_enabled'] = true
       gitlab_rails['ldap_servers'] = YAML.load <<-'EOS' 
         main: # 'main' is the GitLab 'provider ID' of this LDAP server
