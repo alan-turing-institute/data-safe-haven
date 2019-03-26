@@ -314,9 +314,9 @@ When you are on your Dashboard, click on the project that you’d like to clone.
 ![](project_clone_url.png)
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
-'''
+```
 git clone PASTE HTTPS OR SSH HERE
-'''
+```
 
 
 ### Section 4.5.3 Branches
