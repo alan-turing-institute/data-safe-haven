@@ -23,6 +23,9 @@ $params = @{
 }
 
 Write-Output $params
+
+$templatePath = Join-Path $PSScriptRoot "vnet-master-template.json"
+
 New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
-  -TemplateFile vnet-master-template.json @params -Verbose
+  -TemplateFile $templatePath @vnetCreateParams -Verbose
