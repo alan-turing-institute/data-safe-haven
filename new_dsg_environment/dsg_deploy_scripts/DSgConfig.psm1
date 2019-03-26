@@ -77,7 +77,7 @@ function Add-DsgConfig {
         artifacts = [ordered]@{}
     }
     $config.shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.shm.storage.artifacts.accountName = "dsgxartifacts"
+    $config.shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $config.shm.id
 
     # -- Secrets config ---
     $config.shm.keyVault = [ordered]@{}

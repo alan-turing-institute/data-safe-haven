@@ -8,5 +8,6 @@
     "dcHostname": "MGMTDEVDC",
     "dcRgName": "RG_DSG_DC",
     "vnetRgName": "RG_DSG_VNET",
-    "vnetName":"DSG_DSGROUPDEV_VNET1"
+    "vnetName":"DSG_DSGROUPDEV_VNET1",
+    "artifactStorageAccount": "dsgxartifacts"
 }
