@@ -35,7 +35,7 @@
 
   - On Windows you may get a "|Windows protected your PC" pop up. If so, click `More info -> Run anyway`
 
-  - If the default name for the VPN connection does not make it clear which SHM or DSG environment you are connecting to, select the VPN, click "advanced options" and rename to include the SHM or DSG IDs
+  - On Windows do not rename the vpn client as this will break it
 
   - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
