@@ -29,7 +29,7 @@
       }
     },
     "dc": {
-      "rg": "RG_DSG_DC",
+      "rg": "RG_SHM_VM_DC",
       "vmName": "DC",
       "hostname": "SHMDC1",
       "fqdn": "SHMDC1.turingsafehaven.ac.uk",

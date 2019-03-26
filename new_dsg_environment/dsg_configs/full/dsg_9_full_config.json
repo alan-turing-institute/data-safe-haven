@@ -57,7 +57,10 @@
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": "SG DSGROUP9 Server Administrators",
+        "serverAdmins": {
+          "name": "SG DSGROUP9 Server Administrators",
+          "description": "SG DSGROUP9 Server Administrators"
+        },
         "researchUsers": {
           "name": "SG DSGROUP9 Research Users",
           "description": "SG DSGROUP9 Research Users"
