@@ -57,6 +57,8 @@ function Add-DsgConfig {
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
+    $config.shm.network.vnet.rg = $shmConfigBase.vnetRg # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $config.shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $config.shm.domain.netbiosName + "_VNET1"
     $config.shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $config.shm.network.subnets.identity = [ordered]@{}
     $config.shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
