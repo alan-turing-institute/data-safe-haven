@@ -67,7 +67,7 @@ function Add-DsgConfig {
     # --- Domain controller config ---
     $config.shm.dc = [ordered]@{}
     $config.shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
-    $config.shm.dc.vmName = "DC"
+    $config.shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
     $config.shm.dc.hostname = $shmConfigBase.dcHostname
     $config.shm.dc.fqdn = $config.shm.dc.hostname + "." + $config.shm.domain.fqdn
     $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"

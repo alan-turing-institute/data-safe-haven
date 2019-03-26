@@ -32,7 +32,7 @@
     },
     "dc": {
       "rg": "RG_SHM_VM_DC",
-      "vmName": "DC",
+      "vmName": "SHMDC1",
       "hostname": "SHMDC1",
       "fqdn": "SHMDC1.turingsafehaven.ac.uk",
       "ip": "10.220.0.250"

@@ -4,6 +4,7 @@
     "shId": "test",
     "location": "uksouth",
     "ipPrefix": "10.220.1",
+    "dcVmName": "DC",
     "dcHostname": "MGMTDEVDC",
     "dcRgName": "RG_DSG_DC",
     "vnetRgName": "RG_DSG_VNET",
