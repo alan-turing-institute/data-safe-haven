@@ -73,6 +73,8 @@
 
 - [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
 
+  - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** the build in `Powershell` whenever `Powershell` is required later in this guide.
+
 - [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 
 ## Build Process
