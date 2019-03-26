@@ -64,7 +64,7 @@ $params = @{
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
 "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
-"customData" = $gitlabCustomData
+"gitlabCustomData" = $gitlabCustomData
 }
 
 Write-Output $params

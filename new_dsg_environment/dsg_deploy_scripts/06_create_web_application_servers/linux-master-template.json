@@ -78,7 +78,7 @@
                 "description": "Enter name of subnet where you want to provision this VM"
             }    
         },
-       "customData": {
+       "gitlabCustomData": {
          "type": "string",
          "defaultValue": "",
          "metadata": {
@@ -152,7 +152,7 @@
                   },
                   "secrets": [],
                   "allowExtensionOperations": true,
-                  "customData": "[parameters('customData')]"
+                  "customData": "[parameters('gitlabCustomData')]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
