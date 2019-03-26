@@ -48,8 +48,11 @@ runcmd:
     echo "user = User.find_by(username: 'root');user.password=user.password_confirmation='<gitlab-root-password>';user.password_automatically_set=false;user.save!;exit;" | sudo gitlab-rails console production
   # Turn off user account creation
   - |
-    gitlab-rails runner 'ApplicationSetting.last.update_attributes(signup_enabled: false)'
-  # Reload Gitlab configuration and restart
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
+  # Restrict login to SHM domain
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-login-domain>'])"
+    # Reload Gitlab configuration and restart
   - sudo gitlab-ctl reconfigure
   # Update Gitlab
   # - echo "Updating Gitlab"

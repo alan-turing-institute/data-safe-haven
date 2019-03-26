@@ -45,7 +45,8 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
                                             replace('<gitlab-ip>',$config.dsg.linux.gitlab.ip).
                                             replace('<gitlab-hostname>',$config.dsg.linux.gitlab.hostname).
                                             replace('<gitlab-fqdn>',$gitlabFqdn).
-                                            replace('<gitlab-root-password>',$gitlabRootPassword)
+                                            replace('<gitlab-root-password>',$gitlabRootPassword).
+                                            replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
 Write-Output $gitlabCloudInit
 ## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
@@ -67,6 +68,8 @@ $params = @{
 }
 
 Write-Output $params
+
+Exit 1
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
