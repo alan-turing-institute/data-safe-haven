@@ -31,10 +31,13 @@ $sh2Nic | Set-AzNetworkInterface;
 # Update RDS Gateway NSG ibbound access rule
 $nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
 
-$nsgGateway | Get-AzNetworkSecurityRuleConfig -Name "HTTPS_In"
+$httpsInRuleName = "HTTPS_In"
+Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " before update:")
+Write-Host "====="
+Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway
 
 $nsgGatewayHttpsInRuleParams = @{
-  Name = "HTTPS_In"
+  Name = $httpsInRuleName
   NetworkSecurityGroup = $nsgGateway
   Description = "Allow HTTPS inbound to RDS server"
   Access = "Allow"
@@ -47,7 +50,14 @@ $nsgGatewayHttpsInRuleParams = @{
   Priority = "101"
 }
 
+Write-Host ("Updating " + $httpsInRuleName + " rule for " + $nsgGateway.Name + ":")
+Write-Host "====="
 Set-AzNetworkSecurityRuleConfig @nsgGatewayHttpsInRuleParams
+
+
+Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " after update:")
+Write-Host "====="
+Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
