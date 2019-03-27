@@ -37,6 +37,9 @@
       "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
       "ip": "10.220.1.250"
     },
+    "nps": {
+      "ip": "10.220.1.248"
+    },
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",

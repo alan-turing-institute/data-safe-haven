@@ -21,12 +21,12 @@
       "vnet": {
         "rg": "RG_SHM_VNET",
         "name": "SHM_VNET1",
-        "cidr": "10.220.0.0/21"
+        "cidr": "10.251.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.220.0",
-          "cidr": "10.220.0.0/24"
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
         }
       }
     },
@@ -35,7 +35,10 @@
       "vmName": "SHMDC1",
       "hostname": "SHMDC1",
       "fqdn": "SHMDC1.turingsafehaven.ac.uk",
-      "ip": "10.220.0.250"
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "ip": "10.251.0.248"
     },
     "storage": {
       "artifacts": {

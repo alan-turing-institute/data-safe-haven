@@ -254,7 +254,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space e.g. 10.250.1 |
   | |                     -SubnetData        | First 3 octets of the Identity subnet IP address space e.g. 10.250.2 |
   | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
-  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.220.0.250 (production) or 10.220.1.250 (test)|
+  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.251.0.250 (production) or 10.220.1.250 (test)|
 
 
 - Configure Active Directory group polices, to install the polices run the following command with these parameters
@@ -671,7 +671,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Select the "Central Server Running NPS"
 
-- Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.220.0.249` for production SHM)
+- Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.251.0.248` for production SHM)
 
 - Set the "Shared Secret" to the value of the `sh-management-radius-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when adding the DSG RDS to the SHM NPS earlier)
 

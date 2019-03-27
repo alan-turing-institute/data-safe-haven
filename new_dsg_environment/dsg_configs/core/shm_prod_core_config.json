@@ -3,10 +3,11 @@
     "domain": "turingsafehaven.ac.uk",
     "shId": "prod",
     "location": "uksouth",
-    "ipPrefix": "10.220.0",
+    "ipPrefix": "10.251.0",
     "dcVmName": "SHMDC1",
     "dcHostname": "SHMDC1",
     "dcRgName": "RG_SHM_VM_DC",
+    "npsIp": "248",
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgartifactsprod"

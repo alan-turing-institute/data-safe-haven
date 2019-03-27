@@ -72,6 +72,10 @@ function Add-DsgConfig {
     $config.shm.dc.fqdn = $config.shm.dc.hostname + "." + $config.shm.domain.fqdn
     $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
 
+    # --- NPS config ---
+    $config.shm.nps = [ordered]@{}
+    $config.shm.nps.ip = $config.shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
+
     # --- Storage config --
     $config.shm.storage = [ordered]@{
         artifacts = [ordered]@{}
