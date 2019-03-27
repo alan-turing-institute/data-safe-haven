@@ -36,13 +36,15 @@ Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " before update
 Write-Host "====="
 Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway
 
+$allowedSources = $config.dsg.rds.nsg.gateway.allowedSources.Split(',')
+Write-Host $allowedSources
 $nsgGatewayHttpsInRuleParams = @{
   Name = $httpsInRuleName
   NetworkSecurityGroup = $nsgGateway
   Description = "Allow HTTPS inbound to RDS server"
   Access = "Allow"
   Direction = "Inbound"
-  SourceAddressPrefix = $config.dsg.rds.nsg.gateway.allowedSources
+  SourceAddressPrefix = $allowedSources
   Protocol = "TCP"
   SourcePortRange = "*"
   DestinationPortRange = "443"
