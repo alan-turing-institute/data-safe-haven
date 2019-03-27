@@ -527,7 +527,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
   -   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
 
-  -   `certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <rds-fqdn> --csr <path-to-csr>`, where `<rds-fqdn>` is the fully qualified domain name of the RDS server (e.g. `rds.dsgroup10.co.uk`)
+  -   `certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <rds-fqdn> --csr <path-to-csr>`, where `<rds-fqdn>` is the fully qualified domain name of the RDS server (e.g. `rds.dsgroup10.co.uk`). If you are using Windows Subsystem for Linux, the Widnows "C:" drive is accessible at `/mnt/c` and your home directory is at `/mnt/c/users/<username>/`).
 
   -   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties. The DNS Zone is located in the SHM subscription at `Resource Groups -> RG_DSG_DNS -> dgroup<dsg-id>.co.uk`).
 
@@ -541,7 +541,9 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
     -   Wait for Let\'s Encrypt to verify the challenge
 
-    -   Copy `~/tsh-certbot/config/live/<dsg-fq-domain\>/fullchain.pem` to the folder on your local computer that you shared with the RDS Gateway when you connected to it.
+    - CertBot will tell you where it has saved the certificate and chain (should be the same directory you ran it from)
+
+    -   Copy `0000_cert.pem` to the folder on your local computer that you shared with the RDS Gateway when you connected to it. If you are using Windows Subsystem for Linux, use `cp <folder-cert-is-in>/0000_cert.pem /mnt/c/users/<username>/` to copy the cert to your Windows home directory
 
     -   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
 
