@@ -58,9 +58,6 @@ if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "
 fi
 
 # Secrets
-MANAGEMENT_VAULT_NAME="dsg-management-test"
-LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
-ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
 # Set defaults for test and production environments
 if [ "$DSG_ID_UPPER" = "TEST" ] ; then
@@ -74,6 +71,9 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+    MANAGEMENT_VAULT_NAME="dsg-management-test"
+    LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
     MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUP9_VNet1"
@@ -85,6 +85,9 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=DSGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+    MANAGEMENT_VAULT_NAME="dsg-management-test"
+    LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
+    ADMIN_PASSWORD_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-admin-password"
 else
     # Production DSGs have uniform settings
     MGMNT_SUBNET_IP_RANGE="10.220.0.0/24"
@@ -97,6 +100,7 @@ else
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_UPPER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk))"
+    ADMIN_PASSWORD_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-admin-password"
 fi
 
 # ComputeVM-DsgBase version 0.0.2018121000 is a direct copy of Ubuntu version 0.0.2018120701 (/subscriptions/1e79c270-3126-43de-b035-22c3118dd488/resourceGroups/RG_SH_IMAGEGALLERY/providers/Microsoft.Compute/images/ImageComputeVM-Ubuntu1804Base-201812071437)
