@@ -77,6 +77,14 @@
 
 - [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 
+### Install and configure Linux command line
+
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+
+  - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
+
 ## Build Process
 
 0. Define DSG configuration
