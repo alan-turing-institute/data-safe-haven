@@ -84,7 +84,15 @@
          "metadata": {
            "description": "String passed down to the Virtual Machine."
          }   
+       },
+      "hackmdCustomData": {
+         "type": "string",
+         "defaultValue": "",
+         "metadata": {
+           "description": "String passed down to the Virtual Machine."
+         }   
        }
+
     },
     "variables": {
         "gitlabnic": "[concat(parameters('GITLab Server Name'),'_','NIC1')]",
@@ -215,7 +223,8 @@
                         "provisionVMAgent": true
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true
+                    "allowExtensionOperations": true,
+                  "customData": "[parameters('hackmdCustomData')]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [

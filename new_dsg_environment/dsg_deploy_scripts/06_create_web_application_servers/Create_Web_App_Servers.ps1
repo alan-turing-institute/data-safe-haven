@@ -37,7 +37,7 @@ if ($null -eq $gitlabRootPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName -SecretValue $newPassword;
   $gitlabRootPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
 }
-## Read template cloud-init file
+## Read gitlab template cloud-init file
 $gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
 $gitlabCloudInitTemplate = (Get-Content -Raw -Path $gitlabCloudInitTemplatePath)
 ## Patch template with DSG specific values
@@ -54,6 +54,30 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
 ## Encode as base64
 $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 
+## --HACKMD--
+$hackmdFqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
+$hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
+$hackmdUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
+$hackmdLdapUserDn = "CN=" + $config.dsg.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
+$hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
+## Read hackmd template cloud-init file
+$hackmdCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-hackmd.yaml"
+$hackmdCloudInitTemplate = (Get-Content -Raw -Path $hackmdCloudInitTemplatePath)
+## Patch template with DSG specific values
+$hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
+                                            replace('<hackmd-bind-creds>', $hackmdUserPassword).
+                                            replace('<hackmd-user-filter>',$hackmdUserFilter).
+                                            replace('<hackmd-ldap-base>',$config.shm.domain.userOuPath).
+                                            replace('<hackmd-ip>',$config.dsg.linux.hackmd.ip).
+                                            replace('<hackmd-hostname>',$config.dsg.linux.hackmd.hostname).
+                                            replace('<hackmd-fqdn>',$hackmdFqdn).
+                                            replace('<hackmd-ldap-url>',$hackMdLdapUrl).
+                                            replace('<hackmd-ldap-bios>',$config.shm.domain.netbiosName)
+# .replace('<gitlab-root-password>',$gitlabRootPassword)
+# .replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
+## Encode as base64
+$hackmdCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
+
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
 "GITLab VM Size" = $gitlabVMSize
@@ -66,10 +90,15 @@ $params = @{
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
 "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
-"gitlabCustomData" = $gitlabCustomData
+    "gitlabCustomData" = $gitlabCustomData
+    "hackmdCustomData" = $hackmdCustomData
 }
 
 Write-Output $params
+Write-Output "--------"
+Write-Output $gitlabCloudInit
+Write-Output "--------"
+Write-Output $hackmdCloudInit
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
