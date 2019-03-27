@@ -499,7 +499,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ##### Generate a Certificate Signing Request (CSR)
 
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
+- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway (or you have another way to transfer files between your local machine and the RDS Gateway VM).
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
