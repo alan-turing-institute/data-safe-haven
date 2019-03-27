@@ -58,9 +58,6 @@ if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "
 fi
 
 # Secrets
-MANAGEMENT_VAULT_NAME="dsg-management-test"
-LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
-ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 
 # Set defaults for test and production environments
 if [ "$DSG_ID_UPPER" = "TEST" ] ; then
@@ -74,6 +71,9 @@ if [ "$DSG_ID_UPPER" = "TEST" ] ; then
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=data science ldap,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+    MANAGEMENT_VAULT_NAME="dsg-management-test"
+    LDAP_SECRET_NAME="ldap-secret-dsg${DSG_ID_LOWER}"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password"
 elif [ "$DSG_ID_UPPER" = "9" ] ; then
     MGMNT_SUBNET_IP_RANGE="10.220.1.0/24"
     DSG_VNET="DSG_DSGROUP9_VNet1"
@@ -85,6 +85,9 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_BIND_DN="cn=DSGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
+    MANAGEMENT_VAULT_NAME="dsg-management-test"
+    LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
+    ADMIN_PASSWORD_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-admin-password"
 else
     # Production DSGs have uniform settings
     MGMNT_SUBNET_IP_RANGE="10.220.0.0/24"
@@ -97,6 +100,7 @@ else
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_UPPER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk))"
+    ADMIN_PASSWORD_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-admin-password"
 fi
 
 # ComputeVM-DsgBase version 0.0.2018121000 is a direct copy of Ubuntu version 0.0.2018120701 (/subscriptions/1e79c270-3126-43de-b035-22c3118dd488/resourceGroups/RG_SH_IMAGEGALLERY/providers/Microsoft.Compute/images/ImageComputeVM-Ubuntu1804Base-201812071437)
@@ -107,8 +111,9 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-TEST.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
+    CRAN_MIRROR_IP="10.1.0.21"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
@@ -118,6 +123,7 @@ if [ "$DSG_ID_UPPER" = "1" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
@@ -127,6 +133,7 @@ if [ "$DSG_ID_UPPER" = "2" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
@@ -135,6 +142,7 @@ if [ "$DSG_ID_UPPER" = "3" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
@@ -143,6 +151,7 @@ if [ "$DSG_ID_UPPER" = "4" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
@@ -156,8 +165,9 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-${DSG_ID_LOWER}.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
+    CRAN_MIRROR_IP="10.1.0.21"
     LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
 fi
 
@@ -165,12 +175,12 @@ if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
+        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP -o $CRAN_MIRROR_IP
 else
-    MACHINENAME="${SOURCEIMAGE}-${FIXED_IP}"
+    MACHINENAME="DSG$(date '+%Y%m%d%H%M')-${FIXED_IP}"
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP -n $MACHINENAME
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP -o $CRAN_MIRROR_IP -n $MACHINENAME
 fi

@@ -9,8 +9,9 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/ins
 Before running the build script, make sure you have setup the Azure cli with `az login`.
 You can then run `./build_azure_vm_image.sh`.
 The available options for configuring the base image, resource group and name of the VM can be seen by running `./build_azure_vm_image.sh -h`.
-Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 1.5 hours.
-Building on top of the Ubuntu VM takes approximately 3.5 hours (mostly due to building Torch).
+Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 2 hours.
+Building on top of the Ubuntu VM with Torch takes approximately 3.5 hours.
+Building on top of the Ubuntu VM without Torch takes approximately 3 hours.
 
 ```
 usage: ./build_azure_vm_image.sh [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]

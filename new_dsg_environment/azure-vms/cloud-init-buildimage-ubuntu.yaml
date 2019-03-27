@@ -65,6 +65,9 @@ apt:
         =0nKc
         -----END PGP PUBLIC KEY BLOCK-----
 
+    nvidia-ml.list:
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+
     rproject-cran35.list:
       source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
       keyserver: hkp://keyserver.ubuntu.com:80
@@ -74,6 +77,7 @@ apt:
       source: "ppa:webupd8team/atom"
 
 # List of packages to install with apt-get
+# NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
 packages:
   - adcli
   - apt-transport-https
@@ -81,7 +85,6 @@ packages:
   - attr
   - azure-cli
   - code
-  - cuda
   - default-jdk
   - docker.io
   - dotnet-sdk-2.1
@@ -97,6 +100,8 @@ packages:
   - libcanberra-gtk0
   - libgconf-2-4
   - libgit2-dev
+  - libgl1-mesa-glx
+  - libglu1-mesa
   - libgmp-dev
   - libgnome-keyring0
   - libgsl-dev
@@ -118,7 +123,6 @@ packages:
   - libxss1
   - mono-complete
   - mono-devel
-  - nvidia-cuda-toolkit
   - octave
   - oddjob
   - oddjob-mkhomedir
@@ -330,6 +334,7 @@ packages:
   - r-cran-vioplot
   - r-cran-viridis
   - r-cran-visnetwork
+  - r-cran-wavethresh
   - r-cran-wordcloud
   - r-cran-xgboost
   - r-cran-xlsx
@@ -351,6 +356,12 @@ runcmd:
   # Clean up installation
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
+
+  # NVidia setup (following https://www.tensorflow.org/install/gpu)
+  - echo "*** Installing NVidia requirements for tensorflow ***"
+  - apt-get install -y --no-install-recommends nvidia-driver-410
+  - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
+  - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
   #IF_TORCH_ENABLED # Install torch
   #IF_TORCH_ENABLED - echo "*** Installing torch... ***"
@@ -375,72 +386,125 @@ runcmd:
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
-  - export ANACONDA_INSTALL_SCRIPT="Anaconda3-5.3.1-Linux-x86_64.sh"
-  - echo "*** Installing Anaconda... ***"
+  - echo "*** Installing conda... ***"
+  - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
+  - export ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
+  - echo "*** Installing Anaconda ***"
+  - echo "Using installer from $ANACONDA_INSTALLER_URL"
   - cd /tmp
-  - curl -O https://repo.anaconda.com/archive/${ANACONDA_INSTALL_SCRIPT}
+  - curl -O $ANACONDA_INSTALLER_URL
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
-  - sed -i 's|\(.*\)"|\1:/anaconda/bin"|' /etc/environment
-  - export PATH=$PATH:/anaconda/bin
-  - echo "export PATH=$PATH:/anaconda/bin" >> /etc/bash.bashrc
+  # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
+  - . /anaconda/etc/profile.d/conda.sh
+  - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
+  # Update conda
+  - echo "*** Updating conda installation... ***"
+  - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge
-  - conda config --add channels anaconda
-  - conda config --add channels pytorch
-  - conda config --add channels r
+  - conda config --add channels pytorch # for pytorch, torchvision
+  - conda config --add channels ostrokach-forge # for graph-tool which cannot be installed with pip
+  # Do not privilege some channels over others
+  - conda config --set channel_priority false
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 30
   - conda config --set remote_max_retries 10
   - conda config --set remote_read_timeout_secs 120
-  # Prepare environments
+  # List initial environments
   - echo "*** Initial conda environments... ***"
   - conda env list
-  - export PYTHONPACKAGES="ipykernel jupyter_client jupyterlab keras notebook pystan pytorch r-irkernel tensorflow torchvision"
-  - echo "*** Working on py27 environment... ***"
-  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHONPACKAGES; else conda install -y --verbose --name py27 $PYTHONPACKAGES; fi
-  - echo "*** Working on py35 environment... ***"
-  - if [ "$(conda env list | grep py35)" = "" ]; then conda create -y --verbose --name py35 python=3.5 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py35 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
-  - echo "*** Working on py36 environment... ***"
-  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHONPACKAGES jupyterhub jupyterhub-ldapauthenticator; else conda install -y --verbose --name py36 jupyterhub jupyterhub-ldapauthenticator $PYTHONPACKAGES; fi
-  - echo "*** Skipping conda cleanup to permit new virtual environments to be created by users... ***"
+
+  # === AUTOGENERATED ANACONDA PACKAGES START HERE ===
+
+  # Create or install conda environments
+  # Python 2.7
+  - echo "*** Working on py27 environment. Will take approximately 30 minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON27_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py27)" = "" ]; then conda create -y --verbose --name py27 python=2.7 $PYTHON27_CONDA_PACKAGES; else conda install -y --verbose --name py27 $PYTHON27_CONDA_PACKAGES; fi
+  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
+  - echo "Installing $(echo $PYTHON27_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON27_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py27/bin/pip install $PYTHON27_PIP_PACKAGES
+  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
+  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
+  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
+  - END_TIME=$(date +%s)
+  - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py27 environment took $ELAPSED"
+  # Python 3.6
+  - echo "*** Working on py36 environment. Will take approximately 30 minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON36_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py36)" = "" ]; then conda create -y --verbose --name py36 python=3.6 $PYTHON36_CONDA_PACKAGES; else conda install -y --verbose --name py36 $PYTHON36_CONDA_PACKAGES; fi
+  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
+  - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
+  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
+  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
+  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py36 environment took $ELAPSED"
+  # Python 3.7
+  - echo "*** Working on py37 environment. Will take approximately 15 minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
+  - echo "$(echo $PYTHON37_CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - if [ "$(conda env list | grep py37)" = "" ]; then conda create -y --verbose --name py37 python=3.7 $PYTHON37_CONDA_PACKAGES; else conda install -y --verbose --name py37 $PYTHON37_CONDA_PACKAGES; fi
+  - if [ "$(conda env list | grep py37)" = "" ]; then echo "Could not build python 3.7 environment"; exit 1; fi
+  - echo "Installing $(echo $PYTHON37_PIP_PACKAGES | wc -w) additional packages with pip..."
+  - echo "$(echo $PYTHON37_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+  - /anaconda/envs/py37/bin/pip install $PYTHON37_PIP_PACKAGES
+  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
+  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
+  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Building py37 environment took $ELAPSED"
+  # List environments
   - echo "*** Final conda environments... ***"
   - conda env list
-  - if [ "$(conda env list | grep py27)" = "" ]; then echo "Could not build python 2.7 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py35)" = "" ]; then echo "Could not build python 3.5 environment"; exit 1; fi
-  - if [ "$(conda env list | grep py36)" = "" ]; then echo "Could not build python 3.6 environment"; exit 1; fi
 
-  # Set number of cores R should use to install packages to the number of cores available on the VM
-  # (R buolds a lot of packages from source so we can get a decent speedup here)
-  -  Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
+  # === AUTOGENERATED R PACKAGES START HERE ===
 
   # Ensure that R packages are installed
-  - echo "*** Installing additional R packages... ***"
+  # Use the full number of available cores for installation (R builds a lot of packages from source so we can get a decent speedup here)
+  - Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
+  # CRAN
+  - echo "*** Installing additional R packages. Will take approximately 60 minutes... ***"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
   - Rscript -e "installed.packages()[,'Package']"
-  - export CRANPACKAGES="'abind', 'ada', 'akima', 'ape', 'assertthat', 'AUC', 'backports', 'BBmisc', 'bedr', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'COMBAT', 'compiler', 'corrgram', 'corrplot', 'cowplot', 'CoxBoost', 'crayon', 'CVST', 'cvTools', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'directlabels', 'dirichletprocess', 'dlm', 'doBy', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dtw', 'dummies', 'dygraphs', 'e1071', 'emulator', 'evaluate', 'factoextra', 'FactoMineR', 'fda', 'fields', 'fmsb', 'foreach', 'forecast', 'foreign', 'Formula', 'gamlss.dist', 'gamlss.mx', 'gamlss.nl', 'gamlss.spatial', 'gamlss', 'gbm', 'gdata', 'GGally', 'ggforce', 'ggmap', 'ggplot2', 'ggridges', 'ggvis', 'glmnet', 'googleVis', 'gplots', 'graphics', 'grDevices', 'grid', 'gridExtra', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'igraph', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'LDAvis', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'McSpatial', 'methods', 'mgcv', 'mime', 'mlbench', 'mlr', 'multcomp', 'munsell', 'ndtv', 'network', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'polycor', 'pomp', 'PReMiuM', 'pscl', 'purrr', 'pvclust', 'quanteda', 'quantmod', 'R6', 'randomForest', 'RColorBrewer', 'RCurl', 'readr', 'readtext', 'readxl', 'repr', 'reshape', 'reshape2', 'revealjs', 'rgdal', 'realxl', 'rgeos', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'rPython', 'RSQLite', 'rstan', 'runjags', 'RWeka', 'Scale', 'scales', 'shiny', 'slam', 'sna', 'SnowballC', 'sourcetools', 'sp', 'spacyr', 'spatial', 'splines', 'sqldf', 'stargazer', 'stats', 'stats4', 'stm', 'stringi', 'stringr', 'surveillance', 'survival', 'synthpop', 'tcltk2', 'testthat', 'text2vec', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyr', 'tidytext', 'tidyverse', 'tmap', 'tools', 'topicmodels', 'traj', 'tsne', 'urca', 'utils', 'uuid', 'varbvs', 'vars', 'vcd', 'vioplot', 'viridis', 'visNetwork', 'wordcloud', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo'"
   - echo "CRAN packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($CRANPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
   # Bioconductor
   - echo "Previously installed BioConductor packages:"
-  - export BIOCPACKAGES="'apeglm', 'ballgown', 'Biobase', 'ChemmineR', 'clusterProfiler', 'ComplexHeatmap', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'Gviz', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'TimeSeriesExperiment', 'topGO', 'treeio'"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
   - echo "BioConductor packages remaining to be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
-
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
-
   # Install RStudio
   - echo "*** Installing RStudio... ***"
   # Ensure RStudio picks up system R rather than Conda R for all users
+  - export RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   - cd /tmp
-  - wget https://download1.rstudio.org/rstudio-xenial-1.1.463-amd64.deb
-  - gdebi --non-interactive rstudio-xenial-1.1.463-amd64.deb
-  - rm -f rstudio-xenial-1.1.463-amd64.deb
+  - wget https://download1.rstudio.org/${RSTUDIO_DEB}
+  - gdebi --non-interactive ${RSTUDIO_DEB}
+  - rm -f ${RSTUDIO_DEB}
   - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo "*** Installing R packages and RStudio took $ELAPSED"
 
   # Install latest julia version
   - echo "*** Installing Julia... ***"
@@ -517,7 +581,6 @@ runcmd:
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which jupyter)" != "" ]; then echo "jupyter $(which jupyter)"; echo "$(jupyter --version)"; else echo "jupyter not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
@@ -537,4 +600,4 @@ runcmd:
   - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 final_message:
-  "The system is setup and deprovisioned, after $UPTIME seconds"
+  "The system is setup and deprovisioned. Configuration took $UPTIME seconds"

@@ -44,6 +44,11 @@ write_files:
     content: |
       #! /bin/bash
       rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
+  - path: "/home/mirrordaemon/pull_then_push.sh"
+    content: |
+      #! /bin/bash
+      source ~mirrordaemon/pull_from_internet.sh
+      source ~mirrordaemon/push_to_internal_mirrors.sh
 
 runcmd:
   # Generate SSH keys for connecting to the internal mirror
@@ -88,8 +93,7 @@ runcmd:
 
   # Schedule initial update for next boot
   - echo "*** Schedule mirror update jobs for next boot... ***"
-  - echo "@reboot mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
-  - echo "@reboot mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
 
   # Print out some diagnostic information
   - echo "*** This server is currently aware of internal mirrors at the following locations ***"

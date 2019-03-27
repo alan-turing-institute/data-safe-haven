@@ -1,6 +1,6 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management",
+    "subscriptionName": "Safe Haven Managment",
     "id": "prod",
     "location": "uksouth",
     "domain": {
@@ -19,26 +19,31 @@
     },
     "network": {
       "vnet": {
-        "cidr": "10.220.0.0/21"
+        "rg": "RG_SHM_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.220.0",
-          "cidr": "10.220.0.0/24"
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
         }
       }
     },
     "dc": {
-      "rg": "RG_DSG_DC",
-      "vmName": "DC",
+      "rg": "RG_SHM_VM_DC",
+      "vmName": "SHMDC1",
       "hostname": "SHMDC1",
       "fqdn": "SHMDC1.turingsafehaven.ac.uk",
-      "ip": "10.220.0.250"
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "ip": "10.251.0.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgxartifacts"
+        "accountName": "dsgartifactsprod"
       }
     },
     "keyVault": {
@@ -57,7 +62,10 @@
       "netbiosName": "DSGROUP10",
       "dn": "DC=dsgroup10,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": "SG DSGROUP10 Server Administrators",
+        "serverAdmins": {
+          "name": "SG DSGROUP10 Server Administrators",
+          "description": "SG DSGROUP10 Server Administrators"
+        },
         "researchUsers": {
           "name": "SG DSGROUP10 Research Users",
           "description": "SG DSGROUP10 Research Users"
@@ -174,7 +182,8 @@
         "vmName": "GITLAB",
         "hostname": "GITLAB",
         "fqdn": "GITLAB.dsgroup10.co.uk",
-        "ip": "10.250.74.151"
+        "ip": "10.250.74.151",
+        "rootPasswordSecretName": "dsg10-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD",
