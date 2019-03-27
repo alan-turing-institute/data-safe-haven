@@ -593,7 +593,6 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   
   - Select the "DER encoded binary X.509" format and click "Next"
   
-  - Check the "Password" box, enter a password and click "Next"
   
   - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
 
