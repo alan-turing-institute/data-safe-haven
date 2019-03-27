@@ -5,7 +5,7 @@ function Add-DsgConfig {
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
         $dsgId
     )
-    $configRootDir = Join-Path $PSScriptRoot ".." "dsg_configs" -Resolve
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
 
     $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"  
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
@@ -67,6 +67,7 @@ function Add-DsgConfig {
     $config.shm.dc.rg = "RG_DSG_DC"
     $config.shm.dc.vmName = "DC"
     $config.shm.dc.hostname = $shmConfigBase.dcHostname
+    $config.shm.dc.fqdn = $config.shm.dc.hostname + "." + $config.shm.domain.fqdn
     $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
 
     # --- Storage config --
@@ -106,8 +107,8 @@ function Add-DsgConfig {
         serverAdmins = [ordered]@{}
         researchUsers = [ordered]@{}
     }
-    $config.shm.domain.securityGroups.serverAdmins = ("SG " + $config.shm.domain.netbiosName + " Server Administrators")
-    $config.shm.domain.securityGroups.serverAdmins.description = $config.shm.domain.securityGroups.serverAdmins.name
+    $config.dsg.domain.securityGroups.serverAdmins = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
+    $config.dsg.domain.securityGroups.serverAdmins.description = $config.dsg.domain.securityGroups.serverAdmins.name
     $config.dsg.domain.securityGroups.researchUsers.name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
     $config.dsg.domain.securityGroups.researchUsers.description = $config.dsg.domain.securityGroups.researchUsers.name
 
@@ -146,6 +147,7 @@ function Add-DsgConfig {
     $config.dsg.dc.rg = "RG_DSG_DC"
     $config.dsg.dc.vmName = "DSG" + $config.dsg.id + "DC" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DC"
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
+    $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
     $config.dsg.dc.admin = [ordered]@{
         username = "atiadmin"
@@ -185,12 +187,15 @@ function Add-DsgConfig {
     $config.dsg.rds.rg = "RG_DSG_RDS"
     $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
+    $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
+    $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
     $config.dsg.rds.sessionHost2.vmName = "RDSSH2" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH2"
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
+    $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
 
     # --- Secure servers ---
@@ -200,6 +205,7 @@ function Add-DsgConfig {
     $config.dsg.dataserver.rg = "RG_DSG_DATA"
     $config.dsg.dataserver.vmName = "DATASERVER" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DATASERVER"
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
+    $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
@@ -210,10 +216,12 @@ function Add-DsgConfig {
     $config.dsg.linux.rg = "RG_DSG_LINUX"
     $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
+    $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
     $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
     $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
+    $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
     # HackMD server

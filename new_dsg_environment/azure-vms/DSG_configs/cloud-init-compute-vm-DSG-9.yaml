@@ -142,13 +142,30 @@ write_files:
       index = http://PYPI_MIRROR_IP:3128
       index-url = http://PYPI_MIRROR_IP:3128/simple
       trusted-host = PYPI_MIRROR_IP
+  - path: "/Rprofile.site"
+    content: |
+      ## Emacs please make this -*- R -*-
+      ## empty Rprofile.site for R on Debian
+      ##
+      ## Copyright (C) 2008 - 2018  Dirk Eddelbuettel and GPL'ed
+      ##
+      ## see help(Startup) for documentation on ~/.Rprofile and Rprofile.site
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "http://CRAN_MIRROR_IP"
+          options(repos = r)
+      })
 
 runcmd:
   # ==========================================
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
-  # Use explicit paths as cloud-init runs in /bin/sh not /bin/bash
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
+  # Move CRAN mirror config to appropriate locations
+  - cp /Rprofile.site /etc/R/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
   # Create shared data folder and grant all users access
   - sudo mkdir /data
   - sudo chmod go+rw /data
@@ -162,7 +179,7 @@ runcmd:
   - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
-  - echo "source activate py36" >> /etc/bash.bashrc
+  - echo "conda activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
   - echo "Disable screen lock"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop

@@ -83,7 +83,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     DOMAIN="dsgroupdev.co.uk"
     AD_DC_NAME="MGMTDEVDC"
     LDAP_BASE_DN="ou=safe haven research users,dc=dsgroupdev,dc=co,dc=uk"
-    LDAP_BIND_DN="cn=DSGGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
+    LDAP_BIND_DN="cn=DSGROUP9 Data Science LDAP,ou=safe haven service accounts,dc=dsgroupdev,dc=co,dc=uk"
     LDAP_FILTER="(&(objectClass=user)(memberOf=CN=SG DSGROUP$DSG_ID_UPPER Research Users,OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk))"
 else
     # Production DSGs have uniform settings
@@ -107,8 +107,9 @@ if [ "$DSG_ID_UPPER" = "TEST" ]; then
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-TEST.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
+    CRAN_MIRROR_IP="10.1.0.21"
 fi
 if [ "$DSG_ID_UPPER" = "1" ]; then
     DSG_VNET="DSG_EXTREMISM_VNET1"
@@ -118,6 +119,7 @@ if [ "$DSG_ID_UPPER" = "1" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "2" ]; then
     DSG_VNET="DSG_NEWS_VNET1"
@@ -127,6 +129,7 @@ if [ "$DSG_ID_UPPER" = "2" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "3" ]; then
     IP_PREFIX="10.250.18."
@@ -135,6 +138,7 @@ if [ "$DSG_ID_UPPER" = "3" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "4" ]; then
     IP_PREFIX="10.250.26."
@@ -143,6 +147,7 @@ if [ "$DSG_ID_UPPER" = "4" ]; then
     SOURCEIMAGE="Ubuntu"
     VERSION="0.0.2018120701"
     PYPI_MIRROR_IP=""
+    CRAN_MIRROR_IP=""
 fi
 if [ "$DSG_ID_UPPER" = "6" ]; then
     IP_PREFIX="10.250.42."
@@ -153,23 +158,25 @@ if [ "$DSG_ID_UPPER" = "6" ]; then
 fi
 if [ "$DSG_ID_UPPER" = "9" ]; then
     IP_PREFIX="10.250.66."
-    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-9.yaml"
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-${DSG_ID_LOWER}.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
-    VERSION="0.0.2018120701"
+    VERSION="0.0.2019032100"
     PYPI_MIRROR_IP="10.1.0.20"
+    CRAN_MIRROR_IP="10.1.0.21"
+    LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
 fi
-
 
 if [ "$FIXED_IP" = "" ]; then
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
+        -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP -o $CRAN_MIRROR_IP
 else
+    MACHINENAME="DSG$(date '+%Y%m%d%H%M')-${FIXED_IP}"
     IP_ADDRESS="${IP_PREFIX}${FIXED_IP}"
     ./deploy_azure_dsg_vm.sh -s "$SUBSCRIPTIONSOURCE" -t "$SUBSCRIPTIONTARGET" -i "$SOURCEIMAGE" -x "$VERSION" -g "$DSG_NSG" \
         -r "$RESOURCEGROUP" -v "$DSG_VNET" -w "$DSG_SUBNET" -z "$VM_SIZE" -m "$MANAGEMENT_VAULT_NAME" -l "$LDAP_SECRET_NAME" \
         -p "$ADMIN_PASSWORD_SECRET_NAME" -j "$LDAP_USER" -d "$DOMAIN" -a "$AD_DC_NAME" -b "$LDAP_BASE_DN" -c "$LDAP_BIND_DN" \
-        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP
+        -q "$IP_ADDRESS" -y $CLOUD_INIT_YAML -f "$LDAP_FILTER" -e "$MGMNT_SUBNET_IP_RANGE" -k $PYPI_MIRROR_IP -o $CRAN_MIRROR_IP -n $MACHINENAME
 fi

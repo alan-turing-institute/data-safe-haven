@@ -41,7 +41,7 @@ write_files:
       ExecReload=/bin/kill -HUP $MAINPID
       Restart=always
 
-      WorkingDirectory=/datadrive/mirrordaemon/pypi/web/packages
+      WorkingDirectory=/datadrive/mirrordaemon/pypi/
 
       TimeoutStartSec=3
       RestartSec=5
@@ -74,7 +74,7 @@ runcmd:
   - python3 -m venv pypiserver
   - pypiserver/bin/pip install pypiserver
 
-  # Set up pypiserver
+  # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up pypiserver pointing to local disk... ***"
   - systemctl enable pypiserver.service
   - systemctl start pypiserver.service
