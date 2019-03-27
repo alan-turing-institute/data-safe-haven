@@ -100,8 +100,6 @@ Write-Output $gitlabCloudInit
 Write-Output "--------"
 Write-Output $hackmdCloudInit
 
-exit 1
-
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
