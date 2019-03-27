@@ -77,6 +77,14 @@
 
 - [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 
+### Install and configure Linux command line
+
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+
+  - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
+
 ## Build Process
 
 0. Define DSG configuration
@@ -213,7 +221,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once deployment is complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 ### Configure DSG Active Directory Domain Controller
 
@@ -373,7 +381,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 ### Generate temporary SAS token
 - Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 ### Configure Remote Desktop Services
 
@@ -398,7 +406,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -427,11 +435,11 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Download the applications to be served via RDS
 
-  - Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -446,11 +454,11 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
 - Download the applications to be served via RDS
-  - Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
-  - Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
-  - Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -465,6 +473,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
 
 - Install the RDS services by running the following command:
 
@@ -731,15 +741,15 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. 
 
 - Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
 
-- Download OpenOffice using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download OpenOffice using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
-- Download TexLive using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download TexLive using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
-- Download WinEdt using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download WinEdt using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -764,7 +774,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 ### Generate temporary SAS token
 - Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
 ### Configure Dataserver on Domain Controller
 
@@ -787,7 +797,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
-- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>`(append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -796,6 +806,8 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
 
