@@ -466,6 +466,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Change to `C:\Scripts`
 
+- In Powershell run `Set-executionpolicy Unrestricted`
+
 - Install the RDS services by running the following command:
 
   | **Command**              | **Parameters** | **Description**  |
@@ -796,6 +798,8 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
 
