@@ -336,7 +336,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
-  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<DOMAIN\Username>. User is "atiadmin ". See DSG DC admin secret in management KeyVault for password. |
+  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<dsg-domain\Username>. User is "atiadmin ". See DSG DC admin secret in management KeyVault for password. |
   | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
   | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
 
@@ -396,7 +396,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 #### Initial configuration of RDS Gateway
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
 
@@ -421,7 +421,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
@@ -441,7 +441,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
@@ -460,7 +460,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
@@ -501,7 +501,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - From the Server Manager dashboard select `Tools -> Internet Information Service (IIS) Manager`
 
@@ -551,7 +551,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - From the Server Manager dashboard select "Tools -> Internet Information Service (IIS) Manager"
  
@@ -611,7 +611,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
@@ -633,7 +633,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
 
 - In "Server Manager", select `Tools -> Network Policy Server`
 
@@ -657,7 +657,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
 
