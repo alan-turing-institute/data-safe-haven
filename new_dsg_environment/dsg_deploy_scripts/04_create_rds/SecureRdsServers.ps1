@@ -18,16 +18,36 @@ $sh1NicName = $config.dsg.rds.sessionHost1.vmName + "_NIC1";
 $sh2NicName = $config.dsg.rds.sessionHost2.vmName + "_NIC1";
 
 # Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
-$nsg = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.sessionHosts;
+$nsgSessionHosts = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.sessionHosts.name;
 $sh1Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh1NicName;
 $sh2Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh2NicName;
 
-# Assign RDS Session Host NICs to RDS NSG
-$sh1Nic.NetworkSecurityGroup = $nsg;
+# Assign RDS Session Host NICs to Session Hosts NSG
+$sh1Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $sh1Nic | Set-AzNetworkInterface;
-
-$sh2Nic.NetworkSecurityGroup = $nsg;
+$sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $sh2Nic | Set-AzNetworkInterface;
+
+# Update RDS Gateway NSG ibbound access rule
+$nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
+
+$nsgGateway | Get-AzNetworkSecurityRuleConfig -Name "HTTPS_In"
+
+$nsgGatewayHttpsInRuleParams = @{
+  Name = "HTTPS_In"
+  NetworkSecurityGroup = $nsgGateway
+  Description = "Allow HTTPS inbound to RDS server"
+  Access = "Allow"
+  Direction = "Inbound"
+  SourceAddressPrefix = $config.dsg.rds.nsg.gateway.allowedSources
+  Protocol = "TCP"
+  SourcePortRange = "*"
+  DestinationPortRange = "443"
+  DestinationAddressPrefix = "*"
+  Priority = "101"
+}
+
+Set-AzNetworkSecurityRuleConfig @nsgGatewayHttpsInRuleParams
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;

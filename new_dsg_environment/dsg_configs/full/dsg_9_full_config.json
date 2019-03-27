@@ -153,8 +153,13 @@
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
-        "gateway": "NSG_RDS_Server",
-        "sessionHosts": "NSG_SessionHosts"
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253, 193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
       }
     },
     "dataserver": {

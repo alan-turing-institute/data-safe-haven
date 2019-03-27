@@ -185,9 +185,13 @@ function Add-DsgConfig {
         sessionHost2 = [ordered]@{}
     }
     $config.dsg.rds.rg = "RG_DSG_RDS"
-    $config.dsg.rds.nsg = [ordered]@{}
-    $config.dsg.rds.nsg.gateway = "NSG_RDS_Server"
-    $config.dsg.rds.nsg.sessionHosts = "NSG_SessionHosts"
+    $config.dsg.rds.nsg = [ordered]@{
+        gateway = [ordered]@{}
+        sessionHosts = [ordered]@{}
+    }
+    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
+    $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
