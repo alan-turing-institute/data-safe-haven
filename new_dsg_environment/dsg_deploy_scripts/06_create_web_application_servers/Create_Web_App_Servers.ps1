@@ -55,7 +55,7 @@ $hackmdFqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))".fqdn
 $hackmdUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
 $hackmdLdapUserDn = "CN=" + $config.dsg.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
-
+$hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
 ## Read hackmd template cloud-init file
 $hackmdCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-hackmd.yaml"
 $hackmdCloudInitTemplate = (Get-Content -Raw -Path $hackmdCloudInitTemplatePath)
@@ -67,7 +67,7 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdL
                                             replace('<hackmd-ip>',$config.dsg.linux.hackmd.ip).
                                             replace('<hackmd-hostname>',$config.dsg.linux.hackmd.hostname).
                                             replace('<hackmd-fqdn>',$hackmdFqdn).
-                                            replace('<hackmd-ldap-url>',$config.shm.domain.ldapURL).
+                                            replace('<hackmd-ldap-url>',$hackMdLdapUrl).
                                             replace('<hackmd-ldap-bios>',$config.shm.domain.netbiosName)
 # .replace('<gitlab-root-password>',$gitlabRootPassword)
 # .replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
@@ -95,6 +95,8 @@ Write-Output "--------"
 Write-Output $gitlabCloudInit
 Write-Output "--------"
 Write-Output $hackmdCloudInit
+
+exit 1
 
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
