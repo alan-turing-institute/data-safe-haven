@@ -53,7 +53,7 @@ $nsgGatewayHttpsInRuleParams = @{
 Write-Host ("Updating " + $httpsInRuleName + " rule for " + $nsgGateway.Name + ":")
 Write-Host "====="
 Set-AzNetworkSecurityRuleConfig @nsgGatewayHttpsInRuleParams
-
+Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway
 
 Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " after update:")
 Write-Host "====="
