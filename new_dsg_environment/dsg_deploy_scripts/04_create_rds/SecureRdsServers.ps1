@@ -23,26 +23,24 @@ $sh1Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh
 $sh2Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh2NicName;
 
 # Assign RDS Session Host NICs to Session Hosts NSG
+Write-Host (" - Associating RDS Session Hosts with '" + $nsgSessionHosts.Name + "' NSG")
 $sh1Nic.NetworkSecurityGroup = $nsgSessionHosts;
-$sh1Nic | Set-AzNetworkInterface;
+$_ = ($sh1Nic | Set-AzNetworkInterface);
 $sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
-$sh2Nic | Set-AzNetworkInterface;
+$_ = ($sh2Nic | Set-AzNetworkInterface);
 
-# Update RDS Gateway NSG ibbound access rule
+# Update RDS Gateway NSG inbound access rule
 $nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
-
 $httpsInRuleName = "HTTPS_In"
-Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " before update:")
-Write-Host "====="
-Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway
+$httpsInRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway;
 
 # Load allowed sources into an array, splitting on commas and trimming any whitespace from
-# each item
+# each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
 $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEach-Object{$_.Trim()})
-# $allowedSources = "193.60.220.22", "193.60.220.33"
-# Convert the array of strings into an array of objects.
-# $allowedSources = (@($allowedSources) | ForEach-Object{[pscustomobject]$_})
-Write-Host $allowedSources
+
+Write-Host (" - Updating '" + $httpsInRuleName + "' rule source address prefix from '" + $httpsInRuleBefore.SourceAddressPrefix `
+             + "' to '" + $allowedSources + "' on '" + $nsgGateway.name + "' NSG")
+             
 $nsgGatewayHttpsInRuleParams = @{
   Name = $httpsInRuleName
   NetworkSecurityGroup = $nsgGateway
@@ -57,14 +55,15 @@ $nsgGatewayHttpsInRuleParams = @{
   Priority = "101"
 }
 
-Write-Host ("Updating " + $httpsInRuleName + " rule for " + $nsgGateway.Name + ":")
-Write-Host "====="
-Set-AzNetworkSecurityRuleConfig @nsgGatewayHttpsInRuleParams
-Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway
+# Update rule and NSG (both are required)
+$_ = Set-AzNetworkSecurityRuleConfig @nsgGatewayHttpsInRuleParams;
+$_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway;
 
-Write-Host ($httpsInRuleName + " rule for " + $nsgGateway.Name + " after update:")
-Write-Host "====="
-Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway
+# Confirm update has being successfully applied
+$httpsInRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway;
+
+Write-Host (" - '" + $httpsInRuleName + "' rule source address prefix is now '" + $httpsInRuleAfter.SourceAddressPrefix `
+            + "' on '" + $nsgGateway.name + "' NSG")
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
