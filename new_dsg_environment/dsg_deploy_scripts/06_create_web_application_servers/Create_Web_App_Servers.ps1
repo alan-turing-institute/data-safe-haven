@@ -56,7 +56,7 @@ $gitlabCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF
 
 ## --HACKMD--
 $hackmdFqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
-$hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))".fqdn
+$hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
 $hackmdUserPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
 $hackmdLdapUserDn = "CN=" + $config.dsg.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
@@ -99,7 +99,6 @@ Write-Output "--------"
 Write-Output $gitlabCloudInit
 Write-Output "--------"
 Write-Output $hackmdCloudInit
-
 
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
