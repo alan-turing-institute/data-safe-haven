@@ -19,8 +19,6 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUPDEV_VNET1",
         "cidr": "10.220.1.0/21"
       },
       "subnets": {
@@ -36,9 +34,6 @@
       "hostname": "MGMTDEVDC",
       "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
       "ip": "10.220.1.250"
-    },
-    "nps": {
-      "ip": "10.220.1.248"
     },
     "storage": {
       "artifacts": {
@@ -62,10 +57,7 @@
       "netbiosName": "DSGROUP9",
       "dn": "DC=dsgroup9,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": {
-          "name": "SG DSGROUP9 Server Administrators",
-          "description": "SG DSGROUP9 Server Administrators"
-        },
+        "serverAdmins": "SG DSGROUP9 Server Administrators",
         "researchUsers": {
           "name": "SG DSGROUP9 Research Users",
           "description": "SG DSGROUP9 Research Users"
@@ -173,8 +165,7 @@
         "vmName": "GITLAB",
         "hostname": "GITLAB",
         "fqdn": "GITLAB.dsgroup9.co.uk",
-        "ip": "10.250.66.151",
-        "rootPasswordSecretName": "dsg9-gitlab-root-password"
+        "ip": "10.250.66.151"
       },
       "hackmd": {
         "vmName": "HACKMD",

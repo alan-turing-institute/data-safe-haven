@@ -4,11 +4,5 @@
     "shId": "test",
     "location": "uksouth",
     "ipPrefix": "10.220.1",
-    "dcVmName": "DC",
-    "dcHostname": "MGMTDEVDC",
-    "dcRgName": "RG_DSG_DC",
-    "npsIp": "248",
-    "vnetRgName": "RG_DSG_VNET",
-    "vnetName":"DSG_DSGROUPDEV_VNET1",
-    "artifactStorageAccount": "dsgxartifacts"
+    "dcHostname": "MGMTDEVDC"
 }
