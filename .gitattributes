@@ -1,2 +1,0 @@
-# Set line endings for .sh files to LF, even on Windows
-*.sh text eol=lf
