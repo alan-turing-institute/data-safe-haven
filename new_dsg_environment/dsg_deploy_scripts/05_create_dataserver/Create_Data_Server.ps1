@@ -9,6 +9,10 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Admin user credentials (must be same as for DSG DC for now)
 $adminUser = $config.dsg.dc.admin.username
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
@@ -34,3 +38,6 @@ $templatePath = Join-Path $PSScriptRoot "dataserver-master-template.json"
 New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName  $config.dsg.dataserver.rg `
   -TemplateFile $templatePath @params -Verbose
+
+# Switch back to original subscription
+Set-AzContext -Context $prevContext;

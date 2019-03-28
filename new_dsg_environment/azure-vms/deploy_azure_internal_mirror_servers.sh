@@ -91,13 +91,13 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
 fi
 
 # Ensure that keyvault exists
-if [ "$(az keyvault list --resource-group $RESOURCEGROUP | grep $KEYVAULT_NAME)" = "" ]; then
+if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$KEYVAULT_NAME" ]; then
     echo -e "${RED}Keyvault ${BLUE}$KEYVAULT_NAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
 
 # Ensure that VNet exists
-if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$VNET_NAME" ]; then
     echo -e "${RED}VNet ${BLUE}$VNET_NAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
@@ -111,7 +111,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
 fi
 
 # Ensure that external subnet exists
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --query "[].name" -o tsv)" != "$SUBNET_EXTERNAL" ]; then
     echo -e "${RED}External subnet ${BLUE}$SUBNET_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
