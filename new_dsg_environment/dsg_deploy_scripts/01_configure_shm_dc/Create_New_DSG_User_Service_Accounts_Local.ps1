@@ -10,6 +10,10 @@ Import-Module $PSScriptRoot/../GeneratePassword.psm1
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
 
+# Temporarily switch to management subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+
 # Fetch HackMD password (or create if not present)
 $hackMdPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
 if ($null -eq $hackMdPassword) {
@@ -49,10 +53,6 @@ if ($null -eq $testResearcherPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.researchers.test.passwordSecretName -SecretValue $newPassword;
   $testResearcherPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.researchers.test.passwordSecretName).SecretValueText;
 }
-
-# Temporarily switch to management subscription
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_New_DSG_User_Service_Accounts_Remote.ps1"
