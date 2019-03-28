@@ -1,7 +1,7 @@
 # Creating new users without the app
 
 ## Create new user file (Project Investigator or Research Co-ordinator)
-- Make a new copy of `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
+- Make a new copy of the user details file `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
   - `SamAccountName`: Log in username **without** the @domain bit). Use "firstname.lastname" format
   - `GivenName`: User's first / given name
@@ -13,11 +13,8 @@
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
-- Note: OU path must be in quotes
-- Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
-- To force a sync to AAD first ensure that the ADSync module is installed: `Import-Module ADSync`
-- Run `Start-ADSyncSyncCycle -PolicyType Delta` (sync may still take ~5 minutes)
+- Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"` (**OU path must be in quotes**)
+- The `CreateUsers.ps1` script will trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
 ### Troubleshooting
 #### User exists with that name

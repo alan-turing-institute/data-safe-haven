@@ -41,3 +41,7 @@ New-ADUser  -SamAccountName $_.SamAccountName `
             -Email $UserPrincipalName `
             -Country GB
     }
+
+# Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
+Import-Module ADSync
+Start-ADSyncSyncCycle -PolicyType Delta
