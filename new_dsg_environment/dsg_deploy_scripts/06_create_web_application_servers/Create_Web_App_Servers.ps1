@@ -5,6 +5,8 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1
+# Make sure terms for gitlab-ce are accepted
+Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
