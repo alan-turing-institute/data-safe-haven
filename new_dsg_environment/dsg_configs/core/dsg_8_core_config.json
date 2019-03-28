@@ -3,5 +3,9 @@
     "dsgId": "8",
     "domain": "dsgroup8.co.uk",
     "ipPrefix": "10.250.56",
-    "rdsAllowedSources": "Internet"
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.0.2018120701",
+    "packageMirrorIpPypi": "",
+    "packageMirrorIpCran": ""
 }
