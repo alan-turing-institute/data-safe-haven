@@ -159,7 +159,16 @@
         "fqdn": "RDSSH2.dsgroup11.co.uk",
         "ip": "10.250.81.248"
       },
-      "rg": "RG_DSG_RDS"
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253,193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
@@ -182,7 +191,8 @@
         "fqdn": "HACKMD.dsgroup11.co.uk",
         "ip": "10.250.82.152"
       },
-      "rg": "RG_DSG_LINUX"
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
     }
   }
 }
