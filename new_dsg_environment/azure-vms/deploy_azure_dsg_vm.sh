@@ -447,7 +447,7 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 sleep 30
 
 # Poll VM to see whether it has finished running
-echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
+echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
 while true; do
     POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
     if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi

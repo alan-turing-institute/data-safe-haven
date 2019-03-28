@@ -27,15 +27,15 @@ if ($null -eq $computeVmRootPassword) {
 
 # Set IP address if we have a fixed IP
 $vmIpAddress = $null
-if ($fixedIp) { $vmIpAddress = $config.dsg.network.data.prefix + "." + $fixedIp }
+if ($fixedIp) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $fixedIp }
 
 # Set machine name
-$vmName = Get-Date -UFormat "%Y%m%d%H%M"
+$vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
 if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "../../azure-vms/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.dsg.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
