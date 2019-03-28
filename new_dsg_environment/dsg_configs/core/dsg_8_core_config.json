@@ -5,7 +5,7 @@
     "ipPrefix": "10.250.56",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.0.2018120701",
-    "packageMirrorIpPypi": "",
-    "packageMirrorIpCran": ""
+    "computeVmImageVersion": "0.0.2019032100",
+    "packageMirrorIpPypi": "10.1.0.20",
+    "packageMirrorIpCran": "10.1.0.21"
 }
