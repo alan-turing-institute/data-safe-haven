@@ -448,7 +448,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ##### RDS Session Server 2 (Presentation VM)
 
-- Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
+- Connect to the **RDS Session Server 2 (RDSSH2)** via Remote Desktop client over the DSG VPN connection
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
