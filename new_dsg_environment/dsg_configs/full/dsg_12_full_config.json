@@ -51,17 +51,17 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
-    },
-    "mirrors": {
-      "cran": {
-        "ip": null
-      },
-      "pypi": {
-        "ip": null
-      }
     }
   },
   "dsg": {
+    "mirrors": {
+      "cran": {
+        "ip": "10.1.0.21"
+      },
+      "pypi": {
+        "ip": "10.1.0.20"
+      }
+    },
     "subscriptionName": "Data Study Group 12 (Prod)",
     "id": "12",
     "location": "uksouth",
@@ -210,8 +210,8 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageType": null,
-      "vmImageVersion": null,
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.0.2019032100",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup12-dsvm-admin-password"

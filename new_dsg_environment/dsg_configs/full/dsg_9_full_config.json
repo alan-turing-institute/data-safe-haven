@@ -51,7 +51,9 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
-    },
+    }
+  },
+  "dsg": {
     "mirrors": {
       "cran": {
         "ip": "10.1.0.21"
@@ -59,9 +61,7 @@
       "pypi": {
         "ip": "10.1.0.20"
       }
-    }
-  },
-  "dsg": {
+    },
     "subscriptionName": "DSG Template Testing",
     "id": "9",
     "location": "uksouth",

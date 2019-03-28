@@ -95,12 +95,12 @@ function Add-DsgConfig {
     $dsgPrefix = $dsgConfigBase.ipPrefix
 
     # --- Package mirror config ---
-    $config.shm.mirrors = [ordered]@{
+    $config.dsg.mirrors = [ordered]@{
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
-    $config.shm.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
-    $config.shm.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
+    $config.dsg.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
+    $config.dsg.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
