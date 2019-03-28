@@ -51,6 +51,14 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "mirrors": {
+      "cran": {
+        "ip": "10.1.0.21"
+      },
+      "pypi": {
+        "ip": "10.1.0.20"
+      }
     }
   },
   "dsg": {
@@ -97,6 +105,12 @@
         "gateway": {
           "prefix": "10.250.79",
           "cidr": "10.250.79.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
         }
       }
     },
@@ -193,6 +207,15 @@
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.0.2019032100",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup10-dsvm-admin-password"
+      }
     }
   }
 }

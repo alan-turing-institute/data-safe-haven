@@ -7,13 +7,13 @@ function Add-DsgConfig {
     )
     $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
 
-    $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"  
+    $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
 
-    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"  
+    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
     $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
 
-    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"  
+    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
     $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
 
     # Use hash table for config
@@ -94,6 +94,14 @@ function Add-DsgConfig {
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
 
+    # --- Package mirror config ---
+    $config.shm.mirrors = [ordered]@{
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    $config.shm.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
+    $config.shm.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
+
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
     $dsgBasePrefix = $dsgPrefixOctets[0] + "." + $dsgPrefixOctets[1]
@@ -102,7 +110,7 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
-    $config.dsg.location = $config.shm.location 
+    $config.dsg.location = $config.shm.location
 
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}
@@ -127,6 +135,9 @@ function Add-DsgConfig {
             data = [ordered]@{}
             gateway = [ordered]@{}
         }
+        nsg = [ordered]@{
+            data = [ordered]@{}
+        }
     }
     $config.dsg.network.vnet.rg = "RG_DSG_VNET"
     $config.dsg.network.vnet.name = "DSG_" + $config.dsg.domain.netbiosName + "_VNET1"
@@ -139,9 +150,11 @@ function Add-DsgConfig {
     $config.dsg.network.subnets.rds.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
     $config.dsg.network.subnets.data.name = "Subnet-Data"
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
-    $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24" 
+    $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
+    $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
+    $config.dsg.network.nsg.data.name = "NSG_Linux_Servers"
 
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
@@ -242,13 +255,21 @@ function Add-DsgConfig {
 
     # Compute server
 
-    
+    # Compute VMs
+    $config.dsg.dsvm = [ordered]@{}
+    $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
+    $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
+    $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
+    $config.dsg.dsvm.admin = [ordered]@{
+        username = "atiadmin"
+        passwordSecretName = "dsgroup" + $config.dsg.id + "-dsvm-admin-password" # TODO: Current format targeted at using shm keyvault. Update if this changes.
+    }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
     Write-Host $jsonOut
-    Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut  
+    Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
-Export-ModuleMember -Function Add-DsgConfig 
+Export-ModuleMember -Function Add-DsgConfig
 
 function Get-DsgConfig {
     param(
