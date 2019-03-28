@@ -75,12 +75,12 @@ $arguments = "-s '$subscriptionSource' \
               -d $domainName \
               -a $adDcName \
               -y '$cloudInitYaml' \
-              -o $mirrorIpCran \
-              -k $mirrorIpPypi \
               -p $vmAdminPasswordSecretName \
               -n $vmName \
               -z $vmSize"
 
-# Add IP address to the arguments if needed
+# Add additional arguments if needed
 if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
+if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
+if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
 bash -c "../../azure-vms/deploy_azure_dsg_vm.sh $arguments"
