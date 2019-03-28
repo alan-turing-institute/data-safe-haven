@@ -1,30 +1,22 @@
-function Add-DsgConfig {
+
+function Get-ConfigRootDir{
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
+    return $configRootDir
+}
+function Get-ShmFullConfig{
     param(
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
-        $shmId,
-        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
-        $dsgId
+        $shmId
     )
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
-
+    $configRootDir = Get-ConfigRootDir
     $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
-
-    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
-    $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
-
-    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
-    $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
-
-    # Use hash table for config
-    $config = [ordered]@{
-        shm = [ordered]@{}
-        dsg = [ordered]@{}
-    }
-    # === SH MANAGEMENT CONFIG ===
+    
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
-    Write-Host $shmConfigBase
+
+    # === SH MANAGEMENT CONFIG ===
+    $shm = [ordered]@{}
     $shmPrefix = $shmConfigBase.ipPrefix
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
@@ -33,63 +25,90 @@ function Add-DsgConfig {
     $shmThirdOctet = ([int] $shmPrefixOctets[2])
 
     # --- Top-level config ---
-    $config.shm.subscriptionName = $shmConfigBase.subscriptionName
-    $config.shm.id = $shmConfigBase.shId
-    $config.shm.location = $shmConfigBase.location
+    $shm.subscriptionName = $shmConfigBase.subscriptionName
+    $shm.id = $shmConfigBase.shId
+    $shm.location = $shmConfigBase.location
 
     # --- Domain config ---
-    $config.shm.domain = [ordered]@{}
-    $config.shm.domain.fqdn = $shmConfigBase.domain
-    $config.shm.domain.netbiosName = $config.shm.domain.fqdn.Split('.')[0].ToUpper()
-    $config.shm.domain.dn = "DC=" + ($config.shm.domain.fqdn.replace('.',',DC='))
-    $config.shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $config.shm.domain.dn
-    $config.shm.domain.userOuPath = "OU=Safe Haven Research Users," + $config.shm.domain.dn
-    $config.shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $config.shm.domain.dn
-    $config.shm.domain.securityGroups = [ordered]@{
+    $shm.domain = [ordered]@{}
+    $shm.domain.fqdn = $shmConfigBase.domain
+    $shm.domain.netbiosName = $shm.domain.fqdn.Split('.')[0].ToUpper()
+    $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
+    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
+    $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
+    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
+    $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{}
     }
-    $config.shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users"
-    $config.shm.domain.securityGroups.dsvmLdapUsers.description = $config.shm.domain.securityGroups.dsvmLdapUsers.name
+    $shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users"
+    $shm.domain.securityGroups.dsvmLdapUsers.description = $shm.domain.securityGroups.dsvmLdapUsers.name
 
 
     # --- Network config ---
-    $config.shm.network = [ordered]@{
+    $shm.network = [ordered]@{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $config.shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
-    $config.shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $config.shm.domain.netbiosName + "_VNET1"
-    $config.shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
-    $config.shm.network.subnets.identity = [ordered]@{}
-    $config.shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
-    $config.shm.network.subnets.identity.cidr = $config.shm.network.subnets.identity.prefix + ".0/24"
+    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
+    $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+    $shm.network.subnets.identity = [ordered]@{}
+    $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
+    $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
 
     # --- Domain controller config ---
-    $config.shm.dc = [ordered]@{}
-    $config.shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
-    $config.shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
-    $config.shm.dc.hostname = $shmConfigBase.dcHostname
-    $config.shm.dc.fqdn = $config.shm.dc.hostname + "." + $config.shm.domain.fqdn
-    $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
+    $shm.dc = [ordered]@{}
+    $shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
+    $shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
+    $shm.dc.hostname = $shmConfigBase.dcHostname
+    $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
+    $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
 
     # --- NPS config ---
-    $config.shm.nps = [ordered]@{}
-    $config.shm.nps.ip = $config.shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
+    $shm.nps = [ordered]@{}
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
 
     # --- Storage config --
-    $config.shm.storage = [ordered]@{
+    $shm.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
-    $config.shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $config.shm.id
+    $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
+    $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
     # -- Secrets config ---
-    $config.shm.keyVault = [ordered]@{}
-    $config.shm.keyVault.name = "dsg-management-" + $config.shm.id
-    $config.shm.keyVault.secretNames = [ordered]@{}
-    $config.shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+    $shm.keyVault = [ordered]@{}
+    $shm.keyVault.name = "dsg-management-" + $shm.id
+    $shm.keyVault.secretNames = [ordered]@{}
+    $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+
+    return $shm
+}
+Export-ModuleMember -Function Get-ShmFullConfig
+
+function Add-DsgConfig {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
+        $shmId,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
+        $dsgId
+    )
+    $configRootDir = Get-ConfigRootDir
+    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
+    $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
+    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
+    $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
+
+    # Use hash table for config
+    $config = [ordered]@{
+        shm = Get-ShmFullConfig($shmId)
+        dsg = [ordered]@{}
+    }
+
+    # Import minimal management config parameters from JSON config file - we can derive the rest from these
+    $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
 
     # === DSG configuration parameters ===
+    $dsg = [ordered]@{}
     # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
@@ -251,10 +270,6 @@ function Add-DsgConfig {
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
-    # HackMD server
-
-    # Compute server
-
     # Compute VMs
     $config.dsg.dsvm = [ordered]@{}
     $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
@@ -277,7 +292,7 @@ function Get-DsgConfig {
     )
     # Read DSG config from file
     $configRootDir = Join-Path $PSScriptRoot ".." "dsg_configs" "full" -Resolve;
-    $configFilename =  "dsg_" + $dsgId + "_full_config.json";
+    $configFilename =  "dsg_" + $dsgId + "_full_json";
     $configPath = Join-Path $configRootDir $configFilename -Resolve;
     $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
     return $config
