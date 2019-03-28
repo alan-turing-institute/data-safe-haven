@@ -124,6 +124,10 @@ For security reasons, you must (re-)set your password before you can log in:
 5.	Complete the requested information (captcha and the phone number you provided on registration) 
 6.	Reset your password by following the instructions
 
+:warning: During this process, you will need to provide a phone number for
+account recovery. This is **not** MFA. You still need to set up MFA in the next
+section, otherwise you will be unable to launch any apps. :warning:
+
 #### Configure the MFA
 
 Before any user can access the secure environment, you need to setup your multifactor authentication.
@@ -257,6 +261,16 @@ Check the box in the security alert below and confirm by clicking the “yes” 
 Insert your credentials as per the example below:
 
 ![](logon_VMdesktop.png)
+
+:sparkles: TOP TIP: if you get a warning
+
+> Oops, we couldn't connect to "Shared VM (Desktop)"
+>
+> We couldn't connect to the gateway because of an error. If this keeps happening, ask your admin or tech support for help.
+
+make sure that you have MFA enabled (see [Section
+[section 3](#set-your-password), which is different from text messages for
+account recovery.
 
 ## Section 4.4. Using the data analytics VM
 
