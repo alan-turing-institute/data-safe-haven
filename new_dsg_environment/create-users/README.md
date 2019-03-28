@@ -56,7 +56,11 @@ For security we do not store your initial password, so you must reset it before 
 4. At password prompt click "Forgotten password"
 5. Complete the requested information (captcha and the phone number you provided on registration)
 6. Reset your password
-  
+
+**Note**: During this process, you will need to provide a phone number for
+account recovery. This is **not** MFA. You still need to set up MFA in the next
+section, otherwise you will be unable to launch any apps.
+
 #### Set up MFA
 Before you can access the secure environment, you need to setup your multifactor authentication.  The authentication method can be either via a call to a mobile phone or the Microsoft Authenticator app (recommended).
 
