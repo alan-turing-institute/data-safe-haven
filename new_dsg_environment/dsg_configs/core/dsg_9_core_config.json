@@ -2,5 +2,6 @@
     "subscriptionName": "DSG Template Testing",
     "dsgId": "9",
     "domain": "dsgroup9.co.uk",
-    "ipPrefix": "10.250.64"
+    "ipPrefix": "10.250.64",
+    "rdsAllowedSources": "Internet"
 }
