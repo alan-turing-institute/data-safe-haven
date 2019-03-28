@@ -31,6 +31,9 @@ $_ = ($sh1Nic | Set-AzNetworkInterface);
 $sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh2Nic | Set-AzNetworkInterface);
 
+Write-Host (" - NICs associated with '" + $nsgSessionHosts.Name + "'NSG")
+ @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
+
 # Update RDS Gateway NSG inbound access rule
 $nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
 $httpsInRuleName = "HTTPS_In"
@@ -77,13 +80,18 @@ $hackMdNicName = $config.dsg.linux.hackmd.vmName + "_NIC1";
 $nsgLinux = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.nsg;
 $gitlabNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $gitlabNicName;
 $hackMdNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $hackMdNicName;
+Write-Host (" - Associating Web App Servers with '" + $nsgLinux.Name + "' NSG")
 
 # Assign RDS Session Host NICs to Linux VM NSG
 $gitlabNic.NetworkSecurityGroup = $nsgLinux;
-$gitlabNic | Set-AzNetworkInterface;
+$_ = ($gitlabNic | Set-AzNetworkInterface);
 
 $hackMdNic.NetworkSecurityGroup = $nsgLinux;
-$hackMdNic | Set-AzNetworkInterface;
+$_ = ($hackMdNic | Set-AzNetworkInterface);
+
+Write-Host (" - NICs associated with '" + $nsgLinux.Name + "'NSG")
+@($nsgLinux.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
+
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
