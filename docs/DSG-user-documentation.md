@@ -10,8 +10,11 @@ The process for requesting help with the issue is as follows:
   Please do not log an issue before you have read the below document.
 2. re-start the environment (safe haven or data science suite) at least once, re-attempt the process leading to the bug/error at least twice.
 3. Let your challenge facilitator know of the issue. They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
+
 Please help your facilitator with a summary, and an appropriate tag for the issue: [feature request], [package request], [bug report], etc.
+
 If you are reporting a bug, include:
+
 •	Your client machine’s operating system and operating system version
 •	Precise condition under which the bug occurs. How to reproduce it.
 •	Precise description of the bug. What happens? What would you expect to happen instead if there were no bug?
@@ -331,7 +334,7 @@ git config --global user.email
 
 You’ll need to do this only once, since you are using the `--global` option. It tells Git to always use this information for anything you do on that system. If you want to override this with a different username or email address for specific projects, you can run the command without the `--global` option when you’re in that project.
 
-### Section 4.5.3 Command Line Basics
+### Section 4.5.3 Cloning projects
 In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
@@ -342,6 +345,9 @@ Go to your computer’s shell and type the following command with your SSH or HT
 ```
 git clone PASTE HTTPS OR SSH HERE
 ```
+
+### Section 4.5.4 Command Line Basics
+
 Below you can find other commands other basic commands you may find useful during the week.
 
 Go into a project directory to work in it
@@ -389,7 +395,7 @@ Clear the shell window
 clear
 ```
 
-### Section 4.5.4 Branches
+### Section 4.5.5 Branches
 Branching is the way to work on different versions of a repository at one time.
 
 By default your repository has one branch named `master` which is considered to be the definitive branch. We use branches to experiment and make edits before committing them to `master`.
@@ -418,7 +424,7 @@ git checkout master
 git merge NAME-OF-BRANCH
 ```
 
-### Section 4.5.5 Downloading the latest changes in a project
+### Section 4.5.6 Downloading the latest changes in a project
 This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches. You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project. Later, you can push your local commits to the remote repositories.
 ```
 git pull REMOTE NAME-OF-BRANCH
@@ -426,7 +432,7 @@ git pull REMOTE NAME-OF-BRANCH
 
 When you first clone a repository, REMOTE is typically “origin”. This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server. NAME-OF-BRANCH is usually “master”, but it may be any existing branch.
 
-### Section 4.5.6 Add and commit local changes
+### Section 4.5.7 Add and commit local changes
 You’ll see your local changes in red when you type git status. These changes may be new, modified, or deleted files/folders. Use git add to stage a local file/folder for committing. Then use git commit to commit the staged files:
 ```
 git add FILE OR FOLDER
@@ -455,7 +461,7 @@ git checkout .
 ```
 __Note:__ The . character typically means all in Git.
 
-### Section 4.5.7 How to create a Merge Request
+### Section 4.5.8 How to create a Merge Request
 Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches. This is a brief guide on how to create a merge request. For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
 
 1. Before you start, you should have already created a branch and pushed your changes to GitLab.
