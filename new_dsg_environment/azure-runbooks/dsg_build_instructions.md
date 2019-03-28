@@ -756,18 +756,6 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Once installed logout of the server
 
-### Lock down RDS Network configuration
-
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Change to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
-- Run the `./SecureRdsServers.ps1` script, providing the DSG ID when prompted
-
 ## 5. Deploy Data Server
 
 ### Create Dataserver VM
@@ -861,18 +849,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
-### Lock down Web Application Server Network configuration
-
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository
-
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
-- Run the `./SecureWebAppServers.ps1` script, providing the DSG ID when prompted
-## Deploy initial shared Compute VM
+## 7. Deploy initial shared Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
 - Ensure you have carried out the steps in the "Pre-requisites" section
 - Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
@@ -881,6 +858,20 @@ See the [Compute VM build and deployment guide](../azure-vms/README.md).
   - Amend the "Overwite defaults for per-DSG settings" section to set the right DSG specific parameter values
 - Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
 as per the "Safe deployment to a Turing DSG environment" section
+
+## 8. Lock down network configuration
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
+
+- Run the `./SecureRdsServers.ps1` script, providing the DSG ID when prompted
+
+- Run the `./SecureWebAppServers.ps1` script, providing the DSG ID when prompted
 
 ## Server list
 
