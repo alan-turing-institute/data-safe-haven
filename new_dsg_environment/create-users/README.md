@@ -13,7 +13,7 @@
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"` (**OU path must be in quotes**)
+- Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -shmId <shm-id>`, where `<shm-id>` is "test" for the test SHM and "prod" for the production SHM
 - The `CreateUsers.ps1` script will trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
 ### Troubleshooting
@@ -54,7 +54,7 @@ For security we do not store your initial password, so you must reset it before 
 2. Paste the following UR into the private browser address bar - https://aka.ms/ssprsetup
 3. At the login prompt enter your username (provided in the welcome email)
 4. At password prompt click "Forgotten password"
-5. Complete the requested information (captcha and the phone number you provided on registration)
+5. Complete the requested information (captcha and the phone number you provided on registration).
 6. Reset your password
 
 **Note**: During this process, you will need to provide a phone number for
