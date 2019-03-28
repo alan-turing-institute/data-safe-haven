@@ -21,7 +21,7 @@
             "type": "string",
             "defaultValue": "10.250.x.153",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 151"
+                "description": "Enter IP address for VM, must end in 153"
             }    
         },
         "HACKMD Server Name": {
@@ -43,7 +43,7 @@
             "type": "string",
             "defaultValue": "10.250.x.154",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 152"
+                "description": "Enter IP address for VM, must end in 154"
             }    
         },
         "Administrator User": {
