@@ -292,7 +292,7 @@ function Get-DsgConfig {
     )
     # Read DSG config from file
     $configRootDir = Join-Path $PSScriptRoot ".." "dsg_configs" "full" -Resolve;
-    $configFilename =  "dsg_" + $dsgId + "_full_json";
+    $configFilename =  "dsg_" + $dsgId + "_full_config.json";
     $configPath = Join-Path $configRootDir $configFilename -Resolve;
     $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
     return $config
