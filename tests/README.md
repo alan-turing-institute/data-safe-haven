@@ -3,6 +3,8 @@
 
 ## R
 
+### Testing package installation
+
 Switch to System R with 
 
 ```
@@ -26,6 +28,17 @@ If some packages are not installed, you should see:
 ```
 [1] "The following packages gave an error:"
 [1] "realxl"
+```
+
+### Testing package use
+
+Run the two data science scripts with these commands and this expected result:
+
+```bash
+$ RScript test_clustering.R 
+[1] "Clustering ran OK"
+$ RScript test_logistic_regression.R 
+[1] "Logistic regression ran OK"
 ```
 
 ## Python
