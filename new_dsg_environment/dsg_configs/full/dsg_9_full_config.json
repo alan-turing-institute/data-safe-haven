@@ -64,6 +64,7 @@
     },
     "subscriptionName": "DSG Template Testing",
     "id": "9",
+    "shortName": "dsg9",
     "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup9.co.uk",
@@ -132,25 +133,25 @@
       "ldap": {
         "gitlab": {
           "name": "DSGROUP9 Gitlab LDAP",
-          "samAccountName": "dsgroup9-gitlab-ldap",
-          "passwordSecretName": "dsgroup9-gitlab-ldap-password"
+          "samAccountName": "dsg9-gitlab-ldap",
+          "passwordSecretName": "dsg9-gitlab-ldap-password"
         },
         "hackmd": {
           "name": "DSGROUP9 HackMD LDAP",
-          "samAccountName": "dsgroup9-hackmd-ldap",
-          "passwordSecretName": "dsgroup9-hackmd-ldap-password"
+          "samAccountName": "dsg9-hackmd-ldap",
+          "passwordSecretName": "dsg9-hackmd-ldap-password"
         },
         "dsvm": {
           "name": "DSGROUP9 DSVM LDAP",
-          "samAccountName": "dsgroup9-dsvm-ldap",
-          "passwordSecretName": "dsgroup9-dsvm-ldap-password"
+          "samAccountName": "dsg9-dsvm-ldap",
+          "passwordSecretName": "dsg9-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "dsgroup9 Test Researcher",
-          "samAccountName": "dsgroup9-test-researcher",
-          "passwordSecretName": "dsgroup9-test-researcher-password"
+          "name": "DSGROUP9 Test Researcher",
+          "samAccountName": "dsg9-test-res",
+          "passwordSecretName": "dsg9-test-res-password"
         }
       }
     },
