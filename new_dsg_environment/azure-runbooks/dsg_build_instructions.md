@@ -867,15 +867,13 @@ as per the "Safe deployment to a Turing DSG environment" section -->
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/08_network_lockdown/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./SecureRdsServers.ps1` script, providing the DSG ID when prompted
-
-- Run the `./SecureWebAppServers.ps1` script, providing the DSG ID when prompted
+- Run the `./Lockdown_Network.ps1` script, providing the DSG ID when prompted
 
 ## Server list
 
