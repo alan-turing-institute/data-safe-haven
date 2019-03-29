@@ -124,11 +124,14 @@ For security reasons, you must (re-)set your password before you can log in:
 5.	Complete the requested information (captcha and the phone number you provided on registration) 
 6.	Reset your password by following the instructions
 
-:warning: Do not use the following characters in your password: `£§±€`. If you
-do, you will be unable to type them in the virtual keyboard to access the secure
-environment. You may use the following characters:
-`!@$%^&*()_+[];'\,./{}:"|<>?-=`. Microsoft allows you to use an
-alphanumeric-only password if you prefer to avoid symbols altogether. :warning:
+:warning: Do **not** use special characters or symbols in your password. If you
+do, you may be unable to type them in the virtual keyboard to access the secure
+environment. Choose an alphanumeric password with minimum length of 12
+characters, with at least one of each:
+
+- uppercase character
+- lowercase character
+- number
 
 :warning: During this process, you will need to provide a phone number for
 account recovery. This is **not** MFA. You still need to set up MFA in the next
