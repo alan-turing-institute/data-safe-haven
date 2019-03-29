@@ -43,6 +43,8 @@ $ RScript test_logistic_regression.R
 
 ## Python
 
+### Testing package installation
+
 For each of the three environments (2.7, 3.6, 3.7), switch to environment `pyMN`
 with
 
@@ -63,4 +65,17 @@ Ran 2 tests in 0.308s
 
 OK
 ```
+
+### Testing package use
+
+First, run the test of the data science scripts in R as those generate data for
+the Python scripts as well.
+
+Then, run the one data science script with this command and this expected result:
+
+```bash
+$ python3 test_logistic_regression.py
+Logistic model ran OK
+```
+
 
