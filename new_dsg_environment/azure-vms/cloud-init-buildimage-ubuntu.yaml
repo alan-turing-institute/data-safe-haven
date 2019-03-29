@@ -354,6 +354,7 @@ packages:
 
 runcmd:
   # Clean up installation
+  - export DEBIAN_FRONTEND=noninteractive
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
