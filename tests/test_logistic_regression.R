@@ -13,8 +13,7 @@ gen_data <- function(n=100, p=3) {
   return(list(x=x, y=y, weights=weights, theta=theta))  
 }
     
-run_logistic_regression <- function() {
-  data <- gen_data()
+run_logistic_regression <- function(data) {
   fit <- stats::glm.fit(x = data$x,
                         y = data$y,
                         weights = data$weights,
@@ -22,6 +21,16 @@ run_logistic_regression <- function() {
   return(fit$coefficients)
 }
 
-theta <- run_logistic_regression()
+data <- gen_data()
+theta <- run_logistic_regression(data)
 
 print("Logistic regression ran OK")
+
+# Also write to a file for pandas to read from
+df  <- data.frame(cbind(data$x, data$y))
+xnames <- function(i) {
+  paste0("x", i)
+}
+p <- dim(data$x)[2]
+names(df) <- c(lapply(seq(1, p), xnames), "y")
+write.csv(df, file = "logistic.csv", row.names=F)
