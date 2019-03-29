@@ -19,25 +19,37 @@ test_package <- function(p) {
 }
 
 # Read in the package list from the repo
-package_list <- scan("../new_dsg_environment/azure-vms/package_lists/cran.list", what="", sep="\n")
+get_package_list <- function(list_dir = "../new_dsg_environment/azure-vms/package_lists/",
+                             list_files = c("cran.list", "bioconductor.list")) {
+  package_list <- c()
+  for (f in list_files) {
+    path <- paste0(list_dir, f)
+    tmp <- scan(path, what = "", sep = "\n")
+    package_list <- c(package_list, tmp)
+  }
+  return(package_list)
+}
 
 # Test each package
+package_list <- get_package_list()
 for (p in package_list) {
   test_package(p)
 }
 
 # Show results
 if (0 == length(warning_list) & 0 == length(error_list)) {
-  print("All OK!")
+  print("All ", len(package_list), " package(s) OK!")
 } else {
 
   if (0 < length(warning_list)) {
     print("The following packages gave a warning:")
     print(paste(warning_list, sep = "\n"))
+    print("All the packages above gave a warning!")
   }
 
   if (0 < length(error_list)) {
     print("The following packages gave an error:")
     print(paste(error_list, sep = "\n"))
+    print("All the packages above gave an error!")
   }
 }
