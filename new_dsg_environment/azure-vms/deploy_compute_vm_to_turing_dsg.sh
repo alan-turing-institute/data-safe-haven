@@ -93,9 +93,10 @@ else
     MGMNT_SUBNET_IP_RANGE="10.251.0.0/24"
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
-    SUBSCRIPTIONTARGET="Data Study Group ${DSG_ID_LOWER}"
+    SUBSCRIPTIONTARGET="Data Study Group ${DSG_ID_LOWER} (Prod)"
     LDAP_USER="dsg${DSG_ID_LOWER}dsgpuldap"
     DOMAIN="turingsafehaven.ac.uk"
+    MANAGEMENT_VAULT_NAME="dsg-management-test"
     AD_DC_NAME="SHMDC1"
     LDAP_BASE_DN="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
     LDAP_BIND_DN="CN=DSG${DSG_ID_UPPER} Data Science LDAP,OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
@@ -171,7 +172,7 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
 fi
 if [ "$DSG_ID_UPPER" = "10" ]; then
-    IP_PREFIX="10.250.72."
+    IP_PREFIX="10.250.74."
     CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-10.yaml"
     # Only change settings below here during a DSG
     SOURCEIMAGE="Ubuntu"
