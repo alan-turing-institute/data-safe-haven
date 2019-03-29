@@ -52,7 +52,7 @@ fi
 DSG_ID_UPPER=$(echo "$DSG_ID" | tr '[:lower:]' '[:upper:]')
 DSG_ID_LOWER=$(echo "$DSG_ID" | tr '[:upper:]' '[:lower:]')
 if [ "$DSG_ID_UPPER" != "TEST" -a "$DSG_ID_UPPER" != "1" -a "$DSG_ID_UPPER" != "2" -a "$DSG_ID_UPPER" != "3" \
- -a "$DSG_ID_UPPER" != "4" -a "$DSG_ID_UPPER" != "5" -a "$DSG_ID_UPPER" != "6" -a "$DSG_ID_UPPER" != "9" ]; then
+ -a "$DSG_ID_UPPER" != "4" -a "$DSG_ID_UPPER" != "5" -a "$DSG_ID_UPPER" != "6" -a "$DSG_ID_UPPER" != "9" -a "$DSG_ID_UPPER" != "10" ]; then
     echo -e "${RED}DSG Group ID is not valid!${END}"
     print_usage_and_exit
 fi
@@ -90,7 +90,7 @@ elif [ "$DSG_ID_UPPER" = "9" ] ; then
     ADMIN_PASSWORD_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-admin-password"
 else
     # Production DSGs have uniform settings
-    MGMNT_SUBNET_IP_RANGE="10.220.0.0/24"
+    MGMNT_SUBNET_IP_RANGE="10.251.0.0/24"
     DSG_VNET="DSG_DSGROUP${DSG_ID_UPPER}_VNET1"
     SUBSCRIPTIONSOURCE="Safe Haven Management Testing"
     SUBSCRIPTIONTARGET="Data Study Group ${DSG_ID_LOWER}"
@@ -169,6 +169,17 @@ if [ "$DSG_ID_UPPER" = "9" ]; then
     PYPI_MIRROR_IP="10.1.0.20"
     CRAN_MIRROR_IP="10.1.0.21"
     LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
+fi
+if [ "$DSG_ID_UPPER" = "10" ]; then
+    IP_PREFIX="10.250.72."
+    CLOUD_INIT_YAML="DSG_configs/cloud-init-compute-vm-DSG-10.yaml"
+    # Only change settings below here during a DSG
+    SOURCEIMAGE="Ubuntu"
+    VERSION="0.0.2019032100"
+    PYPI_MIRROR_IP="10.1.0.20"
+    CRAN_MIRROR_IP="10.1.0.21"
+    LDAP_SECRET_NAME="dsgroup${DSG_ID_LOWER}-dsvm-ldap-password"
+    LDAP_USER="dsgroup10-dsvm-ldap"
 fi
 
 if [ "$FIXED_IP" = "" ]; then
