@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Insert package addition instructions
-echo "  # To add additional packages update package_lists/requested-<python version>.list"
+echo "  # To add additional packages update package_lists/python<python version>-requested-packages.list"
 
 # Initialise temporary files for list operations
 COMBINED_27=$(mktemp)
@@ -13,17 +13,17 @@ NON_CONDA_37_SORTED=$(mktemp)
 COMMON_REQUESTED=$(mktemp)
 
 # Sort the non-conda lists
-sort non-conda-27.list > $NON_CONDA_27_SORTED
-sort non-conda-36.list > $NON_CONDA_36_SORTED
-sort non-conda-37.list > $NON_CONDA_37_SORTED
+sort python27-not-installable-with-conda.list > $NON_CONDA_27_SORTED
+sort python36-not-installable-with-conda.list > $NON_CONDA_36_SORTED
+sort python37-not-installable-with-conda.list > $NON_CONDA_37_SORTED
 
 # Construct combined lists using:
 #   1. include requested packages
 #   2. include any packages from the utility list
 #   3. remove any packages from the sorted non-conda list which will be installed with pip
-cat requested-27.list utility-packages-27.list | sort | uniq | comm -23 - $NON_CONDA_27_SORTED > $COMBINED_27
-cat requested-36.list utility-packages-36.list | sort | uniq | comm -23 - $NON_CONDA_36_SORTED > $COMBINED_36
-cat requested-37.list utility-packages-37.list | sort | uniq | comm -23 - $NON_CONDA_37_SORTED > $COMBINED_37
+cat python27-requested-packages.list python27-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_27_SORTED > $COMBINED_27
+cat python36-requested-packages.list python36-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_36_SORTED > $COMBINED_36
+cat python37-requested-packages.list python37-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_37_SORTED > $COMBINED_37
 
 # Create a combined list
 comm -12 $COMBINED_27 $COMBINED_36 | comm -12 - $COMBINED_37 > $COMMON_REQUESTED
