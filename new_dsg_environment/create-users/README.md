@@ -43,7 +43,7 @@ If the new user should definitely be a different user, then the following fields
 - Users are now ready to reset password and set up MFA
 
 ## User activation
-- Research Co-ordinator to email users their user ID and instructions. We can securely email users thei ruser ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
+- Research Co-ordinator to email users their user ID and instructions. We can securely email users their user ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
 
 ### User activation instructions
 These are a summary. The user should be sent a delegate pack / guide that has fuller instructions with screenshots. Kirstie's previous guide is being updated by Ian in issue #96.
