@@ -851,13 +851,17 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ## 7. Deploy initial shared Compute VM
 See the [Compute VM build and deployment guide](../azure-vms/README.md).
-- Ensure you have carried out the steps in the "Pre-requisites" section
+- Ensure you have carried out the steps in the "Pre-requisites" section (in particular you will need access to `bash` and `Powershell` with the Azure commandlet)
+- Ensure that the configuration JSON file for your DSG exists (generated in step 2 above)
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms/` directory of the Safe Haven repository.
+- Run the `./Create_Compute_VM.ps1` script, providing the DSG ID, last octet of the IP address (if desired) and VM size (if desired) when prompted
+<!-- 
 - Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
   - Add the new <dsg-id> to the "Check DSG group ID is valid" line
   - Amend the "Set defaults for test and production environments" section to set the right defaults for the new DSG
   - Amend the "Overwite defaults for per-DSG settings" section to set the right DSG specific parameter values
 - Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
-as per the "Safe deployment to a Turing DSG environment" section
+as per the "Safe deployment to a Turing DSG environment" section -->
 
 ## 8. Lock down network configuration
 

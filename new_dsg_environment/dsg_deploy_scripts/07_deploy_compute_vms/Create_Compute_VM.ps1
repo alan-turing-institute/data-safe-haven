@@ -10,7 +10,7 @@ param(
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
+Import-Module $PSScriptRoot/../DSgConfig.psm1
 Import-Module $PSScriptRoot/../GeneratePassword.psm1
 
 # Get DSG config
