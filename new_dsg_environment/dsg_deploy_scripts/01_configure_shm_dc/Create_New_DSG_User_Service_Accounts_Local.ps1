@@ -72,10 +72,11 @@ $params = @{
   testResearcherPassword = $testResearcherPassword
 }
 
-Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 
+Write-Output $result.Value;
+
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
-
