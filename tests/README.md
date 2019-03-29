@@ -12,7 +12,7 @@ conda deactivate
 Run the tests with:
 
 ```
-RScript tests.R
+RScript test_package_installation.R
 ```
 
 If it's right, it should output something like:
