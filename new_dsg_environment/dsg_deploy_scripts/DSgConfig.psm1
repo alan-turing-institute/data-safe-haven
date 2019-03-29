@@ -11,9 +11,10 @@ function Get-ShmFullConfig{
     $configRootDir = Get-ConfigRootDir
     $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
-    
+
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
+
 
     # === SH MANAGEMENT CONFIG ===
     $shm = [ordered]@{}
@@ -26,6 +27,7 @@ function Get-ShmFullConfig{
 
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
+    $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.id = $shmConfigBase.shId
     $shm.location = $shmConfigBase.location
 
@@ -273,6 +275,8 @@ function Add-DsgConfig {
     # Compute VMs
     $config.dsg.dsvm = [ordered]@{}
     $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
+    $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
+    $config.shm.Remove("computeVmImageSubscriptionName")
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
     $config.dsg.dsvm.admin = [ordered]@{
