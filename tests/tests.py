@@ -5,8 +5,10 @@ import unittest
 import pkg_resources
 
 
-PY_VERSIONS_DSG = ["2.7", "3.6", "3.7"]  # tuples with version numbers
-PY_VERSIONS_LOCAL = ["2.7", "3.6"]
+PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
+PY_VERSIONS_LOCAL = ["27", "36"]
+
+PACKAGES = ["numpy", "tensorflow"]
 
 def is_linux():
     """Returns true if running on Linux.
@@ -16,9 +18,10 @@ def is_linux():
 def get_version():
     """Gets the current Python version in a string.
     """
-    return ".".join(sys.version_info[:2])
+    return "".join([str(n) for n in sys.version_info[:2]])
 
-def get_package()
+def get_packages():
+    return PACKAGES
 
 class Tests(unittest.TestCase):
     """Run tests for installation of Python."""
@@ -29,7 +32,7 @@ class Tests(unittest.TestCase):
         self.assertTrue(py_version in expected_py_versions)
 
     def test_packages(self):
-        for p in PACKAGES:
+        for p in get_packages():
             try:
                 dist_info = pkg_resources.get_distribution(p)
             except pkg_resources.DistributionNotFound:
