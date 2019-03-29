@@ -17,3 +17,5 @@ if ("ggdendro" %in% installed.packages()) {
   # Write plot to disk
   ggsave("dendrogram.png", p, width = 16, height = 9)
 }
+
+print("Clustering ran OK")
