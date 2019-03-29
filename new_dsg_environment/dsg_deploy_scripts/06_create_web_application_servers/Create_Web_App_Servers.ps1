@@ -5,8 +5,6 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1
-# Make sure terms for gitlab-ce are accepted
-Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -14,6 +12,9 @@ $config = Get-DsgConfig($dsgId)
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
+# Make sure terms for gitlab-ce are accepted
+Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
 
 # Admin user credentials (must be same as for DSG DC for now)
 $adminUser = $config.dsg.dc.admin.username
