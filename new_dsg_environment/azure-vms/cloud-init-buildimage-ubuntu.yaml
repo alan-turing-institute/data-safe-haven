@@ -419,7 +419,7 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo "*** Working on py27 environment. Will take approximately 30 minutes... ***"
+  - echo "*** Working on py27 environment. Will take approximately 40 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
