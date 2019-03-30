@@ -1,6 +1,9 @@
 
 # Tests
 
+The package installation tests require a copy of the repo, or at least the same
+structure with the files in `../new_dsg_environment/azure-vms/package_lists/`.
+
 ## R
 
 ### Testing package installation
