@@ -341,7 +341,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --priority 3000
 fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
-echo -e "${RED}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${RED}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
+echo -e "${BOLD}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
 
 # Check that VNET and subnet exist
 # --------------------------------
