@@ -57,7 +57,9 @@
 
 - Install the `Az` Powershell module
   - Start Powershell with `pwsh`
-  - Within Powershell run `Install-Module -Name Az -AllowClobber`                              
+  - Within Powershell run `Install-Module -Name Az -AllowClobber`
+  - Answer `A` to the prompt about an untrusted repository
+                              
 ## Use a deployment VM to deploy to the Safe Haven
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
 - Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
