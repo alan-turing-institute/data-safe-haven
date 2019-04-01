@@ -83,4 +83,8 @@ $arguments = "-s '$subscriptionSource' \
 if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
 if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
 if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
-bash -c "../../azure-vms/deploy_azure_dsg_vm.sh $arguments"
+
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+$cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
+
+bash -c $cmd
