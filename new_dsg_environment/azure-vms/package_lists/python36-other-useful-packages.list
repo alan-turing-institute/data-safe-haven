@@ -7,7 +7,6 @@ beautifulsoup4
 bitarray
 bkcharts
 blaze
-blosc
 bottleneck
 colorama
 configparser
@@ -18,7 +17,6 @@ datashape
 distributed
 ephem
 flask
-fribidi
 gmpy2
 heapdict
 html5lib
@@ -32,8 +30,11 @@ pbr
 pillow
 pycodestyle
 pycosat
+pyfribidi
 pytables
 pytest
+python-blosc
+pyyaml
 six
 sphinx
 sqlite
@@ -44,4 +45,3 @@ unicodecsv
 werkzeug
 xlrd
 xlsxwriter
-yaml
