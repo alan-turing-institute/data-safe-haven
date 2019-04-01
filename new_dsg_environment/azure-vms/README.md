@@ -63,26 +63,43 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 See [DSG Build instructions](../azure-runbooks/dsg_build_instructions.md).
 
 ## Safe deployment to a Turing DSG environment
-VMs can be safely deployed into one of the existing Turing DSG environments using the `./deploy_compute_vm_to_turing_dsg.sh` script.
-This script knows the config parameters for the existing Turing DSGs and only needs to be provided with the DSG ID, VM size and the last octet of the IP address the deployed compute VM should receive.
-The IP address range available for the compute VMs in deployed DSG environemnts is `160-199`.
-By convention, CPU-based VM sizes are deployed in the range `160-179` and GPU-based VM images are deployed in the range `180-199`.
-For testing, the IP address can be omitted and the machine will receive a dynamic IP that is not guaranteed to be persistent across reboots.
 
-```
-usage: ./deploy_compute_vm_to_turing_dsg.sh [-h] -d dsg_group_id [-z vm_size] [-q fixed_ip]
-  -h                           display help
-  -d dsg_group_id [required]   specify the DSG group to deploy to ('TEST' for test or 1-6 for production)
-  -z vm_size                   specify a VM size to use (defaults to 'Standard_DS2_v2')
-  -q fixed_ip                  last part of IP address (first three parts are fixed for each DSG group)
-```
+### Ensure you have the required DSG-specific configuration files
+Ensure you have a full configuration JSON file and `cloud-init` YAML file for the DSG environment:
+  - A full JSON config file should exist at  `<data-safe-haven-repo>/new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`
+  - If one does not exist, generate one as per the instructions in section 0 of the [DSG Build instructions](../azure-runbooks/dsg_build_instructions.md)
+  - A `cloud-init` YAML file should exist at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml`.
+  - If one does not exist, create one  by copying the base version at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/cloud-init-compute-vm.yaml`
 
-Example usage
-To deploy the intial shared CPU-based compute VM for the `test` DSG.
+### Configure or log into a suitable deployment environment
+To deploy a compute VM you will need the following available on the machine you run the deployment script from:
+  - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+  - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
+- The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0) 
+- A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
-```bash
-./deploy_compute_vm_to_turing_dsg.sh -g test -q 160
-```
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details.
+
+### Deploy a compute VM
+- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
+- Ensure you have the latest changes locally using `git pull`
+- Ensure you are authenticated in the Azure CLI using `az login`
+- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
+- Open a Powershell terminal with `pwsh`
+- Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
+
+### Troubleshooting Compute VM deployments
+- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
+- Scroll to the bottom of the VM menu on the left hand side of the VM information panel
+- Activate boot diagnostics on the VM and clik save. You need to stay on that screen until the activation is complete.
+- Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
+- If you are not prompted with `login:`, hit enter until the prompt appears
+- Enter `atiadmin` for the username
+- Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` respource group of the SHM subscription.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
+- To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
+
 
 
 ## Deploying a VM from the image gallery into a DSG environment
