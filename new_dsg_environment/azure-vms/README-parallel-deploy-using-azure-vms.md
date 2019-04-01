@@ -43,7 +43,7 @@
 - Install Powershell Core. The following are taken from the Microsoft Powershell Core [installation instructions for Linux](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-6)
   ```bash
   # Download the Microsoft repository GPG keys
-  wget -q https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb
+  wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 
   # Register the Microsoft repository GPG keys
   sudo dpkg -i packages-microsoft-prod.deb
