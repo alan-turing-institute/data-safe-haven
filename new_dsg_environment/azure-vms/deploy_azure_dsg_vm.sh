@@ -408,7 +408,6 @@ sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" 
 echo ""
 echo $TMP_CLOUD_CONFIG_YAML
 cat $TMP_CLOUD_CONFIG_YAML
-exit 1
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
