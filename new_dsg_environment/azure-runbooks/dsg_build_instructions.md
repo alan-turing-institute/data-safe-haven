@@ -850,18 +850,25 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
 ## 7. Deploy initial shared Compute VM
+
+### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
   - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
   - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
 - The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0) 
 - A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
-For convenience we recommend using one of the Safe Haven deployment VMs on Azure. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details.
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details.
 
-To deploy a new compute VM to a DSG:
-- Ensure that the configuration JSON file for your DSG exists (generated in step 2 above)
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms/` directory of the Safe Haven repository.
-- Run the `./Create_Compute_VM.ps1` script, providing the DSG ID, last octet of the IP address (if desired) and VM size (if desired) when prompted
+## Use a deployment VM to deploy to the Safe Haven
+
+- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
+- Ensure you have the latest changes locally using `git pull`
+- Ensure you are authenticated in the Azure CLI using `az login`
+- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
+- Open a Powershell terminal with `pwsh`
+- Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
 
 ### Troubleshooting Compute VM deployments
 - Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
