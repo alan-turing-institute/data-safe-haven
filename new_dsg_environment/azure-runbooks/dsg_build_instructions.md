@@ -861,6 +861,10 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ## 7. Deploy initial shared Compute VM
 
+### Ensure a cloud init file exists for the DSG
+  - Make sure a `cloud-init` YAML file exists at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml`.
+  - If one does not exist, create one  by copying the base version at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/cloud-init-compute-vm.yaml`
+
 ### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
   - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
