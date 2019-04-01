@@ -860,7 +860,7 @@ To deploy a compute VM you will need the following available on the machine you 
 
 **NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details.
 
-## Use a deployment VM to deploy to the Safe Haven
+### Deploy a compute VM
 
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
 - Ensure you have the latest changes locally using `git pull`
