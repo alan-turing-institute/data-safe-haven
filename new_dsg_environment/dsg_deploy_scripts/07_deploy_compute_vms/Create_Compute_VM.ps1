@@ -33,9 +33,11 @@ if ($fixedIp) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $
 $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
 if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
 
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "../../azure-vms/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$deployScriptDir/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -84,7 +86,6 @@ if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
 if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
 if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
 
-$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
 
 bash -c $cmd
