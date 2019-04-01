@@ -20,7 +20,7 @@ sort python37-not-installable-with-conda.list > $NON_CONDA_37_SORTED
 # Construct combined lists using:
 #   1. include requested packages
 #   2. include any packages from the utility list
-#   3. remove any packages from the sorted non-conda list which will be installed with pip
+#   3. remove any packages from the sorted non-conda list (these will be installed with pip)
 cat python27-requested-packages.list python27-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_27_SORTED > $COMBINED_27
 cat python36-requested-packages.list python36-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_36_SORTED > $COMBINED_36
 cat python37-requested-packages.list python37-other-useful-packages.list | sort | uniq | comm -23 - $NON_CONDA_37_SORTED > $COMBINED_37
