@@ -305,6 +305,46 @@ This VM can also be used to directly access GitLab and HackMD
 
 ![](gitlab_screenshot.png)
 
+### What if I want to install packages?
+
+In Python, run this in a shell:
+
+```
+pip install beautifulsoup4
+```
+
+In R, you can install them from inside R:
+
+```
+> install.packages("cluster")
+```
+
+You will see:
+
+```
+Installing package into ‘/usr/local/lib/R/site-library’
+(as ‘lib’ is unspecified)
+Warning in install.packages("cluster") :
+  'lib = "/usr/local/lib/R/site-library"' is not writable
+Would you like to use a personal library instead? (yes/No/cancel)
+```
+
+Enter `yes`, which prompts you to confirm the name of the library:
+
+```
+Would you like to create a personal library
+‘~/R/x86_64-pc-linux-gnu-library/3.5’
+to install packages into? (yes/No/cancel)
+```
+
+Enter `yes`, which then installs the packages:
+
+```
+trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
+...
+```
+
+
 ## Section 4.5. Accessing GitLab and storing code
 
 GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
