@@ -4,14 +4,16 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
-# Temporarily switch to management subscription
+# Temporarily switch to DSG subscription
 $prevContext = Get-AzContext;
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
+# === Lock down RDS VMs ===
 
 # Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
 $sh1NicName = $config.dsg.rds.sessionHost1.vmName + "_NIC1";
@@ -28,6 +30,9 @@ $sh1Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh1Nic | Set-AzNetworkInterface);
 $sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh2Nic | Set-AzNetworkInterface);
+
+Write-Host (" - NICs associated with '" + $nsgSessionHosts.Name + "'NSG")
+ @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
 
 # Update RDS Gateway NSG inbound access rule
 $nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
@@ -64,6 +69,29 @@ $httpsInRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -Netw
 
 Write-Host (" - '" + $httpsInRuleName + "' rule source address prefix is now '" + $httpsInRuleAfter.SourceAddressPrefix `
             + "' on '" + $nsgGateway.name + "' NSG")
+
+# === Lock down Web App servers ===
+
+# Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
+$gitlabNicName = $config.dsg.linux.gitlab.vmName + "_NIC1";
+$hackMdNicName = $config.dsg.linux.hackmd.vmName + "_NIC1";
+
+# Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
+$nsgLinux = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.nsg;
+$gitlabNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $gitlabNicName;
+$hackMdNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $hackMdNicName;
+Write-Host (" - Associating Web App Servers with '" + $nsgLinux.Name + "' NSG")
+
+# Assign RDS Session Host NICs to Linux VM NSG
+$gitlabNic.NetworkSecurityGroup = $nsgLinux;
+$_ = ($gitlabNic | Set-AzNetworkInterface);
+
+$hackMdNic.NetworkSecurityGroup = $nsgLinux;
+$_ = ($hackMdNic | Set-AzNetworkInterface);
+
+Write-Host (" - NICs associated with '" + $nsgLinux.Name + "'NSG")
+@($nsgLinux.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
+
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;

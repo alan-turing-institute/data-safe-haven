@@ -341,7 +341,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --priority 3000
 fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
-echo -e "${RED}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${RED}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
+echo -e "${BOLD}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
 
 # Check that VNET and subnet exist
 # --------------------------------
@@ -398,9 +398,16 @@ AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
 AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
 PYPI_MIRROR_IP_REGEX="s/PYPI_MIRROR_IP/${PYPI_MIRROR_IP}/"
 CRAN_MIRROR_IP_REGEX="s/CRAN_MIRROR_IP/${CRAN_MIRROR_IP}/"
+
+echo $CLOUD_INIT_YAML
+cat $CLOUD_INIT_YAML
+
 # Substitute regexes
 sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" -e "${CRAN_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
+echo ""
+echo $TMP_CLOUD_CONFIG_YAML
+cat $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------

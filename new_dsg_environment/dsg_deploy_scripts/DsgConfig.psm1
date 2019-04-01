@@ -11,9 +11,10 @@ function Get-ShmFullConfig{
     $configRootDir = Get-ConfigRootDir
     $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
-    
+
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
+
 
     # === SH MANAGEMENT CONFIG ===
     $shm = [ordered]@{}
@@ -26,6 +27,7 @@ function Get-ShmFullConfig{
 
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
+    $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.id = $shmConfigBase.shId
     $shm.location = $shmConfigBase.location
 
@@ -129,6 +131,7 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
+    $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
 
     # -- Domain config ---
@@ -204,16 +207,16 @@ function Add-DsgConfig {
         }
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-gitlab-ldap"
+    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.shortName + "-gitlab-ldap"
     $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.users.ldap.gitlab.samAccountName + "-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-hackmd-ldap"
+    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.shortName + "-hackmd-ldap"
     $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.users.ldap.hackmd.samAccountName + "-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-dsvm-ldap"
+    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.shortName + "-dsvm-ldap"
     $config.dsg.users.ldap.dsvm.passwordSecretName =  $config.dsg.users.ldap.dsvm.samAccountName + "-password"
-    $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName.ToLower() + " Test Researcher"
-    $config.dsg.users.researchers.test.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-test-researcher"
+    $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName + " Test Researcher"
+    $config.dsg.users.researchers.test.samAccountName = $config.dsg.shortName + "-test-res"
     $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
 
     # --- RDS Servers ---
@@ -273,6 +276,8 @@ function Add-DsgConfig {
     # Compute VMs
     $config.dsg.dsvm = [ordered]@{}
     $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
+    $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
+    $config.shm.Remove("computeVmImageSubscriptionName")
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
     $config.dsg.dsvm.admin = [ordered]@{

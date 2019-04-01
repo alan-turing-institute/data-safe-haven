@@ -64,6 +64,7 @@
     },
     "subscriptionName": "Data Study Group 11 (Prod)",
     "id": "11",
+    "shortName": "dsg11",
     "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup11.co.uk",
@@ -132,25 +133,25 @@
       "ldap": {
         "gitlab": {
           "name": "DSGROUP11 Gitlab LDAP",
-          "samAccountName": "dsgroup11-gitlab-ldap",
-          "passwordSecretName": "dsgroup11-gitlab-ldap-password"
+          "samAccountName": "dsg11-gitlab-ldap",
+          "passwordSecretName": "dsg11-gitlab-ldap-password"
         },
         "hackmd": {
           "name": "DSGROUP11 HackMD LDAP",
-          "samAccountName": "dsgroup11-hackmd-ldap",
-          "passwordSecretName": "dsgroup11-hackmd-ldap-password"
+          "samAccountName": "dsg11-hackmd-ldap",
+          "passwordSecretName": "dsg11-hackmd-ldap-password"
         },
         "dsvm": {
           "name": "DSGROUP11 DSVM LDAP",
-          "samAccountName": "dsgroup11-dsvm-ldap",
-          "passwordSecretName": "dsgroup11-dsvm-ldap-password"
+          "samAccountName": "dsg11-dsvm-ldap",
+          "passwordSecretName": "dsg11-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "dsgroup11 Test Researcher",
-          "samAccountName": "dsgroup11-test-researcher",
-          "passwordSecretName": "dsgroup11-test-researcher-password"
+          "name": "DSGROUP11 Test Researcher",
+          "samAccountName": "dsg11-test-res",
+          "passwordSecretName": "dsg11-test-res-password"
         }
       }
     },
@@ -210,6 +211,7 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven Management Testing",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.0.2019032100",
       "admin": {

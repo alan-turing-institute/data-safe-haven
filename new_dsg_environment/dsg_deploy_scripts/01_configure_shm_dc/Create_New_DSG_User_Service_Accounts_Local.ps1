@@ -4,8 +4,8 @@
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
-Import-Module $PSScriptRoot/../GeneratePassword.psm1
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -72,10 +72,11 @@ $params = @{
   testResearcherPassword = $testResearcherPassword
 }
 
-Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 
+Write-Output $result.Value;
+
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
-

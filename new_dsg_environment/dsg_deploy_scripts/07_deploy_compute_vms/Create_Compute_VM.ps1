@@ -10,8 +10,8 @@ param(
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
-Import-Module $PSScriptRoot/../GeneratePassword.psm1
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -33,9 +33,11 @@ if ($fixedIp) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $
 $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
 if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
 
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "../../azure-vms/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$deployScriptDir/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -48,7 +50,7 @@ $mirrorIpCran = $config.dsg.mirrors.cran.ip
 $mirrorIpPypi = $config.dsg.mirrors.pypi.ip
 $sourceImage = $config.dsg.dsvm.vmImageType
 $sourceImageVersion = $config.dsg.dsvm.vmImageVersion
-$subscriptionSource = $config.shm.subscriptionName
+$subscriptionSource = $config.dsg.dsvm.vmImageSubscription
 $subscriptionTarget = $config.dsg.subscriptionName
 $targetNsgName = $config.dsg.network.nsg.data.name
 $targetRg = $config.dsg.dsvm.rg
@@ -83,4 +85,9 @@ $arguments = "-s '$subscriptionSource' \
 if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
 if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
 if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
-bash -c "../../azure-vms/deploy_azure_dsg_vm.sh $arguments"
+
+$cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
+
+Write-Output $cmd 
+
+bash -c $cmd
