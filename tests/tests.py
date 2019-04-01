@@ -10,8 +10,21 @@ PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
 PACKAGE_DIR = "../new_dsg_environment/azure-vms/package_lists/"
+PACKAGE_DIR = "./"
 PACKAGE_PREFIXES = ["requested-", "utility-packages-"]
 PACKAGE_SUFFIX = ".list"
+
+# Some packages cannot be called by `import p`, such as
+# `numpy-base`. Skip them.
+PACKAGES_TO_SKIP = ["numpy-base",
+                    "r-irkernel",
+                    "backports",
+]
+PACKAGE_REPLACEMENTS = {"pytorch": "torch",
+                        "pytables": "tables",
+                        "sqlite": "sqlite3",
+                        "tensorflow-gpu": "tensorflow",
+}
 
 def is_linux():
     """Returns true if running on Linux.
@@ -23,13 +36,33 @@ def get_version():
     """
     return "".join([str(n) for n in sys.version_info[:2]])
 
-def get_missing_packages():
-    """Gets the packages required and optional for this version that are
-    not installed.
+def clean_package_name(p):
+    """Cleans up the package name, e.g. removing hyphens and doing common
+    replacements.
     """
+    if p in PACKAGES_TO_SKIP:
+        return None
+
+    if p in PACKAGE_REPLACEMENTS:
+        return PACKAGE_REPLACEMENTS[p]
+    
+    q = p.replace("-", "_")
+    return q
+
+def clean_prefix(p):
+    """Cleans prefix of packages to avoid maintaining different variables,
+    so we save into a variable depending on the value of the prefix, 
+    e.g., "requested-" -> "requested" and "utility-packages-" -> "utility"
+    """
+    return p[:p.find("-")]
+    
+
+def get_package_lists():
+    """Reads the package lists and returns a tuple with required and optional
+    packages.
+    """
+    result = dict()
     version = get_version()
-    required_missing = []
-    optional_missing = []
     for prefix in PACKAGE_PREFIXES:
         path = os.path.join(PACKAGE_DIR, prefix + version + PACKAGE_SUFFIX)
         with open(path) as f:
@@ -37,15 +70,40 @@ def get_missing_packages():
             lines = re.split('\r|\n', contents)
             packages = [l for l in lines if "" != l]
 
-            for p in packages:
-                try:
-                    dist_info = pkg_resources.get_distribution(p)
-                except pkg_resources.DistributionNotFound:
-                    if prefix.startswith("requested"):
-                        required_missing.append(p)
-                    else:
-                        optional_missing.append(p)
-    return (required_missing, optional_missing)
+            key = clean_prefix(prefix)
+            result[key] = packages
+            
+    return result
+
+
+def get_missing_packages():
+    """Gets the packages required and optional for this version that are
+    not installed.
+    """
+    version = get_version()
+    all_packages = get_package_lists()
+    missing = dict()
+
+    for key in all_packages:
+        packages = all_packages[key]
+        missing[key] = []
+        for p in packages:
+
+            q = clean_package_name(p)
+
+            if not q:
+                continue
+
+            try:
+                dist_info = pkg_resources.get_distribution(q)
+            except pkg_resources.DistributionNotFound:
+                full_name = p
+                if q != p:
+                    full_name += " (%s)" % q
+
+                missing[key].append(full_name)
+                
+    return missing
 
 class Tests(unittest.TestCase):
     """Run tests for installation of Python."""
@@ -56,17 +114,30 @@ class Tests(unittest.TestCase):
         self.assertTrue(py_version in expected_py_versions)
 
     def test_packages(self):
-        required_missing, optional_missing = get_missing_packages()
-        if required_missing:
-            print("\n\n** The following required packages are missing: **")
-            print("\n".join(required_missing))
-            print("** The above required packages are missing! **\n\n")
-        if optional_missing:
-            print("\n\n** The following optional packages are missing: **")
-            print("\n".join(optional_missing))
-            print("** The above optional packages are missing! **\n\n")
-        if optional_missing or required_missing:
+        missing = get_missing_packages()
+        fail = False
+        for key in missing:
+            packages = missing[key]
+            if packages:
+                print("\n** The following %s packages are missing: **" % key)
+                print("\n".join(packages))
+                print("** The above %s packages are missing! **\n" % key)
+                fail = True
+        if fail:
             self.fail("Required and/or optional packages are missing")
+
+    def test_sqlite3(self):
+        try:
+            import sqlite3
+        except ModuleNotFoundError as e:
+            self.fail("Unable to import sqlite3")
+
+    def test_graph_tool(self):
+        try:
+            import graph_tool
+        except ModuleNotFoundError as e:
+            self.fail("Unable to import graph_tool")
+        
 
 if '__main__' == __name__:
     import unittest
