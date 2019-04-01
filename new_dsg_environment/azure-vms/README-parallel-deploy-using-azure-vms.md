@@ -39,7 +39,25 @@
 - Add this as a deploy key from the configuration tab of the safe haven repo on Github (**do not** check the "Allow write access" box - these VMs only need read access) 
 - Clone the safe haven repo via `git clone git@github.com:alan-turing-institute/data-safe-haven.git`. This will automatically authenticate using the VM's `id_rsa` SSH key you just created and added to the safe haven repo as a deploy key.
 
+### Install Poweshell with Azure module
+- Install Powershell Core. The following are taken from the Microsoft Powershell Core [installation instructions for Linux](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-6)
+  ```bash
+  # Download the Microsoft repository GPG keys
+  wget -q https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb
 
+  # Register the Microsoft repository GPG keys
+  sudo dpkg -i packages-microsoft-prod.deb
+
+  # Update the list of products
+  sudo apt-get update
+
+  # Install PowerShell
+  sudo apt-get install -y powershell
+  ```
+
+- Install the `Az` Powershell module
+  - Start Powershell with `pwsh`
+  - Within Powershell run `Install-Module -Name Az -AllowClobber`                              
 ## Use a deployment VM to deploy to the Safe Haven
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
 - Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
