@@ -862,13 +862,17 @@ To deploy a new compute VM to a DSG:
 - Ensure that the configuration JSON file for your DSG exists (generated in step 2 above)
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms/` directory of the Safe Haven repository.
 - Run the `./Create_Compute_VM.ps1` script, providing the DSG ID, last octet of the IP address (if desired) and VM size (if desired) when prompted
-<!-- 
-- Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
-  - Add the new <dsg-id> to the "Check DSG group ID is valid" line
-  - Amend the "Set defaults for test and production environments" section to set the right defaults for the new DSG
-  - Amend the "Overwite defaults for per-DSG settings" section to set the right DSG specific parameter values
-- Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
-as per the "Safe deployment to a Turing DSG environment" section -->
+
+### Troubleshooting Compute VM deployments
+- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
+- Scroll to the bottom of the VM menu on the left hand side of the VM information panel
+- Activate boot diagnostics on the VM and clik save. You need to stay on that screen until the activation is complete.
+- Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
+- If you are not prompted with `login:`, hit enter until the prompt appears
+- Enter `atiadmin` for the username
+- Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` respource group of the SHM subscription.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
+- To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## 8. Lock down network configuration
 
