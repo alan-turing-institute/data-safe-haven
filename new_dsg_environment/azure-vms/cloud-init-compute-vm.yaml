@@ -162,56 +162,66 @@ runcmd:
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
   # Move CRAN mirror config to appropriate locations
+  - echo "Setting up CRAN mirror configs"
   - cp /Rprofile.site /etc/R/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
   # Create shared data folder and grant all users access
-  - sudo mkdir /data
-  - sudo chmod go+rw /data
+  - echo "Creating shared data folder"
+  - mkdir /data
+  - chmod go+rw /data
   # Make sure that sssd is running
-  - echo "Restart sssd service"
+  - echo "Restarting sssd service"
   - service sssd restart
   # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
-  - echo "Change ownership of /anaconda/"
+  - echo "Changing ownership of /anaconda/"
   - chgrp -R plugdev /anaconda/
   - chmod -R g=u /anaconda/
   - chmod -R go-w /anaconda/
   # Set py36 as default environment when launching a new shell
-  - echo "Add py36 conda environment setup to global bashrc"
+  - echo "Adding py36 conda environment setup to global bashrc"
   - echo "conda activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
-  - echo "Disable screen lock"
+  - echo "Disabling screen lock"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default session to xfce4
-  - echo "Set default session to xfce4"
+  - echo "Setting default session to xfce4"
   - mv /startwm.sh /etc/xrdp/startwm.sh
   - chmod 0755 /etc/xrdp/startwm.sh
   - echo xfce4-session > ~USERNAME/.xsession
   # Set default terminal for xfce
-  - echo "Set default xfce terminal"
+  - echo "Setting default xfce terminal"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that user owns their home directory
-  - echo "Ensure that user owns their home directory"
+  - echo "Ensuring that user owns their home directory"
   - chown -R USERNAME ~USERNAME
   # Restart xrdp to reflect changes made above
-  - echo "Restart xrdp"
+  - echo "Restarting xrdp"
   - service xrdp restart
   # Add execute permission to the Active Directory set up scripts
-  - sudo chmod +x /active_directory_step01_pre
-  - sudo chmod +x /active_directory_step02_realm_join
-  - sudo chmod +x /active_directory_step03_update_sssd
-  - sudo chmod +x /active_directory_step04_update_pam
+  - echo "Running Active Directory setup"
+  - chmod +x /active_directory_step01_pre
+  - chmod +x /active_directory_step02_realm_join
+  - chmod +x /active_directory_step03_update_sssd
+  - chmod +x /active_directory_step04_update_pam
   # Run the Active Directory set up scripts
-  - sudo /active_directory_step01_pre
-  - sudo /active_directory_step02_realm_join
-  - sudo /active_directory_step03_update_sssd
-  - sudo /active_directory_step04_update_pam
+  - /active_directory_step01_pre
+  - /active_directory_step02_realm_join
+  - /active_directory_step03_update_sssd
+  - /active_directory_step04_update_pam
   # Remove the Active Directory set up scripts (as these contain secrets and are world readable
-  - sudo rm /active_directory_step01_pre
-  - sudo rm /active_directory_step02_realm_join
-  - sudo rm /active_directory_step03_update_sssd
-  - sudo rm /active_directory_step04_update_pam
-  # Shutdown so that we can tell when the job has finished by polling the VM state
-  - shutdown -P now
+  - rm /active_directory_step01_pre
+  - rm /active_directory_step02_realm_join
+  - rm /active_directory_step03_update_sssd
+  - rm /active_directory_step04_update_pam
 
+final_message:
+  "Finished deploying the compute VM. Configuration took $UPTIME seconds"
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True
