@@ -4,10 +4,14 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
+
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Admin user credentials (must be same as for DSG DC for now)
 $adminUser = $config.dsg.dc.admin.username
@@ -42,3 +46,6 @@ $templatePath = Join-Path $PSScriptRoot "rds-master-template.json"
 New-AzResourceGroup -Name $config.dsg.rds.rg  -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.rds.rg `
   -TemplateFile $templatePath  @params -Verbose
+
+# Switch back to original subscription
+Set-AzContext -Context $prevContext;

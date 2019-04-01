@@ -35,7 +35,7 @@
 
   - On Windows you may get a "|Windows protected your PC" pop up. If so, click `More info -> Run anyway`
 
-  - If the default name for the VPN connection does not make it clear which SHM or DSG environment you are connecting to, select the VPN, click "advanced options" and rename to include the SHM or DSG IDs
+  - On Windows do not rename the vpn client as this will break it
 
   - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
@@ -73,7 +73,17 @@
 
 - [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
 
+  - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
+
 - [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
+
+### Install and configure Linux command line
+
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+
+  - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
 
 ## Build Process
 
@@ -109,8 +119,14 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
     "domain": "The fully qualified domain name for the management environment",
     "shId": "A short ID to identify the management environment",
     "location": "The Azure location in which the management environment VMs are deployed",
-    "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt",
-    "dcHostname": "The hostname of the managment environemtn Active Directory Domain Controller"
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
+    "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
+    "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
+    "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
+    "npsIp": "The IP address of the management environment NPS server",
+    "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
+    "vnetName":"The name of the Virtual Network for the management environment",
+    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment"
 }
 ```
 
@@ -124,7 +140,12 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
     "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
     "dsgId": "A short ID to identify the management environment",
     "domain": "The fully qualified domain name for the DSG environment",
-    "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt"
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
+    "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox",
+    "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
+    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)",
+    "packageMirrorIpPypi": "IP address of the internal PyPI mirror (e.g 10.1.0.20)",
+    "packageMirrorIpCran": "IP address of the internal CRAN mirror (e.g 10.1.0.21)"
 }
 ```
 
@@ -142,15 +163,16 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   - `Import-Module ./DsgConfig.psm1 -Force`
 
+  - `Add-DsgConfig -shmId <sh-management-id> -dsgId <dsg-id>` (`<sh-management-id>` is  `test` or `prod`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`)
 
-  - A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
+- A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
 
-  - Commit this new full configuration file to the Safe Haven repository
+- Commit this new full configuration file to the Safe Haven repository
 
 ## 0. Prepare Safe Haven Management Domain
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -166,7 +188,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -176,47 +198,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
-### Create Peering Connection with the management virtual network
+- The VNet peerings may take a few minutes to provision after the script completes.
 
-- Once the virtual network is created, a peer connection is required between the management and DSG virtual networks
-
-- From the Azure portal go to the **SHM subscription** and open the management virtual network at `Resource Groups -> RG_SHM_VNET -> DSG_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
-
-- Select "**Peerings"** from the left-hand navigation
-
-- Add a new "Peering"
-
-- Configure the Peering as follows:
-
-  - Name: `PEER_DSG_DSGROUP<dsg-id>_VNET1`
-
-  - Subscription: Select the new DSG subscription
-
-  - Virtual Network: Select the newly created virtual network (`DSG_DSGROUP<dsg-id>_VNET1`)
-
-  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1c7f094.PNG](images/media/image2.png)
-
-- Change to the new **DSG subscription**, open the virtual network at `Resource groups -> RG_DSG_VNET -> DSG_DSGROUP<dsg-id>_VNET1`
-
-- Select "**Peerings"** from the left-hand navigation
-
-- Add a new "Peering"
-
-- Configure the Peering as follows:
-
-  - Name: `PEER_<shm-slug>_VNET1`, where `<shm-slug>` is `DSGROUPDEV` for the test environment and `SHM` for the production environment.
-
-  - Subscription: Select the Safe Haven management subscription
-
-  - Virtual Network: Select the SHM virtual network (`DSG_<shm-slug>_VNET1`)
-
-  - Set "Allow virtual network access" to "Enabled" and leave the remaining checkboxes **un**checked
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1d02087.PNG](images/media/image3.png)
-
-- Once provisioned the networks will be connected.
+### Set up a VPN connection to the DSG
 
 - In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`
   
@@ -234,7 +218,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -248,7 +232,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once deployment is complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 ### Configure DSG Active Directory Domain Controller
 
@@ -256,7 +240,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with the admin credentials for the DSG DC, which were created and stored in the Safe Haven Management KeyVault by the DC deployment script
 
-- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>`, where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -265,6 +249,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run  `Set-executionpolicy Unrestricted` 
 
 - Set the VM to United Kingdom/GMT timezone by running the following command:
 
@@ -287,7 +273,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space e.g. 10.250.1 |
   | |                     -SubnetData        | First 3 octets of the Identity subnet IP address space e.g. 10.250.2 |
   | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
-  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.220.0.250 (production) or 10.220.1.250 (test)|
+  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.251.0.250 (production) or 10.220.1.250 (test)|
 
 
 - Configure Active Directory group polices, to install the polices run the following command with these parameters
@@ -369,7 +355,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
-  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<DOMAIN\Username>. User is "atiadmin ". See DSG DC admin secret in management KeyVault for password. |
+  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<dsg-domain\Username>. User is "atiadmin ". See DSG DC admin secret in management KeyVault for password. |
   | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
   | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
 
@@ -393,7 +379,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -406,7 +392,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 ### Generate temporary SAS token
 - Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 ### Configure Remote Desktop Services
 
@@ -429,9 +415,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 #### Initial configuration of RDS Gateway
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -454,17 +440,17 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
 - Download the applications to be served via RDS
 
-  - Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
 
-  - Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -472,18 +458,18 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ##### RDS Session Server 2 (Presentation VM)
 
-- Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
+- Connect to the **RDS Session Server 2 (RDSSH2)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
 - Download the applications to be served via RDS
-  - Download WinSCP using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
-  - Download PuTTY using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
-  - Download Chome using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -493,11 +479,13 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
 
 - Install the RDS services by running the following command:
 
@@ -532,9 +520,9 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 ##### Generate a Certificate Signing Request (CSR)
 
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
+- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway (or you have another way to transfer files between your local machine and the RDS Gateway VM).
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - From the Server Manager dashboard select `Tools -> Internet Information Service (IIS) Manager`
 
@@ -560,7 +548,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
   -   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
 
-  -   `certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <rds-fqdn> --csr <path-to-csr>`, where `<rds-fqdn>` is the fully qualified domain name of the RDS server (e.g. `rds.dsgroup10.co.uk`)
+  -   `certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <rds-fqdn> --csr <path-to-csr>`, where `<rds-fqdn>` is the fully qualified domain name of the RDS server (e.g. `rds.dsgroup10.co.uk`). If you are using Windows Subsystem for Linux, the Widnows "C:" drive is accessible at `/mnt/c` and your home directory is at `/mnt/c/users/<username>/`).
 
   -   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties. The DNS Zone is located in the SHM subscription at `Resource Groups -> RG_DSG_DNS -> dgroup<dsg-id>.co.uk`).
 
@@ -574,7 +562,9 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
     -   Wait for Let\'s Encrypt to verify the challenge
 
-    -   Copy `~/tsh-certbot/config/live/<dsg-fq-domain\>/fullchain.pem` to the folder on your local computer that you shared with the RDS Gateway when you connected to it.
+    - CertBot will tell you where it has saved the certificate and chain (should be the same directory you ran it from)
+
+    -   Copy `0000_cert.pem` to the folder on your local computer that you shared with the RDS Gateway when you connected to it. If you are using Windows Subsystem for Linux, use `cp <folder-cert-is-in>/0000_cert.pem /mnt/c/users/<username>/` to copy the cert to your Windows home directory
 
     -   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
 
@@ -584,7 +574,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - From the Server Manager dashboard select "Tools -> Internet Information Service (IIS) Manager"
  
@@ -624,7 +614,6 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   
   - Select the "DER encoded binary X.509" format and click "Next"
   
-  - Check the "Password" box, enter a password and click "Next"
   
   - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
 
@@ -644,7 +633,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
@@ -666,7 +655,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
 
 - In "Server Manager", select `Tools -> Network Policy Server`
 
@@ -690,7 +679,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
 
-- Login with domain user `<shm-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
 
@@ -704,7 +693,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Select the "Central Server Running NPS"
 
-- Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.220.0.249` for production SHM)
+- Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.251.0.248` for production SHM)
 
 - Set the "Shared Secret" to the value of the `sh-management-radius-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when adding the DSG RDS to the SHM NPS earlier)
 
@@ -763,15 +752,15 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. 
 
 - Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
 
-- Download OpenOffice using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download OpenOffice using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
-- Download TexLive using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download TexLive using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
-- Download WinEdt using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
+- Download WinEdt using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - Install the downloaded packages
 
@@ -783,7 +772,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -796,7 +785,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 ### Generate temporary SAS token
 - Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "dsgxartifacts"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name`
+  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
 ### Configure Dataserver on Domain Controller
 
@@ -819,7 +808,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
 
-- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://dsgxartifacts.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>`(append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
 - You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
 
@@ -828,6 +817,8 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
 
@@ -844,7 +835,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -854,273 +845,96 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - The deployment will take a few minutes to complete
 
-### Configure HackMD Server
-
-- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
-
-- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
-
-- Update the local host file
-
-  | **Command**          | **Actions**                                                      |
-  | -- | -- |
-  | `sudo nano /etc/hosts` | Add the line: `<DSG-Subnet-Data-Prefix>.152 hackmd hackmd.dsgroup<dsg-id>.co.uk` |
-
-- Update the time-zone
-
-  | **Command**                  | **Actions**         |
-  | -- | -- |
-  | `sudo dpkg-reconfigure tzdata` | Select `Europe -> London` |
-
-#### Install Docker
-Install Docker using the following commands
-
-```console
-sudo apt-get update
-sudo apt upgrade
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
-sudo apt update
-sudo apt install docker-ce
-sudo docker run hello-world
-sudo apt install docker-compose
-sudo git clone https://github.com/hackmdio/docker-hackmd.git
-```
-
-##### Configure HackMD
-
-- Change to `./docker-hackmd`
-
-- Run `sudo nano docker-compose.yml` and make the following edits:
-
-  - Change Version to 2
-
-    ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML2235a31.PNG](images/media/image29.png)
-
-  - Add the following lines under the `app: -> environment:` section 
-
-    | **Property**                    | **Value**                                                                         |
-    |-- | -- |
-    | `- HMD_LDAP_PROVIDERNAME=`    | NetBIOS name of management domain i.e. `turingsafehaven` for production and `dsgroupdev` for test |
-    | `- HMD_LDAP_URL=`             | LDAP connection URL i.e. `ldap://shmdc1.turingsafehaven.ac.uk` for production and `ldap://mgmtdevdc.dsgroupdev.co.uk` for test |
-    | `- HMD_LDAP_BINDDN=`          | Bind Path for LDAP user i.e.                                                      |
-    |                                | "`CN=DSGROUP<dsg-id> HackMD LDAP,OU=Safe Haven Service Accounts,<shm-domain-dn>`" |
-    |                                | where `<shm-domain-dn>` is `DC=turingsafehaven,DC=ac,DC=uk` for production and `DC=dsgroupdev,DC=co,DC=uk` for test |                                                                                |
-    | `- HMD_LDAP_BINDCREDENTIALS=`  | Password for the HackMD LDAP account from the SHM KeyVault |
-    | `- HMD_LDAP_SEARCHBASE=`      | OU Path to the Research Users OU i.e. |         
-    |                                | "`OU=Safe Haven Research Users,<shm-domain-dn>`", where `<shm-domain-dn>` is as above |
-    | `- HMD_LDAP_SEARCHFILTER=`    | `(&(objectClass=user)(memberOf=CN=SG DSGROUP<dsg-id> Research Users,OU=Safe Haven Security Groups,<shm-domain-dn>)(userPrincipalName={{username}}))`, where `<shm-domain-dn>` is as above |
-    | `- HMD_USECDN=`                | `false`                                                                             |
-    | `- HMD_EMAIL=`                 | `false`                                                                             |
-    | `- HMD_ALLOW_FREEURL=`        | `true`                                                                              |
-    | `- HMD_ALLOW_ANONYMOUS=`      | `false`                                                                             |
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2840785.PNG](images/media/image30.png)
-
-- Start HackMD container via `sudo docker-compose up -d`
-
-- You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
-
 ### Configure GitLab Server
 
-- Connect to the **Gitlab** server at `<DSG-Subnet-Data-Prefix>.151` with Putty (or any SSH client)
+- GitLab is fully configured by the `Create_Web_App_Servers.ps1` deployment script
 
-- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
-
-- Update the local host file
-
-  | **Command**          | **Actions**                                                      |
-  | -- | -- |
-  | `sudo nano /etc/hosts` | Add the line: `<DSG-Subnet-Data-Prefix>.151 gitlab gitlab.dsgroup<dsg-id>.co.uk` |
-
-- Update the time-zone
-
-  | **Command**                  | **Actions**         |
-  | -- | -- |
-  | `sudo dpkg-reconfigure tzdata` | Select `Europe -> London` |
-
-- Identify the data disk (the one with no partitions on it), noting ID with `sudo lshw -C disk`
-
-- Create partition on the data drive
-
-  | **Command**         | **Detail**                                 |
-  | -- | -- |
-  | `sudo fdisk /dev/xxx` | \- xxx = disk name as noted above (likely `sdc`) |
-  |                     |                                            |
-  |                     | \- Command: n                              |
-  |                     |                                            |
-  |                     | \- Partition type: Primary                 |
-  |                     |                                            |
-  |                     | \- Partition number: 1                     |
-  |                     |                                            |
-  |                     | \- First Sector: (accept default)          |
-  |                     |                                            |
-  |                     | \- Last Sector: (accept default)           |
-  |                     |                                            |
-  |                     | \- Command: W                              |
-
-- Format Partition with `sudo mkfs.ext4 /dev/xxx1 -L DataDrive` (xxx = disk name as noted above)
-
-- Capture Partition UUID with `sudo blkid`
-
-  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML84a1ac.PNG](images/media/image31.png)
-
-- Backup FSTAB file with `sudo cp /etc/fstab /etc/fstab.$(date +%Y-%m-%d)`
-
-- Open FSTAB file for editing with `sudo nano /etc/fstab`
-
-- Add the following lines (Change UUID to that captured above)
-
-  `UUID=<UUID CAPTURED ABOVE> /media/gitdata ext4 defaults 0 2`
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29309ce.PNG](images/media/image32.png)
-
-- Create home folder mount point with `sudo mkdir /media/gitdata`
-
-- Mount drive with `sudo mount -a`
-
-- Edit Gitlab config file with `sudo nano /etc/gitlab/gitlab.rb`
-
-- Uncomment the LDAP configuration lines (excluding the "EE only" and "secondary" subsections)
-
-- Update the following properties:
-
-  | **Command**                    | **Value** |
-  | -- | -- |
-  | `Gitlabrails['ldap_enabled']`  | `true` |
-  | `Host`                         | DSG DC FQDN i.e. `shmdc1.turingsafehaven.ac.uk` for production and `mgmtdevdc.dsgroupdev.co.uk` for test |
-  | `Method`                         | `Plain`|
-  | `bind_dn`                       | "`CN=DSGROUP<dsg-id> Gitlab LDAP,OU=Safe Haven Service Accounts,<shm-domain-dn>`" |
-  |                                | where `<shm-domain-dn>` is `DC=turingsafehaven,DC=ac,DC=uk` for production and `DC=dsgroupdev,DC=co,DC=uk` for test | 
-  | `password`                       | Password of GitLab LDAP service account from SHM KeyVault |
-  | `active_directory`              | `true` |
-  | `allow user name or email login` | `true` |
-  | `block_auto_created_users`    | `false` |
-  | `base`                           | OU Path to the Research Users OU i.e. |         
-  |                                | "`OU=Safe Haven Research Users,<shm-domain-dn>`", where `<shm-domain-dn>` is as above |
-  | `user_filter`                   | `(&(objectClass=user)(memberOf=CN=SG DSGROUP<dsg-id> Research Users,OU=Safe Haven Security Groups,<shm-domain-dn>))`, where `<shm-domain-dn>` is as above |
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29c3cf8.PNG](images/media/image33.png)
-
-- Ensure that the `EOS` line at the end of the LDAP block is uncommented.
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1aee41b.PNG](images/media/image35.png)
-
-- Scroll down to "For setting up different data storing directory"
-
-- Add the following under the `git_data_dir` entry
-
-  `git_data_dirs({ "default" => { "path" => "/media/gitdata" } })`
-
-  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML205637a.PNG](images/media/image34.png)
-
-- Save the Gitlab config file and close it
-
-- Run the following command to reconfigure server: `sudo gitlab-ctl reconfigure`
-
-- Do an LDAP check: `sudo gitlab-rake gitlab:ldap:check`
-
-  ![C:\\Users\\ROB\~2.CLA\\AppData\\Local\\Temp\\SNAGHTML194a8c6.PNG](images/media/image36.png)
-
-### Configure the Gitlab Web Application
-
-#### Set the root (admin) password
-
-- Go to the Gitlab server via the browser. The first password prompt sets the password for the `root` (admin) user.
-  
-  - Generate a root password using https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1
-  
-  - Store this root password in the SHM KeyVault with secret name `dsg-<dsg-id>-gitlab-root-password`
-
-  - Copy the password from the KeyVault secret and enter it at the password prompt on the Gitlab page
-
-#### Configure the Web Application
-
-- Log in as the `root` user using the "Standard" login tab
-
-- Go to the "admin area" by clicking on the spanner icon at the top left
-
-- Click the "settings" item in the lefthand sidebar
-
--  Disable user sign up in the "Sign-in restrictions" section
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e3d554.PNG](images/media/image37.png)
-
-- Add FQDN of DSG and SHM domains to the "Restricted domains for sign-ups" box, one domain per line.
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML29f04c3.PNG](images/media/image38.png)
-
-- Scroll to the bottom of the settings page and press "Save"
-
-- Log out of Gitlab using the signout icon in the top left
-
-#### Upgrade Gitlab on the Gitlab VM
-
-- Connect to the **HackMD** server at `<DSG-Subnet-Data-Prefix>.152` with Putty (or any SSH client)
-
-- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
-
-- Upgrade GitLab:
-
-  ```console
-  sudo apt-get update
-  sudo apt-get install gitlab-ce=9.5.6-ce.0
-  sudo gitlab-ctl reconfigure
-  sudo gitlab-ctl restart
-  sudo apt-get update
-  sudo apt-get install gitlab-ce=10.8.7-ce.0
-  sudo gitlab-ctl reconfigure
-  sudo gitlab-ctl restart
-  sudo apt-get update
-  sudo apt upgrade
-  sudo gitlab-ctl reconfigure
-  sudo gitlab-ctl restart
-  ```
-
-- If prompted to update `waagent.conf` enter `N` (default) [TODO: Check if this should be another option].
+- There is a built-in `root` user, whose password is stored in the DSG KeyVault (see DSG config file for KeyVault and secret names).
 
 - You can test Gitlab independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
-## Deploy initial shared Compute VM
-See the [Compute VM build and deployment guide](../azure-vms/README.md).
-- Ensure you have carried out the steps in the "Pre-requisites" section
-- Update the `deploy_compute_vm_to_turing_dsg.sh` script with the details of the new DSG.
-  - Add the new <dsg-id> to the "Check DSG group ID is valid" line
-  - Amend the "Set defaults for test and production environments" section to set the right defaults for the new DSG
-  - Amend the "Overwite defaults for per-DSG settings" section to set the right DSG specific parameter values
-- Deploy a new VM using `./deploy_compute_vm_to_turing_dsg.sh -g <dsg-id> -q 160`
-as per the "Safe deployment to a Turing DSG environment" section
+### Configure HackMD Server
 
-## Network Lock Down
+- HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
 
-- Once all the VMs have been deployed and updated before the DSG is ready the network on the RDS Session servers and Linux servers needs locking down to prevent them from accessing the internet.
+- You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
-- Open the Azure Portal
+## 7. Deploy initial shared Compute VM
 
-- Locate the "Network Security Groups" management pane.
+### Ensure a cloud init file exists for the DSG
+  - Make sure a `cloud-init` YAML file exists at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml`.
+  - If one does not exist, create one  by copying the base version at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/cloud-init-compute-vm.yaml`
 
-- RDS Servers
+### Configure or log into a suitable deployment environment
+To deploy a compute VM you will need the following available on the machine you run the deployment script from:
+  - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+  - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
+- The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0) 
+- A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
-  - Open "NSG_SessionHosts"
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
-  - Associate the following NICs to this NSG
+### Deploy a compute VM
 
-    - RDSSH1_NIC1
+- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
+- Ensure you have the latest changes locally using `git pull`
+- Ensure you are authenticated in the Azure CLI using `az login`
+- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
+- Open a Powershell terminal with `pwsh`
+- Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
 
-    - RDSSH2_NIC2
+### Troubleshooting Compute VM deployments
+- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
+- Scroll to the bottom of the VM menu on the left hand side of the VM information panel
+- Activate boot diagnostics on the VM and click save. You need to stay on that screen until the activation is complete.
+- Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
+- If you are not prompted with `login:`, hit enter until the prompt appears
+- Enter `atiadmin` for the username
+- Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` respource group of the SHM subscription.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
+- To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
-- Web application Servers
+## 8. Lock down network configuration
 
-  - Open NSG_Linux_Servers
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-  - Associate the following NICs to this NSG
+- Change to the `new_dsg_environment/dsg_deploy_scripts/08_network_lockdown/` directory of the Safe Haven repository
 
-    - GITLAB_NIC1
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-    - HACKMD_NIC1
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-## Server administration
+- Run the `./Lockdown_Network.ps1` script, providing the DSG ID when prompted
+
+## 9. Peer DSG and mirror networks
+**NOTE:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
+
+Change to the `new_dsg_environment/azure-vms/` folder and open a bash terminal with access to the `Az` CLI and run the `./peer_mirrors_to_compute_vms.sh` script as detailed below.
+
+```
+usage: ./peer_mirrors_to_compute_vms.sh [-h] -s subscription_compute -t subscription_mirror [-g resource_group_compute] [-h resource_group_mirror] [-n vnet_name_compute] [-m vnet_name_mirror]
+  -h                                   display help
+  -s subscription_compute [required]   specify subscription where the compute VNet is deployed. (typically this will be 'Data Study Group Testing')
+  -t subscription_mirror [required]    specify subscription where the mirror VNet is deployed. (typically this will be 'Safe Haven Management Testing')
+  -c resource_group_compute            specify resource group where the compute VNet is deployed (defaults to 'RG_DSG_VNET')
+  -m resource_group_mirror             specify resource group where the mirror VNet is deployed (defaults to 'RG_SH_PKG_MIRRORS')
+  -v vnet_name_compute                 specify name of the compute VNet (defaults to 'DSG_DSGROUPTEST_VNet1')
+  -w vnet_name_mirror                  specify name of the mirror VNet (defaults to 'VNET_SH_PKG_MIRRORS')
+```
+
+This script peers the DSG virtual network with the mirror virtual network in the management subscription so that the compute VMs can talk to the mirror servers.
+Note that the "inbound one-way airlock" for packages is enforced by the NSG rules for the external and internal mirrrors.
+The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and its associated internal mirrors (for pushing to these mirror servers).
+The **internal** mirror NSG rules do not allow **any outbound** communication, while permitting inbound communication from their associated external mirrors (to receive pushed package updates) and from the DSGs that are peered with them (to serve packages to these DSGs).
+
+Example usage:
+
+```bash
+./peer_mirrors_to_compute_vms.sh -s "Data Study Group Testing" "Safe Haven Management Testing"
+```
+
+## Server list
 
 - The following servers are created as a result of these instructions:
   - DSG`<dsg-id>`DC (domain controller)

@@ -1,30 +1,23 @@
-function Add-DsgConfig {
+
+function Get-ConfigRootDir{
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
+    return $configRootDir
+}
+function Get-ShmFullConfig{
     param(
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
-        $shmId,
-        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
-        $dsgId
+        $shmId
     )
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "dsg_configs" -Resolve
-
-    $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"  
+    $configRootDir = Get-ConfigRootDir
+    $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
 
-    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"  
-    $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
-
-    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"  
-    $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
-
-    # Use hash table for config
-    $config = [ordered]@{
-        shm = [ordered]@{}
-        dsg = [ordered]@{}
-    }
-    # === SH MANAGEMENT CONFIG ===
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
-    Write-Host $shmConfigBase
+
+
+    # === SH MANAGEMENT CONFIG ===
+    $shm = [ordered]@{}
     $shmPrefix = $shmConfigBase.ipPrefix
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
@@ -33,60 +26,102 @@ function Add-DsgConfig {
     $shmThirdOctet = ([int] $shmPrefixOctets[2])
 
     # --- Top-level config ---
-    $config.shm.subscriptionName = $shmConfigBase.subscriptionName
-    $config.shm.id = $shmConfigBase.shId
-    $config.shm.location = $shmConfigBase.location
+    $shm.subscriptionName = $shmConfigBase.subscriptionName
+    $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
+    $shm.id = $shmConfigBase.shId
+    $shm.location = $shmConfigBase.location
 
     # --- Domain config ---
-    $config.shm.domain = [ordered]@{}
-    $config.shm.domain.fqdn = $shmConfigBase.domain
-    $config.shm.domain.netbiosName = $config.shm.domain.fqdn.Split('.')[0].ToUpper()
-    $config.shm.domain.dn = "DC=" + ($config.shm.domain.fqdn.replace('.',',DC='))
-    $config.shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $config.shm.domain.dn
-    $config.shm.domain.userOuPath = "OU=Safe Haven Research Users," + $config.shm.domain.dn
-    $config.shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $config.shm.domain.dn
-    $config.shm.domain.securityGroups = [ordered]@{
+    $shm.domain = [ordered]@{}
+    $shm.domain.fqdn = $shmConfigBase.domain
+    $shm.domain.netbiosName = $shm.domain.fqdn.Split('.')[0].ToUpper()
+    $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
+    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
+    $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
+    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
+    $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{}
     }
-    $config.shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users"
-    $config.shm.domain.securityGroups.dsvmLdapUsers.description = $config.shm.domain.securityGroups.dsvmLdapUsers.name
+    $shm.domain.securityGroups.dsvmLdapUsers.name = "SG Data Science LDAP Users"
+    $shm.domain.securityGroups.dsvmLdapUsers.description = $shm.domain.securityGroups.dsvmLdapUsers.name
 
 
     # --- Network config ---
-    $config.shm.network = [ordered]@{
+    $shm.network = [ordered]@{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $config.shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
-    $config.shm.network.subnets.identity = [ordered]@{}
-    $config.shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
-    $config.shm.network.subnets.identity.cidr = $config.shm.network.subnets.identity.prefix + ".0/24"
+    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
+    $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+    $shm.network.subnets.identity = [ordered]@{}
+    $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
+    $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
 
     # --- Domain controller config ---
-    $config.shm.dc = [ordered]@{}
-    $config.shm.dc.rg = "RG_DSG_DC"
-    $config.shm.dc.vmName = "DC"
-    $config.shm.dc.hostname = $shmConfigBase.dcHostname
-    $config.shm.dc.fqdn = $config.shm.dc.hostname + "." + $config.shm.domain.fqdn
-    $config.shm.dc.ip = $config.shm.network.subnets.identity.prefix + ".250"
+    $shm.dc = [ordered]@{}
+    $shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
+    $shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
+    $shm.dc.hostname = $shmConfigBase.dcHostname
+    $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
+    $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
+
+    # --- NPS config ---
+    $shm.nps = [ordered]@{}
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
 
     # --- Storage config --
-    $config.shm.storage = [ordered]@{
+    $shm.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
-    $config.shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.shm.storage.artifacts.accountName = "dsgxartifacts"
+    $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
+    $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
     # -- Secrets config ---
-    $config.shm.keyVault = [ordered]@{}
-    $config.shm.keyVault.name = "dsg-management-" + $config.shm.id
-    $config.shm.keyVault.secretNames = [ordered]@{}
-    $config.shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+    $shm.keyVault = [ordered]@{}
+    $shm.keyVault.name = "dsg-management-" + $shm.id
+    $shm.keyVault.secretNames = [ordered]@{}
+    $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+
+    return $shm
+}
+Export-ModuleMember -Function Get-ShmFullConfig
+
+function Add-DsgConfig {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
+        $shmId,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
+        $dsgId
+    )
+    $configRootDir = Get-ConfigRootDir
+    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
+    $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
+    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
+    $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
+
+    # Use hash table for config
+    $config = [ordered]@{
+        shm = Get-ShmFullConfig($shmId)
+        dsg = [ordered]@{}
+    }
+
+    # Import minimal management config parameters from JSON config file - we can derive the rest from these
+    $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
 
     # === DSG configuration parameters ===
+    $dsg = [ordered]@{}
     # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
+
+    # --- Package mirror config ---
+    $config.dsg.mirrors = [ordered]@{
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    $config.dsg.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
+    $config.dsg.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
@@ -96,7 +131,8 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
-    $config.dsg.location = $config.shm.location 
+    $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
+    $config.dsg.location = $config.shm.location
 
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}
@@ -107,7 +143,7 @@ function Add-DsgConfig {
         serverAdmins = [ordered]@{}
         researchUsers = [ordered]@{}
     }
-    $config.dsg.domain.securityGroups.serverAdmins = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
+    $config.dsg.domain.securityGroups.serverAdmins.name = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
     $config.dsg.domain.securityGroups.serverAdmins.description = $config.dsg.domain.securityGroups.serverAdmins.name
     $config.dsg.domain.securityGroups.researchUsers.name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
     $config.dsg.domain.securityGroups.researchUsers.description = $config.dsg.domain.securityGroups.researchUsers.name
@@ -121,6 +157,9 @@ function Add-DsgConfig {
             data = [ordered]@{}
             gateway = [ordered]@{}
         }
+        nsg = [ordered]@{
+            data = [ordered]@{}
+        }
     }
     $config.dsg.network.vnet.rg = "RG_DSG_VNET"
     $config.dsg.network.vnet.name = "DSG_" + $config.dsg.domain.netbiosName + "_VNET1"
@@ -133,9 +172,11 @@ function Add-DsgConfig {
     $config.dsg.network.subnets.rds.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
     $config.dsg.network.subnets.data.name = "Subnet-Data"
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
-    $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24" 
+    $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
+    $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
+    $config.dsg.network.nsg.data.name = "NSG_Linux_Servers"
 
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
@@ -166,16 +207,16 @@ function Add-DsgConfig {
         }
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-gitlab-ldap"
+    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.shortName + "-gitlab-ldap"
     $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.users.ldap.gitlab.samAccountName + "-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-hackmd-ldap"
+    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.shortName + "-hackmd-ldap"
     $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.users.ldap.hackmd.samAccountName + "-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-dsvm-ldap"
+    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.shortName + "-dsvm-ldap"
     $config.dsg.users.ldap.dsvm.passwordSecretName =  $config.dsg.users.ldap.dsvm.samAccountName + "-password"
-    $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName.ToLower() + " Test Researcher"
-    $config.dsg.users.researchers.test.samAccountName = $config.dsg.domain.netbiosName.ToLower() + "-test-researcher"
+    $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName + " Test Researcher"
+    $config.dsg.users.researchers.test.samAccountName = $config.dsg.shortName + "-test-res"
     $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
 
     # --- RDS Servers ---
@@ -185,6 +226,13 @@ function Add-DsgConfig {
         sessionHost2 = [ordered]@{}
     }
     $config.dsg.rds.rg = "RG_DSG_RDS"
+    $config.dsg.rds.nsg = [ordered]@{
+        gateway = [ordered]@{}
+        sessionHosts = [ordered]@{}
+    }
+    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
+    $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
@@ -214,26 +262,34 @@ function Add-DsgConfig {
         hackmd = [ordered]@{}
     }
     $config.dsg.linux.rg = "RG_DSG_LINUX"
+    $config.dsg.linux.nsg = "NSG_Linux_Servers"
     $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
+    $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
     $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
-    # HackMD server
-
-    # Compute server
-
-    
+    # Compute VMs
+    $config.dsg.dsvm = [ordered]@{}
+    $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
+    $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
+    $config.shm.Remove("computeVmImageSubscriptionName")
+    $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
+    $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
+    $config.dsg.dsvm.admin = [ordered]@{
+        username = "atiadmin"
+        passwordSecretName = "dsgroup" + $config.dsg.id + "-dsvm-admin-password" # TODO: Current format targeted at using shm keyvault. Update if this changes.
+    }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
     Write-Host $jsonOut
-    Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut  
+    Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
-Export-ModuleMember -Function Add-DsgConfig 
+Export-ModuleMember -Function Add-DsgConfig
 
 function Get-DsgConfig {
     param(

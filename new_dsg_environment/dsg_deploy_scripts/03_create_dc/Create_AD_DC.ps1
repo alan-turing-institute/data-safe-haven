@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../GeneratePassword.psm1
-Import-Module $PSScriptRoot/../DsgConfig.psm1
-Import-Module $PSScriptRoot/../GenerateSasToken.psm1
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -35,8 +35,9 @@ $artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscript
  Write-Host $artifactSasToken.GetType()
 $artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
-# Switch to DSG subscription and deploy
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName; # Assign to dummy variable to avoid conmtext being returned
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
@@ -59,3 +60,7 @@ Write-Output ($params | ConvertTo-JSON -depth 10)
 New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg `
   -TemplateFile $templatePath @params -Verbose
+
+
+# Switch back to original subscription
+Set-AzContext -Context $prevContext;

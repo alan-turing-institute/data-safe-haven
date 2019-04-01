@@ -1,0 +1,223 @@
+{
+  "shm": {
+    "subscriptionName": "Safe Haven Managment",
+    "id": "prod",
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_VM_DC",
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "ip": "10.251.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgartifactsprod"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      }
+    }
+  },
+  "dsg": {
+    "mirrors": {
+      "cran": {
+        "ip": "10.1.0.21"
+      },
+      "pypi": {
+        "ip": "10.1.0.20"
+      }
+    },
+    "subscriptionName": "Data Study Group 14 (Prod)",
+    "id": "14",
+    "shortName": "dsg14",
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "dsgroup14.co.uk",
+      "netbiosName": "DSGROUP14",
+      "dn": "DC=dsgroup14,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP14 Server Administrators",
+          "description": "SG DSGROUP14 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP14 Research Users",
+          "description": "SG DSGROUP14 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP14_VNET1",
+        "cidr": "10.250.104.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.250.104",
+          "cidr": "10.250.104.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.250.105",
+          "cidr": "10.250.105.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.250.106",
+          "cidr": "10.250.106.0/24"
+        },
+        "gateway": {
+          "prefix": "10.250.111",
+          "cidr": "10.250.111.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG14DC",
+      "hostname": "DSG14DC",
+      "fqdn": "DSG14DC.dsgroup14.co.uk",
+      "ip": "10.250.104.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg14-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP14 Gitlab LDAP",
+          "samAccountName": "dsg14-gitlab-ldap",
+          "passwordSecretName": "dsg14-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP14 HackMD LDAP",
+          "samAccountName": "dsg14-hackmd-ldap",
+          "passwordSecretName": "dsg14-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP14 DSVM LDAP",
+          "samAccountName": "dsg14-dsvm-ldap",
+          "passwordSecretName": "dsg14-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP14 Test Researcher",
+          "samAccountName": "dsg14-test-res",
+          "passwordSecretName": "dsg14-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup14.co.uk",
+        "ip": "10.250.105.250"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup14.co.uk",
+        "ip": "10.250.105.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup14.co.uk",
+        "ip": "10.250.105.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253,193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup14.co.uk",
+      "ip": "10.250.106.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup14.co.uk",
+        "ip": "10.250.106.151",
+        "rootPasswordSecretName": "dsg14-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup14.co.uk",
+        "ip": "10.250.106.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.0.2019032100",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup14-dsvm-admin-password"
+      }
+    }
+  }
+}

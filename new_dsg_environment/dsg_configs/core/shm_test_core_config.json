@@ -1,8 +1,15 @@
 {
     "subscriptionName": "Safe Haven Management Testing",
+    "computeVmImageSubscriptionName": "Safe Haven Management Testing",
     "domain": "dsgroupdev.co.uk",
     "shId": "test",
     "location": "uksouth",
     "ipPrefix": "10.220.1",
-    "dcHostname": "MGMTDEVDC"
+    "dcVmName": "DC",
+    "dcHostname": "MGMTDEVDC",
+    "dcRgName": "RG_DSG_DC",
+    "npsIp": "248",
+    "vnetRgName": "RG_DSG_VNET",
+    "vnetName":"DSG_DSGROUPDEV_VNET1",
+    "artifactStorageAccount": "dsgxartifacts"
 }
