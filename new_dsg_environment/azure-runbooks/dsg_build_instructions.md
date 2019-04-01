@@ -120,7 +120,13 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
     "shId": "A short ID to identify the management environment",
     "location": "The Azure location in which the management environment VMs are deployed",
     "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt",
-    "dcHostname": "The hostname of the managment environemtn Active Directory Domain Controller"
+    "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
+    "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
+    "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
+    "npsIp": "The IP address of the management environment NPS server",
+    "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
+    "vnetName":"The name of the Virtual Network for the management environment",
+    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment"
 }
 ```
 
@@ -135,7 +141,11 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
     "dsgId": "A short ID to identify the management environment",
     "domain": "The fully qualified domain name for the DSG environment",
     "ipPrefix": "The three octect IP address prefix for the Class A range used by the management environemnt",
-    "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox"
+    "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox",
+    "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
+    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)",
+    "packageMirrorIpPypi": "IP address of the internal PyPI mirror (e.g 10.1.0.20)",
+    "packageMirrorIpCran": "IP address of the internal CRAN mirror (e.g 10.1.0.21)"
 }
 ```
 
