@@ -88,4 +88,6 @@ if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
 
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
 
+Write-Output $cmd 
+
 bash -c $cmd
