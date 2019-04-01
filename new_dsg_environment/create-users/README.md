@@ -55,10 +55,13 @@ For security we do not store your initial password, so you must reset it before 
 3. At the login prompt enter your username (provided in the welcome email)
 4. At password prompt click "Forgotten password"
 5. Complete the requested information (captcha and the phone number you provided on registration).
-6. Reset your password
+6. Generate a new password using the [Secure Password
+Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
+7. Reset your password
 
-**Note**: Do **not** use special characters or symbols in your password. If you
-do, you may be unable to type them in the virtual keyboard to access the secure
+**Note**: Do **not** use special characters or symbols in your password if you
+prefer to pass on using the Secure Password Generator. If you include symbols,
+you may be unable to type them in the virtual keyboard to access the secure
 environment. Choose an alphanumeric password with minimum length of 12
 characters, with at least one of each:
 
