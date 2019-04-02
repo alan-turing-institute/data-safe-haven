@@ -17,7 +17,7 @@ conda deactivate
 Run the tests with:
 
 ```
-RScript test_package_installation.R
+Rscript test_package_installation.R
 ```
 
 If it's right, it should output something like:
@@ -38,9 +38,9 @@ If some packages are not installed, you should see:
 Run the two data science scripts with these commands and this expected result:
 
 ```bash
-$ RScript test_clustering.R 
+$ Rscript test_clustering.R 
 [1] "Clustering ran OK"
-$ RScript test_logistic_regression.R 
+$ Rscript test_logistic_regression.R 
 [1] "Logistic regression ran OK"
 ```
 
