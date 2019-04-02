@@ -963,7 +963,9 @@ To run the smoke tests:
 
 - Change to the tests folder using `cd ~/dsg_tests/tests`
 
-- Follow the instructions in the `README.md` file in your local copy of the `tests` folder at `<safe-haven-repository>/new_dsg_environment/azure-vms/tests/` folder.
+- Follow the instructions in the `README.md` file the `tests` folder in your local copy of the `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder.
+
+- If all test results are expected you are done! Otherwise, contact REG for help diagnosing test failures.
 
 ## Server list
 
