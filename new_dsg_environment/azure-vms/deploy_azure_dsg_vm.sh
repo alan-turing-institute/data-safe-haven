@@ -462,9 +462,9 @@ while true; do
 done
 
 # VM must be off for us to switch NSG. Once done we restart
-echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} at ${BOLD}$(date)${END}"
+echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} ${BOLD}at $(date)${END}"
 az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID
-echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END} at ${BOLD}$(date)${END}"
+echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END} ${BOLD}at $(date)${END}"
 az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 
 # Poll VM to see whether it has finished restarting
@@ -481,5 +481,5 @@ done
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
-echo -e "Deployment complete at ${BOLD}$(date)${END}"
+echo -e "${BOLD}Deployment complete at $(date)${END}"
 echo -e "${BOLD}This new VM can be accessed with SSH or remote desktop at ${BLUE}${PRIVATEIP}${END}"
