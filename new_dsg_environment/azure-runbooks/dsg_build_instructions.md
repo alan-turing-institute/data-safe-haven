@@ -876,10 +876,10 @@ To deploy a compute VM you will need the following available on the machine you 
 
 ### Deploy a compute VM
 
+- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
 - Ensure you have the latest changes locally using `git pull`
 - Ensure you are authenticated in the Azure CLI using `az login`
-- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
 - Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
