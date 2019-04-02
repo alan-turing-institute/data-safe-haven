@@ -1,24 +1,32 @@
 #! /bin/bash
 
-# Options which are configurable at the command line
-SOURCEIMAGE="Ubuntu"
-MACHINENAME=""
-RESOURCEGROUP="RG_DSG_COMPUTE"
-SUBSCRIPTIONSOURCE="" # must be provided
-SUBSCRIPTIONTARGET="" # must be provided
-USERNAME="atiadmin"
-DSG_NSG="NSG_Linux_Servers" # NB. this will disallow internet connection during deployment
-DSG_VNET="DSG_DSGROUPTEST_VNet1"
-DSG_SUBNET="Subnet-Data"
-VM_SIZE="Standard_DS2_v2"
-VERSION=""
-CLOUD_INIT_YAML="cloud-init-compute-vm.yaml"
-
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
+
+# Options which are configurable at the command line
+SUBSCRIPTIONSOURCE="" # must be provided
+SUBSCRIPTIONTARGET="" # must be provided
+LDAP_SECRET_NAME=""
+LDAP_USER=""
+ADMIN_PASSWORD_SECRET_NAME=""
+DOMAIN=""
+AD_DC_NAME=""
+IP_ADDRESS=""
+DSG_NSG="NSG_Linux_Servers" # NB. this will disallow internet connection during deployment
+SOURCEIMAGE="Ubuntu"
+VERSION=""
+MACHINENAME="DSG$(date '+%Y%m%d%H%M')"
+RESOURCEGROUP="RG_DSG_COMPUTE"
+USERNAME="atiadmin"
+DSG_VNET="DSG_DSGROUPTEST_VNet1"
+DSG_SUBNET="Subnet-Data"
+VM_SIZE="Standard_DS2_v2"
+CLOUD_INIT_YAML="cloud-init-compute-vm.yaml"
+PYPI_MIRROR_IP=""
+CRAN_MIRROR_IP=""
 
 # Other constants
 IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
@@ -30,34 +38,38 @@ DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connectio
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 -s subscription_source -t subscription_target [-h] [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name]"
-    echo "  -h                        display help"
-    echo "  -g nsg_name               specify which NSG to connect to (defaults to 'NSG_Linux_Servers')"
-    echo "  -i source_image           specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
-    echo "  -x source_image_version   specify the version of the source image to use (defaults to prompting to select from available versions)"
-    echo "  -n machine_name           specify name of created VM, which must be unique in this resource group (defaults to 'DSGYYYYMMDDHHMM')"
-    echo "  -r resource_group         specify resource group for deploying the VM image - will be created if it does not already exist (defaults to 'RG_DSG_COMPUTE')"
-    echo "  -u user_name              specify a username for the admin account (defaults to 'atiadmin')"
-    echo "  -s subscription_source    specify source subscription that images are taken from [required]. (Test using 'Safe Haven Management Testing')"
-    echo "  -t subscription_target    specify target subscription for deploying the VM image [required]. (Test using 'Data Study Group Testing')"
-    echo "  -v vnet_name              specify a VNET to connect to (defaults to 'DSG_DSGROUPTEST_VNet1')"
-    echo "  -w subnet_name            specify a subnet to connect to (defaults to 'Subnet-Data')"
-    echo "  -z vm_size                specify a VM size to use (defaults to 'Standard_DS2_v2')"
-    echo "  -m management_vault_name  specify name of KeyVault containing management secrets (required)"
-    echo "  -l ldap_secret_name       specify name of KeyVault secret containing LDAP secret (required)"
-    echo "  -j ldap_user              specify the LDAP user (required)"
-    echo "  -p password_secret_name   specify name of KeyVault secret containing VM admin password (required)"
-    echo "  -d domain                 specify domain name for safe haven (required)"
-    echo "  -a ad_dc_name             specify Active Directory Domain Controller name (required)"
-    echo "  -b ldap_base_dn           specify LDAP base DN"
-    echo "  -c ldap_bind_dn           specify LDAP bind DN"
-    echo "  -q ip_address             specify a specific IP address to deploy the VM to (required)"
-    echo "  -y yaml_cloud_init        specify a custom cloud-init YAML script"
+    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip] [-o cran_mirror_ip]"
+    echo "  -h                                    display help"
+    echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')"
+    echo "  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')"
+    echo "  -m management_vault_name [required]   specify name of KeyVault containing management secrets"
+    echo "  -l ldap_secret_name [required]        specify name of KeyVault secret containing LDAP secret"
+    echo "  -j ldap_user [required]               specify the LDAP user"
+    echo "  -p password_secret_name [required]    specify name of KeyVault secret containing VM admin password"
+    echo "  -d domain [required]                  specify domain name for safe haven"
+    echo "  -a ad_dc_name [required]              specify Active Directory Domain Controller name"
+    echo "  -q ip_address [required]              specify a specific IP address to deploy the VM to"
+    echo "  -e mgmnt_subnet_ip_range [required]   specify IP range for safe haven management subnet"
+    echo "  -g nsg_name                           specify which NSG to connect to (defaults to '${DSG_NSG}')"
+    echo "  -i source_image                       specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
+    echo "  -x source_image_version               specify the version of the source image to use (defaults to prompting to select from available versions)"
+    echo "  -n machine_name                       specify name of created VM, which must be unique in this resource group (defaults to '${MACHINENAME}')"
+    echo "  -r resource_group                     specify resource group for deploying the VM image - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -u user_name                          specify a username for the admin account (defaults to '${USERNAME}')"
+    echo "  -v vnet_name                          specify a VNET to connect to (defaults to '${DSG_VNET}')"
+    echo "  -w subnet_name                        specify a subnet to connect to (defaults to '${DSG_SUBNET}')"
+    echo "  -z vm_size                            specify a VM size to use (defaults to '${VM_SIZE}')"
+    echo "  -b ldap_base_dn                       specify LDAP base DN"
+    echo "  -c ldap_bind_dn                       specify LDAP bind DN"
+    echo "  -f ldap_filter                        specify LDAP filter"
+    echo "  -y yaml_cloud_init                    specify a custom cloud-init YAML script"
+    echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}')"
+    echo "  -o cran_mirror_ip                     specify the IP address of the CRAN mirror (defaults to '${CRAN_MIRROR_IP}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
+while getopts "a:b:c:d:e:f:g:hi:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:" opt; do
     case $opt in
         g)
             DSG_NSG=$OPTARG
@@ -113,11 +125,17 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
         a)
             AD_DC_NAME=$OPTARG
             ;;
+        e)
+            MGMNT_SUBNET_IP_RANGE=$OPTARG
+            ;;
         b)
             LDAP_BASE_DN=$OPTARG
             ;;
         c)
             LDAP_BIND_DN=$OPTARG
+            ;;
+        f)
+            LDAP_FILTER=$OPTARG
             ;;
         q)
             IP_ADDRESS=$OPTARG
@@ -125,16 +143,17 @@ while getopts "g:hi:x:n:r:u:s:t:v:w:z:m:l:p:j:d:a:b:c:q:y:" opt; do
         y)
             CLOUD_INIT_YAML=$OPTARG
             ;;
+        k)
+            PYPI_MIRROR_IP=$OPTARG
+            ;;
+        o)
+            CRAN_MIRROR_IP=$OPTARG
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             ;;
     esac
 done
-
-# Set default machine name
-if [ "$MACHINENAME" = "" ]; then
-    MACHINENAME="DSG$(date '+%Y%m%d%H%M')"
-fi
 
 # Check that a source subscription has been provided
 if [ "$SUBSCRIPTIONSOURCE" = "" ]; then
@@ -148,6 +167,13 @@ if [ "$MANAGEMENT_VAULT_NAME" = "" ]; then
     print_usage_and_exit
 fi
 
+# Check that the machine name is valid
+# NOTE: It looks like passing a blank string for machine name gives an "option requires and argument"
+# error and the default value for $MACHINENAME set at the top of the script is preserved.
+if [ "$MACHINENAME" = "" ]; then
+    echo -e "${RED}Machine name cannot be blank!${END}"
+    print_usage_and_exit
+fi
 
 # Check that an LDAP secret KeyVault secret name has been provided
 if [ "$LDAP_SECRET_NAME" = "" ]; then
@@ -181,6 +207,11 @@ fi
 
 # Look up specified image definition
 az account set --subscription "$SUBSCRIPTIONSOURCE"
+if [ "$(az account show --query 'name' | xargs)" != "$SUBSCRIPTIONSOURCE" ]; then
+    echo -e "${RED}Could not set source subscription to ${BLUE}'${SUBSCRIPTIONSOURCE}'${END}${RED}. Are you a member? Current subscription is ${BLUE}'$(az account show --query 'name' | xargs)'${END}"
+    print_usage_and_exit
+fi
+
 if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
     IMAGE_DEFINITION="ComputeVM-Ubuntu1804Base"
 elif [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
@@ -221,6 +252,11 @@ IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --ga
 # Switch subscription and setup resource groups if they do not already exist
 # --------------------------------------------------------------------------
 az account set --subscription "$SUBSCRIPTIONTARGET"
+if [ "$(az account show --query 'name' | xargs)" != "$SUBSCRIPTIONTARGET" ]; then
+    echo -e "${RED}Could not set target subscription to ${BLUE}'${SUBSCRIPTIONTARGET}'${END}${RED}. Are you a member? Current subscription is ${BLUE}'$(az account show --query 'name' | xargs)'${END}"
+    print_usage_and_exit
+fi
+
 if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
@@ -248,11 +284,7 @@ fi
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
     az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
-    if [ "$SUBSCRIPTIONTARGET" == "Data Study Group Testing" ]; then
-        LDAP_SERVER_IP_RANGE="10.220.1.0/24"
-    else
-        LDAP_SERVER_IP_RANGE="10.251.0.0/24"
-    fi
+
     # Inbound: allow LDAP then deny all
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
@@ -261,7 +293,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --name InboundAllowLDAP \
         --description "Inbound allow LDAP" \
         --access "Allow" \
-        --source-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --source-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --source-port-ranges 88 389 636 \
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
@@ -290,7 +322,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --access "Allow" \
         --source-address-prefixes VirtualNetwork \
         --source-port-ranges "*" \
-        --destination-address-prefixes $LDAP_SERVER_IP_RANGE \
+        --destination-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --destination-port-ranges "*" \
         --protocol "*" \
         --priority 2000
@@ -309,7 +341,7 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --priority 3000
 fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
-echo -e "${RED}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${RED}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
+echo -e "${BOLD}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
 
 # Check that VNET and subnet exist
 # --------------------------------
@@ -344,9 +376,7 @@ ADMIN_PASSWORD=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --n
 LDAP_SECRET_PLAINTEXT=$(az keyvault secret show --vault-name $MANAGEMENT_VAULT_NAME --name $LDAP_SECRET_NAME --query "value" | xargs)
 
 # Create a new config file with the appropriate username and LDAP password
-TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-TMP_CLOUD_CONFIG_YAML="${TMP_CLOUD_CONFIG_PREFIX}.yaml"
-rm $TMP_CLOUD_CONFIG_PREFIX
+TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 DOMAIN_UPPER=$(echo "$DOMAIN" | tr '[:lower:]' '[:upper:]')
 DOMAIN_LOWER=$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]')
 AD_DC_NAME_UPPER=$(echo "$AD_DC_NAME" | tr '[:lower:]' '[:upper:]')
@@ -361,10 +391,16 @@ DOMAIN_LOWER_REGEX="s/DOMAIN_LOWER/${DOMAIN_LOWER}/g"
 DOMAIN_UPPER_REGEX="s/DOMAIN_UPPER/${DOMAIN_UPPER}/g"
 LDAP_BASE_DN_REGEX="s/LDAP_BASE_DN/${LDAP_BASE_DN}/g"
 LDAP_BIND_DN_REGEX="s/LDAP_BIND_DN/${LDAP_BIND_DN}/g"
+# Escape ampersand in the LDAP filter as it is a special character for sed
+LDAP_FILTER_ESCAPED=${LDAP_FILTER/"&"/"\&"}
+LDAP_FILTER_REGEX="s/LDAP_FILTER/${LDAP_FILTER_ESCAPED}/g"
 AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
 AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
+PYPI_MIRROR_IP_REGEX="s/PYPI_MIRROR_IP/${PYPI_MIRROR_IP}/"
+CRAN_MIRROR_IP_REGEX="s/CRAN_MIRROR_IP/${CRAN_MIRROR_IP}/"
+
 # Substitute regexes
-sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
+sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" -e "${CRAN_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
@@ -375,32 +411,34 @@ STARTTIME=$(date +%s)
 if [ "$IP_ADDRESS" = "" ]; then
     echo -e "${BOLD}Requesting a dynamic IP address${END}"
     az vm create ${PLANDETAILS} \
-        --resource-group $RESOURCEGROUP \
-        --name $MACHINENAME \
-        --image $IMAGE_ID \
-        --subnet $DSG_SUBNET_ID \
-        --nsg $DEPLOYMENT_NSG_ID \
-        --public-ip-address "" \
-        --custom-data $TMP_CLOUD_CONFIG_YAML \
-        --size $VM_SIZE \
-        --admin-username $USERNAME \
         --admin-password $ADMIN_PASSWORD \
-        --os-disk-size-gb 1024
+        --admin-username $USERNAME \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --image $IMAGE_ID \
+        --name $MACHINENAME \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --os-disk-name "${MACHINENAME}OSDISK" \
+        --os-disk-size-gb 1024 \
+        --public-ip-address "" \
+        --resource-group $RESOURCEGROUP \
+        --size $VM_SIZE \
+        --subnet $DSG_SUBNET_ID
 else
     echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
     az vm create ${PLANDETAILS} \
-        --resource-group $RESOURCEGROUP \
-        --name $MACHINENAME \
-        --image $IMAGE_ID \
-        --subnet $DSG_SUBNET_ID \
-        --nsg $DEPLOYMENT_NSG_ID \
-        --public-ip-address "" \
-        --custom-data $TMP_CLOUD_CONFIG_YAML \
-        --size $VM_SIZE \
-        --admin-username $USERNAME \
         --admin-password $ADMIN_PASSWORD \
+        --admin-username $USERNAME \
+        --custom-data $TMP_CLOUD_CONFIG_YAML \
+        --image $IMAGE_ID \
+        --name $MACHINENAME \
+        --nsg $DEPLOYMENT_NSG_ID \
+        --os-disk-name "${MACHINENAME}OSDISK" \
         --os-disk-size-gb 1024 \
-        --private-ip-address $IP_ADDRESS
+        --private-ip-address $IP_ADDRESS \
+        --public-ip-address "" \
+        --resource-group $RESOURCEGROUP \
+        --size $VM_SIZE \
+        --subnet $DSG_SUBNET_ID
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
@@ -409,14 +447,14 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 sleep 30
 
 # Poll VM to see whether it has finished running
-echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
+echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
 while true; do
     POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
     if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
     sleep 10
 done
 
-# Switch NSG and restart
+# VM must be off for us to switch NSG. Once done we restart
 echo -e "${BOLD}Switching to secure NSG: ${BLUE}${DSG_NSG}${END}"
 az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID
 echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
