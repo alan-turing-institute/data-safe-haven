@@ -53,6 +53,10 @@ $ Rscript test_logistic_regression.R
 [1] "Logistic regression ran OK"
 ```
 
+### Testing package mirrors
+
+To test CRAN mirror run: `bash test_cran.sh`
+
 ## Python
 
 ### Testing package installation
@@ -91,4 +95,6 @@ $ python3 test_logistic_regression.py
 Logistic model ran OK
 ```
 
+### Testing package mirrors
 
+To test PyPI mirror run: `bash test_pypi.sh`
