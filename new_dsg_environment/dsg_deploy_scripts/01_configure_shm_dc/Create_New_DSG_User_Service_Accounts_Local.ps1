@@ -4,10 +4,15 @@
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
+
+# Temporarily switch to management subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Fetch HackMD password (or create if not present)
 $hackMdPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
@@ -49,10 +54,6 @@ if ($null -eq $testResearcherPassword) {
   $testResearcherPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.users.researchers.test.passwordSecretName).SecretValueText;
 }
 
-# Temporarily switch to management subscription
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
-
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_New_DSG_User_Service_Accounts_Remote.ps1"
 # For some reason, passing a JSON string as the -Parameter value for Invoke-AzVMRunCommand
@@ -71,10 +72,11 @@ $params = @{
   testResearcherPassword = $testResearcherPassword
 }
 
-Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 
+Write-Output $result.Value;
+
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
-

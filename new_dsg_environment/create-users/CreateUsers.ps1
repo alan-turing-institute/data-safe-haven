@@ -1,24 +1,29 @@
 Param (
-        [Parameter(Mandatory=$true, 
-             HelpMessage="Path to the CSV file of users")]
-        [ValidateNotNullOrEmpty()]
-        [string]$UserFilePath,
+     [Parameter(Mandatory=$true, 
+          HelpMessage="Path to the CSV file of users")]
+     [ValidateNotNullOrEmpty()]
+     [string]$userFilePath,
 
-        [Parameter(Mandatory=$true, 
-             HelpMessage="FQDN of the domain i.e. TuringSafeHaven.ac.uk")]
-        [ValidateNotNullOrEmpty()]
-        [string]$domain,
+     [Parameter(Mandatory=$true, 
+          HelpMessage="Safe Haven Management environment ('test' for test and 'prod' for production")]
+     [ValidateSet('test','prod')]
+     [string]$shmId
+)
 
-        [Parameter(Mandatory=$true, 
-             HelpMessage="OU path of the user container, MUST be in quotes! i.e OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk")]
-        [ValidateNotNullOrEmpty()]
-        [string]$UserOUPath
- )
+# Set SHM specific parameters from SHM ID
+if ($ShmId -eq 'test') {
+     $domain="dsgroupdev.co.uk";
+     $userOuPath="OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk";
+} elseif ($shmId -eq 'prod') {
+     $domain="turingsafehaven.ac.uk";
+     $userOuPath="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk";
+}
+ -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
 
 Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
-Import-Csv $UserFilePath | foreach-object {
+Import-Csv $userFilePath | foreach-object {
 Write-Host $_
 
 $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
@@ -32,7 +37,7 @@ New-ADUser  -SamAccountName $_.SamAccountName `
             -SurName $_.Surname `
             -Department $Department `
             -Description $Description `
-            -Path $UserOUPath `
+            -Path $userOuPath `
             -Enabled $True `
             -AccountPassword (ConvertTo-SecureString $Password -AsPlainText -force) `
             -PasswordNeverExpires $False `
@@ -41,3 +46,7 @@ New-ADUser  -SamAccountName $_.SamAccountName `
             -Email $UserPrincipalName `
             -Country GB
     }
+
+# Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
+Import-Module ADSync
+Start-ADSyncSyncCycle -PolicyType Delta

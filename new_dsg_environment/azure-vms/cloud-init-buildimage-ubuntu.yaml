@@ -354,6 +354,7 @@ packages:
 
 runcmd:
   # Clean up installation
+  - export DEBIAN_FRONTEND=noninteractive
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
@@ -408,9 +409,9 @@ runcmd:
   # Do not privilege some channels over others
   - conda config --set channel_priority false
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
-  - conda config --set remote_connect_timeout_secs 30
-  - conda config --set remote_max_retries 10
-  - conda config --set remote_read_timeout_secs 120
+  - conda config --set remote_connect_timeout_secs 60
+  - conda config --set remote_max_retries 20
+  - conda config --set remote_read_timeout_secs 180
   # List initial environments
   - echo "*** Initial conda environments... ***"
   - conda env list
@@ -419,7 +420,7 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo "*** Working on py27 environment. Will take approximately 30 minutes... ***"
+  - echo "*** Working on py27 environment. Will take approximately 40 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."

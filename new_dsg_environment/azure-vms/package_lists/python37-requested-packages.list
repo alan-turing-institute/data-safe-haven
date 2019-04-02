@@ -1,7 +1,9 @@
+aero-calc
 basemap
 bokeh
 dtw
 fbprophet
+folium
 geopandas
 gmplot
 graph-tool
@@ -13,6 +15,7 @@ jupyterhub-ldapauthenticator
 jupyterlab
 keras
 matplotlib
+NavPy
 networkx
 notebook
 numpy
@@ -22,10 +25,13 @@ pandas
 pandas-datareader
 pandas-profiling
 pandasql
+pint
 plotly
-pyLDAvis
 pygpu
+pygrib
+pyLDAvis
 pymc3
+pyod
 pyopengl
 pyopengl-accelerate
 pystan
