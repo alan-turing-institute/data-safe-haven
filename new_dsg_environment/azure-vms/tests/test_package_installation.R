@@ -19,7 +19,7 @@ test_package <- function(p) {
 }
 
 # Read in the package list from the repo
-get_package_list <- function(list_dir = "../new_dsg_environment/azure-vms/package_lists/",
+get_package_list <- function(list_dir = "../package_lists/",
                              list_files = c("cran.list", "bioconductor.list")) {
   package_list <- c()
   for (f in list_files) {
