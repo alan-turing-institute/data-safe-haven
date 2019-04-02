@@ -1,7 +1,7 @@
 # Creating new users without the app
 
 ## Create new user file (Project Investigator or Research Co-ordinator)
-- Make a new copy of `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
+- Make a new copy of the user details file `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
   - `SamAccountName`: Log in username **without** the @domain bit). Use "firstname.lastname" format
   - `GivenName`: User's first / given name
@@ -13,9 +13,8 @@
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
-- Run ".\CreateUsers.ps1 -UserFilePath '<drive/folder>UserCreate.csv' -domain dsgroupdev.co.uk -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
-- Note: OU path must be in quotes
-- Allow ADSync to replicate changes to AAD, approx 15 mins users will be on Azure AD
+- Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -shmId <shm-id>`, where `<shm-id>` is "test" for the test SHM and "prod" for the production SHM
+- The `CreateUsers.ps1` script will trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
 ### Troubleshooting
 #### User exists with that name
@@ -23,7 +22,7 @@ First check if that user actually already exists!
 
 If the new user should definitely be a different user, then the following fields need to be unique for all users in the Active Directory. If they are not you will may get a "Name already in use" error.
 - `SamAccountName`: Specified explicitly in the CSV file, so update to `firstname.middle.initials.lastname`
-- `DistinguishedName`: Formed of `CN=<DisplayName>.<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
 
 ## Azure Portal
 - Login into Azure Portal and connect to the correct AAD subscription
@@ -44,7 +43,7 @@ If the new user should definitely be a different user, then the following fields
 - Users are now ready to reset password and set up MFA
 
 ## User activation
-- Research Co-ordinator to email users their user ID and instructions. We can securely email users thei ruser ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
+- Research Co-ordinator to email users their user ID and instructions. We can securely email users their user ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
 
 ### User activation instructions
 These are a summary. The user should be sent a delegate pack / guide that has fuller instructions with screenshots. Kirstie's previous guide is being updated by Ian in issue #96.
@@ -55,9 +54,25 @@ For security we do not store your initial password, so you must reset it before 
 2. Paste the following UR into the private browser address bar - https://aka.ms/ssprsetup
 3. At the login prompt enter your username (provided in the welcome email)
 4. At password prompt click "Forgotten password"
-5. Complete the requested information (captcha and the phone number you provided on registration)
-6. Reset your password
-  
+5. Complete the requested information (captcha and the phone number you provided on registration).
+6. Generate a new password using the [Secure Password
+Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
+7. Reset your password
+
+**Note**: Do **not** use special characters or symbols in your password if you
+prefer to pass on using the Secure Password Generator. If you include symbols,
+you may be unable to type them in the virtual keyboard to access the secure
+environment. Choose an alphanumeric password with minimum length of 12
+characters, with at least one of each:
+
+- uppercase character
+- lowercase character
+- number
+
+**Note**: During this process, you will need to provide a phone number for
+account recovery. This is **not** MFA. You still need to set up MFA in the next
+section, otherwise you will be unable to launch any apps.
+
 #### Set up MFA
 Before you can access the secure environment, you need to setup your multifactor authentication.  The authentication method can be either via a call to a mobile phone or the Microsoft Authenticator app (recommended).
 
