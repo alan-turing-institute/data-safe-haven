@@ -443,6 +443,8 @@ else
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
+echo -e "Deployment complete at ${BOLD}$(date)${END}"
+echo -e "Running cloud-init..."
 
 # allow some time for the system to finish initialising
 sleep 30
