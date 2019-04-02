@@ -882,9 +882,9 @@ To deploy a compute VM you will need the following available on the machine you 
 - Ensure you are authenticated in the Azure CLI using `az login`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
-- Run `git status` to verify you are on the correct branch and up to date with `origin`.
+- Run `git fetch;git pull;git status` to verify you are on the correct branch and up to date with `origin`.
 - Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
-- After deployment, copy everything from the `git status` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
+- After deployment, copy everything from the `git fetch;git pull;git status` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
 
 ### Troubleshooting Compute VM deployments
 - Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
