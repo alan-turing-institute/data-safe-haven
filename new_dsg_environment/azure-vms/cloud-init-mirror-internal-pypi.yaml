@@ -1,0 +1,89 @@
+#cloud-config
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+# List of packages to install with apt-get
+packages:
+  - openssh-server
+  - python3-pip
+  - python3-venv
+
+# Add the atiadmin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
+
+write_files:
+  - path: "/etc/systemd/system/pypiserver.service"
+    content: |
+      [Unit]
+      Description=A minimal PyPI server for use with pip/easy_install.
+      After=network.target
+
+      [Service]
+      Type=simple
+      PIDFile=/var/run/pypiserver.pid
+      User=mirrordaemon
+      Group=mirrordaemon
+
+      ExecStart=/pypiserver/bin/pypi-server -p 3128 -P . -a . --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
+      ExecStop=/bin/kill -TERM $MAINPID
+      ExecReload=/bin/kill -HUP $MAINPID
+      Restart=always
+
+      WorkingDirectory=/datadrive/mirrordaemon/pypi/
+
+      TimeoutStartSec=3
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+
+runcmd:
+  # Set up disk
+  - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
+  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+  - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/mirrordaemon/pypi/web/packages
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
+
+  # Install pypiserver with pip
+  - echo "*** Installing pypiserver... ***"
+  - python3 -m venv pypiserver
+  - pypiserver/bin/pip install pypiserver
+
+  # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
+  - echo "*** Setting up pypiserver pointing to local disk... ***"
+  - systemctl enable pypiserver.service
+  - systemctl start pypiserver.service
+  - systemctl status pypiserver.service
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

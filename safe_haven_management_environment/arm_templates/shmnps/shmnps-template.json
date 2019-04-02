@@ -1,0 +1,251 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "VM Size": {
+            "type": "string",
+            "defaultValue": "Standard_F4s_v2",
+            "allowedValues": [
+                "Standard_F4s_v2",
+                "Standard_DS2_v2"                
+            ],
+            "metadata": {
+                "description": "Select size of VM"
+                }
+            },
+            "Administrator User": {
+                "type": "string",
+                "metadata": {
+                    "description": "Enter name for VM Administrator"
+                }    
+            },
+            "Administrator Password": {
+                "type": "securestring",
+                "metadata": {
+                    "description": "Enter name for VM Administrator Password"
+                }    
+            },
+            "Virtual Network Name": {
+                "type": "string",
+                "defaultValue": "SHM_VNET1",
+                "metadata": {
+                    "description": "Enter name of virtual network to provision these VMs"
+                }    
+            },
+            "Virtual Network Resource Group": {
+                "type": "string",
+                "metadata": {
+                    "description": "Enter name of resource group that is assoicated with the virtual network above"
+                }    
+            },
+            "Virtual Network Subnet": {
+                "type": "string",
+                "defaultValue": "Subnet-Identity",
+                "metadata": {
+                    "description": "Enter name of subnet where you want to provision this VM"
+                }    
+            },
+            "Domain Name": {
+                "defaultValue": "TURINGSAFEHAVEN.CO.UK",
+                "type": "string",
+                "metadata": {
+                    "description": "Enter domain name"
+                }
+            }    
+        },
+    "variables": {
+        "npsname": "SHMDC1",
+        "npsnic": "[concat(variables('npsname'),'_','NIC1')]",
+        "npsipaddress": "10.251.0.248",
+        "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
+        "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
+        "oustring": "[replace(parameters('Domain Name'),'.',',DC=')]",
+        "oupath": "[concat('OU=Safe Haven Service Servers,DC=', variables('oustring'))]"
+       },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('npsname')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2019-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(variables('npsname'),'_OS_DISK')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 128
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat(variables('npsname'), '_Data_Disk1')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS"
+                            },
+                            "diskSizeGB": 128
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('npsname')]",
+                    "adminUsername": "[parameters('Administrator User')]",
+                    "adminPassword": "[parameters('Administrator Password')]",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('npsnic'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('npsnic'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('npsnic')]",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[variables('npsipaddress')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('subnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "primary": true,
+                "tapConfigurations": []
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[variables('diagStorageAccountName')]",
+            "apiVersion": "2018-07-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": false,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('npsname'), '/', 'bginfo')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "bginfo",
+                "typeHandlerVersion": "2.1"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('npsname'))]"
+            ]
+        },
+        {
+            "apiVersion": "2018-06-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('npsname'),'/joindomain')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('npsname'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('npsname'),'bginfo')]"
+            ],
+            "properties": {
+              "publisher": "Microsoft.Compute",
+              "type": "JsonADDomainExtension",
+              "typeHandlerVersion": "1.3",
+              "autoUpgradeMinorVersion": true,
+              "settings": {
+                "Name": "[parameters('Domain Name')]",
+                "OUPath": "[variables('oupath')]",
+                "User": "[concat(parameters('Domain Name'), '\\', parameters('Administrator User'))]",
+                "Restart": "true",
+                "Options": "3"
+              },
+              "protectedSettings": {
+                "Password": "[parameters('Administrator Password')]"
+              }
+            }
+        }
+    ]
+}

@@ -1,17 +1,17 @@
 #! /bin/bash
 
-# Options which are configurable at the command line
-MACHINENAME="" # either this or SOURCEIMAGE must be provided
-SOURCEIMAGE="" # either this or MACHINENAME must be provided
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-SUBSCRIPTION=""
-VERSIONSUFFIX=""
-
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
+
+# Options which are configurable at the command line
+SUBSCRIPTION="" # must be provided
+MACHINENAME="" # either this or SOURCEIMAGE must be provided
+SOURCEIMAGE="" # either this or MACHINENAME must be provided
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+VERSIONSUFFIX=""
 
 # Other constants
 SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base" "ComputeVM-DsgBase")
@@ -21,13 +21,13 @@ VERSIONMINOR="0"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] [-i source_image] [-n machine_name] [-s subscription] [-v version_suffix]"
-    echo "  -h                  display help"
-    echo "  -i source_image     specify an already existing image to add to the gallery."
-    echo "  -n machine_name     specify a machine name to turn into an image. Ensure that the build script has completely finished before running this."
-    echo "  -r resource_group   specify resource group - must match the one where the machine/image already exists (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -s subscription     specify subscription for storing the VM images [required]. (Test using 'Safe Haven Management Testing')"
-    echo "  -v version_suffix   this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc."
+    echo "usage: $0 [-h] -s subscription [-i source_image | -n machine_name] [-r resource_group] [-v version_suffix]"
+    echo "  -h                                        display help"
+    echo "  -s subscription [required]                specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
+    echo "  -i source_image [this or '-n' required]   specify an already existing image to add to the gallery [either this or machine_name are required]."
+    echo "  -n machine_name [this or '-i' required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required]."
+    echo "  -r resource_group                         specify resource group - must match the one where the machine/image already exists (defaults to '${RESOURCEGROUP}')"
+    echo "  -v version_suffix                         this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc."
     exit 1
 }
 
