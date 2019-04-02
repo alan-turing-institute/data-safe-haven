@@ -14,19 +14,18 @@ PACKAGE_SUFFIXES = ["-requested-packages.list", "-other-useful-packages.list"]
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
-    "jupyter",     # not a python package
-    "numpy-base",  # not an importable package
-    "r-irkernel",  # not a python package
-    "backports",   # not an importable package
+    "jupyter",        # not a python package
+    "numpy-base",     # not an importable package
+    "r-irkernel",     # not a python package
+    "backports",      # not an importable package
+    "tensorflow-gpu", # add a special test for this
 ]
 
 # Some packages have different names in conda from the importable name
 PACKAGE_REPLACEMENTS = {
-    "fribidi": "pyfribidi",
     "pytables": "tables",
     "pytorch": "torch",
     "sqlite": "sqlite3",
-    "tensorflow-gpu": "tensorflow",
     "yaml": "pyyaml",
 }
 
@@ -95,6 +94,16 @@ def get_package_lists():
             
     return result
 
+def check_tensorflow():
+    print("Testing tensorflow...")
+    try:
+        from tensorflow.python.client import device_lib
+        device_names = [d.name for d in device_lib.list_local_devices()]
+        print("Tensorflow can see the following devices:\n{}".format(device_names))
+        return True
+    except ImportError:
+        return False
+
 
 def get_missing_packages():
     """Gets the packages required and optional for this version that are
@@ -125,6 +134,10 @@ def get_missing_packages():
                     warning[key].append(full_name)
                 else:
                     missing[key].append(full_name)
+
+    # Check tensorflow explicitly
+    if not check_tensorflow():
+        missing["requested"] = "tensorflow-gpu"
                 
     return (warning, missing)
 
