@@ -453,7 +453,7 @@ sleep 30
 echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
 while true; do
     # Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
-    VM_DOWN=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))])" == \`2\`)
+    VM_DOWN=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
     if [ "$VM_DOWN" == "true" ]; then break; fi
     # ... otherwise print current status and wait for 30s
     echo -e "${BOLD}Current VM status at $(date):${END}"
@@ -471,7 +471,7 @@ az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 echo -e "${BOLD}Waiting for VM to restart...${END}"
 while true; do
     # Check that VM is up by requiring "PowerState/running" and "ProvisioningState/succeeded"
-    VM_UP=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))])" == \`2\`)
+    VM_UP=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
     if [ "$VM_UP" == "true" ]; then break; fi
     # ... otherwise print current status and wait for 10s
     echo -e "${BOLD}Current VM status at $(date):${END}"
