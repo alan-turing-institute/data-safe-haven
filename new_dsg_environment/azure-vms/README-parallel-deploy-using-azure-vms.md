@@ -65,11 +65,13 @@
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
 - Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
 - Connect to the VM using `mosh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in the `RG_DSG_SECRETS` resource group of the `Safe Haven Management Testing` subscription)
-- Checkout the master branch using `git checkout master`
+- Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
+- Checkout the master branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
 - Ensure you are authenticated in the Azure CLI using `az login`
-- Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
 - Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
+- After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
 
