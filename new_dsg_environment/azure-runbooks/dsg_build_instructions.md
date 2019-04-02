@@ -876,13 +876,15 @@ To deploy a compute VM you will need the following available on the machine you 
 
 ### Deploy a compute VM
 
-- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to)
+- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
+- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
 - Ensure you are authenticated in the Azure CLI using `az login`
-- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
 - Deploy a new VM into a DSG environment using the `Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address (next unused one between 160 and 199)
+- After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
 
 ### Troubleshooting Compute VM deployments
 - Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
@@ -933,6 +935,37 @@ Example usage:
 ```bash
 ./peer_mirrors_to_compute_vms.sh -s "Data Study Group Testing" "Safe Haven Management Testing"
 ```
+
+## 10. Run smoke tests on shared compute VM
+These tests should be run **after** the network lock down and peering the DSG and mirror VNets.
+
+To run the smoke tests:
+
+- Ensure you have the appropriate version of the tests by changing to the `master` branch (or the branch you deployed the VMs from if different) and doing a `pull` from Git or your preferred Git app (e.g. SourceTree).
+
+- Connect to the **DSG Dataserver** via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares the Safe Haven repository folder on your local machine with the  Dataserver (or you have another way to transfer files between your local machine and the Dataserver VM).
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Copy the `package_lists` and `tests` folders from your local `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to a `dsg_tests` folder on within the `F:\Data` folder on the DSG Dataserver.
+
+    ![](images/media/transfer_test_files_to_dataserver.png)
+
+- Connect to the DSG environment via the RDS Webclient at `https://rds.dsgroup<dsg-id>.co.uk/RDWeb/webclient`, logging in as a normal Research User.
+
+- Open the WinSCP "File transfer" app and connect to the IP address of the Shared VM (`<data-subnet-prefix>.160`) with the same credentials.
+
+- Copy the `dsg_tests` folder from the Dataserver `R:\` drive to your home directory on the Shared VM.
+
+  ![](images/media/copy_test_files_from_dataserver_to_shared_vm.png)
+
+- Connect to a terminal session on the Shared VM using the "Shared VM (SSH)" app
+
+- Change to the tests folder using `cd ~/dsg_tests/tests`
+
+- Follow the instructions in the `README.md` file the `tests` folder in your local copy of the `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder.
+
+- If all test results are expected you are done! Otherwise, contact REG for help diagnosing test failures.
 
 ## Server list
 
