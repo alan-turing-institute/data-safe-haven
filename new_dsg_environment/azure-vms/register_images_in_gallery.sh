@@ -17,7 +17,7 @@ VERSIONSUFFIX=""
 SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base" "ComputeVM-DsgBase")
 GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
 VERSIONMAJOR="0"
-VERSIONMINOR="0"
+VERSIONMINOR="1"
 
 # Document usage for this script
 print_usage_and_exit() {
