@@ -221,7 +221,7 @@ elif [ "$SOURCEIMAGE" = "DataScience" ]; then
 elif [ "$SOURCEIMAGE" = "DSG" ]; then
     IMAGE_DEFINITION="ComputeVM-DsgBase"
 else
-    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
+    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} ${RED}as an image type${END}"
     print_usage_and_exit
 fi
 
