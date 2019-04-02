@@ -1,28 +1,66 @@
 # Safe Haven User Documentation
 
-## Section 1. Support for bugs and reports
+**Table of contents:**
 
-The Turing IT and Research Engineering Group and the data study group team attempt to solve IT infrastructure issues arising as soon as possible.
+* [Section 1: Support for bugs and reports](#section-1-support-for-bugs-and-reports)
+* [Section 2: Overview of the Turing DSG IT set-up](section-2-overview-of-the-turing-dsg-it-set-up)
+  * [2.1: Data governance and challenge overview](#section-21-data-governance-and-challenge-overview)
+  * [2.2: Turing safe haven set-up](#section-22-turing-safe-haven-set-up)
+  * [2.3: Wi-Fi access](#section-23-wi-fi-access)
+  * [2.4: Multi-factor authentication](#section-24-multi-factor-authentication)
+* [Section 3: User activation instructions](#section-3-user-activation-instructions)
+  * [Section 3.1. Initial User Sign In, configuring MFA](#section-31-initial-user-sign-in-configuring-mfa)
+* [Section 4: Using the safe haven](#section-4-using-the-safe-haven)
+  * [Section 4.1: Access credentials](#section-41-access-credentials)
+  * [Section 4.2: Logging into the Windows Azure environment](#section-42-logging-into-the-windows-azure-environment)
+  * [Section 4.3: First-time set-up](#section-43-first-time-set-up)
+  * [Section 4.4: Using the data analytics virtual machine](#section-44-using-the-data-analytics-virtual-machine)
+  * [Section 4.5: Accessing GitLab and storing code](#section-45-accessing-gitlab-and-storing-code)
+  * [Section 4.6: Accessing HackMD and writing the report](#section-46-accessing-hackmd-and-writing-the-report)
+  * [Section 4.7: Accessing the data and exporting figures](#section-47-accessing-the-data-and-exporting-figures)
+  * [Section 4.8: Creating and presenting the report-out slides for Friday](#section-48-creating-and-presenting-the-report-out-slides-for-friday)
+  * [Section 4.9: Outputs from the week](#section-49-outputs-from-the-week)
+* [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+
+## Section 1: Support for bugs and reports
+
+The Turing IT, Research Engineering Group (REG) and the data study group teams attempt to solve IT infrastructure issues arising as soon as possible.
 
 The process for requesting help with the issue is as follows:
 
-1. make sure you have read the below document and checked if it answers your query.
-  Please do not log an issue before you have read the below document.
-2. re-start the environment (safe haven or data science suite) at least once, re-attempt the process leading to the bug/error at least twice.
-3. Let your challenge facilitator know of the issue. They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
-Please help your facilitator with a summary, and an appropriate tag for the issue: [feature request], [package request], [bug report], etc.
-If you are reporting a bug, include:
-•	Your client machine’s operating system and operating system version
-•	Precise condition under which the bug occurs. How to reproduce it.
-•	Precise description of the bug. What happens? What would you expect to happen instead if there were no bug?
-•	Any workarounds/fixes you have found
+1. Make sure you have **read this document** and checked if it answers your query.
 
-## Section 2. Overview of the Turing DSG IT set-up
+   *Please do not log an issue before you have read all of the sections in this document.*
+
+2. Re-start the environment (safe haven or data science suite) at least once, re-attempt the process leading to the bug/error at least twice.
+
+    *We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well!
+    (Particularly when there are lots of folks trying these steps at the same time.)*
+
+3. Let your challenge facilitator know of the issue.
+  They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
+
+    Please help your facilitator with a summary, and an appropriate tag for the issue.
+    For example: `[feature request]`, `[package request]`, `[bug report]` are all nice and easy to understand.
+
+    If you are reporting a bug, please include:
+
+    * Your client machine’s operating system and operating system version.
+    * Precise condition under which the bug occurs.
+    How to reproduce it.
+    * Precise description of the bug.
+    What happens?
+    What would you expect to happen instead if there were no bug?
+    * Any workarounds/fixes you have found
+
+## Section 2: Overview of the Turing DSG IT set-up
 
 To maintain security of the data and challenge insights we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute.
 Each challenge data set has a data governance and security tier which may impose restrictions on the analysis environment.
 
-### Section 2.1 Data governance and challenge overview
+This section outlines the different tiers and explains some of the restrictions that apply to the more sensitive data classifications.
+
+### Section 2.1: Data governance and challenge overview
 
 The challenges in this DSG fall into *two distinct security tiers*:
 
@@ -45,7 +83,7 @@ Challenge specifics are as below.
 * Imperial College/LANL/HiMaR –  this is also an open data challenge so the analysis environment is open.
   Ask your facilitator Helen Hu *email address redacted* and Challenge Owner Niall Adams to give you access to the Spark cluster and the Azure data science virtual machines.
 
-### Section 2.2. Turing safe haven set-up
+### Section 2.2: Turing safe haven set-up
 
 The following applies only to tier 2 or tier 3 challenges (see [section 2.1](#section-21-data-governance-and-challenge-overview)).
 
@@ -57,9 +95,12 @@ A copy of the data is available in a read-only file volume inside a [Windows Azu
 The Azure environment also contains a Unix data science VM, which can only be accessed from the dashboard.
 
 :arrow_right: Your laptop
-  :arrow_right: Turing DSG Wi-Fi
-    :arrow_right: Windows remote desktop (multi-factor authentication required)
-      :arrow_right: Unix Azure environment
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Turing DSG Wi-Fi
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Windows remote desktop (multi-factor authentication required)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Unix Azure environment
 
 The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
 
@@ -67,7 +108,7 @@ You also have access to HackMD for collaborative writing and GitLab to version c
 
 Note that tier 2 and higher safe havens do not allow you to install new software packages – if you require a specific package, please communicate this to your facilitator.
 
-### Section 2.3. Wi-Fi access
+### Section 2.3: Wi-Fi access
 
 You need to be connected to the Turing’s internal Wi-fi network to access any of the challenges:
 
@@ -76,7 +117,7 @@ You need to be connected to the Turing’s internal Wi-fi network to access any 
 
 The password is the full string between <password start> and <password end>, including spaces.
 
-### Section 2.4. Multi-factor authentication
+### Section 2.4: Multi-factor authentication
 
 Multi-factor authentication (MFA, also known as two-factor authentication, "2FA", even if there are more than two factors) is one of the most powerful ways of protecting your personal information online.
 In this case, we use MFA to protect the challenge data.
@@ -91,7 +132,7 @@ This process may cause some connectivity challenges on the first (and maybe seco
 The DSG team are here to help smooth these processes for you, but it is important to emphasise that we are always balancing ease of analysis with our responsibilities as data controllers for the DSG week.
 Thank you for your patience as we and your facilitators work to get you connected securely.
 
-## Section 3. User activation instructions
+## Section 3: User activation instructions
 
 This section describes user activation and verification procedures which are a requirement for the tier 2 or higher Turing safe haven.
 As a result, you will possess user credentials that allow you to use the safe haven.
@@ -105,7 +146,7 @@ These same user credentials can be used to access the Azure environments for the
 If you provided your phone number via the form we circulated last week and requested participants to complete, your account will be ready to initialise.
 If you did not provide your number, please let you facilitator know, so they can log this with the IT and DSG team and get you an account set up ready to activate.
 
-Your user name will be in the format firstname.lastname – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as firstname.lastname@turingsafehaven.ac.uk .
+Your username will be in the format `firstname.lastname` – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as `firstname.lastname@turingsafehaven.ac.uk`.
 
 You will have to (1) set a password and (2) configure MFA before you are able to log in to the safe haven.
 
@@ -113,13 +154,14 @@ You will have to (1) set a password and (2) configure MFA before you are able to
 
 For security reasons, you must (re-)set your password before you can log in:
 
-1.	Open a private browser session (‘incognito mode’) on your laptop – this will avoid picking up any existing Azure / Microsoft accounts you have
-2.	Paste the following URL into the private browser address bar - https://aka.ms/ssprsetup
-3.	At the login prompt enter your username username@turingsafehaven.ac.uk and confirm/proceed
-4.	There will then be a password prompt.
-  And as you haven’t set a password yet - click "Forgotten password"
-5.	Complete the requested information (captcha and the phone number you provided on registration)
-6.	Reset your password by following the instructions
+1. Open a private browser session ('incognito mode') on your laptop – this will avoid picking up any existing Azure / Microsoft accounts you have.
+2. Paste the following URL into the private browser address bar - https://aka.ms/ssprsetup
+3. At the login prompt enter your username `username@turingsafehaven.ac.uk` and confirm/proceed.
+  (Remember that your username will be in the format `firstname.lastname`.)
+4. There will then be a password prompt.
+  The first time you log-in **you haven’t set a password yet** so click "Forgotten password"
+5. Complete the requested information (captcha and the phone number you provided on registration).
+6.	Reset your password by following the instructions.
 
 #### Configure the MFA
 
@@ -138,16 +180,19 @@ The links to download the app for iOS, Android and Window mobile are:
 
 1. Open a private browser session on your laptop
 2. Enter https://aka.ms/MFASetup into the address bar
-3. Login using username@turingsafehaven.ac.uk and the new password you just created
-  a. Note that you might find another address is automatically inserted at this step (eg your work email account). This is why we suggest using a private (incognito) browser session. If that doesn’t work, log out of your personal account and try again with your data study group user name.
-4. Make sure you add another alternative number or use the Azure Auth phone app, but best advice is to the same number (your mobile number) as the alternative number as the Azure App can be a little hit and miss
-5. Click save when done
-6. Click “Set it up now” when prompted
-7. On the “Additional security verification” screen you have three options on how the system will contact you for verification.  Click the drop down next under “Step 1” and select the option you wish to use.
+3. Login using `username@turingsafehaven.ac.uk` and the new password you just created.
+  a. Note that **you might find another address is automatically inserted at this step** (eg your work email account).
+  (This is why we suggest using a private (incognito) browser session.)
+  If that doesn’t work, **log out of your personal account** and try again with your data study group username.
+4. Make sure you add another alternative number or use the Azure Auth phone app, but best advice is to the same number (your mobile number) as the alternative number as the Azure App can be a little hit and miss.
+5. Click save when done.
+6. Click "Set it up now" when prompted.
+7. On the "Additional security verification" screen you have three options on how the system will contact you for verification.
+  Click the drop down next under "Step 1" and select the option you wish to use.
 
 ![](images/MFA_Step1.png)
 
-**Option 1**: Authentication by phone
+**Step 3 (Option 1)**: Authentication by phone
 
 This option will call your mobile phone.
 The service is automated, and you’ll be requested to press the # key to confirm the request
@@ -161,7 +206,7 @@ Note: some people get a call that says, "press the pound key" and others receive
 
 After completing the process you can close your browser.
 
-**Option 2**: Mobile app
+**Step 3 (Option 2)**: Authentication by mobile app
 
 If you have installed the Microsoft Authenticator app then this is the option to select.
 
@@ -175,7 +220,7 @@ If you have installed the Microsoft Authenticator app then this is the option to
 8.	Enter your mobile phone number to enable password recovery
 9.	Click "Done" to finish
 
-After completing the process you can close your browser
+After completing the process you can close your browser.
 
 #### Top tips regarding MFA
 
@@ -184,70 +229,88 @@ After completing the process you can close your browser
 Sometimes the MFA steps can be buggy.
 We’ve collected a few top tips here, but really, the answer is to be patient and just try again with the exact steps you just completed!
 
-* :sparkles: TOP TIP :sparkles:: Verifying your account in the Authenticator app can be weirdly buggy. Sometimes it doesn’t work the first time, but for the facilitators we all connected after somewhere between 1 and 10 attempts.
-* :sparkles: TOP TIP :sparkles:: Make sure you allow notifications on your authenticator app, and check you don’t have Do not Disturb mode on
-* :sparkles: TOP TIP :sparkles:: You have to be SUPER FAST at acknowledging the notification on your app! I think within the 30 seconds that each of the access codes update. If at first you don’t succeed…
+* Verifying your account in the Authenticator app can be weirdly buggy.
+  Sometimes it doesn’t work the first time, but for the facilitators we all connected after somewhere between 1 and 10 attempts.
+* Make sure you allow notifications on your authenticator app, and check you don’t have Do not Disturb mode on.
+* You have to be SUPER FAST at acknowledging the notification on your app!
+  The access codes update every 30 seconds.
+  If at first you don’t succeed...
 
-## Section 4. Using the safe haven
+## Section 4: Using the safe haven
 
 ### Section 4.1. Access credentials
 
-From the user registration process as in Section 3, you should have the following ready:
-* A user name – firstname.lastname, we refer to this as [UID] below
-* A user password – you choose this in the registration/MFA set-up process, [pw] below
-* A safe haven internal VM (IP – 10.250.sth.sth. or similar), your facilitator will pass on, [IP] below.
+From the user registration process ([Section 3](#section-3-user-activation-instructions)), you should have the following ready:
+* A `username` in the format `firstname.lastname`.
+  We refer to this as `[UID]` below.
+* A user password.
+  You choose this in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
+  We refer to this as `[pw]` below.
+* A safe haven internal VM (`IP – 10.250.sth.sth` where `sth` is short for "something").
+  Your facilitator will pass on this information on to you.
+  We refer to this as `[IP]` below.
+
 Those can be accessed by clicking on the custom VM icon.
 
-### Section 4.2. Logging into the Windows Azure environment
+### Section 4.2: Logging into the Windows Azure environment
 
 In order to access the Azure safe haven environment, follow the below steps:
 
-1. Open a private web browser session and enter the following URL in an incognito tab / private mode)
-https://rds.dsgroupX.co.uk/RDWeb/webclient/
+1. Open a private web browser session and enter the following URL in an incognito tab/private mode): https://rds.dsgroupX.co.uk/RDWeb/webclient/
 
-Where you replace “X” by one of the following numbers, depending on challenge
+Where you replace `X` by one of the following numbers, depending on challenge
 Challenge A: X = 1	Challenge B: X = 2	Challenge C: X = 3	NATS: X = 4
 
-NOTE: due to the security tier, there is no internet access from inside any of the above VMs. There is no copy/paste functionality from outside to inside the environment.
+Important note: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
 
-* :sparkles: TOP TIP :sparkles:: Don’t forget the https:// - it won’t work without that prefix.
+Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
-2. Enter the user name you’ve been provided, ensure that you use the following format:
+> TOP TIP: Don’t forget the `https://` - it won’t work without that prefix.
+
+2. Enter the username you’ve been provided, ensure that you use the following format:
 [UID]@turingsafehaven.ac.uk
-* :sparkles: TOP TIP :sparkles:: that's an AC.UK address not .co.uk!!
 
-3. Enter your [pw] and confirm.
+> TOP TIP: that's an `ac.uk` address not `.co.uk` :wink:!!
 
-You will now receive a call/text/push notification for the MFA to confirm.
+3. Enter your password and confirm.
+
+You will now **receive a call/text/push notification** for the MFA to confirm.
 For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
+
 After success, you’ll see the following screen:
 
 ![](images/RDS_app_selection_options.png)
 
-4. Follow the steps in [Section 4.3](#section-43-First-time-set-up) if this is the first time you are logging in.
+4. Follow the steps in [Section 4.3](#section-43-first-time-set-up) if this is the first time you are logging in.
+
 Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
 5. Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
-That means some of your key mappings may not be the same as you’re used to.
 
-* :sparkles: TOP TIP :sparkles:: Open up a text editor to check what keys the remote desktop thinks you’re typing – especially if you have special characters you are using.
+That means **some of your key mappings may not be the same** as you’re used to.
 
-* :sparkles: TOP TIP :sparkles:: Right click on Desktop and Applications->Settings->Keyboard to change the layout
+> TOP TIP: Open up a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
 
-### Section 4.3. First-time set-up
+> TOP TIP: Right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
+
+### Section 4.3: First-time set-up
 
 In order to set up your user account on the VM, you need to follow the below steps **once**.
 
-1  Run the “Shared VM (SSH)” app and log in with [UID], [pw], at [IP] (enter into fields).
-(Note, the cursor will not move while you are typing your password)
-Confirm the below security alert with “yes” (this only happens on the first log in).
+1. Run the "Shared VM (SSH)" app and log in with `[UID]`, `[pw]`, at `[IP]` (enter into fields).
+
+(Note, **the cursor will not move** while you are typing your password)
+
+Confirm the below security alert with `"yes"` (this only happens on the first log in).
+
 Once you have confirmed log in, you can close this window.
 
 ![](images/1st_logon_putty.png)
 
-2. run the “Shared VM (Desktop)” app.
-Log in with [UID]@turingsafehaven.ac.uk and [pw].
-Check the box in the security alert below and confirm by clicking the “yes” button.
+2. Run the “Shared VM (Desktop)” app.
+
+Log in with `[UID]@turingsafehaven.ac.uk` and `[pw]`.
+Check the box in the security alert below and confirm by clicking the `"yes"` button.
 
 ![](images/1st_logon_sharedVMdesktop.png)
 
@@ -255,28 +318,33 @@ Insert your credentials as per the example below:
 
 ![](images/logon_VMdesktop.png)
 
-## Section 4.4. Using the data analytics VM
+### Section 4.4: Using the data analytics virtual machine
 
-The analytics environment can be accessed through the Shared VM (desktop) app.
-Please log in with user name [UID] and password [pw].
+The analytics environment can be accessed through the `Shared VM` (desktop) app.
+Please log in with username `[UID]` and password `[pw]`.
 
 Applications can be accessed through Terminal or right click on desktop (top left) and:
-* Applications->Development->RStudio
-* Applications->Development->Atom
-* Open Terminal here -> “jupyter notebook &” for python through jupyter
-* Open Terminal here -> “spyder &” for Spyder a Python IDE that behaves like RStudio jupyter
 
-Note that all the custom R packages requested have been installed in the system R. However, just typing R at the commandline will run conda's R. You can run the system R by typing /user/bin/R. We had already pointed RStudio to use system R, so those using RStudio should see the custom packages with no issues.
+* `Applications`->`Development`->`RStudio`
+* `Applications`->`Development`->`Atom`
+* Open Terminal here -> `jupyter notebook &` if you want to use python within a jupyter notebook.
+* Open Terminal here -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
 
-This VM can also be used to directly access GitLab and HackMD
-1.	E.g. point firefox to url provided by the resource dashboard for GitLab/HackMD
+Note that all the custom R packages requested have been installed in the system R.
+However, just typing R at the commandline will run conda's R.
+You can run the system R by typing `/user/bin/R`.
+We had already pointed RStudio to use system R, so those using RStudio should see the custom packages with no issues.
+
+This VM can also be used to directly access `GitLab` and `HackMD`
+
+1.	Point firefox to url provided by the resource dashboard for GitLab/HackMD
 2.	Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
 
 ![](images/repository_url_copy_icon.png)
 
 ![](images/gitlab_screenshot.png)
 
-## Section 4.5. Accessing GitLab and storing code
+### Section 4.5: Accessing GitLab and storing code
 
 GitLab is an open source version of GitHub.
 
@@ -285,19 +353,19 @@ There is a local GitLab installation within the Work Resources.
 
 If you have not used GitLab before – do feel free to ask your group colleagues for help, ask in the Slack channel for help.
 
-Everything that is not stored in a GitLab repository on Friday lunchtime will be DESTROYED FOR EVER.
+Everything that is not stored in a GitLab repository on Friday lunchtime will be **DESTROYED FOR EVER**.
 Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
 
-You can access the same GitLab repositories from the Work Resources page. **(or via the sahared VM desktop?)
+You can access the same GitLab repositories from the Work Resources page. **(or via the shared VM desktop?)
 
-Login with user name [UID] and password [pw].
+Login with username `[UID]` and password `[pw]`.
 
 ![](images/gitlab_screenshot_login.png)
 
 Please make all your repositories public so they are easy to share within your group.
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
-## Section 4.6. Accessing HackMD and writing the report
+### Section 4.6: Accessing HackMD and writing the report
 
 HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
 It uses markdown which is a simple way to format your text so that it renders nicely in full html.
@@ -306,44 +374,50 @@ You can find a really great markdown cheat sheet at
 [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 
 You can access a local installation of HackMD from the Work Resources page.
-Login with your user name [UID]@turingsafehaven.ac.uk and password [pw], as below.
+Login with your username `[UID]@turingsafehaven.ac.uk` and password `[pw]`, as below.
+
 ![](images/hackmd_logon.png)
 
 We have provided some example report templates for you which outline a structure we recommend.
 
 Please make all your documents public so they are easy to share within your group.
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
-We recommend that one person start the document, then let everyone know the URL text after the “/”
+We recommend that one person start the document, then let everyone know the URL text after the `/`.
 
-* :sparkles: TOP TIP :sparkles:: The URL for sharing a report is rather long...
-You can either write it in a textfile in the R drive (which everyone has access to) or publish the link and share that one (the published link will be much shorter.
-Anyone who has it can now click the little blue pen to go back to the editable version.
+> TOP TIP: The URL for sharing a report is rather long.
+> You can either write it in a textfile in the `R` drive (which everyone has access to) or publish the link and share that one (the published link will be much shorter).
+> Anyone who has it can now click the little blue pen to go back to the editable version.
 
-* :sparkles: TOP TIP :sparkles:: a lower case “L” and an upper case “I” will look the same! [ I /= l ]Try the one you didn’t try first time round if you don’t get to the right place.
+> TOP TIP: a lower case `L` and an upper case `I` will look the same!
+> ( `I /= l` )
+> Try the one you didn’t try first time round if you don't get to the right place.
 
 ![](images/hackmd_screenshot.png)
 
 If you are working on a challenge that is below Tier 2, the environment is open so you do not have to use HackMD and can use other tools such as Overleaf, if you prefer.
 You can use our HackMD templates to help you structure the report.
 
-## Section 4.7. Accessing the data and exporting figures
+### Section 4.7: Accessing the data and exporting figures
 
-The data can be found in the R drive on the Windows Azure environment.
-Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory. You can use Windows File Explorer to move data within the Windows environment.
+The data can be found in the `R` drive on the Windows Azure environment.
+Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory.
+You can use Windows File Explorer to move data within the Windows environment.
 
-You can transfer the data to the Linux environment using the WinSCP app. (See Appendix A)
-To access the data science VM’s file system, enter user name [UID] and password [pw] into the login mask, as shown below, and confirm with “login”.
+You can transfer the data to the Linux environment using the WinSCP app. (See [Appendix A](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update))
+To access the data science VM’s file system, enter username `[UID]` and password `[pw]` into the login mask, as shown below, and confirm with "login".
+
 ![](images/WinSCP_logon.png)
 
-* :sparkles: TOP TIP :sparkles:: Although the default says not to save the password – you’re in a super secure environment so your life will be easier if you do save it.
+> TOP TIP: Although the default says not to save the password – you’re in a super secure environment so your life will be easier if you do save it.
 
 You can now drag and drop any files between the data science VM and the Windows Azure environment, as in the screenshot below.
+
 ![](images/WinSCP_screenshot.png)
 
-## Section 4.8. Creating and presenting the report-out slides for Friday
+### Section 4.8: Creating and presenting the report-out slides for Friday
 
 If you are in one of the Tier 2 level challenges:
-To create the presentation slides, go to the “Presentation server” on the Work Resources list and then open the Open Office icon on the Windows desktop.
+To create the presentation slides, go to the `Presentation server` on the Work Resources list and then open the Open Office icon on the Windows desktop.
 An example template is provided for you in the windows Azure environment (shared drive).
 
 You won't be able to access the compute virtual machines from the windows desktop.
@@ -365,7 +439,7 @@ If you are in one of the Tier 0/1 level challenges:
 You do not need to use the above instructions as it is an open environment.
 Your facilitator has an example presentation template which your team can use.
 
-## Section 4.9. Outputs from the week
+### Section 4.9: Outputs from the week
 
 We will close down the compute virtual machines on the Friday afternoon.
 
@@ -374,7 +448,7 @@ That means that anything that is a valuable output of the week should be stored 
 Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
 **Should we be encourgaing people to put data in GitLab...?**
 
-Everything that is not stored in a GitLab repository on Friday lunchtime will be DESTROYED FOR EVER.
+Everything that is not stored in a GitLab repository on Friday lunchtime will be **DESTROYED FOR EVER**.
 
 Please do this early and often through the week (not just for the presentation.)
 
@@ -390,7 +464,7 @@ Based on an initial document by Kirstie Whitaker.
 Updated by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
  
 
-## Appendix A. Migrating to a new data science VM post package update
+## Appendix A: Migrating to a new data science VM post package update
 
 Important: please listen to your facilitators who will explicitly update you on VM updates and potential additional instructions specific to the migration.
 
@@ -398,19 +472,22 @@ Do not attempt to migrate to a new data science VM before it has been officially
 
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment.
 
-User access credentials [UID] and [pw] remain the same; the IP address [IP] changes in a systematic way.
-Each package update increments the last IP block “160” by one. That is, the first VM’s address is 10.250.sth.160, the address of the first update is 10.250.sth.161, of the second update 10.250.sth.162, and so on.
+User access credentials `[UID]` and `[pw]` remain the same; the IP address `[IP]` changes in a systematic way.
+
+Each package update increments the last IP block `160` by one.
+That is, the first VM’s address is `10.250.sth.160`, the address of the first update is `10.250.sth.161`, of the second update `10.250.sth.162`, and so on.
+
 Apart from the change in IP address, the VM itself will behave the same.
 
 Local availability of a data copy file volume, usage of Gitlab, HackMD, etc will be unaffected by the VM update.
 
-To access an updated VM, use the “custom VM (desktop) app” instead of the “shared VM (desktop) app”.
-This is exactly as in Section 4.4, with the onnly difference that in each log-in, you have to provide the updated VM’s [IP].
-Prior to initial use, you will also have to follow the first-time set-up instructions by SSH-ing in via the “custom VM (SSH) app” instead of the “shared VM (SH) app”, following instructions as in Section 4.3, with the onnly difference that in each log-in, you have to provide the updated VM’s [IP].
+To access an updated VM, use the `custom VM (desktop) app` instead of the `shared VM (desktop) app`.
+This is exactly as in [Section 4.4](#section-44-using-the-data-analytics-virtual-machine), with the only difference that in each log-in, you have to provide the updated VM’s `[IP]`.
+Prior to initial use, you will also have to follow the first-time set-up instructions by SSH-ing in via the `custom VM (SSH) app` instead of the `shared VM (SH) app`, following instructions as in [Section 4.3](#section-43-first-time-set-up), with the only difference that in each log-in, you have to provide the updated VM's `[IP]`.
 
 Any local files that you have created in older VMs – e.g., analysis scripts, notes, derived data – will have to be manually transferred and are not automatically available in a newer VM.
 
 Three options to transfer files:
-* Use WinSCP for drag-and-drop file transfer, as in Section 4.7. First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
+* Use WinSCP for drag-and-drop file transfer, as in [Section 4.7](#section-47-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
 * Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
 * Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
