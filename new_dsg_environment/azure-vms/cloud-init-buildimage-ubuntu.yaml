@@ -596,6 +596,7 @@ runcmd:
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
   # Deprovision
+  - echo "Deprovisioning this VM to allow an image to be made from it"
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
   - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
