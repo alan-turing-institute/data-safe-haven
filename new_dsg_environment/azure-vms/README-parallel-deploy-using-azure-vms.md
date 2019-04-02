@@ -66,7 +66,7 @@ The VM(s) you want to use may be stopped to save money, so you may need to start
 - Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
 - Connect to the VM using `mosh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in the `RG_DSG_SECRETS` resource group of the `Safe Haven Management Testing` subscription)
 - Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
-- Checkout the master branch using `git checkout master`
+- Checkout the master branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
 - Ensure you are authenticated in the Azure CLI using `az login`
 - Open a Powershell terminal with `pwsh`
