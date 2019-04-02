@@ -458,7 +458,8 @@ while true; do
     # ... otherwise print current status and wait for 30s
     echo -e "${BOLD}Current VM status at $(date):${END}"
     az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
-    sleep 30
+    # Only check status every 5 minutes as deployment is expected to take 20 minutes
+    sleep 300
 done
 
 # VM must be off for us to switch NSG. Once done we restart
