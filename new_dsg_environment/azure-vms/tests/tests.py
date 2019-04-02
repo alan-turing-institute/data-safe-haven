@@ -2,8 +2,8 @@ import re
 import os
 import sys
 import unittest
-
 import pkg_resources
+import warnings
 
 
 PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
@@ -62,6 +62,7 @@ def clean_suffix(p):
 
 def import_package(package_name):
     """Explicitly test imports."""
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     if package_name == "graph_tool":
         try:
             import graph_tool
@@ -97,6 +98,7 @@ def get_package_lists():
 def check_tensorflow():
     print("Testing tensorflow...")
     try:
+        warnings.simplefilter("ignore")
         from tensorflow.python.client import device_lib
         device_names = [d.name for d in device_lib.list_local_devices()]
         print("Tensorflow can see the following devices:\n{}".format(device_names))
