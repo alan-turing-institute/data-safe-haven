@@ -9,7 +9,7 @@ import pkg_resources
 PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
-PACKAGE_DIR = os.path.join(os.path.realpath(".."), "new_dsg_environment", "azure-vms", "package_lists")
+PACKAGE_DIR = os.path.join(os.path.realpath(".."), "package_lists")
 PACKAGE_SUFFIXES = ["-requested-packages.list", "-other-useful-packages.list"]
 
 # Some packages cannot be imported so we skip them.
