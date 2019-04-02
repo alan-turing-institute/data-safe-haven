@@ -31,7 +31,6 @@ pbr
 pillow
 pycodestyle
 pycosat
-pyfribidi
 pytables
 pytest
 python-blosc
