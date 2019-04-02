@@ -450,8 +450,7 @@ sleep 30
 # Poll VM to see whether it has finished running
 echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
 while true; do
-    STATE = $(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "join('::',[(instanceView.statuses[?code=='PowerState/deallocated'])[0].code, (instanceView.statuses[?code=='ProvisioningState/succeeded'])[0].code])")
-    if [ "$STATE" == "PowerState/deallocated::ProvisioningState/succeeded" ]; then break; fi
+    STATE=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "((instanceView.statuses[?code=='PowerState/deallocated'])[0].code=='PowerState/deallocated' && (instanceView.statuses[?code=='ProvisioningState/succeeded'])[0].code=='ProvisioningState/succeeded')")
     sleep 30
 done
 
@@ -464,7 +463,7 @@ az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 # Poll VM to see whether it has finished restarting
 echo -e "${BOLD}Waiting for VM to restart...${END}"
 while true; do
-    STATE = $(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "join('::',[(instanceView.statuses[?code=='PowerState/deallocated'])[0].code, (instanceView.statuses[?code=='ProvisioningState/succeeded'])[0].code])")
+    STATE=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "((instanceView.statuses[?code=='PowerState/running'])[0].code=='PowerState/running' && (instanceView.statuses[?code=='ProvisioningState/succeeded'])[0].code=='ProvisioningState/succeeded')")
     if [ "$STATE" == "PowerState/running::ProvisioningState/succeeded" ]; then break; fi
     sleep 10
 done
