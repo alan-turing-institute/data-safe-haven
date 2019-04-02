@@ -10,8 +10,7 @@ PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
 PACKAGE_DIR = os.path.join(os.path.realpath(".."), "new_dsg_environment", "azure-vms", "package_lists")
-PACKAGE_PREFIXES = ["requested-", "utility-packages-"]
-PACKAGE_SUFFIX = ".list"
+PACKAGE_SUFFIXES = ["-requested-packages.list", "-other-useful-packages.list"]
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
@@ -54,12 +53,12 @@ def clean_package_name(p):
     q = p.replace("-", "_")
     return q
 
-def clean_prefix(p):
-    """Cleans prefix of packages to avoid maintaining different variables,
+def clean_suffix(p):
+    """Cleans suffix of packages to avoid maintaining different variables,
     so we save into a variable depending on the value of the prefix, 
-    e.g., "requested-" -> "requested" and "utility-packages-" -> "utility"
+    e.g., "-requested-packages.list" -> "requested" and "-other-useful-packages.list" -> "other-useful"
     """
-    return p[:p.find("-")]
+    return p[1:p.find("-packages")]
 
 
 def import_package(package_name):
@@ -85,15 +84,14 @@ def get_package_lists():
     """
     result = dict()
     version = get_version()
-    for prefix in PACKAGE_PREFIXES:
-        path = os.path.join(PACKAGE_DIR, prefix + version + PACKAGE_SUFFIX)
+    for suffix in PACKAGE_SUFFIXES:
+        path = os.path.join(PACKAGE_DIR, "python" + version + suffix)
         with open(path) as f:
             contents = f.read(-1)
             lines = re.split('\r|\n', contents)
             packages = [l for l in lines if "" != l]
 
-            key = clean_prefix(prefix)
-            result[key] = packages
+            result[clean_suffix(suffix)] = packages
             
     return result
 
