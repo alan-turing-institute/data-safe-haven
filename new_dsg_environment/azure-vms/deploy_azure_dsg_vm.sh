@@ -221,7 +221,7 @@ elif [ "$SOURCEIMAGE" = "DataScience" ]; then
 elif [ "$SOURCEIMAGE" = "DSG" ]; then
     IMAGE_DEFINITION="ComputeVM-DsgBase"
 else
-    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
+    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} ${RED}as an image type${END}"
     print_usage_and_exit
 fi
 
@@ -443,8 +443,8 @@ else
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
-echo -e "Deployment complete at ${BOLD}$(date)${END}"
-echo -e "Running cloud-init..."
+echo -e "${BOLD}VM creation finished at $(date)${END}"
+echo -e "${BOLD}Running cloud-init for deployment...${END}"
 
 # allow some time for the system to finish initialising
 sleep 30
