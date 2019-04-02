@@ -221,7 +221,7 @@ elif [ "$SOURCEIMAGE" = "DataScience" ]; then
 elif [ "$SOURCEIMAGE" = "DSG" ]; then
     IMAGE_DEFINITION="ComputeVM-DsgBase"
 else
-    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} as an image type${END}"
+    echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} ${RED}as an image type${END}"
     print_usage_and_exit
 fi
 
@@ -406,6 +406,7 @@ sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" 
 # -------------------------------------------------
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
+echo -e "Starting deployment at ${BOLD}$(date)${END}"
 STARTTIME=$(date +%s)
 
 if [ "$IP_ADDRESS" = "" ]; then
@@ -442,6 +443,8 @@ else
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
+echo -e "${BOLD}VM creation finished at $(date)${END}"
+echo -e "${BOLD}Running cloud-init for deployment...${END}"
 
 # allow some time for the system to finish initialising
 sleep 30
@@ -449,17 +452,35 @@ sleep 30
 # Poll VM to see whether it has finished running
 echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
 while true; do
-    POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-    if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-    sleep 10
+    # Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
+    VM_DOWN=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
+    if [ "$VM_DOWN" == "true" ]; then break; fi
+    # ... otherwise print current status and wait for 30s
+    echo -e "${BOLD}Current VM status at $(date):${END}"
+    az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
+    # Only check status every 5 minutes as deployment is expected to take 20 minutes
+    sleep 300
 done
 
 # VM must be off for us to switch NSG. Once done we restart
-echo -e "${BOLD}Switching to secure NSG: ${BLUE}${DSG_NSG}${END}"
+echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} ${BOLD}at $(date)${END}"
 az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID
-echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
+echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END} ${BOLD}at $(date)${END}"
 az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
+
+# Poll VM to see whether it has finished restarting
+echo -e "${BOLD}Waiting for VM to restart...${END}"
+while true; do
+    # Check that VM is up by requiring "PowerState/running" and "ProvisioningState/succeeded"
+    VM_UP=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
+    if [ "$VM_UP" == "true" ]; then break; fi
+    # ... otherwise print current status and wait for 10s
+    echo -e "${BOLD}Current VM status at $(date):${END}"
+    az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
+    sleep 10
+done
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
+echo -e "${BOLD}Deployment complete at $(date)${END}"
 echo -e "${BOLD}This new VM can be accessed with SSH or remote desktop at ${BLUE}${PRIVATEIP}${END}"
