@@ -936,6 +936,35 @@ Example usage:
 ./peer_mirrors_to_compute_vms.sh -s "Data Study Group Testing" "Safe Haven Management Testing"
 ```
 
+## 10. Run smoke tests on shared compute VM
+These tests should be run **after** the network lock down and peering the DSG and mirror VNets.
+
+To run the smoke tests:
+
+- Ensure you have the appropriate version of the tests by changing to the `master` branch (or the branch you deployed the VMs from if different) and doing a `pull` from Git or your preferred Git app (e.g. SourceTree).
+
+- Connect to the **DSG Dataserver** via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares the Safe Haven repository folder on your local machine with the  Dataserver (or you have another way to transfer files between your local machine and the Dataserver VM).
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Copy the `package_lists` and `tests` folders from your local `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to a `dsg_tests` folder on within the `F:\Data` folder on the DSG Dataserver.
+
+    ![](images/media/transfer_test_files_to_dataserver.png)
+
+- Connect to the DSG environment via the RDS Webclient at `https://rds.dsgroup<dsg-id>.co.uk/RDWeb/webclient`, logging in as a normal Research User.
+
+- Open the WinSCP "File transfer" app and connect to the IP address of the Shared VM (`<data-subnet-prefix>.160`) with the same credentials.
+
+- Copy the `dsg_tests` folder from the Dataserver `R:\` drive to your home directory on the Shared VM.
+
+  ![](images/media/copy_test_files_from_dataserver_to_shared_vm.png)
+
+- Connect to a terminal session on the Shared VM using the "Shared VM (SSH)" app
+
+- Change to the tests folder using `cd ~/dsg_tests/tests`
+
+- Follow the instructions in the `README.md` file in your local copy of the `tests` folder at `<safe-haven-repository>/new_dsg_environment/azure-vms/tests/` folder.
+
 ## Server list
 
 - The following servers are created as a result of these instructions:

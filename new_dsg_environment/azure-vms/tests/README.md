@@ -1,8 +1,8 @@
 
 # Tests
 
-The package installation tests require a copy of the repo, or at least the same
-structure with the files in `../new_dsg_environment/azure-vms/package_lists/`.
+## Prerequisites
+The package installation tests require a copy of the `package_lists` folder in the `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to exist at the same level as the folder containing this README file.
 
 ## R
 
@@ -20,18 +20,27 @@ Run the tests with:
 Rscript test_package_installation.R
 ```
 
-If it's right, it should output something like:
+The installation check will take several minutes to run.
+
+There are a few known packages that will cause warnings and errors during this test.
+- rgl: This package is successfully installed, but required a GUI to load
+- ballgown: This package cannot currently be installed
+- DMRate: This package cannot currently be installed
+- maftools: This package cannot currently be installed
+- RCGAbiolinks: This package cannot currently be installed
+
+The expected output for a successful test is:
 
 ```
-[1] "All OK"
-```
-
-If some packages are not installed, you should see:
-
-```
+[1] "The following packages gave a warning:"
+[1] "rgl"
+[1] "All the above gave a warning!"
 [1] "The following packages gave an error:"
-[1] "realxl"
+[1] "ballgown"    "DMRate"    "maftools"    "RCGAbiolinks"
+[1] "All the above gave an error!"
 ```
+
+If any additonal packages appear on the warning or error list, please contact REG to investigate:
 
 ### Testing package use
 
@@ -48,20 +57,21 @@ $ Rscript test_logistic_regression.R
 
 ### Testing package installation
 
-For each of the three environments (2.7, 3.6, 3.7), switch to environment `pyMN`
-with
+For each of the three Pyhton versions installed (2.7, 3.6, 3.7), switch to environment `pyMN`, where `M` is the major version number and `N` is the minor version number (e.g. for Python 3.6, use `py36`) and do the following:
+
+Activate the conda environment for the Python version.
 
 ```
 conda activate pyMN
 ```
 
-then run the Python tests with:
+Run the Python tests with:
 
 ```
 python tests.py
 ```
 
-If it's right, it should output something like:
+The expected outcome for a successful test is:
 
 ```
 Ran 2 tests in 0.308s
