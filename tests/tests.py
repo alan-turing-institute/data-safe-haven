@@ -9,21 +9,26 @@ import pkg_resources
 PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
-PACKAGE_DIR = "../new_dsg_environment/azure-vms/package_lists/"
-PACKAGE_DIR = "./"
+PACKAGE_DIR = os.path.join(os.path.realpath(".."), "new_dsg_environment", "azure-vms", "package_lists")
 PACKAGE_PREFIXES = ["requested-", "utility-packages-"]
 PACKAGE_SUFFIX = ".list"
 
-# Some packages cannot be called by `import p`, such as
-# `numpy-base`. Skip them.
-PACKAGES_TO_SKIP = ["numpy-base",
-                    "r-irkernel",
-                    "backports",
+# Some packages cannot be imported so we skip them.
+PACKAGES_TO_SKIP = [
+    "jupyter",     # not a python package
+    "numpy-base",  # not an importable package
+    "r-irkernel",  # not a python package
+    "backports",   # not an importable package
 ]
-PACKAGE_REPLACEMENTS = {"pytorch": "torch",
-                        "pytables": "tables",
-                        "sqlite": "sqlite3",
-                        "tensorflow-gpu": "tensorflow",
+
+# Some packages have different names in conda from the importable name
+PACKAGE_REPLACEMENTS = {
+    "fribidi": "pyfribidi",
+    "pytables": "tables",
+    "pytorch": "torch",
+    "sqlite": "sqlite3",
+    "tensorflow-gpu": "tensorflow",
+    "yaml": "pyyaml",
 }
 
 def is_linux():
@@ -55,7 +60,24 @@ def clean_prefix(p):
     e.g., "requested-" -> "requested" and "utility-packages-" -> "utility"
     """
     return p[:p.find("-")]
-    
+
+
+def import_package(package_name):
+    """Explicitly test imports."""
+    if package_name == "graph_tool":
+        try:
+            import graph_tool
+            return True
+        except ModuleNotFoundError as e:
+            return False
+    if package_name == "sqlite3":
+        try:
+            import sqlite3
+            return True
+        except ModuleNotFoundError as e:
+            return False
+    return False
+
 
 def get_package_lists():
     """Reads the package lists and returns a tuple with required and optional
@@ -82,11 +104,11 @@ def get_missing_packages():
     """
     version = get_version()
     all_packages = get_package_lists()
-    missing = dict()
+    warning, missing = {}, {}
 
     for key in all_packages:
         packages = all_packages[key]
-        missing[key] = []
+        warning[key], missing[key] = [], []
         for p in packages:
 
             q = clean_package_name(p)
@@ -100,10 +122,13 @@ def get_missing_packages():
                 full_name = p
                 if q != p:
                     full_name += " (%s)" % q
-
-                missing[key].append(full_name)
+                # Test whether we can import
+                if import_package(q):
+                    warning[key].append(full_name)
+                else:
+                    missing[key].append(full_name)
                 
-    return missing
+    return (warning, missing)
 
 class Tests(unittest.TestCase):
     """Run tests for installation of Python."""
@@ -114,10 +139,14 @@ class Tests(unittest.TestCase):
         self.assertTrue(py_version in expected_py_versions)
 
     def test_packages(self):
-        missing = get_missing_packages()
+        warning, missing = get_missing_packages()
         fail = False
-        for key in missing:
-            packages = missing[key]
+        for key, packages in warning.items():
+            if packages:
+                print("\n** The following %s packages can be imported but had pkg_resource issues: **" % key)
+                print("\n".join(packages))
+                print("** The above %s packages can be imported but had pkg_resource issues: **" % key)
+        for key, packages in missing.items():
             if packages:
                 print("\n** The following %s packages are missing: **" % key)
                 print("\n".join(packages))
@@ -125,19 +154,7 @@ class Tests(unittest.TestCase):
                 fail = True
         if fail:
             self.fail("Required and/or optional packages are missing")
-
-    def test_sqlite3(self):
-        try:
-            import sqlite3
-        except ModuleNotFoundError as e:
-            self.fail("Unable to import sqlite3")
-
-    def test_graph_tool(self):
-        try:
-            import graph_tool
-        except ModuleNotFoundError as e:
-            self.fail("Unable to import graph_tool")
-        
+    
 
 if '__main__' == __name__:
     import unittest
