@@ -117,9 +117,12 @@ function Add-DsgConfig {
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
+        vnet = [ordered]@{}
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
+    $config.dsg.mirrors.vnet.rg = "RG_SH_PKG_MIRRORS"
+    $config.dsg.mirrors.vnet.name = "VNET_SH_PKG_MIRRORS"
     $config.dsg.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
     $config.dsg.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
 
