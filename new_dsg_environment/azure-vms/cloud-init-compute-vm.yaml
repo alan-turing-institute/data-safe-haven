@@ -167,16 +167,16 @@ runcmd:
   - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
   # Create shared data folder and grant all users access
+  - echo "Creating shared data folder"
   - sudo mkdir /data
   - sudo chmod go+rw /data
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
-  # Give anaconda directory to plugdev group (which all new users are a part of) and set group permissions equal to user
+  # Set 'other' permissions on the anaconda directory to be equal to that of the owner
+  # We then remove write access so that site-packages can be used but not altered
   - echo "Change ownership of /anaconda/"
-  - chgrp -R plugdev /anaconda/
-  - chmod -R g=u /anaconda/
-  - chmod -R go-w /anaconda/
+  - chmod -R o=u,o-w /anaconda/
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
   - echo "conda activate py36" >> /etc/bash.bashrc
