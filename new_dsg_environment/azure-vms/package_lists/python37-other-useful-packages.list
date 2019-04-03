@@ -9,7 +9,6 @@ beautifulsoup4
 bitarray
 bkcharts
 blaze
-blosc
 bottleneck
 colorama
 configparser
@@ -21,7 +20,6 @@ datashape
 distributed
 ephem
 flask
-fribidi
 gast
 gmpy2
 grpcio
@@ -42,6 +40,8 @@ pycodestyle
 pycosat
 pytables
 pytest
+python-blosc
+pyyaml
 setuptools-git
 six
 sphinx
@@ -53,4 +53,3 @@ unicodecsv
 werkzeug
 xlrd
 xlsxwriter
-yaml

@@ -83,15 +83,15 @@ FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 
 RESOURCE="galleries/images/versions"
 RESOURCE_METADATA_QUERY="resourceTypes[?resourceType=='$RESOURCE']"
 RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-
-echo "Ensuring $FEATURE feature is registered and $RESOURCE resource is present in namespace $NAMESPACE (this may take some time)."
-echo "Current $FEATURE feature state is $FEATURE_STATE."
+# Print out current status
+echo -e "${BOLD}Ensuring namespace ${BLUE}$NAMESPACE${END} ${BOLD}contains ${BLUE}$FEATURE${END} ${BOLD}feature and ${BLUE}$RESOURCE${END} ${BOLD}(this may take some time).${END}"
+echo -e "${BOLD}Current ${BLUE}$FEATURE${END} ${BOLD}feature state is ${BLUE}$FEATURE_STATE.${END}"
 if [ "$RESOURCE_METADATA" = "[]" ]; then
-    echo "Resource $RESOURCE is not present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is ${RED}not${END} ${BOLD}present.${END}"
 else
-    echo "Resource $RESOURCE is present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is present.${END}"
 fi
-
+# Loop until features are present
 while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     if [ "$FEATURE_STATE" = "NotRegistered" ]; then
         # Register feature

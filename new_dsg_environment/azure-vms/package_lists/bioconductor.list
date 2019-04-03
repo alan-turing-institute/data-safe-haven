@@ -1,5 +1,4 @@
 apeglm
-ballgown
 Biobase
 ChemmineR
 clusterProfiler
@@ -11,7 +10,6 @@ DECIPHER
 DESeq2
 destiny
 DirichletMultinomial
-DMRcate
 EBSeq
 edgeR
 fastseg
@@ -28,7 +26,6 @@ interactiveDisplayBase
 KEGGgraph
 limma
 made4
-maftools
 metagenomeSeq
 minet
 MLInterfaces
@@ -49,7 +46,6 @@ SNPRelate
 SPIA
 supraHex
 sva
-TCGAbiolinks
 TimeSeriesExperiment
 topGO
 treeio

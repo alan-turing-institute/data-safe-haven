@@ -242,7 +242,7 @@ if [ "$VERSION" = "" ]; then
 fi
 
 # Check that this is a valid version and then get the image ID
-echo -e "${BOLD}Finding ID for image ${BLUE}${IMAGE_DEFINITION}${END} version ${BLUE}${VERSION}${END}${BOLD}...${END}"
+echo -e "${BOLD}Finding ID for image ${BLUE}${IMAGE_DEFINITION}${END} ${BOLD}version ${BLUE}${VERSION}${END}${BOLD}...${END}"
 if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Version $VERSION could not be found.${END}"
     print_usage_and_exit

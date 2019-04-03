@@ -23,6 +23,7 @@ PACKAGES_TO_SKIP = [
 
 # Some packages have different names in conda from the importable name
 PACKAGE_REPLACEMENTS = {
+    "python-blosc": "blosc",
     "pytables": "tables",
     "pytorch": "torch",
     "sqlite": "sqlite3",
