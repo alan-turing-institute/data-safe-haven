@@ -50,9 +50,29 @@ write_files:
       WantedBy=multi-user.target
   - path: "/pypiserver.app.py.patch"
     content: |
-      --- _app.py 2019-04-03 17:11:18.000000000 +0100
-      +++ _app.py 2019-04-03 17:13:01.000000000 +0100
-      @@ -229,6 +229,10 @@
+      --- _app.py 2019-04-03 19:02:39.000000000 +0100
+      +++ _app.py 2019-04-03 19:07:00.000000000 +0100
+      @@ -213,6 +213,19 @@
+                   "string")[0].childNodes[0].wholeText.strip()
+               response = []
+               ordering = 0
+      +        # Override package search (which times out) with a lookup from the simple static package index
+      +        with open("/datadrive/mirrordaemon/pypi/web/simple/index.html", "r") as f_package_index:
+      +            for line in f_package_index.readlines():
+      +                if "<a href" in line:
+      +                    package_name = line.split(">")[1].split("<")[0]
+      +                    if value in package_name:
+      +                        d = {'_pypi_ordering': ordering, 'version': 'exists',
+      +                             'name': package_name, 'summary': "{} is available".format(package_name)}
+      +                        response.append(d)
+      +                ordering += 1
+      +        call_string = xmlrpclib.dumps((response,), 'search', methodresponse=True)
+      +        return call_string
+      +        # End of patch
+               for p in packages():
+                   if p.pkgname.count(value) > 0:
+                       # We do not presently have any description/summary, returning
+      @@ -229,6 +242,10 @@
        @app.route("/simple/")
        @auth("list")
        def simpleindex():
@@ -63,7 +83,8 @@ write_files:
            links = sorted(core.get_prefixes(packages()))
            tmpl = """\
            <html>
-      @@ -254,6 +258,11 @@
+      @@ -253,7 +270,10 @@
+           normalized = core.normalize_pkgname_for_url(prefix)
            if prefix != normalized:
                return redirect('/simple/{0}/'.format(normalized), 301)
       -
@@ -74,7 +95,7 @@ write_files:
            files = sorted(core.find_packages(packages(), prefix=prefix),
                           key=lambda x: (x.parsed_version, x.relfn))
            if not files:
-      @@ -310,6 +317,14 @@
+      @@ -310,6 +330,14 @@
        @app.route('/packages/:filename#.*#')
        @auth("download")
        def server_static(filename):
@@ -114,6 +135,7 @@ runcmd:
   - python3 -m venv pypiserver
   - pypiserver/bin/pip install pypiserver
   # Patch pypiserver so that it uses the static simple index files
+  - echo "*** Patching pypiserver to use static index files ***"
   - cd /pypiserver/lib/python3.6/site-packages/pypiserver
   - patch < /pypiserver.app.py.patch
   - cd /
