@@ -50,9 +50,50 @@ write_files:
       WantedBy=multi-user.target
   - path: "/pypiserver.app.py.patch"
     content: |
-      --- _app.py 2019-04-03 19:02:39.000000000 +0100
-      +++ _app.py 2019-04-03 19:07:00.000000000 +0100
-      @@ -213,6 +213,19 @@
+      --- _app.py	2019-04-03 19:51:21.000000000 +0100
+      +++ _app.py.new	2019-04-03 19:37:44.000000000 +0100
+      @@ -3,6 +3,7 @@
+       import mimetypes
+       import os
+       import re
+      +import subprocess
+       import zipfile
+       import xml.dom.minidom
+
+      @@ -83,7 +84,7 @@
+           fp = request.fullpath
+
+           try:
+      -        numpkgs = len(list(packages()))
+      +        numpkgs = int(subprocess.check_output("find /datadrive/mirrordaemon/pypi/web/packages -type f | wc -l", shell=True))
+           except:
+               numpkgs = 0
+
+      @@ -106,6 +107,7 @@
+
+
+       def doc_upload():
+      +    raise HTTPError(405, "documentation upload not allowed")
+           try:
+               content = request.files['content']
+           except KeyError:
+      @@ -119,6 +121,7 @@
+
+
+       def remove_pkg():
+      +    raise HTTPError(405, "package removal not allowed")
+           name = request.forms.get("name")
+           version = request.forms.get("version")
+           if not name or not version:
+      @@ -138,6 +141,7 @@
+
+
+       def file_upload():
+      +    raise HTTPError(405, "file upload not allowed")
+           ufiles = Upload._make(
+               request.files.get(f, None) for f in ('content', 'gpg_signature'))
+           if not ufiles.pkg:
+      @@ -213,6 +217,19 @@
                    "string")[0].childNodes[0].wholeText.strip()
                response = []
                ordering = 0
@@ -72,7 +113,7 @@ write_files:
                for p in packages():
                    if p.pkgname.count(value) > 0:
                        # We do not presently have any description/summary, returning
-      @@ -229,6 +242,10 @@
+      @@ -229,6 +246,10 @@
        @app.route("/simple/")
        @auth("list")
        def simpleindex():
@@ -83,7 +124,7 @@ write_files:
            links = sorted(core.get_prefixes(packages()))
            tmpl = """\
            <html>
-      @@ -253,7 +270,10 @@
+      @@ -253,7 +274,10 @@
            normalized = core.normalize_pkgname_for_url(prefix)
            if prefix != normalized:
                return redirect('/simple/{0}/'.format(normalized), 301)
@@ -95,7 +136,17 @@ write_files:
            files = sorted(core.find_packages(packages(), prefix=prefix),
                           key=lambda x: (x.parsed_version, x.relfn))
            if not files:
-      @@ -310,6 +330,14 @@
+      @@ -284,6 +308,9 @@
+       @app.route('/packages/')
+       @auth("list")
+       def list_packages():
+      +    # Redirecting to the simple endpoint
+      +    return redirect(request.fullpath.replace("packages", "simple"), 302)
+      +    # End of patch
+           fp = request.fullpath
+           files = sorted(core.find_packages(packages()),
+                          key=lambda x: (os.path.dirname(x.relfn),
+      @@ -310,6 +337,14 @@
        @app.route('/packages/:filename#.*#')
        @auth("download")
        def server_static(filename):
@@ -110,6 +161,8 @@ write_files:
            entries = core.find_packages(packages())
            for x in entries:
                f = x.relfn_unix
+
+
 
 runcmd:
   # Set up disk
