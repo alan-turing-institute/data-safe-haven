@@ -48,7 +48,47 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
-
+  - path: "/pypiserver.app.py.patch"
+    content: |
+      --- _app.py 2019-04-03 17:11:18.000000000 +0100
+      +++ _app.py 2019-04-03 17:13:01.000000000 +0100
+      @@ -229,6 +229,10 @@
+       @app.route("/simple/")
+       @auth("list")
+       def simpleindex():
+      +    # Overriding simple index pages with static content
+      +    with open("/datadrive/mirrordaemon/pypi/web/simple/index.html", "r") as f_index:
+      +        return f_index.read()
+      +    # End of patch
+           links = sorted(core.get_prefixes(packages()))
+           tmpl = """\
+           <html>
+      @@ -254,6 +258,11 @@
+           if prefix != normalized:
+               return redirect('/simple/{0}/'.format(normalized), 301)
+      -
+      +    # Overriding simple index pages with static content
+      +    with open("/datadrive/mirrordaemon/pypi/web/simple/{}/index.html".format(prefix), "r") as f_index:
+      +        return f_index.read()
+      +    # End of patch
+           files = sorted(core.find_packages(packages(), prefix=prefix),
+                          key=lambda x: (x.parsed_version, x.relfn))
+           if not files:
+      @@ -310,6 +317,14 @@
+       @app.route('/packages/:filename#.*#')
+       @auth("download")
+       def server_static(filename):
+      +    # Overriding package root check since all packages are in one directory
+      +    root = "/datadrive/mirrordaemon/pypi/web/packages"
+      +    response = static_file(filename, root=root, mimetype=mimetypes.guess_type(filename)[0])
+      +    if config.cache_control:
+      +        response.set_header(
+      +            "Cache-Control", "public, max-age=%s" % config.cache_control)
+      +    return response
+      +    # End of patch
+           entries = core.find_packages(packages())
+           for x in entries:
+               f = x.relfn_unix
 
 runcmd:
   # Set up disk
@@ -73,6 +113,10 @@ runcmd:
   - echo "*** Installing pypiserver... ***"
   - python3 -m venv pypiserver
   - pypiserver/bin/pip install pypiserver
+  # Patch pypiserver so that it uses the static simple index files
+  - cd /pypiserver/lib/python3.6/site-packages/pypiserver
+  - patch < /pypiserver.app.py.patch
+  - cd /
 
   # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up pypiserver pointing to local disk... ***"
