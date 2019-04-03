@@ -909,32 +909,31 @@ To deploy a compute VM you will need the following available on the machine you 
 
 - Run the `./Lockdown_Network.ps1` script, providing the DSG ID when prompted
 
-## 9. Peer DSG and mirror networks
-**NOTE:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
+## 9. Peer DSG and package mirror networks
+**WARNING:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
 
-Change to the `new_dsg_environment/azure-vms/` folder and open a bash terminal with access to the `Az` CLI and run the `./peer_mirrors_to_compute_vms.sh` script as detailed below.
-
-```
-usage: ./peer_mirrors_to_compute_vms.sh [-h] -s subscription_compute -t subscription_mirror [-g resource_group_compute] [-h resource_group_mirror] [-n vnet_name_compute] [-m vnet_name_mirror]
-  -h                                   display help
-  -s subscription_compute [required]   specify subscription where the compute VNet is deployed. (typically this will be 'Data Study Group Testing')
-  -t subscription_mirror [required]    specify subscription where the mirror VNet is deployed. (typically this will be 'Safe Haven Management Testing')
-  -c resource_group_compute            specify resource group where the compute VNet is deployed (defaults to 'RG_DSG_VNET')
-  -m resource_group_mirror             specify resource group where the mirror VNet is deployed (defaults to 'RG_SH_PKG_MIRRORS')
-  -v vnet_name_compute                 specify name of the compute VNet (defaults to 'DSG_DSGROUPTEST_VNet1')
-  -w vnet_name_mirror                  specify name of the mirror VNet (defaults to 'VNET_SH_PKG_MIRRORS')
-```
+**=== Do not peer Tier 3 or above DSGs to the mirror network ===**
 
 This script peers the DSG virtual network with the mirror virtual network in the management subscription so that the compute VMs can talk to the mirror servers.
+
 Note that the "inbound one-way airlock" for packages is enforced by the NSG rules for the external and internal mirrrors.
+
 The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and its associated internal mirrors (for pushing to these mirror servers).
+
 The **internal** mirror NSG rules do not allow **any outbound** communication, while permitting inbound communication from their associated external mirrors (to receive pushed package updates) and from the DSGs that are peered with them (to serve packages to these DSGs).
 
-Example usage:
+To peer the DSG and package mirror networks:
 
-```bash
-./peer_mirrors_to_compute_vms.sh -s "Data Study Group Testing" "Safe Haven Management Testing"
-```
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
+
+- Run the `./Peer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
+
 
 ## 10. Run smoke tests on shared compute VM
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets.

@@ -55,6 +55,10 @@
   },
   "dsg": {
     "mirrors": {
+      "vnet": {
+        "rg": "RG_SH_PKG_MIRRORS",
+        "name": "VNET_SH_PKG_MIRRORS"
+      },
       "cran": {
         "ip": "10.1.0.21"
       },
