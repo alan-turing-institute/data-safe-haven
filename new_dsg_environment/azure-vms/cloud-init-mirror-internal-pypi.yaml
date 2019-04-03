@@ -50,52 +50,34 @@ write_files:
       WantedBy=multi-user.target
   - path: "/pypiserver.app.py.patch"
     content: |
-      --- _app.py	2019-04-03 19:51:21.000000000 +0100
-      +++ _app.py.new	2019-04-03 19:37:44.000000000 +0100
-      @@ -3,6 +3,7 @@
-       import mimetypes
-       import os
-       import re
-      +import subprocess
-       import zipfile
-       import xml.dom.minidom
+      --- _app.py 2019-04-03 19:51:21.000000000 +0100
+      +++ _app.py 2019-04-03 20:27:05.000000000 +0100
+      @@ -84,7 +84,2 @@
 
-      @@ -83,7 +84,7 @@
-           fp = request.fullpath
-
-           try:
+      -    try:
       -        numpkgs = len(list(packages()))
-      +        numpkgs = int(subprocess.check_output("find /datadrive/mirrordaemon/pypi/web/packages -type f | wc -l", shell=True))
-           except:
-               numpkgs = 0
-
-      @@ -106,6 +107,7 @@
-
-
+      -    except:
+      -        numpkgs = 0
+      -
+           # Ensure template() does not consider `msg` as filename!
+      @@ -94,3 +89,3 @@
+                           VERSION=__version__,
+      -                    NUMPKGS=numpkgs,
+      +                    NUMPKGS="mirrored",
+                           PACKAGES=urljoin(fp, "packages/"),
+      @@ -108,2 +103,3 @@
        def doc_upload():
       +    raise HTTPError(405, "documentation upload not allowed")
            try:
-               content = request.files['content']
-           except KeyError:
-      @@ -119,6 +121,7 @@
-
-
+      @@ -121,2 +117,3 @@
        def remove_pkg():
       +    raise HTTPError(405, "package removal not allowed")
            name = request.forms.get("name")
-           version = request.forms.get("version")
-           if not name or not version:
-      @@ -138,6 +141,7 @@
-
-
+      @@ -140,2 +137,3 @@
        def file_upload():
       +    raise HTTPError(405, "file upload not allowed")
            ufiles = Upload._make(
-               request.files.get(f, None) for f in ('content', 'gpg_signature'))
-           if not ufiles.pkg:
-      @@ -213,6 +217,19 @@
-                   "string")[0].childNodes[0].wholeText.strip()
-               response = []
+      @@ -215,2 +213,23 @@
                ordering = 0
       +        # Override package search (which times out) with a lookup from the simple static package index
       +        with open("/datadrive/mirrordaemon/pypi/web/simple/index.html", "r") as f_package_index:
@@ -103,30 +85,30 @@ write_files:
       +                if "<a href" in line:
       +                    package_name = line.split(">")[1].split("<")[0]
       +                    if value in package_name:
-      +                        d = {'_pypi_ordering': ordering, 'version': 'exists',
-      +                             'name': package_name, 'summary': "{} is available".format(package_name)}
+      +                        versions = ["exists"]
+      +                        with open("/datadrive/mirrordaemon/pypi/web/simple/{}/index.html".format(package_name), "r") as f_package_details:
+      +                            for line in f_package_details.readlines():
+      +                                if ".tar.gz" in line:
+      +                                    try:
+      +                                        versions.append(line.split(">")[1].split("-")[-1].split(".tar.gz")[0])
+      +                                    except IndexError:
+      +                                        pass
+      +                        d = {"_pypi_ordering": 0, "version": versions[-1],
+      +                             "name": package_name, "summary": "{} is available".format(package_name)}
       +                        response.append(d)
       +                ordering += 1
       +        call_string = xmlrpclib.dumps((response,), 'search', methodresponse=True)
       +        return call_string
       +        # End of patch
                for p in packages():
-                   if p.pkgname.count(value) > 0:
-                       # We do not presently have any description/summary, returning
-      @@ -229,6 +246,10 @@
-       @app.route("/simple/")
-       @auth("list")
+      @@ -231,2 +250,6 @@
        def simpleindex():
       +    # Overriding simple index pages with static content
       +    with open("/datadrive/mirrordaemon/pypi/web/simple/index.html", "r") as f_index:
       +        return f_index.read()
       +    # End of patch
            links = sorted(core.get_prefixes(packages()))
-           tmpl = """\
-           <html>
-      @@ -253,7 +274,10 @@
-           normalized = core.normalize_pkgname_for_url(prefix)
-           if prefix != normalized:
+      @@ -255,3 +278,6 @@
                return redirect('/simple/{0}/'.format(normalized), 301)
       -
       +    # Overriding simple index pages with static content
@@ -134,21 +116,13 @@ write_files:
       +        return f_index.read()
       +    # End of patch
            files = sorted(core.find_packages(packages(), prefix=prefix),
-                          key=lambda x: (x.parsed_version, x.relfn))
-           if not files:
-      @@ -284,6 +308,9 @@
-       @app.route('/packages/')
-       @auth("list")
+      @@ -286,2 +312,5 @@
        def list_packages():
       +    # Redirecting to the simple endpoint
       +    return redirect(request.fullpath.replace("packages", "simple"), 302)
       +    # End of patch
            fp = request.fullpath
-           files = sorted(core.find_packages(packages()),
-                          key=lambda x: (os.path.dirname(x.relfn),
-      @@ -310,6 +337,14 @@
-       @app.route('/packages/:filename#.*#')
-       @auth("download")
+      @@ -312,2 +341,10 @@
        def server_static(filename):
       +    # Overriding package root check since all packages are in one directory
       +    root = "/datadrive/mirrordaemon/pypi/web/packages"
@@ -159,9 +133,6 @@ write_files:
       +    return response
       +    # End of patch
            entries = core.find_packages(packages())
-           for x in entries:
-               f = x.relfn_unix
-
 
 
 runcmd:
