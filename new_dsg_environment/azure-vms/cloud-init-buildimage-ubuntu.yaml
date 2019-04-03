@@ -525,7 +525,17 @@ runcmd:
   # Install jupyter kernels
   - echo "*** Setting up R and Julia kernels for jupyter... ***"
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
-  - Rscript -e "IRkernel::installspec(user = FALSE)"
+  # - Rscript -e "IRkernel::installspec(user = FALSE)"
+  #
+  # The command above would install the kernel from system R for jupyter but fails
+  # (since we're not in an environment with jupyter at this point) with the following error:
+  #
+  #   Error in IRkernel::installspec(user = FALSE) :
+  #     jupyter-client has to be installed but “jupyter kernelspec --version” exited with code 127.
+  #   In addition: Warning message:
+  #   In system2("jupyter", c("kernelspec", "--version"), FALSE, FALSE) :
+  #     error in running command
+  #   Execution halted
   - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
 
   # Install spark
