@@ -958,7 +958,9 @@ To run the smoke tests:
 
   ![](images/media/copy_test_files_from_dataserver_to_shared_vm.png)
 
-- Connect to a terminal session on the Shared VM using the "Shared VM (SSH)" app
+- Connect to a **remote desktop** on the Shared VM using the "Shared VM (Desktop)" app
+
+- Open a terminal session
 
 - Change to the tests folder using `cd ~/dsg_tests/tests`
 
