@@ -38,7 +38,7 @@ for (p in package_list) {
 
 # Show results
 if (0 == length(warning_list) & 0 == length(error_list)) {
-  print("All ", len(package_list), " package(s) OK!")
+  print(paste("All ", length(package_list), " package(s) OK!"))
 } else {
 
   if (0 < length(warning_list)) {
