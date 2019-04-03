@@ -1,11 +1,11 @@
-pkg1="a2svm"
-pip install $pkg1
+# Use "sismic" as it is in the "00/00" package directory, so should be rsync'd first
+pkg1="sismic"
 echo " - Attempting to install $pkg1"
 pip install $pkg1  --user --quiet
 status1=$?
 
-pkg2="z80"
-pip install $pkg2
+# Use "uncertainties" as it is in the "ff/f" package directory, so should be rsync'd first
+pkg2="uncertainties"
 echo " - Attempting to install $pkg2"
 pip install $pkg2  --user  --quiet
 status2=$?
