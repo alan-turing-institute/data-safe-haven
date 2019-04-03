@@ -33,6 +33,7 @@ write_files:
     content: |
       #! /bin/bash
       # rsync: make the destination look like the source
+      #   -p          preserve permissions
       #   -r          recursive
       #   -t          preserve times
       #   -l          follow symlinks
@@ -41,7 +42,7 @@ write_files:
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          rsync -rtlzv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
+          rsync -prtlzv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
