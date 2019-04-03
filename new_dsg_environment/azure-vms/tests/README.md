@@ -24,23 +24,18 @@ The installation check will take several minutes to run.
 
 There are a few known packages that will cause warnings and errors during this test.
 - rgl: This package is successfully installed, but required a GUI to load
-- ballgown: This package cannot currently be installed
-- DMRate: This package cannot currently be installed
-- maftools: This package cannot currently be installed
-- RCGAbiolinks: This package cannot currently be installed
 
 The expected output for a successful test is:
 
 ```
-[1] "The following packages gave a warning:"
-[1] "rgl"
-[1] "All the above gave a warning!"
-[1] "The following packages gave an error:"
-[1] "ballgown"    "DMRate"    "maftools"    "RCGAbiolinks"
-[1] "All the above gave an error!"
+Read <num-r-packages> items
+Read <num-bioconductor-packages> items
+Warnin g message:
+call dbDisconnect() when finished working with a connection
+[1] "All <num-r-and-bioconductor-packages> package(s) OK!"
 ```
 
-If any additonal packages appear on the warning or error list, please contact REG to investigate:
+If you get any other warnings or errors, please contact REG to investigate.
 
 ### Testing package use
 
@@ -57,31 +52,27 @@ $ Rscript test_logistic_regression.R
 
 To test CRAN mirror run: `bash test_cran.sh`
 
-## Python
+This will attempt to install a few test packages from the internal PyPI mirror.
 
-### Testing package installation
+If all packages install successfully, `**CRAN working OK**` will be displayed as the final line of the output (after the package installation progress).
+
+If one or more packages fail to install, `**CRAN failed**` (followed by a list of failing packages) will be displayed as the final lines of the output (after the package installation progress).
+
+## Python
 
 For each of the three Pyhton versions installed (2.7, 3.6, 3.7), switch to environment `pyMN`, where `M` is the major version number and `N` is the minor version number (e.g. for Python 3.6, use `py36`) and do the following:
 
-Activate the conda environment for the Python version.
+Activate the conda environment for each Python version with `conda activate pyMN`
 
-```
-conda activate pyMN
-```
+### Testing package installation
+- Run the Python tests with `python tests.py`. The following warnings are expected:
 
-Run the Python tests with:
+  - `Your CPU supports instructions that this TensorFlow binary was not compiled to use`
+  - `CUDA_ERROR_NO_DEVICE: no CUDA capable device is detected` (you should **not** get this error on GPU VMs - e.g. NC series)
+  - `graph-tool` can be imported but had pkg_resource issues
+  - `sqlite3` can be imported but had pkg_resource issues
 
-```
-python tests.py
-```
-
-The expected outcome for a successful test is:
-
-```
-Ran 2 tests in 0.308s
-
-OK
-```
+If you get any otrher errors please contact REG to investigate.
 
 ### Testing package use
 
@@ -91,7 +82,7 @@ the Python scripts as well.
 Then, run the one data science script with this command and this expected result:
 
 ```bash
-$ python3 test_logistic_regression.py
+$ python test_logistic_regression.py
 Logistic model ran OK
 ```
 
