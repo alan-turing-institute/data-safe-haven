@@ -3,11 +3,13 @@ Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, r
 
 # install sample packages to local user library
 pkg1="A3"
-Rscript -e "install.packages('${pkg1}', lib = Sys.getenv('R_LIBS_USER'))"
+echo " - Attempting to install $pkg1"
+Rscript -e "install.packages('${pkg1}', lib = Sys.getenv('R_LIBS_USER'), quiet=TRUE)"
 status1=$?
 
 pkg2="zyp"
-Rscript -e "install.packages('${pkg1}', lib = Sys.getenv('R_LIBS_USER'))"
+echo " - Attempting to install $pkg2"
+Rscript -e "install.packages('${pkg2}', lib = Sys.getenv('R_LIBS_USER'), quiet=TRUE)"
 status2=$?
 
 if [ $status1 -eq 0 -a $status2 -eq 0 ]; then
