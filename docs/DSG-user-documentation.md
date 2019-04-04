@@ -436,7 +436,7 @@ If you have not used GitLab before:
 Everything that is not stored in a GitLab repository on Friday lunchtime will be **DESTROYED FOR EVER**.
 Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
 
-You can access the same GitLab repositories from the Work Resources page. **(or via the shared VM desktop?)
+You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop.
 
 Login with username `[UID]` and password `[pw]`.
 
