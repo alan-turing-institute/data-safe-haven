@@ -34,12 +34,12 @@ The process for requesting help with the issue is as follows:
 
 1. Make sure you have **read this document** and checked if it answers your query.
 
-   *Please do not log an issue before you have read all of the sections in this document.*
+    *Please do not log an issue before you have read all of the sections in this document.*
 
 2. Re-start the environment (safe haven or data science suite) at least once, re-attempt the process leading to the bug/error at least twice.
 
-    *We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well!
-    (Particularly when there are lots of folks trying these steps at the same time.)*
+    We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well!
+    (Particularly when there are lots of folks trying these steps at the same time.)
 
 3. Let your challenge facilitator know of the issue.
   They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
@@ -243,10 +243,8 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 
 From the user registration process ([Section 3](#section-3-user-activation-instructions)), you should have the following ready:
 * A `username` in the format `firstname.lastname`.
-  We refer to this as `[UID]` below.
-* A user password.
+* A user `password`.
   You choose this in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
-  We refer to this as `[pw]` below.
 * A safe haven internal VM (`IP – 10.250.sth.sth` where `sth` is short for "something").
   Your facilitator will pass on this information on to you.
   We refer to this as `[IP]` below.
@@ -259,19 +257,24 @@ In order to access the Azure safe haven environment, follow the below steps:
 
 1. Open a private web browser session and enter the following URL in an incognito tab/private mode): https://rds.dsgroupX.co.uk/RDWeb/webclient/
 
-Where you replace `X` by one of the following numbers, depending on challenge
-Challenge A: X = 1	Challenge B: X = 2	Challenge C: X = 3	NATS: X = 4
+    Replace `X` by one of the following numbers, depending on challenge
+
+    * X = 11 : NATS
+    * X = 12 : Spend Network
+    * X = 13 : GOSH
+    * X = 14 : Roche
+    * X = 15 : British Antarctic Survey
 
 Important note: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
 
 Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
-> TOP TIP: Don’t forget the `https://` - it won’t work without that prefix.
+:warning: Don’t forget the `https://` - it won’t work without that prefix.
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
-[UID]@turingsafehaven.ac.uk
+`firstname.lastname@turingsafehaven.ac.uk`
 
-> TOP TIP: that's an `ac.uk` address not `.co.uk` :wink:!!
+    :warning: that's an `ac.uk` address not `.co.uk`
 
 3. Enter your password and confirm.
 
@@ -282,17 +285,15 @@ After success, you’ll see the following screen:
 
 ![](images/RDS_app_selection_options.png)
 
-4. Follow the steps in [Section 4.3](#section-43-first-time-set-up) if this is the first time you are logging in.
+4. *(First time only)* Follow the steps in [Section 4.3](#section-43-first-time-set-up) if this is the first time you are logging in.
 
-Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
+    Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
-5. Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
-
+:warning: Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
 That means **some of your key mappings may not be the same** as you’re used to.
 
-> TOP TIP: Open up a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
-
-> TOP TIP: Right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
+We recommend opening a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
+You can right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
 
 ### Section 4.3: First-time set-up
 
