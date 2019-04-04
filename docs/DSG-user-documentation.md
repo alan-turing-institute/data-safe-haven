@@ -156,7 +156,7 @@ For security reasons, you must (re-)set your password before you can log in:
 ![](images/resetpassword_3.png)
 
 6. Generate a new password using the [Secure Password
-Generator we set up](https://passwordsgenerator.net/?length=12&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
+Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
 
     :warning: Do **not** use special characters or symbols in your password.
     If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
@@ -357,7 +357,9 @@ then make sure that you have MFA enabled (see [Section 3](section-3-user-activat
 ### Section 4.4: Using the data analytics virtual machine
 
 The analytics environment can be accessed through the `Shared VM` (desktop) app.
-Please log in with username `[UID]` and password `[pw]`.
+Please log in with username `firstname.lastname` and password `password`.
+
+![](images/VM_arrived.png)
 
 Applications can be accessed through Terminal or right click on desktop (top left) and:
 
@@ -366,15 +368,14 @@ Applications can be accessed through Terminal or right click on desktop (top lef
 * Open Terminal here -> `jupyter notebook &` if you want to use python within a jupyter notebook.
 * Open Terminal here -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
 
-Note that all the custom R packages requested have been installed in the system R.
-However, just typing R at the commandline will run conda's R.
+Note that typing R at the commandline will run conda's version R.
 You can run the system R by typing `/user/bin/R`.
 We had already pointed RStudio to use system R, so those using RStudio should see the custom packages with no issues.
 
-This VM can also be used to directly access `GitLab` and `HackMD`
+This VM can also be used to directly access `GitLab` and `HackMD`.
 
-1.	Point firefox to url provided by the resource dashboard for GitLab/HackMD
-2.	Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
+1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
+2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
 
 ![](images/repository_url_copy_icon.png)
 
