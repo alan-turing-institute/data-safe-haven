@@ -130,7 +130,7 @@ Please let your facilitator know if any of the below fails despite multiple trie
 
 ### Section 3.1. Initial User Sign In, configuring MFA
 
-If you provided your phone number via the form we circulated last week and requested participants to complete, your account will be ready to initialise.
+You should have provided a phone number when you registered for the DSG.
 If you did not provide your number, please let you facilitator know, so they can log this with the IT and DSG team and get you an account set up ready to activate.
 
 Your username will be in the format `firstname.lastname` – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as `firstname.lastname@turingsafehaven.ac.uk`.
@@ -147,27 +147,49 @@ For security reasons, you must (re-)set your password before you can log in:
   (Remember that your username will be in the format `firstname.lastname`.)
 4. There will then be a password prompt.
   The first time you log-in **you haven’t set a password yet** so click "Forgotten password"
+
+![](images/resetpassword_1.png)
+
 5. Complete the requested information (captcha and the phone number you provided on registration).
+
+![](images/resetpassword_2.png)
+![](images/resetpassword_3.png)
+
 6. Generate a new password using the [Secure Password
 Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
-7. Reset your password by following the instructions
 
-:warning: Do **not** use special characters or symbols in your password.
-If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
-Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
+    :warning: Do **not** use special characters or symbols in your password.
+    If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
+    Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
 
-- uppercase character
-- lowercase character
-- number
+    - uppercase character
+    - lowercase character
+    - number
 
-:warning: During this process, you will need to provide a phone number or an email for account recovery.
-This is **not** MFA.
-You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
+![](images/resetpassword_4.png)
+![](images/resetpassword_5.png)
+
+7. Log into your account
+
+    :warning: During this process, you will need to provide a phone number or an email for account recovery.
+    This is **not** MFA.
+    You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
+
+![](images/login_1.png)
+![](images/login_2.png)
+
+8. Answer your phone when it rings!
+
+![](images/login_3.png)
+
+9. Finish logging in
+
+![](images/login_4.png)
 
 #### Configure the MFA
 
 Before any user can access the secure environment, you need to setup your multifactor authentication.
-The authentication method can be either via a call or text to a mobile phone or the Microsoft Authenticator app (recommended).
+The authentication method can be either via a call to your phone or via the Microsoft Authenticator app.
 
 **Step 1**: Log into your account
 
@@ -178,53 +200,50 @@ The authentication method can be either via a call or text to a mobile phone or 
   (This is why we suggest using a private (incognito) browser session.)
   If that doesn’t work, **log out of your personal account** and try again with your data study group username.
 
-**Step 2**: Set up the second authentication method
+4. Set up the second authentication method
 
-At this point you need to make a choice.
-Would you like to use MFA via a phone call or the Microsoft authenticator app?
+![](images/setup_mfa.png)
 
-**Step 2 (phone)**: Set an alternative phone number
+5. **Phone option**: If you choose to set up the authentication by phone call you will receive a call straight away.
 
-4. Make sure you add another alternative number or use the Azure Auth phone app, but best advice is to the same number (your mobile number) as the alternative number as the Azure App can be a little hit and miss.
+    Note that some people get a call that says, *"press the pound key"* and others receive *"press the hash key"* – both mean hit the `#` button.
 
-**Step 2 (app)**: Download the Microsoft authenticator app
+![](images/setup_mfa_phone_1.png)
+![](images/setup_mfa_phone_2.png)
 
-5. Click save when done.
-6. Click "Set it up now" when prompted.
-7. On the "Additional security verification" screen you have three options on how the system will contact you for verification.
-  Click the drop down next under "Step 1" and select the option you wish to use.
+Note that when you click `close` the page will switch to your dashboard.
 
-![](images/MFA_Step1.png)
+You can close your browser at this point.
 
-**Step 3 (Option 1)**: Authentication by phone
+5. **App option**:
 
-This option will call your mobile phone.
-The service is automated, and you’ll be requested to press the # key to confirm the request
-Note: some people get a call that says, "press the pound key" and others receive "press the hash key" – both mean hit the "#"
+   i. Download the app via one of these links:
 
-1.	Select your country from the drop down
-2.	Enter your mobile number
-3.	Click "Next"
-4.	Answer your phone and follow the instructions
-5.	Click "Done" to finish the process
+   * iOS: https://bit.ly/iosauthenticator
+   * Android: https://bit.ly/androidauthenticator
+   * Windows mobile: https://bit.ly/windowsauthenticator
 
-After completing the process you can close your browser.
+    ii. Select the "Receive notifications for verification" radio button
 
-**Step 3 (Option 2)**: Authentication by mobile app
+    iii. Click on "Set up"
 
-If you have installed the Microsoft Authenticator app then this is the option to select.
+    iv. Open your Microsoft Authenticator app on your phone and select "Add an account"
 
-1.	Select the "Receive notifications for verification" radio button
-2.	Click on "Set up"
-3.	Open your Microsoft Authenticator app on your phone and select "Add an account"
-4.	Select "Work or School" account
-5.	Scan the QR code on the screen
-6.	Click "Next" to start verification
-7.	Click "Next" again to test the app, you will get a verification on your app.
-8.	Enter your mobile phone number to enable password recovery
-9.	Click "Done" to finish
+    v. Select "Work or School" account
 
-After completing the process you can close your browser.
+    vi. Scan the QR code on the screen
+
+    vii. Click "Next" to start verification
+
+    viii. Click "Next" again to test the app, you will get a verification on your app.
+
+![](images/setup_mfa_app_1.png)
+![](images/setup_mfa_app_2.png)
+![](images/setup_mfa_app_3.png)
+
+6. When confirmed you can close the browser.
+
+![](images/setup_mfa_app_4.png)
 
 #### Top tips regarding MFA
 
@@ -235,7 +254,8 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 
 * Verifying your account in the Authenticator app can be weirdly buggy.
   Sometimes it doesn’t work the first time, but for the facilitators we all connected after somewhere between 1 and 10 attempts.
-* Make sure you allow notifications on your authenticator app, and check you don’t have Do not Disturb mode on.
+* Make sure you allow notifications on your authenticator app.
+* Check you don’t have Do not Disturb mode on.
 * You have to be SUPER FAST at acknowledging the notification on your app!
   The access codes update every 30 seconds.
   If at first you don’t succeed...
