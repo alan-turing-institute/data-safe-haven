@@ -101,10 +101,10 @@ You can install packages you need from these copies in the usual way, for exampl
 
 You need to be connected to the Turing’s internal Wi-fi network to access any of the challenges:
 
-> Wi-Fi Name: Turing DSG
-> Password  : *<password start>REDACTED<password end>*
+> Wi-Fi Name: Turing Guest
+> Password  : *Available on signage throughout the Turing Institute*
 
-The password is the full string between <password start> and <password end>, including spaces.
+The password is the full string *including spaces*.
 
 ### Section 2.4: Multi-factor authentication
 
