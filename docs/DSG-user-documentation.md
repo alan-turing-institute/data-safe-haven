@@ -24,6 +24,10 @@
 
 ## Section 1: Support for bugs and reports
 
+*You may be surprised that we're starting this document with a section about bugs and problems!*
+*Our logic is that once you're set up, this is going to be the most important part.*
+*Good luck with your analyses, we're here to help if you need us.*
+
 The Turing IT, Research Engineering Group (REG) and the data study group teams attempt to solve IT infrastructure issues arising as soon as possible.
 
 The process for requesting help with the issue is as follows:
@@ -62,26 +66,11 @@ This section outlines the different tiers and explains some of the restrictions 
 
 ### Section 2.1: Data governance and challenge overview
 
-The challenges in this DSG fall into *two distinct security tiers*:
+The challenges in this DSG are all categorised as *Tier 2: "Official"*.
 
-* **Tier 2** – medium security: dstl, MedImmune, NATS, PlayerLens
-* **Tier 0/1** – low security: Imperial/LANL/HiMAR, NSCS
-
-Access procedures depend on the security tier for the chosen challenge:
-
-**Tier 2**: the DSG team will come to each room and take a participant register for each challenge.
+In order to access tier 2 data, the DSG team will come to each room and take a participant register for each challenge.
 While you are having an initial problem discussion and brainstorming session, access will be granted to the Turing safe haven and to the relevant challenge data.
-When this is ready, your facilitator will guide you through user registration and a safe haven usage tutorial.
-Please also familiarise yourself with user registration and safe haven usage documentation as outlined in sections 3 and 4 of this document.
-
-**Tier 0/1**: the challenge facilitator and/or challenge owner representative can give you direct access to the data and/or the analysis environment.
-Challenge specifics are as below.
-
-* NCSC – if you join this challenge, please send your facilitator Giovanni Colavizza, *email address redacted*, your Azure and GitHub account names – create accounts if necessary.
-  Giovanni will then invite you to code and data repositories.
-  This is an open data challenge so the analysis environment is also open.
-* Imperial College/LANL/HiMaR –  this is also an open data challenge so the analysis environment is open.
-  Ask your facilitator Helen Hu *email address redacted* and Challenge Owner Niall Adams to give you access to the Spark cluster and the Azure data science virtual machines.
+When this is ready, your facilitator will guide you through user registration and a safe haven usage tutorial following the instructions in this document.
 
 ### Section 2.2: Turing safe haven set-up
 
@@ -409,8 +398,8 @@ trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 
 GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
 
-It also allows you to version control all the code that you write for any of the Data Study Group challenges. 
-There is a local GitLab installation within the Work Resources. 
+It also allows you to version control all the code that you write for any of the Data Study Group challenges.
+There is a local GitLab installation within the Work Resources.
 
 If you have not used GitLab before:
 - There is a small tutorial below
