@@ -128,8 +128,6 @@ As a result, you will possess user credentials that allow you to use the safe ha
 Instructions should be followed only once, at the start of the data study week.
 Please let your facilitator know if any of the below fails despite multiple tries.
 
-These same user credentials can be used to access the Azure environments for the Tier 0/1 challenges, so if you don’t already have an Azure account, you can follow these user activation instructions and provide them to your facilitator.
-
 ### Section 3.1. Initial User Sign In, configuring MFA
 
 If you provided your phone number via the form we circulated last week and requested participants to complete, your account will be ready to initialise.
