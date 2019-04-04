@@ -156,7 +156,7 @@ For security reasons, you must (re-)set your password before you can log in:
 ![](images/resetpassword_3.png)
 
 6. Generate a new password using the [Secure Password
-Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
+Generator we set up](https://passwordsgenerator.net/?length=12&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
 
     :warning: Do **not** use special characters or symbols in your password.
     If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
