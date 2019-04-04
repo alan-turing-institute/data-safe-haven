@@ -645,9 +645,6 @@ We recommend that one person start the document, then let everyone know the URL 
 
 ![](images/hackmd_screenshot.png)
 
-If you are working on a challenge that is below Tier 2, the environment is open so you do not have to use HackMD and can use other tools such as Overleaf, if you prefer.
-You can use our HackMD templates to help you structure the report.
-
 ### Section 4.7: Accessing the data and exporting figures
 
 The data can be found in the `R` drive on the Windows Azure environment.
@@ -667,7 +664,6 @@ You can now drag and drop any files between the data science VM and the Windows 
 
 ### Section 4.8: Creating and presenting the report-out slides for Friday
 
-If you are in one of the Tier 2 level challenges:
 To create the presentation slides, go to the `Presentation server` on the Work Resources list and then open the Open Office icon on the Windows desktop.
 An example template is provided for you in the windows Azure environment (shared drive).
 
@@ -685,10 +681,6 @@ Be prepared for this outcome and be able to talk about what the audience would s
 You do not have time to try to fix the demo during your presentation.
 And that’s ok!
 You can always show the demo to the challenge owners in a quiet space after lunchtime.
-
-If you are in one of the Tier 0/1 level challenges:
-You do not need to use the above instructions as it is an open environment.
-Your facilitator has an example presentation template which your team can use.
 
 ### Section 4.9: Outputs from the week
 
