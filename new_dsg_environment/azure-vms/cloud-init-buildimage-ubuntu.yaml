@@ -531,7 +531,7 @@ runcmd:
   # (since we're not in an environment with jupyter at this point) with the following error:
   #
   #   Error in IRkernel::installspec(user = FALSE) :
-  #     jupyter-client has to be installed but “jupyter kernelspec --version” exited with code 127.
+  #     jupyter-client has to be installed but "jupyter kernelspec --version" exited with code 127.
   #   In addition: Warning message:
   #   In system2("jupyter", c("kernelspec", "--version"), FALSE, FALSE) :
   #     error in running command
