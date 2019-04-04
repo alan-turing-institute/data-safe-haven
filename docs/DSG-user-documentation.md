@@ -150,9 +150,9 @@ For security reasons, you must (re-)set your password before you can log in:
 5. Complete the requested information (captcha and the phone number you provided on registration).
 6. Generate a new password using the [Secure Password
 Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
-7.	Reset your password by following the instructions
+7. Reset your password by following the instructions
 
-:warning: Do **not** use special characters or symbols in your password if you prefer to pass on using the Secure Password Generator.
+:warning: Do **not** use special characters or symbols in your password.
 If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
 Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
 
@@ -160,32 +160,35 @@ Choose an alphanumeric password with minimum length of 12 characters, with at le
 - lowercase character
 - number
 
-:warning: During this process, you will need to provide a phone number for account recovery.
+:warning: During this process, you will need to provide a phone number or an email for account recovery.
 This is **not** MFA.
-You still need to set up MFA in the next section, otherwise you will be unable to launch any apps. :warning:
+You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
 
 #### Configure the MFA
 
 Before any user can access the secure environment, you need to setup your multifactor authentication.
 The authentication method can be either via a call or text to a mobile phone or the Microsoft Authenticator app (recommended).
 
-**Step 1** (if using the Microsoft authenticator app): download the app on your mobile device.
+**Step 1**: Log into your account
 
-The links to download the app for iOS, Android and Window mobile are:
-
-* iOS: http://bit.ly/iosauthenticator
-* Android: http://bit.ly/androidauthenticator
-* Windows mobile: http://bit.ly/windowsauthenticator
-
-**Step 2**: Configure the multifactor authentication
-
-1. Open a private browser session on your laptop
-2. Enter https://aka.ms/MFASetup into the address bar
-3. Login using `username@turingsafehaven.ac.uk` and the new password you just created.
+1. Open a private browser session on your laptop.
+2. Enter https://aka.ms/MFASetup into the address bar.
+3. Login using `firstname.lastname@turingsafehaven.ac.uk` and the new password you just created.
   a. Note that **you might find another address is automatically inserted at this step** (eg your work email account).
   (This is why we suggest using a private (incognito) browser session.)
   If that doesn’t work, **log out of your personal account** and try again with your data study group username.
+
+**Step 2**: Set up the second authentication method
+
+At this point you need to make a choice.
+Would you like to use MFA via a phone call or the Microsoft authenticator app?
+
+**Step 2 (phone)**: Set an alternative phone number
+
 4. Make sure you add another alternative number or use the Azure Auth phone app, but best advice is to the same number (your mobile number) as the alternative number as the Azure App can be a little hit and miss.
+
+**Step 2 (app)**: Download the Microsoft authenticator app
+
 5. Click save when done.
 6. Click "Set it up now" when prompted.
 7. On the "Additional security verification" screen you have three options on how the system will contact you for verification.
