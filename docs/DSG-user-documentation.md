@@ -262,17 +262,12 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 
 ## Section 4: Using the safe haven
 
-### Section 4.1. Access credentials
+### Section 4.1: Access credentials
 
 From the user registration process ([Section 3](#section-3-user-activation-instructions)), you should have the following ready:
 * A `username` in the format `firstname.lastname`.
 * A user `password`.
   You choose this in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
-* A safe haven internal VM (`IP – 10.250.sth.sth` where `sth` is short for "something").
-  Your facilitator will pass on this information on to you.
-  We refer to this as `[IP]` below.
-
-Those can be accessed by clicking on the custom VM icon.
 
 ### Section 4.2: Logging into the Windows Azure environment
 
@@ -301,7 +296,7 @@ Additionally there is **no copy/paste functionality** from outside to inside the
 
 3. Enter your password and confirm.
 
-You will now **receive a call/text/push notification** for the MFA to confirm.
+You will now **receive a call or mobile app notification** for the MFA to confirm.
 For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
 
 After success, you’ll see the following screen:
@@ -320,26 +315,34 @@ You can right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to c
 
 ### Section 4.3: First-time set-up
 
-In order to set up your user account on the VM, you need to follow the below steps **once**.
+In order to set up your user account on the virtual machine, you need to follow the below steps **once**.
 
-1. Run the "Shared VM (SSH)" app and log in with `[UID]`, `[pw]`, at `[IP]` (enter into fields).
+1. Run the "Shared VM (SSH)" app.
+You will need to first authenticate using MFA.
 
-(Note, **the cursor will not move** while you are typing your password)
+![](images/login_putty_1.png)
+![](images/login_putty_2.png)
+![](images/login_putty_3.png)
 
-Confirm the below security alert with `"yes"` (this only happens on the first log in).
-
-Once you have confirmed log in, you can close this window.
+2. Confirm the below security alert with `"yes"` (this only happens on the first log in).
 
 ![](images/1st_logon_putty.png)
 
-2. Run the “Shared VM (Desktop)” app.
+3. Log into Putty with your `username` (`firstname.lastname`) and `password`.
 
-Log in with `[UID]@turingsafehaven.ac.uk` and `[pw]`.
-Check the box in the security alert below and confirm by clicking the `"yes"` button.
+    Note that **The cursor will not move** while you are typing your password!
+
+4. Once you have confirmed log in, you can close this window.
+
+:warning: Be careful not to close the browser when you close the tab in the remote desktop!
+
+5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with `firstname.lastname@turingsafehaven.ac.uk` and `password`.
+
+    Check the box in the security alert below and confirm by clicking the `"yes"` button.
 
 ![](images/1st_logon_sharedVMdesktop.png)
 
-Insert your credentials as per the example below:
+6. Insert your credentials as per the example below:
 
 ![](images/logon_VMdesktop.png)
 
