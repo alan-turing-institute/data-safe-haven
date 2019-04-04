@@ -74,18 +74,16 @@ When this is ready, your facilitator will guide you through user registration an
 
 ### Section 2.2: Turing safe haven set-up
 
-The following applies only to tier 2 or tier 3 challenges (see [section 2.1](#section-21-data-governance-and-challenge-overview)).
-
 The original data is hosted on a server at the Alan Turing Institute.
 You will not have access to that data server.
 
-A copy of the data is available in a read-only file volume inside a [Windows Azure environment](https://azure.microsoft.com/en-gb/overview/what-is-azure/).
+A copy of the data is available inside a [Windows Azure environment](https://azure.microsoft.com/en-gb/overview/what-is-azure/).
 
 The Azure environment also contains a Unix data science VM, which can only be accessed from the dashboard.
 
 :arrow_right: Your laptop
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Turing DSG Wi-Fi
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Turing Guest Wi-Fi
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Windows remote desktop (multi-factor authentication required)
 
@@ -95,7 +93,9 @@ The data science VM has a standard suite of data science software, including Pyt
 
 You also have access to HackMD for collaborative writing and GitLab to version control and share your code.
 
-Note that tier 2 and higher safe havens do not allow you to install new software packages – if you require a specific package, please communicate this to your facilitator.
+The Tier 2 environment does not allow connection to the internet.
+However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
+You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
 ### Section 2.3: Wi-Fi access
 
