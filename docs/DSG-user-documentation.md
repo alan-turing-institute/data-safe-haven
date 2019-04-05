@@ -430,7 +430,7 @@ It also allows you to version control all the code that you write for any of the
 There is a local GitLab installation within the Work Resources.
 
 If you have not used GitLab before:
-- There is a small tutorial below
+- There is a small tutorial available as an Appendix to this guidance
 - You can find the official documentation [in the GitLab website] (https://docs.gitlab.com/ee/gitlab-basics/README.html)
 - Ask your group colleagues for help
 - Ask in the Slack channel for help.
@@ -440,183 +440,13 @@ Make sure that every piece of code or processed dataset you think might be at al
 
 You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop.
 
-Login with username `[UID]` and password `[pw]`.
+Login with username `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
 ![](images/gitlab_screenshot_login.png)
 
 Please make all your repositories public so they are easy to share within your group.
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
-### Section 4.5.1 Repositories
-A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
-
-During the Data Study Group Week, you will be accessing and adding files to the same project repository.
-
-### Section 4.5.2 Add your Git username and set your email
-It is important to configure your Git username and email address, since every Git commit will use this information to identify you as the author.
-
-On your shell, type the following command to add your username:
-```
-git config --global user.name "YOUR_USERNAME"
-```
-
-Then verify that you have the correct username:
-```
-git config --global user.name
-```
-
-To set your email address, type the following command:
-```
-git config --global user.email "your_email_address@example.com"
-```
-
-To verify that you entered your email correctly, type:
-```
-git config --global user.email
-```
-
-You’ll need to do this only once, since you are using the `--global` option. It tells Git to always use this information for anything you do on that system. If you want to override this with a different username or email address for specific projects, you can run the command without the `--global` option when you’re in that project.
-
-### Section 4.5.3 Cloning projects
-In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
-
-When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
-
-![](project_clone_url.png)
-
-Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
-```
-git clone PASTE HTTPS OR SSH HERE
-```
-
-### Section 4.5.4 Command Line Basics
-
-Below you can find other commands other basic commands you may find useful during the week.
-
-Go into a project directory to work in it
-```
-cd NAME-OF-PROJECT
-```
-
-Go back one directory
-```
-cd ..
-```
-
-List what’s in the current directory
-```
-ls
-```
-
-Create a new directory
-```
-mkdir NAME-OF-YOUR-DIRECTORY
-```
-
-Remove a file
-```
-rm NAME-OF-FILE
-```
-
-Remove a directory and all of its contents
-```
-rm -r NAME-OF-DIRECTORY
-```
-
-View command history
-```
-history
-```
-
-Show which directory I am in
-```
-pwd
-```
-
-Clear the shell window
-```
-clear
-```
-
-### Section 4.5.5 Branches
-Branching is the way to work on different versions of a repository at one time.
-
-By default your repository has one branch named `master` which is considered to be the definitive branch. We use branches to experiment and make edits before committing them to `master`.
-
-When you create a branch off the `master` branch, you’re making a copy, or snapshot, of `master` as it was at that point in time. If someone else made changes to the `master` branch while you were working on your branch, you could pull in those updates.
-
-To create a branch:
-```
-git checkout -b NAME-OF-BRANCH
-```
-
-Work on an existing branch:
-```
-git checkout NAME-OF-BRANCH
-```
-
-To merge created branch with master branch you need to be in the created branch.
-```
-git checkout NAME-OF-BRANCH
-git merge master
-```
-
-To merge master branch with created branch you need to be in the master branch.
-```
-git checkout master
-git merge NAME-OF-BRANCH
-```
-
-### Section 4.5.6 Downloading the latest changes in a project
-This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches. You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project. Later, you can push your local commits to the remote repositories.
-```
-git pull REMOTE NAME-OF-BRANCH
-```
-
-When you first clone a repository, REMOTE is typically “origin”. This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server. NAME-OF-BRANCH is usually “master”, but it may be any existing branch.
-
-### Section 4.5.7 Add and commit local changes
-You’ll see your local changes in red when you type git status. These changes may be new, modified, or deleted files/folders. Use git add to stage a local file/folder for committing. Then use git commit to commit the staged files:
-```
-git add FILE OR FOLDER
-git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-```
-
-To add and commit all local changes in one command:
-```
-git add .
-git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
-```
-
-To push all local commits to the remote repository:
-```
-git push REMOTE NAME-OF-BRANCH
-```
-
-For example, to push your local commits to the master branch of the origin remote:
-```
-git push origin master
-```
-
-To delete all local changes in the repository that have not been added to the staging area, and leave unstaged files/folders, type:
-```
-git checkout .
-```
-__Note:__ The . character typically means all in Git.
-
-### Section 4.5.8 How to create a Merge Request
-Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches. This is a brief guide on how to create a merge request. For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
-
-1. Before you start, you should have already created a branch and pushed your changes to GitLab.
-2. Go to the project where you’d like to merge your changes and click on the Merge requests tab.
-3. Click on New merge request on the right side of the screen.
-4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
-![](merge1.png)
-5. When ready, click on the Compare branches and continue button.
-6.At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
-![](merge2.png)
-7. When ready, click on the Submit merge request button.
-Your merge request will be ready to be approved and merged.
 
 ### Section 4.6: Accessing HackMD and writing the report
 
@@ -735,3 +565,176 @@ Three options to transfer files:
 * Use WinSCP for drag-and-drop file transfer, as in [Section 4.7](#section-47-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
 * Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
 * Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
+
+## Appendix B: Gitlab
+
+### Repositories
+A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
+
+During the Data Study Group Week, you will be accessing and adding files to the same project repository.
+
+### Add your Git username and set your email
+It is important to configure your Git username and email address, since every Git commit will use this information to identify you as the author.
+
+On your shell, type the following command to add your username:
+```
+git config --global user.name "YOUR_USERNAME"
+```
+
+Then verify that you have the correct username:
+```
+git config --global user.name
+```
+
+To set your email address, type the following command:
+```
+git config --global user.email "your_email_address@example.com"
+```
+
+To verify that you entered your email correctly, type:
+```
+git config --global user.email
+```
+
+You’ll need to do this only once, since you are using the `--global` option. It tells Git to always use this information for anything you do on that system. If you want to override this with a different username or email address for specific projects, you can run the command without the `--global` option when you’re in that project.
+
+### Cloning projects
+In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
+
+When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
+
+![](project_clone_url.png)
+
+Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
+```
+git clone PASTE HTTPS OR SSH HERE
+```
+
+### Command Line Basics
+
+Below you can find other commands other basic commands you may find useful during the week.
+
+Go into a project directory to work in it
+```
+cd NAME-OF-PROJECT
+```
+
+Go back one directory
+```
+cd ..
+```
+
+List what’s in the current directory
+```
+ls
+```
+
+Create a new directory
+```
+mkdir NAME-OF-YOUR-DIRECTORY
+```
+
+Remove a file
+```
+rm NAME-OF-FILE
+```
+
+Remove a directory and all of its contents
+```
+rm -r NAME-OF-DIRECTORY
+```
+
+View command history
+```
+history
+```
+
+Show which directory I am in
+```
+pwd
+```
+
+Clear the shell window
+```
+clear
+```
+
+### Branches
+Branching is the way to work on different versions of a repository at one time.
+
+By default your repository has one branch named `master` which is considered to be the definitive branch. We use branches to experiment and make edits before committing them to `master`.
+
+When you create a branch off the `master` branch, you’re making a copy, or snapshot, of `master` as it was at that point in time. If someone else made changes to the `master` branch while you were working on your branch, you could pull in those updates.
+
+To create a branch:
+```
+git checkout -b NAME-OF-BRANCH
+```
+
+Work on an existing branch:
+```
+git checkout NAME-OF-BRANCH
+```
+
+To merge created branch with master branch you need to be in the created branch.
+```
+git checkout NAME-OF-BRANCH
+git merge master
+```
+
+To merge master branch with created branch you need to be in the master branch.
+```
+git checkout master
+git merge NAME-OF-BRANCH
+```
+
+### Downloading the latest changes in a project
+This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches. You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project. Later, you can push your local commits to the remote repositories.
+```
+git pull REMOTE NAME-OF-BRANCH
+```
+
+When you first clone a repository, REMOTE is typically “origin”. This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server. NAME-OF-BRANCH is usually “master”, but it may be any existing branch.
+
+### Add and commit local changes
+You’ll see your local changes in red when you type git status. These changes may be new, modified, or deleted files/folders. Use git add to stage a local file/folder for committing. Then use git commit to commit the staged files:
+```
+git add FILE OR FOLDER
+git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
+```
+
+To add and commit all local changes in one command:
+```
+git add .
+git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
+```
+
+To push all local commits to the remote repository:
+```
+git push REMOTE NAME-OF-BRANCH
+```
+
+For example, to push your local commits to the master branch of the origin remote:
+```
+git push origin master
+```
+
+To delete all local changes in the repository that have not been added to the staging area, and leave unstaged files/folders, type:
+```
+git checkout .
+```
+__Note:__ The . character typically means all in Git.
+
+### How to create a Merge Request
+Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches. This is a brief guide on how to create a merge request. For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
+
+1. Before you start, you should have already created a branch and pushed your changes to GitLab.
+2. Go to the project where you’d like to merge your changes and click on the Merge requests tab.
+3. Click on New merge request on the right side of the screen.
+4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
+![](merge1.png)
+5. When ready, click on the Compare branches and continue button.
+6.At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
+![](merge2.png)
+7. When ready, click on the Submit merge request button.
+Your merge request will be ready to be approved and merged.
