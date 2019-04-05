@@ -457,7 +457,7 @@ You can find a really great markdown cheat sheet at
 [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 
 You can access a local installation of HackMD from the Work Resources page.
-Login with your username `[UID]@turingsafehaven.ac.uk` and password `[pw]`, as below.
+Login with your username `firtname.lastname@turingsafehaven.ac.uk` and  `password`, as below.
 
 ![](images/hackmd_logon.png)
 
