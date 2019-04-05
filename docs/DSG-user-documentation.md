@@ -372,14 +372,6 @@ Note that typing R at the commandline will run conda's version R.
 You can run the system R by typing `/user/bin/R`.
 We had already pointed RStudio to use system R, so those using RStudio should see the custom packages with no issues.
 
-This VM can also be used to directly access `GitLab` and `HackMD`.
-
-1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
-2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
-
-![](images/repository_url_copy_icon.png)
-
-![](images/gitlab_screenshot.png)
 
 ### What if I want to install packages?
 
@@ -419,6 +411,16 @@ Enter `yes`, which then installs the packages:
 trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 ...
 ```
+### Accessing GitLab and HackMD from the VM instead of via work resources app
+
+This VM can also be used to directly access `GitLab` and `HackMD`.
+
+1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
+2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
+
+![](images/repository_url_copy_icon.png)
+
+![](images/gitlab_screenshot.png)
 
 ### Section 4.5: Accessing GitLab and storing code
 
