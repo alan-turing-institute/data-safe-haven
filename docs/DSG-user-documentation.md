@@ -112,10 +112,10 @@ Multi-factor authentication (MFA, also known as two-factor authentication, "2FA"
 In this case, we use MFA to protect the challenge data.
 
 Very briefly, MFA will ask you to confirm your identity via another mechanism whenever you connect to the Windows Azure environment.
-You can think of your username and password as being the first authentication, and the second being a text message, phone call, personal access code or notification via the mobile app.
+You can think of your username and password as being the first authentication, and the second being a the phone call or notification via the mobile app.
 *This is why we ask that you bring a mobile device with you to the Data Study Group.*
 
-The instructions below recommend using notifications via the Windows authenticator app, but all the options above will work too.
+The instructions below recommend using notifications via the Authenticator app, but a phone call will work too.
 
 This process may cause some connectivity challenges on the first (and maybe second) days of the Data Study Group, especially if your phone provider’s network has low connectivity at the British Library.
 The DSG team are here to help smooth these processes for you, but it is important to emphasise that we are always balancing ease of analysis with our responsibilities as data controllers for the DSG week.
