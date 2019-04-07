@@ -98,6 +98,7 @@ You also have access to HackMD for collaborative writing and GitLab to version c
 The Tier 2 environment does not allow connection to the internet.
 However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
 
 ### Section 2.3: Wi-Fi access
 
@@ -287,7 +288,10 @@ In order to access the Azure safe haven environment, follow the below steps:
     * X = 14 : Roche
     * X = 15 : British Antarctic Survey
 
-Important note: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
+Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
+(However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
+You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.)
 
 Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
@@ -337,7 +341,7 @@ If you don't respond fast enough to the MFA, or it has failed, you will likley g
 
 3. Log into Putty with your `username` (`firstname.lastname`) and `password`.
 
-    Note that **The cursor will not move** while you are typing your password!
+    Note that **the cursor will not move** while you are typing your password!
 
 4. Once you have confirmed log in, you can close this window.
 
@@ -345,7 +349,7 @@ If you don't respond fast enough to the MFA, or it has failed, you will likley g
 
 5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
-    Check the box in the security alert below and confirm by clicking the `"yes"` button.
+    Check the box in the security alert below and confirm by clicking the `"Yes"` button.
 
 ![](images/1st_logon_sharedVMdesktop.png)
 
@@ -381,7 +385,7 @@ We had already pointed RStudio to use system R, so those using RStudio should se
 
 ### Accessing GitLab and HackMD from the VM instead of via work resources app
 
-This VM can also be used to directly access `GitLab` and `HackMD`.
+This VM can also be used to directly access `GitLab` and `HackMD`, via the broswer within the VM.
 
 1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
 2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
@@ -392,9 +396,13 @@ This VM can also be used to directly access `GitLab` and `HackMD`.
 
 ### Section 4.5: Installing packages
 
-Packages can be installed from a local mirror (inside the environment) of CRAN and PyPI, for challenges in Tier 2 environment or below.
+Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
+You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
-For Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment, additional packages can be requested via the facilitator. If the package is not critical to the success of the project, the Research Computing teams may not process the installation - the time needed to successfully process the request and test will be taken into consideration.
+Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment. 
+In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect. 
+If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration. 
+
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
 
 In Tier 2 or below;
@@ -552,7 +560,9 @@ Suggested folders for the shared drive:
 ## Acknowledgments
 
 Based on an initial document written March/April 2018 by Kirstie Whitaker.
+
 Updated in December 2018 by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
+
 Updated again in March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
  
 ## Appendix A: Migrating to a new data science VM post package update
