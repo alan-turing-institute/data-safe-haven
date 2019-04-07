@@ -15,7 +15,7 @@
   * [Section 4.2: Logging into the Windows Azure environment](#section-42-logging-into-the-windows-azure-environment)
   * [Section 4.3: First-time set-up](#section-43-first-time-set-up)
   * [Section 4.4: Using the data analytics virtual machine](#section-44-using-the-data-analytics-virtual-machine)
-  * [Section 4.5:  What if I want to install packages?](#section45-what-if-i-want-to-install-packages-?)
+  * [Section 4.5:  Installing packages](#section45-installing-packages)
   * [Section 4.6: Accessing GitLab and storing code](#section-46-accessing-gitlab-and-storing-code)
   * [Section 4.7: Accessing HackMD and writing the report](#section-47-accessing-hackmd-and-writing-the-report)
   * [Section 4.8: Accessing the data and exporting figures](#section-48-accessing-the-data-and-exporting-figures)
@@ -387,11 +387,11 @@ This VM can also be used to directly access `GitLab` and `HackMD`.
 
 ![](images/gitlab_screenshot.png)
 
-### Section 4.5: What if I want to install packages?
+### Section 4.5: Installing packages
 
 Packages can be installed from a local mirror (inside the environment) of CRAN and PyPI, for challenges in Tier 2 environment or below.
 
-For Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment, additional packages can be requested via the facilitator. 
+For Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment, additional packages can be requested via the facilitator. If the package is not critical to the success of the project, the Research Computing teams may not process the installation - the time needed to successfully process the request and test will be taken into consideration.
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
 
 In Tier 2 or below;
