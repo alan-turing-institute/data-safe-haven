@@ -326,9 +326,12 @@ You will need to first authenticate using MFA.
 
 ![](images/login_putty_1.png)
 ![](images/login_putty_2.png)
+
+If you don't respond fast enough to the MFA, or it has failed, you will likley get an error that looks like this:
+
 ![](images/login_putty_3.png)
 
-2. Confirm the below security alert with `"yes"` (this only happens on the first log in).
+2. When you get in the first time, there will be a security alert. Dismiss security alert (that looks like the screenshot below) by clicking  `"yes"` (this only happens on the first log in).
 
 ![](images/1st_logon_putty.png)
 
