@@ -21,6 +21,7 @@
   * [Section 4.8: Creating and presenting the report-out slides for Friday](#section-48-creating-and-presenting-the-report-out-slides-for-friday)
   * [Section 4.9: Outputs from the week](#section-49-outputs-from-the-week)
 * [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+* [Appendix B: Gitlab tutorial notes](#appendix-b-Gitlab-tutorial-notes)
 
 ## Section 1: Support for bugs and reports
 
@@ -569,7 +570,7 @@ Three options to transfer files:
 * Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
 * Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
 
-## Appendix B: Gitlab
+## Appendix B: Gitlab tutorial notes
 
 ### Repositories
 A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
