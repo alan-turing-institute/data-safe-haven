@@ -397,7 +397,9 @@ This VM can also be used to directly access `GitLab` and `HackMD`, via the brosw
 ### Section 4.5: Installing packages
 
 Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
-You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively. 
+
+`python` and `R` installs should be done on a **per-user level** to avoid changing/breaking the global setup for each team.
 
 Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment. 
 In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect. 
@@ -410,8 +412,10 @@ In Tier 2 or below;
 In Python, run this in a shell:
 
 ```
-pip install beautifulsoup4
+pip install --user <package-name>
 ```
+
+Rather than `pip install beautifulsoup4 --user`, put the `--user` flag earlier to make it easier to modify previous pip install commands from the bash history (i.e. `pip install --user <package-name>`).
 
 In R, you can install them from inside R:
 
