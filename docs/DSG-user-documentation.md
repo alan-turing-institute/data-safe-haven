@@ -374,8 +374,18 @@ Note that typing R at the commandline will run conda's version R.
 You can run the system R by typing `/user/bin/R`.
 We had already pointed RStudio to use system R, so those using RStudio should see the custom packages with no issues.
 
+### Accessing GitLab and HackMD from the VM instead of via work resources app
 
-### What if I want to install packages?
+This VM can also be used to directly access `GitLab` and `HackMD`.
+
+1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
+2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
+
+![](images/repository_url_copy_icon.png)
+
+![](images/gitlab_screenshot.png)
+
+### Section 4.5: What if I want to install packages?
 
 In Python, run this in a shell:
 
@@ -413,18 +423,9 @@ Enter `yes`, which then installs the packages:
 trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 ...
 ```
-### Accessing GitLab and HackMD from the VM instead of via work resources app
 
-This VM can also be used to directly access `GitLab` and `HackMD`.
 
-1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
-2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
-
-![](images/repository_url_copy_icon.png)
-
-![](images/gitlab_screenshot.png)
-
-### Section 4.5: Accessing GitLab and storing code
+### Section 4.6: Accessing GitLab and storing code
 
 GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
 
@@ -450,7 +451,7 @@ Please make all your repositories public so they are easy to share within your g
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
 
-### Section 4.6: Accessing HackMD and writing the report
+### Section 4.7: Accessing HackMD and writing the report
 
 HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
 It uses markdown which is a simple way to format your text so that it renders nicely in full html.
@@ -479,7 +480,7 @@ We recommend that one person start the document, then let everyone know the URL 
 
 ![](images/hackmd_screenshot.png)
 
-### Section 4.7: Accessing the data and exporting figures
+### Section 4.8: Accessing the data and exporting figures
 
 The data can be found in the `R` drive on the Windows Azure environment.
 Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory.
@@ -496,7 +497,7 @@ You can now drag and drop any files between the data science VM and the Windows 
 
 ![](images/WinSCP_screenshot.png)
 
-### Section 4.8: Creating and presenting the report-out slides for Friday
+### Section 4.9: Creating and presenting the report-out slides for Friday
 
 To create the presentation slides, go to the `Presentation server` on the Work Resources list and then open the Open Office icon on the Windows desktop.
 An example template is provided for you in the windows Azure environment (shared drive).
@@ -516,7 +517,7 @@ You do not have time to try to fix the demo during your presentation.
 And that’s ok!
 You can always show the demo to the challenge owners in a quiet space after lunchtime.
 
-### Section 4.9: Outputs from the week
+### Section 4.10: Outputs from the week
 
 We will close down the compute virtual machines on the Friday afternoon.
 
