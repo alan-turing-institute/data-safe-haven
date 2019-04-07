@@ -533,20 +533,21 @@ You can always show the demo to the challenge owners in a quiet space after lunc
 
 We will close down the compute virtual machines on the Friday afternoon.
 
-That means that anything that is a valuable output of the week should be stored in the persistent storage area - shared drive - rather than your local user storage, OR in the GitLab repository.
+That means that anything that is a valuable output of the week should be stored in the persistent storage area - shared drive -  OR in the GitLab repository, rather than your local user storage.
 
-Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
-**Should we be encourgaing people to put data in GitLab...?**
-
-Everything that is not stored in a GitLab repository on Friday lunchtime will be **DESTROYED FOR EVER**.
+Make sure that *every* piece of code, image, or processed dataset you think might be at all useful is stored in a GitLab repository (code) or on the shared drive (data, images) before lunchtime on Friday. 
+Please see  [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update) for details on how to use WinSCP to transfer files from the VM to the shared drive within the secure environment.
 
 Please do this early and often through the week (not just for the presentation.)
 
-The folders will be:
+Everything that is not stored in a GitLab repository or the shared drive on Friday lunchtime will be **DESTROYED FOR EVER**.
+
+Suggested folders for the shared drive:
 * Presentation
 * Transformed data/derived data
 * Report
-* ???? **UPDATE**
+* Code
+* Images
 
 ## Acknowledgments
 
