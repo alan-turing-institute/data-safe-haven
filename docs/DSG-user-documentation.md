@@ -388,6 +388,13 @@ This VM can also be used to directly access `GitLab` and `HackMD`.
 
 ### Section 4.5: What if I want to install packages?
 
+Packages can be installed from a local mirror (inside the environment) of CRAN and PyPI, for challenges in Tier 2 environment or below.
+
+For Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment, additional packages can be requested via the facilitator. 
+For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+
+In Tier 2 or below;
+
 In Python, run this in a shell:
 
 ```
