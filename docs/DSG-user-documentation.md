@@ -499,7 +499,7 @@ Everyone in your group will be able to access it, so please make a copy of it to
 You can use Windows File Explorer to move data within the Windows environment.
 
 You can transfer the data to the Linux environment using the WinSCP app. (See [Appendix A](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update))
-To access the data science VM’s file system, enter username `[UID]` and password `[pw]` into the login mask, as shown below, and confirm with "login".
+To access the data science VM’s file system, enter username `username` and `password` into the login mask, as shown below, and confirm with "login".
 
 ![](images/WinSCP_logon.png)
 
@@ -563,7 +563,7 @@ Do not attempt to migrate to a new data science VM before it has been officially
 
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment.
 
-User access credentials `[UID]` and `[pw]` remain the same; the IP address `[IP]` changes in a systematic way.
+User access credentials `username` and `password` remain the same; the IP address `[IP]` changes in a systematic way.
 
 Each package update increments the last IP block `160` by one.
 That is, the first VM’s address is `10.250.sth.160`, the address of the first update is `10.250.sth.161`, of the second update `10.250.sth.162`, and so on.
@@ -579,7 +579,7 @@ Prior to initial use, you will also have to follow the first-time set-up instruc
 Any local files that you have created in older VMs – e.g., analysis scripts, notes, derived data – will have to be manually transferred and are not automatically available in a newer VM.
 
 Three options to transfer files:
-* Use WinSCP for drag-and-drop file transfer, as in [Section 4.7](#section-47-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
+* Use WinSCP for drag-and-drop file transfer, as in [Section 4.8](#section-48-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
 * Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
 * Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
 
