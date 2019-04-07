@@ -135,6 +135,8 @@ If you did not provide your number, please let you facilitator know, so they can
 
 Your username will be in the format `firstname.lastname` – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as `firstname.lastname@turingsafehaven.ac.uk`.
 
+ :warning: If you have a hyphenated lastname, or surnames, or long family name, your username will (usually!) have been set with `lastname` as the second part of your surname. Please check in with the DSG team if you are having any issues with your username.
+
 You will have to (1) set a password and (2) configure MFA before you are able to log in to the safe haven.
 
 #### Set your password
