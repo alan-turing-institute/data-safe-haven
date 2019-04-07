@@ -15,7 +15,7 @@
   * [Section 4.2: Logging into the Windows Azure environment](#section-42-logging-into-the-windows-azure-environment)
   * [Section 4.3: First-time set-up](#section-43-first-time-set-up)
   * [Section 4.4: Using the data analytics virtual machine](#section-44-using-the-data-analytics-virtual-machine)
-  * [Section 4.5:  Installing packages](#section45-installing-packages)
+  * [Section 4.5:  Installing packages](#section-45-installing-packages)
   * [Section 4.6: Accessing GitLab and storing code](#section-46-accessing-gitlab-and-storing-code)
   * [Section 4.7: Accessing HackMD and writing the report](#section-47-accessing-hackmd-and-writing-the-report)
   * [Section 4.8: Accessing the data and exporting figures](#section-48-accessing-the-data-and-exporting-figures)
