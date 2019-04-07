@@ -547,8 +547,9 @@ The folders will be:
 
 ## Acknowledgments
 
-Based on an initial document by Kirstie Whitaker.
-Updated by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
+Based on an initial document written March/April 2018 by Kirstie Whitaker.
+Updated in December 2018 by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
+Updated again in March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
  
 ## Appendix A: Migrating to a new data science VM post package update
 
