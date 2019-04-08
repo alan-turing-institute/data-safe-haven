@@ -97,7 +97,8 @@ You also have access to HackMD for collaborative writing and GitLab for version 
 
 The Tier 2 environment does not allow connection to the internet.
 However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
-You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+You can install packages you need from these copies in the usual way, for example `pip install --user` and `packages.install` for Python and R respectively.
+Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For `CRAN`, you will be prompted to make a user package direcory when you install your first package. For `PyPI`, you will need to run `pip install` with the `--user` flag.
 See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
 
 ### Section 2.3: Wi-Fi access
