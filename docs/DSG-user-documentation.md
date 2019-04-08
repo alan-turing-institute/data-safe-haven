@@ -184,6 +184,14 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
     ![](images/login_1.png)
     ![](images/login_2.png)
 
+If you get a "account or password is correct" message, there are a few things to check:
+ * that you typed the right username
+ * that you typed the right domain (see below example!)
+
+Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
+
+![](images/resetpassword_incorrect_1.png)
+
 8. Answer your phone when it rings!
 
    ![](images/login_3.png)
@@ -298,6 +306,8 @@ In order to access the Azure safe haven environment, follow the below steps:
    Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
    :warning: Don’t forget the `https://` - it won’t work without that prefix.
+
+![](images/logon_environment.png)
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
 `firstname.lastname@turingsafehaven.ac.uk`
@@ -607,6 +617,15 @@ Three options to transfer files:
 
 ## Appendix B: Gitlab tutorial notes
 
+Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as 
+ * Project wiki - exactly what it says
+ * Project pastebin - share bits of code
+ * Project issue tracker - track things TODO and bugs
+ * Pull requests - Way to keep track of changes individuals have made to be included in master
+        Some teams design their entire workflows around these things
+A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/). 
+
+
 ### Repositories
 A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
 
@@ -650,6 +669,8 @@ git clone PASTE HTTPS OR SSH HERE
 ```
 
 ### Command Line Basics
+
+There are multiple git cheat sheets such as [interactive](http://ndpsoftware.com/git-cheatsheet.html#loc=stash;) and [this one](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet). We summarised what we find useful below.
 
 Below you can find other commands other basic commands you may find useful during the week.
 
