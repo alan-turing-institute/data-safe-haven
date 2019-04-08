@@ -83,13 +83,13 @@ A copy of the data is available inside a [Windows Azure environment](https://azu
 
 The Azure environment also contains a Unix data science VM, which can only be accessed from the dashboard.
 
-:arrow_right: Your laptop
+&rarr; Your laptop
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Turing Guest Wi-Fi
+&nbsp;&nbsp;&nbsp;&rarr; Turing Guest Wi-Fi
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Windows remote desktop (multi-factor authentication required)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Windows remote desktop (multi-factor authentication required)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:arrow_right: Unix Azure environment
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&rarr; Unix Azure environment
 
 The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
 
@@ -139,7 +139,7 @@ If you did not provide your number, please let you facilitator know, so they can
 
 Your username will be in the format `firstname.lastname` – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as `firstname.lastname@turingsafehaven.ac.uk`.
 
- :warning: If you have a hyphenated lastname, or surnames, or long family name, your username will (usually!) have been set with `lastname` as the second part of your surname. Please check in with the DSG team if you are having any issues with your username.
+ **NOTE:** If you have a hyphenated lastname, or surnames, or long family name, your username will (usually!) have been set with `lastname` as the second part of your surname. Please check in with the DSG team if you are having any issues with your username.
 
 You will have to (1) set a password and (2) configure MFA before you are able to log in to the safe haven.
 
@@ -164,7 +164,7 @@ For security reasons, you must (re-)set your password before you can log in:
 6. Generate a new password using the [Secure Password
 Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
 
-    :warning: Do **not** use special characters or symbols in your password.
+    **NOTE:** Do **not** use special characters or symbols in your password.
     If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
     Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
 
@@ -177,7 +177,7 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
 
 7. Log into your account
 
-    :warning: During this process, you will need to provide a phone number or an email for account recovery.
+    **NOTE:** During this process, you will need to provide a phone number or an email for account recovery.
     This is **not** MFA.
     You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
 
@@ -305,14 +305,14 @@ In order to access the Azure safe haven environment, follow the below steps:
 
    Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
-   :warning: Don’t forget the `https://` - it won’t work without that prefix.
+   **NOTE:** Don’t forget the `https://` - it won’t work without that prefix.
 
    ![](images/logon_environment.PNG)
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
 `firstname.lastname@turingsafehaven.ac.uk`
 
-    :warning: that's an `ac.uk` address not `.co.uk`
+    **NOTE:** that's an `ac.uk` address not `.co.uk`
 
 3. Enter your password and confirm.
 
@@ -327,7 +327,7 @@ In order to access the Azure safe haven environment, follow the below steps:
 
    Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
-   :warning: Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
+   **NOTE:** Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
    That means **some of your key mappings may not be the same** as you’re used to.
 
    We recommend opening a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
@@ -356,7 +356,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
 4. Once you have confirmed log in, you can close this window.
 
-   :warning: Be careful not to close the browser when you close the tab in the remote desktop!
+   **NOTE:** Be careful not to close the browser when you close the tab in the remote desktop!
 
 5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
