@@ -3,7 +3,7 @@
 **Table of contents:**
 
 * [Section 1: Support for bugs and reports](#section-1-support-for-bugs-and-reports)
-* [Section 2: Overview of the Turing DSG IT set-up](section-2-overview-of-the-turing-dsg-it-set-up)
+* [Section 2: Overview of the Turing DSG IT setup](#section-2-overview-of-the-turing-dsg-it-setup)
   * [2.1: Data governance and challenge overview](#section-21-data-governance-and-challenge-overview)
   * [2.2: Turing safe haven set-up](#section-22-turing-safe-haven-set-up)
   * [2.3: Wi-Fi access](#section-23-wi-fi-access)
@@ -38,7 +38,7 @@ The process for requesting help with the issue is as follows:
 
     *Please do not log an issue before you have read all of the sections in this document.*
 
-2. Re-start the environment (safe haven or data science suite) at least once, re-attempt the process leading to the bug/error at least twice.
+2. Log out and log back in again (to the safe haven or data science environment) at least once, re-attempt the process leading to the bug/error at least twice.
 
     We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well!
     (Particularly when there are lots of folks trying these steps at the same time.)
@@ -59,7 +59,7 @@ The process for requesting help with the issue is as follows:
     What would you expect to happen instead if there were no bug?
     * Any workarounds/fixes you have found
 
-## Section 2: Overview of the Turing DSG IT set-up
+## Section 2: Overview of the Turing DSG IT setup
 
 To maintain security of the data and challenge insights we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute.
 Each challenge data set has a data governance and security tier which may impose restrictions on the analysis environment.
