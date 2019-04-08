@@ -281,23 +281,23 @@ In order to access the Azure safe haven environment, follow the below steps:
 
 1. Open a private web browser session and enter the following URL in an incognito tab/private mode): https://rds.dsgroupX.co.uk/RDWeb/webclient/
 
-    Replace `X` by one of the following numbers, depending on challenge
+   Replace `X` by one of the following numbers, depending on challenge
 
-    * X = 11 : NATS
-    * X = 12 : Spend Network
-    * X = 13 : GOSH
-    * X = 14 : Roche
-    * X = 15 : British Antarctic Survey
+   * X = 11 : NATS
+   * X = 12 : Spend Network
+   * X = 13 : GOSH
+   * X = 14 : Roche
+   * X = 15 : British Antarctic Survey
 
-Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
-(However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
-You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
-Note that you will need to use the `--user` flag with `pip install`.
-See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
+   Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
+   (However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
+   You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+   Note that you will need to use the `--user` flag with `pip install`.
+   See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
 
-Additionally there is **no copy/paste functionality** from outside to inside the environment.
+   Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
-:warning: Don’t forget the `https://` - it won’t work without that prefix.
+   :warning: Don’t forget the `https://` - it won’t work without that prefix.
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
 `firstname.lastname@turingsafehaven.ac.uk`
@@ -306,40 +306,39 @@ Additionally there is **no copy/paste functionality** from outside to inside the
 
 3. Enter your password and confirm.
 
-You will now **receive a call or mobile app notification** for the MFA to confirm.
-For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
+   You will now **receive a call or mobile app notification** for the MFA to confirm.
+   For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
 
-After success, you’ll see the following screen:
+   After success, you’ll see the following screen:
 
-![](images/RDS_app_selection_options.png)
+   ![](images/RDS_app_selection_options.png)
 
 4. *(First time only)* Follow the steps in [Section 4.3](#section-43-first-time-set-up) if this is the first time you are logging in.
 
-    Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
+   Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
-:warning: Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
-That means **some of your key mappings may not be the same** as you’re used to.
+   :warning: Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
+   That means **some of your key mappings may not be the same** as you’re used to.
 
-We recommend opening a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
-You can right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
+   We recommend opening a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
+   You can right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
 
 ### Section 4.3: First-time set-up
 
 In order to set up your user account on the virtual machine, you need to follow the below steps **once**.
 
 1. Run the "Shared VM (SSH)" app.
-You will need to first authenticate using MFA.
+   You will need to first authenticate using MFA.
 
-![](images/login_putty_1.png)
-![](images/login_putty_2.png)
+   ![](images/login_putty_2.png)
 
-If you don't respond fast enough to the MFA, or it has failed, you will likley get an error that looks like this:
+   If you don't respond fast enough to the MFA, or it has failed, you will likely get an error that looks like this:
 
-![](images/login_putty_3.png)
+   ![](images/login_putty_3.png)
 
 2. When you get in the first time, there will be a security alert. Dismiss security alert (that looks like the screenshot below) by clicking  `"yes"` (this only happens on the first log in).
 
-![](images/1st_logon_putty.png)
+   ![](images/1st_logon_putty.png)
 
 3. Log into Putty with your `username` (`firstname.lastname`) and `password`.
 
@@ -347,25 +346,36 @@ If you don't respond fast enough to the MFA, or it has failed, you will likley g
 
 4. Once you have confirmed log in, you can close this window.
 
-:warning: Be careful not to close the browser when you close the tab in the remote desktop!
+   :warning: Be careful not to close the browser when you close the tab in the remote desktop!
 
 5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
     Check the box in the security alert below and confirm by clicking the `"Yes"` button.
 
-![](images/1st_logon_sharedVMdesktop.png)
+   ![](images/1st_logon_sharedVMdesktop.png)
 
 6. Insert your credentials as per the example below:
 
-![](images/logon_VMdesktop.png)
+   ![](images/logon_VMdesktop.png)
 
-If you get a warning:
+   If you get a warning:
 
-> Oops, we couldn't connect to "Shared VM (Desktop)"
->
-> We couldn't connect to the gateway because of an error. If this keeps happening, ask your admin or tech support for help.
+   > Oops, we couldn't connect to "Shared VM (Desktop)"
+   >
+   > We couldn't connect to the gateway because of an error.
 
-then make sure that you have MFA enabled (see [Section 3](section-3-user-activation-instructions), which is different from text messages for account recovery.
+   Then make sure that you have MFA enabled (see [Section 3](section-3-user-activation-instructions), which is different from text messages for account recovery. If this keeps happening, ask your admin or tech support for help.
+
+   If you get an error:
+   > connecting to sesman ip 127.0.0.1 port 3350
+   >
+   > sesman connect ok
+   >
+   > sending login info to session manager, please wait...
+   >
+   > login failed for display 0
+
+   Then it is likely that you have entered your credentials incorrectly. Please try again, entering your username and password carefully. If this keeps happening, ask your admin or tech support for help.
 
 ### Section 4.4: Using the data analytics virtual machine
 
@@ -390,34 +400,24 @@ We had already pointed RStudio to use system R, so those using RStudio should se
 This VM can also be used to directly access `GitLab` and `HackMD`, via the broswer within the VM.
 
 1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
-2. Read and write access – the repository URL can be copied using via icon and then replacing the first bit by the IP address – in the case below 10.250.10.151
+2. Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
 
-![](images/repository_url_copy_icon.png)
+   ![](images/gitlab_screenshot.png)
 
-![](images/gitlab_screenshot.png)
+3. If you create a new repository, we recommend you make it **public**. As each challenge has it's own secure environment, this will make the repository accessible to your colleagues working on the same challenge but not to anyone else (who will not have access to the challenge environment). 
 
 ### Section 4.5: Installing packages
 
 Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively. 
 
-`python` and `R` installs should be done on a **per-user level** to avoid changing/breaking the global setup for each team.
-
-Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment. 
-In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect. 
-If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration. 
-
-For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
-
-In Tier 2 or below;
+Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For `CRAN`, you will be prompted to make a user package direcory when you install your first package. For `PyPI`, you will need to run `pip install` with the `--user` flag.
 
 In Python, run this in a shell:
 
 ```
 pip install --user <package-name>
 ```
-
-Rather than `pip install beautifulsoup4 --user`, put the `--user` flag earlier to make it easier to modify previous pip install commands from the bash history (i.e. `pip install --user <package-name>`).
 
 In R, you can install them from inside R:
 
@@ -450,6 +450,12 @@ trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 ...
 ```
 
+Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment. 
+In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect. 
+If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration. 
+
+For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+
 
 ### Section 4.6: Accessing GitLab and storing code
 
@@ -460,12 +466,12 @@ There is a local GitLab installation within the Work Resources.
 
 If you have not used GitLab before:
 - There is a small tutorial available as an Appendix to this guidance
-- You can find the official documentation [in the GitLab website] (https://docs.gitlab.com/ee/gitlab-basics/README.html)
+- You can find the official documentation [in the GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html)
 - Ask your group colleagues for help
 - Ask in the Slack channel for help.
 
-Everything that is not stored in a GitLab repository on Friday lunchtime will be **DESTROYED FOR EVER**.
-Make sure that every piece of code or processed dataset you think might be at all useful is stored in a GitLab repository within the secure environment.
+Everything that is not stored in a GitLab repository or on the shared `R:` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
+Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment. Small processed data can also be stored in Gitlab. Larger processed datasets should be transferred to the shared `R:` drive using the `File Transfer` WinSCP app. 
 
 You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop.
 
@@ -512,7 +518,7 @@ The data can be found in the `R` drive on the Windows Azure environment.
 Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory.
 You can use Windows File Explorer to move data within the Windows environment.
 
-You can transfer the data to the Linux environment using the WinSCP app. (See [Appendix A](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update))
+You can transfer the data to the Linux environment using the `File Transfer` WinSCP app. (See [Appendix A](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update))
 To access the data science VM’s file system, enter username `username` and `password` into the login mask, as shown below, and confirm with "login".
 
 ![](images/WinSCP_logon.png)
