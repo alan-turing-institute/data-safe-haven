@@ -599,6 +599,15 @@ Three options to transfer files:
 
 ## Appendix B: Gitlab tutorial notes
 
+Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as 
+ * Project wiki - exactly what it says
+ * Project pastebin - share bits of code
+ * Project issue tracker - track things TODO and bugs
+ * Pull requests - Way to keep track of changes individuals have made to be included in master
+        Some teams design their entire workflows around these things
+A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/). 
+
+
 ### Repositories
 A repository is usually used to organize a single project. Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs. We recommend including a README, or a file with information about your project.
 
