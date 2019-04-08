@@ -643,6 +643,8 @@ git clone PASTE HTTPS OR SSH HERE
 
 ### Command Line Basics
 
+There are multiple git cheat sheets such as [interactive](http://ndpsoftware.com/git-cheatsheet.html#loc=stash;) and [this one](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet). We summarised what we find useful below.
+
 Below you can find other commands other basic commands you may find useful during the week.
 
 Go into a project directory to work in it
