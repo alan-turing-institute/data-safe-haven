@@ -152,14 +152,14 @@ For security reasons, you must (re-)set your password before you can log in:
 3. At the login prompt enter your username `username@turingsafehaven.ac.uk` and confirm/proceed.
   (Remember that your username will be in the format `firstname.lastname`.)
 4. There will then be a password prompt.
-  The first time you log-in **you haven’t set a password yet** so click "Forgotten password"
+   The first time you log-in **you haven’t set a password yet** so click "Forgotten password"
 
-![](images/resetpassword_1.png)
+   ![](images/resetpassword_1.png)
 
 5. Complete the requested information (captcha and the phone number you provided on registration).
 
-![](images/resetpassword_2.png)
-![](images/resetpassword_3.png)
+   ![](images/resetpassword_2.png)
+   ![](images/resetpassword_3.png)
 
 6. Generate a new password using the [Secure Password
 Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
@@ -172,8 +172,8 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
     - lowercase character
     - number
 
-![](images/resetpassword_4.png)
-![](images/resetpassword_5.png)
+    ![](images/resetpassword_4.png)
+    ![](images/resetpassword_5.png)
 
 7. Log into your account
 
@@ -181,16 +181,16 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
     This is **not** MFA.
     You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
 
-![](images/login_1.png)
-![](images/login_2.png)
+    ![](images/login_1.png)
+    ![](images/login_2.png)
 
 8. Answer your phone when it rings!
 
-![](images/login_3.png)
+   ![](images/login_3.png)
 
 9. Finish logging in
 
-![](images/login_4.png)
+   ![](images/login_4.png)
 
 #### Configure the MFA
 
@@ -208,20 +208,20 @@ The authentication method can be either via a call to your phone or via the Micr
 
 4. Set up the second authentication method
 
-![](images/setup_mfa.png)
+    ![](images/setup_mfa.png)
 
 5. **Phone option**: If you choose to set up the authentication by phone call you will receive a call straight away.
 
     Note that some people get a call that says, *"press the pound key"* and others receive *"press the hash key"* – both mean hit the `#` button.
 
-![](images/setup_mfa_phone_1.png)
-![](images/setup_mfa_phone_2.png)
+    ![](images/setup_mfa_phone_1.png)
+    ![](images/setup_mfa_phone_2.png)
 
-Note that when you click `close` the page will switch to your dashboard.
+    Note that when you click `close` the page will switch to your dashboard.
 
-You can close your browser at this point.
+    You can close your browser at this point.
 
-5. **App option**:
+6. **App option**:
 
    i. Download the app via one of these links:
 
@@ -243,13 +243,13 @@ You can close your browser at this point.
 
     viii. Click "Next" again to test the app, you will get a verification on your app.
 
-![](images/setup_mfa_app_1.png)
-![](images/setup_mfa_app_2.png)
-![](images/setup_mfa_app_3.png)
+    ![](images/setup_mfa_app_1.png)
+    ![](images/setup_mfa_app_2.png)
+    ![](images/setup_mfa_app_3.png)
 
-6. When confirmed you can close the browser.
+7. When confirmed you can close the browser.
 
-![](images/setup_mfa_app_4.png)
+   ![](images/setup_mfa_app_4.png)
 
 #### Top tips regarding MFA
 
