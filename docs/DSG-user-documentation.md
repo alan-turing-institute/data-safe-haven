@@ -106,6 +106,7 @@ See [Section 4.5:  Installing packages](#section-45-installing-packages) for fur
 You need to be connected to the Turing’s internal Wi-fi network to access any of the challenges:
 
 > Wi-Fi Name: Turing Guest
+>
 > Password  : *Available on signage throughout the Turing Institute*
 
 The password is the full string *including spaces*.
@@ -279,9 +280,12 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 ### Section 4.1: Access credentials
 
 From the user registration process ([Section 3](#section-3-user-activation-instructions)), you should have the following ready:
-* A `username` in the format `firstname.lastname`.
-* A user `password`.
-  You choose this in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
+
+- A `username` in the format `firstname.lastname`.
+
+- A user `password`.
+
+You (re-)set your password in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
 
 ### Section 4.2: Logging into the Windows Azure environment
 
@@ -310,7 +314,8 @@ In order to access the Azure safe haven environment, follow the below steps:
    ![](images/logon_environment.PNG)
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
-`firstname.lastname@turingsafehaven.ac.uk`
+
+   - `firstname.lastname@turingsafehaven.ac.uk`
 
     **NOTE:** that's an `ac.uk` address not `.co.uk`
 
@@ -358,9 +363,11 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    **NOTE:** Be careful not to close the browser when you close the tab in the remote desktop!
 
-5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with `firstname.lastname@turingsafehaven.ac.uk` and `password`.
+5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
 
-    Check the box in the security alert below and confirm by clicking the `"Yes"` button.
+   `firstname.lastname@turingsafehaven.ac.uk` and `password`.
+
+   Check the box in the security alert below and confirm by clicking the `"Yes"` button.
 
    ![](images/1st_logon_sharedVMdesktop.png)
 
@@ -377,12 +384,13 @@ In order to set up your user account on the virtual machine, you need to follow 
    Then make sure that you have MFA enabled (see [Section 3](section-3-user-activation-instructions), which is different from text messages for account recovery. If this keeps happening, ask your admin or tech support for help.
 
    If you get an error:
+
    > connecting to sesman ip 127.0.0.1 port 3350
-   >
+   > 
    > sesman connect ok
-   >
+   > 
    > sending login info to session manager, please wait...
-   >
+   > 
    > login failed for display 0
 
    Then it is likely that you have entered your credentials incorrectly. Please try again, entering your username and password carefully. If this keeps happening, ask your admin or tech support for help.
@@ -573,11 +581,12 @@ Please do this early and often through the week (not just for the presentation.)
 Everything that is not stored in a GitLab repository or the shared drive on Friday lunchtime will be **DESTROYED FOR EVER**.
 
 Suggested folders for the shared drive:
-* Presentation
-* Transformed data/derived data
-* Report
-* Code
-* Images
+
+- Presentation
+- Transformed data/derived data
+- Report
+- Code
+- Images
 
 ## Acknowledgments
 
@@ -586,7 +595,7 @@ Based on an initial document written March/April 2018 by Kirstie Whitaker.
 Updated in December 2018 by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
 
 Updated again in March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
- 
+
 ## Appendix A: Migrating to a new data science VM post package update
 
 Important: please listen to your facilitators who will explicitly update you on VM updates and potential additional instructions specific to the migration.
@@ -611,18 +620,21 @@ Prior to initial use, you will also have to follow the first-time set-up instruc
 Any local files that you have created in older VMs – e.g., analysis scripts, notes, derived data – will have to be manually transferred and are not automatically available in a newer VM.
 
 Three options to transfer files:
-* Use WinSCP for drag-and-drop file transfer, as in [Section 4.8](#section-48-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
-* Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
-* Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
+
+- Use WinSCP for drag-and-drop file transfer, as in [Section 4.8](#section-48-accessing-the-data-and-exporting-figures). First transfer from the old [IP] to the Windows environment, then transfer from Windows environment to new [IP].
+- Use command line SCP for direct transfer from old [IP] to new [IP]. The data science VMs are able to see each other in the network.
+- Push your partial work to Gitlab from a local git repository on the old VM, and the pull your work into a local git repository on the new VM. This is *not* recommended for figures or files above a size of 1MB as it will clutter Gitlab, please use only for code and other text files, or small figures/data.
 
 ## Appendix B: Gitlab tutorial notes
 
 Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as 
- * Project wiki - exactly what it says
- * Project pastebin - share bits of code
- * Project issue tracker - track things TODO and bugs
- * Pull requests - Way to keep track of changes individuals have made to be included in master
-        Some teams design their entire workflows around these things
+ 
+ - Project wiki - exactly what it says
+ - Project pastebin - share bits of code
+ - Project issue tracker - track things TODO and bugs
+ - Pull requests - Way to keep track of changes individuals have made to be included in master
+
+Some teams design their entire workflows around these things.
 A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/). 
 
 
@@ -794,7 +806,7 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
    ![](merge1.png)
-   
+
 5. When ready, click on the Compare branches and continue button.
 6. At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
