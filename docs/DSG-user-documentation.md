@@ -93,7 +93,7 @@ The Azure environment also contains a Unix data science VM, which can only be ac
 
 The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
 
-You also have access to HackMD for collaborative writing and GitLab to version control and share your code.
+You also have access to HackMD for collaborative writing and GitLab for version control and to share your code.
 
 The Tier 2 environment does not allow connection to the internet.
 However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
