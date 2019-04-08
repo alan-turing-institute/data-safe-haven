@@ -307,7 +307,7 @@ In order to access the Azure safe haven environment, follow the below steps:
 
    :warning: Don’t forget the `https://` - it won’t work without that prefix.
 
-![](images/logon_environment.png)
+   ![](images/logon_environment.PNG)
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
 `firstname.lastname@turingsafehaven.ac.uk`
