@@ -183,6 +183,14 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
 ![](images/login_1.png)
 ![](images/login_2.png)
 
+If you get a "account or password is correct" message, there are a few things to check:
+ * that you typed the right username
+ * that you typed the right domain (see below example!)
+
+Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
+
+![](images/resetpassword_incorrect_1.png)
+
 8. Answer your phone when it rings!
 
 ![](images/login_3.png)
@@ -296,6 +304,8 @@ See [Section 4.5:  Installing packages](#section-45-installing-packages) for fur
 Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
 :warning: Don’t forget the `https://` - it won’t work without that prefix.
+
+![](images/logon_environment.png)
 
 2. Enter the username you’ve been provided, ensure that you use the following format:
 `firstname.lastname@turingsafehaven.ac.uk`
