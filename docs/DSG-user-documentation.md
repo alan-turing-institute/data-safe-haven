@@ -292,7 +292,8 @@ In order to access the Azure safe haven environment, follow the below steps:
 Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
 (However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
-See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.)
+Note that you will need to use the `--user` flag with `pip install`.
+See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
 
 Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
