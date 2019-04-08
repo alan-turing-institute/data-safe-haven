@@ -291,8 +291,8 @@ In order to access the Azure safe haven environment, follow the below steps:
 
    Replace `X` by one of the following numbers, depending on challenge
 
+   * X = 10 : Spend Network
    * X = 11 : NATS
-   * X = 12 : Spend Network
    * X = 13 : GOSH
    * X = 14 : Roche
    * X = 15 : British Antarctic Survey
