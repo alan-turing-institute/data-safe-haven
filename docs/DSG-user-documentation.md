@@ -89,7 +89,7 @@ The Azure environment also contains a Unix data science VM, which can only be ac
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Windows remote desktop (multi-factor authentication required)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&rarr; Unix Azure environment
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Unix Azure environment
 
 The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
 
@@ -184,11 +184,11 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
     ![](images/login_1.png)
     ![](images/login_2.png)
 
-If you get a "account or password is correct" message, there are a few things to check:
- * that you typed the right username
- * that you typed the right domain (see below example!)
+    If you get a "account or password is correct" message, there are a few things to check:
+     * that you typed the right username
+     * that you typed the right domain (see below example!)
 
-Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
+    Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
 
    ![](images/resetpassword_incorrect_1.PNG)
 
