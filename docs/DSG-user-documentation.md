@@ -792,9 +792,13 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 2. Go to the project where you’d like to merge your changes and click on the Merge requests tab.
 3. Click on New merge request on the right side of the screen.
 4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
-![](merge1.png)
+
+   ![](merge1.png)
+   
 5. When ready, click on the Compare branches and continue button.
-6.At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
-![](merge2.png)
+6. At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
+
+   ![](merge2.png)
+
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
