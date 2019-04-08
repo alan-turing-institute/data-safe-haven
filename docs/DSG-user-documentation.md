@@ -190,7 +190,7 @@ If you get a "account or password is correct" message, there are a few things to
 
 Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
 
-![](images/resetpassword_incorrect_1.png)
+   ![](images/resetpassword_incorrect_1.PNG)
 
 8. Answer your phone when it rings!
 
