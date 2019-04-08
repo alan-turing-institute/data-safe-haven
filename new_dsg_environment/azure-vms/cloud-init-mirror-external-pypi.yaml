@@ -37,12 +37,11 @@ write_files:
       #   -r          recursive
       #   -t          preserve times
       #   -l          follow symlinks
-      #   -z          compress data during transfer
       #   -v          verbose
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          rsync -prtlzv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |

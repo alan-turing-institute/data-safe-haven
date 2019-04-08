@@ -160,7 +160,7 @@ runcmd:
   - pypiserver/bin/pip install pypiserver
   # Patch pypiserver so that it uses the static simple index files
   - echo "*** Patching pypiserver to use static index files ***"
-  - cd /pypiserver/lib/python3.6/site-packages/pypiserver
+  - cd /pypiserver/lib/python3*/site-packages/pypiserver
   - patch < /pypiserver.app.py.patch
   - cd /
 

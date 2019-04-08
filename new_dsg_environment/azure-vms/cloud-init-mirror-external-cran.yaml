@@ -34,17 +34,16 @@ write_files:
       #   -r          recursive
       #   -t          preserve times
       #   -l          follow symlinks
-      #   -z          compress data during transfer
       #   -v          verbose
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          rsync -prtlzv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
       #! /bin/bash
-      rsync -rtlzv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
+      rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
   - path: "/home/mirrordaemon/pull_then_push.sh"
     content: |
       #! /bin/bash
