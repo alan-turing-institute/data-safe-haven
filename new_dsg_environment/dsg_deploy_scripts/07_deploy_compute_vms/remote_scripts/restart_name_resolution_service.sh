@@ -1,25 +1,13 @@
-#!/bin/sh
-print_usage_and_exit() {
-    echo "usage: $0 [-h] -q"
-    echo "  -h      display help"
-    echo "  -q      host to query DNS for (e.g. rdssh1.dsgroup9.co.uk)"
-    exit 1
-}
-
-while getopts "h?q:" opt; do
-    case "$opt" in
-        h|\?)
-            print_usage_and_exit
-            ;;
-        q)  
-            TEST_HOST=$OPTARG
-            ;;
-    esac
-done
+#!/bin/bash
+# $TEST_HOST must be present as an environment variable
+# This script is designed to be deployed to an Azure Linux VM via
+# the Powershell Invoke-AzVMRunCommand, which sets all variables 
+# passed in its -Parameter argument as environment variables
 
 NS_CMD=( nslookup $TEST_HOST )
 RESTART_CMD="sudo systemctl restart systemd-resolved.service"
 
+echo "Testing connectivity for '$TEST_HOST'"
 NS_RESULT_PRE=$(${NS_CMD[@]})
 NS_EXIT_PRE=$?
 if [ "$NS_EXIT_PRE" == "0" ]
@@ -37,6 +25,7 @@ else
     $(${RESTART_CMD})
 fi
 
+echo "Re-testing connectivity for '$TEST_HOST'"
 NS_RESULT_POST=$(${NS_CMD[@]})
 NS_EXIT_POST=$?
 if [ "$NS_EXIT_POST" == "0" ]
