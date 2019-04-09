@@ -609,7 +609,8 @@ runcmd:
   - echo "Deprovisioning this VM to allow an image to be made from it"
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
-  - ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+  # NB. this is not needed with newer versions, so we check first
+  - if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
 
 final_message:
   "The system is setup and deprovisioned. Configuration took $UPTIME seconds"
