@@ -559,25 +559,25 @@ runcmd:
   - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
-  # Install azcopy
-  - echo "*** Installing azcopy... ***"
-  - cd /tmp
-  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
-  - tar -xf azcopy.tar.gz
-  - bash install.sh
-  - rm -rf azcopy.tar.gz azcopy install.sh
-  - if [ "$(which azcopy)" = "" ]; then echo "Could not install azcopy"; exit 1; fi
+  # # Install azcopy
+  # - echo "*** Installing azcopy... ***"
+  # - cd /tmp
+  # - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
+  # - tar -xf azcopy.tar.gz
+  # - bash install.sh
+  # - rm -rf azcopy.tar.gz azcopy install.sh
+  # - if [ "$(which azcopy)" = "" ]; then echo "Could not install azcopy"; exit 1; fi
 
-  # Azure Storage Explorer
-  - mkdir -p /opt/azurestorage
-  - cd /opt/azurestorage
-  - wget http://download.microsoft.com/download/A/E/3/AE32C485-B62B-4437-92F7-8B6B2C48CB40/previous-StorageExplorer-linux-x64.tar.gz
-  - tar -zxf previous-StorageExplorer-linux-x64.tar.gz
-  - rm -f previous-StorageExplorer-linux-x64.tar.gz
-  - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
-  - export PATH=$PATH:/opt/azurestorage/
-  - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/azurestorage/"
-  - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
+  # # Azure Storage Explorer
+  # - mkdir -p /opt/azurestorage
+  # - cd /opt/azurestorage
+  # - wget http://download.microsoft.com/download/A/E/3/AE32C485-B62B-4437-92F7-8B6B2C48CB40/previous-StorageExplorer-linux-x64.tar.gz
+  # - tar -zxf previous-StorageExplorer-linux-x64.tar.gz
+  # - rm -f previous-StorageExplorer-linux-x64.tar.gz
+  # - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
+  # - export PATH=$PATH:/opt/azurestorage/
+  # - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/azurestorage/"
+  # - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
 
   # Check for successful installations
   - echo "*** Checking for successful installation... ***"
@@ -603,7 +603,8 @@ runcmd:
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
-  - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
+  # - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
+  # - if [ "$(which StorageExplorer)" != "" ]; then echo "StorageExplorer $(which StorageExplorer)"; else echo "StorageExplorer not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
