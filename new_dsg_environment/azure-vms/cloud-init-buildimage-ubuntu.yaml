@@ -345,6 +345,7 @@ packages:
   - r-cran-zoo
   - r-recommended
   - realmd
+  - ristretto
   - scala
   - sssd
   - sssd-tools
