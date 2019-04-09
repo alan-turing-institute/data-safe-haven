@@ -394,7 +394,6 @@ runcmd:
   - echo "*** Installing conda... ***"
   - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - export ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
-  - echo "*** Installing Anaconda ***"
   - echo "Using installer from $ANACONDA_INSTALLER_URL"
   - cd /tmp
   - curl -O $ANACONDA_INSTALLER_URL
@@ -550,12 +549,14 @@ runcmd:
   - echo "*** Installing spark... ***"
   - mkdir -p /opt/spark
   - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
-  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
-  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
-  - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"
+  - echo "360a7b57290537c5eb3570c70d0d0b9580c4f9db8d0fa9746c3bbb6544bbb8f629901582968955aceb5649cb9d66c2d524971e4e3ef34c35d96f02ff6dba4d72  spark-2.4.1-bin-hadoop2.7.tgz" > spark_sha512.hash
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.1/spark-2.4.1-bin-hadoop2.7.tgz
+  - if [ "$(sha512sum -c spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
+  - tar -zxf spark-2.4.1-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.1-bin-hadoop2.7.tgz
+  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin
+  - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install azcopy
