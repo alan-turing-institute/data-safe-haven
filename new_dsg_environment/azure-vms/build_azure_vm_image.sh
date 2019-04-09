@@ -218,6 +218,6 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
-echo -e "${RED}This process will take several hours to complete.${END}"
+echo -e "${BOLD}This process will take several hours to complete.${END}"
 echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

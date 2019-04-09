@@ -10,12 +10,12 @@ END="\033[0m"
 SUBSCRIPTION="" # must be provided
 MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
+GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 VERSIONSUFFIX=""
 
 # Other constants
 SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base" "ComputeVM-DsgBase")
-GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
 VERSIONMAJOR="0"
 VERSIONMINOR="1"
 
@@ -26,13 +26,14 @@ print_usage_and_exit() {
     echo "  -s subscription [required]                specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
     echo "  -i source_image [this or '-n' required]   specify an already existing image to add to the gallery [either this or machine_name are required]."
     echo "  -n machine_name [this or '-i' required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required]."
+    echo "  -g gallery_name                           specify which image gallery to use, creating it if it does not exist. Must be unique within the subscription (defaults to '${GALLERYNAME}')"
     echo "  -r resource_group                         specify resource group - must match the one where the machine/image already exists (defaults to '${RESOURCEGROUP}')"
     echo "  -v version_suffix                         this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc."
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:n:r:s:v:" opt; do
+while getopts "g:hi:n:r:s:v:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -42,6 +43,9 @@ while getopts "hi:n:r:s:v:" opt; do
             ;;
         n)
             MACHINENAME=$OPTARG
+            ;;
+        g)
+            GALLERYNAME=$OPTARG
             ;;
         r)
             RESOURCEGROUP=$OPTARG
@@ -140,7 +144,7 @@ elif [ "$MACHINENAME" != "" ] && [ "$SOURCEIMAGE" != "" ]; then
     print_usage_and_exit
 elif [ "$MACHINENAME" != "" ]; then
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME)" = "" ]; then
-        echo -e "${RED}Could not find a machine called ${BLUE}${MACHINENAME}${RED} in resource group ${RESOURCEGROUP}${END}"
+        echo -e "${RED}Could not find a machine called ${BLUE}${MACHINENAME}${RED} in resource group ${BLUE}${RESOURCEGROUP}${END}"
         echo -e "${BOLD}Available machines are:${END}"
         az vm list --resource-group $RESOURCEGROUP --query "[].name" -o table
         print_usage_and_exit
@@ -153,7 +157,18 @@ elif [ "$MACHINENAME" != "" ]; then
         SOURCEIMAGE="Image$(echo $MACHINENAME | sed 's/Generalized//')"
         echo -e "${BOLD}Creating an image from VM: ${BLUE}${MACHINENAME}${END}"
         az image create --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --source $MACHINENAME
-        # echo "Residual artifacts of the build process (ie. anything starting with $MACHINENAME) can now be deleted from $RESOURCEGROUP."
+        # If the image has been successfully created then remove build artifacts
+        if [ "$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE --query 'id')" != "" ]; then
+            echo -e "${BOLD}Removing residual artifacts of the build process from ${BLUE}${RESOURCEGROUP}${END}"
+            echo -e "${BOLD}... virtual machine: ${BLUE}${MACHINENAME}${END}"
+            az vm delete --yes --resource-group $RESOURCEGROUP --name $MACHINENAME
+            echo -e "${BOLD}... hard disk: ${BLUE}${MACHINENAME}OSDISK${END}"
+            az disk delete --yes --resource-group $RESOURCEGROUP --name "${MACHINENAME}OSDISK"
+            echo -e "${BOLD}... network card: ${BLUE}${MACHINENAME}VMNic${END}"
+            az network nic delete --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic"
+            echo -e "${BOLD}... public IP address: ${BLUE}${MACHINENAME}PublicIP${END}"
+            az network public-ip delete --resource-group $RESOURCEGROUP --name "${MACHINENAME}PublicIP"
+        fi
     fi
 fi
 
@@ -166,7 +181,7 @@ if [ "$(az image show --resource-group $RESOURCEGROUP --name $SOURCEIMAGE 2>&1 |
 fi
 
 # Create the image as a new version of the appropriate existing registered version
-echo -e "${BOLD}Trying to identify ${BLUE}$SOURCEIMAGE${END} ${BOLD}as a supported image...${END}"
+echo -e "${BOLD}Checking whether ${BLUE}$SOURCEIMAGE${END} ${BOLD}is a supported image...${END}"
 for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
     if [[ "$SOURCEIMAGE" = *"$SUPPORTEDIMAGE"* ]]; then
         echo -e "${BOLD}Identified ${BLUE}${SOURCEIMAGE}${END} ${BOLD}as an instance of ${BLUE}${SUPPORTEDIMAGE}${END}"
@@ -188,7 +203,10 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
             done
         fi
         echo -e "${BOLD}Preparing to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
-        echo -e "${RED}Please note, this may take more than 30 minutes to complete${END}"
+        echo -e "${BOLD}Please note, this may take more than 30 minutes to complete${END}"
+        echo -e "${BOLD}Starting image replication at $(date)${END}"
+        STARTTIME=$(date +%s)
+
         az sig image-version create \
             --resource-group $RESOURCEGROUP \
             --gallery-name $GALLERYNAME \
@@ -198,5 +216,9 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
             --managed-image $RESOURCEID
         echo -e "${BOLD}Result of replication...${END}"
         az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE
+
+        # Final message
+        ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+        echo "${BOLD}Image replication finished in $ELAPSED${END}"
     fi
 done
