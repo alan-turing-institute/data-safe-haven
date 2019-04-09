@@ -30,7 +30,7 @@ $computeVmName = ($computeVmNics | Where-Object{$_.IpConfigurations.PrivateIpAdd
 
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "restart_name_resolution_service.sh"
-$testHost = ("rdssh1." + $config.dsg.domain.fqdn)
+$testHost = $config.shm.dc.fqdn
 Write-Host " - Restarting name resolution service on VM $computeVmName"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$computeVmName" `
     -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter @{"TEST_HOST"="$testHost"};
