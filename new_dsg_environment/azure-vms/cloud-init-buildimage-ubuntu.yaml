@@ -359,9 +359,6 @@ runcmd:
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
 
-  # Ensure that ~/.local/bin and ~/bin will be included in PATH so that any executables that are installed there (eg. by pip) can be used
-  - EXTRA_PATHS="\$HOME/.local/bin:\$HOME/bin"
-
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
   - apt-get install -y --no-install-recommends nvidia-driver-410
@@ -526,7 +523,6 @@ runcmd:
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
-  - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/julia/julia-1.0.1/bin"
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -556,7 +552,6 @@ runcmd:
   - rm -rf spark-2.4.1-bin-hadoop2.7.tgz
   - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"|' /etc/environment
   - export PATH=$PATH:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin
-  - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # # Install azcopy
@@ -576,7 +571,6 @@ runcmd:
   # - rm -f previous-StorageExplorer-linux-x64.tar.gz
   # - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
   # - export PATH=$PATH:/opt/azurestorage/
-  # - export EXTRA_PATHS="${EXTRA_PATHS}:/opt/azurestorage/"
   # - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
 
   # Check for successful installations
@@ -615,9 +609,11 @@ runcmd:
   - echo "Bioconductor packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
-  # Set PATH appropriately
-  - echo "Setting PATH to '${PATH}:${EXTRA_PATHS}'"
-  - echo "export PATH=${PATH}:${EXTRA_PATHS}" >> /etc/bash.bashrc
+  # Set PATH to the current working version which contains all installed packages
+  # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  - export PATH=$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - echo "Setting PATH to '${PATH}'"
+  - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
   # Deprovision
   - echo "Deprovisioning this VM to allow an image to be made from it"
