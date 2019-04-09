@@ -219,10 +219,6 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
 
         # Final message
         ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-<<<<<<< HEAD
         echo -e "${BOLD}Image replication finished in $ELAPSED${END}"
-=======
-        echo "${BOLD}Image replication finished in $ELAPSED${END}"
->>>>>>> fea42eec88952809e193b9161d94735ccc895968
     fi
 done
