@@ -173,12 +173,6 @@ runcmd:
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
-  # Set 'other' permissions on the anaconda directory to be equal to that of the owner
-  # We then remove write access so that site-packages can be used but not altered
-  # Also add ~/.local/bin and ~/bin to PATH so that any executables that are installed there by pip can be used
-  - echo "Updating /anaconda/ permissions"
-  - chmod -R o=u,o-w /anaconda/
-  - echo "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin" >> /etc/bash.bashrc
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
   - echo "conda activate py36" >> /etc/bash.bashrc
