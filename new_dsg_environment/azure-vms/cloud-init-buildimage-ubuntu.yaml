@@ -383,7 +383,7 @@ runcmd:
   #IF_TORCH_ENABLED # ... and now switch them back
   #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
   #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  #IF_TORCH_ENABLED # NB. the following line can probabaly be removed - needs to be tested
+  #IF_TORCH_ENABLED # NB. the following line can probably be removed - needs to be tested
   #IF_TORCH_ENABLED - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
   #IF_TORCH_ENABLED - export PATH=$PATH:/opt/torch/install/bin
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
@@ -522,7 +522,7 @@ runcmd:
   - echo "Installing and cleaning up..."
   - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
-  # NB. the following line can probabaly be removed - needs to be tested
+  # NB. the following line can probably be removed - needs to be tested
   - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
@@ -552,7 +552,7 @@ runcmd:
   - if [ "$(sha512sum -c spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
   - tar -zxf spark-2.4.1-bin-hadoop2.7.tgz
   - rm -rf spark-2.4.1-bin-hadoop2.7.tgz
-  # NB. the following line can probabaly be removed - needs to be tested
+  # NB. the following line can probably be removed - needs to be tested
   - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"|' /etc/environment
   - export PATH=$PATH:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
@@ -572,7 +572,7 @@ runcmd:
   # - wget http://download.microsoft.com/download/A/E/3/AE32C485-B62B-4437-92F7-8B6B2C48CB40/previous-StorageExplorer-linux-x64.tar.gz
   # - tar -zxf previous-StorageExplorer-linux-x64.tar.gz
   # - rm -f previous-StorageExplorer-linux-x64.tar.gz
-  # # NB. the following line can probabaly be removed - needs to be tested
+  # # NB. the following line can probably be removed - needs to be tested
   # - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
   # - export PATH=$PATH:/opt/azurestorage/
   # - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
