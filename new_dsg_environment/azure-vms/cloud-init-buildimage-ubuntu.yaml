@@ -611,7 +611,7 @@ runcmd:
 
   # Set PATH to the current working version which contains all installed packages
   # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
-  - export PATH=$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - export PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
