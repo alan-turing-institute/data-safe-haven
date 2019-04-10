@@ -113,6 +113,7 @@ packages:
   - libnss-ldap
   - libnss-sss
   - libnss3
+  - libopenmpi-dev
   - libpam-ldap
   - libpam-sss
   - libpoppler-cpp-dev

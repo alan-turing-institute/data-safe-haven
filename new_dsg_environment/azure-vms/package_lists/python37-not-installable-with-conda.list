@@ -7,3 +7,6 @@ NavPy
 pyod
 python-geohash
 tensorflow-gpu
+atari-py
+box2d-py
+gym

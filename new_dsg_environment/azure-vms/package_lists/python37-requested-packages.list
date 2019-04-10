@@ -1,12 +1,15 @@
 aero-calc
 basemap
 bokeh
+box2d-py
+cloudpickle
 dtw
 fbprophet
 folium
 geopandas
 gmplot
 graph-tool
+gym
 ipykernel
 jupyter
 jupyter_client
@@ -15,6 +18,7 @@ jupyterhub-ldapauthenticator
 jupyterlab
 keras
 matplotlib
+mpi4py
 NavPy
 networkx
 notebook
@@ -27,6 +31,7 @@ pandas-profiling
 pandasql
 pint
 plotly
+pyglet
 pygpu
 pygrib
 pyLDAvis
