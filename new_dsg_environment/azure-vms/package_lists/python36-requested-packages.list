@@ -8,6 +8,7 @@ fbprophet
 folium
 geopandas
 gmplot
+gpyopt
 graph-tool
 gym
 ipykernel

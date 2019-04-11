@@ -3,6 +3,7 @@ atari-py
 box2d-py
 dtw
 gmplot
+gpyopt
 gym
 NavPy
 pyod
