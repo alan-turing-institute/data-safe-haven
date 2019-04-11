@@ -348,19 +348,19 @@ Storage
 
 What storage volumes exist in the analysis environment?
 
-A Secure data volume is a read-only volume that contains the secure data for use in analyses. It is mounted read-only
+A Secure Data volume is a read-only volume that contains the secure data for use in analyses. It is mounted read-only
 in the analysis environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the environment has access to.
 
-A Secure document volume contains electronically signed copies of agreements between the Data Provider and the
+A Secure Document volume contains electronically signed copies of agreements between the Data Provider and the
 research institution.
 
-A Secure Scratch Area is a read-write volume used for data analysis. Its contents are automatically and regularly deleted.
+A Secure Scratch volume is a read-write volume used for data analysis. Its contents are automatically and regularly deleted.
 
 An Output volume is a read-write area intended for the extraction of results, such as figures for publication. 
 
 The Software volume is a read-only area which contains software used for analysis. 
 
-A Home area is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home Area.
+A Home volume is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
 
 User Devices
 ------------
