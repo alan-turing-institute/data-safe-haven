@@ -114,10 +114,9 @@ A Referee volunteers to review code or derived data, providing evidence to the I
 
 ### Dataset Provider and Representative
 
-The representative contact to the research institution of the organisation who provided the dataset under analysis.
-
-The Dataset Provider will designate an individual representative to liaise with the research institution.
-That individual will certify that the Dataset Provider is authorised  to share the dataset with the research institute.
+The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single individual representative contact to liaise with the research institution.
+This individual is the **Dataset Provider Representative**.
+They are authorised to act on behalf of the Dataset Provider with respect the the dataset and must be in position to certify that the Dataset Provider is authorised  to share the dataset with the research institute.
 
 There may be additional people at the Data Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the Dataset Provider Representative to manage this set of stakeholders at the Dataset Provider.
