@@ -8,6 +8,7 @@ fbprophet
 folium
 geopandas
 gmplot
+gpy
 gpyopt
 graph-tool
 gym
@@ -30,6 +31,7 @@ pandas
 pandas-datareader
 pandas-profiling
 pandasql
+paramz
 pint
 plotly
 pyglet
