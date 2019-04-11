@@ -238,7 +238,7 @@ This requires two-factor authentication, with, at some tiers, the copy paste fun
 
 At some tiers, we may provide **secure shell** connections in addition to the remote desktop.
 
-Such text-based access is sufficient for by some professional data scientists, with the provenance
+Such text-based access is sufficient for some professional data scientists, with the provenance
 information provided by command-driven data analysis a primary driver for this preference. (Processes can 
 easily be reproduced based on the commands typed.) 
 When not needed, providing a remote desktop interface adds complexity and therefore risk.
