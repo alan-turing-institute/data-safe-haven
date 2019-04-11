@@ -315,8 +315,6 @@ This protocol should limit all aspects of the transfer to provide the minimum ne
 A time limited or one-time access token, providing write-only access to the secure transfer volume should be granted to the Dataset Provider Representative
 via the web framework to deposit the dataset.
 
-The Research Manager may remind the Dataset Provider Representative that this has been activated by a phone call or email, but the details for access must only be provided in the management framework, not over other channels.
-
 Software library distributions
 ------------------------------
 
