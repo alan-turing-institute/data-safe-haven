@@ -249,7 +249,7 @@ typing a long passphrase is mitigated, reducing the risk of users choosing insec
 
 At some tiers, then specific commands commonly used for data copy-out, are blocked for users. 
 
-In neither case is copy-out to the machine used to access the environment absolutely prevented - with remote desktop software, malicious users can script automated screen-grabs. However, this can be made difficult to deter casual workaround risk, and, at the highest tiers, prevented by forbidding access machines to leave the secure physical environment.
+In neither case is copy-out to the machine used to access the environment absolutely prevented - with remote desktop software, malicious users can script automated screen-grabs. However, this can be made difficult to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the environment from machines permanently located within a secure physical environment.
 
 The Classification Process
 --------------------------
