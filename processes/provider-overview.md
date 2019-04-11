@@ -110,7 +110,7 @@ In both cases, the term Investigator here is independent of this - regardless of
 
 ### Referee
 
-A Referee volunteers to review code or derived data, providing evidence to the investigator and Dataset Provider Representative that the researchers are complying with data handling practices. 
+A Referee volunteers to review code or derived data, providing evidence to the Investigator and Dataset Provider Representative that the researchers are complying with data handling practices. 
 
 ### Dataset Provider and Representative
 
