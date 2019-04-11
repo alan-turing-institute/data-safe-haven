@@ -387,15 +387,15 @@ User device networks
 Our network security model distinguishes two dedicated research networks for
 user devices.
 
-* An Open network
+* The open internet
+* An Institutional network
 * A Restricted network
 
-The Open network corresponds to organisational guest network access (e.g. Eduroam) - it is assumed the whole research community can access this network, and restriction
-by IP address to data environments is not possible on the Open network.
+An Institutional network corresponds to organisational guest network access (e.g. Eduroam). Access to environments can be restricted to machines on an Instituitional network, but it is assumed the whole research community can access this network, though this access may be remote for authorised users (e.g. via VPN).
 
-The Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure environments, while away from their home institution.
+A Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure environments, while away from their home institution.
 
-Access to the restricted network via VPN should not be possible.
+Remote acess to a Restricted network (e.g. via VPN) should not be possible.
 
 Firewall rules for the environments enforce restricted network IP ranges corresponding to these networks.
 
