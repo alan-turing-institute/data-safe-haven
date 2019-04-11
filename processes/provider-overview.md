@@ -310,19 +310,12 @@ protection against this risk:
 This protocol should limit all aspects of the transfer to provide the minimum necessary exposure:
 
 * The time window during which dataset can be transferred
-* The machines from which it can be transferred
 * The networks from which it can be transferred
 
 A time limited or one-time access token, providing write-only access to the secure transfer volume should be granted to the Dataset Provider Representative
 via the web framework to deposit the dataset.
 
 The Research Manager may remind the Dataset Provider Representative that this has been activated by a phone call or email, but the details for access must only be provided in the management framework, not over other channels.
-
-### Low security transfer protocol
-
-For data environments open to ssh connections from the internet, datasets can be transferred to via `scp` from the Dataset Provider to the secure data volume, using their normal login credentials.
-
-Alternatively, the Dataset Provider Representative may upload the dataset to the web management framework, over SSL, which will place it on the secure data volume.
 
 Software library distributions
 ------------------------------
@@ -399,10 +392,10 @@ user devices.
 * An Open network
 * A Restricted network
 
-The open research network corresponds to Eduroam access - it is assumed the whole research community can access this network, and restriction
-by IP address to data environments is not possible on the open network.
+The Open network corresponds to organisational guest network access (e.g. Eduroam) - it is assumed the whole research community can access this network, and restriction
+by IP address to data environments is not possible on the Open network.
 
-Restricted networks may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to restricted networks, and thus to secure environments, while away from their home institution.
+The Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure environments, while away from their home institution.
 
 Access to the restricted network via VPN should not be possible.
 
