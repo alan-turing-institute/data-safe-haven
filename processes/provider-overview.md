@@ -369,8 +369,8 @@ What devices should researchers use to connect to the secure research environmen
 
 We define two types of devices: 
 
-* Open devices
 * Managed devices
+* Open devices
 
 ### Managed devices
 
