@@ -192,7 +192,7 @@ the tier 3 environment and then transferred to the tier 2 environment.
 
 Tier 2 environments are also used to handle, combine or generate information which is confidential, but not, in commercial or national security terms, sensitive.
 Tier 2 corresponds to the government OFFICIAL classification.
-They includes commercial-in-confidence datasets or intellectual property where the consequences of legal or financial consequences from disclosure are low.
+This includes commercial-in-confidence datasets or intellectual property where the consequences of legal or financial consequences from disclosure are low.
 
 At Tier 2 and above, reclassification of the results of the project for publication must be run following a careful process. Derived information must otherwise be maintained as confidential.
 
