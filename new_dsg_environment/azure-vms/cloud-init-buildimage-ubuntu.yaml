@@ -474,20 +474,6 @@ runcmd:
   # List environments
   - echo "*** Final conda environments... ***"
   - conda env list
-  # Checkout Spinning Up which has to be manually installed for python 3.6 and 3.7
-  - echo "*** Installing Spinning Up from github for python 3.6 ***"
-  - mkdir -p /opt/py36
-  - cd /opt/py36
-  - git clone https://github.com/openai/spinningup.git
-  - cd /opt/py36/spinningup
-  - /anaconda/envs/py36/bin/pip install -e .
-  - echo "*** Installing Spinning Up from github for python 3.7 ***"
-  - mkdir -p /opt/py37
-  - cd /opt/py37
-  - git clone https://github.com/openai/spinningup.git
-  - cd /opt/py37/spinningup
-  - /anaconda/envs/py37/bin/pip install -e .
-  - cd /
   # Set 'other' permissions on the anaconda directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
   - echo "*** Updating /anaconda/ permissions... ***"
