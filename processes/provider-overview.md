@@ -203,7 +203,7 @@ pseudonymised, when in fact re-identification might be possible.
 
 Tier 3 environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects.
 
-It also includes pseudonymised or synthetic information generated from personal data, where we have only weak
+This also includes pseudonymised or synthetic information generated from personal data, where we have only weak
 confidence in the quality of pseudonymisation.
 
 Tier 3 environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial or national 
@@ -219,10 +219,10 @@ At Tier 3, the risk of hostile actors attempting to break into the secure enviro
 
 ### Tier 4
 
-Tier 3 environments are used to handle, combine or generate personal data 
+Tier 4 environments are used to handle, combine or generate personal data 
 where disclosure poses a substantial threat to the personal safety, health or security of the data subjects.
 
-It also includes handling, combining or generating datasets which are sensitive in commercial or national 
+This also includes handling, combining or generating datasets which are sensitive in commercial or national 
 security terms, and are likely to be subject to attack by sophisticated, 
 well resourced and determined actors, such as serious organised crime groups and state actors. This
 corresponds to the UK governmental "SECRET" categorisation.
