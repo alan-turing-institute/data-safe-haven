@@ -266,7 +266,7 @@ If necessary, following this phase, the team should then reclassify once they ha
 User lifecycle
 ---------------
 
-Users who wish to have access to the secure environment should set their credentials within the Turing secure environment menagement system.
+Users who wish to have access to the secure environment should set their credentials within the Turing secure environment management system.
 
 Projects are created in the management system by a Research Manager, and an Investigator assigned.
 
