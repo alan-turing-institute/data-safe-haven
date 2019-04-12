@@ -24,15 +24,19 @@ Set-Culture en-GB
 Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
 
 #Format data drive
-Write-Host -ForegroundColor Green "Formatting data drive"
 Stop-Service ShellHWDetection
 
-$CandidateRawDisks = Get-Disk |  Where {$_.PartitionStyle -eq 'raw'} | Sort -Property Number
-Foreach ($RawDisk in $CandidateRawDisks) {
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where index -eq $RawDisk.Number | Select SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
-    $Disk = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
-    $Partition = New-Partition -DiskNumber $RawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $Volume = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "DATA-$LUN" -Confirm:$false
+$rawDisks = Get-Disk |  Where {$_.PartitionStyle -eq 'raw'} | Sort -Property Number
+if ($rawDisks.Count -gt 0) {
+  Write-Output ("Formatting " + $rawDisks.Count + " raw disks")
+  Foreach ($rawDisk in $rawDisks) {
+    $LUN = (Get-WmiObject Win32_DiskDrive | Where index -eq $rawDisk.Number | Select SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
+    $disk = Initialize-Disk -PartitionStyle GPT -Number $rawDisk.Number
+    $partition = New-Partition -DiskNumber $rawDisk.Number -UseMaximumSize -AssignDriveLetter
+    $label = "DATA-$LUN"
+    Write-Output (" - Formatting partition " + $partition.PartitionNumber + " of raw disk " + $rawDisk.Number + " with label '" + $label + "' at drive letter '" + $partition.DriveLetter + "'")
+    $volume = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
+  }
 }
 
 Start-Service ShellHWDetection
