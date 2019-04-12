@@ -23,9 +23,11 @@ $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DataServer_Rem
 # at the other end to recover a valid JSON string.
 $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```"")
 
-Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dataserver.rg -Name $config.dsg.dataserver.vmName `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dataserver.rg -Name $config.dsg.dataserver.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter @{configJson=$configJson};
+    
+Write-Output $result.Value;
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
