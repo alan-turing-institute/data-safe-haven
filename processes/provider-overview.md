@@ -8,11 +8,11 @@ Secure environments for analysis of sensitive datasets are essential for researc
 
 Such "data safe havens" are a vital part of the research infrastructure.
 
-It is essential that sensitive or confidential datasets are kept secure, both to enable for analysis of 
+It is essential that sensitive or confidential datasets are kept secure, both to enable analysis of 
 personal data in a manner that is capable of being compliant with data protection law, 
-but to preserve the social license to carry out research activities.
+and to preserve the social license to carry out research activities.
 
-To create and operate these safely, efficiently, and usably, requires, as with many sociotechnical systems, a complex stack of interacting 
+To create and operate these safely, efficiently, and ensure usability, requires, as with many sociotechnical systems, a complex stack of interacting 
 business process and design choices. This document describes the approaches taken by the Alan Turing Institute when building and managing environments for productive, secure, collaborative research projects.
 
 We propose choices for the security controls that should be applied in the areas of:
@@ -30,11 +30,11 @@ We do this for each of a small set of security "Tiers" - noting that the choice 
 
 This document describes our approach to handling research data. It does not cover the institute's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision in Microsoft Azure and the Edinburgh Parallel Computing Centre.
 
-Software-defined Infrastructure
+Software-defined infrastructure
 -------------------------------
 
-Our approach - separately instantiating an isolated environment for each project - is only possible without a hugely
-inefficient duplication of effort because of the advent of "software defined infrastructure".
+Our approach - separately instantiating an isolated environment for each project - would involve a hugely
+inefficient duplication of effort were it not for the advent of "software defined infrastructure".
 
 It is now possible to specify a whole arrangement of IT infrastructure, servers, storage, access policies and so on,
 completely as **code**. This code is executed against web services provided by infrastructure providers (the APIs
@@ -64,12 +64,12 @@ Our user community are relatively technically able, so the casual use of technic
 colleagues must be considered.
 This can be mitigated by placing inconvenience barriers in the way of undesired behaviours, even if those barriers are in principle not too hard to circumvent.
 
-Secondly, research institutions need to be open about the research we carry out, and hence, the datasets we hold. This is both because the need to 
-publish our research as part of our impact cases to funders, and because of the need to maintain the trust of society providing our social licence. This means
-we cannot rely on "security through obscurity": We must make our security decisions assuming that adversaries know what we have, what we are doing with it, and
+Secondly, research institutions need to be open about the research we carry out, and hence, the datasets we hold. This is because of both the need to 
+publish our research as part of our impact cases to funders, and because of the need to maintain the trust of society, which provides our social licence. This means
+we cannot rely on "security through obscurity": we must make our security decisions assuming that adversaries know what we have, what we are doing with it, and
 how we secure it. 
 
-Why Classify?
+Why classify?
 -------------
 
 One of the major drivers for usability or security problems is over- or under-classification, that is, treating data as more or less sensitive than it deserves.
@@ -114,11 +114,11 @@ A Referee volunteers to review code or derived data, providing evidence to the I
 
 ### Dataset Provider and Representative
 
-The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single individual representative contact to liaise with the research institution.
+The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the research institution.
 This individual is the **Dataset Provider Representative**.
-They are authorised to act on behalf of the Dataset Provider with respect the the dataset and must be in position to certify that the Dataset Provider is authorised  to share the dataset with the research institute.
+They are authorised to act on behalf of the Dataset Provider with respect to the dataset and must be in a position to certify that the Dataset Provider is authorised  to share the dataset with the research institute.
 
-There may be additional people at the Data Provider who will have input in discussions around data sharing and data classification.
+There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the Dataset Provider Representative to manage this set of stakeholders at the Dataset Provider.
 
 ### Research Manager
@@ -133,11 +133,11 @@ Members of Turing staff responsible for configuration and maintenance of the sec
 Environment Tiers
 -----------------
 
-Our approach for secure information processing tiers is not new: they correspond to UK government classifications, and reconcile these to the definitions of personal data, whether or not 'special category', under the GDPR, and relate these to common activities in the research community.
+Our approach for secure information processing tiers is not new: they correspond to UK government classifications, and reconcile these to the definitions of personal data, whether or not something is 'special category' under the GDPR, and relate these to common activities in the research community.
 
-In this paper, by 'sensitive datasets' we mean datasets with confidentiality restrictions and/or which are subject to data protection law (DPL).
+In this paper, by 'sensitive datasets' we mean datasets with confidentiality restrictions and/or those which are subject to data protection law (DPL).
 
-We emphasise that these are based on considering the sensitivity of all information handled in the project, including information generated by
+We emphasise that this classification is based on considering the sensitivity of all information handled in the project, including information generated by
 combining or processing input datasets. In every case, the categorisation does not depend only on the input datasets, but on combining information
 with other information or generated results.
 
@@ -151,11 +151,11 @@ are dead.
 
 ### Tier 0
 
-Tier zero environments are used to handle publicly available, open information, where all generated and combined
+Tier 0 environments are used to handle publicly available, open information, where all generated and combined
 information is also suitable for open handling.
 
-Tier 0 applies where information
-processed, combined or generated does not include personal data.
+Tier 0 applies where none of the information
+processed, combined or generated includes personal data.
 
 Although this data is open, there are still advantages to handling it through a managed data analysis infrastructure. 
 
@@ -167,10 +167,10 @@ Finally, audit trails as to the handling of Tier 0 information mitigate the risk
 
 ### Tier 1
 
-Tier one environments are used to handle, process and generate
-data that is intended for eventual publication or could be published without reputational damage. 
+Tier 1 environments are used to handle, process and generate
+data that is intended for eventual publication or that could be published without reputational damage. 
 
-Information that is kept private to give the research team a competitive advantage, not as a protection for the information.
+Information is kept private in order to give the research team a competitive advantage, not due to legal data protection requirements.
 
 Both the information and the proposed processing must otherwise meet the criteria for Tier 0.
 
@@ -201,7 +201,7 @@ pseudonymised, when in fact re-identification might be possible.
 
 ### Tier 3
 
-Tier 3 environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects.
+Tier 3 environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be Tier 4).
 
 This also includes pseudonymised or synthetic information generated from personal data, where we have only weak
 confidence in the quality of pseudonymisation.
@@ -210,7 +210,7 @@ Tier 3 environments are also used to handle, combine or generate information, in
 security terms. 
 This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources.
 This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups.
-The threat profile excludes sophisticated, well resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
+The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
 This corresponds to the governmental ‘OFFICIAL–SENSITIVE’ categorisation. 
 
 The difference between Tier 2 and Tier 3 environments is the most significant in this model, as it carries the highest consequences, both for researcher productivity and organisational risk. 
@@ -224,10 +224,10 @@ where disclosure poses a substantial threat to the personal safety, health or se
 
 This also includes handling, combining or generating datasets which are sensitive in commercial or national 
 security terms, and are likely to be subject to attack by sophisticated, 
-well resourced and determined actors, such as serious organised crime groups and state actors. This
-corresponds to the UK governmental "SECRET" categorisation.
+well-resourced and determined actors, such as serious organised crime groups and state actors. This
+corresponds to the UK government "SECRET" categorisation.
 
-It is at Tier 4, that the risk of hostile actors penetrating the project team becomes significant.
+It is at Tier 4 that the risk of hostile actors penetrating the project team becomes significant.
 
 Connections to the secure environment
 -------------------------------------
@@ -244,12 +244,12 @@ easily be reproduced based on the commands typed.)
 When not needed, providing a remote desktop interface adds complexity and therefore risk.
 
 At every tier, long passphrases
-should be enforced, and users are trained in the use of keychain managers on their acccess devices, locked with two-factor authentication, so that the inconvenience of repeatedly
+should be enforced, and users are trained in the use of keychain managers on their access devices, locked with two-factor authentication, so that the inconvenience of repeatedly
 typing a long passphrase is mitigated, reducing the risk of users choosing insecure passwords.
 
-At some tiers, then specific commands commonly used for data copy-out, are blocked for users. 
+At some tiers, specific commands commonly used for data copy-out, are blocked for users. 
 
-In neither case is copy-out to the machine used to access the environment absolutely prevented - with remote desktop software, malicious users can script automated screen-grabs. However, this can be made difficult to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the environment from machines permanently located within a secure physical environment.
+In neither case is copy-out to the machine used to access the environment absolutely prevented - with remote desktop software, malicious users can script automated screen-grabs. However, this can be made difficult in order to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the environment from machines permanently located within a secure physical environment.
 
 The Classification Process
 --------------------------
@@ -277,7 +277,7 @@ The Research Manager has the authority to assign Referees and Data Provider Repr
 
 At some tiers, new members of the research team or Referees must also be approved by the Dataset Provider Representative.
 
-Before joining a project, Researchers, Investigators and Referees must certify in the management system that they have received training in the handling of data in the system.
+Before joining a project, Researchers, Investigators and Referees must certify in the management system that they have received training in handling data in the system.
 
 In line with statute, the Dataset Provider Representative must also certify that the organisation providing the dataset has permission from the dataset owner, 
 if they are not the dataset owner, to share it with the research organisation, and this should be recorded within the management system database.
@@ -298,9 +298,9 @@ Once made available, all transfer must use encrypted channels, (SCP or SSL).  No
 via dropbox, google drive, sharepoint or office 365 groups. Data upload should always be directly into the secure volume
 to avoid the risk of individuals unintentionally retaining the dataset for longer than intended.
 
-The Dataset Provider Representative should then immediately indicate the transfer is complete, and in doing so, they lose access to the data volume. 
+The Dataset Provider Representative should then immediately indicate the transfer is complete. In doing so, they lose access to the data volume. 
 
-The research manager should authorise the mounting of the data volume in the analysis environment, using the web interface.
+The Research Manager should authorise the mounting of the data volume in the analysis environment, using the web interface.
 
 While open for deposit, this volume provides an additional risk of a third party accessing the dataset. We define two tiers of 
 protection against this risk:
@@ -312,16 +312,15 @@ This protocol should limit all aspects of the transfer to provide the minimum ne
 * The time window during which dataset can be transferred
 * The networks from which it can be transferred
 
-A time limited or one-time access token, providing write-only access to the secure transfer volume should be granted to the Dataset Provider Representative
-via the web framework to deposit the dataset.
+To deposit the dataset, a time limited or one-time access token, providing write-only access to the secure transfer volume, should be granted via the web framework to the Dataset Provider Representative.
 
 Software library distributions
 ------------------------------
 
 Maintainers of shared research computing environments face a difficult challenge in keeping research algorithm libraries and platforms
-up to date - and in many cases these conflict. The use of single-project virtual environments opens another possibility: downloading the software as neeeded for the project
+up to date - and in many cases these conflict. The use of single-project virtual environments opens another possibility: downloading the software as needed for the project
 from package managers such as the Python package index. To achieve this in a secure environment, without access to the
-external internet, requires maintainance of mirrors of package repositories inside the environment. 
+external internet, requires maintenance of mirrors of package repositories inside the environment. 
 
 Use of package mirrors inside the environment means that the set of default installed packages can be kept
 to a minimum, reducing the likelihood of encountering package-conflict problems and saving on
@@ -369,7 +368,7 @@ Managed devices do not have administrator/root access.
 
 They have an extensive suite of research software installed.
 
-This include the ability to install packages for standard programming environments without use of administrator access.
+This includes the ability to install packages for standard programming environments without the need for administrator access.
 
 Researchers can compile and run executables they code in User Space.
 
@@ -384,18 +383,18 @@ However, such devices are not able to access higher tier secure environments.
 User device networks
 --------------------
 
-Our network security model distinguishes two dedicated research networks for
+Our network security model distinguishes three dedicated research networks for
 user devices.
 
 * The open internet
 * An Institutional network
 * A Restricted network
 
-An Institutional network corresponds to organisational guest network access (e.g. Eduroam). Access to environments can be restricted to machines on an Instituitional network, but it is assumed the whole research community can access this network, though this access may be remote for authorised users (e.g. via VPN).
+An Institutional network corresponds to organisational guest network access (such as Eduroam). Access to environments can be restricted to machines on an Instituitional network, but it is assumed the whole research community can access this network, though this access may be remote for authorised users (for example, via VPN).
 
 A Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure environments, while away from their home institution.
 
-Remote acess to a Restricted network (e.g. via VPN) should not be possible.
+Remote access to a Restricted network (e.g. via VPN) should not be possible.
 
 Firewall rules for the environments enforce restricted network IP ranges corresponding to these networks.
 
@@ -405,7 +404,7 @@ Physical security
 -----------------
 
 Some data requires a physical security layer around not just the data centre,
-but the place users use to connect to it.
+but the physical environment users use to connect to it.
 
 We distinguish three levels of physical security for research spaces:
 
@@ -417,7 +416,7 @@ Open research spaces include university libraries, cafes and common rooms.
 
 Medium security research spaces control the possibility of unauthorised viewing.
 Card access restricting entry to employees is required. 
-Screen adaptations or desk partitions prevent "visual evesdropping" in open plan research environments.
+Screen adaptations or desk partitions prevent "visual eavesdropping" in open plan research environments.
 
 Secure research spaces control the possibility of the researcher deliberately
 removing data. Devices will be locked to appropriate desks, and neither enter nor leave 
@@ -438,18 +437,18 @@ However, the assertion that a derived data artefact indeed merits a lower tier c
 understanding the possibility of personal data leaking through generated pseudonymised, synthetic or other derived datasets 
 is a delicate endeavour.
 
-Pseudonyimised datasets can, on linking to another published dataset, become identifiable.
+Pseudonymised datasets can, on linking to another published dataset, become identifiable.
 
 We therefore require the reclassification process to certify an authors' claims about the script which was used to produce the derived data artefact,
 and that identifiable data is not released.
 
 No reclassification should be permitted without a script describing, in code, the process used to create the derived dataset. 
-(The authors do not believe that a spreadsheet can be properly so audited.)
+(The authors do not believe that a spreadsheet can be properly audited for this.)
 
 A reclassification script should be written by a project member. This is placed on the software volume or home volume, and run so that the derived
 dataset is placed on the Output Volume.
 
-Following appropriate review of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating other environment's ID and the reclassification script preserved.
+Following appropriate review of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating environment's ID and the reclassification script preserved.
 
 Software Ingress
 ----------------
@@ -461,7 +460,7 @@ environment, arrive inside?
 
 If we allow access to the internet to `git clone` such software, this might allow for data to leave the environment, and at higher tiers, there is no access to the open internet. 
 
-Instead, for researcher-written code developed elsewhere, other software, implementers should use an **airlock policy**: installation should be performed in an isolated environment without access to the data. After the installations are completed, internet access must then be disabled and data access enabled. 
+Instead, for researcher-written code developed elsewhere, implementers should use an **airlock policy**: installation should be performed in an isolated environment without access to the data. After the installations are completed, internet access must then be disabled and data access enabled. 
 
 For software that does not require admin rights to install:
 
@@ -471,7 +470,7 @@ In **analysis mode**, internet access is disabled and data and scratch volumes a
 
 For software that requires admin rights to install:
 
-In **install mode** A virtual machine is created outside of the secure environment. The user has administrator privileges on the machine and can install any software necessary from the open internet. There is no access to the secure data during this process.
+In **install mode**, a virtual machine is created outside of the secure environment. The user has administrator privileges on the machine and can install any software necessary from the open internet. There is no access to the secure data during this process.
 
 In **analysis mode**, the VM image is moved into the secure environment where internet access is disabled. 
 
@@ -481,8 +480,7 @@ The choices
 ------------
 
 Having described the full model, processes, and lifecycles, we can now enumerate the list of choices that
-can be made for each Environment. These are all separately configurable on an environment-by-
-environment bassis. However, we make recommendations for these choices at each tier.
+can be made for each Environment. These are all separately configurable on an environment-by-environment basis. However, we recommend the following at each tier.
 
 ### Package mirrors
 
@@ -522,11 +520,11 @@ Tier 4 access must be from the high security space.
 
 At Tier 2 and below, the Investigator has the authority to add new members to the research team, and the research manager has the authority to assign Referees.
 
-At Tier 3 and above, new members of the research team or Referees must be counter-approved by the Dataset Provider Representative.
+At Tier 3 and above, new Referees or members of the research team must be counter-approved by the Dataset Provider Representative.
 
 ### Connection
 
-At Tier 1 and Tier 0, ssh access to the enviroment is possible without restrictions. The user should be able to set-up port forwarding (ssh tunnel) and use this to access remotely-running UI clients via a native client browser.
+At Tier 1 and Tier 0, ssh access to the environment is possible without restrictions. The user should be able to set-up port forwarding (ssh tunnel) and use this to access remotely-running UI clients via a native client browser.
 
 At Tier 3, only remote desktop access is enabled.
 
@@ -546,7 +544,7 @@ For Tier 3,
 the Investigator and Referee must review and sign off on software or virtual machines arriving through the software
 ingress process (excluding package mirrors) before it can be accessed inside the environment.
 
-For Tier-0 and Tier-1, users should be able to install software directly into the environment (in user space) from the open internet.
+For Tier 0 and Tier 1, users should be able to install software directly into the environment (in user space) from the open internet.
 
 ### Data ingress
 
