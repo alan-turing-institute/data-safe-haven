@@ -15,6 +15,14 @@ param(
 # at this end to recover a valid JSON string.
 $config =  ($configJson.Replace("``","`"") | ConvertFrom-Json)
 
+# Set language and time-zone
+Write-Output "Setting system locale"
+Set-WinHomeLocation -GeoId 0xf2
+Set-TimeZone -Name "GMT Standard Time"
+Set-WinSystemLocale en-GB
+Set-Culture en-GB
+Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
+
 #Format data drive
 Write-Host -ForegroundColor Green "Formatting data drive"
 Stop-Service ShellHWDetection
@@ -36,11 +44,4 @@ $researcherUserSg = ($config.shm.domain.netbiosName + "\" + $config.dsg.domain.s
 $serverAdminSg = ($config.dsg.domain.netbiosName + "\" + $config.dsg.domain.securityGroups.serverAdmins.name)
 New-SmbShare -Path "F:\Data" -Name "Data" -ChangeAccess $researcherUserSg -FullAccess $serverAdminSg
 
-#Set language and time-zone
-Set-WinHomeLocation -GeoId 0xf2
-Set-TimeZone -Name "GMT Standard Time"
-Set-WinSystemLocale en-GB
-Set-Culture en-GB
-Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
-
-write-Host -ForegroundColor Cyan "Completed"
+
