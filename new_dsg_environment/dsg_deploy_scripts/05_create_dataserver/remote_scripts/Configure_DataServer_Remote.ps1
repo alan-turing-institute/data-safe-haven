@@ -41,11 +41,31 @@ if ($rawDisks.Count -gt 0) {
 
 Start-Service ShellHWDetection
 
-#Setup user profile disk shares
-Write-Host -ForegroundColor Green "Creating data share" 
-Mkdir "F:\Data"
+# Setup disk shares
+Write-Output "Configuring disk shares"
+$shareDriveLetter = "F"
+$shareFolder = "Data"
+$sharePath = ($shareDriveLetter + ":\" + $shareFolder)
+$shareName = $shareFolder
 $researcherUserSg = ($config.shm.domain.netbiosName + "\" + $config.dsg.domain.securityGroups.researchUsers.name) 
 $serverAdminSg = ($config.dsg.domain.netbiosName + "\" + $config.dsg.domain.securityGroups.serverAdmins.name)
-New-SmbShare -Path "F:\Data" -Name "Data" -ChangeAccess $researcherUserSg -FullAccess $serverAdminSg
+Write-Output "  - Creating '$shareName' data share at '$sharePath' with the following permissions"
+Write-Output "    - FullAccess: $serverAdminSg"
+Write-Output "    - ChangeAccess: $researcherUserSg" 
 
-
+# Create share, being robust to case where share already exists
+if(!(Test-Path -Path $sharePath )){
+  New-Item -ItemType directory -Path $sharePath
+}
+New-SmbShare -Path "F:\Data" -Name "Data" -ErrorAction:Continue
+
+# Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
+Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
+Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
+Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
+
+# Set the permissions we want explicitly
+Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
+Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force
+
+
