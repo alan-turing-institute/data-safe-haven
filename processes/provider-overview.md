@@ -448,7 +448,7 @@ No reclassification should be permitted without a script describing, in code, th
 A reclassification script should be written by a project member. This is placed on the software volume or home volume, and run so that the derived
 dataset is placed on the Output Volume.
 
-Following appropriate review of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating environment's ID and the reclassification script preserved.
+Following review by the data provider representative, investigator, or an independent referee (depending on Tier) of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating environment's ID and the reclassification script preserved.
 
 Software Ingress
 ----------------
