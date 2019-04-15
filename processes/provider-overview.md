@@ -114,9 +114,9 @@ A Referee volunteers to review code or derived data, providing evidence to the I
 
 ### Dataset Provider and Representative
 
-The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the research institution.
+The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the Turing.
 This individual is the **Dataset Provider Representative**.
-They are authorised to act on behalf of the Dataset Provider with respect to the dataset and must be in a position to certify that the Dataset Provider is authorised  to share the dataset with the research institute.
+They are authorised to act on behalf of the Dataset Provider with respect to the dataset and must be in a position to certify that the Dataset Provider is authorised  to share the dataset with the Turing.
 
 There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the Dataset Provider Representative to manage this set of stakeholders at the Dataset Provider.
@@ -341,8 +341,7 @@ What storage volumes exist in the analysis environment?
 A Secure Data volume is a read-only volume that contains the secure data for use in analyses. It is mounted read-only
 in the analysis environments that must access it. One or more such volumes will be mounted depending on how many managed secure datasets the environment has access to.
 
-A Secure Document volume contains electronically signed copies of agreements between the Data Provider and the
-research institution.
+A Secure Document volume contains electronically signed copies of agreements between the Data Provider and the Turing.
 
 A Secure Scratch volume is a read-write volume used for data analysis. Its contents are automatically and regularly deleted.
 
