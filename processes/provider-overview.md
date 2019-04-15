@@ -28,7 +28,7 @@ We propose choices for the security controls that should be applied in the areas
 
 We do this for each of a small set of security "Tiers" - noting that the choice of security controls depends on the sensitivity of the data.
 
-This document describes our approach to handling research data. It does not cover the institute's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre.
+This document describes our approach to handling research data. It does not cover the Turing's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre.
 
 Software-defined infrastructure
 -------------------------------
