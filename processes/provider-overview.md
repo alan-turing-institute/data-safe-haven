@@ -60,8 +60,8 @@ We highlight two assumptions about the research user community critical to our d
 
 Firstly, we must consider not only accidental breach and deliberate attack, but also the possibility of "workaround breach", where
 well-intentioned researchers, in an apparent attempt to make their scholarly processes easier, circumvent security measures, for example, by copying out datasets to their personal device.
-Our user community are relatively technically able, so the casual use of technically able circumvention measures, not by adversaries, but by
-colleagues must be considered.
+Our user community are relatively technically able; the casual use of technically able circumvention measures, not by adversaries but by
+colleagues, must be considered.
 This can be mitigated by increasing awareness and placing inconvenience barriers in the way of undesired behaviours, even if those barriers are in principle not too hard to circumvent.
 
 Secondly, research institutions need to be open about the research we carry out, and hence, the datasets we hold. This is because of both the need to 
