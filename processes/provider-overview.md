@@ -499,7 +499,7 @@ Only the Restricted network will be able to access Tier 3 and above, and only vi
 
 Tier 2 environments should only be accessible from an Institutional network.
 
-Tier 1 and 0 environments should be accessibpe from the Internet.
+Tier 1 and 0 environments should be accessible from the Internet.
 
 ### Outbound network
 
