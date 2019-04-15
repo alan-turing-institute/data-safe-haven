@@ -28,7 +28,7 @@ We propose choices for the security controls that should be applied in the areas
 
 We do this for each of a small set of security "Tiers" - noting that the choice of security controls depends on the sensitivity of the data.
 
-This document describes our approach to handling research data. It does not cover the institute's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision in Microsoft Azure and the Edinburgh Parallel Computing Centre.
+This document describes our approach to handling research data. It does not cover the institute's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre.
 
 Software-defined infrastructure
 -------------------------------
@@ -59,10 +59,10 @@ Secure data science
 We highlight two assumptions about the research user community critical to our design:
 
 Firstly, we must consider not only accidental breach and deliberate attack, but also the possibility of "workaround breach", where
-well-intentioned researchers, in an apparent attempt to make their life easier, circumvent security measures, for example, by copying out datasets to their personal device.
+well-intentioned researchers, in an apparent attempt to make their scholarly processes easier, circumvent security measures, for example, by copying out datasets to their personal device.
 Our user community are relatively technically able, so the casual use of technically able circumvention measures, not by adversaries, but by
 colleagues must be considered.
-This can be mitigated by placing inconvenience barriers in the way of undesired behaviours, even if those barriers are in principle not too hard to circumvent.
+This can be mitigated by increasing awareness and placing inconvenience barriers in the way of undesired behaviours, even if those barriers are in principle not too hard to circumvent.
 
 Secondly, research institutions need to be open about the research we carry out, and hence, the datasets we hold. This is because of both the need to 
 publish our research as part of our impact cases to funders, and because of the need to maintain the trust of society, which provides our social licence. This means
@@ -79,7 +79,7 @@ Regulatory and commercial compliance requirements place constraints on the use o
 Almost all security measures can be circumvented, security can almost always be improved by adding additional barriers, and improvements
 to security almost always carry a cost in usability and performance.
 
-Misclassification is seriously costly for research organisations: overclassification results not just in lost researcher productivity, but also a loss of scientific engagement, as researchers choose not to take part in a project with cumbersome security requirements. Systematic overclassification **increases** data risk by encouraging workaround breach.
+Misclassification is seriously costly for research organisations and their partners: overclassification results not just in lost researcher productivity, but also a loss of scientific engagement, as researchers choose not to take part in a project with cumbersome security requirements. Systematic overclassification **increases** data risk by encouraging workaround breach.
 
 The risks of under-classification include not only
 legal and financial sanction, but the loss of the social licence to operate of the whole community of data science researchers.
@@ -416,7 +416,7 @@ Open research spaces include university libraries, cafes and common rooms.
 
 Medium security research spaces control the possibility of unauthorised viewing.
 Card access restricting entry to employees is required. 
-Screen adaptations or desk partitions prevent "visual eavesdropping" in open plan research environments.
+Screen adaptations or desk partitions can be adopted in open plan research environments, if there is a high risk of "visual eavesdropping".
 
 Secure research spaces control the possibility of the researcher deliberately
 removing data. Devices will be locked to appropriate desks, and neither enter nor leave 
