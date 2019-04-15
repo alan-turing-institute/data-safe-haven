@@ -497,7 +497,9 @@ At tier 1 and 0, installation should be from the reference package server on the
 
 Only the Restricted network will be able to access Tier 3 and above, and only via the access node.
 
-Open network should be able to access only Tier 2 and below.
+Tier 2 environments should only be accessible from an Institutional network.
+
+Tier 1 and 0 environments should be accessibpe from the Internet.
 
 ### Outbound network
 
