@@ -68,7 +68,8 @@ $_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorA
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force;
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force;
 
-Get-SmbShareAccess -Name $shareName | Format-Table
+Write-Output "SMB share access for '$shareName' share:"
+Get-SmbShareAccess -Name $shareName | Format-List
 
 # Remove all existing ACL rules on the dataserver folder backing the share
 $acl = Get-Acl $sharePath;
@@ -82,5 +83,6 @@ $researchUserAccessRule = New-Object System.Security.AccessControl.FileSystemAcc
 $_ = $acl.Setaccessrule($researchUserAccessRule);
 $_ = (Set-Acl $sharePath $acl);
 
+Write-Output "ACL access rules for '$sharePath' folder:"
 Get-Acl $sharePath | Format-List
 
