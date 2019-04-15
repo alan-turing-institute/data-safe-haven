@@ -104,7 +104,7 @@ in our user model. We use the lower case term when considering the population of
 ### Investigator
 
 The research project lead, this individual is responsible for ensuring that the project staff comply with
-the haven's security policies. A single lead investigator must be responsible for a project. Multiple collaborating institutions may have
+the Environment's security policies. A single lead investigator must be responsible for a project. Multiple collaborating institutions may have
 their own lead academic staff, and academic staff might delegate to a researcher the leadership as far as interaction with the secure environment is concerned.
 In both cases, the term Investigator here is independent of this - regardless of academic status or institutional collaboration, this individual accepts responsibility for the conduct of the project and its members.
 
