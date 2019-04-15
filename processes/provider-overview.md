@@ -312,7 +312,7 @@ This protocol should limit all aspects of the transfer to provide the minimum ne
 * The time window during which dataset can be transferred
 * The networks from which it can be transferred
 
-To deposit the dataset, a time limited or one-time access token, providing write-only access to the secure transfer volume, should be granted via the web framework to the Dataset Provider Representative.
+To deposit the dataset, a time limited or one-time access token, providing write-only access to the secure transfer volume, will be generated and transferred via a secure channel to the Dataset Provider Representative.
 
 Software library distributions
 ------------------------------
