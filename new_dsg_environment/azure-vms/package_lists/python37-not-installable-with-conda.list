@@ -1,13 +1,12 @@
 aero-calc
+atari-py
+box2d-py
 dtw
 fbprophet
 gmplot
-gpyopt
+gym
 keras
 NavPy
 pyod
 python-geohash
 tensorflow-gpu
-atari-py
-box2d-py
-gym
