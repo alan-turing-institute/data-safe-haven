@@ -185,10 +185,10 @@ Tier 2 environments are used to handle, combine or generate information which is
 It may be used for pseudonymised or synthetic information generated from personal data, where we have strong, but not absolute,
 confidence in the quality of pseudonymisation. This makes the information no longer personal data, but the risk of processing it so that individuals are capable of being re-identified must be considered as part of the classification process.
 
-The pseudonymisation process itself, if carried out in the research organisation, should take place in a Tier-3 environment.
+The pseudonymisation process itself, if carried out in the research organisation, should take place in a Tier 3 environment.
 
-A typical model for a project will be to instantiate both tier 2 and tier 3 environments, with pseudonymised or synthetic data generated in 
-the tier 3 environment and then transferred to the tier 2 environment.
+A typical model for a project will be to instantiate both Tier 2 and Tier 3 environments, with pseudonymised or synthetic data generated in 
+the Tier 3 environment and then transferred to the Tier 2 environment.
 
 Tier 2 environments are also used to handle, combine or generate information which is confidential, but not, in commercial or national security terms, sensitive.
 Tier 2 corresponds to the government OFFICIAL classification.
@@ -447,7 +447,7 @@ No reclassification should be permitted without a script describing, in code, th
 A reclassification script should be written by a project member. This is placed on the software volume or home volume, and run so that the derived
 dataset is placed on the Output Volume.
 
-Following review by the data provider representative, investigator, or an independent referee (depending on Tier) of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating environment's ID and the reclassification script preserved.
+Following review by the data provider representative, investigator, or an independent referee (depending on tier) of the reclassification script and generated derived dataset, a new environment can be created with the former egress volume now mounted as a new secure data volume within a new environment, at a different tier. The existence of this environment as a "derived environment" should be noted, with the originating environment's ID and the reclassification script preserved.
 
 Software Ingress
 ----------------
@@ -485,12 +485,12 @@ can be made for each Environment. These are all separately configurable on an en
 
 ### Package mirrors
 
-At tier 3 and higher, package mirrors should include only white-listed software.
+At Tier 3 and higher, package mirrors should include only white-listed software.
 
-At tier 2, package mirrors should include all software, one month behind the reference package server.
+At Tier 2, package mirrors should include all software, one month behind the reference package server.
 Critical security updates should be fast-tracked.
 
-At tier 1 and 0, installation should be from the reference package server on the external internet.
+At Tier 1 and 0, installation should be from the reference package server on the external internet.
 
 ### Inbound network
 
