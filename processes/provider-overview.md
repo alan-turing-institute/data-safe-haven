@@ -460,13 +460,15 @@ environment, arrive inside?
 
 If we allow access to the internet to `git clone` such software, this might allow for data to leave the environment, and at higher tiers, there is no access to the open internet. 
 
-Instead, for researcher-written code developed elsewhere, implementers should use an **airlock policy**: installation should be performed in an isolated environment without access to the data. After the installations are completed, internet access must then be disabled and data access enabled. 
+Instead, for researcher-written code developed elsewhere, we implement a **one-way airlock policy**:
 
-For software that does not require admin rights to install:
+For software that does not require admin rights to install, software is ingressed in a similar manner as data, via a software ingress volume:
 
-In **install mode**, internet access is opened and data and scratch volumes are not accessible. Software can be downloaded and installed. 
+In **external mode** the researcher is provided temporary **write-only** access to a software ingress volume.
 
-In **analysis mode**, internet access is disabled and data and scratch volumes are accessible.
+Once the researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the environment tier.
+
+Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to researchers within the analysis environment with **read-only** access and they can then install the software or transfer the source to a version control repository within the secure environment as appropriate.
 
 For software that requires admin rights to install:
 
