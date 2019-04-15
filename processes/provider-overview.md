@@ -185,7 +185,7 @@ Tier 2 environments are used to handle, combine or generate information which is
 It may be used for pseudonymised or synthetic information generated from personal data, where we have strong, but not absolute,
 confidence in the quality of pseudonymisation. This makes the information no longer personal data, but the risk of processing it so that individuals are capable of being re-identified must be considered as part of the classification process.
 
-The pseudonymisation process itself, if carried out in the research organisation, should take place in a Tier 3 environment.
+The pseudonymisation process itself, if carried out in the Turing, should take place in a Tier 3 environment.
 
 A typical model for a project will be to instantiate both Tier 2 and Tier 3 environments, with pseudonymised or synthetic data generated in 
 the Tier 3 environment and then transferred to the Tier 2 environment.
@@ -280,7 +280,7 @@ At some tiers, new members of the research team or Referees must also be approve
 Before joining a project, Researchers, Investigators and Referees must certify in the management system that they have received training in handling data in the system.
 
 In line with statute, the Dataset Provider Representative must also certify that the organisation providing the dataset has permission from the dataset owner, 
-if they are not the dataset owner, to share it with the research organisation, and this should be recorded within the management system database.
+if they are not the dataset owner, to share it with the Turing, and this should be recorded within the management system database.
 
 Data ingress
 ------------
