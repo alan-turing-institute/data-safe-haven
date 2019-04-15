@@ -544,11 +544,15 @@ Tier 0 and Tier 1 environments have access to the internet.
 
 ### Software ingress
 
-For Tier 3,
-the Investigator and Referee must review and sign off on software or virtual machines arriving through the software
-ingress process (excluding package mirrors) before it can be accessed inside the environment.
+For Tier 3, additional software or virtual machines arriving through the software ingress process
+must be reviewed an signed off by the Investigator and Referee before it can be accessed inside 
+the environment (with the exception of pre-approved virtual machines or package mirrors).
 
-For Tier 0 and Tier 1, users should be able to install software directly into the environment (in user space) from the open internet.
+For Tier 2, additional software or virtual machines requested by Researchers do not require 
+review anord sign off by anyone else, but must arrive through the software ingress process.
+
+For Tier 0 and Tier 1, users should be able to install software directly into the environment 
+(in user space) from the open internet.
 
 ### Data ingress
 
