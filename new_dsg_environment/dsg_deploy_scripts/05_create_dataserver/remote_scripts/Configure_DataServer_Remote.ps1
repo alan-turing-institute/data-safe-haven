@@ -55,17 +55,32 @@ Write-Output "    - ChangeAccess: $researcherUserSg"
 
 # Create share, being robust to case where share already exists
 if(!(Test-Path -Path $sharePath )){
-  New-Item -ItemType directory -Path $sharePath
+  $_ = New-Item -ItemType directory -Path $sharePath;
 }
-New-SmbShare -Path "F:\Data" -Name "Data" -ErrorAction:Continue
+$_ = New-SmbShare -Path "F:\Data" -Name "Data" -ErrorAction:Continue;
 
 # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
-Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
-Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
-Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue;
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue;
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue;
 
-# Set the permissions we want explicitly
-Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
-Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force
+# Set the permissions we want explicitly on the share
+$_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force;
+$_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force;
 
+Get-SmbShareAccess -Name $shareName | Format-Table
+
+# Remove all existing ACL rules on the dataserver folder backing the share
+$acl = Get-Acl $sharePath;
+$_ = ($acl.Access | ForEach-Object{$acl.RemoveAccessRule($_)});
+## Set the permissions we want explicitly on the dataserver folder backing the share
+$serverAdminAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($serverAdminSg, 
+                            "Full", "ContainerInherit, ObjectInherit", "None", "Allow");
+$researchUserAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($researcherUserSg, 
+                            "Modify", "ContainerInherit, ObjectInherit", "None", "Allow");
+                            $_ = $acl.Setaccessrule($serverAdminAccessRule);     
+$_ = $acl.Setaccessrule($researchUserAccessRule);
+$_ = (Set-Acl $sharePath $acl);
+
+Get-Acl $sharePath | Format-List
 
