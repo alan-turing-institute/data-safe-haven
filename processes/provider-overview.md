@@ -161,7 +161,7 @@ Although this data is open, there are still advantages to handling it through a 
 
 Management of Tier 0 data in a visible, well ordered infrastructure provides confidence to stakeholders as to the handling of more sensitive datasets. 
 
-Although analysis may take place on personal devices, the data should still therefore be listed through the inventory and curatorial systems of a managed research data environment.
+Although analysis may take place on personal devices or in non-managed cloud-based analysis environments, the data should still therefore be listed through the inventory and curatorial systems of a managed research data environment.
 
 Finally, audit trails as to the handling of Tier 0 information mitigate the risk attendant on misclassification.
 
