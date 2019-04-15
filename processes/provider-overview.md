@@ -516,7 +516,7 @@ Managed laptop devices should be able to leave the physical office where the Res
 
 Tier 2 and below environments should not be subject to physical security.
 
-Tier 3 environments should require the limited access space.
+Tier 3 access should be from the medium security space.
 
 Tier 4 access must be from the high security space.
 
