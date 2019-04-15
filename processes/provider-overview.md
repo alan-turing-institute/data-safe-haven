@@ -12,7 +12,7 @@ It is essential that sensitive or confidential datasets are kept secure, both to
 personal data in a manner that is capable of being compliant with data protection law, 
 and to preserve the social license to carry out research activities.
 
-To create and operate these safely, efficiently, and ensure usability, requires, as with many sociotechnical systems, a complex stack of interacting 
+To create and operate these environments safely, efficiently, and ensure usability, requires, as with many sociotechnical systems, a complex stack of interacting 
 business process and design choices. This document describes the approaches taken by the Alan Turing Institute when building and managing environments for productive, secure, collaborative research projects.
 
 We propose choices for the security controls that should be applied in the areas of:
