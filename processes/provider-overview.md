@@ -389,7 +389,7 @@ user devices.
 * An Institutional network
 * A Restricted network
 
-An Institutional network corresponds to organisational guest network access (such as Eduroam). Access to environments can be restricted to machines on an Institutional network, but it is assumed the whole research community can access this network, though this access may be remote for authorised users (for example, via VPN).
+An Institutional network corresponds to organisational guest network access (such as Eduroam). Access to environments can be restricted such that access is only allowed by devices which are connected to an Institutional network, but it is assumed the whole research community can access this network, though this access may be remote for authorised users (for example, via VPN).
 
 A Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure environments, while away from their home institution.
 
