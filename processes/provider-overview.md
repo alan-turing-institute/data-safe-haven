@@ -316,7 +316,7 @@ To deposit the dataset, a time limited or one-time access token, providing write
 
 ### Lower tier transfer protocol
 
-This protocol does not restrict time windows or networks for deposit, and read-write transfer volumes, and is used for less sensitive datasets. 
+This protocol does not restrict time windows or networks for deposit, supports read-write transfer volumes, and is used for less sensitive datasets. Non-publically available data (Tier 1 and above) must still be encrypted in transit, with the encryption key transferred via a separate secure channel to the data.
 
 Software library distributions
 ------------------------------
