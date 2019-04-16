@@ -30,6 +30,8 @@ We do this for each of a small set of security "Tiers" - noting that the choice 
 
 This document describes our approach to handling research data. It does not cover the Turing's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre.
 
+The document is structured as follows: we begin with discussions of some aspects of the design necessary to motivate it. We then describe our 'model' for secure research environments, defining various terms. Next, we discuss the possible choices for each security control around each of the above areas, while leaving open the question of which controls are appropriate at which tiers. Finally, at the end, we make specific choices assigning controls to security tiers.
+
 Software-defined infrastructure
 -------------------------------
 
@@ -236,20 +238,22 @@ A remote desktop connection, allowing access to graphical interface applications
 to allow researchers to connect to the remote secure analysis environment.
 At all but the lowest tiers, this requires two-factor authentication, and, at some tiers, the copy paste function is disabled.
 
+At every tier, long and strong passphrases (e.g. at least four randomly chosen dictionary words)
+should be enforced, and users are trained in the use of keychain managers on their access devices, locked with two-factor authentication, so that the inconvenience of repeatedly
+typing a long passphrase is mitigated, reducing the risk of users choosing insecure passwords.
+
 At some tiers, we may provide **secure shell**, command line-based, connections in addition to the remote desktop.
 
 Such text-based access is sufficient for some professional data scientists, with the provenance
 information provided by command-driven data analysis a primary driver for this preference. (Processes can 
 easily be reproduced based on the commands typed.) 
-When not needed, providing a remote desktop interface adds complexity and therefore risk.
+If not needed, providing a remote desktop interface adds complexity and therefore risk.
 
-At every tier, long and strong passphrases (e.g. at least four randomly chosen dictionary words)
-should be enforced, and users are trained in the use of keychain managers on their access devices, locked with two-factor authentication, so that the inconvenience of repeatedly
-typing a long passphrase is mitigated, reducing the risk of users choosing insecure passwords.
+At some tiers, specific commands commonly used for data copy-out, can therefore be blocked for users. 
 
-At some tiers, specific commands commonly used for data copy-out, are blocked for users. 
+In neither case is copy-out to the machine used to access the environment absolutely prevented (with remote desktop software, malicious users can script automated screen-grabs). However, this can be made difficult in order to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the environment from machines permanently located within a secure physical environment.
 
-In neither case is copy-out to the machine used to access the environment absolutely prevented - with remote desktop software, malicious users can script automated screen-grabs. However, this can be made difficult in order to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the environment from machines permanently located within a secure physical environment.
+We therefore believe it will be possible to make secure shell access just as secure as remote desktop access, but this remains a work in progress.
 
 The Classification Process
 --------------------------
@@ -464,23 +468,12 @@ If it is needed to extract data from secure environments for publication, firstl
 process should be followed, to generate an appropriate Tier-1 or Tier-0 environment. Data can then be copied directly
 out via scp.
 
-As an exceptional process, it may be necessary to release generated
-sensitive data back to the original Data Provider, or to transfer to an
-independent secure data environment.
-
-In this circumstance, then the following process should be followed:
-
-The Data Provider Representative and Research Manager should authorise this in the management system,
-which makes record of the fact. The expected IP range and time duration for the extraction should be specified at this time. This should temporarily make available a new secure volume accessible outside the environment using 
-the credentials of the Data Provider Representative, from which data may be copied out.
-
-
 Software Ingress
 ----------------
 
 Package mirrors allow ingress of standard software.
 
-But since we forbid copy-paste, how should researcher-written software, written outside the secure
+But since we disable copy-paste, how should researcher-written software, written outside the secure
 environment, arrive inside?
 
 If we allow access to the internet to `git clone` such software, this might allow for data to leave the environment, and at higher tiers, there is no access to the open internet. 
@@ -520,12 +513,12 @@ At Tier 1 and 0, installation should be from the reference package server on the
 
 ### Inbound network
 
-Only the Restricted network will be able to access Tier 3 and above.
-
-Tier 2 environments should only be accessible from an Institutional network.
-
 At Tier 2 and 3, the analysis machines themselves are not accessible directly. Instead, only 
 a small group of machines are exposed to the network, termed "access nodes". These provide the remote desktop facilities used indirectly to access the analysis environments.
+
+Only the Restricted network will be able to access Tier 3 and above access nodes
+
+Tier 2 environment access nodes should only be accessible from an Institutional network.
 
 Tier 1 and 0 environments should be accessible from the Internet.
 
@@ -550,6 +543,8 @@ Tier 4 access must be from the high security space.
 
 ### User management
 
+New user accounts are requested by users on the system and approved by research managers before assignment to projects.
+
 At Tier 2 and below, the Investigator has the authority to add new members to the research team, and the research manager has the authority to assign Referees.
 
 At Tier 3 and above, new Referees or members of the research team must be counter-approved by the Dataset Provider Representative.
@@ -558,10 +553,9 @@ At Tier 3 and above, new Referees or members of the research team must be counte
 
 At Tier 1 and Tier 0, ssh access to the environment is possible without restrictions. The user should be able to set-up port forwarding (ssh tunnel) and use this to access remotely-running UI clients via a native client browser.
 
-At Tier 3, only remote desktop access is enabled.
+At Tier 2 and above only remote desktop access is enabled.
 
-At Tier 2, we are unsure at this stage if our objective to enable restricted SSH access to this
-tier is possible. In the interim, only remote desktop access is enabled.
+We may, in future, enable secure shell access at Tier 2, but this remains a work in progress.
 
 ### Internet access
 
@@ -607,3 +601,7 @@ environment in which the derived data is generated is Tier 3 or higher.
 
 At Tier 3 and higher, Data Provider Representative signoff of all egress of data or code from the secure
 environment is required.
+
+### Two factor authentication
+
+At Tier 2 and higher, two factor authentication is required.
