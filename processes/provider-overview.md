@@ -289,7 +289,7 @@ How do sensitive datasets arrive in the Secure Data Volume?
 
 The policies defined here minimise the number of people who have access to restricted information before it is in the secure research environment.
 
-Datasets must only be transferred from the Dataset Provider to the research environment after an initial classification has been completed
+Datasets must only be transferred from the Dataset Provider to the Turing after an initial classification has been completed
 and the data sharing agreement executed.
 
 The transfer process should be initiated by the Research Manager in the management framework, opening a new empty secure data volume for deposit.
