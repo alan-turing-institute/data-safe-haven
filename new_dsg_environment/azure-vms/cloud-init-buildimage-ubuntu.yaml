@@ -422,7 +422,7 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo "*** Working on py27 environment. Will take approximately 40 minutes... ***"
+  - echo "*** Working on py27 environment. Will take approximately 35 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -440,7 +440,7 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo "*** Building py27 environment took $ELAPSED"
   # Python 3.6
-  - echo "*** Working on py36 environment. Will take approximately 30 minutes... ***"
+  - echo "*** Working on py36 environment. Will take approximately 45 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -456,7 +456,7 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo "*** Building py36 environment took $ELAPSED"
   # Python 3.7
-  - echo "*** Working on py37 environment. Will take approximately 15 minutes... ***"
+  - echo "*** Working on py37 environment. Will take approximately 20 minutes... ***"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
