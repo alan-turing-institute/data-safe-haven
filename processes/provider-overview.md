@@ -331,7 +331,7 @@ Malicious software has occasionally been able to become an official download on 
 This is a low risk, since the environment will not have access to the internet, but must still be guarded against at the higher tiers.
 
 At some tiers we mirror only whitelisted packages, at others we mirror the full package list but with a delay
-(during which the community will catch most malicious code on package mirrors.)
+(during which the wider international research community will catch most malicious code on package mirrors.)
 
 Storage
 -------
