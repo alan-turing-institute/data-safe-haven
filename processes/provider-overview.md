@@ -13,7 +13,7 @@ personal data in a manner that is capable of being compliant with data protectio
 and to avoid harm to the consent of society for research activities with personal data (called 'social license').
 
 To create and operate these Environments safely and efficiently whilst ensuring usability, requires, as with many sociotechnical systems, a complex stack of interacting 
-business process and design choices. This document describes the approaches taken by the Alan Turing Institute when building and managing Environments for productive, secure, collaborative research Projects.
+business process and design choices. This document describes the approaches taken by the Alan Turing Institute when building and managing Environments for productive, secure, collaborative research projects.
 
 We propose choices for the security controls that should be applied in the areas of:
 
@@ -30,12 +30,60 @@ We do this for each of a small set of security "Tiers" - noting that the choice 
 
 This document describes our approach to handling research data. It does not cover the Turing's core enterprise information security practices, which are described elsewhere. Nor do we cover the data-centre level or organisational management security practices which are fundamental to any secure computing facility - we do not operate our own data centres, but rely on upstream ISO 270001 compliant data centre provision, such as Microsoft Azure and the Edinburgh Parallel Computing Centre.
 
-The document is structured as follows: we begin with discussions of some aspects of the design necessary to motivate it. We then describe our 'model' for Environments, defining various terms. Next, we discuss the possible choices for each security control around each of the above areas, while leaving open the question of which controls are appropriate at which tiers. Finally, at the end, we make specific choices assigning controls to security tiers.
+The document is structured as follows: we begin by defining terms which are used throughout the document. We then discuss some aspects of the design, before describing our 'model' for secure research Environments. Next, we discuss the possible choices for each security control around each of the areas bullet-pointed above, while leaving open the question of which controls are appropriate at which tiers. Finally, we make specific choices assigning controls to security tiers.
+
+Definitions - a model for secure data research projects
+-----------------------------------------
+
+### Environments
+
+Assessing the sensitivity of a dataset requires an understanding both of the base sensitivity of the information contained in the dataset and of the impact on that base sensitivity of the operations that it will undergo in the research project. 
+The classification exercise therefore relates to each stage of a project and not simply to the datasets as they are introduced into it.
+
+Classification to a tier is therefore **not** a property of a dataset, because a dataset's sensitivity depends on the data it can be combined with, and the use to which it is put.
+
+Classification is instead a property of an **Environment**, which is here defined as: the project, a subset of its tasks, and a collection of datasets.
+
+A project will create one or more Environments corresponding to the stages of the project, and the current tasks in operation.
+
+### Researcher
+
+A project member, who analyses data to produce results. We reserve the capitalised term "Researcher" for this role
+in our user model. We use the lower case term when considering the population of researchers more widely.
+
+### Investigator
+
+The research project lead, this individual is responsible for ensuring that project staff comply with
+the Environment's security policies. A single lead Investigator must be responsible for a project. Multiple collaborating institutions may have
+their own lead academic staff, and academic staff might delegate to a researcher the leadership as far as interaction with the Environment is concerned.
+In both cases, the term Investigator here is independent of this - regardless of academic status or institutional collaboration, this individual accepts responsibility for the conduct of the project and its members.
+
+### Referee
+
+A Referee volunteers to review code or derived data, providing evidence to the Investigator and Dataset Provider Representative that the researchers are complying with data handling practices. 
+
+### Dataset Provider and Representative
+
+The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the Turing.
+This individual is the **Dataset Provider Representative**.
+They are authorised to act on behalf of the Dataset Provider with respect to the dataset and must be in a position to certify that the Dataset Provider is authorised  to share the dataset with the Turing.
+
+There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
+It is the duty of the Dataset Provider Representative to manage this set of stakeholders at the Dataset Provider.
+
+### Research Manager
+
+A designated staff member in the Turing who is responsible for creation and monitoring of projects and Environments.
+This should be a member of professional staff with oversight for data handling in one or more research domains.
+
+### System Manager 
+
+Members of Turing staff responsible for configuration and maintenance of the Environment.
 
 Software-defined infrastructure
 -------------------------------
 
-Our approach - separately instantiating an isolated Environment for each Project - would involve a hugely
+Our approach - separately instantiating an isolated Environment for each project - would involve a hugely
 inefficient duplication of effort were it not for the advent of "software-defined infrastructure".
 
 It is now possible to specify a whole arrangement of IT infrastructure, servers, storage, access policies and so on,
@@ -81,56 +129,10 @@ Regulatory and commercial compliance requirements place constraints on the use o
 Almost all security measures can be circumvented, security can almost always be improved by adding additional barriers, and improvements
 to security almost always carry a cost in usability and performance.
 
-Misclassification is seriously costly for research organisations and their partners: overclassification results not just in lost researcher productivity, but also a loss of scientific engagement, as researchers choose not to take part in a Project with cumbersome security requirements. Systematic overclassification **increases** data risk by encouraging workaround breach.
+Misclassification is seriously costly for research organisations and their partners: overclassification results not just in lost researcher productivity, but also a loss of scientific engagement, as researchers choose not to take part in a project with cumbersome security requirements. Systematic overclassification **increases** data risk by encouraging workaround breach.
 
 The risks of under-classification include not only
 legal and financial sanction, but the loss of the social licence to operate of the whole community of data science researchers.
-
-Definitions - a model for secure data research Projects
------------------------------------------
-
-### Environments and Projects 
-
-Assessing the sensitivity of a dataset requires an understanding of the base sensitivity of the information contained in the dataset and of the impact on that base sensitivity of the operations that it will undergo in the research Project. 
-The classification exercise therefore relates to each stage of a Project and not simply to the datasets as they are introduced into it.
-
-Classification to a tier is therefore a property of an Environment: the Project, a subset of its tasks, and a collection of datasets. It is not a property of a dataset, because a particular dataset's sensitivity depends on the data it can be combined with, and the use to which it is put.
-
-A Project will create one or more Environments corresponding to the stages of the Project, and the current tasks in operation.
-
-### Researcher
-
-A project member, who analyses data to produce results. We reserve the capitalised term "Researcher" for this role
-in our user model. We use the lower case term when considering the population of researchers more widely.
-
-### Investigator
-
-The research Project lead, this individual is responsible for ensuring that the Project staff comply with
-the Environment's security policies. A single lead Investigator must be responsible for a Project. Multiple collaborating institutions may have
-their own lead academic staff, and academic staff might delegate to a researcher the leadership as far as interaction with the Environment is concerned.
-In both cases, the term Investigator here is independent of this - regardless of academic status or institutional collaboration, this individual accepts responsibility for the conduct of the Project and its members.
-
-### Referee
-
-A Referee volunteers to review code or derived data, providing evidence to the Investigator and Dataset Provider Representative that the researchers are complying with data handling practices. 
-
-### Dataset Provider and Representative
-
-The **Dataset Provider** is the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the Turing.
-This individual is the **Dataset Provider Representative**.
-They are authorised to act on behalf of the Dataset Provider with respect to the dataset and must be in a position to certify that the Dataset Provider is authorised  to share the dataset with the Turing.
-
-There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
-It is the duty of the Dataset Provider Representative to manage this set of stakeholders at the Dataset Provider.
-
-### Research Manager
-
-A designated staff member in the Turing who is responsible for creation and monitoring of Projects and Environments.
-This should be a member of professional staff with oversight for data handling in one or more research domains.
-
-### System Manager 
-
-Members of Turing staff responsible for configuration and maintenance of the Environment.
 
 Environment Tiers
 -----------------
@@ -139,14 +141,14 @@ Our approach for secure information processing tiers is not new: they correspond
 
 In this paper, by 'sensitive datasets' we mean datasets with confidentiality restrictions and/or those which are subject to data protection law (DPL).
 
-We emphasise that this classification is based on considering the sensitivity of all information handled in the Project, including information that may be generated by
+We emphasise that this classification is based on considering the sensitivity of all information handled in the project, including information that may be generated by
 combining or processing input datasets. In every case, the categorisation does not depend only on the input datasets, but on combining information
 with other information or generated results.
 
 Derived information may be of higher security tier than the information in the input datasets.
-(For example, information on the identities of those who are suspected to possess an undiagnosed neurological condition on the basis of analysis of public social media data.) Where a Project team believes this will be the case, the datasets should be transferred to the higher tier of Environment before the Project commences.
+(For example, information on the identities of those who are suspected to possess an undiagnosed neurological condition on the basis of analysis of public social media data.) Where a project team believes this will be the case, the datasets should be transferred to the higher tier of Environment before the project commences.
 
-If it becomes apparent during the Project that intended analysis will produce this effect then the datasets should be transferred to the relevant higher security tier Environment before that analysis is carried out.
+If it becomes apparent during the project that intended analysis will produce this effect then the datasets should be transferred to the relevant higher security tier Environment before that analysis is carried out.
 
 In the below, "personal data" follows the GDPR definition: information linked to living individuals. It excludes information about individuals who
 are dead.
@@ -189,14 +191,14 @@ confidence in the quality of pseudonymisation. This makes the information no lon
 
 The pseudonymisation process itself, if carried out in the Turing, should take place in a Tier 3 Environment.
 
-A typical model for a Project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised or synthetic data generated in 
+A typical model for a project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised or synthetic data generated in 
 the Tier 3 Environment and then transferred to the Tier 2 Environment.
 
 Tier 2 Environments are also used to handle, combine or generate information which is confidential, but not, in commercial or national security terms, sensitive.
 Tier 2 corresponds to the government OFFICIAL classification.
 This includes commercial-in-confidence datasets or intellectual property where the consequences of legal or financial consequences from disclosure are low.
 
-At Tier 2 and above, reclassification of the results of the Project for publication must be run following a careful process. Derived information must otherwise be maintained as confidential.
+At Tier 2 and above, reclassification of the results of the project for publication must be run following a careful process. Derived information must otherwise be maintained as confidential.
 
 At Tier 2, the most significant risks are "workaround breach" and the risk of  mistakenly believing data is robustly
 pseudonymised, when in fact re-identification might be possible.
@@ -217,7 +219,7 @@ This tier corresponds to the governmental ‘OFFICIAL–SENSITIVE’ categorisat
 
 The difference between Tier 2 and Tier 3 Environments is the most significant in this model, as it carries the highest consequences, both for researcher productivity and organisational risk. 
 
-At Tier 3, the risk of hostile actors attempting to break into the secure Environment becomes significant.
+At Tier 3, the risk of hostile actors attempting to break into the Environment becomes significant.
 
 ### Tier 4
 
@@ -229,7 +231,7 @@ security terms, and are likely to be subject to attack by sophisticated,
 well-resourced and determined actors, such as serious organised crime groups and state actors. This
 tier corresponds to the UK government "SECRET" categorisation.
 
-It is at Tier 4 that the risk of hostile actors penetrating the Project team becomes significant.
+It is at Tier 4 that the risk of hostile actors penetrating the project team becomes significant.
 
 Connections to the Environment
 -------------------------------------
@@ -274,14 +276,14 @@ Users who wish to have access to the Environment first complete an online form c
 
 Projects are created in the management system by a Research Manager, and an Investigator assigned.
 
-Research Managers and Investigators may add users to groups corresponding to specific research Projects
+Research Managers and Investigators may add users to groups corresponding to specific research projects
 through the management framework.
 
-The Research Manager has the authority to assign Referees and Data Provider Representatives to a Project.
+The Research Manager has the authority to assign Referees and Data Provider Representatives to a project.
 
 At some tiers, new members of the research team or Referees must also be approved by the Dataset Provider Representative.
 
-Before joining a Project, Researchers, Investigators and Referees must certify in the management system that they have received training in handling data in the system.
+Before joining a project, Researchers, Investigators and Referees must certify in the management system that they have received training in handling data in the system.
 
 As required by law, the Dataset Provider Representative must also certify that the organisation providing the dataset has permission from the dataset owner, 
 if they are not the dataset owner, to share it with the Turing, and this should be recorded within the management system database.
@@ -326,7 +328,7 @@ Software library distributions
 ------------------------------
 
 Maintainers of shared research computing Environments face a difficult challenge in keeping research algorithm libraries and platforms
-up to date - and in many cases these conflict. The use of single-project virtual Environments opens another possibility: downloading the software as needed for the Project
+up to date - and in many cases these conflict. The use of single-project virtual Environments opens another possibility: downloading the software as needed for the project
 from package managers such as the Python package index. To achieve this in a secure Environment, without access to the
 external internet, requires maintenance of mirrors of package repositories inside the Environment. 
 
@@ -432,7 +434,7 @@ Screen adaptations or desk partitions can be adopted in open plan Environments, 
 Secure research spaces control the possibility of the researcher deliberately
 removing data. Devices will be locked to appropriate desks, and neither enter nor leave 
 the space. Mobile devices should be removed before entering, to block the 'photographic hole',
-where mobile phones are used to capture secure data from a screen. Only researchers associated with a secure Project have access to such a space.
+where mobile phones are used to capture secure data from a screen. Only researchers associated with a secure project have access to such a space.
 
 Firewall rules for the Environments must enforce Restricted network IP ranges corresponding to these 
 research spaces.
@@ -440,7 +442,7 @@ research spaces.
 Data reclassification
 ---------------------
 
-From a Project, datasets can often be created which merit use in an Environment with a lower classification.
+From a project, datasets can often be created which merit use in an Environment with a lower classification.
 
 For example, data may be pseudonymised, bringing it from Tier 3 to Tier 2, or used to build into a trained model, which might become Tier 1, or aggregated into a summary statistic, and published as Tier 0.
 
@@ -456,7 +458,7 @@ and that identifiable data is not released.
 No reclassification should be permitted without a script describing, in code, the process used to create the derived dataset. 
 (The authors do not believe that a spreadsheet can be properly audited for this.)
 
-A reclassification script should be written by a Project member. This is placed on the software volume or home volume, and run so that the derived
+A reclassification script should be written by a project member. This is placed on the software volume or home volume, and run so that the derived
 dataset is placed on the Output Volume.
 
 Following review by the Data Provider Representative, Investigator, or an independent Referee (depending on tier) of the reclassification script and generated derived dataset, a new Environment can be created with the former egress volume now mounted as a new secure data volume within a new Environment, at a different tier. The existence of this Environment as a "derived Environment" should be noted, with the originating Environment's ID and the reclassification script preserved.
@@ -464,7 +466,7 @@ Following review by the Data Provider Representative, Investigator, or an indepe
 Data egress
 -----------
 
-If it is needed to extract data from Environments for publication, firstly, the appropriate declassification
+If it is needed to extract data from secure Environments for publication, firstly, the appropriate declassification
 process should be followed, to generate an appropriate Tier-1 or Tier-0 Environment. Data can then be copied directly
 out via scp.
 
@@ -543,7 +545,7 @@ Tier 4 access must be from the high security space.
 
 ### User management
 
-New user accounts are requested by users on the system and approved by Research Managers before assignment to Projects.
+New user accounts are requested by users on the system and approved by Research Managers before assignment to projects.
 
 At Tier 2 and below, the Investigator has the authority to add new members to the research team, and the Research Manager has the authority to assign Referees.
 
