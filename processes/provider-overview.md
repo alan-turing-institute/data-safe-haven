@@ -254,7 +254,7 @@ In neither case is copy-out to the machine used to access the environment absolu
 The Classification Process
 --------------------------
 
-The Dataset Provider Representative and Investigator must agree on a data classification.
+The Dataset Provider Representative and Investigator must agree on an Environment classification.
 
 An initial classification should be made by the Dataset Provider Representative and an appropriate environment instantiated, so that
 ingress can occur and the remainder of the review can take place. 
