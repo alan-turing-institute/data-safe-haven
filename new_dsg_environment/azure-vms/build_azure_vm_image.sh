@@ -1,31 +1,34 @@
 #! /bin/bash
 
-# Options which are configurable at the command line
-SOURCEIMAGE="Ubuntu"
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_F2s_v2"
-
-
 # Constants for colourised output
 BOLD="\033[1m"
 RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
 
+# Options which are configurable at the command line
+RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+SOURCEIMAGE="Ubuntu"
+SUBSCRIPTION="" # must be provided
+VMSIZE="Standard_E8s_v3"
+
 # Other constants
+ADMIN_USERNAME="atiadmin"
 MACHINENAME="ComputeVM"
 LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 NSGNAME="NSG_IMAGE_BUILD"
+VNETNAME="VNET_IMAGE_BUILD"
+SUBNETNAME="SBNET_IMAGE_BUILD"
+IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i source_image] [-n machine_name] [-r resource_group]"
-    echo "  -h                            display help"
-    echo "  -s subscription (required)    specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
-    echo "  -i source_image (optional)    specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
-    echo "  -r resource_group (optional)  specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')"
-    echo "  -z vm_size (optional)         size of the VM to use for build (defaults to 'Standard_F2s_v2')"
+    echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
+    echo "  -h                           display help"
+    echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
+    echo "  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
     exit 1
 }
 
@@ -53,20 +56,25 @@ while getopts "hi:r:s:z:" opt; do
     esac
 done
 
-# Check that a subscription has been provided
+# Check that source image is "Ubuntu"
+if [ "$SOURCEIMAGE" != "Ubuntu" ]; then
+    echo -e "${RED}At the moment we only support building the Ubuntu Compute VM${END}"
+    print_usage_and_exit
+fi
+
+# Check that a subscription has been provided and switch to it
 if [ "$SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
-
-# Switch subscription and setup resource group if it does not already exist
-# - have to build in West Europe in order to use Shared Image Gallery
 az account set --subscription "$SUBSCRIPTION"
+
+# Setup resource group if it does not already exist
+# - have to build in West Europe in order to use Shared Image Gallery
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
     az group create --name $RESOURCEGROUP --location $LOCATION
 fi
-
 
 # Ensure required features for shared image galleries are enabled for this subscription
 FEATURE="GalleryPreview"
@@ -75,15 +83,15 @@ FEATURE_STATE="$(az feature show --namespace $NAMESPACE --name $FEATURE --query 
 RESOURCE="galleries/images/versions"
 RESOURCE_METADATA_QUERY="resourceTypes[?resourceType=='$RESOURCE']"
 RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
-
-echo "Ensuring $FEATURE feature is registered and $RESOURCE resource is present in namespace $NAMESPACE (this may take some time)."
-echo "Current $FEATURE feature state is $FEATURE_STATE."
+# Print out current status
+echo -e "${BOLD}Ensuring namespace ${BLUE}$NAMESPACE${END} ${BOLD}contains ${BLUE}$FEATURE${END} ${BOLD}feature and ${BLUE}$RESOURCE${END} ${BOLD}(this may take some time).${END}"
+echo -e "${BOLD}Current ${BLUE}$FEATURE${END} ${BOLD}feature state is ${BLUE}$FEATURE_STATE.${END}"
 if [ "$RESOURCE_METADATA" = "[]" ]; then
-    echo "Resource $RESOURCE is not present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is ${RED}not${END} ${BOLD}present.${END}"
 else
-    echo "Resource $RESOURCE is present."
+    echo -e "${BOLD}Resource ${BLUE}$RESOURCE${END} ${BOLD}is present.${END}"
 fi
-
+# Loop until features are present
 while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     if [ "$FEATURE_STATE" = "NotRegistered" ]; then
         # Register feature
@@ -101,6 +109,16 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
     RESOURCE_METADATA="$(az provider show --namespace $NAMESPACE --query $RESOURCE_METADATA_QUERY)"
 done
 
+# Create a VNet and subnet for the deployment
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP | grep $VNETNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating VNet for image building: ${BLUE}$VNETNAME${END}"
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE
+fi
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep $SUBNETNAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating subnet for image building: ${BLUE}$SUBNETNAME${END}"
+    az network vnet subnet create --name $SUBNETNAME --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --address-prefixes $IP_RANGE
+fi
+
 # Add an NSG group to deny inbound connections except Turing-based SSH
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
@@ -111,7 +129,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --direction Inbound \
         --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
-        --source-address-prefixes 193.60.220.253 \
+        --source-address-prefixes 193.60.220.240 193.60.220.253 \
         --source-port-ranges "*" \
         --destination-address-prefixes "*" \
         --destination-port-ranges 22 \
@@ -135,26 +153,23 @@ fi
 # Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
 # If anything else is requested then print usage message and exit.
 # If using the Data Science VM then the terms will be automatically accepted.
+TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-        echo -e "${BOLD}Enabling ${BLUE}Torch ${BOLD}compilation${END}"
+        echo -e "${BOLD}Enabling ${BLUE}Torch${END}${BOLD} compilation${END}"
         # Make a temporary config file with the Torch lines uncommented
-        TMP_CLOUD_CONFIG_PREFIX=$(mktemp)
-        TMP_CLOUD_CONFIG_YAML=$(mktemp "${TMP_CLOUD_CONFIG_PREFIX}.yaml")
-        rm $TMP_CLOUD_CONFIG_PREFIX
         sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
         MACHINENAME="${MACHINENAME}-UbuntuTorch1804Base"
-        INITSCRIPT="$TMP_CLOUD_CONFIG_YAML"
     else
         MACHINENAME="${MACHINENAME}-Ubuntu1804Base"
-        INITSCRIPT="cloud-init-buildimage-ubuntu.yaml"
+        cp cloud-init-buildimage-ubuntu.yaml $TMP_CLOUD_CONFIG_YAML
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    DISKSIZEGB="40"
+    DISKSIZEGB="60"
 elif [ "$SOURCEIMAGE" = "DataScience" ]; then
     MACHINENAME="${MACHINENAME}-DataScienceBase"
     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-    INITSCRIPT="cloud-init-buildimage-datascience.yaml"
+    cp cloud-init-buildimage-datascience.yaml $TMP_CLOUD_CONFIG_YAML
     DISKSIZEGB="60"
     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
     az vm image accept-terms --urn $SOURCEIMAGE
@@ -167,21 +182,33 @@ fi
 TIMESTAMP="$(date '+%Y%m%d%H%M')"
 BASENAME="Generalized${MACHINENAME}-${TIMESTAMP}"
 
+# Build python package lists
+cd package_lists && source generate_python_package_specs.sh > ../python_package_specs.yaml && cd ..
+sed -i -e '/# === AUTOGENERATED ANACONDA PACKAGES START HERE ===/r./python_package_specs.yaml' $TMP_CLOUD_CONFIG_YAML
+rm python_package_specs.yaml
+
+# Build R package lists
+cd package_lists && source generate_r_package_specs.sh > ../r_package_specs.yaml && cd ..
+sed -i -e '/# === AUTOGENERATED R PACKAGES START HERE ===/r./r_package_specs.yaml' $TMP_CLOUD_CONFIG_YAML
+rm r_package_specs.yaml
+
 # Create the VM based off the selected source image
 echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
 echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
-STARTTIME=$(date +%s)
 az vm create \
-  --resource-group $RESOURCEGROUP \
-  --name $BASENAME \
+  --admin-username $ADMIN_USERNAME \
+  --custom-data $TMP_CLOUD_CONFIG_YAML \
+  --generate-ssh-keys \
   --image $SOURCEIMAGE \
-  --os-disk-size-gb $DISKSIZEGB \
-  --custom-data $INITSCRIPT \
+  --name $BASENAME \
   --nsg $NSGNAME \
+  --os-disk-name "${BASENAME}OSDISK" \
+  --os-disk-size-gb $DISKSIZEGB \
+  --resource-group $RESOURCEGROUP \
   --size $VMSIZE \
-  --admin-username atiadmin \
-  --generate-ssh-keys
+  --subnet $SUBNETNAME \
+  --vnet-name $VNETNAME
 
 # --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
 # the key will be removed from the build machine at the end of VM creation
@@ -191,6 +218,6 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
-echo -e "${RED}This process will take several hours to complete.${END}"
+echo -e "${BOLD}This process will take several hours to complete.${END}"
 echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

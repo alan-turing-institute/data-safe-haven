@@ -1,0 +1,166 @@
+#cloud-config
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+# List of packages to install with apt-get
+packages:
+  - build-essential
+  - openssh-server
+  - python3-dev
+  - python3-pip
+  - python3-venv
+
+# Add the atiadmin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+
+# Initialise an empty file `internal_mirror_ip_addresses.txt`
+# When internal mirrors are deployed, they add their IP address to this file
+# Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
+write_files:
+  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    content: |
+  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    content: |
+      #! /bin/bash
+      # rsync: make the destination look like the source
+      #   -p          preserve permissions
+      #   -r          recursive
+      #   -t          preserve times
+      #   -l          follow symlinks
+      #   -z          compress data during transfer
+      #   -v          verbose
+      #   --delete    delete files present in destination but not source
+      #   --progress  show progress
+      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          rsync -prtlzv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
+      done
+  - path: "/home/mirrordaemon/pull_from_internet.sh"
+    content: |
+      #! /bin/bash
+      /bandersnatch/bin/bandersnatch mirror
+  - path: "/home/mirrordaemon/pull_then_push.sh"
+    content: |
+      #! /bin/bash
+      source ~mirrordaemon/pull_from_internet.sh
+      source ~mirrordaemon/push_to_internal_mirrors.sh
+  - path: "/etc/bandersnatch.conf"
+    content: |
+        [mirror]
+        ; The directory where the mirror data will be stored.
+        directory = /datadrive/mirrordaemon/pypi
+
+        ; Save JSON metadata into the web tree
+        ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
+        json = false
+
+        ; The PyPI server which will be mirrored.
+        master = https://pypi.org
+
+        ; The network socket timeout to use for all connections. This is set to a
+        ; somewhat aggressively low value - rather fail quickly temporarily and re-run
+        ; the client soon instead of having a process hang infinitely and have TCP not
+        ; catching up for ages.
+        timeout = 10
+
+        ; Whether to hash package indexes
+        ; Note that package index directory hashing is incompatible with pip
+        ; Recommended - the default of false for full pip/pypi compatibility.
+        hash-index = false
+
+        ; Number of worker threads to use for parallel downloads.
+        ; Recommendations for worker thread setting
+        ; - leave the default of 3 to avoid overloading the pypi master
+        ; - official servers located in data centers could run 10 workers
+        ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
+        workers = 5
+
+        ; Whether to stop a sync quickly after an error is found or whether to continue
+        ; syncing but not marking the sync as successful. Value should be "true" or
+        ; "false".
+        stop-on-error = false
+
+        ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
+        delete-packages = true
+
+        ; To enable whitelisting, you need to uncomment both the [blacklist] and [whitelist] sections
+        ; [blacklist]
+        ; plugins =
+        ;     whitelist_project
+
+        ; [whitelist]
+        ; packages =
+        ;     numpy
+        ;     matplotlib
+
+runcmd:
+  # Generate SSH keys for connecting to the internal mirror
+  # - do this early since it is pulled out of the VM by the deployment script
+  - echo "*** Generating SSH keys for connecting to the internal mirror"
+  - ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - sed -i 's/root@/mirrordaemon@/' id_rsa.pub
+  - mkdir -p ~mirrordaemon/.ssh
+  - mv id_rsa id_rsa.pub ~mirrordaemon/.ssh/
+  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
+  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+
+  # Upgrade installation then clean up
+  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - apt-get -y upgrade
+  - apt-get clean
+
+  # Set up and partition data disk
+  - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
+  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+  - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/mirrordaemon/pypi
+
+  # Install bandersnatch with pip
+  - echo "*** Installing bandersnatch... ***"
+  - python3 -m venv bandersnatch
+  - bandersnatch/bin/pip install wheel
+  - bandersnatch/bin/pip install bandersnatch
+
+  # Set up mirroring
+  - chmod u+x ~mirrordaemon/*.sh
+  - echo "*** Adding external update (rsync) job to crontab (3am on 15th of each month)... ***"
+  - echo "0 3 15 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "*** Adding internal mirror update job to crontab (3am on 1st of each month)... ***"
+  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
+
+  # Schedule initial update for next boot
+  - echo "*** Scheduling mirror update jobs for next boot... ***"
+  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
+
+  # Print out some diagnostic information
+  - echo "*** This server is currently aware of internal mirrors at the following locations ***"
+  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

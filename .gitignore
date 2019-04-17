@@ -1,1 +1,7 @@
+# System files
+*.DS_Store
 .idea/
+logistic.csv
+
+# All secrets folders, no matter how nested
+secrets/

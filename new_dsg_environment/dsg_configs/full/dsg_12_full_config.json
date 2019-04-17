@@ -1,0 +1,227 @@
+{
+  "shm": {
+    "subscriptionName": "Safe Haven Managment",
+    "id": "prod",
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_VM_DC",
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "ip": "10.251.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgartifactsprod"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      }
+    }
+  },
+  "dsg": {
+    "mirrors": {
+      "vnet": {
+        "rg": "RG_SH_PKG_MIRRORS",
+        "name": "VNET_SH_PKG_MIRRORS"
+      },
+      "cran": {
+        "ip": "10.1.0.21"
+      },
+      "pypi": {
+        "ip": "10.1.0.20"
+      }
+    },
+    "subscriptionName": "Data Study Group 12 (Prod)",
+    "id": "12",
+    "shortName": "dsg12",
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "dsgroup12.co.uk",
+      "netbiosName": "DSGROUP12",
+      "dn": "DC=dsgroup12,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP12 Server Administrators",
+          "description": "SG DSGROUP12 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP12 Research Users",
+          "description": "SG DSGROUP12 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP12_VNET1",
+        "cidr": "10.250.88.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.250.88",
+          "cidr": "10.250.88.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.250.89",
+          "cidr": "10.250.89.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.250.90",
+          "cidr": "10.250.90.0/24"
+        },
+        "gateway": {
+          "prefix": "10.250.95",
+          "cidr": "10.250.95.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG12DC",
+      "hostname": "DSG12DC",
+      "fqdn": "DSG12DC.dsgroup12.co.uk",
+      "ip": "10.250.88.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg12-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP12 Gitlab LDAP",
+          "samAccountName": "dsg12-gitlab-ldap",
+          "passwordSecretName": "dsg12-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP12 HackMD LDAP",
+          "samAccountName": "dsg12-hackmd-ldap",
+          "passwordSecretName": "dsg12-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP12 DSVM LDAP",
+          "samAccountName": "dsg12-dsvm-ldap",
+          "passwordSecretName": "dsg12-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP12 Test Researcher",
+          "samAccountName": "dsg12-test-res",
+          "passwordSecretName": "dsg12-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup12.co.uk",
+        "ip": "10.250.89.250"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup12.co.uk",
+        "ip": "10.250.89.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup12.co.uk",
+        "ip": "10.250.89.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253,193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup12.co.uk",
+      "ip": "10.250.90.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup12.co.uk",
+        "ip": "10.250.90.151",
+        "rootPasswordSecretName": "dsg12-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup12.co.uk",
+        "ip": "10.250.90.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2019040300",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup12-dsvm-admin-password"
+      }
+    }
+  }
+}

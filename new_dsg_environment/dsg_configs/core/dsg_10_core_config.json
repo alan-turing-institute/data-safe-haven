@@ -1,0 +1,11 @@
+{
+    "subscriptionName": "Data Study Group 10 (Prod)",
+    "dsgId": "10",
+    "domain": "dsgroup10.co.uk",
+    "ipPrefix": "10.250.72",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019040300",
+    "packageMirrorIpPypi": "10.1.0.20",
+    "packageMirrorIpCran": "10.1.0.21"
+}
