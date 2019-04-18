@@ -490,13 +490,7 @@ Once the researcher transfers the software source or installation package to thi
 
 Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to researchers within the analysis Environment with **read-only** access and they can then install the software or transfer the source to a version control repository within the Environment as appropriate.
 
-For software that requires admin rights to install:
-
-In **install mode**, a virtual machine is created outside of the Environment. The user has administrator privileges on the virtual machine and can install any software necessary from the open internet. There is no access to the secure data during this process.
-
-In **analysis mode**, the VM image is moved into the Environment where internet access is disabled. 
-
-The process to switch volumes between these modes should be managed through a process in the web-based management software.
+For software that requires admin rights to install, the software installer is again brought in via a software ingress volume, but the installation process requires a System Manager to run the install process.
 
 The choices
 ------------
