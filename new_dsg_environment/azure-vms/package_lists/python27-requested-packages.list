@@ -5,6 +5,8 @@ fbprophet
 folium
 geopandas
 gmplot
+gpy
+gpyopt
 graph-tool
 ipykernel
 jupyter
@@ -22,6 +24,7 @@ pandas
 pandas-datareader
 pandas-profiling
 pandasql
+paramz
 pint
 plotly
 pygpu
