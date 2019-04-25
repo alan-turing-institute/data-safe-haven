@@ -87,7 +87,7 @@ write_files:
         ; - leave the default of 3 to avoid overloading the pypi master
         ; - official servers located in data centers could run 10 workers
         ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
-        workers = 5
+        workers = 10
 
         ; Whether to stop a sync quickly after an error is found or whether to continue
         ; syncing but not marking the sync as successful. Value should be "true" or
