@@ -38,18 +38,20 @@ write_files:
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
           START_TIME=$(date +%s)
           rsync -prtlv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran
           ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-          echo "$(date +'%Y-%m-%d %H:%M:%S'): Pushing to internal mirrors at $IP_ADDRESS took $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+          echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
     content: |
       #! /bin/bash
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
       rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-      echo "$(date +'%Y-%m-%d %H:%M:%S'): Pulling from the internet took $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
     content: |
       #! /bin/bash
