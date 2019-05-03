@@ -2,7 +2,7 @@
 The data that you loaded into the Turing Safe Haven may have been sensitive – commercially or legally required by law. Before reports and results can be extracted from the Safe Haven to be ready for publication, there needs to be a declassification process.
 
 # Declassification
-See [https://github.com/alan-turing-institute/data-safe-haven/wiki/Declassification-and-Egress](egress.md)
+See [egress documentation](egress.md)
 
 # Removing data without declassification
 There may be situations that require data egress without going through the process of declassification.  Due to the sensitivity of the data we will only ever release this data to the original data owner that sent it to us in the first place, or if it is to comply with law.
