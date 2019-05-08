@@ -9,7 +9,7 @@ END="\033[0m"
 # Options which are configurable at the command line
 IP_TRIPLET_VNET="10.1.0"
 KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
-RESOURCEGROUP="RG_SH_PKG_MIRRORS"
+RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
 
 # Other constants
@@ -144,7 +144,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 4095
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.4
@@ -212,7 +212,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 1023
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5

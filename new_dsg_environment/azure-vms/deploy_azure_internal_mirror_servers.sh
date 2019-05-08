@@ -207,7 +207,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
-    az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 4095
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
@@ -294,7 +294,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
-    az disk create --location $LOCATION --name $DISKNAME --resource-group $RESOURCEGROUP --size-gb 4095
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 1023
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
