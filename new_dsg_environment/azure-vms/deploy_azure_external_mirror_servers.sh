@@ -9,7 +9,7 @@ END="\033[0m"
 # Options which are configurable at the command line
 IP_TRIPLET_VNET="10.1.0"
 KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
-RESOURCEGROUP="RG_SH_PKG_MIRRORS"
+RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
 
 # Other constants
