@@ -144,7 +144,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 4095
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.4
@@ -212,7 +212,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     # Create the data disk
     echo -e "${BOLD}Creating 4TB datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --size-gb 4095 --location $LOCATION
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 1023
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5
