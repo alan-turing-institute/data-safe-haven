@@ -1,0 +1,22 @@
+FROM ubuntu:18.04
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+strongswan \
+libstrongswan-standard-plugins \
+strongswan-pki \
+openssl
+ENV USERNAME client
+ENV PASSWORD password
+
+RUN mkdir /certs/
+RUN mkdir /out/
+
+RUN ipsec pki --gen --outform pem > /certs/caKey.pem
+RUN ipsec pki --self --in /certs/caKey.pem --dn "CN=VPN CA" --ca --outform pem > /certs/caCert.pem
+
+RUN openssl x509 -in /certs/caCert.pem -outform der | base64 -w0 ; echo
+
+RUN ipsec pki --gen --outform pem > "/certs/${USERNAME}Key.pem"
+RUN ipsec pki --pub --in "/certs/${USERNAME}Key.pem" | ipsec pki --issue --cacert /certs/caCert.pem --cakey /certs/caKey.pem --dn "CN=${USERNAME}" --san "${USERNAME}" --flag clientAuth --outform pem > "/certs/${USERNAME}Cert.pem"
+
+RUN openssl pkcs12 -in "/certs/${USERNAME}Cert.pem" -inkey "/certs/${USERNAME}Key.pem" -certfile /certs/caCert.pem -export -out "/certs/${USERNAME}.p12" -password "pass:${PASSWORD}"
