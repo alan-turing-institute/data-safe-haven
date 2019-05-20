@@ -1,7 +1,7 @@
 function New-AccountSasToken {
     param(
-        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter subscription name")]
-        [string]$subscriptionName,
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter subscription id")]
+        [string]$subscriptionID,
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
         [string]$resourceGroup,
         [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter storage account name")]
@@ -17,14 +17,14 @@ function New-AccountSasToken {
     )
 
     # Temporarily switch to storage account subscription
-    $_ = Set-AzContext -Subscription $subscriptionName; # Assign to dummy variable to avoid conmtext being returned
+    $_ = Set-AzContext -SubscriptionId $subscriptionID; # Assign to dummy variable to avoid conmtext being returned
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
     $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
 
     # Switch back to previous subscription
-    $_ = Set-AzContext -Subscription $prevSubscription; # Assign to dummy variable to avoid conmtext being returned
+    $_ = Set-AzContext -SubscriptionID $prevSubscription; # Assign to dummy variable to avoid conmtext being returned
 
     return $sasToken
 }
