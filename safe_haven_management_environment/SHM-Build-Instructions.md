@@ -10,7 +10,7 @@
 ## Artifacts Storage Account
 
 - Create an Azure storage account within the subscription that is going to host the SHM VMs
- - Create Blob storage container called "dsc" and copy the files from here to it
+ - Create Blob storage container called "dsc" and copy the files from here to it [Note: storage container names need to be unique across the azure account so if the name exists then make it unique and replace the name in these instructions]
  - Create the following Azure "File Shares" and populate as shown below.
    - scripts - copy the files from [here](https://github.com/alan-turing-institute/data-safe-haven/tree/214-safe-haven-managment-deployment/safe_haven_management_environment/scripts) to it
    - sqlserver - download the SQL Express 2017 from [here](https://go.microsoft.com/fwlink/?linkid=853017) and Microsoft SQL Studio from [here](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017).  The SQL server installation files should be expanded
