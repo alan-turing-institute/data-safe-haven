@@ -6,7 +6,7 @@
             "defaultValue": "SHM_VNET1",
             "type": "string"
         },
-        "P2S VPN Certifciate": {
+        "P2S_VPN_Certifciate": {
             "type": "string",
             "metadata": {
                 "description": "Paste certificate into dialogue box"
@@ -532,7 +532,7 @@
                         {
                             "name": "SafeHavenManagementP2SRootCert",
                             "properties": {
-                                "publicCertData": "[parameters('P2S VPN Certifciate')]"
+                                "publicCertData": "[parameters('P2S_VPN_Certifciate')]"
                             }
                         }
                     ],
