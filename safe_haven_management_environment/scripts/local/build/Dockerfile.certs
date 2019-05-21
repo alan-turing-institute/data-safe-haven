@@ -19,4 +19,4 @@ RUN openssl x509 -in /certs/caCert.pem -outform der | base64 -w0 ; echo
 RUN ipsec pki --gen --outform pem > "/certs/${USERNAME}Key.pem"
 RUN ipsec pki --pub --in "/certs/${USERNAME}Key.pem" | ipsec pki --issue --cacert /certs/caCert.pem --cakey /certs/caKey.pem --dn "CN=${USERNAME}" --san "${USERNAME}" --flag clientAuth --outform pem > "/certs/${USERNAME}Cert.pem"
 
-RUN openssl pkcs12 -in "/certs/${USERNAME}Cert.pem" -inkey "/certs/${USERNAME}Key.pem" -certfile /certs/caCert.pem -export -out "/certs/${USERNAME}.p12" -password "pass:${PASSWORD}"
+RUN openssl pkcs12 -in "/certs/${USERNAME}Cert.pem" -inkey "/certs/${USERNAME}Key.pem" -certfile /certs/caCert.pem -export -out "/certs/${USERNAME}.pfx" -password "pass:${PASSWORD}"
