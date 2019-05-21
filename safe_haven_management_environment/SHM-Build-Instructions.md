@@ -7,6 +7,14 @@
 - Azure Subscription to build the environment in
 - Self signed certificate for Azure Point to Site VPN service [Microsoft Documentation](https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-certificates-point-to-site)
 
+### Create self signed certificate
+- To create a self signed certificate call: `bash /data-safe-haven/safe_haven_management_environment/scripts/local/generate-root-cert.sh`
+- This will generate certificates and place them in: `data-safe-haven/safe_haven_management_environment/scripts/local/out/certs`
+
+- Create a resource group called `RG_SHM_SECRETS` and create a keychain within it called `shm-management-test`.
+
+- Upload the `client.pfx` certificate to the keychain with name `DSG-P2S-test-ClientCert` and password `password`
+
 ## Artifacts Storage Account
 
 - Create an Azure storage account within the subscription that is going to host the SHM VMs
@@ -33,6 +41,8 @@ em -Raw)
 - Download VPN client from the virtual network VPN gatway and install on your PC
 - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_<shm-slug>_VNET -> <shm-slug>_VNET1_GW`, where `<dsg-slug>` is `DSG` for test and `SHM` for production. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+
+  - Download the client.pfx certificate and install it by double clicking it. 
 
 ## Domain Controllers
 
