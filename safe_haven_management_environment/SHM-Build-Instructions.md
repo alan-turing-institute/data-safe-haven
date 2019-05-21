@@ -19,6 +19,7 @@
    
 ## Virtual Network
 
+- Create the resource group RG_SHM_VNET
 - Deploy "shmvnet-template" template
   - New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile shmvnet-template.json -P2S_VPN_Certifciate $(Get-Content -Path /Users/ogiles/Documents/project_repos/data-safe-haven/safe_haven_management_environment/scripts/local/out/certs/caCert.p
 em -Raw)
@@ -33,6 +34,7 @@ em -Raw)
 
 ## Domain Controllers
 
+- Create the resource group RG_SHM_DC
 - Ensure that the virutal network has deployed successfully
 - Deploy "shmdc-template" template
 - Complete the following detail:
