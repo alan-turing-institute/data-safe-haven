@@ -53,7 +53,6 @@
         },
         "Artifacts Location": {
             "type": "string",
-            "defaultValue": "https://NAME.blob.core.windows.net",
             "metadata": {
                 "description": "Enter the URL of the blob storage where the artifacts are held"
             }
