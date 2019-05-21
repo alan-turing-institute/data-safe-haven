@@ -36,7 +36,7 @@
 - Complete the following detail:
   - Resource Group: RG_SHM_DC
   - Location: UK South
-  - VM Size
+  - VM Size: Standard_DS2_v2
   - Administrator User: atiadmin
   - Administrator Password
   - Safe Mode Password
