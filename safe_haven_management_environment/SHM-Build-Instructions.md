@@ -20,6 +20,8 @@
 ## Virtual Network
 
 - Deploy "shmvnet-template" template
+  - New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile shmvnet-template.json -P2S_VPN_Certifciate $(Get-Content -Path /Users/ogiles/Documents/project_repos/data-safe-haven/safe_haven_management_environment/scripts/local/out/certs/caCert.p
+em -Raw)
 - Complete the following detail:
   - Resource Group: RG_SHM_VNET
   - Location: UK South
