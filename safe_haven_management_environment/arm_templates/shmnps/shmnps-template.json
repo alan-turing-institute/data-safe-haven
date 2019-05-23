@@ -4,10 +4,11 @@
     "parameters": {
         "VM Size": {
             "type": "string",
-            "defaultValue": "Standard_F4s_v2",
+            "defaultValue": "Standard_D2s_v3",
             "allowedValues": [
                 "Standard_F4s_v2",
-                "Standard_DS2_v2"                
+                "Standard_DS2_v2",
+                "Standard_D2s_v3"                
             ],
             "metadata": {
                 "description": "Select size of VM"
