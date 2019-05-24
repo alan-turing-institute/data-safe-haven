@@ -72,14 +72,14 @@ $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Ob
 New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate [string]$cert -Virtual_Network_Name "SHM_VNET1"
 
 # Deploy the shmdc-template
-New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../arm_templates/shmdc/shmdc-template.json"  `
-        -Administrator_User "atiadmin"
-        -Administrator_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "dcpass").SecretValueText
-        -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValueText
-        -Virtual_Network_Resource_Group "RG_SHM_VNET"
-        -Artifacts_Location ""
-        -Artifacts_Location_SAS_Token ""
-        -Domain_Name ""
+# New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../arm_templates/shmdc/shmdc-template.json"  `
+#         -Administrator_User "atiadmin"
+#         -Administrator_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "dcpass").SecretValueText
+#         -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValueText
+#         -Virtual_Network_Resource_Group "RG_SHM_VNET"
+#         -Artifacts_Location ""
+#         -Artifacts_Location_SAS_Token ""
+#         -Domain_Name ""
 
 
 # TO RUN THIS SCRIPT (second is my personal subscription)
