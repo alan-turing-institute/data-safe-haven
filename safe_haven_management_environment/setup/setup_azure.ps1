@@ -17,18 +17,16 @@ New-AzKeyVault -Name $vaultName -ResourceGroupName RG_SHM_SECRETS  -Location uks
 
 Import-Module ../scripts/local/GeneratePassword.psm1
 
-# VM1
+# VM pass
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-Set-AzKeyVaultSecret -VaultName $vaultName -Name 'SHMDC1' -SecretValue $secretvalue
-# VM2
+Set-AzKeyVaultSecret -VaultName $vaultName -Name 'dcpass' -SecretValue $secretvalue
+# safemode pass
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-Set-AzKeyVaultSecret -VaultName $vaultName -Name 'SHMDC2' -SecretValue $secretvalue
+Set-AzKeyVaultSecret -VaultName $vaultName -Name 'safemodepass' -SecretValue $secretvalue
 # VM3
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
 Set-AzKeyVaultSecret -VaultName $vaultName -Name 'NPS' -SecretValue $secretvalue
 
-# To retrieve keys
-# (Get-AzKeyVaultSecret -vaultName "Contosokeyvault" -name "ExamplePassword").SecretValueText
 
 # Generate certificates
 $cwd = Get-Location
@@ -64,6 +62,25 @@ Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqls
 
 # Tidy up - Delete the local executable files
 Remove-Item –path 'temp/' –recurse
+
+
+
+
+# Run template files
+# Deploy the shmvnet template
+$cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
+New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate [string]$cert -Virtual_Network_Name "SHM_VNET1"
+
+# Deploy the shmdc-template
+New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../arm_templates/shmdc/shmdc-template.json"  `
+        -Administrator_User "atiadmin"
+        -Administrator_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "dcpass").SecretValueText
+        -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValueText
+        -Virtual_Network_Resource_Group "RG_SHM_VNET"
+        -Artifacts_Location ""
+        -Artifacts_Location_SAS_Token ""
+        -Domain_Name ""
+
 
 # TO RUN THIS SCRIPT (second is my personal subscription)
 # ./setup_azure.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"

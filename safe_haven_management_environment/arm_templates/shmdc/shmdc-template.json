@@ -13,22 +13,22 @@
             "description": "Select size of VM"
             }
         },
-        "Administrator User": {
+        "Administrator_User": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for VM Administrator"
             }    
         },
-        "Administrator Password": {
+        "Administrator_Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter VM Administrator Password"
+                "description": "Enter VM Administrator_Password"
             }    
         },
-        "SafeMode Password": {
+        "SafeMode_Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter SafeMode Password"
+                "description": "Enter SafeMode_Password"
             }    
         },
         "Virtual Network Name": {
@@ -38,7 +38,7 @@
                 "description": "Enter name of virtual network to provision these VMs"
             }    
         },
-        "Virtual Network Resource Group": {
+        "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
@@ -51,19 +51,19 @@
                 "description": "Enter name of subnet where you want to provision this VM"
             }    
         },
-        "Artifacts Location": {
+        "Artifacts_Location": {
             "type": "string",
             "metadata": {
                 "description": "Enter the URL of the blob storage where the artifacts are held"
             }
         },
-        "Artifacts Location SAS Token": {
+        "Artifacts_Location_SAS_Token": {
             "type": "securestring",
             "metadata": {
                 "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
             }
         },
-        "Domain Name":{
+        "Domain_Name":{
             "type": "string",
             "defaultValue": "TURINGSAFEHAVEN.AC.UK",
             "metadata": {
@@ -80,7 +80,7 @@
         "dc2ipaddress": "10.251.0.249",
         "avsetname": "AVSET_SHM_VM_DC",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
-        "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
     },
     "resources": [
@@ -145,8 +145,8 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('dc1name')]",
-                    "adminUsername": "[parameters('Administrator User')]",
-                    "adminPassword": "[parameters('Administrator Password')]",
+                    "adminUsername": "[parameters('Administrator_User')]",
+                    "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -192,26 +192,26 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts Location'), '/dsc/CreateADPDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/dsc/CreateADPDC.zip')]",
                             "script": "CreateADPDC.ps1",
                             "function": "CreateADPDC"
                             },
                             "configurationArguments": {
-                                "DomainName": "[parameters('Domain Name')]"
+                                "DomainName": "[parameters('Domain_Name')]"
                             }
                         },
                         "protectedSettings": {
                             "configurationArguments": {
                                 "adminCreds": {
-                                        "UserName": "[parameters('Administrator User')]",
-                                        "Password": "[parameters('Administrator Password')]"
+                                        "UserName": "[parameters('Administrator_User')]",
+                                        "Password": "[parameters('Administrator_Password')]"
                                         },
                                 "SafeModeAdminCreds" :{
-                                        "UserName": "[parameters('Administrator User')]",
-                                        "Password": "[parameters('SafeMode Password')]"
+                                        "UserName": "[parameters('Administrator_User')]",
+                                        "Password": "[parameters('SafeMode_Password')]"
                                         }
                                 },
-                            "configurationUrlSasToken": "[parameters('Artifacts Location SAS Token')]"
+                            "configurationUrlSasToken": "[parameters('Artifacts_Location_SAS_Token')]"
                         }
                     }
                 }
@@ -312,8 +312,8 @@
                 },
                 "osProfile": {
                     "computerName": "[variables('dc2name')]",
-                    "adminUsername": "[parameters('Administrator User')]",
-                    "adminPassword": "[parameters('Administrator Password')]",
+                    "adminUsername": "[parameters('Administrator_User')]",
+                    "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -360,27 +360,27 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts Location'), '/dsc/CreateADBDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/dsc/CreateADBDC.zip')]",
                             "script": "CreateADBDC.ps1",
                             "function": "CreateADBDC"
                             },
                             "configurationArguments": {
-                                "DomainName": "[parameters('Domain Name')]",
+                                "DomainName": "[parameters('Domain_Name')]",
                                 "DNSServer": "[variables('dc1ipaddress')]"
                             }
                         },
                         "protectedSettings": {
                             "configurationArguments": {
                                 "adminCreds": {
-                                    "UserName": "[parameters('Administrator User')]",
-                                    "Password": "[parameters('Administrator Password')]"
+                                    "UserName": "[parameters('Administrator_User')]",
+                                    "Password": "[parameters('Administrator_Password')]"
                                     },
                                 "SafeModeAdminCreds" :{
-                                    "UserName": "[parameters('Administrator User')]",
-                                    "Password": "[parameters('SafeMode Password')]"
+                                    "UserName": "[parameters('Administrator_User')]",
+                                    "Password": "[parameters('SafeMode_Password')]"
                                     }   
                                 },
-                            "configurationUrlSasToken": "[parameters('Artifacts Location SAS Token')]"
+                            "configurationUrlSasToken": "[parameters('Artifacts_Location_SAS_Token')]"
                         }
                     }
                 }

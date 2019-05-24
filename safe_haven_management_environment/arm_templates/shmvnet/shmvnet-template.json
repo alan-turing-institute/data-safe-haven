@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Virtual Network Name": {
+        "Virtual_Network_Name": {
             "defaultValue": "SHM_VNET1",
             "type": "string"
         },
@@ -504,7 +504,7 @@
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'SHM_VNET1_GW_PIP')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), 'GatewaySubnet')]"
                             }
                         }
                     }
@@ -544,12 +544,12 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', 'SHM_VNET1_GW_PIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), 'GatewaySubnet')]"
             ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('Virtual Network Name')]",
+            "name": "[parameters('Virtual_Network_Name')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -613,7 +613,7 @@
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         },
         {
@@ -627,7 +627,7 @@
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         },
         {
@@ -644,7 +644,7 @@
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
             ]
         }
