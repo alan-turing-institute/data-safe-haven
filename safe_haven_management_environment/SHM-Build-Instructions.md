@@ -162,6 +162,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 ### Install Azure Active Directory Connect
 
 - Download the latest version of the AAD Connect tool from [here](https://www.microsoft.com/en-us/download/details.aspx?id=47594)
+  - You will need to temporarily [enable downloads on the VM](https://support.avg.com/SupportArticleView?l=en&urlname=Your-current-security-settings-do-not-allow-this-file-to-be-downloaded-in-Internet-Explorer) 
 - Run the installer
 - Agree the license terms -> "Continue"
 - Select "Customize"
