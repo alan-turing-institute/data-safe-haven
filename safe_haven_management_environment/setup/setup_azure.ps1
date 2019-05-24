@@ -54,7 +54,17 @@ Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareN
 Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
 
     
+# Download executables from microsoft
+New-Item -Name "temp" -ItemType "directory"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
+
+# Upload executables to fileshare
+Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
+
+# Tidy up - Delete the local executable files
+Remove-Item –path 'temp/' –recurse
+
 # TO RUN THIS SCRIPT (second is my personal subscription)
 # ./setup_azure.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"
 # ./setup_azure.ps1 -SubscriptionId "a570a7a2-8632-4a2f-aa10-d7fe37eca122" -vaultName "shmvault"
-
