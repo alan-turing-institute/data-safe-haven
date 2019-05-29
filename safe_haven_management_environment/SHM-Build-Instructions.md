@@ -60,9 +60,9 @@ em -Raw)
   - Safe Mode Password
   - Virtual Network: SHM_VNET1
   - Virtual Network Resource Group: RG_SHM_VNET
-  - Artifacts Location: URL to blob
+  - Artifacts Location: URL to blob storage - Generate shared access signature on azure portal (Should not contain a trailing / )
   - Artifacts Location SAS Token: Blob SAS token
-  - Domain name: TURINGSAFEHAVEN.AC.UK
+  - Domain name: TURINGSAFEHAVEN.AC.UK (Or alterative domain)
 
 ### Domain Controller SHMDC1
 

@@ -65,7 +65,6 @@
         },
         "Domain_Name":{
             "type": "string",
-            "defaultValue": "TURINGSAFEHAVEN.AC.UK",
             "metadata": {
                 "Description": "Enter the correct public domain name"
             }
