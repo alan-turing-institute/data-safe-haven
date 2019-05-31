@@ -75,7 +75,9 @@ New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../a
         -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValue`
         -Virtual_Network_Resource_Group "RG_SHM_VNET"
 
-       
+
+        
+New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_NPS" -templatefile "../arm_templates/shmnps/shmnps-template.json" -Administrator_User atiadmin -Domain_Name shmtestb.onmicrosoft.com 
+
 # TO RUN THIS SCRIPT (second is my personal subscription)
-# ./setup_azure.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"
-# ./setup_azure.ps1 -SubscriptionId "a570a7a2-8632-4a2f-aa10-d7fe37eca122" -vaultName "shmvault"
+# ./setup_azure1.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"
