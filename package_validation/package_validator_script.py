@@ -25,8 +25,8 @@ Measure: Yes/No (plus name of licence if available/inferable, length of README i
 Measure: Yes/No plus capture of actual email address
 """
 
-g = Github("<USER_NAME>", "<PASSWORD>")
-
+#g = Github("<USER_NAME>", "<PASSWORD>")
+g = Github("darenasc", "prisio01")
 
 R_PACKAGES = ['abind', 'ada', 'akima', 'ape', 'assertthat', 'AUC', 'backports', 'BBmisc', 'bedr', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'COMBAT', 'compiler', 'corrgram', 'corrplot', 'cowplot', 'CoxBoost', 'crayon', 'CVST', 'cvTools', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'directlabels', 'dirichletprocess', 'dlm', 'doBy', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dtw', 'dummies', 'dygraphs', 'e1071', 'emulator', 'evaluate', 'factoextra', 'FactoMineR', 'fda', 'fields', 'fmsb', 'foreach', 'forecast', 'foreign', 'Formula', 'gamlss.dist', 'gamlss.mx', 'gamlss.nl', 'gamlss.spatial', 'gamlss', 'gbm', 'gdata', 'GGally', 'ggforce', 'ggmap', 'ggplot2', 'ggridges', 'ggvis', 'glmnet', 'googleVis', 'gplots', 'graphics', 'grDevices', 'grid', 'gridExtra', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'igraph', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'LDAvis', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'McSpatial', 'methods', 'mgcv', 'mime', 'mlbench', 'mlr', 'multcomp', 'munsell', 'ndtv', 'network', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'polycor', 'pomp', 'PReMiuM', 'pscl', 'psych', 'purrr', 'pvclust', 'quanteda', 'quantmod', 'R6', 'randomForest', 'RColorBrewer', 'RCurl', 'readr', 'readtext', 'readxl', 'repr', 'reshape', 'reshape2', 'revealjs', 'rgdal', 'rgeos', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'rPython', 'RSQLite', 'rstan', 'runjags', 'RWeka', 'Scale', 'scales', 'shiny', 'slam', 'sna', 'SnowballC', 'sourcetools', 'sp', 'spacyr', 'spatial', 'splines', 'sqldf', 'stargazer', 'stats', 'stats4', 'stm', 'stringi', 'stringr', 'surveillance', 'survival', 'synthpop', 'tcltk2', 'testthat', 'text2vec', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyr', 'tidytext', 'tidyverse', 'tmap', 'tools', 'topicmodels', 'traj', 'tsne', 'urca', 'utils', 'uuid', 'varbvs', 'vars', 'vcd', 'vioplot', 'viridis', 'visNetwork', 'wordcloud', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo', 'apeglm', 'ballgown', 'Biobase', 'ChemmineR', 'clusterProfiler', 'ComplexHeatmap', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'Gviz', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'TimeSeriesExperiment', 'topGO', 'treeio']
 PYTHON_PACKAGES = ['ipykernel', 'jupyter_client', 'jupyterlab', 'keras', 'notebook', 'pystan', 'pytorch', 'r-irkernel', 'tensorflow', 'torchvision']
@@ -246,10 +246,11 @@ def evaluate_python_packages(url):
                   , 'dask/hdfs3'
                   , 'cloudera/hs2client'
                   , 'python-hyper/hyperlink'
+                  , 'jupyterlab/jupyterlab'
                  ]
     
     repos = []
-    pbar = tqdm(range(len(df)))
+    pbar = tqdm(range(232,len(df)))
     for i in pbar:
         pbar.set_description('{} {}'.format(python_version, df.name.iloc[i]))
         if df.github_link.iloc[i]:
@@ -282,10 +283,20 @@ def evaluate_python_packages(url):
         df.at[i, 'is_in_pypi'] = is_in_pypi(df.name.iloc[i])
         df.at[i, 'is_in_conda'] = is_in_conda(python_conda, df.name.iloc[i])
     
-    df.to_excel('python_libraries_v1.xlsx', sheet_name=python_version)
     df.to_csv(python_version+'.csv')
-    return 
+    return df
 
-evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/')
-evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/')
-evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/')
+# Validation of packages in conda.
+python_37 = evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/')
+python_36 = evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/')
+python_27 = evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/')
+
+
+# Exporting the results to an Excel file
+writer = pd.ExcelWriter('Python_packages.xlsx', engine='xlsxwriter')
+
+python_37.to_excel(writer, sheet_name='Python 3.7')
+python_36.to_excel(writer, sheet_name='Python 3.6')
+python_27.to_excel(writer, sheet_name='Python 2.7')
+
+writer.save()
