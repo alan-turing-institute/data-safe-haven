@@ -40,6 +40,7 @@ Anaconda		https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/
 				https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/
 				https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/
 """
+
 def get_soup(url):
     response = urllib.request.urlopen(url).read()
     soup = BeautifulSoup(response, 'html.parser')
@@ -60,8 +61,8 @@ def get_github(url):
     except:
         return None
 
-def get_initial_python_37_repos(python_packages = 'https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/'):
-    soup = get_soup(python_packages)
+def get_initial_python_packages(python_packages_url):
+    soup = get_soup(python_packages_url)
     
     table = soup.find('table')
     rows = table.find_all('tr')
@@ -180,29 +181,74 @@ def is_in_conda(python_list, package_name):
         return 'No'
     pass
 
-df_python_37 = get_initial_python_37_repos()
-python_conda_37 = get_conda_packages('https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/')
-python_conda_36 = get_conda_packages('https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/')
-python_conda_27 = get_conda_packages('https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/')
+def get_license(repo):
+    try:
+        license = repo.get_license()
+        name = license.license.name
+        url = license.html_url
+        return name, url
+    except:
+        return None, None
 
-pbar = tqdm(range(len(df_python_37)))
-for i in pbar:
-    pbar.set_description('{}'.format(df_python_37.name.iloc[i]))
-    df_python_37.at[i, 'github_link'] = get_github_url(df_python_37.name.iloc[i], df_python_37.link.iloc[i])
-    df_python_37.at[i, 'has_version_control'] = has_version_control(df_python_37.name.iloc[i], df_python_37.github_link.iloc[i])
+def get_lead_contributor(repo):
+    return repo.get_stats_contributors()[-1].author.login
 
-repos = []
-pbar = tqdm(range(len(df_python_37)))
-for i in pbar:
-    pbar.set_description('{}'.format(df_python_37.name.iloc[i]))
-    if df_python_37.github_link.iloc[i]:
-        repo = get_repo(g, df_python_37.github_link.iloc[i])
-        if repo:
-            df_python_37.at[i, 'num_commits'] = get_number_commits(repo)
-            df_python_37.at[i, 'num_contributors'] = get_number_contributors(repo)
-            df_python_37.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df_python_37.num_contributors.iloc[i], n=3)
-            repos.append(repo)
-    df_python_37.at[i, 'is_in_pypi'] = is_in_pypi(df_python_37.name.iloc[i])
-    df_python_37.at[i, 'is_in_conda'] = is_in_conda(python_conda_37, df_python_37.name.iloc[i])
+def get_user_email(login):
+    user = g.get_user(login)
+    return user.email
 
-df_python_37.to_excel('python_libraries_v1.xlsx', sheet_name='Python 3.7')
+def evaluate_python_packages(url):
+    df = get_initial_python_packages(url)
+    if 'py3.7' in url:
+        python_version = 'Python 3.7'
+    elif 'py3.6' in url:
+        python_version = 'Python 3.6'
+    elif 'py2.7' in url:
+        python_version = 'Python 2.7'
+    
+    pbar = tqdm(range(len(df)))
+    for i in pbar:
+        pbar.set_description('{}: {}'.format(python_version, df.name.iloc[i]))
+        df.at[i, 'github_link'] = get_github_url(df.name.iloc[i], df.link.iloc[i])
+        df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
+    
+    df['num_commits'] = None
+    df['num_contributors'] = None
+    df['more_than_3_contributors'] = None
+    df['license'] = None
+    df['url_license'] = None
+    df['has_license'] = None
+    df['lead_contributor'] = None
+    df['lead_contributor_email'] = None
+    df['is_in_pypi'] = None
+    df['is_in_conda'] = None
+    
+    python_conda = get_conda_packages(url)
+    
+    repos = []
+    pbar = tqdm(range(len(df)))
+    for i in pbar:
+        pbar.set_description('{}: {}'.format(python_version, df.name.iloc[i]))
+        if df.github_link.iloc[i]:
+            repo = get_repo(g, df.github_link.iloc[i])
+            if repo:
+                df.at[i, 'num_commits'] = get_number_commits(repo)
+                df.at[i, 'num_contributors'] = get_number_contributors(repo)
+                df.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df.num_contributors.iloc[i], n=3)
+                df.at[i, 'license'], df.at[i, 'url_license'] = get_license(repo)
+                if df.at[i, 'license']:
+                    df.at[i, 'has_license'] = 'Yes'
+                else:
+                    df.at[i, 'has_license'] = 'No'
+                df.at[i, 'lead_contributor'] = get_lead_contributor(repo)
+                df.at[i, 'lead_contributor_email'] = get_user_email(df.lead_contributor.iloc[i])
+                repos.append(repo)
+        df.at[i, 'is_in_pypi'] = is_in_pypi(df.name.iloc[i])
+        df.at[i, 'is_in_conda'] = is_in_conda(python_conda, df.name.iloc[i])
+    
+    df.to_excel('python_libraries_v1.xlsx', sheet_name=python_version)
+    return df
+
+evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/')
+evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/')
+evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py2.7_linux-64/')
