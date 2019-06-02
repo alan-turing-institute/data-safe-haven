@@ -25,7 +25,8 @@ Measure: Yes/No (plus name of licence if available/inferable, length of README i
 Measure: Yes/No plus capture of actual email address
 """
 
-g = Github("<USER_NAME>", "<PASSWORD")
+g = Github("<USER_NAME>", "<PASSWORD>")
+
 
 R_PACKAGES = ['abind', 'ada', 'akima', 'ape', 'assertthat', 'AUC', 'backports', 'BBmisc', 'bedr', 'BiocManager', 'bitops', 'boot', 'brms', 'car', 'care', 'caret', 'checkmate', 'chron', 'class', 'cluster', 'coda', 'codetools', 'colorRamps', 'colorspace', 'COMBAT', 'compiler', 'corrgram', 'corrplot', 'cowplot', 'CoxBoost', 'crayon', 'CVST', 'cvTools', 'data.table', 'datasets', 'dbarts', 'DBI', 'deepnet', 'devtools', 'DiagrammeR', 'dichromat', 'digest', 'directlabels', 'dirichletprocess', 'dlm', 'doBy', 'doParallel', 'dplyr', 'DPpackage', 'DT', 'dtw', 'dummies', 'dygraphs', 'e1071', 'emulator', 'evaluate', 'factoextra', 'FactoMineR', 'fda', 'fields', 'fmsb', 'foreach', 'forecast', 'foreign', 'Formula', 'gamlss.dist', 'gamlss.mx', 'gamlss.nl', 'gamlss.spatial', 'gamlss', 'gbm', 'gdata', 'GGally', 'ggforce', 'ggmap', 'ggplot2', 'ggridges', 'ggvis', 'glmnet', 'googleVis', 'gplots', 'graphics', 'grDevices', 'grid', 'gridExtra', 'gtable', 'h2o', 'highr', 'Hmisc', 'htmltools', 'httpuv', 'httr', 'igraph', 'irace', 'IRdisplay', 'iterators', 'jsonlite', 'kernlab', 'KernSmooth', 'kknn', 'kml', 'kmlShape', 'knitr', 'labeling', 'lattice', 'lazyeval', 'LDAvis', 'leaflet', 'lme4', 'loo', 'lubridate', 'magrittr', 'maps', 'maptools', 'markdown', 'MASS', 'Matrix', 'matrixStats', 'mboost', 'mclust', 'MCMCpack', 'McSpatial', 'methods', 'mgcv', 'mime', 'mlbench', 'mlr', 'multcomp', 'munsell', 'ndtv', 'network', 'networkD3', 'neuralnet', 'nlme', 'nnet', 'parallel', 'parallelMap', 'ParamHelpers', 'party', 'pbdZMQ', 'pls', 'plyr', 'polycor', 'pomp', 'PReMiuM', 'pscl', 'psych', 'purrr', 'pvclust', 'quanteda', 'quantmod', 'R6', 'randomForest', 'RColorBrewer', 'RCurl', 'readr', 'readtext', 'readxl', 'repr', 'reshape', 'reshape2', 'revealjs', 'rgdal', 'rgeos', 'rgl', 'rJava', 'rmarkdown', 'RMySQL', 'ROCR', 'roxygen2', 'rpart', 'RPostgreSQL', 'rPython', 'RSQLite', 'rstan', 'runjags', 'RWeka', 'Scale', 'scales', 'shiny', 'slam', 'sna', 'SnowballC', 'sourcetools', 'sp', 'spacyr', 'spatial', 'splines', 'sqldf', 'stargazer', 'stats', 'stats4', 'stm', 'stringi', 'stringr', 'surveillance', 'survival', 'synthpop', 'tcltk2', 'testthat', 'text2vec', 'tgp', 'threejs', 'tibble', 'tidyr', 'tidyr', 'tidytext', 'tidyverse', 'tmap', 'tools', 'topicmodels', 'traj', 'tsne', 'urca', 'utils', 'uuid', 'varbvs', 'vars', 'vcd', 'vioplot', 'viridis', 'visNetwork', 'wordcloud', 'xgboost', 'XLConnect', 'xlsx', 'XML', 'xtable', 'xts', 'yaml', 'zoo', 'apeglm', 'ballgown', 'Biobase', 'ChemmineR', 'clusterProfiler', 'ComplexHeatmap', 'ConsensusClusterPlus', 'cummeRbund', 'dada2', 'DECIPHER', 'DESeq2', 'destiny', 'DirichletMultinomial', 'DMRcate', 'EBSeq', 'edgeR', 'fastseg', 'FlowSOM', 'flowUtils', 'ggtree', 'GOSemSim', 'GOstats', 'graph', 'graphite', 'GSEABase', 'Gviz', 'interactiveDisplayBase', 'KEGGgraph', 'limma', 'made4', 'maftools', 'metagenomeSeq', 'minet', 'MLInterfaces', 'monocle', 'pathview', 'pcaMethods', 'phyloseq', 'RankProd', 'RBGL', 'RDAVIDWebService', 'Rgraphviz', 'safe', 'SC3', 'scater', 'scde', 'scran', 'SNPRelate', 'SPIA', 'supraHex', 'sva', 'TCGAbiolinks', 'TimeSeriesExperiment', 'topGO', 'treeio']
 PYTHON_PACKAGES = ['ipykernel', 'jupyter_client', 'jupyterlab', 'keras', 'notebook', 'pystan', 'pytorch', 'r-irkernel', 'tensorflow', 'torchvision']
@@ -211,7 +212,7 @@ def evaluate_python_packages(url):
         pbar.set_description('{}: {}'.format(python_version, df.name.iloc[i]))
         df.at[i, 'github_link'] = get_github_url(df.name.iloc[i], df.link.iloc[i])
         df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
-    
+
     df['num_commits'] = None
     df['num_contributors'] = None
     df['more_than_3_contributors'] = None
@@ -222,32 +223,68 @@ def evaluate_python_packages(url):
     df['lead_contributor_email'] = None
     df['is_in_pypi'] = None
     df['is_in_conda'] = None
+    df['has_lead_contributor_email'] = None
     
     python_conda = get_conda_packages(url)
+
+    slow_responses = ['CanopyTax/asyncpgsa'
+                  , 'PiDelport/backports.os'
+                  , 'PiDelport/backports.weakref'
+                  , 'bokeh/bkcharts'
+                  , 'Blosc/c-blosc'
+                  , 'biolab/bottlechest'
+                  , 'conda-forge/ca-certificates-feedstock'
+                  , 'pyviz/colorcet'
+                  , 'conda-tools/conda-build-all'
+                  , 'conda/conda-verify'
+                  , 'twisted/constantly'
+                  , 'dask/dask-glm'
+                  , 'dask/dask-ml'
+                  , 'dropbox/dropbox-sdk-python'
+                  , 'Toblerity/Fiona'
+                  , 'fribidi/fribidi'
+                  , 'dask/hdfs3'
+                  , 'cloudera/hs2client'
+                  , 'python-hyper/hyperlink'
+                 ]
     
     repos = []
     pbar = tqdm(range(len(df)))
     for i in pbar:
-        pbar.set_description('{}: {}'.format(python_version, df.name.iloc[i]))
+        pbar.set_description('{} {}'.format(python_version, df.name.iloc[i]))
         if df.github_link.iloc[i]:
             repo = get_repo(g, df.github_link.iloc[i])
             if repo:
-                df.at[i, 'num_commits'] = get_number_commits(repo)
-                df.at[i, 'num_contributors'] = get_number_contributors(repo)
-                df.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df.num_contributors.iloc[i], n=3)
-                df.at[i, 'license'], df.at[i, 'url_license'] = get_license(repo)
+                if df.num_commits.iloc[i] == None:
+                    pbar.set_description('{} {} number of commits'.format(python_version, df.name.iloc[i]))
+                    df.at[i, 'num_commits'] = get_number_commits(repo)
+                if df.num_contributors.iloc[i] == None:
+                    pbar.set_description('{} {} number of contributors'.format(python_version, df.name.iloc[i]))
+                    df.at[i, 'num_contributors'] = get_number_contributors(repo)
+                if df.more_than_3_contributors.iloc[i] == None:
+                    pbar.set_description('{} {} more than 3 contributors?'.format(python_version, df.name.iloc[i]))
+                    df.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df.num_contributors.iloc[i], n=3)
+                if df.license.iloc[i] == None:
+                    pbar.set_description('{} {} license'.format(python_version, df.name.iloc[i]))
+                    df.at[i, 'license'], df.at[i, 'url_license'] = get_license(repo)
                 if df.at[i, 'license']:
                     df.at[i, 'has_license'] = 'Yes'
                 else:
                     df.at[i, 'has_license'] = 'No'
-                df.at[i, 'lead_contributor'] = get_lead_contributor(repo)
-                df.at[i, 'lead_contributor_email'] = get_user_email(df.lead_contributor.iloc[i])
+                """if repo.full_name not in slow_responses and df.lead_contributor.iloc[i] == None:
+                    df.at[i, 'lead_contributor'] = get_lead_contributor(repo)
+                    df.at[i, 'lead_contributor_email'] = get_user_email(df.at[i, 'lead_contributor'])
+                    if df.lead_contributor_email.iloc[i]:
+                        df.at[i, 'has_lead_contributor_email'] = 'Yes'
+                    else:
+                        df.at[i, 'has_lead_contributor_email'] = 'No'"""
                 repos.append(repo)
         df.at[i, 'is_in_pypi'] = is_in_pypi(df.name.iloc[i])
         df.at[i, 'is_in_conda'] = is_in_conda(python_conda, df.name.iloc[i])
     
     df.to_excel('python_libraries_v1.xlsx', sheet_name=python_version)
-    return df
+    df.to_csv(python_version+'.csv')
+    return 
 
 evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.7_linux-64/')
 evaluate_python_packages('https://docs.anaconda.com/anaconda/packages/py3.6_linux-64/')
