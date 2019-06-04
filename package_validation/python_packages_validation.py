@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import urllib.request
 import pandas as pd
-#from tqdm import tqdm_notebook as tqdm
 from tqdm import tqdm
 from github import Github
 import json
