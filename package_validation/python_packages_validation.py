@@ -11,8 +11,8 @@ import time
 from math import isnan
 import requests
 
-GITHUB_API_TOKEN = 'c27a967497ab98a55ac5aa4e8d66bc333bde70ff'
 LIBRARIES_IO_API_KEY = '00cb33c5a2174dd7bbdcffb365d3a8de'
+GITHUB_API_TOKEN = 'c27a967497ab98a55ac5aa4e8d66bc333bde70ff'
 
 def get_soup(url):
     response = urllib.request.urlopen(url).read()
