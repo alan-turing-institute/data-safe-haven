@@ -15,6 +15,7 @@ R_PACKAGES = ['abind', 'ada', 'akima', 'ape', 'assertthat', 'AUC', 'backports', 
 
 cran_url = 'https://cran.r-project.org/web/packages/available_packages_by_name.html'
 base_cran_url = 'https://cran.r-project.org'
+bioconductor_url = 'https://www.bioconductor.org/checkResults/3.10/bioc-LATEST/'
 
 def get_soup(url):
     """
@@ -189,7 +190,6 @@ for i in pbar:
 
 
 # Packages from Bioconductor
-bioconductor_url = 'https://www.bioconductor.org/checkResults/3.10/bioc-LATEST/'
 bioconductor_packages = get_initial_bioconductor_packages(bioconductor_url)
 columns = ['name', 'url']
 df_bioconductor = pd.DataFrame(bioconductor_packages, columns=columns)
