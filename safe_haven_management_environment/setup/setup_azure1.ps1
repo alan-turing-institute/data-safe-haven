@@ -23,9 +23,9 @@ Set-AzKeyVaultSecret -VaultName $vaultName -Name 'dcpass' -SecretValue $secretva
 # safemode pass
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
 Set-AzKeyVaultSecret -VaultName $vaultName -Name 'safemodepass' -SecretValue $secretvalue
-# VM3
-$secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-Set-AzKeyVaultSecret -VaultName $vaultName -Name 'NPS' -SecretValue $secretvalue
+# # VM3
+# $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
+# Set-AzKeyVaultSecret -VaultName $vaultName -Name 'NPS' -SecretValue $secretvalue
 
 # Generate certificates
 $cwd = Get-Location
@@ -77,7 +77,6 @@ New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../a
 
 
         
-New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_NPS" -templatefile "../arm_templates/shmnps/shmnps-template.json" -Administrator_User atiadmin -Domain_Name shmtestb.onmicrosoft.com 
 
 # TO RUN THIS SCRIPT (second is my personal subscription)
 # ./setup_azure1.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"
