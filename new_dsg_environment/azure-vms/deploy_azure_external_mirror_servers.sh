@@ -88,17 +88,51 @@ NSG_EXTERNAL="${NSG_PREFIX_EXTERNAL}_TIER${TIER}"
 
 # Set datadisk size
 # -----------------
-if [ "$TIER" == "3" ]; then
+if [ "$TIER" == "2" ]; then
+    PYPIDATADISKSIZE="4TB"
+    PYPIDATADISKSIZEGB="4095"
+    CRANDATADISKSIZE="512GB"
+    CRANDATADISKSIZEGB="511"
+elif [ "$TIER" == "3" ]; then
     PYPIDATADISKSIZE="128GB"
     PYPIDATADISKSIZEGB="127"
     CRANDATADISKSIZE="128GB"
     CRANDATADISKSIZEGB="127"
 else
-    PYPIDATADISKSIZE="4TB"
-    PYPIDATADISKSIZEGB="4095"
-    CRANDATADISKSIZE="512GB"
-    CRANDATADISKSIZEGB="511"
+    print_usage_and_exit
 fi
+
+
+
+CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
+TIER3WHITELIST="package_lists/tier3_pypi_whitelist.list"
+
+# Make a temporary cloud-init file that we may alter
+TMP_CLOUDINITYAML="$(mktemp).yaml"
+cp $CLOUDINITYAML $TMP_CLOUDINITYAML
+
+# Apply whitelist if this is a Tier-3 mirror
+if [ "$TIER" == "3" ]; then
+    # Indent whitelist by twelve spaces to match surrounding text
+    TMP_WHITELIST="$(mktemp).list"
+    cp $TIER3WHITELIST $TMP_WHITELIST
+    sed -i -e 's/^/            /' $TMP_WHITELIST
+
+    # Build cloud-config file
+    sed -i -e 's/; IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
+    sed -i -e "/packages =/ r ${TMP_WHITELIST}" $TMP_CLOUDINITYAML
+    # cat $TMP_WHITELIST
+    rm $TMP_WHITELIST
+    cat $TMP_CLOUDINITYAML
+    print_usage_and_exit
+fi
+
+
+    # for RPACKAGE in $(cat package_lists/tier3_cran_whitelist.list)
+# rsync -rtlzv --delete --dry-run --include="*/" --include="bin/linux/ubuntu/*/ztable*" --include="src/contrib/ztable*" --include "src/contrib/Archive/ztable/**" --include "web/packages/checks/check_results*ztable*" --include "web/dcmeta/ztable*" --include "web/packages/ztable/**" --exclude="*" cran.r-project.org::CRAN > mirror6.list
+
+print_usage_and_exit
+
 
 # Setup resource group if it does not already exist
 # -------------------------------------------------------------------------
@@ -158,7 +192,7 @@ MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
     TIER3WHITELIST="package_lists/tier3_pypi_whitelist.ini"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-pypi"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-pypi"
 
     # Make a temporary cloud-init file that we may alter
     TMP_CLOUDINITYAML="$(mktemp).yaml"
@@ -167,13 +201,26 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     # Apply whitelist if this is a Tier-3 mirror
     if [ "$TIER" == "3" ]; then
         # Indent whitelist by eight spaces to match surrounding text
-        TMP_WHITELISTINI="$(mktemp).ini"
-        cp $TIER3WHITELIST $TMP_WHITELISTINI
-        sed -i -e 's/^/        /' $TMP_WHITELISTINI
+        TMP_WHITELIST="$(mktemp).ini"
+        cp $TIER3WHITELIST $TMP_WHITELIST
+        sed -i -e 's/^/        /' $TMP_WHITELIST
+
+        # ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
+        # [blacklist]
+        # plugins =
+        #     whitelist_project
+
+        # [whitelist]
+        # packages =
+
+
 
         # Build cloud-config file
-        sed -i -e "/; @WHITELISTED_PACKAGES/ r ${TMP_WHITELISTINI}" $TMP_CLOUDINITYAML
-        rm $TMP_WHITELISTINI
+        sed -i -e 's/; IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
+        sed -i -e "/@WHITELISTED_PACKAGES/ r ${TMP_WHITELIST}" $TMP_CLOUDINITYAML
+        rm $TMP_WHITELIST
+        cat $TMP_CLOUDINITYAML
+        print_usage_and_exit
     fi
 
     # Ensure that admin password is available
@@ -243,7 +290,8 @@ fi
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-cran"
+    TIER3WHITELIST="package_lists/tier3_cran_whitelist.ini"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-cran"
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then

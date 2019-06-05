@@ -100,7 +100,13 @@ write_files:
         ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
         delete-packages = true
 
-        ; @WHITELISTED_PACKAGES
+        ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
+        ; IF_WHITELIST_ENABLED [blacklist]
+        ; IF_WHITELIST_ENABLED plugins =
+        ; IF_WHITELIST_ENABLED     whitelist_project
+
+        ; IF_WHITELIST_ENABLED [whitelist]
+        ; IF_WHITELIST_ENABLED packages =
 
 runcmd:
   # Generate SSH keys for connecting to the internal mirror
