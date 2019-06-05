@@ -8,7 +8,7 @@ END="\033[0m"
 
 # Options which are configurable at the command line
 IP_TRIPLET_VNET="10.1.0"
-KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
+KEYVAULT_NAME="kv-shm-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
 TIER="2"
@@ -16,11 +16,11 @@ TIER="2"
 # Other constants
 ADMIN_USERNAME="atiadmin"
 LOCATION="uksouth"
-MACHINENAME_PREFIX_EXTERNAL="MirrorVMExternal"
-NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
+MACHINENAME_PREFIX_EXTERNAL="ExternalMirror"
+NSG_PREFIX_EXTERNAL="NSG_SHM_PKG_MIRRORS_EXTERNAL"
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-SUBNET_EXTERNAL="SBNT_SH_PKG_MIRRORS_EXTERNAL"
-VNET_NAME_PREFIX="VNET_SH_PKG_MIRRORS"
+SUBNET_PREFIX_EXTERNAL="SBNT_SHM_PKG_MIRRORS_EXTERNAL"
+VNETNAME_PREFIX="VNET_SHM_PKG_MIRRORS"
 
 
 # Document usage for this script
@@ -81,8 +81,24 @@ if [ "$TIER" != "2" ] && [ "$TIER" != "3" ]; then
     echo -e "${RED}Tier must be either '2' or '3'${END}"
     print_usage_and_exit
 fi
-VNET_NAME="${VNET_NAME_PREFIX}_TIER${TIER}"
+VNETNAME="${VNETNAME_PREFIX}_TIER${TIER}"
+SUBNET_EXTERNAL="${SUBNET_PREFIX_EXTERNAL}_TIER${TIER}"
+MACHINENAME_PREFIX_EXTERNAL="Tier${TIER}${MACHINENAME_PREFIX_EXTERNAL}"
+NSG_EXTERNAL="${NSG_PREFIX_EXTERNAL}_TIER${TIER}"
 
+# Set datadisk size
+# -----------------
+if [ "$TIER" == "3" ]; then
+    PYPIDATADISKSIZE="128GB"
+    PYPIDATADISKSIZEGB="127"
+    CRANDATADISKSIZE="128GB"
+    CRANDATADISKSIZEGB="127"
+else
+    PYPIDATADISKSIZE="4TB"
+    PYPIDATADISKSIZEGB="4095"
+    CRANDATADISKSIZE="512GB"
+    CRANDATADISKSIZEGB="511"
+fi
 
 # Setup resource group if it does not already exist
 # -------------------------------------------------------------------------
@@ -109,9 +125,9 @@ IP_RANGE_VNET="${IP_TRIPLET_VNET}.0/24"
 IP_RANGE_SBNT_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
 
 # Create VNet if it does not already exist
-if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNET_NAME)" = "" ]; then
-    echo -e "${BOLD}Creating mirror VNet ${BLUE}$VNET_NAME${END}${BOLD} using the IP range ${BLUE}$IP_RANGE_VNET${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNET_NAME --address-prefixes $IP_RANGE_VNET
+if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNETNAME)" = "" ]; then
+    echo -e "${BOLD}Creating mirror VNet ${BLUE}$VNETNAME${END}${BOLD} using the IP range ${BLUE}$IP_RANGE_VNET${END}"
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE_VNET
 fi
 
 # Create external NSG if it does not already exist
@@ -124,14 +140,14 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
 fi
 
 # Create external subnet if it does not already exist
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_EXTERNAL${END}"
     az network vnet subnet create \
         --address-prefix $IP_RANGE_SBNT_EXTERNAL \
         --name $SUBNET_EXTERNAL \
         --network-security-group $NSG_EXTERNAL \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
 fi
 echo -e "${BOLD}External tier ${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
@@ -149,7 +165,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     cp $CLOUDINITYAML $TMP_CLOUDINITYAML
 
     # Apply whitelist if this is a Tier-3 mirror
-    if [ "$TIER" == "3" ]
+    if [ "$TIER" == "3" ]; then
         # Indent whitelist by eight spaces to match surrounding text
         TMP_WHITELISTINI="$(mktemp).ini"
         cp $TIER3WHITELIST $TMP_WHITELISTINI
@@ -158,7 +174,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         # Build cloud-config file
         sed -i -e "/; @WHITELISTED_PACKAGES/ r ${TMP_WHITELISTINI}" $TMP_CLOUDINITYAML
         rm $TMP_WHITELISTINI
-    else
+    fi
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -173,9 +189,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
 
     # Create the data disk
-    echo -e "${BOLD}Creating 4TB datadisk...${END}"
+    echo -e "${BOLD}Creating ${PYPIDATADISKSIZE} datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 4095
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${PYPIDATADISKSIZEGB}
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.4
@@ -202,7 +218,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_EXTERNAL \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} server${END}"
     rm $TMP_CLOUDINITYAML
 
@@ -242,9 +258,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
     echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
 
     # Create the data disk
-    echo -e "${BOLD}Creating 4TB datadisk...${END}"
+    echo -e "${BOLD}Creating ${CRANDATADISKSIZE} datadisk...${END}"
     DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 1023
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB}
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5
@@ -271,7 +287,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_EXTERNAL \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} server${END}"
 
     # Poll VM to see whether it has finished running
