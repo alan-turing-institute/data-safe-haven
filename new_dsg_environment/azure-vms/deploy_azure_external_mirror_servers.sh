@@ -11,6 +11,7 @@ IP_TRIPLET_VNET="10.1.0"
 KEYVAULT_NAME="kv-sh-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
+TIER="2"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
@@ -25,19 +26,20 @@ VNET_NAME="VNET_SH_PKG_MIRRORS"
 # Document usage for this script
 # ------------------------------
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i vnet_ip] [-k keyvault_name] [-r resource_group]"
+    echo "usage: $0 [-h] -s subscription [-i vnet_ip] [-k keyvault_name] [-r resource_group] [-t tier]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
     echo "  -i vnet_ip                   specify initial IP triplet for the mirror VNet (defaults to '${IP_TRIPLET_VNET}')"
     echo "  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -t tier                      specify which tier these mirrors will belong to, either '2' or '3' (defaults to '${TIER}')"
     exit 1
 }
 
 
 # Read command line arguments, overriding defaults where necessary
 # ----------------------------------------------------------------
-while getopts "hi:k:r:s:" opt; do
+while getopts "hi:k:r:s:t:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -54,6 +56,9 @@ while getopts "hi:k:r:s:" opt; do
         s)
             SUBSCRIPTION=$OPTARG
             ;;
+        t)
+            TIER=$OPTARG
+            ;;
         \?)
             print_usage_and_exit
             ;;
@@ -69,6 +74,12 @@ if [ "$SUBSCRIPTION" = "" ]; then
 fi
 az account set --subscription "$SUBSCRIPTION"
 
+# Check that Tier is either 2 or 3
+# --------------------------------
+if [ "$TIER" != "2" ] && [ "$TIER" != "3" ]; then
+    echo -e "${RED}Tier must be either '2' or '3'${END}"
+    print_usage_and_exit
+fi
 
 # Setup resource group if it does not already exist
 # -------------------------------------------------------------------------
