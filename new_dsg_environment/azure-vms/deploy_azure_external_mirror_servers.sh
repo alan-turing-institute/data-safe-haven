@@ -20,7 +20,7 @@ MACHINENAME_PREFIX_EXTERNAL="MirrorVMExternal"
 NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
 SUBNET_EXTERNAL="SBNT_SH_PKG_MIRRORS_EXTERNAL"
-VNET_NAME="VNET_SH_PKG_MIRRORS"
+VNET_NAME_PREFIX="VNET_SH_PKG_MIRRORS"
 
 
 # Document usage for this script
@@ -74,12 +74,15 @@ if [ "$SUBSCRIPTION" = "" ]; then
 fi
 az account set --subscription "$SUBSCRIPTION"
 
+
 # Check that Tier is either 2 or 3
 # --------------------------------
 if [ "$TIER" != "2" ] && [ "$TIER" != "3" ]; then
     echo -e "${RED}Tier must be either '2' or '3'${END}"
     print_usage_and_exit
 fi
+VNET_NAME="${VNET_NAME_PREFIX}_TIER${TIER}"
+
 
 # Setup resource group if it does not already exist
 # -------------------------------------------------------------------------
@@ -130,7 +133,7 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
         --resource-group $RESOURCEGROUP \
         --vnet-name $VNET_NAME
 fi
-echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
+echo -e "${BOLD}External tier ${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
 
 # Set up PyPI external mirror
@@ -138,7 +141,24 @@ echo -e "${BOLD}External mirrors will be deployed in the IP range ${BLUE}$IP_RAN
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
+    TIER3WHITELIST="package_lists/tier3_pypi_whitelist.ini"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-external-pypi"
+
+    # Make a temporary cloud-init file that we may alter
+    TMP_CLOUDINITYAML="$(mktemp).yaml"
+    cp $CLOUDINITYAML $TMP_CLOUDINITYAML
+
+    # Apply whitelist if this is a Tier-3 mirror
+    if [ "$TIER" == "3" ]
+        # Indent whitelist by eight spaces to match surrounding text
+        TMP_WHITELISTINI="$(mktemp).ini"
+        cp $TIER3WHITELIST $TMP_WHITELISTINI
+        sed -i -e 's/^/        /' $TMP_WHITELISTINI
+
+        # Build cloud-config file
+        sed -i -e "/; @WHITELISTED_PACKAGES/ r ${TMP_WHITELISTINI}" $TMP_CLOUDINITYAML
+        rm $TMP_WHITELISTINI
+    else
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -171,7 +191,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --admin-username $ADMIN_USERNAME \
         --attach-data-disks $DISKNAME \
         --authentication-type password \
-        --custom-data $CLOUDINITYAML \
+        --custom-data $TMP_CLOUDINITYAML \
         --image $SOURCEIMAGE \
         --name $MACHINENAME_EXTERNAL \
         --nsg "" \
@@ -184,6 +204,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)
         --subnet $SUBNET_EXTERNAL \
         --vnet-name $VNET_NAME
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} server${END}"
+    rm $TMP_CLOUDINITYAML
 
     # Poll VM to see whether it has finished running
     echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
