@@ -245,80 +245,82 @@ fi
 
 # Set up CRAN external mirror
 # ---------------------------
-MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)" = "" ]; then
-    CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
-    TIER3WHITELIST="package_lists/tier3_cran_whitelist.list"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-cran"
+if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
+    MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
+    if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_EXTERNAL)" = "" ]; then
+        CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
+        TIER3WHITELIST="package_lists/tier3_cran_whitelist.list"
+        ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-cran"
 
-    # Make a temporary cloud-init file that we may alter
-    TMP_CLOUDINITYAML="$(mktemp).yaml"
-    cp $CLOUDINITYAML $TMP_CLOUDINITYAML
+        # Make a temporary cloud-init file that we may alter
+        TMP_CLOUDINITYAML="$(mktemp).yaml"
+        cp $CLOUDINITYAML $TMP_CLOUDINITYAML
 
-    # Apply whitelist if this is a Tier-3 mirror
-    if [ "$TIER" == "3" ]; then
-        # Build cloud-config file
-        WHITELISTED_PACKAGES=$(cat $TIER3WHITELIST | tr '\n', ' ')
-        sed -i -e "s/WHITELISTED_PACKAGES=/WHITELISTED_PACKAGES=\"${WHITELISTED_PACKAGES}\"/" $TMP_CLOUDINITYAML
-        sed -i -e 's/# IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
+        # Apply whitelist if this is a Tier-3 mirror
+        if [ "$TIER" == "3" ]; then
+            # Build cloud-config file
+            WHITELISTED_PACKAGES=$(cat $TIER3WHITELIST | tr '\n', ' ')
+            sed -i -e "s/WHITELISTED_PACKAGES=/WHITELISTED_PACKAGES=\"${WHITELISTED_PACKAGES}\"/" $TMP_CLOUDINITYAML
+            sed -i -e 's/# IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
+        fi
+
+        # Ensure that admin password is available
+        if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
+            echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME_EXTERNAL${END}"
+            az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
+        fi
+        # Retrieve admin password from keyvault
+        ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
+
+        # Create the VM based off the selected source image
+        echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as part of ${BLUE}$RESOURCEGROUP${END}"
+        echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
+
+        # Create the data disk
+        echo -e "${BOLD}Creating ${CRANDATADISKSIZE} datadisk...${END}"
+        DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
+        az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB}
+
+        # Temporarily allow outbound internet connections through the NSG from this IP address only
+        PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5
+        echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
+        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
+        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
+
+        # Create the VM
+        echo -e "${BOLD}Creating VM...${END}"
+        OSDISKNAME=${MACHINENAME_EXTERNAL}_OSDISK
+        az vm create \
+            --admin-password $ADMIN_PASSWORD \
+            --admin-username $ADMIN_USERNAME \
+            --attach-data-disks $DISKNAME \
+            --authentication-type password \
+            --custom-data $TMP_CLOUDINITYAML \
+            --image $SOURCEIMAGE \
+            --name $MACHINENAME_EXTERNAL \
+            --nsg "" \
+            --os-disk-name $OSDISKNAME \
+            --public-ip-address "" \
+            --private-ip-address $PRIVATEIPADDRESS \
+            --resource-group $RESOURCEGROUP \
+            --size Standard_F4s_v2 \
+            --storage-sku Standard_LRS \
+            --subnet $SUBNET_EXTERNAL \
+            --vnet-name $VNETNAME
+        echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} server${END}"
+
+        # Poll VM to see whether it has finished running
+        echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
+        while true; do
+            POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
+            if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
+            sleep 10
+        done
+
+        # Delete the configuration NSG rule and restart the VM
+        echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
+        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
+        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary
+        az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
     fi
-
-    # Ensure that admin password is available
-    if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-        echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME_EXTERNAL${END}"
-        az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
-    fi
-    # Retrieve admin password from keyvault
-    ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
-
-    # Create the VM based off the selected source image
-    echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as part of ${BLUE}$RESOURCEGROUP${END}"
-    echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
-
-    # Create the data disk
-    echo -e "${BOLD}Creating ${CRANDATADISKSIZE} datadisk...${END}"
-    DISKNAME=${MACHINENAME_EXTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB}
-
-    # Temporarily allow outbound internet connections through the NSG from this IP address only
-    PRIVATEIPADDRESS=${IP_TRIPLET_VNET}.5
-    echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
-
-    # Create the VM
-    echo -e "${BOLD}Creating VM...${END}"
-    OSDISKNAME=${MACHINENAME_EXTERNAL}_OSDISK
-    az vm create \
-        --admin-password $ADMIN_PASSWORD \
-        --admin-username $ADMIN_USERNAME \
-        --attach-data-disks $DISKNAME \
-        --authentication-type password \
-        --custom-data $TMP_CLOUDINITYAML \
-        --image $SOURCEIMAGE \
-        --name $MACHINENAME_EXTERNAL \
-        --nsg "" \
-        --os-disk-name $OSDISKNAME \
-        --public-ip-address "" \
-        --private-ip-address $PRIVATEIPADDRESS \
-        --resource-group $RESOURCEGROUP \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS \
-        --subnet $SUBNET_EXTERNAL \
-        --vnet-name $VNETNAME
-    echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} server${END}"
-
-    # Poll VM to see whether it has finished running
-    echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-    while true; do
-        POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-        if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-        sleep 10
-    done
-
-    # Delete the configuration NSG rule and restart the VM
-    echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
-    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
-    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary
-    az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL
 fi
