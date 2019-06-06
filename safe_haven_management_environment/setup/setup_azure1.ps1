@@ -2,6 +2,9 @@ param([string] $SubscriptionId = "",
         [string] $vaultName = "shmvault")
 
 
+Import-Module ../scripts/local/GeneratePassword.psm1
+
+
 # Set the subscriptionID
 Set-AzContext -SubscriptionId $SubscriptionId
 
@@ -15,7 +18,6 @@ New-AzResourceGroup -Name RG_SHM_RESOURCES -Location uksouth
 # Create a keyvault and generate passwords
 New-AzKeyVault -Name $vaultName -ResourceGroupName RG_SHM_SECRETS  -Location uksouth
 
-Import-Module ../scripts/local/GeneratePassword.psm1
 
 # VM pass
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
@@ -23,9 +25,6 @@ Set-AzKeyVaultSecret -VaultName $vaultName -Name 'dcpass' -SecretValue $secretva
 # safemode pass
 $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
 Set-AzKeyVaultSecret -VaultName $vaultName -Name 'safemodepass' -SecretValue $secretvalue
-# # VM3
-# $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-# Set-AzKeyVaultSecret -VaultName $vaultName -Name 'NPS' -SecretValue $secretvalue
 
 # Generate certificates
 $cwd = Get-Location
@@ -67,7 +66,6 @@ $cert = [string]$cert
 $cert = $cert.replace(" ", "")
 New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate $cert -Virtual_Network_Name "SHM_VNET1"
 
-
 # Deploy the shmdc-template
 New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../arm_templates/shmdc/shmdc-template.json"`
         -Administrator_User "atiadmin"`
@@ -76,7 +74,3 @@ New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../a
         -Virtual_Network_Resource_Group "RG_SHM_VNET"
 
 
-        
-
-# TO RUN THIS SCRIPT (second is my personal subscription)
-# ./setup_azure1.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6"
