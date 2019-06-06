@@ -382,7 +382,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 ## 5. Validation 
 
 
-
+<!-- 
 # OLD
 ## Prerequisites
 
@@ -595,4 +595,4 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 - Enter your Azure Active directory ID (Note: if you see a service principal error here this is because you don't have any valid P1 licenses, purchase licenses and then re-run the commands in this section)
 - Enter "Y" when prompted
 
-#### Installation of Safe Haven Management environment complete.
+#### Installation of Safe Haven Management environment complete. -->
