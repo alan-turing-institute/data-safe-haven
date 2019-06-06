@@ -49,7 +49,13 @@ write_files:
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
-      rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
+      RSYNC_INCLUDES=""
+      # IF_WHITELIST_ENABLED WHITELISTED_PACKAGES=
+      # IF_WHITELIST_ENABLED for RPACKAGE in $WHITELISTED_PACKAGES; do
+      # IF_WHITELIST_ENABLED     RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
+      # IF_WHITELIST_ENABLED done
+      # IF_WHITELIST_ENABLED RSYNC_INCLUDES='--include="*/" $RSYNC_INCLUDES --exclude="*"'
+      rsync -rtlv --delete --progress $RSYNC_INCLUDES cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
@@ -57,6 +63,9 @@ write_files:
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
+  - path: "/home/mirrordaemon/pull_whitelist.sh"
+    content: |
+      #! /bin/bash
 
 runcmd:
   # Generate SSH keys for connecting to the internal mirror
