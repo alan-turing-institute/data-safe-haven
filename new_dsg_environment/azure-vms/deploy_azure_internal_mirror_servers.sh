@@ -7,29 +7,30 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-# IP_TRIPLET_INTERNAL="10.1.1"
-KEYVAULT_NAME="kv-sh-pkg-mirrors" # must match what was used for the external mirrors
-RESOURCEGROUP="RG_SH_PKG_MIRRORS"
+KEYVAULT_NAME="kv-shm-pkg-mirrors" # must be globally unique
+RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
+TIER="2"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
 LOCATION="uksouth"
-MACHINENAME_PREFIX_EXTERNAL="MirrorVMExternal"
+MACHINENAME_PREFIX_EXTERNAL="ExternalMirror"
 NAME_SUFFIX=""
-NSG_EXTERNAL="NSG_SH_PKG_MIRRORS_EXTERNAL"
+NSG_PREFIX_EXTERNAL="NSG_SHM_PKG_MIRRORS_EXTERNAL"
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-SUBNET_EXTERNAL="SBNT_SH_PKG_MIRRORS_EXTERNAL"
-VNET_NAME="VNET_SH_PKG_MIRRORS"
+SUBNET_PREFIX_EXTERNAL="SBNT_SHM_PKG_MIRRORS_EXTERNAL"
+VNETNAME_PREFIX="VNET_SHM_PKG_MIRRORS"
 
 # Document usage for this script
 # ------------------------------
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-k keyvault_name] [-r resource_group] [-x name_suffix]"
+    echo "usage: $0 [-h] -s subscription [-k keyvault_name] [-r resource_group] [-t tier] [-x name_suffix]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
     echo "  -k keyvault_name             specify name for keyvault that already contains admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group that contains the external mirror servers (defaults to '${RESOURCEGROUP}')"
+    echo "  -t tier                      specify which tier these mirrors will belong to, either '2' or '3' (defaults to '${TIER}')"
     echo "  -x name_suffix               specify (optional) suffix that will be used to distinguish these internal mirror servers from any others (defaults to '${NAME_SUFFIX}')"
     exit 1
 }
@@ -37,7 +38,7 @@ print_usage_and_exit() {
 
 # Read command line arguments, overriding defaults where necessary
 # ----------------------------------------------------------------
-while getopts "hk:r:s:x:" opt; do
+while getopts "hk:r:s:t:x:" opt; do
     case $opt in
         h)
             print_usage_and_exit
@@ -51,6 +52,9 @@ while getopts "hk:r:s:x:" opt; do
         s)
             SUBSCRIPTION=$OPTARG
             ;;
+        t)
+            TIER=$OPTARG
+            ;;
         x)
             NAME_SUFFIX=$OPTARG
             ;;
@@ -59,6 +63,44 @@ while getopts "hk:r:s:x:" opt; do
             ;;
     esac
 done
+
+
+# Check that a subscription has been provided and switch to it
+# ------------------------------------------------------------
+if [ "$SUBSCRIPTION" = "" ]; then
+    echo -e "${RED}Subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+az account set --subscription "$SUBSCRIPTION"
+
+
+# Check that Tier is either 2 or 3
+# --------------------------------
+if [ "$TIER" != "2" ] && [ "$TIER" != "3" ]; then
+    echo -e "${RED}Tier must be either '2' or '3'${END}"
+    print_usage_and_exit
+fi
+VNETNAME="${VNETNAME_PREFIX}_TIER${TIER}"
+SUBNET_EXTERNAL="${SUBNET_PREFIX_EXTERNAL}_TIER${TIER}"
+MACHINENAME_PREFIX_EXTERNAL="Tier${TIER}${MACHINENAME_PREFIX_EXTERNAL}"
+NSG_EXTERNAL="${NSG_PREFIX_EXTERNAL}_TIER${TIER}"
+
+
+# Set datadisk size
+# -----------------
+if [ "$TIER" == "2" ]; then
+    PYPIDATADISKSIZE="4TB"
+    PYPIDATADISKSIZEGB="4095"
+    CRANDATADISKSIZE="512GB"
+    CRANDATADISKSIZEGB="511"
+elif [ "$TIER" == "3" ]; then
+    PYPIDATADISKSIZE="128GB"
+    PYPIDATADISKSIZEGB="127"
+    CRANDATADISKSIZE="128GB"
+    CRANDATADISKSIZEGB="127"
+else
+    print_usage_and_exit
+fi
 
 
 # Setup internal names to match the external names
@@ -71,15 +113,6 @@ if [ "$NAME_SUFFIX" != "" ]; then
     SUBNET_INTERNAL="${SUBNET_INTERNAL}_${NAME_SUFFIX}"
     MACHINENAME_PREFIX_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}${NAME_SUFFIX}"
 fi
-
-
-# Check that a subscription has been provided and switch to it
-# ------------------------------------------------------------
-if [ "$SUBSCRIPTION" = "" ]; then
-    echo -e "${RED}Subscription is a required argument!${END}"
-    print_usage_and_exit
-fi
-az account set --subscription "$SUBSCRIPTION"
 
 
 # Ensure that the external mirrors have been set up
@@ -97,11 +130,11 @@ if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query "[].name" -o ts
 fi
 
 # Ensure that VNet exists
-if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$VNET_NAME" ]; then
-    echo -e "${RED}VNet ${BLUE}$VNET_NAME${RED} not found! Have you deployed the external mirrors?${END}"
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$VNETNAME" ]; then
+    echo -e "${RED}VNet ${BLUE}$VNETNAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
-IP_TRIPLET_VNET=$(az network vnet show --resource-group $RESOURCEGROUP --name $VNET_NAME --query "addressSpace.addressPrefixes" -o tsv | cut -d'.' -f1-3)
+IP_TRIPLET_VNET=$(az network vnet show --resource-group $RESOURCEGROUP --name $VNETNAME --query "addressSpace.addressPrefixes" -o tsv | cut -d'.' -f1-3)
 IP_RANGE_SBNT_EXTERNAL="${IP_TRIPLET_VNET}.0/28"
 
 # Ensure that external NSG exists
@@ -111,7 +144,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
 fi
 
 # Ensure that external subnet exists
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --query "[].name" -o tsv)" != "$SUBNET_EXTERNAL" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].name" -o tsv)" != "$SUBNET_EXTERNAL" ]; then
     echo -e "${RED}External subnet ${BLUE}$SUBNET_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
@@ -119,7 +152,7 @@ fi
 
 # Find the next valid IP range for this subnet
 # --------------------------------------------
-IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME --query "[].addressPrefix" -o tsv)
+IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].addressPrefix" -o tsv)
 for FOURTH_OCTET in $(seq 0 16 240); do
     IP_RANGE_SUBNET_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
     ALREADY_IN_USE=0
@@ -135,7 +168,7 @@ done
 if [ $ALREADY_IN_USE -eq 0 ]; then
     echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 else
-    echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNET_NAME${END}"
+    echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNETNAME${END}"
     print_usage_and_exit
 fi
 
@@ -166,14 +199,14 @@ fi
 
 # Create internal subnet if it does not already exist
 # ---------------------------------------------------
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNET_NAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
         --address-prefix $IP_RANGE_SUBNET_INTERNAL \
         --name $SUBNET_INTERNAL \
         --network-security-group $NSG_INTERNAL \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
 fi
 
 # Set up PyPI internal mirror
@@ -182,7 +215,7 @@ MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}PyPI"
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-pypi"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-pypi"
     if [ "$NAME_SUFFIX" != "" ]; then
         ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
     fi
@@ -205,9 +238,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
 
     # Create the data disk
-    echo -e "${BOLD}Creating 4TB datadisk...${END}"
+    echo -e "${BOLD}Creating ${PYPIDATADISKSIZE} datadisk...${END}"
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 4095
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb $PYPIDATADISKSIZEGB
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 4))"
@@ -233,7 +266,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_INTERNAL \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
     rm $TMPCLOUDINITYAML
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} server${END}"
 
@@ -269,7 +302,7 @@ MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}CRAN"
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
 if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)" = "" ]; then
     CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
-    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-internal-cran"
+    ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-cran"
     if [ "$NAME_SUFFIX" != "" ]; then
         ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
     fi
@@ -292,9 +325,9 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
     echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
 
     # Create the data disk
-    echo -e "${BOLD}Creating 4TB datadisk...${END}"
+    echo -e "${BOLD}Creating $CRANDATADISKSIZE datadisk...${END}"
     DISKNAME=${MACHINENAME_INTERNAL}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb 1023
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb $CRANDATADISKSIZEGB
 
     # Find the next unused IP address in this subnet and temporarily allow outbound internet connections through the NSG from it
     PRIVATEIPADDRESS="$IP_TRIPLET_VNET.$(($(echo $IP_RANGE_SUBNET_INTERNAL | cut -d'/' -f1 | cut -d'.' -f4) + 5))"
@@ -320,7 +353,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_INTERNAL \
-        --vnet-name $VNET_NAME
+        --vnet-name $VNETNAME
     rm $TMPCLOUDINITYAML
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} server${END}"
 

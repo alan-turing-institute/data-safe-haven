@@ -37,6 +37,7 @@ write_files:
       #   -v          verbose
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors"
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
           START_TIME=$(date +%s)
