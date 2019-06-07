@@ -7,7 +7,7 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-IP_TRIPLET_VNET="10.1.0"
+IP_TRIPLET_VNET=""
 KEYVAULT_NAME="kv-shm-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
@@ -21,6 +21,8 @@ NSG_PREFIX_EXTERNAL="NSG_SHM_PKG_MIRRORS_EXTERNAL"
 SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
 SUBNET_PREFIX_EXTERNAL="SBNT_SHM_PKG_MIRRORS_EXTERNAL"
 VNETNAME_PREFIX="VNET_SHM_PKG_MIRRORS"
+IP_TRIPLET_VNET_DEFAULT_TIER2="10.2.0"
+IP_TRIPLET_VNET_DEFAULT_TIER3="10.3.0"
 
 
 # Document usage for this script
@@ -29,7 +31,7 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i vnet_ip] [-k keyvault_name] [-r resource_group] [-t tier]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription where the mirror servers should be deployed. (Test using 'Safe Haven Management Testing')"
-    echo "  -i vnet_ip                   specify initial IP triplet for the mirror VNet (defaults to '${IP_TRIPLET_VNET}')"
+    echo "  -i vnet_ip                   specify initial IP triplet for the mirror VNet (defaults to '${IP_TRIPLET_VNET_DEFAULT_TIER2}' for Tier-2 and '${IP_TRIPLET_VNET_DEFAULT_TIER3}' for Tier-3)"
     echo "  -k keyvault_name             specify (globally unique) name for keyvault that will be used to store admin passwords for the mirror servers (defaults to '${KEYVAULT_NAME}')"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     echo "  -t tier                      specify which tier these mirrors will belong to, either '2' or '3' (defaults to '${TIER}')"
@@ -85,6 +87,19 @@ VNETNAME="${VNETNAME_PREFIX}_TIER${TIER}"
 SUBNET_EXTERNAL="${SUBNET_PREFIX_EXTERNAL}_TIER${TIER}"
 MACHINENAME_PREFIX_EXTERNAL="Tier${TIER}${MACHINENAME_PREFIX_EXTERNAL}"
 NSG_EXTERNAL="${NSG_PREFIX_EXTERNAL}_TIER${TIER}"
+
+
+# Ensure VNet IP triplet is set
+# -----------------------------
+if [ "$IP_TRIPLET_VNET" == "" ]; then
+    if [ "$TIER" == "2" ]; then
+        IP_TRIPLET_VNET=$IP_TRIPLET_VNET_DEFAULT_TIER2
+    elif [ "$TIER" == "3" ]; then
+        IP_TRIPLET_VNET=$IP_TRIPLET_VNET_DEFAULT_TIER3
+    else
+        print_usage_and_exit
+    fi
+fi
 
 
 # Set datadisk size
