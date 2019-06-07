@@ -64,9 +64,6 @@ write_files:
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
-  - path: "/home/mirrordaemon/pull_whitelist.sh"
-    content: |
-      #! /bin/bash
 
 runcmd:
   # Generate SSH keys for connecting to the internal mirror
