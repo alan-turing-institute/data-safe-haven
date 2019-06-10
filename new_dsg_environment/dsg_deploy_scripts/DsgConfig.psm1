@@ -127,11 +127,11 @@ function Add-DsgConfig {
     $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $tier
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so both can exist in one resource group
     if(@(2, 3).Contains($tier)){
-        $config.dsg.mirrors.cran.ip = "10." + $tier + ".0.20"
-        $config.dsg.mirrors.pypi.ip = "10." + $tier + ".0.21"
+        $config.dsg.mirrors.pypi.ip = "10." + $tier + ".0.20"
+        $config.dsg.mirrors.cran.ip = "10." + $tier + ".0.21"
     } else {
-        $config.dsg.mirrors.cran.ip = ""
         $config.dsg.mirrors.pypi.ip = ""
+        $config.dsg.mirrors.cran.ip = ""
     }
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters

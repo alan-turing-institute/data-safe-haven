@@ -34,6 +34,7 @@ IMAGES_GALLERY="SIG_SH_COMPUTE"
 LOCATION="uksouth"
 LDAP_RESOURCEGROUP="RG_SH_LDAP"
 DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connection during deployment
+OS_DISK_SIZE_GB="1024"
 
 
 # Document usage for this script
@@ -406,7 +407,7 @@ sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" 
 # -------------------------------------------------
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
 echo -e "${BOLD}This will use the ${BLUE}$SOURCEIMAGE${END}${BOLD}-based compute machine image${END}"
-echo -e "Starting deployment at ${BOLD}$(date)${END}"
+echo -e "${BOLD}Starting deployment at $(date)${END}"
 STARTTIME=$(date +%s)
 
 if [ "$IP_ADDRESS" = "" ]; then
@@ -419,7 +420,7 @@ if [ "$IP_ADDRESS" = "" ]; then
         --name $MACHINENAME \
         --nsg $DEPLOYMENT_NSG_ID \
         --os-disk-name "${MACHINENAME}OSDISK" \
-        --os-disk-size-gb 1024 \
+        --os-disk-size-gb $OS_DISK_SIZE_GB \
         --public-ip-address "" \
         --resource-group $RESOURCEGROUP \
         --size $VM_SIZE \
@@ -434,7 +435,7 @@ else
         --name $MACHINENAME \
         --nsg $DEPLOYMENT_NSG_ID \
         --os-disk-name "${MACHINENAME}OSDISK" \
-        --os-disk-size-gb 1024 \
+        --os-disk-size-gb $OS_DISK_SIZE_GB \
         --private-ip-address $IP_ADDRESS \
         --public-ip-address "" \
         --resource-group $RESOURCEGROUP \
