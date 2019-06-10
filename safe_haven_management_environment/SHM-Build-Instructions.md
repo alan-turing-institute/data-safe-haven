@@ -1,6 +1,5 @@
 # Safe Haven Management Environment Build Instructions
 
-- Tested on MacOS
 ## Prerequisites
 
 ### An Azure subscription with sufficient credits to build the environment in 
