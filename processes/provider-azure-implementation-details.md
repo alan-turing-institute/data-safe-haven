@@ -72,7 +72,7 @@ Package mirrors
 
 For Tier 2 and Tier 3 DSG environments, a selection of Python and R packages can be provided via a set of servers that mirror some or all of the PyPI or CRAN package servers.
 
-Tier 2 environments can access a common set of full mirrors of PyPI and CRAN, while each Tier 2 environment can have its own dedicated set of mirrors, hosting only a subset of PyPI or CRAN packages restricted to a DSG specific whitelist. Connection of DSGs to mirror sets is achieved via VNet peering. While Tier 2 DSGs are peered to the same mirror VNet, this does not permit communication between DSGs.
+Tier 2 environments can access a common set of full mirrors of PyPI and CRAN, while each Tier 3 environment can have its own dedicated set of mirrors, hosting only a subset of PyPI or CRAN packages restricted to a DSG specific whitelist. Connection of DSGs to mirror sets is achieved via VNet peering. While Tier 2 DSGs are peered to the same mirror VNet, this does not permit communication between DSGs.
 
 To minimise the risk of any breaches via the package mirrors, there are two mirror servers for each official package server mirrored.
 
