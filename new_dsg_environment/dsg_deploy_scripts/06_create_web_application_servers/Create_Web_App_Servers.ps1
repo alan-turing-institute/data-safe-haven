@@ -21,8 +21,8 @@ $adminUser = $config.dsg.dc.admin.username
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 # VM sizes
-$hackMdVmSize = "Standard_DS2_v2"
-$gitlabVmSize = "Standard_DS2_v2"
+$hackMdVmSize = "Standard_B2ms"
+$gitlabVmSize = "Standard_B2ms"
 
 # Patch cloud init templates
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
@@ -84,7 +84,7 @@ $hackmdCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
 "GITLab VM Size" = $gitlabVMSize
-"GITLab IP Address" =  $config.dsg.linux.gitlab.ip 
+"GITLab IP Address" =  $config.dsg.linux.gitlab.ip
 "HACKMD Server Name" = $config.dsg.linux.hackmd.vmName
 "HACKMD VM Size" = $hackmdVMSize
 "HACKMD IP Address" = $config.dsg.linux.hackmd.ip
