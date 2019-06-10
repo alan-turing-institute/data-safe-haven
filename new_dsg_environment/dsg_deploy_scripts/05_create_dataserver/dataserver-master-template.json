@@ -100,7 +100,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -112,7 +112,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 512
                         }
