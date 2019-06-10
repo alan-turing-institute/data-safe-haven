@@ -381,6 +381,14 @@ Start-ADSyncSyncCycle -PolicyType Delta
 
 ## 5. Validation 
 
+1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers` application. 
+
+2. After about 30 minutes the new user should appear on the Azure Active Directory account. Or to force a sync, on the NPS machine open a powershell and call:
+
+```
+Start-ADSyncSyncCycle -PolicyType Delta
+```
+
 
 <!-- 
 # OLD
