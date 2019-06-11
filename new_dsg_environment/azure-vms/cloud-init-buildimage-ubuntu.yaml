@@ -269,7 +269,6 @@ packages:
   - r-cran-plyr
   - r-cran-polycor
   - r-cran-pomp
-  - r-cran-premium
   - r-cran-pscl
   - r-cran-purrr
   - r-cran-pvclust
@@ -289,7 +288,6 @@ packages:
   - r-cran-repr
   - r-cran-reshape
   - r-cran-reshape2
-  - r-cran-rgdal
   - r-cran-rgeos
   - r-cran-rgl
   - r-cran-rjava
@@ -330,7 +328,6 @@ packages:
   - r-cran-tidyr
   - r-cran-tidytext
   - r-cran-tidyverse
-  - r-cran-tmap
   - r-cran-topicmodels
   - r-cran-urca
   - r-cran-uuid
@@ -361,10 +358,8 @@ packages:
   - xsltproc
 
 runcmd:
-  # Clean up installation
+  # Suppress apt warning messages
   - export DEBIAN_FRONTEND=noninteractive
-  - echo "*** Cleaning up apt-get packages... ***"
-  - apt-get clean
 
   # Install PyCharm
   - echo "*** Installing PyCharm... ***"
@@ -375,6 +370,11 @@ runcmd:
   - apt-get install -y --no-install-recommends nvidia-driver-410
   - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
   - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
+
+  # Clean up installation
+  - echo "*** Cleaning up apt-get packages... ***"
+  - apt autoremove
+  - apt-get clean
 
   #IF_TORCH_ENABLED # Install torch
   #IF_TORCH_ENABLED - echo "*** Installing torch... ***"
@@ -590,10 +590,9 @@ runcmd:
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
-  # - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
-  # - if [ "$(which StorageExplorer)" != "" ]; then echo "StorageExplorer $(which StorageExplorer)"; else echo "StorageExplorer not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
