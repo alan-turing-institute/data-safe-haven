@@ -11,53 +11,54 @@
         },
         "VM Size": {
             "type": "string",
-            "defaultValue": "Standard_F4s_v2",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
                 "Standard_F4s_v2",
-                "Standard_DS2_v2"                
+                "Standard_DS2_v2"
             ],
             "metadata": {
                 "description": "Select size of VM"
-            }    
+            }
         },
         "IP Address": {
             "type": "string",
             "defaultValue": "10.250.x.250",
             "metadata": {
                 "description": "Enter IP address for VM, must end in 250"
-            }    
+            }
         },
         "Administrator User": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for VM Administrator"
-            }    
+            }
         },
         "Administrator Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for VM Administrator Password"
-            }    
+            }
         },
         "Virtual Network Name": {
             "type": "string",
             "defaultValue": "DSG_DSGROUPX_VNET1",
             "metadata": {
                 "description": "Enter name of virtual network to provision this VM"
-            }    
+            }
         },
         "Virtual Network Resource Group": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
-            }    
+            }
         },
         "Virtual Network Subnet": {
             "type": "string",
             "defaultValue": "Subnet-Identity",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }    
+            }
         },
         "Artifacts Location": {
             "type": "string",
@@ -112,7 +113,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -124,7 +125,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 20
                         }
