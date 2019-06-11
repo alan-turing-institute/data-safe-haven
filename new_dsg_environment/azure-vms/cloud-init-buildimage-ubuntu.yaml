@@ -119,6 +119,7 @@ packages:
   - libpoppler-cpp-dev
   - libpq-dev
   - librsvg2-dev
+  - libsensors4
   - libssl-dev
   - libudunits2-dev
   - libxss1
@@ -127,8 +128,11 @@ packages:
   - octave
   - oddjob
   - oddjob-mkhomedir
+  - parallel
+  - pgadmin3
   - postgresql
   - postgresql-contrib
+  - qgis
   - r-base
   - r-base-core
   - r-base-dev
@@ -350,15 +354,21 @@ packages:
   - scala
   - sssd
   - sssd-tools
+  - sysstat
   - xfce4
   - xfce4-terminal
   - xrdp
+  - xsltproc
 
 runcmd:
   # Clean up installation
   - export DEBIAN_FRONTEND=noninteractive
   - echo "*** Cleaning up apt-get packages... ***"
   - apt-get clean
+
+  # Install PyCharm
+  - echo "*** Installing PyCharm... ***"
+  - snap install pycharm-community --classic
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "*** Installing NVidia requirements for tensorflow ***"
