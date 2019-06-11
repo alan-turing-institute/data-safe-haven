@@ -26,7 +26,7 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
-    echo "  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
     exit 1
@@ -166,13 +166,13 @@ if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     DISKSIZEGB="60"
-elif [ "$SOURCEIMAGE" = "DataScience" ]; then
-    MACHINENAME="${MACHINENAME}-DataScienceBase"
-    SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-    cp cloud-init-buildimage-datascience.yaml $TMP_CLOUD_CONFIG_YAML
-    DISKSIZEGB="60"
-    echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
-    az vm image accept-terms --urn $SOURCEIMAGE
+# elif [ "$SOURCEIMAGE" = "DataScience" ]; then
+#     MACHINENAME="${MACHINENAME}-DataScienceBase"
+#     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
+#     cp cloud-init-buildimage-datascience.yaml $TMP_CLOUD_CONFIG_YAML
+#     DISKSIZEGB="60"
+#     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
+#     az vm image accept-terms --urn $SOURCEIMAGE
 else
     echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
