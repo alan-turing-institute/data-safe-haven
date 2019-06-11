@@ -30,6 +30,8 @@ runcmd:
   - chown atiadmin:atiadmin /home/atiadmin/.ssh/id_rsa*
   # Install Azure CLI support for Powershell
   - pwsh -command "Install-Module -Name Az -Force -AllowClobber"
+  - pwsh -command "Install-Module -Name Az.Accounts -Force -AllowClobber"
+
   # Clean up
   - apt-get -y upgrade
   - apt-get -y clean
