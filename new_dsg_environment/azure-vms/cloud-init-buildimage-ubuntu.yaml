@@ -27,6 +27,8 @@ apt:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
       keyid: ACCC4CF8
 
+      # keyserver: ha.pool.sks-keyservers.net
+      # keyid: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
     #   key: |
     #     -----BEGIN PGP PUBLIC KEY BLOCK-----
     #     mQINBE6XR8IBEACVdDKT2HEH1IyHzXkb4nIWAY7echjRxo7MTcj4vbXAyBKOfjja
@@ -465,15 +467,6 @@ runcmd:
   # Suppress apt warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
-  # Install postgresql
-  - echo "=== Installing PostgreSQL extensions... ==="
-  - cat /postgres.install
-  - sudo -u postgres psql -f /postgres.install
-
-  # Install PyCharm
-  - echo "=== Installing PyCharm... ==="
-  - snap install pycharm-community --classic
-
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo "=== Installing NVidia requirements for tensorflow ==="
   - apt-get install -y --no-install-recommends nvidia-driver-410
@@ -676,6 +669,14 @@ runcmd:
   # - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"|' /etc/environment
   - export PATH=$PATH:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
+
+  # Install PostgreSQL extensions
+  - echo "=== Installing PostgreSQL extensions... ==="
+  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /postgresql.install
+
+  # Install PyCharm
+  - echo "=== Installing PyCharm... ==="
+  - snap install pycharm-community --classic
 
   # Check for successful installations
   - echo "=== Checking for successful installation... ==="
