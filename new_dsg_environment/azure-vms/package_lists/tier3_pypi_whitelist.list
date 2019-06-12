@@ -109,6 +109,7 @@ pymc3
 pyod
 PyOpenGL
 PyOpenGL-accelerate
+pyparsing
 pyrsistent
 pystan
 pytest

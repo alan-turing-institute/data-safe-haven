@@ -19,6 +19,7 @@ $mirrorPeeringParams = @{
   "VirtualNetworkName" = $config.dsg.mirrors.vnet.name
   "ResourceGroupName" = $config.dsg.mirrors.vnet.rg
 }
+Write-Output "Unpeering using config..."
 Write-Output $mirrorPeeringParams
 Remove-AzVirtualNetworkPeering @mirrorPeeringParams -Force
 
@@ -27,10 +28,11 @@ Remove-AzVirtualNetworkPeering @mirrorPeeringParams -Force
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Remove peering from DSG VNet
 $dsgPeeringParams = @{
-  "Name" = "PEER_" + $config.shm.mirrors.vnet.name
+  "Name" = "PEER_" + $config.dsg.mirrors.vnet.name
   "VirtualNetworkName" = $config.dsg.network.vnet.name
   "ResourceGroupName" = $config.dsg.network.vnet.rg
 }
+Write-Output "Unpeering using config..."
 Write-Output $dsgPeeringParams
 Remove-AzVirtualNetworkPeering @dsgPeeringParams -Force
 
