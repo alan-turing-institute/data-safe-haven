@@ -1,0 +1,99 @@
+aero-calc
+atari-py
+basemap
+bokeh
+box2d-py
+cloudpickle
+dtw
+fbprophet
+folium
+geopandas
+gmplot
+graph-tool
+gym
+ipykernel
+jupyter
+	mistune
+	bleach
+	qtconsole
+	six
+	pandocfilters
+	pyrsistent
+	setuptools
+	entrypoints
+	testpath
+	traitlets
+	wcwidth
+	jupyter-core
+	ipywidgets
+	webencodings
+	notebook
+	MarkupSafe
+	jupyter-console
+	configparser
+	pygments
+	prompt_toolkit
+	ipython
+	functools32
+	nbconvert
+	ipykernel
+	ipython-genutils
+	attrs
+	defusedxml
+	nbformat
+	jsonschema
+	jinja2
+jupyter_client
+	traitlets
+	python-dateutil
+	six
+	jupyter-core
+	tornado
+	pyzmq
+jupyterhub
+jupyterhub-ldapauthenticator
+jupyterlab
+keras
+matplotlib
+mpi4py
+NavPy
+networkx
+notebook
+numpy
+numpy-base
+numpydoc
+	Jinja2
+	MarkupSafe
+	sphinx
+pandas
+pandas-datareader
+pandas-profiling
+pandasql
+paramz
+pint
+	funcsigs
+plotly
+pyglet
+pygpu
+pygrib
+pyLDAvis
+pymc3
+pyod
+pyopengl
+pyopengl-accelerate
+pystan
+python-geohash
+python-louvain
+	networkx
+pytorch
+r-irkernel
+rpy2
+scikit-image
+scikit-learn
+scipy
+seaborn
+spacy
+tensorflow-gpu
+torchvision
+tsfresh
+wordcloud

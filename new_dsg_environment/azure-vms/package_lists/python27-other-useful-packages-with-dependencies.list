@@ -1,0 +1,69 @@
+appdirs
+astropy
+atomicwrites
+automat
+	attrs
+	six
+backports
+beautifulsoup4
+	soupsieve
+	backports.functools-lru-cache
+bitarray
+bkcharts
+blaze
+bottleneck
+	numpy
+colorama
+configparser
+contextlib2
+cython
+dask
+datashape
+	numpy
+	multipledispatch
+	python-dateutil
+	six
+distributed
+enum34
+ephem
+flask
+	MarkupSafe
+	Werkzeug
+	click
+	Jinja2
+	itsdangerous
+gmpy2
+heapdict
+html5lib
+	six
+	webencodings
+lxml
+markdown
+	setuptools
+mock
+	six
+	funcsigs
+nltk
+	six
+	singledispatch
+nose
+numba
+pbr
+pillow
+pycodestyle
+pycosat
+pytables
+pytest
+python-blosc
+pyyaml
+six
+sphinx
+sqlite
+sympy
+	mpmath
+termcolor
+twisted
+unicodecsv
+werkzeug
+xlrd
+xlsxwriter
