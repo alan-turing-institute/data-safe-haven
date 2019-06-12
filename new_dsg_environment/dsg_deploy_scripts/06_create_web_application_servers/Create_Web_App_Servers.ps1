@@ -41,6 +41,9 @@ if ($null -eq $gitlabRootPassword) {
   Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName -SecretValue $newPassword;
   $gitlabRootPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.linux.gitlab.rootPasswordSecretName).SecretValueText;
 }
+Write-Output $gitlabUserPassword
+Write-Output $gitlabRootPassword
+Exit 1
 ## Read gitlab template cloud-init file
 $gitlabCloudInitTemplatePath = Join-Path $PSScriptRoot "cloud-init-gitlab.yaml"
 $gitlabCloudInitTemplate = (Get-Content -Raw -Path $gitlabCloudInitTemplatePath)
