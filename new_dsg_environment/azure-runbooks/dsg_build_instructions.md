@@ -879,7 +879,7 @@ To deploy a compute VM you will need the following available on the machine you 
 - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
-- Ensure you are authenticated in the Azure CLI using `az login`
+- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
