@@ -60,10 +60,10 @@
         "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": "10.3.0.21"
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": "10.3.0.20"
+        "ip": "10.20.3.20"
       }
     },
     "subscriptionName": "DSG Template Testing",

@@ -1,26 +1,11 @@
 #! /bin/bash
 
-# Constants for colourised output
-BOLD="\033[1m"
-RED="\033[0;31m"
-BLUE="\033[0;36m"
-END="\033[0m"
+# Load common constants and options
+source configs/mirrors.sh
+source configs/text.sh
 
 # Options which are configurable at the command line
-KEYVAULT_NAME="kv-shm-pkg-mirrors" # must be globally unique
-RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
-SUBSCRIPTION="" # must be provided
-TIER="2"
-
-# Other constants
-ADMIN_USERNAME="atiadmin"
-LOCATION="uksouth"
-MACHINENAME_PREFIX_EXTERNAL="ExternalMirror"
 NAME_SUFFIX=""
-NSG_PREFIX_EXTERNAL="NSG_SHM_PKG_MIRRORS_EXTERNAL"
-SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-SUBNET_PREFIX_EXTERNAL="SBNT_SHM_PKG_MIRRORS_EXTERNAL"
-VNETNAME_PREFIX="VNET_SHM_PKG_MIRRORS"
 
 # Document usage for this script
 # ------------------------------
@@ -80,24 +65,29 @@ if [ "$TIER" != "2" ] && [ "$TIER" != "3" ]; then
     echo -e "${RED}Tier must be either '2' or '3'${END}"
     print_usage_and_exit
 fi
+
+
+# Set tier-dependent variables
+# ----------------------------
+MACHINENAME_PREFIX_EXTERNAL="Tier${TIER}External${MACHINENAME_BASE}"
+NSG_EXTERNAL="${NSG_PREFIX}_EXTERNAL_TIER${TIER}"
+SUBNET_EXTERNAL="${SUBNET_PREFIX}_EXTERNAL_TIER${TIER}"
 VNETNAME="${VNETNAME_PREFIX}_TIER${TIER}"
-SUBNET_EXTERNAL="${SUBNET_PREFIX_EXTERNAL}_TIER${TIER}"
-MACHINENAME_PREFIX_EXTERNAL="Tier${TIER}${MACHINENAME_PREFIX_EXTERNAL}"
-NSG_EXTERNAL="${NSG_PREFIX_EXTERNAL}_TIER${TIER}"
+VNET_IPTRIPLET="10.20.${TIER}"
 
 
 # Set datadisk size
 # -----------------
 if [ "$TIER" == "2" ]; then
-    PYPIDATADISKSIZE="4TB"
-    PYPIDATADISKSIZEGB="4095"
-    CRANDATADISKSIZE="512GB"
-    CRANDATADISKSIZEGB="511"
+    PYPIDATADISKSIZE=$DATADISK_LARGE
+    PYPIDATADISKSIZEGB=$DATADISK_LARGE_NGB
+    CRANDATADISKSIZE=$DATADISK_MEDIUM
+    CRANDATADISKSIZEGB=$DATADISK_MEDIUM_NGB
 elif [ "$TIER" == "3" ]; then
-    PYPIDATADISKSIZE="128GB"
-    PYPIDATADISKSIZEGB="127"
-    CRANDATADISKSIZE="128GB"
-    CRANDATADISKSIZEGB="127"
+    PYPIDATADISKSIZE=$DATADISK_SMALL
+    PYPIDATADISKSIZEGB=$DATADISK_SMALL_NGB
+    CRANDATADISKSIZE=$DATADISK_SMALL
+    CRANDATADISKSIZEGB=$DATADISK_SMALL_NGB
 else
     print_usage_and_exit
 fi
@@ -144,7 +134,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
 fi
 
 # Ensure that external subnet exists
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].name" -o tsv)" != "$SUBNET_EXTERNAL" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].name" -o tsv | grep 'EXTERNAL')" != "$SUBNET_EXTERNAL" ]; then
     echo -e "${RED}External subnet ${BLUE}$SUBNET_EXTERNAL${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
@@ -262,6 +252,7 @@ if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)
         --nsg "" \
         --os-disk-name $OSDISKNAME \
         --public-ip-address "" \
+        --private-ip-address $PRIVATEIPADDRESS \
         --resource-group $RESOURCEGROUP \
         --size Standard_F4s_v2 \
         --storage-sku Standard_LRS \
@@ -350,6 +341,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
             --nsg "" \
             --os-disk-name $OSDISKNAME \
             --public-ip-address "" \
+            --private-ip-address $PRIVATEIPADDRESS \
             --resource-group $RESOURCEGROUP \
             --size Standard_F4s_v2 \
             --storage-sku Standard_LRS \
