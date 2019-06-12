@@ -41,7 +41,7 @@ write_files:
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
           START_TIME=$(date +%s)
-          rsync -prtlv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran | tee /datadrive/mirrordaemon/push_to_internal_mirrors.log
           ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
@@ -56,7 +56,7 @@ write_files:
       # IF_WHITELIST_ENABLED     RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
       # IF_WHITELIST_ENABLED done
       # IF_WHITELIST_ENABLED RSYNC_INCLUDES='--include="*/" $RSYNC_INCLUDES --exclude="*"'
-      rsync -rtlv --delete --progress $RSYNC_INCLUDES cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran
+      rsync -rtlv --delete --progress $RSYNC_INCLUDES cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran | tee /datadrive/mirrordaemon/pull_from_internet.log
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"

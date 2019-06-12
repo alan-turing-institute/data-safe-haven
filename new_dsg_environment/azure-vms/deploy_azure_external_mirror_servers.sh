@@ -96,7 +96,7 @@ fi
 
 # Create keyvault for storing passwords if it does not already exist
 # ------------------------------------------------------------------
-if [ "$(az keyvault list --resource-group $RESOURCEGROUP | grep $KEYVAULT_NAME)" = "" ]; then
+if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $KEYVAULT_NAME)" != "$KEYVAULT_NAME" ]; then
     echo -e "${BOLD}Creating keyvault ${BLUE}$KEYVAULT_NAME${END}"
     az keyvault create --name $KEYVAULT_NAME --resource-group $RESOURCEGROUP --enabled-for-deployment true
     # Wait for DNS propagation of keyvault
@@ -111,7 +111,7 @@ IP_RANGE_VNET="${VNET_IPTRIPLET}.0/24"
 IP_RANGE_SBNT_EXTERNAL="${VNET_IPTRIPLET}.0/28"
 
 # Create VNet if it does not already exist
-if [ "$(az network vnet list -g $RESOURCEGROUP | grep $VNETNAME)" = "" ]; then
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $VNETNAME)" != "$VNETNAME" ]; then
     echo -e "${BOLD}Creating mirror VNet ${BLUE}$VNETNAME${END}${BOLD} using the IP range ${BLUE}$IP_RANGE_VNET${END}"
     az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE_VNET
 fi

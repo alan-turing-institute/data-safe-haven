@@ -114,13 +114,13 @@ if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
 fi
 
 # Ensure that keyvault exists
-if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$KEYVAULT_NAME" ]; then
+if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $KEYVAULT_NAME)" != "$KEYVAULT_NAME" ]; then
     echo -e "${RED}Keyvault ${BLUE}$KEYVAULT_NAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
 
 # Ensure that VNet exists
-if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query "[].name" -o tsv)" != "$VNETNAME" ]; then
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $VNETNAME)" != "$VNETNAME" ]; then
     echo -e "${RED}VNet ${BLUE}$VNETNAME${RED} not found! Have you deployed the external mirrors?${END}"
     print_usage_and_exit
 fi
