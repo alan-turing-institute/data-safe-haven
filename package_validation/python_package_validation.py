@@ -10,6 +10,7 @@ from datetime import datetime
 import time
 from math import isnan
 import requests
+from collections import Iterable
 
 # API tokens for github.com and for libraries.io
 LIBRARIES_IO_API_KEY = ''
@@ -88,11 +89,14 @@ def get_github_url(name, link):
             return github_url
         except:
             return None
+    if link:
 
-    if 'github.com/' in link:
-        return link
-    elif 'readthedocs.org/' in link:
-        return get_github_from_readthedocs(link)
+        if 'github.com/' in link:
+            return link
+        elif 'readthedocs.org/' in link:
+            return get_github_from_readthedocs(link)
+        else:
+            return None
     else:
         return None
 
@@ -131,6 +135,13 @@ def get_pypi_url(name):
     """
     return 'https://pypi.org/project/{}'.format(name)
 
+def get_repo_url_from_pypi(name):
+    response = get_libraries_io_project_info(name)
+    if response:
+        return response['latest_release_number'], response['repository_url'] or response['homepage']
+    else:
+        return None, None
+
 def get_libraries_io_project_info(name):
     """
     Using the package name, it returns a JSON with information of the project/library from libraries.io 
@@ -163,7 +174,10 @@ def get_project_dependencies(name, version):
     https://libraries.io/api/:platform/:name/:version/dependencies?api_key=00cb33c5a2174dd7bbdcffb365d3a8de
     """
     response = requests.get('https://libraries.io/api/Pypi/{name}/{version}/dependencies?api_key={api_key}'.format(name=name, version=version, api_key=LIBRARIES_IO_API_KEY))
-    return response.json()
+    if response.status_code == 200:
+        return response.json()
+    else:
+        None
     
 def get_contributors_from_libraries_io(name):
 	"""
@@ -300,13 +314,15 @@ def get_dependencies(name, version):
     Returns the number and url of the repository of the dependencies.
     """
     dep = get_project_dependencies(name, version)
-    if 'error' in dep:
+    if dep and 'error' in dep:
         return None, None
-    else:
+    elif dep:
         dependencies = []
         for d in dep['dependencies']:
             dependencies.append((d['name']+' '+d['requirements']))
         return len(dependencies), dependencies
+    else:
+        return None, None
 
 def evaluate_packages_from_anaconda(python_version):
     anaconda_url = 'https://docs.anaconda.com/anaconda/packages/py{python_version}_linux-64/'.format(python_version=python_version)
@@ -322,7 +338,6 @@ def evaluate_packages_from_anaconda(python_version):
     for i in pbar:
         pbar.set_description('{}'.format(df.name.iloc[i]))
         df.at[i, 'github_link'] = get_github_url(df.name.iloc[i], df.link.iloc[i])
-        df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
         df.at[i, 'pypi_url'] = get_pypi_url(df.name.iloc[i])
 
     # Information from libraries.io
@@ -365,6 +380,7 @@ def evaluate_packages_from_anaconda(python_version):
             df.at[i, 'num_contributors_last_year'] = get_contributors(df.github_link.iloc[i], 365)
             df.at[i, 'total_contributors'] = get_total_contributors(df.github_link.iloc[i])
             df.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df.num_contributors_last_year.iloc[i])
+            df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
         df.at[i, 'is_in_pypi'] = is_in_pypi(df.name.iloc[i])
         df.at[i, 'is_in_conda'] = is_in_conda(python_anaconda_37, df.name.iloc[i])
 
@@ -401,7 +417,19 @@ def evaluate_package(name, python_version = '3.7'):
     anaconda_url = 'https://docs.anaconda.com/anaconda/packages/py{python_version}_linux-64/'.format(python_version=python_version)
     df_base = get_initial_python_packages(anaconda_url)
     df = df_base[df_base['name']==name].copy().reset_index()
-    
+
+    if len(df) == 0:
+        df = pd.DataFrame(columns=['name','version','link','in_installation'])
+        df['name'] = None
+        df['version'] = None
+        df['link'] = None
+        df['in_installation'] = None
+
+        df.at[0, 'name'] = name
+        version, link = get_repo_url_from_pypi(name)
+        df.at[0, 'version'] = version
+        df.at[0, 'link'] = link
+
     # Creates new columns in the dataframe
     df['github_link'] = None            # url of the github repository
     df['has_version_control'] = None    # Yes/No if has a public repository in github, gitlab, or bitbucket
@@ -412,7 +440,6 @@ def evaluate_package(name, python_version = '3.7'):
     for i in pbar:
         pbar.set_description('{}'.format(df.name.iloc[i]))
         df.at[i, 'github_link'] = get_github_url(df.name.iloc[i], df.link.iloc[i])
-        df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
         df.at[i, 'pypi_url'] = get_pypi_url(df.name.iloc[i])
 
     # Information from libraries.io
@@ -455,6 +482,7 @@ def evaluate_package(name, python_version = '3.7'):
             df.at[i, 'num_contributors_last_year'] = get_contributors(df.github_link.iloc[i], 365)
             df.at[i, 'total_contributors'] = get_total_contributors(df.github_link.iloc[i])
             df.at[i, 'more_than_3_contributors'] = has_more_than_n_contributors(df.num_contributors_last_year.iloc[i])
+            df.at[i, 'has_version_control'] = has_version_control(df.name.iloc[i], df.github_link.iloc[i])
         df.at[i, 'is_in_pypi'] = is_in_pypi(df.name.iloc[i])
         df.at[i, 'is_in_conda'] = is_in_conda(python_anaconda_37, df.name.iloc[i])
 
@@ -481,3 +509,35 @@ def evaluate_package(name, python_version = '3.7'):
         df.at[i, 'dependencies'] = deps
         time.sleep(1)
     return df
+
+def flatten(items):
+    """
+    Returns a flat list from a nested list.
+    Code found here https://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists/2158532#2158532
+    """
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            for sub_x in flatten(x):
+                yield sub_x
+        else:
+            yield x
+            
+def get_names_of_all_dependencies(name, path=None):
+    """
+    Returns all the possible paths of the tree of dependencies of a package.
+    This nested list can be used to get the names of the dependencies.
+    """
+    version, _ = get_repo_url_from_pypi(name)
+    num_dep, dependencies = get_dependencies(name, version)
+    
+    paths = []
+    if path is None:
+        path = []
+    path.append(name)
+    if dependencies and num_dep > 0:
+        for dep in dependencies:
+            package_name = dep.split()[0]
+            paths.extend(get_names_of_all_dependencies(package_name, path[:]))
+    else:
+        paths.append(path)
+    return paths

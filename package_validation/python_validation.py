@@ -6,7 +6,7 @@ df = pd.DataFrame()
 df = pv.evaluate_packages_from_anaconda(python_version = '3.7')
 
 # Exporting the results to an Excel file
-df.to_excel('python_packages_v1.xlsx')
+df.to_excel('python_packages_v2.xlsx')
 
 
 # Or it can be evaluated one by one, uncommenting the following lines and calling pv.evaluate_package('some_package_name')
