@@ -183,7 +183,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.240"
+          "allowedSources": "Internet"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
