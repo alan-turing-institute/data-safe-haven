@@ -183,7 +183,11 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
+<<<<<<< HEAD
           "allowedSources": "193.60.220.240"
+=======
+          "allowedSources": "193.60.220.253,193.60.220.240"
+>>>>>>> origin/DSSG-SUMMER2019
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
