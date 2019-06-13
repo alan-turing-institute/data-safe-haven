@@ -13,7 +13,12 @@ $config = Get-DsgConfig($dsgId)
 $prevContext = Get-AzContext;
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
-# === Lock down RDS VMs ===
+Write-Host ("Locking down network configuration for DSG" + $config.dsg.id `
+           + " (Tier " + $config.dsg.tier + ")")
+
+# =======================================================================
+# === Ensure RDS session hosts are bound to most restricted Linux NSG ===
+# =======================================================================
 
 # Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
 $sh1NicName = $config.dsg.rds.sessionHost1.vmName + "_NIC1";
@@ -31,8 +36,39 @@ $_ = ($sh1Nic | Set-AzNetworkInterface);
 $sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh2Nic | Set-AzNetworkInterface);
 
-Write-Host (" - NICs associated with '" + $nsgSessionHosts.Name + "'NSG")
- @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
+# Wait a short while for NIC association to complete
+Start-Sleep -Seconds 5
+Write-Host ("   - Done: NICs associated with '" + $nsgSessionHosts.Name + "' NSG")
+ @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object{Write-Host ("     - " + $_.Id.Split("/")[-1])}
+
+# ====================================================================
+# === Ensure Webapp servers are bound to most restricted Linux NSG ===
+# ====================================================================
+
+# Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
+$gitlabNicName = $config.dsg.linux.gitlab.vmName + "_NIC1";
+$hackMdNicName = $config.dsg.linux.hackmd.vmName + "_NIC1";
+
+# Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
+$nsgLinux = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.nsg;
+$gitlabNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $gitlabNicName;
+$hackMdNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $hackMdNicName;
+Write-Host (" - Associating Web App Servers with '" + $nsgLinux.Name + "' NSG")
+
+# Assign Webapp server NICs to Linux VM NSG
+$gitlabNic.NetworkSecurityGroup = $nsgLinux;
+$_ = ($gitlabNic | Set-AzNetworkInterface);
+$hackMdNic.NetworkSecurityGroup = $nsgLinux;
+$_ = ($hackMdNic | Set-AzNetworkInterface);
+
+# Wait a short while for NIC association to complete
+Start-Sleep -Seconds 5
+Write-Host ("   - Done: NICs associated with '" + $nsgLinux.Name + "' NSG")
+@($nsgLinux.NetworkInterfaces) | ForEach-Object{Write-Host ("   -   " + $_.Id.Split("/")[-1])}
+
+# ==================================================
+# === Update RDS Gateway NSG to match DSG config ===
+# ==================================================
 
 # Update RDS Gateway NSG inbound access rule
 $nsgGateway = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.gateway.name;
@@ -67,30 +103,54 @@ $_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway;
 # Confirm update has being successfully applied
 $httpsInRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway;
 
-Write-Host (" - '" + $httpsInRuleName + "' rule source address prefix is now '" + $httpsInRuleAfter.SourceAddressPrefix `
+Write-Host ("   - Done: '" + $httpsInRuleName + "' rule source address prefix is now '" + $httpsInRuleAfter.SourceAddressPrefix `
             + "' on '" + $nsgGateway.name + "' NSG")
 
-# === Lock down Web App servers ===
+# =======================================================
+# === Update restricted Linux NSG to match DSG config ===
+# =======================================================
 
-# Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
-$gitlabNicName = $config.dsg.linux.gitlab.vmName + "_NIC1";
-$hackMdNicName = $config.dsg.linux.hackmd.vmName + "_NIC1";
-
-# Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
+# Update RDS Gateway NSG inbound access rule
 $nsgLinux = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.nsg;
-$gitlabNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $gitlabNicName;
-$hackMdNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $hackMdNicName;
-Write-Host (" - Associating Web App Servers with '" + $nsgLinux.Name + "' NSG")
+$internetOutRuleName = "Deny_Internet"
+$internetOutRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleName -NetworkSecurityGroup $nsgLinux;
 
-# Assign RDS Session Host NICs to Linux VM NSG
-$gitlabNic.NetworkSecurityGroup = $nsgLinux;
-$_ = ($gitlabNic | Set-AzNetworkInterface);
+# Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
+If ($config.dsg.tier -in 0,1){
+  $access = "Allow"
+}
+Else {
+  $access = "Deny"
+}
+$allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEach-Object{$_.Trim()})
 
-$hackMdNic.NetworkSecurityGroup = $nsgLinux;
-$_ = ($hackMdNic | Set-AzNetworkInterface);
+Write-Host (" - Updating '" + $internetOutRuleName + "' rule on '" + $nsgLinux.name + "' NSG to '" `
+            + $access  + "' access to '" + $internetOutRuleBefore.DestinationAddressPrefix `
+            + "' (was previously '" + $internetOutRuleBefore.Access + "')")
+             
+$nsgLinuxInternetOutRuleParams = @{
+  Name = $internetOutRuleName
+  NetworkSecurityGroup = $nsgLinux
+  Description = "Control outbound internet access from user accessible VMs"
+  Access = $access
+  Direction = "Outbound"
+  SourceAddressPrefix = "VirtualNetwork"
+  Protocol = "*"
+  SourcePortRange = "*"
+  DestinationPortRange = "*"
+  DestinationAddressPrefix = "Internet"
+  Priority = "4000"
+}
 
-Write-Host (" - NICs associated with '" + $nsgLinux.Name + "'NSG")
-@($nsgLinux.NetworkInterfaces) | ForEach-Object{Write-Host ("   - " + $_.Id.Split("/")[-1])}
+# Update rule and NSG (both are required)
+$_ = Set-AzNetworkSecurityRuleConfig @nsgLinuxInternetOutRuleParams;
+$_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgLinux;
+
+# Confirm update has being successfully applied
+$internetOutRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleName -NetworkSecurityGroup $nsgLinux;
+
+Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + "' NSG will now '" + $internetOutRuleAfter.Access `
+            + "' access to '" + $internetOutRuleAfter.DestinationAddressPrefix + "'")
 
 
 # Switch back to previous subscription
