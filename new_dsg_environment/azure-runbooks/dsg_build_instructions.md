@@ -71,17 +71,17 @@
 
 ### Install and configure PowerShell for Azure
 
-- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
+- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 
   - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
 
-- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
+- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 
 ### Install and configure Linux command line
 
-- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 
-- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
 
   - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
 
