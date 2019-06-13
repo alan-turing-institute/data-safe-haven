@@ -1,0 +1,37 @@
+#cloud-config
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+  # Add repositories
+  sources:
+    microsoft-prod.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      keyid: EB3E94ADBE1229CF
+
+    microsoft-azure-cli.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
+      keyid: EB3E94ADBE1229CF
+
+# List of packages to install with apt-get
+packages:
+  - azure-cli
+  - mosh
+  - powershell
+  - python-pip
+
+runcmd:
+  # Generate SSH key for atiadmin
+  - mkdir -p /home/atiadmin/.ssh
+  - ssh-keygen -t rsa -b 4096 -N "" -f /home/atiadmin/.ssh/id_rsa
+  - chown atiadmin:atiadmin /home/atiadmin/.ssh/id_rsa*
+  # Install Azure CLI support for Powershell
+  - pwsh -command "Install-Module -Name Az -Force -AllowClobber"
+  - pwsh -command "Install-Module -Name Az.Accounts -Force -AllowClobber"
+
+  # Clean up
+  - apt-get -y upgrade
+  - apt-get -y clean

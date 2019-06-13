@@ -512,7 +512,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 To make this Remote Desktop Service accessible from the internet an `A` record will need to be added to the DNS Zone for the domain associated with the DSG.
 
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal.
+- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal.
 
 #### Configuration of SSL on RDS Gateway
 
@@ -879,7 +879,7 @@ To deploy a compute VM you will need the following available on the machine you 
 - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
-- Ensure you are authenticated in the Azure CLI using `az login`
+- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
@@ -927,6 +927,8 @@ To peer the DSG and package mirror networks:
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/` directory of the Safe Haven repository
+
+- Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
