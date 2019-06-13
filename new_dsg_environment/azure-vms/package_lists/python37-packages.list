@@ -38,8 +38,6 @@ gensim
 geopandas
 gmplot
 gmpy2
-gpy
-gpyopt
 graph-tool
 grpcio
 gym
