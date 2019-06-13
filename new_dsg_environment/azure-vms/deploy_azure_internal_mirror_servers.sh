@@ -164,7 +164,7 @@ else
         print_usage_and_exit
     fi
 fi
-echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
+echo -e "${BOLD}Internal tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 
 
 # Set up the internal NSG and configure the external NSG
@@ -386,3 +386,4 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
     fi
 fi
+

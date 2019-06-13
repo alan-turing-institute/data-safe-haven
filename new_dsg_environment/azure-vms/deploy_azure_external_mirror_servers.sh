@@ -135,7 +135,7 @@ if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $
         --resource-group $RESOURCEGROUP \
         --vnet-name $VNETNAME
 fi
-echo -e "${BOLD}External tier ${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
+echo -e "${BOLD}External tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
 
 # Set up PyPI external mirror
