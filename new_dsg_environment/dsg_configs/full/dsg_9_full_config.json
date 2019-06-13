@@ -58,17 +58,17 @@
     "id": "9",
     "shortName": "dsg9",
     "location": "uksouth",
-    "tier": 1,
+    "tier": 3,
     "mirrors": {
       "vnet": {
         "rg": "RG_SHM_PKG_MIRRORS",
-        "name": "VNET_SHM_PKG_MIRRORS_TIER1"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": ""
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": ""
+        "ip": "10.20.3.20"
       }
     },
     "domain": {
@@ -183,7 +183,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "Internet"
+          "allowedSources": "193.60.220.240"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
