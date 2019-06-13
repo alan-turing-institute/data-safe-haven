@@ -41,7 +41,7 @@ Write-Output ("Removing peering for DSG network from SHM Mirror networks")
 # Switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
-# === Remove mirror side of peerings involving this DSG ===
+# === Remove DSG side of peerings involving this DSG ===
 Write-Output ("Removing peering for SHM Mirror networks from DSG network")
 $dsgPeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $dsgVnet.Name  -ResourceGroupName $config.dsg.network.vnet.rg;
 # Iterate over peerings
