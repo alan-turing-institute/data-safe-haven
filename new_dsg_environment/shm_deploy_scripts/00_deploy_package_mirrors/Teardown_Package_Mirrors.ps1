@@ -1,13 +1,13 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SAE ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$saeId
+  [string]$dsgId
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../dsg_deploy_scripts/DsgConfig.psm1 -Force
 
 # Get DSG config
-$config = Get-DsgConfig($saeId)
+$config = Get-DsgConfig($dsgId)
 
 # Switch to appropriate management subscription
 Set-AzContext -SubscriptionId $config.shm.subscriptionName;
