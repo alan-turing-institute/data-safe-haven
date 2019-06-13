@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Load common constants and options
-source configs/mirrors.sh
-source configs/text.sh
+source ${BASH_SOURCE%/*}/configs/mirrors.sh
+source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Options which are configurable at the command line
 NAME_SUFFIX=""
@@ -164,21 +164,23 @@ else
         print_usage_and_exit
     fi
 fi
-echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
+echo -e "${BOLD}Internal tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 
 
 # Set up the internal NSG and configure the external NSG
 # ------------------------------------------------------
 # Update external NSG to allow connections to this IP range
-echo -e "${BOLD}Updating NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} to allow connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
+echo -e "${BOLD}Ensuring that NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} allows connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
 if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound 2> /dev/null)" = "" ]; then
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 400
 # ... otherwise we update them, extracting the existing IP ranges first
 else
     EXISTING_IP_RANGES=$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --query "[destinationAddressPrefix, destinationAddressPrefixes]" -o tsv | xargs)
-    UPDATED_IP_RANGES=$(echo $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
-    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $UPDATED_IP_RANGES
+    UPDATED_IP_RANGES=$(echo $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL | tr ' ' '\n' | sort | uniq | tr '\n' ' ' | sed -e 's/ *$//')
+    if [ "$UPDATED_IP_RANGES" != "$EXISTING_IP_RANGES" ]; then
+        az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $UPDATED_IP_RANGES
+    fi
 fi
 
 # Create internal NSG if it does not already exist
@@ -209,9 +211,9 @@ fi
 MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}PyPI"
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
-    echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${BOLD}VM ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
 else
-    CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
+    CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-internal-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-pypi"
     if [ "$NAME_SUFFIX" != "" ]; then
         ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
@@ -300,9 +302,9 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
     MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}CRAN"
     MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
-        echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
+        echo -e "${BOLD}VM ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
     else
-        CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
+        CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-internal-cran.yaml"
         ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-cran"
         if [ "$NAME_SUFFIX" != "" ]; then
             ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
@@ -384,3 +386,4 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
     fi
 fi
+

@@ -17,7 +17,7 @@ Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 $mirrorPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
   "VirtualNetworkName" = $config.dsg.mirrors.vnet.name
-  "ResourceGroupName" = $config.dsg.mirrors.vnet.rg
+  "ResourceGroupName" = $config.dsg.mirrors.rg
 }
 Write-Output "Unpeering using config..."
 Write-Output $mirrorPeeringParams

@@ -21,7 +21,7 @@ $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
 Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # Fetch Mirrors Vnet
 $mirrorVnet = Get-AzVirtualNetwork -Name $config.dsg.mirrors.vnet.name `
-                                -ResourceGroupName $config.dsg.mirrors.vnet.rg
+                                   -ResourceGroupName $config.dsg.mirrors.rg
 # Add Peering to Mirror Vnet
 $mirrorPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
