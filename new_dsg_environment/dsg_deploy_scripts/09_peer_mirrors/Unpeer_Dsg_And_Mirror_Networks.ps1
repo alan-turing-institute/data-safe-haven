@@ -7,35 +7,35 @@ Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config and store original subscription
-$config = Get-DsgConfig($dsgId)
-$originalSubscription = Get-AzContext
+$config = Get-DsgConfig($dsgId);
+$originalSubscription = Get-AzContext;
 
 
 # Switch to management subscription
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # Remove peering from mirror VNet
 $mirrorPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
   "VirtualNetworkName" = $config.dsg.mirrors.vnet.name
   "ResourceGroupName" = $config.dsg.mirrors.vnet.rg
-}
-Write-Output "Unpeering using config..."
-Write-Output $mirrorPeeringParams
-Remove-AzVirtualNetworkPeering @mirrorPeeringParams -Force
+};
+Write-Output ("Removing peering '" + $mirrorPeeringParams.Name `
+              + "' on mirror VNet '" + $mirrorPeeringParams.VirtualNetworkName + "'.")
+$_ = Remove-AzVirtualNetworkPeering @mirrorPeeringParams -Force;
 
 
 # Switch to DSG subscription
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Remove peering from DSG VNet
 $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.mirrors.vnet.name
   "VirtualNetworkName" = $config.dsg.network.vnet.name
   "ResourceGroupName" = $config.dsg.network.vnet.rg
-}
-Write-Output "Unpeering using config..."
-Write-Output $dsgPeeringParams
-Remove-AzVirtualNetworkPeering @dsgPeeringParams -Force
+};
+Write-Output ("Removing peering '" + $dsgPeeringParams.Name `
+              + "' on DSG VNet '" + $dsgPeeringParams.VirtualNetworkName + "'.")
+$_ = Remove-AzVirtualNetworkPeering @dsgPeeringParams -Force;
 
 
 # Switch back to original subscription
-Set-AzContext -Context $originalSubscription;
+$_ = Set-AzContext -Context $originalSubscription;

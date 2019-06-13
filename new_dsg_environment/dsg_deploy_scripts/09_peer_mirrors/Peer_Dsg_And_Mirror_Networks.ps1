@@ -7,21 +7,21 @@ Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config
-$config = Get-DsgConfig($dsgId)
+$config = Get-DsgConfig($dsgId);
 
 # Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$prevContext = Get-AzContext;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Fetch DSG Vnet
 $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
-                                -ResourceGroupName $config.dsg.network.vnet.rg
+                                -ResourceGroupName $config.dsg.network.vnet.rg;
 
 # Temporarily switch to management subscription
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # Fetch Mirrors Vnet
 $mirrorVnet = Get-AzVirtualNetwork -Name $config.dsg.mirrors.vnet.name `
-                                -ResourceGroupName $config.dsg.mirrors.vnet.rg
+                                -ResourceGroupName $config.dsg.mirrors.vnet.rg;
 # Add Peering to Mirror Vnet
 $mirrorPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
@@ -31,12 +31,13 @@ $mirrorPeeringParams = @{
   "AllowForwardedTraffic" = $FALSE
   "AllowGatewayTransit" = $FALSE
   "UseRemoteGateways" = $FALSE
-}
-Write-Output $mirrorPeeringParams
-Add-AzVirtualNetworkPeering @mirrorPeeringParams
+};
+Write-Output ("Adding peering '" + $mirrorPeeringParams.Name `
+              + "' on mirror VNet '" + $mirrorPeeringParams.VirtualNetworkName + "'.")
+$_ = Add-AzVirtualNetworkPeering @mirrorPeeringParams;
 
 # Switch back to DSG subscription
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Add Peering to DSG Vnet
 $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.mirrors.vnet.name
@@ -46,9 +47,10 @@ $dsgPeeringParams = @{
   "AllowForwardedTraffic" = $FALSE
   "AllowGatewayTransit" = $FALSE
   "UseRemoteGateways" = $FALSE
-}
-Write-Output $dsgPeeringParams
-Add-AzVirtualNetworkPeering @dsgPeeringParams
+};
+Write-Output ("Adding peering '" + $dsgPeeringParams.Name `
+              + "' on DSG VNet '" + $dsgPeeringParams.VirtualNetworkName + "'.")
+$_ = Add-AzVirtualNetworkPeering @dsgPeeringParams;
 
 # Switch back to original subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;

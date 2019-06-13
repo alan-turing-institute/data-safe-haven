@@ -11,7 +11,7 @@ $config = Get-DsgConfig($dsgId)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext;
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 Write-Host ("Applying network configuration for DSG" + $config.dsg.id `
            + " (Tier " + $config.dsg.tier + "), hosted on subscription '" + `
@@ -165,9 +165,9 @@ $unpeerScriptPath = (Join-Path $peeringDir "Unpeer_Dsg_And_Mirror_Networks.ps1" 
 $repeerScriptPath = (Join-Path $peeringDir "Peer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
 
 # Unpeer the DSG from its existing mirror set
-Invoke-Expression -Command "$unpeerScriptPath -dsgId $dsgId"
+$_ = Invoke-Expression -Command "$unpeerScriptPath -dsgId $dsgId";
 # Repeer the DSG to the mirror set appropriate to its current config
-Invoke-Expression -Command "$repeerScriptPath -dsgId $dsgId"
+$_ = Invoke-Expression -Command "$repeerScriptPath -dsgId $dsgId";
 
 # Switch back to previous subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;
