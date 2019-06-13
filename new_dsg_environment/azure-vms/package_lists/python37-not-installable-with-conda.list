@@ -1,3 +1,4 @@
+aequitas
 aero-calc
 atari-py
 box2d-py
@@ -7,6 +8,10 @@ gmplot
 gym
 keras
 NavPy
+ohio
+pg8000
 pyod
 python-geohash
+spacy-langdetect
 tensorflow-gpu
+triage
