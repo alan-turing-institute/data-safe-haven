@@ -154,6 +154,18 @@ $internetOutRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleNa
 Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + "' NSG will now '" + $internetOutRuleAfter.Access `
             + "' access to '" + $internetOutRuleAfter.DestinationAddressPrefix + "'")
 
+# ==================================================
+# === Ensure DSG is peered to correct mirror set ===
+# ==================================================
+# We do this as the Tier of the DSG may have changed and we want to ensure we are peered
+# to the correct mirror set fo its current Tier and not peered to the mirror set for 
+# any other Tier
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+
+# Unpeer the DSG from its existing mirror set
+Invoke-Expression -Command Unpeer_Dsg_And_Mirror_Networks.ps1 -dsgId $config.dsg.id
+# Repeer the DSG to the mirror set appropriate to its current config
+Invoke-Expression -Command Peer_Dsg_And_Mirror_Networks.ps1 -dsgId $config.dsg.id
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
