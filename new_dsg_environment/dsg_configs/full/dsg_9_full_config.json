@@ -58,17 +58,17 @@
     "id": "9",
     "shortName": "dsg9",
     "location": "uksouth",
-    "tier": 0,
+    "tier": 3,
     "mirrors": {
       "vnet": {
         "rg": "RG_SHM_PKG_MIRRORS",
-        "name": "VNET_SHM_PKG_MIRRORS_TIER0"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": ""
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": ""
+        "ip": "10.20.3.20"
       }
     },
     "domain": {
