@@ -24,7 +24,7 @@ USERNAME="atiadmin"
 DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
-CLOUD_INIT_YAML="cloud-init-compute-vm.yaml"
+CLOUD_INIT_YAML="" # must be provided
 PYPI_MIRROR_IP=""
 CRAN_MIRROR_IP=""
 
@@ -40,7 +40,7 @@ OS_DISK_TYPE="Standard_LRS"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip] [-o cran_mirror_ip]"
+    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range -y yaml_cloud_init [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-k pypi_mirror_ip] [-o cran_mirror_ip]"
     echo "  -h                                    display help"
     echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')"
     echo "  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')"
@@ -64,7 +64,7 @@ print_usage_and_exit() {
     echo "  -b ldap_base_dn                       specify LDAP base DN"
     echo "  -c ldap_bind_dn                       specify LDAP bind DN"
     echo "  -f ldap_filter                        specify LDAP filter"
-    echo "  -y yaml_cloud_init                    specify a custom cloud-init YAML script"
+    echo "  -y yaml_cloud_init [required]         specify the cloud-init YAML script"
     echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}')"
     echo "  -o cran_mirror_ip                     specify the IP address of the CRAN mirror (defaults to '${CRAN_MIRROR_IP}')"
     exit 1
@@ -204,6 +204,12 @@ fi
 # Check that a target subscription has been provided
 if [ "$SUBSCRIPTIONTARGET" = "" ]; then
     echo -e "${RED}Target subscription is a required argument!${END}"
+    print_usage_and_exit
+fi
+
+# Check that a cloud-init YAML file has been provided
+if [ "$CLOUD_INIT_YAML" = "" ]; then
+    echo -e "${RED}Cloud-init YAML is a required argument!${END}"
     print_usage_and_exit
 fi
 

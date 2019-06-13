@@ -58,6 +58,11 @@ $targetSubnet = $config.dsg.network.subnets.data.name
 $targetVnet = $config.dsg.network.vnet.name
 $vmAdminPasswordSecretName = $config.dsg.dsvm.admin.passwordSecretName
 
+# If there is no custom cloud-init YAML file then use the default
+if (-Not (Test-Path -Path $cloudInitYaml)) {
+  $cloudInitYaml = $PSScriptRoot/../../dsg_configs/cloud_init/cloud-init-compute-vm.yaml
+}
+
 # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
 $arguments = "-s '$subscriptionSource' \
               -t '$subscriptionTarget' \
@@ -78,6 +83,7 @@ $arguments = "-s '$subscriptionSource' \
               -a $adDcName \
               -p $vmAdminPasswordSecretName \
               -n $vmName \
+              -y $cloudInitYaml \
               -z $vmSize"
 
 # Add additional arguments if needed
