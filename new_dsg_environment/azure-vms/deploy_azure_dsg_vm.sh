@@ -34,7 +34,8 @@ IMAGES_GALLERY="SIG_SH_COMPUTE"
 LOCATION="uksouth"
 LDAP_RESOURCEGROUP="RG_SH_LDAP"
 DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connection during deployment
-OS_DISK_SIZE_GB="1024"
+OS_DISK_SIZE_GB="512"
+OS_DISK_TYPE="Standard_LRS"
 
 
 # Document usage for this script
@@ -424,6 +425,7 @@ if [ "$IP_ADDRESS" = "" ]; then
         --public-ip-address "" \
         --resource-group $RESOURCEGROUP \
         --size $VM_SIZE \
+        --storage-sku $OS_DISK_TYPE \
         --subnet $DSG_SUBNET_ID
 else
     echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
@@ -440,6 +442,7 @@ else
         --public-ip-address "" \
         --resource-group $RESOURCEGROUP \
         --size $VM_SIZE \
+        --storage-sku $OS_DISK_TYPE \
         --subnet $DSG_SUBNET_ID
 fi
 # Remove temporary init file if it exists
