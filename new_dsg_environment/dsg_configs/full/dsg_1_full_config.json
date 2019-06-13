@@ -60,8 +60,11 @@
     "location": "uksouth",
     "tier": 3,
     "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
       "vnet": {
-        "rg": "RG_SHM_PKG_MIRRORS",
         "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
@@ -183,11 +186,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-<<<<<<< HEAD
           "allowedSources": "193.60.220.240"
-=======
-          "allowedSources": "193.60.220.253,193.60.220.240"
->>>>>>> origin/DSSG-SUMMER2019
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
