@@ -10,7 +10,7 @@ END="\033[0m"
 RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
 SUBSCRIPTION="" # must be provided
 MIRROR_TYPE="" # must be provided
-TIER="2"
+TIER="3"
 
 # Other constants
 MACHINENAME_PREFIX_EXTERNAL="ExternalMirror"
