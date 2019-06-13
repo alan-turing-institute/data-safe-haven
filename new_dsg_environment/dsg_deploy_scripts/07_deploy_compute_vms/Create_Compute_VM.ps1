@@ -34,7 +34,7 @@ $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
 if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
 
 $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
-$cloudInitDir = $PSScriptRoot/../../dsg_configs/cloud_init/
+$cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
@@ -61,8 +61,11 @@ $vmAdminPasswordSecretName = $config.dsg.dsvm.admin.passwordSecretName
 
 # If there is no custom cloud-init YAML file then use the default
 if (-Not (Test-Path -Path $cloudInitYaml)) {
-  $cloudInitYaml = $cloudInitDir/cloud-init-compute-vm.yaml
+  $cloudInitYaml = Join-Path $cloudInitDir "cloud-init-compute-vm-DEFAULT.yaml" -Resolve
 }
+
+Write-Output $cloudInitYaml
+Exit 1
 
 # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
 $arguments = "-s '$subscriptionSource' \
