@@ -99,6 +99,7 @@ write_files:
       echo "Creating sssd config"
       cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
       cat /etc/sssd/sssd.conf
+      chmod 0600 /etc/sssd/sssd.conf
       # Edit LDAP config
       echo "Creating LDAP config"
       mv /ldap.conf /etc/ldap.conf
@@ -161,8 +162,6 @@ runcmd:
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
   # *** END OF DSG-SPECIFIC COMMANDS ***
   # ==========================================
-  # Install LDAP tools for debugging LDAP issues
-  - apt-get install ldap-utils
   # Move CRAN mirror config to appropriate locations
   - cp /Rprofile.site /etc/R/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
