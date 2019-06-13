@@ -80,8 +80,9 @@ $httpsInRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -Net
 # each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
 $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEach-Object{$_.Trim()})
 
-Write-Host (" - Updating '" + $httpsInRuleName + "' rule source address prefix from '" + $httpsInRuleBefore.SourceAddressPrefix `
-             + "' to '" + $allowedSources + "' on '" + $nsgGateway.name + "' NSG")
+Write-Host (" - Updating '" + $httpsInRuleName + "' rule on '" + $nsgGateway.name + "' NSG to '" `
+            + $httpsInRuleBefore.Access  + "' access from '" + $httpsInRuleBefore.SourceAddressPrefix `
+            + "' (was previously '" + $httpsInRuleBefore.SourceAddressPrefix + "')")
              
 $nsgGatewayHttpsInRuleParams = @{
   Name = $httpsInRuleName
@@ -104,8 +105,8 @@ $_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway;
 # Confirm update has being successfully applied
 $httpsInRuleAfter = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -NetworkSecurityGroup $nsgGateway;
 
-Write-Host ("   - Done: '" + $httpsInRuleName + "' rule source address prefix is now '" + $httpsInRuleAfter.SourceAddressPrefix `
-            + "' on '" + $nsgGateway.name + "' NSG")
+Write-Host ("   - Done: '" + $httpsInRuleName + "' on '" + $nsgGateway.name + "' NSG will now '" + $httpsInRuleAfter.Access `
+            + "' access from '" + $httpsInRuleAfter.SourceAddressPrefix + "'")
 
 # =======================================================
 # === Update restricted Linux NSG to match DSG config ===
