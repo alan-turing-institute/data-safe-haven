@@ -34,10 +34,11 @@ $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
 if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
 
 $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+$cloudInitDir = $PSScriptRoot/../../dsg_configs/cloud_init/
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "$deployScriptDir/SAE_config_overrides/cloud-init-compute-vm-SAE-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -60,7 +61,7 @@ $vmAdminPasswordSecretName = $config.dsg.dsvm.admin.passwordSecretName
 
 # If there is no custom cloud-init YAML file then use the default
 if (-Not (Test-Path -Path $cloudInitYaml)) {
-  $cloudInitYaml = $PSScriptRoot/../../dsg_configs/cloud_init/cloud-init-compute-vm.yaml
+  $cloudInitYaml = $cloudInitDir/cloud-init-compute-vm.yaml
 }
 
 # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
