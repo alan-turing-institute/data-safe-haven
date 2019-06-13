@@ -63,9 +63,7 @@ $vmAdminPasswordSecretName = $config.dsg.dsvm.admin.passwordSecretName
 if (-Not (Test-Path -Path $cloudInitYaml)) {
   $cloudInitYaml = Join-Path $cloudInitDir "cloud-init-compute-vm-DEFAULT.yaml" -Resolve
 }
-
-Write-Output $cloudInitYaml
-Exit 1
+Write-Output "Using cloud-init from '$cloudInitYaml'"
 
 # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
 $arguments = "-s '$subscriptionSource' \
