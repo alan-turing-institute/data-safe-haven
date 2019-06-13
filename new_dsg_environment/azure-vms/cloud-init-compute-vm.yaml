@@ -99,6 +99,7 @@ write_files:
       echo "Creating sssd config"
       cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
       cat /etc/sssd/sssd.conf
+      chmod 0600 /etc/sssd/sssd.conf
       # Edit LDAP config
       echo "Creating LDAP config"
       mv /ldap.conf /etc/ldap.conf
