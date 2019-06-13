@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Load common constants and options
-source configs/mirrors.sh
-source configs/text.sh
+source ${BASH_SOURCE%/*}/configs/mirrors.sh
+source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Document usage for this script
 # ------------------------------
