@@ -131,11 +131,13 @@ function Add-DsgConfig {
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
+        rg = "RG_SHM_PKG_MIRRORS"
+        keyVault = [ordered]@{}
         vnet = [ordered]@{}
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
-    $config.dsg.mirrors.vnet.rg = "RG_SHM_PKG_MIRRORS"
+    $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
     $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if(@(2, 3).Contains($config.dsg.tier)){

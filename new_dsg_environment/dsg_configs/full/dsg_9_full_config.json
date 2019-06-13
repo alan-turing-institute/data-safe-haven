@@ -60,9 +60,12 @@
     "location": "uksouth",
     "tier": 2,
     "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-test"
+      },
       "vnet": {
-        "rg": "RG_SHM_PKG_MIRRORS",
-        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
         "ip": "10.20.2.21"

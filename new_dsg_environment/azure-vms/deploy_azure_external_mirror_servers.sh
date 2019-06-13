@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Load common constants and options
-source configs/mirrors.sh
-source configs/text.sh
+source ${BASH_SOURCE%/*}/configs/mirrors.sh
+source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Document usage for this script
 # ------------------------------
@@ -135,7 +135,7 @@ if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $
         --resource-group $RESOURCEGROUP \
         --vnet-name $VNETNAME
 fi
-echo -e "${BOLD}External tier ${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
+echo -e "${BOLD}External tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
 
 # Set up PyPI external mirror
@@ -144,8 +144,8 @@ MACHINENAME="${MACHINENAME_PREFIX}PyPI"
 if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
     echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
 else
-    CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
-    TIER3WHITELIST="package_lists/tier3_pypi_whitelist.list"
+    CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-pypi.yaml"
+    TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_pypi_whitelist.list"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-pypi"
 
     # Make a temporary cloud-init file that we may alter
@@ -234,8 +234,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
         echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
     else
-        CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
-        TIER3WHITELIST="package_lists/tier3_cran_whitelist.list"
+        CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-cran.yaml"
+        TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_cran_whitelist.list"
         ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-cran"
 
         # Make a temporary cloud-init file that we may alter
