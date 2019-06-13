@@ -54,6 +54,11 @@
     }
   },
   "dsg": {
+    "subscriptionName": "Data Study Group 10 (Prod)",
+    "id": "10",
+    "shortName": "dsg10",
+    "location": "uksouth",
+    "tier": 2,
     "mirrors": {
       "vnet": {
         "rg": "RG_SHM_PKG_MIRRORS",
@@ -66,10 +71,6 @@
         "ip": "10.20.2.20"
       }
     },
-    "subscriptionName": "Data Study Group 10 (Prod)",
-    "id": "10",
-    "shortName": "dsg10",
-    "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup10.co.uk",
       "netbiosName": "DSGROUP10",

@@ -54,6 +54,11 @@
     }
   },
   "dsg": {
+    "subscriptionName": "DSG Template Testing",
+    "id": "9",
+    "shortName": "dsg9",
+    "location": "uksouth",
+    "tier": 3,
     "mirrors": {
       "vnet": {
         "rg": "RG_SHM_PKG_MIRRORS",
@@ -66,10 +71,6 @@
         "ip": "10.20.3.20"
       }
     },
-    "subscriptionName": "DSG Template Testing",
-    "id": "9",
-    "shortName": "dsg9",
-    "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup9.co.uk",
       "netbiosName": "DSGROUP9",

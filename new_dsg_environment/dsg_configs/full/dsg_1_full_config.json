@@ -54,63 +54,63 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Data Study Group 4 (Prod)",
-    "id": "4",
-    "shortName": "dsg4",
+    "subscriptionName": "Data Study Group 1 (Prod)",
+    "id": "1",
+    "shortName": "dsg1",
     "location": "uksouth",
-    "tier": 1,
+    "tier": 3,
     "mirrors": {
       "vnet": {
         "rg": "RG_SHM_PKG_MIRRORS",
-        "name": "VNET_SHM_PKG_MIRRORS_TIER1"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": ""
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": ""
+        "ip": "10.20.3.20"
       }
     },
     "domain": {
-      "fqdn": "dsgroup4.co.uk",
-      "netbiosName": "DSGROUP4",
-      "dn": "DC=dsgroup4,DC=co,DC=uk",
+      "fqdn": "dsgroup1.co.uk",
+      "netbiosName": "DSGROUP1",
+      "dn": "DC=dsgroup1,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "name": "SG DSGROUP4 Server Administrators",
-          "description": "SG DSGROUP4 Server Administrators"
+          "name": "SG DSGROUP1 Server Administrators",
+          "description": "SG DSGROUP1 Server Administrators"
         },
         "researchUsers": {
-          "name": "SG DSGROUP4 Research Users",
-          "description": "SG DSGROUP4 Research Users"
+          "name": "SG DSGROUP1 Research Users",
+          "description": "SG DSGROUP1 Research Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUP4_VNET1",
-        "cidr": "10.250.24.0/21"
+        "name": "DSG_DSGROUP1_VNET1",
+        "cidr": "10.250.0.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.250.24",
-          "cidr": "10.250.24.0/24"
+          "prefix": "10.250.0",
+          "cidr": "10.250.0.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.250.25",
-          "cidr": "10.250.25.0/24"
+          "prefix": "10.250.1",
+          "cidr": "10.250.1.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.250.26",
-          "cidr": "10.250.26.0/24"
+          "prefix": "10.250.2",
+          "cidr": "10.250.2.0/24"
         },
         "gateway": {
-          "prefix": "10.250.31",
-          "cidr": "10.250.31.0/27"
+          "prefix": "10.250.7",
+          "cidr": "10.250.7.0/27"
         }
       },
       "nsg": {
@@ -125,38 +125,38 @@
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DSG4DC",
-      "hostname": "DSG4DC",
-      "fqdn": "DSG4DC.dsgroup4.co.uk",
-      "ip": "10.250.24.250",
+      "vmName": "DSG1DC",
+      "hostname": "DSG1DC",
+      "fqdn": "DSG1DC.dsgroup1.co.uk",
+      "ip": "10.250.0.250",
       "admin": {
         "username": "atiadmin",
-        "passwordSecretName": "dsg4-dc-admin-password"
+        "passwordSecretName": "dsg1-dc-admin-password"
       }
     },
     "users": {
       "ldap": {
         "gitlab": {
-          "name": "DSGROUP4 Gitlab LDAP",
-          "samAccountName": "dsg4-gitlab-ldap",
-          "passwordSecretName": "dsg4-gitlab-ldap-password"
+          "name": "DSGROUP1 Gitlab LDAP",
+          "samAccountName": "dsg1-gitlab-ldap",
+          "passwordSecretName": "dsg1-gitlab-ldap-password"
         },
         "hackmd": {
-          "name": "DSGROUP4 HackMD LDAP",
-          "samAccountName": "dsg4-hackmd-ldap",
-          "passwordSecretName": "dsg4-hackmd-ldap-password"
+          "name": "DSGROUP1 HackMD LDAP",
+          "samAccountName": "dsg1-hackmd-ldap",
+          "passwordSecretName": "dsg1-hackmd-ldap-password"
         },
         "dsvm": {
-          "name": "DSGROUP4 DSVM LDAP",
-          "samAccountName": "dsg4-dsvm-ldap",
-          "passwordSecretName": "dsg4-dsvm-ldap-password"
+          "name": "DSGROUP1 DSVM LDAP",
+          "samAccountName": "dsg1-dsvm-ldap",
+          "passwordSecretName": "dsg1-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "DSGROUP4 Test Researcher",
-          "samAccountName": "dsg4-test-res",
-          "passwordSecretName": "dsg4-test-res-password"
+          "name": "DSGROUP1 Test Researcher",
+          "samAccountName": "dsg1-test-res",
+          "passwordSecretName": "dsg1-test-res-password"
         }
       }
     },
@@ -164,26 +164,26 @@
       "gateway": {
         "vmName": "RDS",
         "hostname": "RDS",
-        "fqdn": "RDS.dsgroup4.co.uk",
-        "ip": "10.250.25.250"
+        "fqdn": "RDS.dsgroup1.co.uk",
+        "ip": "10.250.1.250"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
         "hostname": "RDSSH1",
-        "fqdn": "RDSSH1.dsgroup4.co.uk",
-        "ip": "10.250.25.249"
+        "fqdn": "RDSSH1.dsgroup1.co.uk",
+        "ip": "10.250.1.249"
       },
       "sessionHost2": {
         "vmName": "RDSSH2",
         "hostname": "RDSSH2",
-        "fqdn": "RDSSH2.dsgroup4.co.uk",
-        "ip": "10.250.25.248"
+        "fqdn": "RDSSH2.dsgroup1.co.uk",
+        "ip": "10.250.1.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "Internet"
+          "allowedSources": "193.60.220.240"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -194,22 +194,22 @@
       "rg": "RG_DSG_DATA",
       "vmName": "DATASERVER",
       "hostname": "DATASERVER",
-      "fqdn": "DATASERVER.dsgroup4.co.uk",
-      "ip": "10.250.26.250"
+      "fqdn": "DATASERVER.dsgroup1.co.uk",
+      "ip": "10.250.2.250"
     },
     "linux": {
       "gitlab": {
         "vmName": "GITLAB",
         "hostname": "GITLAB",
-        "fqdn": "GITLAB.dsgroup4.co.uk",
-        "ip": "10.250.26.151",
-        "rootPasswordSecretName": "dsg4-gitlab-root-password"
+        "fqdn": "GITLAB.dsgroup1.co.uk",
+        "ip": "10.250.2.151",
+        "rootPasswordSecretName": "dsg1-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD",
         "hostname": "HACKMD",
-        "fqdn": "HACKMD.dsgroup4.co.uk",
-        "ip": "10.250.26.152"
+        "fqdn": "HACKMD.dsgroup1.co.uk",
+        "ip": "10.250.2.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
@@ -221,7 +221,7 @@
       "vmImageVersion": "0.1.2019041601",
       "admin": {
         "username": "atiadmin",
-        "passwordSecretName": "dsgroup4-dsvm-admin-password"
+        "passwordSecretName": "dsgroup1-dsvm-admin-password"
       }
     }
   }

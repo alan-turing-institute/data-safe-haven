@@ -117,23 +117,6 @@ function Add-DsgConfig {
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
 
-    # --- Package mirror config ---
-    $config.dsg.mirrors = [ordered]@{
-        vnet = [ordered]@{}
-        cran = [ordered]@{}
-        pypi = [ordered]@{}
-    }
-    $config.dsg.mirrors.vnet.rg = "RG_SHM_PKG_MIRRORS"
-    $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $tier
-    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if(@(2, 3).Contains($tier)){
-        $config.dsg.mirrors.pypi.ip = "10.20." + $tier + ".20"
-        $config.dsg.mirrors.cran.ip = "10.20." + $tier + ".21"
-    } else {
-        $config.dsg.mirrors.pypi.ip = ""
-        $config.dsg.mirrors.cran.ip = ""
-    }
-
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
     $dsgBasePrefix = $dsgPrefixOctets[0] + "." + $dsgPrefixOctets[1]
@@ -144,6 +127,24 @@ function Add-DsgConfig {
     $config.dsg.id = $dsgConfigBase.dsgId
     $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
+    $config.dsg.tier = $tier
+
+    # --- Package mirror config ---
+    $config.dsg.mirrors = [ordered]@{
+        vnet = [ordered]@{}
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    $config.dsg.mirrors.vnet.rg = "RG_SHM_PKG_MIRRORS"
+    $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
+    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
+    if(@(2, 3).Contains($config.dsg.tier)){
+        $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
+        $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
+    } else {
+        $config.dsg.mirrors.pypi.ip = ""
+        $config.dsg.mirrors.cran.ip = ""
+    }
 
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}
