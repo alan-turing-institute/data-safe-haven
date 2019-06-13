@@ -51,7 +51,7 @@ $dsgPeerings = Get-AzVirtualNetworkPeering -Name "*" -VirtualNetwork $dsgVnet.Na
   If($dsgPeering.RemoteVirtualNetwork.Id -in (@($mirrorVnets) | ForEach-Object{$_.Id})) {
     Write-Output ("  - Removing peering " + $dsgPeering.Name + " (linking " `
                   + $dsgPeering.VirtualNetworkName + " to " + $dsgVnet.Name + ")")
-    $_ = Remove-AzVirtualNetworkPeering -Name $dsgPeering.Name -VirtualNetworkName $dsgVnetName -ResourceGroupName $config.dsg.network.vnet.rg
+    $_ = Remove-AzVirtualNetworkPeering -Name $dsgPeering.Name -VirtualNetworkName $dsgVnet.Name -ResourceGroupName $config.dsg.network.vnet.rg
   }
 }
 
