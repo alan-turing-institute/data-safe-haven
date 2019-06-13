@@ -30,6 +30,8 @@ write_files:
       git_data_dirs({ "default" => { "path" => "/media/gitdata" } })    
   
 runcmd:
+  # Install LDAP tools for debugging LDAP issues
+  - apt-get install ldap-utils
   # Configure server
   - echo "Configuring server"
   - echo "<gitlab-ip> <gitlab-hostname> <gitlab-fqdn>" >> /etc/hosts
