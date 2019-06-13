@@ -382,20 +382,26 @@ packages:
   - sssd
   - sssd-tools
   - sysstat
+  - texlive-full
   - xfce4
   - xfce4-terminal
   - xrdp
   - xsltproc
+  - nvidia-driver-410
+  - cuda-10-0
+  - libcudnn7=7.4.1.5-1+cuda10.0
+  - libcudnn7-dev=7.4.1.5-1+cuda10.0
+  - nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
 runcmd:
   # Suppress apt warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
-  # NVidia setup (following https://www.tensorflow.org/install/gpu)
-  - echo ">=== Installing NVidia requirements for tensorflow ===<"
-  - apt-get install -y --no-install-recommends nvidia-driver-410
-  - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
-  - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
+  # # NVidia setup (following https://www.tensorflow.org/install/gpu)
+  # - echo ">=== Installing NVidia requirements for tensorflow ===<"
+  # - apt-get install -y --no-install-recommends nvidia-driver-410
+  # - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
+  # - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
@@ -474,9 +480,9 @@ runcmd:
   - END_TIME=$(date +%s)
   - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Building py27 environment took $ELAPSED"
+  - echo ">=== Building py27 environment took $ELAPSED ===<"
   # Python 3.6
-  - echo ">=== Working on py36 environment. Will take approximately 45 minutes... ===<"
+  - echo ">=== Working on py36 environment. Will take approximately 90 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -490,9 +496,9 @@ runcmd:
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Building py36 environment took $ELAPSED"
+  - echo ">=== Building py36 environment took $ELAPSED ===<"
   # Python 3.7
-  - echo ">=== Working on py37 environment. Will take approximately 20 minutes... ===<"
+  - echo ">=== Working on py37 environment. Will take approximately 30 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -506,7 +512,7 @@ runcmd:
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Building py37 environment took $ELAPSED"
+  - echo ">=== Building py37 environment took $ELAPSED ===<"
   # List environments
   - echo ">=== Final conda environments... ===<"
   - conda env list
@@ -547,7 +553,7 @@ runcmd:
   - rm -f ${RSTUDIO_DEB}
   - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Installing R packages and RStudio took $ELAPSED"
+  - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
 
   # Install latest julia version
   - echo ">=== Installing Julia... ===<"
