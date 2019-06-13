@@ -14,7 +14,8 @@ $prevContext = Get-AzContext;
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 Write-Host ("Locking down network configuration for DSG" + $config.dsg.id `
-           + " (Tier " + $config.dsg.tier + ")")
+           + " (Tier " + $config.dsg.tier + "), hosted on subscription '" + `
+           $config.dsg.subscriptionName + "'.")
 
 # =======================================================================
 # === Ensure RDS session hosts are bound to most restricted Linux NSG ===
