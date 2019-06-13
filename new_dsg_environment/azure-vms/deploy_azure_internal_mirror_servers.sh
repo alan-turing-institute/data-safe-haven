@@ -177,8 +177,8 @@ if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG
 # ... otherwise we update them, extracting the existing IP ranges first
 else
     EXISTING_IP_RANGES=$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --query "[destinationAddressPrefix, destinationAddressPrefixes]" -o tsv | xargs)
-    DESTINATION_IP_RANGES=$(echo $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
-    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $DESTINATION_IP_RANGES
+    UPDATED_IP_RANGES=$(echo $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $UPDATED_IP_RANGES
 fi
 
 # Create internal NSG if it does not already exist
