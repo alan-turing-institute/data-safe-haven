@@ -103,10 +103,10 @@ write_files:
       create extension if not exists earthdistance;
   - path: "/installation/spark_sha512.hash"
     content: |
-      360a7b57290537c5eb3570c70d0d0b9580c4f9db8d0fa9746c3bbb6544bbb8f629901582968955aceb5649cb9d66c2d524971e4e3ef34c35d96f02ff6dba4d72  spark-2.4.1-bin-hadoop2.7.tgz
+      80a4c564ceff0d9aff82b7df610b1d34e777b45042e21e2d41f3e497bb1fa5d8  spark-2.4.1-bin-hadoop2.7.tgz
   - path: "/installation/dbeaver_sha512.hash"
     content: |
-      fe66600b90471b5ece5a4dbc8ad41b544f86ee9597be8485c53803d1e285d0d976e10601b68f6dd8446f630dd6327168103bd1f0bcb67e7588b1c4067a49a8b9  dbeaver-ce_6.1.0_amd64.deb
+      d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -589,19 +589,19 @@ runcmd:
   - echo ">=== Installing spark... ===<"
   - mkdir -p /opt/spark
   - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.1/spark-2.4.1-bin-hadoop2.7.tgz
-  - if [ "$(sha512sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
-  - tar -zxf spark-2.4.1-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.1-bin-hadoop2.7.tgz
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz
+  - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
+  - tar -zxf spark-2.4.3-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.3-bin-hadoop2.7.tgz
   # # NB. the following line can probably be removed - needs to be tested
-  # - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/spark/spark-2.4.1-bin-hadoop2.7/bin
+  # - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin"|' /etc/environment
+  - export PATH=$PATH:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install dbeaver
   - echo ">=== Installing dbeaver... ===<"
   - curl -O https://dbeaver.io/files/6.1.0/dbeaver-ce_6.1.0_amd64.deb
-  - if [ "$(sha512sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
+  - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
   - dpkg -i dbeaver-ce_6.1.0_amd64.deb
   - rm dbeaver-ce_6.1.0_amd64.deb
 
