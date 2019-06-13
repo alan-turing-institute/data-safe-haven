@@ -165,9 +165,9 @@ $unpeerScriptPath = (Join-Path $peeringDir "Unpeer_Dsg_And_Mirror_Networks.ps1" 
 $repeerScriptPath = (Join-Path $peeringDir "Peer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
 
 # Unpeer the DSG from its existing mirror set
-$_ = Invoke-Expression -Command "$unpeerScriptPath -dsgId $dsgId";
+Invoke-Expression -Command "$unpeerScriptPath -dsgId $dsgId";
 # Repeer the DSG to the mirror set appropriate to its current config
-$_ = Invoke-Expression -Command "$repeerScriptPath -dsgId $dsgId";
+Invoke-Expression -Command "$repeerScriptPath -dsgId $dsgId";
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
