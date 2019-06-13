@@ -28,7 +28,6 @@ notebook
 numpy
 numpy-base
 numpydoc
-ohio
 pandas
 pandas-datareader
 pandas-profiling
