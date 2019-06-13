@@ -114,7 +114,7 @@ Write-Host ("   - Done: '" + $httpsInRuleName + "' on '" + $nsgGateway.name + "'
 
 # Update RDS Gateway NSG inbound access rule
 $nsgLinux = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.nsg;
-$internetOutRuleName = "Deny_Internet"
+$internetOutRuleName = "Internet_Out"
 $internetOutRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleName -NetworkSecurityGroup $nsgLinux;
 
 # Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
