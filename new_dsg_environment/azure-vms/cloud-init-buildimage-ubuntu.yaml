@@ -1,11 +1,15 @@
 #cloud-config
 
+# Update package database on first boot (ie. run apt-get update)
+package_update: true
+
+# Upgrade installed packages on first boot (ie. run apt-get upgrade)
+package_upgrade: true
+
+
 apt:
   # Preserves the existing /etc/apt/sources.list
   preserve_sources_list: true
-
-  # Update apt database on first boot (ie run apt-get update)
-  update: true
 
   # Add repositories
   sources:
@@ -32,7 +36,7 @@ apt:
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
-    nvidia.list:
+    nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
       key: |
         -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -387,21 +391,16 @@ packages:
   - xfce4-terminal
   - xrdp
   - xsltproc
-  - nvidia-driver-410
-  - cuda-10-0
-  - libcudnn7=7.4.1.5-1+cuda10.0
-  - libcudnn7-dev=7.4.1.5-1+cuda10.0
-  - nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
 runcmd:
   # Suppress apt warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
-  # # NVidia setup (following https://www.tensorflow.org/install/gpu)
-  # - echo ">=== Installing NVidia requirements for tensorflow ===<"
-  # - apt-get install -y --no-install-recommends nvidia-driver-410
-  # - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
-  # - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
+  # NVidia setup (following https://www.tensorflow.org/install/gpu)
+  - echo ">=== Installing NVidia requirements for tensorflow ===<"
+  - apt-get install -y --no-install-recommends nvidia-driver-410
+  - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
+  - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
@@ -639,6 +638,7 @@ runcmd:
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
   - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; exit 1; fi
   - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
