@@ -144,8 +144,8 @@ MACHINENAME="${MACHINENAME_PREFIX}PyPI"
 if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
     echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
 else
-    CLOUDINITYAML="cloud-init-mirror-external-pypi.yaml"
-    TIER3WHITELIST="package_lists/tier3_pypi_whitelist.list"
+    CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-pypi.yaml"
+    TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_pypi_whitelist.list"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-pypi"
 
     # Make a temporary cloud-init file that we may alter
@@ -234,8 +234,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
         echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
     else
-        CLOUDINITYAML="cloud-init-mirror-external-cran.yaml"
-        TIER3WHITELIST="package_lists/tier3_cran_whitelist.list"
+        CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-cran.yaml"
+        TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_cran_whitelist.list"
         ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-external-cran"
 
         # Make a temporary cloud-init file that we may alter

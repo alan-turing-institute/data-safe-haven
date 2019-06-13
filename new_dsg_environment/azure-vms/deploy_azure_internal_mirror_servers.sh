@@ -173,7 +173,7 @@ echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RAN
 echo -e "${BOLD}Ensuring that NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} allows connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
 if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound 2> /dev/null)" = "" ]; then
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name rsyncOutbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes $IP_RANGE_SUBNET_INTERNAL --priority 400
 # ... otherwise we update them, extracting the existing IP ranges first
 else
     EXISTING_IP_RANGES=$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --query "[destinationAddressPrefix, destinationAddressPrefixes]" -o tsv | xargs)
@@ -213,7 +213,7 @@ MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
 if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
     echo -e "${BOLD}VM ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
 else
-    CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
+    CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-internal-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-pypi"
     if [ "$NAME_SUFFIX" != "" ]; then
         ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
@@ -304,7 +304,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
         echo -e "${BOLD}VM ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
     else
-        CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
+        CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-internal-cran.yaml"
         ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-cran"
         if [ "$NAME_SUFFIX" != "" ]; then
             ADMIN_PASSWORD_SECRET_NAME="${ADMIN_PASSWORD_SECRET_NAME}-${NAME_SUFFIX}"
