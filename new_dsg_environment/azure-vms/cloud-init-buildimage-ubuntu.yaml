@@ -616,6 +616,7 @@ runcmd:
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
   # :: Programming languages
+  - echo ">=== Programming languages... ===<"
   - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
   - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
   - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
@@ -625,24 +626,31 @@ runcmd:
   - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
   - if [ "$(which python)" != "" ]; then echo "python $(which python)"; echo "$(python --version)"; else echo "python not found!"; exit 1; fi
   - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
-  # :: Development tools
+  # :: Editors
+  - echo ">=== Editors... ===<"
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
+  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
+  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  # :: LaTeX
+  - echo ">=== LaTeX... ===<"
+  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
+  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
+  # :: Development tools
+  - echo ">=== Development tools... ===<"
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
-  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
-  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
   - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
   - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
-  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
-  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
-  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
   #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
