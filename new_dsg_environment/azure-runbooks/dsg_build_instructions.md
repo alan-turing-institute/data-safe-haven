@@ -71,17 +71,17 @@
 
 ### Install and configure PowerShell for Azure
 
-- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
+- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 
   - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
 
-- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
+- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 
 ### Install and configure Linux command line
 
-- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 
-- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
 
   - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
 
@@ -512,7 +512,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 To make this Remote Desktop Service accessible from the internet an `A` record will need to be added to the DNS Zone for the domain associated with the DSG.
 
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal. 
+- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal.
 
 #### Configuration of SSL on RDS Gateway
 
@@ -936,6 +936,7 @@ To peer the DSG and package mirror networks:
 
 - Run the `./Peer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
+- If you want to un-peer these networks (for example if you are re-deploying the mirrors) run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted.
 
 ## 10. Run smoke tests on shared compute VM
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets.

@@ -15,7 +15,7 @@ Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Fetch DSG Vnet
 $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
-                                -ResourceGroupName $config.dsg.network.vnet.rg 
+                                -ResourceGroupName $config.dsg.network.vnet.rg
 
 # Temporarily switch to management subscription
 Set-AzContext -SubscriptionId $config.shm.subscriptionName;
@@ -39,7 +39,7 @@ Add-AzVirtualNetworkPeering @mirrorPeeringParams
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Add Peering to DSG Vnet
 $dsgPeeringParams = @{
-  "Name" = "PEER_" + $config.shm.mirrors.vnet.name
+  "Name" = "PEER_" + $config.dsg.mirrors.vnet.name
   "VirtualNetwork" = $dsgVnet
   "RemoteVirtualNetworkId" = $mirrorVnet.Id
   "BlockVirtualNetworkAccess" = $FALSE

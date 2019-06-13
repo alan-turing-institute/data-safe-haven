@@ -54,10 +54,15 @@
     }
   },
   "dsg": {
+    "subscriptionName": "Data Study Group 4 (Prod)",
+    "id": "4",
+    "shortName": "dsg4",
+    "location": "uksouth",
+    "tier": 1,
     "mirrors": {
       "vnet": {
-        "rg": "RG_SH_PKG_MIRRORS",
-        "name": "VNET_SH_PKG_MIRRORS"
+        "rg": "RG_SHM_PKG_MIRRORS",
+        "name": "VNET_SHM_PKG_MIRRORS_TIER1"
       },
       "cran": {
         "ip": ""
@@ -66,10 +71,6 @@
         "ip": ""
       }
     },
-    "subscriptionName": "Data Study Group 4 (Prod)",
-    "id": "4",
-    "shortName": "dsg4",
-    "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup4.co.uk",
       "netbiosName": "DSGROUP4",
@@ -182,7 +183,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.253,193.60.220.240"
+          "allowedSources": "Internet"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"

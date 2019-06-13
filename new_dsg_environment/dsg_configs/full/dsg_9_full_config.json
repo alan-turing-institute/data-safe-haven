@@ -54,22 +54,23 @@
     }
   },
   "dsg": {
-    "mirrors": {
-      "vnet": {
-        "rg": "RG_SH_PKG_MIRRORS",
-        "name": "VNET_SH_PKG_MIRRORS"
-      },
-      "cran": {
-        "ip": "10.1.0.21"
-      },
-      "pypi": {
-        "ip": "10.1.0.20"
-      }
-    },
     "subscriptionName": "DSG Template Testing",
     "id": "9",
     "shortName": "dsg9",
     "location": "uksouth",
+    "tier": 3,
+    "mirrors": {
+      "vnet": {
+        "rg": "RG_SHM_PKG_MIRRORS",
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
+      },
+      "cran": {
+        "ip": "10.20.3.21"
+      },
+      "pypi": {
+        "ip": "10.20.3.20"
+      }
+    },
     "domain": {
       "fqdn": "dsgroup9.co.uk",
       "netbiosName": "DSGROUP9",

@@ -56,14 +56,14 @@
   "dsg": {
     "mirrors": {
       "vnet": {
-        "rg": "RG_SH_PKG_MIRRORS",
-        "name": "VNET_SH_PKG_MIRRORS"
+        "rg": "RG_SHM_PKG_MIRRORS",
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
       },
       "cran": {
-        "ip": "10.1.0.21"
+        "ip": "10.20.2.21"
       },
       "pypi": {
-        "ip": "10.1.0.20"
+        "ip": "10.20.2.20"
       }
     },
     "subscriptionName": "Data Study Group 11 (Prod)",

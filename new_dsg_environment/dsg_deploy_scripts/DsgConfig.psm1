@@ -51,7 +51,7 @@ function Get-ShmFullConfig{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment automated, make this: "RG_DSG_VNET"
     $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
@@ -92,7 +92,9 @@ function Add-DsgConfig {
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
         $shmId,
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
-        $dsgId
+        $dsgId,
+        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter Tier (either '2' or '3')")]
+        $tier
     )
     $configRootDir = Get-ConfigRootDir
     $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
@@ -115,17 +117,6 @@ function Add-DsgConfig {
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
 
-    # --- Package mirror config ---
-    $config.dsg.mirrors = [ordered]@{
-        vnet = [ordered]@{}
-        cran = [ordered]@{}
-        pypi = [ordered]@{}
-    }
-    $config.dsg.mirrors.vnet.rg = "RG_SH_PKG_MIRRORS"
-    $config.dsg.mirrors.vnet.name = "VNET_SH_PKG_MIRRORS"
-    $config.dsg.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
-    $config.dsg.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
-
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
     $dsgBasePrefix = $dsgPrefixOctets[0] + "." + $dsgPrefixOctets[1]
@@ -136,6 +127,24 @@ function Add-DsgConfig {
     $config.dsg.id = $dsgConfigBase.dsgId
     $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
+    $config.dsg.tier = $tier
+
+    # --- Package mirror config ---
+    $config.dsg.mirrors = [ordered]@{
+        vnet = [ordered]@{}
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    $config.dsg.mirrors.vnet.rg = "RG_SHM_PKG_MIRRORS"
+    $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
+    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
+    if(@(2, 3).Contains($config.dsg.tier)){
+        $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
+        $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
+    } else {
+        $config.dsg.mirrors.pypi.ip = ""
+        $config.dsg.mirrors.cran.ip = ""
+    }
 
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}
