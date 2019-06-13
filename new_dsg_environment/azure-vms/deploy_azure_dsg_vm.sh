@@ -52,6 +52,7 @@ print_usage_and_exit() {
     echo "  -a ad_dc_name [required]              specify Active Directory Domain Controller name"
     echo "  -q ip_address [required]              specify a specific IP address to deploy the VM to"
     echo "  -e mgmnt_subnet_ip_range [required]   specify IP range for safe haven management subnet"
+    echo "  -y yaml_cloud_init [required]         specify the cloud-init YAML script"
     echo "  -g nsg_name                           specify which NSG to connect to (defaults to '${DSG_NSG}')"
     echo "  -i source_image                       specify source_image: either 'Ubuntu' (default) 'UbuntuTorch' (as default but with Torch included) or 'DataScience' (the Microsoft Azure DSVM) or 'DSG' (the current base image for Data Study Groups)"
     echo "  -x source_image_version               specify the version of the source image to use (defaults to prompting to select from available versions)"
@@ -64,7 +65,6 @@ print_usage_and_exit() {
     echo "  -b ldap_base_dn                       specify LDAP base DN"
     echo "  -c ldap_bind_dn                       specify LDAP bind DN"
     echo "  -f ldap_filter                        specify LDAP filter"
-    echo "  -y yaml_cloud_init [required]         specify the cloud-init YAML script"
     echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}')"
     echo "  -o cran_mirror_ip                     specify the IP address of the CRAN mirror (defaults to '${CRAN_MIRROR_IP}')"
     exit 1
