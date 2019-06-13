@@ -3,7 +3,7 @@
     "dsgId": "9",
     "domain": "dsgroup9.co.uk",
     "ipPrefix": "10.250.64",
-    "rdsAllowedSources": "193.60.220.240,137.205.213.46",
+    "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019041601"
 }
