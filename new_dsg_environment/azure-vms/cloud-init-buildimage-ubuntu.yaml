@@ -399,7 +399,7 @@ runcmd:
 
   # Clean up installation
   - echo "=== Cleaning up apt-get packages... ==="
-  - apt-get autoremove
+  - apt-get -y autoremove
   - apt-get clean
 
   #IF_TORCH_ENABLED # Install torch
