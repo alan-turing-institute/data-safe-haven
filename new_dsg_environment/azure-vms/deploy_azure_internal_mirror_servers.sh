@@ -261,8 +261,8 @@ else
         --public-ip-address "" \
         --private-ip-address $PRIVATEIPADDRESS \
         --resource-group $RESOURCEGROUP \
-        --size Standard_F4s_v2 \
-        --storage-sku Standard_LRS \
+        --size $MIRROR_VM_SIZE \
+        --storage-sku $MIRROR_DISK_TYPE \
         --subnet $SUBNET_INTERNAL \
         --vnet-name $VNETNAME
     rm $TMPCLOUDINITYAML
@@ -352,8 +352,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
             --public-ip-address "" \
             --private-ip-address $PRIVATEIPADDRESS \
             --resource-group $RESOURCEGROUP \
-            --size Standard_F4s_v2 \
-            --storage-sku Standard_LRS \
+            --size $MIRROR_VM_SIZE \
+            --storage-sku $MIRROR_DISK_TYPE \
             --subnet $SUBNET_INTERNAL \
             --vnet-name $VNETNAME
         rm $TMPCLOUDINITYAML
