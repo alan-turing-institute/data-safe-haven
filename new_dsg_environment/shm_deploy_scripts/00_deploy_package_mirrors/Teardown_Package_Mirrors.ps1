@@ -31,6 +31,6 @@ $cmd = "$deployScriptDir/teardown_azure_mirror_server_set.sh $arguments -m PyPI"
 bash -c $cmd
 
 # Teardown CRAN mirror servers
-Write-Host "Tearing down PyPI mirror servers"
+Write-Host "Tearing down CRAN mirror servers"
 $cmd = "$deployScriptDir/teardown_azure_mirror_server_set.sh $arguments -m CRAN"
 bash -c $cmd
