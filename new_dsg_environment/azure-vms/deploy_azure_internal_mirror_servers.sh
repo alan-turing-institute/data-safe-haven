@@ -139,28 +139,32 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
     print_usage_and_exit
 fi
 
-
-# Find the next valid IP range for this subnet
-# --------------------------------------------
-IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].addressPrefix" -o tsv)
-for FOURTH_OCTET in $(seq 0 16 240); do
-    IP_RANGE_SUBNET_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
-    ALREADY_IN_USE=0
-    for IP_ADDRESS_PREFIX in $IP_ADDRESS_PREFIXES; do
-        if [ "$IP_RANGE_SUBNET_INTERNAL" == "$IP_ADDRESS_PREFIX" ]; then
-            ALREADY_IN_USE=1
+# Load the IP range from the internal subnet if it exists
+# -------------------------------------------------------
+if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].{name: name}[?name == '${SUBNET_INTERNAL}']" -o tsv) == $SUBNET_INTERNAL ]; then
+    # Load the IP range being used
+    IP_RANGE_SUBNET_INTERNAL=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query "addressPrefix" -o tsv)
+else
+    # Find the next valid IP range for this subnet
+    IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].addressPrefix" -o tsv)
+    for FOURTH_OCTET in $(seq 0 16 240); do
+        IP_RANGE_SUBNET_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
+        ALREADY_IN_USE=0
+        for IP_ADDRESS_PREFIX in $IP_ADDRESS_PREFIXES; do
+            if [ "$IP_RANGE_SUBNET_INTERNAL" == "$IP_ADDRESS_PREFIX" ]; then
+                ALREADY_IN_USE=1
+            fi
+        done
+        if [ $ALREADY_IN_USE -eq 0 ]; then
+            break
         fi
     done
-    if [ $ALREADY_IN_USE -eq 0 ]; then
-        break
+    if [ $ALREADY_IN_USE -ne 0 ]; then
+        echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNETNAME${END}"
+        print_usage_and_exit
     fi
-done
-if [ $ALREADY_IN_USE -eq 0 ]; then
-    echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
-else
-    echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNETNAME${END}"
-    print_usage_and_exit
 fi
+echo -e "${BOLD}Internal mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 
 
 # Set up the internal NSG and configure the external NSG
@@ -173,7 +177,8 @@ if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG
 # ... otherwise we update them, extracting the existing IP ranges first
 else
     EXISTING_IP_RANGES=$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --query "[destinationAddressPrefix, destinationAddressPrefixes]" -o tsv | xargs)
-    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL
+    DESTINATION_IP_RANGES=$(echo $EXISTING_IP_RANGES $IP_RANGE_SUBNET_INTERNAL | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+    az network nsg rule update --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound --destination-address-prefixes $DESTINATION_IP_RANGES
 fi
 
 # Create internal NSG if it does not already exist
@@ -189,7 +194,7 @@ fi
 
 # Create internal subnet if it does not already exist
 # ---------------------------------------------------
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_INTERNAL}" 2> /dev/null)" = "" ]; then
+if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].{name: name}[?name == '${SUBNET_INTERNAL}']" -o tsv) != $SUBNET_INTERNAL ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
         --address-prefix $IP_RANGE_SUBNET_INTERNAL \
@@ -203,7 +208,9 @@ fi
 # ---------------------------
 MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}PyPI"
 MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}PyPI"
-if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)" = "" ]; then
+if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
+    echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
+else
     CLOUDINITYAML="cloud-init-mirror-internal-pypi.yaml"
     ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-pypi"
     if [ "$NAME_SUFFIX" != "" ]; then
@@ -292,7 +299,9 @@ fi
 if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
     MACHINENAME_INTERNAL="${MACHINENAME_PREFIX_INTERNAL}CRAN"
     MACHINENAME_EXTERNAL="${MACHINENAME_PREFIX_EXTERNAL}CRAN"
-    if [ "$(az vm list --resource-group $RESOURCEGROUP | grep $MACHINENAME_INTERNAL)" = "" ]; then
+    if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL 2> /dev/null)" != "" ]; then
+        echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
+    else
         CLOUDINITYAML="cloud-init-mirror-internal-cran.yaml"
         ADMIN_PASSWORD_SECRET_NAME="vm-admin-password-tier-${TIER}-internal-cran"
         if [ "$NAME_SUFFIX" != "" ]; then

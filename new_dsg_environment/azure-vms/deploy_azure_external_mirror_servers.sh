@@ -126,7 +126,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
 fi
 
 # Create external subnet if it does not already exist
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep "${SUBNET_EXTERNAL}" 2> /dev/null)" = "" ]; then
+if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].{name: name}[?name == '${SUBNET_EXTERNAL}']" -o tsv) != $SUBNET_EXTERNAL ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_EXTERNAL${END}"
     az network vnet subnet create \
         --address-prefix $IP_RANGE_SBNT_EXTERNAL \

@@ -100,7 +100,7 @@ MACHINENAME_INTERNAL="$(echo $MACHINENAME_EXTERNAL | sed 's/External/Internal/')
 if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME_EXTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}VM ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} does not exist in ${BLUE}$RESOURCEGROUP${END}"
 else
-    echo -e "${BOLD}Removing Tier-${BLUE}$TIER $MIRROR_TYPE${END}${BOLD} mirrors from ${BLUE}$RESOURCEGROUP${END}"
+    echo -e "${BOLD}Removing ${BLUE}Tier-$TIER $MIRROR_TYPE${END}${BOLD} mirrors from ${BLUE}$RESOURCEGROUP${END}"
 
     for MACHINENAME in $MACHINENAME_EXTERNAL $MACHINENAME_INTERNAL; do
         echo -e "${BOLD}Working on ${BLUE}${MACHINENAME}${END}"
