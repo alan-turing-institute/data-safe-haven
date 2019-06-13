@@ -92,7 +92,6 @@ $arguments = "-s '$subscriptionSource' \
 if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
 if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
 if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
-if (Test-Path -Path $cloudInitYaml) { $arguments = $arguments + " -y '$cloudInitYaml'" }
 
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
 bash -c $cmd
