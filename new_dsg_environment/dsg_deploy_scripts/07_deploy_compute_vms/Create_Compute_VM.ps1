@@ -37,7 +37,7 @@ $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" 
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "$deployScriptDir/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$deployScriptDir/SAE_config_overrides/cloud-init-compute-vm-SAE-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -76,16 +76,15 @@ $arguments = "-s '$subscriptionSource' \
               -e $managementSubnetIpRange \
               -d $domainName \
               -a $adDcName \
-              -y '$cloudInitYaml' \
               -p $vmAdminPasswordSecretName \
               -n $vmName \
               -z $vmSize"
 
 # Add additional arguments if needed
-if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
-if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
-if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
+if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
+if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
+if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
+if (Test-Path -Path $cloudInitYaml) { $arguments = $arguments + " -y '$cloudInitYaml'" }
 
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
-
 bash -c $cmd
