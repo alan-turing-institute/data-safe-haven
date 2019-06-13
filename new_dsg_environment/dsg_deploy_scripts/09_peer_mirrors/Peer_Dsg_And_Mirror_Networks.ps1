@@ -33,7 +33,7 @@ $mirrorPeeringParams = @{
   "UseRemoteGateways" = $FALSE
 };
 Write-Output ("Adding peering '" + $mirrorPeeringParams.Name `
-              + "' on mirror VNet '" + $mirrorPeeringParams.VirtualNetworkName + "'.")
+              + "' on mirror VNet '" + $mirrorPeeringParams.VirtualNetwork.Name + "'.")
 $_ = Add-AzVirtualNetworkPeering @mirrorPeeringParams;
 
 # Switch back to DSG subscription
@@ -49,7 +49,7 @@ $dsgPeeringParams = @{
   "UseRemoteGateways" = $FALSE
 };
 Write-Output ("Adding peering '" + $dsgPeeringParams.Name `
-              + "' on DSG VNet '" + $dsgPeeringParams.VirtualNetworkName + "'.")
+              + "' on DSG VNet '" + $dsgPeeringParams.VirtualNetwork.Name + "'.")
 $_ = Add-AzVirtualNetworkPeering @dsgPeeringParams;
 
 # Switch back to original subscription
