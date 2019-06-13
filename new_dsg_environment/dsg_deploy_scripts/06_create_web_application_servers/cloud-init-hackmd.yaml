@@ -2,6 +2,8 @@
 package_upgrade: false
 
 runcmd:
+  # Install LDAP tools for debugging LDAP issues
+  - apt-get install ldap-utils
   - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone
   - dpkg-reconfigure -f noninteractive tzdata
