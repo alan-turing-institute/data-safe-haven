@@ -81,7 +81,7 @@ $httpsInRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $httpsInRuleName -Net
 $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEach-Object{$_.Trim()})
 
 Write-Host (" - Updating '" + $httpsInRuleName + "' rule on '" + $nsgGateway.name + "' NSG to '" `
-            + $httpsInRuleBefore.Access  + "' access from '" + $httpsInRuleBefore.SourceAddressPrefix `
+            + $httpsInRuleBefore.Access  + "' access from '" + $allowedSources `
             + "' (was previously '" + $httpsInRuleBefore.SourceAddressPrefix + "')")
              
 $nsgGatewayHttpsInRuleParams = @{
