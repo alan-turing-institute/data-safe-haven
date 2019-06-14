@@ -31,7 +31,7 @@ distributed
 dtw
 ephem
 fbprophet
-flask
+flask=0.12.2
 folium
 gast
 gensim
