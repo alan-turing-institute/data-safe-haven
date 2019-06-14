@@ -139,13 +139,28 @@ if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name 
     print_usage_and_exit
 fi
 
-# Load the IP range from the internal subnet if it exists
-# -------------------------------------------------------
-if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].{name: name}[?name == '${SUBNET_INTERNAL}']" -o tsv) == $SUBNET_INTERNAL ]; then
-    # Load the IP range being used
+
+# Create internal NSG if it does not already exist
+# ------------------------------------------------
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
+    az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name mirrorRequestsInbound --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes "*" --priority 300
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+fi
+
+
+# Configure the internal subnet, creating it if it does not exist
+# ---------------------------------------------------------------
+if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query 'name' -o tsv 2> /dev/null)" == "$SUBNET_INTERNAL" ]; then
+    # Load the IP range from the internal subnet if it exists
+    # -------------------------------------------------------
     IP_RANGE_SUBNET_INTERNAL=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query "addressPrefix" -o tsv)
 else
     # Find the next valid IP range for this subnet
+    # --------------------------------------------
     IP_ADDRESS_PREFIXES=$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].addressPrefix" -o tsv)
     for FOURTH_OCTET in $(seq 0 16 240); do
         IP_RANGE_SUBNET_INTERNAL="${IP_TRIPLET_VNET}.${FOURTH_OCTET}/28"
@@ -163,13 +178,23 @@ else
         echo -e "${RED}Could not find a valid, unused IP range in ${BLUE}$VNETNAME${END}"
         print_usage_and_exit
     fi
+    # ... and create the internal subnet
+    # ----------------------------------
+    if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query 'name' -o tsv 2> /dev/null)" != "$SUBNET_INTERNAL" ]; then
+        echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
+        az network vnet subnet create \
+            --address-prefix $IP_RANGE_SUBNET_INTERNAL \
+            --name $SUBNET_INTERNAL \
+            --network-security-group $NSG_INTERNAL \
+            --resource-group $RESOURCEGROUP \
+            --vnet-name $VNETNAME
+    fi
 fi
 echo -e "${BOLD}Internal tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 
 
-# Set up the internal NSG and configure the external NSG
-# ------------------------------------------------------
-# Update external NSG to allow connections to this IP range
+# Configure the external NSG to allow connections to this internal IP range
+# -------------------------------------------------------------------------
 echo -e "${BOLD}Ensuring that NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} allows connections to IP range ${BLUE}$IP_RANGE_SUBNET_INTERNAL${END}"
 # ... if rsync rules do not exist then we create them
 if [ "$(az network nsg rule show --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name rsyncOutbound 2> /dev/null)" = "" ]; then
@@ -183,28 +208,6 @@ else
     fi
 fi
 
-# Create internal NSG if it does not already exist
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_INTERNAL 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating NSG for internal mirrors: ${BLUE}$NSG_INTERNAL${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name $NSG_INTERNAL
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name rsyncInbound --description "Allow ports 22 and 873 for rsync" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 22 873 --protocol TCP --destination-address-prefixes "*" --priority 200
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name mirrorRequestsInbound --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" --source-address-prefixes VirtualNetwork --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes "*" --priority 300
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
-fi
-
-
-# Create internal subnet if it does not already exist
-# ---------------------------------------------------
-if [ $(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --query "[].{name: name}[?name == '${SUBNET_INTERNAL}']" -o tsv) != $SUBNET_INTERNAL ]; then
-    echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
-    az network vnet subnet create \
-        --address-prefix $IP_RANGE_SUBNET_INTERNAL \
-        --name $SUBNET_INTERNAL \
-        --network-security-group $NSG_INTERNAL \
-        --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME
-fi
 
 # Set up PyPI internal mirror
 # ---------------------------

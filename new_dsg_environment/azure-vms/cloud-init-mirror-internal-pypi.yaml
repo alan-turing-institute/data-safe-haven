@@ -136,6 +136,14 @@ write_files:
 
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - export DEBIAN_FRONTEND=noninteractive
+
+  # Upgrade installation and clean up
+  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - apt-get -y upgrade
+  - apt-get clean
+
   # Set up disk
   - echo "*** Setting up local disk... ***"
   - parted /dev/sdc mklabel gpt
