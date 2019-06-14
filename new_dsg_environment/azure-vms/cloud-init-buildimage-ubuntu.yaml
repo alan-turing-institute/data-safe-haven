@@ -464,7 +464,7 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo ">=== Working on py27 environment. Will take approximately 70 minutes... ===<"
+  - echo ">=== Working on py27 environment. Will take approximately 60 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -482,7 +482,7 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py27 environment took $ELAPSED ===<"
   # Python 3.6
-  - echo ">=== Working on py36 environment. Will take approximately 90 minutes... ===<"
+  - echo ">=== Working on py36 environment. Will take approximately 80 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -613,6 +613,7 @@ runcmd:
   # Install PyCharm
   - echo ">=== Installing PyCharm... ===<"
   - snap install pycharm-community --classic
+  - export PATH=$PATH:/snap/bin
 
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
@@ -633,7 +634,7 @@ runcmd:
   - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
-  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; fi
   - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
   # :: LaTeX

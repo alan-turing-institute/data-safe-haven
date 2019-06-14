@@ -24,7 +24,7 @@ dtw
 enum34
 ephem
 fbprophet
-flask
+flask=0.12.2
 folium
 gensim
 geopandas
