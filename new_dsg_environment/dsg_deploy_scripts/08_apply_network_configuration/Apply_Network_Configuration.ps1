@@ -161,13 +161,11 @@ Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + 
 # to the correct mirror set fo its current Tier and not peered to the mirror set for 
 # any other Tier
 $peeringDir = (Join-Path $PSScriptRoot ".." "09_peer_mirrors" -Resolve)
-$unpeerScriptPath = (Join-Path $peeringDir "Unpeer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
-$repeerScriptPath = (Join-Path $peeringDir "Peer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
+$peeringScriptPath = (Join-Path $peeringDir "Configure_Mirror_Peering.ps1"  -Resolve)
 
-# Unpeer the DSG from its existing mirror set
-Invoke-Expression -Command "$unpeerScriptPath -dsgId $dsgId";
-# Repeer the DSG to the mirror set appropriate to its current config
-Invoke-Expression -Command "$repeerScriptPath -dsgId $dsgId";
+# (Re-)configure Mirror peering for the DSG
+Write-Host ("Configuring mirror peering")
+Invoke-Expression -Command "$peeringScriptPath -dsgId $dsgId";
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
