@@ -10,7 +10,7 @@ PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
 PACKAGE_DIR = os.path.join(os.path.realpath(".."), "package_lists")
-PACKAGE_SUFFIXES = ["-packages.list"]
+PACKAGE_SUFFIX = "-packages.list"
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
@@ -25,6 +25,7 @@ PACKAGES_TO_SKIP = [
 
 # Some packages have different names in conda from the importable name
 PACKAGE_REPLACEMENTS = {
+    "python-annoy": "annoy",
     "python-blosc": "blosc",
     "pytables": "tables",
     "pytorch": "torch",
@@ -54,12 +55,12 @@ def clean_package_name(p):
     q = p.replace("-", "_")
     return q
 
-def clean_suffix(p):
-    """Cleans suffix of packages to avoid maintaining different variables,
-    so we save into a variable depending on the value of the prefix,
-    e.g., "-requested-packages.list" -> "requested" and "-other-useful-packages.list" -> "other-useful"
-    """
-    return p[1:p.find("-packages")]
+# def clean_suffix(p):
+#     """Cleans suffix of packages to avoid maintaining different variables,
+#     so we save into a variable depending on the value of the prefix,
+#     e.g., "-requested-packages.list" -> "requested" and "-other-useful-packages.list" -> "other-useful"
+#     """
+#     return p[1:p.find("-packages")]
 
 
 def import_package(package_name):
@@ -77,6 +78,12 @@ def import_package(package_name):
             return True
         except ModuleNotFoundError as e:
             return False
+    if package_name == "xgboost":
+        try:
+            import sqlite3
+            return True
+        except ModuleNotFoundError as e:
+            return False
     return False
 
 
@@ -84,18 +91,14 @@ def get_package_lists():
     """Reads the package lists and returns a tuple with required and optional
     packages.
     """
-    result = dict()
+    packages = []
     version = get_version()
-    for suffix in PACKAGE_SUFFIXES:
-        path = os.path.join(PACKAGE_DIR, "python" + version + suffix)
-        with open(path) as f:
-            contents = f.read(-1)
-            lines = re.split('\r|\n', contents)
-            packages = [l for l in lines if "" != l]
-
-            result[clean_suffix(suffix)] = packages
-
-    return result
+    path = os.path.join(PACKAGE_DIR, "python" + version + PACKAGE_SUFFIX)
+    with open(path) as f:
+        contents = f.read(-1)
+        lines = re.split('\r|\n', contents)
+        packages = [l for l in lines if "" != l]
+    return packages
 
 def check_tensorflow():
     print("Testing tensorflow...")
@@ -113,35 +116,30 @@ def get_missing_packages():
     """Gets the packages required and optional for this version that are
     not installed.
     """
-    version = get_version()
-    all_packages = get_package_lists()
-    warning, missing = {}, {}
+    packages = get_package_lists()
+    warning, missing = [], []
 
-    for key in all_packages:
-        packages = all_packages[key]
-        warning[key], missing[key] = [], []
-        for p in packages:
+    for p in packages:
+        q = clean_package_name(p)
 
-            q = clean_package_name(p)
+        if not q:
+            continue
 
-            if not q:
-                continue
-
-            try:
-                dist_info = pkg_resources.get_distribution(q)
-            except pkg_resources.DistributionNotFound:
-                full_name = p
-                if q != p:
-                    full_name += " (%s)" % q
-                # Test whether we can import
-                if import_package(q):
-                    warning[key].append(full_name)
-                else:
-                    missing[key].append(full_name)
+        try:
+            pkg_resources.get_distribution(q)
+        except pkg_resources.DistributionNotFound:
+            full_name = p
+            if q != p:
+                full_name += " (%s)" % q
+            # Test whether we can import
+            if import_package(q):
+                warning.append(full_name)
+            else:
+                missing.append(full_name)
 
     # Check tensorflow explicitly
     if not check_tensorflow():
-        missing["requested"] = "tensorflow-gpu"
+        missing = "tensorflow-gpu"
 
     return (warning, missing)
 
@@ -156,16 +154,16 @@ class Tests(unittest.TestCase):
     def test_packages(self):
         warning, missing = get_missing_packages()
         fail = False
-        for key, packages in warning.items():
+        for packages in warning:
             if packages:
-                print("\n** The following %s packages can be imported but had pkg_resource issues: **" % key)
+                print("\n** The following packages can be imported but had pkg_resource issues: **")
                 print("\n".join(packages))
-                print("** The above %s packages can be imported but had pkg_resource issues: **" % key)
-        for key, packages in missing.items():
+                print("** The above packages can be imported but had pkg_resource issues: **")
+        for packages in missing:
             if packages:
-                print("\n** The following %s packages are missing: **" % key)
+                print("\n** The following packages are missing: **")
                 print("\n".join(packages))
-                print("** The above %s packages are missing! **\n" % key)
+                print("** The above packages are missing! **\n")
                 fail = True
         if fail:
             self.fail("Required and/or optional packages are missing")
