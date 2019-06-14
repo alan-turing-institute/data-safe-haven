@@ -65,13 +65,13 @@
         "name": "kv-shm-pkg-mirrors-prod"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER0"
+        "name": null
       },
       "cran": {
-        "ip": ""
+        "ip": null
       },
       "pypi": {
-        "ip": ""
+        "ip": null
       }
     },
     "domain": {
