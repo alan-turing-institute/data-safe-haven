@@ -1,5 +1,4 @@
 absl-py
-aequitas
 aero-calc
 appdirs
 astor
@@ -31,7 +30,7 @@ distributed
 dtw
 ephem
 fbprophet
-flask=0.12.2
+flask
 folium
 gast
 gensim
