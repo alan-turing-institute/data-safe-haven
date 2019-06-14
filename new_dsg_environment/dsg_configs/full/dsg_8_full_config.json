@@ -1,15 +1,15 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Managment",
-    "id": "prod",
+    "subscriptionName": "Safe Haven Management Testing",
+    "id": "test",
     "location": "uksouth",
     "domain": {
-      "fqdn": "turingsafehaven.ac.uk",
-      "netbiosName": "TURINGSAFEHAVEN",
-      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "dsgroupdev.co.uk",
+      "netbiosName": "DSGROUPDEV",
+      "dn": "DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -19,35 +19,35 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_SHM_VNET",
-        "name": "SHM_VNET1",
-        "cidr": "10.251.0.0/21"
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUPDEV_VNET1",
+        "cidr": "10.220.1.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.251.0",
-          "cidr": "10.251.0.0/24"
+          "prefix": "10.220.1",
+          "cidr": "10.220.1.0/24"
         }
       }
     },
     "dc": {
-      "rg": "RG_SHM_VM_DC",
-      "vmName": "SHMDC1",
-      "hostname": "SHMDC1",
-      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
-      "ip": "10.251.0.250"
+      "rg": "RG_DSG_DC",
+      "vmName": "DC",
+      "hostname": "MGMTDEVDC",
+      "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
+      "ip": "10.220.1.250"
     },
     "nps": {
-      "ip": "10.251.0.248"
+      "ip": "10.220.1.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgartifactsprod"
+        "accountName": "dsgxartifacts"
       }
     },
     "keyVault": {
-      "name": "dsg-management-prod",
+      "name": "dsg-management-test",
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
@@ -62,7 +62,7 @@
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
-        "name": "kv-shm-pkg-mirrors-prod"
+        "name": "kv-shm-pkg-mirrors-test"
       },
       "vnet": {
         "name": "VNET_SHM_PKG_MIRRORS_TIER2"
@@ -124,7 +124,7 @@
       }
     },
     "keyVault": {
-      "name": "dsg-management-prod"
+      "name": "dsg-management-test"
     },
     "dc": {
       "rg": "RG_DSG_DC",
