@@ -9,27 +9,56 @@ from tqdm import tqdm
 	- pv.flatten(deps) flattens the nested lists from the dependencies.
 """
 
-# Gets the file names of the Python list in the `path` directory
+# Getting the files to make the initial list of packages
 path = '../new_dsg_environment/azure-vms/package_lists/'
-onlyfiles = [f for f in listdir(path) if isfile(join(path, f)) and 'python' in f and '.list' in f and '-with-dependencies.list' not in f]
+onlyfiles = [f for f in listdir(path) if isfile(join(path, f)) and 'python' in f and '.list' in f and '-with-dependencies.list' not in f and 'diff' not in f]
 
-# For each .list file, a new one is created adding '-with-dependencies' to the name.
+packages = []
 for file in onlyfiles:
     with open(path+file) as f:
-        package_list = f.read()
-        
-    file_name = file.replace('.list', '-with-dependencies.list')
-    f = open(path+file_name, 'w')
+        data = f.read()
+        for p in data.split('\n'):
+            if len(p.strip()) > 0:
+                packages.append(p)
 
-	# For each package in the file searches its dependencies.
-    pbar = tqdm(package_list.split('\n'))
-    for package in pbar:
-        pbar.set_description('{} {}'.format(file_name, package))
-        if len(package) > 0:
-            f.write('{}\n'.format(package))
-            deps = pv.get_names_of_all_dependencies(package)
-            if deps is not None:
-                for dep in list(set(pv.flatten(deps))):
-                    if dep != package:
-                        f.write('\t{}\n'.format(dep))
-    f.close() 
+# Adding the packages that may have different names in pip
+diff_list = '../new_dsg_environment/azure-vms/package_lists/python-diff-names.list'
+
+with open(diff_list) as f:
+    data = f.read()
+
+for package in data.split('\n'):
+    name1, name2 = package.split(' -> ')
+    packages.append(name1)
+    packages.append(name2)
+
+packages = list(set(packages))
+packages.sort()
+
+# `packages` is the initial list of packages.
+
+# The search is iterative, it looks for dependencies of packages in a list. 
+# Then stores the new packages to search for their dependencies in the next iteration and so on.
+master_list = packages
+new_packages = None
+iterations = 10
+
+for i in range(iterations):
+    if new_packages == None:
+        new_packages = pv.process_dependencies(master_list, master_list)
+        master_list.extend(new_packages)
+    else:
+        new_packages = pv.process_dependencies(new_packages, master_list)
+        master_list.extend(new_packages)    
+
+# Saving the list to a file
+final_list = master_list
+final_list = list(set(final_list))
+
+file_name = 'python-final.list'
+f = open(file_name, 'w')
+final_list.sort()
+for p in final_list:
+    f.write(p+'\n')
+    
+f.close()

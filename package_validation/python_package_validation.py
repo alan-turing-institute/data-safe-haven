@@ -541,3 +541,39 @@ def get_names_of_all_dependencies(name, path=None):
     else:
         paths.append(path)
     return paths
+
+def get_repository_dependencies(name, delay = 0.5):
+    """
+    Returns a list of dependencies from PyPI.
+    """
+    _, repo_url, _ = get_project_info(name)
+    time.sleep(delay)
+    if repo_url and 'github.com' in repo_url:
+        owner, repo_name = repo_url.split('/')[-2], repo_url.split('/')[-1]
+        response = requests.get('https://libraries.io/api/github/{owner}/{name}/dependencies?api_key={api_key}'.format(owner=owner, name=repo_name, api_key=LIBRARIES_IO_API_KEY))
+
+        deps = []
+        if response.status_code == 200:
+            for dependency in response.json()['dependencies']:
+                if dependency['platform'] in ['pypi','PyPI']:
+                    deps.append(dependency['name'])
+            return deps
+        else:
+            return None
+    else:
+        return None
+
+def process_dependencies(packages, master_list):
+    """
+    Returns a list of dependency packages that are not yet in the master list of packages, only new dependencies.
+    """
+    aux_list = []
+    pbar = tqdm(packages)
+    for package in pbar:
+        pbar.set_description('{}'.format(package))
+        dependencies = get_repository_dependencies(package)
+        if dependencies:
+            for dependency in dependencies:
+                if dependency not in master_list:
+                    aux_list.append(dependency)
+    return aux_list
