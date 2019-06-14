@@ -175,23 +175,25 @@ The following people have access to the project:
 | Name               | GitHub ID | Email |
 | ------------------ | --- | --- |
 | Diego Arenas       | [@darenasc](https://github.com/darenasc)| <darenasc@gmail.com> |
-| Jonathan Atkins     | [@jon-atkins](https://github.com/jon-atkins)| <jatkins@turing.ac.uk> |
-| Ayman Boustati      | [@aboustati](https://github.com/aboustati)| <aboustati@turing.ac.uk> |
-| Ian Carter          | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
-| Rob Clarke          | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
-| Giovanni Colavizza  | [@Giovanni1085](https://github.com/Giovanni1085)| <gcolavizza@turing.ac.uk> |
-| Christine Foster    | [@ChristineFoster](https://github.com/ChristineFoster)| <cfoster@turing.ac.uk> |
-| Evelina Gabasova    | [@evelinag](https://github.com/evelinag)| <egabasova@turing.ac.uk> |
-| James Geddes        | [@triangle-man](https://github.com/triangle-man)| <jgeddes@turing.ac.uk> |
-| Andreas Grammenos   | [@andylamp](https://github.com/andylamp) | <axor@turing.ac.uk> |
-| Nicolas Guernion    | | <nguernion@turing.ac.uk> |
-| James Heatherington | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
+| Jonathan Atkins    | [@jon-atkins](https://github.com/jon-atkins)| <jatkins@turing.ac.uk> |
+| Ayman Boustati     | [@aboustati](https://github.com/aboustati)| <aboustati@turing.ac.uk> |
+| Ian Carter         | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
+| Rob Clarke         | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
+| Giovanni Colavizza | [@Giovanni1085](https://github.com/Giovanni1085)| <gcolavizza@turing.ac.uk> |
+| Christine Foster   | [@ChristineFoster](https://github.com/ChristineFoster)| <cfoster@turing.ac.uk> |
+| Evelina Gabasova   | [@evelinag](https://github.com/evelinag)| <egabasova@turing.ac.uk> |
+| James Geddes       | [@triangle-man](https://github.com/triangle-man)| <jgeddes@turing.ac.uk> |
+| Andreas Grammenos  | [@andylamp](https://github.com/andylamp) | <axor@turing.ac.uk> |
+| Nicolas Guernion   | | <nguernion@turing.ac.uk> |
+| James Hetherington | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
 | Franz Kiraly       | [@fkiraly](https://github.com/fkiraly)| <fkiraly@turing.ac.uk> |
 | Catherine Lawrence | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
 | Martin O'Reilly    | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
 | Kenji Takeda       | [@ktakeda1](https://github.com/ktakeda1)| <ktakeda@turing.ac.uk> |
 | Sebastian Vollmer  | [@vollmersj](https://github.com/vollmersj)| <svollmer@turing.ac.uk> |
 | Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
+| James Robinson     | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
+
 
 ### Making a change with a pull request
 
