@@ -1,4 +1,3 @@
-aequitas
 aero-calc
 appdirs
 astropy
@@ -28,7 +27,7 @@ distributed
 dtw
 ephem
 fbprophet
-flask=0.12.2
+flask
 folium
 gensim
 geopandas
