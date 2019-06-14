@@ -118,7 +118,7 @@ $internetOutRuleName = "Internet_Out"
 $internetOutRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleName -NetworkSecurityGroup $nsgLinux;
 
 # Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
-If ($config.dsg.tier -in 0,1){
+If ($config.dsg.tier -in "0","1"){
   $access = "Allow"
 }
 Else {

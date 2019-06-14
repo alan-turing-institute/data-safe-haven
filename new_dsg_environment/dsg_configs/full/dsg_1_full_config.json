@@ -58,7 +58,7 @@
     "id": "1",
     "shortName": "dsg1",
     "location": "uksouth",
-    "tier": 3,
+    "tier": "3",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {

@@ -54,9 +54,17 @@
     }
   },
   "dsg": {
+    "subscriptionName": "Data Study Group 12 (Prod)",
+    "id": "12",
+    "shortName": "dsg12",
+    "location": "uksouth",
+    "tier": "2",
     "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
       "vnet": {
-        "rg": "RG_SHM_PKG_MIRRORS",
         "name": "VNET_SHM_PKG_MIRRORS_TIER2"
       },
       "cran": {
@@ -66,10 +74,6 @@
         "ip": "10.20.2.20"
       }
     },
-    "subscriptionName": "Data Study Group 12 (Prod)",
-    "id": "12",
-    "shortName": "dsg12",
-    "location": "uksouth",
     "domain": {
       "fqdn": "dsgroup12.co.uk",
       "netbiosName": "DSGROUP12",
