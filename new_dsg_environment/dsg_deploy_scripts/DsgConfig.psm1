@@ -89,8 +89,6 @@ Export-ModuleMember -Function Get-ShmFullConfig
 
 function Add-DsgConfig {
     param(
-        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
-        $shmId,
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
         $dsgId
     )
@@ -100,14 +98,14 @@ function Add-DsgConfig {
     $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
     $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
 
-    # Use hash table for config
-    $config = [ordered]@{
-        shm = Get-ShmFullConfig($shmId)
-        dsg = [ordered]@{}
-    }
-
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
+
+    # Use hash table for config
+    $config = [ordered]@{
+        shm = Get-ShmFullConfig($dsgConfigBase.shmId)
+        dsg = [ordered]@{}
+    }
 
     # === DSG configuration parameters ===
     $dsg = [ordered]@{}

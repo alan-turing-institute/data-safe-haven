@@ -1,6 +1,7 @@
 {
     "subscriptionName": "Data Study Group 6 (Prod)",
     "dsgId": "6",
+    "shmId": "prod",
     "tier": "2",
     "domain": "dsgroup6.co.uk",
     "ipPrefix": "10.250.40",
