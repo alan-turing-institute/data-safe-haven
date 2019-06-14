@@ -92,9 +92,7 @@ function Add-DsgConfig {
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
         $shmId,
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
-        $dsgId,
-        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter Tier (either '2' or '3')")]
-        $tier
+        $dsgId
     )
     $configRootDir = Get-ConfigRootDir
     $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
@@ -127,7 +125,7 @@ function Add-DsgConfig {
     $config.dsg.id = $dsgConfigBase.dsgId
     $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
-    $config.dsg.tier = $tier
+    $config.dsg.tier = $dsgConfigBase.tier
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
@@ -139,14 +137,17 @@ function Add-DsgConfig {
     }
     $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if(@(2, 3).Contains($config.dsg.tier)){
+    if(@("2", "3").Contains($config.dsg.tier)){
         $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
         $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
         $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
-    } else {
+    } elseif(@("0", "1").Contains($config.dsg.tier)) {
         $config.dsg.mirrors.vnet.name = $null
         $config.dsg.mirrors.pypi.ip = $null
         $config.dsg.mirrors.cran.ip = $null
+    } else {
+        Write-Error ("Tier '" + $config.dsg.tier + "' not supported (NOTE: Tier must be provided as a string in the core DSG config.)")
+        return
     }
 
     # -- Domain config ---

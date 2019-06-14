@@ -1,6 +1,7 @@
 {
     "subscriptionName": "Data Study Group 8 (Test)",
     "dsgId": "8",
+    "tier": "2",
     "domain": "dsgroup8.co.uk",
     "ipPrefix": "10.250.56",
     "rdsAllowedSources": "Internet",

@@ -1,6 +1,7 @@
 {
     "subscriptionName": "Data Study Group 11 (Prod)",
     "dsgId": "11",
+    "tier": "2",
     "domain": "dsgroup11.co.uk",
     "ipPrefix": "10.250.80",
     "rdsAllowedSources": "193.60.220.253,193.60.220.240",
