@@ -910,23 +910,15 @@ To deploy a compute VM you will need the following available on the machine you 
 - Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
 ## 9. Peer DSG and package mirror networks
-**WARNING:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
+The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network.
 
-**=== Do not peer Tier 3 or above DSGs to the mirror network ===**
+**==THESE SCRIPTS SHOULD NOT BE RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
 
-This script peers the DSG virtual network with the mirror virtual network in the management subscription so that the compute VMs can talk to the mirror servers.
-
-Note that the "inbound one-way airlock" for packages is enforced by the NSG rules for the external and internal mirrrors.
-
-The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and its associated internal mirrors (for pushing to these mirror servers).
-
-The **internal** mirror NSG rules do not allow **any outbound** communication, while permitting inbound communication from their associated external mirrors (to receive pushed package updates) and from the DSGs that are peered with them (to serve packages to these DSGs).
-
-To peer the DSG and package mirror networks:
+However, if you need to unpeer the mirror networks for some reason (e.g. while preparing a DSG subscription for re-use), you can run the unpeering script separately as described below.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/internal/` directory of the Safe Haven repository
 
 - Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
@@ -934,9 +926,7 @@ To peer the DSG and package mirror networks:
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./Peer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
-
-- If you want to un-peer these networks (for example if you are re-deploying the mirrors) run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted.
+- Run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
 ## 10. Run smoke tests on shared compute VM
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets.
