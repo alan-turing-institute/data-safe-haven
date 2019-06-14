@@ -14,10 +14,12 @@ PACKAGE_SUFFIXES = ["-requested-packages.list", "-other-useful-packages.list"]
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
+    "backports",      # not an importable package
+    "graph-tool",     # not a python package
     "jupyter",        # not a python package
     "numpy-base",     # not an importable package
     "r-irkernel",     # not a python package
-    "backports",      # not an importable package
+    "sqlite",         # not a python package
     "tensorflow-gpu", # add a special test for this
 ]
 
@@ -26,7 +28,6 @@ PACKAGE_REPLACEMENTS = {
     "python-blosc": "blosc",
     "pytables": "tables",
     "pytorch": "torch",
-    "sqlite": "sqlite3",
     "yaml": "pyyaml",
 }
 
@@ -49,13 +50,13 @@ def clean_package_name(p):
 
     if p in PACKAGE_REPLACEMENTS:
         return PACKAGE_REPLACEMENTS[p]
-    
+
     q = p.replace("-", "_")
     return q
 
 def clean_suffix(p):
     """Cleans suffix of packages to avoid maintaining different variables,
-    so we save into a variable depending on the value of the prefix, 
+    so we save into a variable depending on the value of the prefix,
     e.g., "-requested-packages.list" -> "requested" and "-other-useful-packages.list" -> "other-useful"
     """
     return p[1:p.find("-packages")]
@@ -93,7 +94,7 @@ def get_package_lists():
             packages = [l for l in lines if "" != l]
 
             result[clean_suffix(suffix)] = packages
-            
+
     return result
 
 def check_tensorflow():
@@ -141,12 +142,12 @@ def get_missing_packages():
     # Check tensorflow explicitly
     if not check_tensorflow():
         missing["requested"] = "tensorflow-gpu"
-                
+
     return (warning, missing)
 
 class Tests(unittest.TestCase):
     """Run tests for installation of Python."""
-        
+
     def test_python_version(self):
         py_version = get_version()
         expected_py_versions = PY_VERSIONS_DSG if is_linux() else PY_VERSIONS_LOCAL
@@ -168,7 +169,7 @@ class Tests(unittest.TestCase):
                 fail = True
         if fail:
             self.fail("Required and/or optional packages are missing")
-    
+
 
 if '__main__' == __name__:
     import unittest

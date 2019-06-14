@@ -131,6 +131,7 @@ packages:
   - libasound2
   - libcanberra-gtk0
   - libgconf-2-4
+  - libgdal-dev
   - libgit2-dev
   - libgl1-mesa-glx
   - libglu1-mesa
