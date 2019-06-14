@@ -111,6 +111,9 @@ write_files:
         ; IF_WHITELIST_ENABLED packages =
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - export DEBIAN_FRONTEND=noninteractive
+
   # Generate SSH keys for connecting to the internal mirror
   # - do this early since it is pulled out of the VM by the deployment script
   - echo "*** Generating SSH keys for connecting to the internal mirror"
