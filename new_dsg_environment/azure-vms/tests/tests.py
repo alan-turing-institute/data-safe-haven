@@ -10,7 +10,7 @@ PY_VERSIONS_DSG = ["27", "36", "37"]  # version numbers in remote
 PY_VERSIONS_LOCAL = ["27", "36"]
 
 PACKAGE_DIR = os.path.join(os.path.realpath(".."), "package_lists")
-PACKAGE_SUFFIXES = ["-requested-packages.list", "-other-useful-packages.list"]
+PACKAGE_SUFFIXES = ["-packages.list"]
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
