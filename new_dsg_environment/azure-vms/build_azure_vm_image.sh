@@ -150,9 +150,8 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --priority 3000
 fi
 
-# Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
+# Select source image - either Ubuntu 18.04 or Ubuntu 18.04 plus Torch
 # If anything else is requested then print usage message and exit.
-# If using the Data Science VM then the terms will be automatically accepted.
 TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
@@ -166,13 +165,6 @@ if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     DISKSIZEGB="60"
-# elif [ "$SOURCEIMAGE" = "DataScience" ]; then
-#     MACHINENAME="${MACHINENAME}-DataScienceBase"
-#     SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-#     cp cloud-init-buildimage-datascience.yaml $TMP_CLOUD_CONFIG_YAML
-#     DISKSIZEGB="60"
-#     echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
-#     az vm image accept-terms --urn $SOURCEIMAGE
 else
     echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
