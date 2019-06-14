@@ -138,14 +138,15 @@ function Add-DsgConfig {
         pypi = [ordered]@{}
     }
     $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
-    $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if(@(2, 3).Contains($config.dsg.tier)){
+        $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
         $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
         $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
     } else {
-        $config.dsg.mirrors.pypi.ip = ""
-        $config.dsg.mirrors.cran.ip = ""
+        $config.dsg.mirrors.vnet.name = $null
+        $config.dsg.mirrors.pypi.ip = $null
+        $config.dsg.mirrors.cran.ip = $null
     }
 
     # -- Domain config ---
