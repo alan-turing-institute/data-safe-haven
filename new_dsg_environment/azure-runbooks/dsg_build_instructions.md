@@ -897,17 +897,17 @@ To deploy a compute VM you will need the following available on the machine you 
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
-## 8. Lock down network configuration
+## 8. Apply network configuration
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/08_network_lockdown/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./Lockdown_Network.ps1` script, providing the DSG ID when prompted
+- Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
 ## 9. Peer DSG and package mirror networks
 **WARNING:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
