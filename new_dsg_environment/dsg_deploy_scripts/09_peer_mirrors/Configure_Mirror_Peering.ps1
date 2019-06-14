@@ -9,6 +9,13 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
 
+# Unpeer any existing networks before (re-)establishing correct peering for DSG
+$unpeeringScriptPath = (Join-Path $PSScriptRoot "internal" "Unpeer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
+
+# (Re-)configure Mirror peering for the DSG
+Write-Host ("Removing all existing mirror peerings")
+Invoke-Expression -Command "$unpeeringScriptPath -dsgId $dsgId";
+
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext;
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
