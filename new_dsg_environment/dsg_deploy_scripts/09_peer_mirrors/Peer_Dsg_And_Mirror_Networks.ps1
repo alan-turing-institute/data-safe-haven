@@ -19,6 +19,12 @@ $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
 
 # Temporarily switch to management subscription
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+# Check a mirror set has been configured for the DSG
+If(!$config.dsg.mirrors.vnet.name){
+  Write-Output ("No mirror VNet configured for Tier " + $config.dsg.tier + " DSG " `
+                + $config.dsg.id + ". Nothing to do.")
+  Exit 0
+}
 # Fetch Mirrors Vnet
 $mirrorVnet = Get-AzVirtualNetwork -Name $config.dsg.mirrors.vnet.name `
                                    -ResourceGroupName $config.dsg.mirrors.rg
