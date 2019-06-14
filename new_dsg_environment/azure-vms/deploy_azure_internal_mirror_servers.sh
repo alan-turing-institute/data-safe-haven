@@ -141,7 +141,7 @@ fi
 
 # Load the IP range from the internal subnet if it exists
 # -------------------------------------------------------
-if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL 2> /dev/null)" != "" ]; then
+if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query 'name' -o tsv 2> /dev/null)" == "$SUBNET_INTERNAL" ]; then
     # Load the IP range being used
     IP_RANGE_SUBNET_INTERNAL=$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query "addressPrefix" -o tsv)
 else
@@ -196,7 +196,7 @@ fi
 
 # Create internal subnet if it does not already exist
 # ---------------------------------------------------
-if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL 2> /dev/null)" == "" ]; then
+if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --name $SUBNET_INTERNAL --query 'name' -o tsv 2> /dev/null)" != "$SUBNET_INTERNAL" ]; then
     echo -e "${BOLD}Creating subnet ${BLUE}$SUBNET_INTERNAL${END}"
     az network vnet subnet create \
         --address-prefix $IP_RANGE_SUBNET_INTERNAL \
