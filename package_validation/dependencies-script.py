@@ -5,8 +5,8 @@ from tqdm import tqdm
 
 """
 	It uses two functions from `pv` to generate a list file with the packages and dependencies.
-	- pv.get_names_of_all_dependencies(package) returns a list of lists of dependencies.
-	- pv.flatten(deps) flattens the nested lists from the dependencies.
+	- pv.process_dependencies(packages, master_list) returns a list of new dependencies found among the dependencies of the `packages` list.
+	- get_repository_dependencies(name, delay = 0.5) returns the dependencies of a given package.
 """
 
 # Getting the files to make the initial list of packages
@@ -55,7 +55,7 @@ for i in range(iterations):
 final_list = master_list
 final_list = list(set(final_list))
 
-file_name = 'python-final.list'
+file_name = 'new_dsg_environment/azure-vms/package_lists/python-final.list'
 f = open(file_name, 'w')
 final_list.sort()
 for p in final_list:
