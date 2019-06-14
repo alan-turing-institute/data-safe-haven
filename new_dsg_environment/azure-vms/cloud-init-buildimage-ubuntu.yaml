@@ -103,7 +103,7 @@ write_files:
       create extension if not exists earthdistance;
   - path: "/installation/spark_sha512.hash"
     content: |
-      80a4c564ceff0d9aff82b7df610b1d34e777b45042e21e2d41f3e497bb1fa5d8  spark-2.4.1-bin-hadoop2.7.tgz
+      80a4c564ceff0d9aff82b7df610b1d34e777b45042e21e2d41f3e497bb1fa5d8  spark-2.4.3-bin-hadoop2.7.tgz
   - path: "/installation/dbeaver_sha512.hash"
     content: |
       d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
@@ -402,7 +402,7 @@ runcmd:
   - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
   - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
-  # Clean up installation
+  # Clean up installation - getting to this point takes approximately 30 mins
   - echo ">=== Cleaning up apt-get packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
@@ -526,7 +526,7 @@ runcmd:
   # Use the full number of available cores for installation (R builds a lot of packages from source so we can get a decent speedup here)
   - Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
   # CRAN
-  - echo ">=== Installing additional R packages. Will take approximately 60 minutes... ===<"
+  - echo ">=== Installing additional R packages. Will take approximately 70 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
