@@ -89,7 +89,7 @@ Export-ModuleMember -Function Get-ShmFullConfig
 
 function Add-DsgConfig {
     param(
-        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
         $dsgId
     )
     $configRootDir = Get-ConfigRootDir
