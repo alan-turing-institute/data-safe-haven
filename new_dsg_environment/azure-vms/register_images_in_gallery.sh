@@ -218,7 +218,8 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
         az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE
 
         # Final message
-        ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+        # ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S") # Linux
+        ELAPSED=$(date -r $(($(date +%s) - $STARTTIME)) +"%H:%M:%S") # OSX
         echo -e "${BOLD}Image replication finished in $ELAPSED${END}"
     fi
 done
