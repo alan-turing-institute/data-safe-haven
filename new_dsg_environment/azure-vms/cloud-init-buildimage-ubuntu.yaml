@@ -394,7 +394,7 @@ packages:
   - xsltproc
 
 runcmd:
-  # Suppress apt warning messages
+  # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
@@ -482,7 +482,7 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py27 environment took $ELAPSED ===<"
   # Python 3.6
-  - echo ">=== Working on py36 environment. Will take approximately 80 minutes... ===<"
+  - echo ">=== Working on py36 environment. Will take approximately 70 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -498,7 +498,7 @@ runcmd:
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py36 environment took $ELAPSED ===<"
   # Python 3.7
-  - echo ">=== Working on py37 environment. Will take approximately 30 minutes... ===<"
+  - echo ">=== Working on py37 environment. Will take approximately 20 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
