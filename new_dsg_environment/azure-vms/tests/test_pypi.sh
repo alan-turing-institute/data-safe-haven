@@ -1,5 +1,5 @@
-# Use "sismic" as it is in the "00/00" package directory, so should be rsync'd first
-pkg1="sismic"
+# Use "MarkupSafe" as it is in the "00/00" package directory, so should be rsync'd first
+pkg1="MarkupSafe"
 echo " - Attempting to install $pkg1"
 pip install $pkg1  --user --quiet
 status1=$?
@@ -21,5 +21,5 @@ else
         echo " - $pkg2 installation failed"
     fi
 fi
-    
+
 
