@@ -1,11 +1,11 @@
-# Use "MarkupSafe" as it is in the "00/00" package directory, so should be rsync'd first
+# Use "MarkupSafe" as it is the first linux package on the Tier-3 whitelist (in the "00/00" package directory) so should be rsync'd near the end
 pkg1="MarkupSafe"
 echo " - Attempting to install $pkg1"
 pip install $pkg1  --user --quiet
 status1=$?
 
-# Use "uncertainties" as it is in the "ff/f" package directory, so should be rsync'd first
-pkg2="uncertainties"
+# Use "Fiona" as it is the last linux package on the Tier-3 whitelist (in the "ff/fb" package directory) so should be rsync'd near the end
+pkg2="Fiona"
 echo " - Attempting to install $pkg2"
 pip install $pkg2  --user  --quiet
 status2=$?

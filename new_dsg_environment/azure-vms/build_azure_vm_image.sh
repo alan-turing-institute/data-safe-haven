@@ -188,6 +188,7 @@ rm r_package_specs.yaml
 echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
 echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
+
 az vm create \
   --admin-username $ADMIN_USERNAME \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
