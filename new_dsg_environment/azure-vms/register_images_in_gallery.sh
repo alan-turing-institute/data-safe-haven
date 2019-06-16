@@ -203,7 +203,7 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
             done
         fi
         echo -e "${BOLD}Preparing to replicate this image across 3 regions as version ${BLUE}${IMAGEVERSION}${END} ${BOLD}of ${BLUE}${SUPPORTEDIMAGE}${END}"
-        echo -e "${BOLD}Please note, this may take more than 30 minutes to complete${END}"
+        echo -e "${BOLD}Please note, this may take about 1 hour to complete${END}"
         echo -e "${BOLD}Starting image replication at $(date)${END}"
         STARTTIME=$(date +%s)
 
@@ -218,8 +218,7 @@ for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
         az sig image-version list --resource-group $RESOURCEGROUP --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE
 
         # Final message
-        # ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S") # Linux
-        ELAPSED=$(date -r $(($(date +%s) - $STARTTIME)) +"%H:%M:%S") # OSX
+        ELAPSED=$(date -u -r $(($(date +%s) - $STARTTIME)) +"%H:%M:%S") # OSX
         echo -e "${BOLD}Image replication finished in $ELAPSED${END}"
     fi
 done

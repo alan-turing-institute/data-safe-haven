@@ -73,7 +73,7 @@ Activate the conda environment for each Python version with `conda activate pyMN
   - `Your CPU supports instructions that this TensorFlow binary was not compiled to use`
   - `CUDA_ERROR_NO_DEVICE: no CUDA capable device is detected` (you should **not** get this error on GPU VMs - e.g. NC series)
 
-If you get any otrher errors please contact REG to investigate.
+If you get any other errors please contact REG to investigate.
 
 ### Testing package use
 
