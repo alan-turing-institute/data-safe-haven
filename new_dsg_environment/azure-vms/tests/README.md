@@ -8,7 +8,7 @@ The package installation tests require a copy of the `package_lists` folder in t
 
 ### Testing package installation
 
-Switch to System R with 
+Switch to System R with
 
 ```
 conda deactivate
@@ -23,16 +23,19 @@ Rscript test_package_installation.R
 The installation check will take several minutes to run.
 
 There are a few known packages that will cause warnings and errors during this test.
-- rgl: This package is successfully installed, but required a GUI to load
+- `rgl`: This package is successfully installed, but required a GUI to load
+- `clusterProfiler`: Error is `multiple methods tables found for ‘toTable’`. Not yet understood
+- `GOSemSim`: False positive - no warning on package load
+- `graphite`: False positive - no warning on package load
 
 The expected output for a successful test is:
 
 ```
 Read <num-r-packages> items
 Read <num-bioconductor-packages> items
-Warnin g message:
-call dbDisconnect() when finished working with a connection
-[1] "All <num-r-and-bioconductor-packages> package(s) OK!"
+[1] "The following packages gave a warning:"
+[1] "rgl"             "clusterProfiler" "GOSemSim"        "graphite"
+[1] "All the packages above gave a warning!"
 ```
 
 If you get any other warnings or errors, please contact REG to investigate.
@@ -42,9 +45,9 @@ If you get any other warnings or errors, please contact REG to investigate.
 Run the two data science scripts with these commands and this expected result:
 
 ```bash
-$ Rscript test_clustering.R 
+$ Rscript test_clustering.R
 [1] "Clustering ran OK"
-$ Rscript test_logistic_regression.R 
+$ Rscript test_logistic_regression.R
 [1] "Logistic regression ran OK"
 ```
 
@@ -69,10 +72,8 @@ Activate the conda environment for each Python version with `conda activate pyMN
 
   - `Your CPU supports instructions that this TensorFlow binary was not compiled to use`
   - `CUDA_ERROR_NO_DEVICE: no CUDA capable device is detected` (you should **not** get this error on GPU VMs - e.g. NC series)
-  - `graph-tool` can be imported but had pkg_resource issues
-  - `sqlite3` can be imported but had pkg_resource issues
 
-If you get any otrher errors please contact REG to investigate.
+If you get any other errors please contact REG to investigate.
 
 ### Testing package use
 
