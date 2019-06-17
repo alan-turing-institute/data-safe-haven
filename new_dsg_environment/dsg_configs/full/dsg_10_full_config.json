@@ -58,20 +58,20 @@
     "id": "10",
     "shortName": "dsg10",
     "location": "uksouth",
-    "tier": "3",
+    "tier": "2",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
         "name": "kv-shm-pkg-mirrors-prod"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
       },
       "cran": {
-        "ip": "10.20.3.21"
+        "ip": "10.20.2.21"
       },
       "pypi": {
-        "ip": "10.20.3.20"
+        "ip": "10.20.2.20"
       }
     },
     "domain": {
