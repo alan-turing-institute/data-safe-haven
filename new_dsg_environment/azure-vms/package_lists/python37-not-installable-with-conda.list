@@ -2,11 +2,11 @@ aero-calc
 atari-py
 box2d-py
 dtw
-fbprophet
 gmplot
 gym
-keras
 NavPy
+ohio
+pg8000
 pyod
 python-geohash
-tensorflow-gpu
+spacy-langdetect

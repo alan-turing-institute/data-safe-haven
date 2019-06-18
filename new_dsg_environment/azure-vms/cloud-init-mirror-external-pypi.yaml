@@ -41,10 +41,11 @@ write_files:
       #   -v          verbose
       #   --delete    delete files present in destination but not source
       #   --progress  show progress
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors"
       for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
           START_TIME=$(date +%s)
-          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi | tee /datadrive/mirrordaemon/push_to_internal_mirrors.log
           ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
@@ -53,7 +54,7 @@ write_files:
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
-      /bandersnatch/bin/bandersnatch mirror
+      /bandersnatch/bin/bandersnatch mirror #| tee /datadrive/mirrordaemon/pull_from_internet.log
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
@@ -100,17 +101,19 @@ write_files:
         ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
         delete-packages = true
 
-        ; To enable whitelisting, you need to uncomment both the [blacklist] and [whitelist] sections
-        ; [blacklist]
-        ; plugins =
-        ;     whitelist_project
+        ; DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
+        ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
+        ; IF_WHITELIST_ENABLED [blacklist]
+        ; IF_WHITELIST_ENABLED plugins =
+        ; IF_WHITELIST_ENABLED     whitelist_project
 
-        ; [whitelist]
-        ; packages =
-        ;     numpy
-        ;     matplotlib
+        ; IF_WHITELIST_ENABLED [whitelist]
+        ; IF_WHITELIST_ENABLED packages =
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - export DEBIAN_FRONTEND=noninteractive
+
   # Generate SSH keys for connecting to the internal mirror
   # - do this early since it is pulled out of the VM by the deployment script
   - echo "*** Generating SSH keys for connecting to the internal mirror"

@@ -18,8 +18,8 @@ $adminUser = $config.dsg.dc.admin.username
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 # VM sizes
-$rdsGatewayVmSize = "Standard_DS2_v2"
-$rdsHostVmSize = "Standard_DS2_v2"
+$rdsGatewayVmSize = "Standard_B2ms"
+$rdsHostVmSize = "Standard_B2ms"
 
 $params = @{
  "RDS Gateway Name" = $config.dsg.rds.gateway.vmName
@@ -27,7 +27,7 @@ $params = @{
  "RDS Gateway IP Address" = $config.dsg.rds.gateway.ip
  "RDS Session Host 1 Name" = $config.dsg.rds.sessionHost1.vmName
  "RDS Session Host 1 VM Size" = $rdsHostVmSize
- "RDS Session Host 1 IP Address" = $config.dsg.rds.sessionHost1.ip 
+ "RDS Session Host 1 IP Address" = $config.dsg.rds.sessionHost1.ip
  "RDS Session Host 2 Name" = $config.dsg.rds.sessionHost2.vmName
  "RDS Session Host 2 VM Size" = $rdsHostVmSize
  "RDS Session Host 2 IP Address" = $config.dsg.rds.sessionHost2.ip

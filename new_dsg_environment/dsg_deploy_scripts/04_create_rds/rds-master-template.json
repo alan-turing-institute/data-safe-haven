@@ -8,8 +8,10 @@
         },
         "RDS Gateway VM Size": {
             "type": "string",
-            "defaultValue": "Standard_F8s_v2",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",
                 "Standard_F32s_v2",
@@ -20,14 +22,14 @@
             ],
             "metadata": {
                 "description": "Select size of RDS Gateway VM"
-            }    
+            }
         },
         "RDS Gateway IP Address": {
             "type": "string",
             "defaultValue": "10.250.x.250",
             "metadata": {
                 "description": "Enter IP address for RDS Gatway VM, must end in 250"
-            }    
+            }
         },
         "RDS Session Host 1 Name": {
             "defaultValue": "RDSSH1",
@@ -35,8 +37,10 @@
         },
         "RDS Session Host 1 VM Size": {
             "type": "string",
-            "defaultValue": "Standard_F8s_v2",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",
                 "Standard_F32s_v2",
@@ -47,14 +51,14 @@
             ],
             "metadata": {
                 "description": "Select size of RDS Session Host 1 VM"
-            }    
+            }
         },
         "RDS Session Host 1 IP Address": {
             "type": "string",
             "defaultValue": "10.250.x.249",
             "metadata": {
                 "description": "Enter IP address for RDS Session Host 1 VM, must end in 249"
-            }    
+            }
         },
         "RDS Session Host 2 Name": {
             "defaultValue": "RDSSH2",
@@ -62,8 +66,10 @@
         },
         "RDS Session Host 2 VM Size": {
             "type": "string",
-            "defaultValue": "Standard_F8s_v2",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
+                "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",
                 "Standard_F32s_v2",
@@ -74,14 +80,14 @@
             ],
             "metadata": {
                 "description": "Select size of RDS Session Host 1 VM"
-            }    
+            }
         },
         "RDS Session Host 2 IP Address": {
             "type": "string",
             "defaultValue": "10.250.x.248",
             "metadata": {
                 "description": "Enter IP address for RDS Session Host 1 VM, must end in 248"
-            }    
+            }
         },
         "Domain Name": {
             "defaultValue": "DSGROUPx.CO.UK",
@@ -94,33 +100,33 @@
             "type": "string",
             "metadata": {
                 "description": "Enter name for VM Administrator"
-            }    
+            }
         },
         "Administrator Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for VM Administrator Password"
-            }    
+            }
         },
         "Virtual Network Name": {
             "type": "string",
             "defaultValue": "DSG_DSGROUPX_VNET1",
             "metadata": {
                 "description": "Enter name of virtual network to provision this VM"
-            }    
+            }
         },
         "Virtual Network Resource Group": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
-            }    
+            }
         },
         "Virtual Network Subnet": {
             "type": "string",
             "defaultValue": "Subnet-RDS",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }    
+            }
         }
 },
     "variables": {
@@ -158,7 +164,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -170,7 +176,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 1023
                         },
@@ -181,7 +187,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 1023
                         }
@@ -244,7 +250,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -307,7 +313,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },

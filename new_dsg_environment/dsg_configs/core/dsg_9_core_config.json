@@ -1,11 +1,11 @@
 {
     "subscriptionName": "DSG Template Testing",
     "dsgId": "9",
+    "shmId": "test",
+    "tier": "3",
     "domain": "dsgroup9.co.uk",
     "ipPrefix": "10.250.64",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.1.2019041601",
-    "packageMirrorIpPypi": "10.1.0.20",
-    "packageMirrorIpCran": "10.1.0.21"
+    "computeVmImageVersion": "0.1.2019061600"
 }

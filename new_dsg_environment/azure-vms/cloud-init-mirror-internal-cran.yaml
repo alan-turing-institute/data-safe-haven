@@ -38,7 +38,10 @@ write_files:
       </VirtualHost>
 
 runcmd:
-  # Upgrade installation, clean up, then install nginx
+  # Suppress apt prompts and warning messages
+  - export DEBIAN_FRONTEND=noninteractive
+
+  # Upgrade installation and clean up
   - echo "*** Upgrade and clean up apt-get packages... ***"
   - apt-get -y upgrade
   - apt-get clean
