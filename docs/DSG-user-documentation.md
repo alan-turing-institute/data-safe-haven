@@ -814,3 +814,25 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
+
+## Appendix C: Troubleshooting
+
+### Unexpected certificate error
+
+#### Symptom
+- You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
+- When you try and launch an app, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
+- When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.  
+
+  ![](images/unexpected_certificate_error.png)
+
+### Cause
+The SSL certificate protecting your connection to the RDS webclient expires every three months and is renewed every two months.
+The new SSL certificate is seamlessly picked up by your browser when connecting to `https://rds.dsgroupX.co.uk/RDWeb/weblient`.
+However, the webclient downloads a separate copy of the certificate for its own use to validate connections to the apps it serves.
+This downloaded certificate is cached by your browser, which means that the old certificate will continue to be used by the web app when the browser is allowed to load things from its cache.
+
+### Solution
+Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://rds.dsgroupX.co.uk/RDWeb/weblient` (instructions vary by browser and operating system).
+This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
+
