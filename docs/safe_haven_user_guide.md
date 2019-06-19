@@ -23,6 +23,7 @@
   * [Section 4.10: Outputs from the week](#section-410-outputs-from-the-week)
 * [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
 * [Appendix B: Gitlab tutorial notes](#appendix-b-Gitlab-tutorial-notes)
+* [Appendix C: Troubleshooting](#appendix-c-troubleshooting)
 
 ## Section 1: Support for bugs and reports
 
