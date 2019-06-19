@@ -15,19 +15,19 @@ STATUS_CMD="sudo realm list --name-only | grep $DOMAIN_LOWER"
 echo -e "Testing current realms..."
 STATUS=$(${STATUS_CMD})
 if [ "$STATUS" == "" ]; then
-    echo -e "${RED}No realms found. Attempting to join $DOMAIN_LOWER${END}"
+    echo -e "${RED}No realm memberships found. Attempting to join $DOMAIN_LOWER${END}"
     sudo cat /etc/ldap.secret | sudo realm join --verbose -U $LDAP_USER $DOMAIN_LOWER --install=/
 else
-    echo -e "${BLUE}Found realm: '$STATUS'. No need to rejoin.${END}"
+    echo -e "${BLUE}Currently a member of realm: '$STATUS'. No need to rejoin.${END}"
     exit 0
 fi
 
 echo -e "Retesting current realms..."
 STATUS=$(${STATUS_CMD})
 if [ "$STATUS" == "" ]; then
-    echo -e "${RED}No realms found!${END}"
+    echo -e "${RED}No realm memberships found!${END}"
     exit 1
 else
-    echo -e "${BLUE}Found realm: '$STATUS'${END}"
+    echo -e "${BLUE}Currently a member of realm: '$STATUS'${END}"
     exit 0
 fi

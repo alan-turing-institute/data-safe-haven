@@ -29,7 +29,7 @@ $computeVmNics = ($computeVmNicIds | ForEach-Object{Get-AzNetworkInterface -Reso
 $computeVmName = ($computeVmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
 
 # Run remote scripts
-$diagnostic_scripts = @("restart_name_resolution_service.sh", "rerun_realm_join.sh")
+$diagnostic_scripts = @("restart_name_resolution_service.sh", "rerun_realm_join.sh", "restart_sssd_service.sh")
 $testHost = $config.shm.dc.fqdn
 $ldapUser = $config.dsg.users.ldap.dsvm.samAccountName
 $domainLower = $config.shm.domain.fqdn
