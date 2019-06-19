@@ -674,7 +674,7 @@ In Git, when you copy a project you say you “clone” it. To work on a git pro
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
 
-![](project_clone_url.png)
+![](images/project_clone_url.png)
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
 ```
@@ -806,12 +806,12 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 3. Click on New merge request on the right side of the screen.
 4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
-   ![](merge1.png)
+   ![](images/merge1.png)
 
 5. When ready, click on the Compare branches and continue button.
 6. At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
-   ![](merge2.png)
+   ![](images/merge2.png)
 
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
