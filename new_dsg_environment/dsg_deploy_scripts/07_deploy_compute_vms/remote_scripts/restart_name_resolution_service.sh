@@ -8,6 +8,8 @@ RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
 
+echo -e "${BLUE}Checking name resolution${END}"
+
 NS_CMD=( nslookup $TEST_HOST )
 RESTART_CMD="sudo systemctl restart systemd-resolved.service"
 
