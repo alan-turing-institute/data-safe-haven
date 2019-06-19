@@ -13,14 +13,11 @@ END="\033[0m"
 echo -e "${BLUE}Checking LDAP connectivity${END}"
 
 LDAP_SECRET=$(sudo cat /etc/ldap.secret)
-USER_SEARCH_CMD="ldapsearch -LLL -D \"${LDAP_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$TEST_HOST\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_USER})\""
-
-#  | grep 'sAMAccountName:' | cut -d' ' -f2)"
-echo $USER_SEARCH_CMD
-$($USER_SEARCH_CMD)
+USER_SEARCH_CMD=(ldapsearch -LLL -D "${LDAP_USER}@${DOMAIN_LOWER}" -w "$LDAP_SECRET" -p 389 -h "$TEST_HOST" -b "$SERVICE_PATH" -s sub "(sAMAccountName=${LDAP_USER})")
+LDAP_SEARCH_OUTPUT=$("${USER_SEARCH_CMD[@]}")
 
 echo -e "Testing LDAP search..."
-STATUS=$(${USER_SEARCH_CMD} 2>&1)
+STATUS=$(echo $LDAP_SEARCH_OUTPUT | sed 's/.*sAMAccountName: \(.*\) s.*/\1/' 2>&1)
 if [ "$STATUS" == "$LDAP_USER" ]; then
     echo -e "${BLUE}LDAP search succeeded: found user '$STATUS'.${END}"
     exit 0
