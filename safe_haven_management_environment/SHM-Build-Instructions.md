@@ -14,6 +14,9 @@
 ### Azure CLI 
 - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
+### Docker desktop
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Docker is used to generate certificates. 
+
 ## 0. Setup Azure Active Directory (AAD) with P1 Licenses
 
 ### Create a new AAD
