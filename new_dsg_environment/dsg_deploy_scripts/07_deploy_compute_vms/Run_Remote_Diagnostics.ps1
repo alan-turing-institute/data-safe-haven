@@ -28,14 +28,19 @@ $computeVmNics = ($computeVmNicIds | ForEach-Object{Get-AzNetworkInterface -Reso
 ## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
 $computeVmName = ($computeVmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
 
-# Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "restart_name_resolution_service.sh"
+# Run remote scripts
+$diagnostic_scripts = @("restart_name_resolution_service.sh")
 $testHost = $config.shm.dc.fqdn
-Write-Host " - Restarting name resolution service on VM $computeVmName"
-$result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$computeVmName" `
-    -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter @{"TEST_HOST"="$testHost"};
+Write-Host " - Running diagnostic scripts on VM $computeVmName"
 
-Write-Output $result.Value;
+foreach ($diagnostic_script in $diagnostic_scripts) {
+  $scriptPath = Join-Path $PSScriptRoot "remote_scripts" $diagnostic_script
+  # Write-Host " - Restarting name resolution service on VM $computeVmName"
+  $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$computeVmName" `
+                                  -CommandId 'RunShellScript' -ScriptPath $scriptPath `
+                                  -Parameter @{"TEST_HOST"="$testHost"};
+  Write-Output $result.Value;
+}
 
 # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
