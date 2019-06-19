@@ -12,7 +12,6 @@ STATUS_CMD="sudo systemctl status sssd.service"
 
 echo "Testing sssd status..."
 STATUS=$(${STATUS_CMD})
-echo $STATUS
 if [ "$(echo $STATUS | grep 'Active: failed')" != "" ]; then
     echo -e "${RED}SSSD service has failed. Restarting...${END}"
     sudo systemctl stop sssd.service
