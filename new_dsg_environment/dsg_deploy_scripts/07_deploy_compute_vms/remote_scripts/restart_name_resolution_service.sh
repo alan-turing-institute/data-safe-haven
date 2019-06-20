@@ -49,11 +49,13 @@ DNS_STATUS=$(test_dnslookup)
 # Check where resolv.conf is pointing
 echo "Testing /etc/resolv.conf"
 RESOLVE_CONF_LOCATION=$(sudo ls -al /etc/resolv.conf | cut -d'>' -f2 | sed -e 's/ //g')
-echo "/etc/resolv.conf is pointing to $RESOLVE_CONF_LOCATION"
 RESOLVE_CONF_TARGET="/run/systemd/resolve/resolv.conf"
 if [ "$RESOLVE_CONF_LOCATION" != "$RESOLVE_CONF_TARGET" ]; then
-    reset_resolv_conf $RESOLVE_CONF_TARGET
+    echo -e "${RED}/etc/resolv.conf is pointing to ${RESOLVE_CONF_LOCATION}${END}"
+    reset_resolv_conf "$RESOLVE_CONF_TARGET"
     DNS_STATUS=$(test_dnslookup)
+else
+    echo -e "${BLUE}/etc/resolv.conf is pointing to ${RESOLVE_CONF_LOCATION}${END}"
 fi
 
 # If the DNS problem is not solved then restart the service
