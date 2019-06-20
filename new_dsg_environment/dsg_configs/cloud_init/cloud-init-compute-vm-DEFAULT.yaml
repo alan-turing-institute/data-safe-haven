@@ -195,20 +195,23 @@ runcmd:
   - echo "Restart xrdp"
   - service xrdp restart
   # Add execute permission to the Active Directory set up scripts
-  - sudo chmod +x /active_directory_step01_pre
-  - sudo chmod +x /active_directory_step02_realm_join
-  - sudo chmod +x /active_directory_step03_update_sssd
-  - sudo chmod +x /active_directory_step04_update_pam
+  - chmod +x /active_directory_step01_pre
+  - chmod +x /active_directory_step02_realm_join
+  - chmod +x /active_directory_step03_update_sssd
+  - chmod +x /active_directory_step04_update_pam
   # Run the Active Directory set up scripts
-  - sudo /active_directory_step01_pre
-  - sudo /active_directory_step02_realm_join
-  - sudo /active_directory_step03_update_sssd
-  - sudo /active_directory_step04_update_pam
+  - /active_directory_step01_pre
+  - /active_directory_step02_realm_join
+  - /active_directory_step03_update_sssd
+  - /active_directory_step04_update_pam
   # Remove the Active Directory set up scripts (as these contain secrets and are world readable
-  - sudo rm /active_directory_step01_pre
-  - sudo rm /active_directory_step02_realm_join
-  - sudo rm /active_directory_step03_update_sssd
-  - sudo rm /active_directory_step04_update_pam
+  - rm /active_directory_step01_pre
+  - rm /active_directory_step02_realm_join
+  - rm /active_directory_step03_update_sssd
+  - rm /active_directory_step04_update_pam
+  # Update resolv.conf to point to the correct location
+  - rm /etc/resolv.conf
+  - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
   # Shutdown so that we can tell when the job has finished by polling the VM state
   - shutdown -P now
 
