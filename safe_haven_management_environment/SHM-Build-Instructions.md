@@ -355,7 +355,7 @@ Start-ADSyncSyncCycle -PolicyType Initial
 Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
-### Additional AAD Connect Configuration (ROB METHOD)
+<!-- ### Additional AAD Connect Configuration (ROB METHOD)
 
 1. Open the `Synchronization Rules Editor` from the start menu on the SHMNPS VM. 
 2. Change the "Direction" drop down to "Outbound"
@@ -365,7 +365,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 6. Change the "FlowType" column from "Expression" to "Direct"
 7. "Source" column click drop-down and choose "c" attribute
 8. Cick "Save"
-9. Click the X to close the Synchronization Rules Editor window
+9. Click the X to close the Synchronization Rules Editor window -->
 
 ### MFA Configuation
 
