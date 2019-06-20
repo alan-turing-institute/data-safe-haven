@@ -24,6 +24,7 @@ if [ "$(echo $STATUS | grep 'Active: failed')" != "" ]; then
     sudo systemctl restart sssd.service
 else
     echo -e "${BLUE}SSSD service is working. No need to restart.${END}"
+    echo $STATUS
     exit 0
 fi
 
