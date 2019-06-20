@@ -13,28 +13,19 @@ END="\033[0m"
 echo -e "${BLUE}Checking LDAP connectivity${END}"
 
 LDAP_SECRET=$(sudo cat /etc/ldap.secret)
-USER_SEARCH_CMD="ldapsearch -LLL -D \"${LDAP_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$TEST_HOST\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_USER})\""
-
-#  | grep 'sAMAccountName:' | cut -d' ' -f2)"
-echo $USER_SEARCH_CMD
-$($USER_SEARCH_CMD)
+LDAPSEARCH_CMD="ldapsearch -LLL -D \"${LDAP_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$TEST_HOST\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_USER})\""
 
 echo -e "Testing LDAP search..."
-STATUS=$(${USER_SEARCH_CMD} 2>&1)
+LDAP_SEARCH=$(eval ${LDAPSEARCH_CMD} 2>&1)
+STATUS=$(echo "${LDAP_SEARCH}" | grep 'sAMAccountName:' | cut -d' ' -f2)
 if [ "$STATUS" == "$LDAP_USER" ]; then
     echo -e "${BLUE}LDAP search succeeded: found user '$STATUS'.${END}"
+    echo "LDAP SEARCH RESULT:"
+    echo "$LDAP_SEARCH"
     exit 0
 else
     echo -e "${RED}LDAP search failed: '$STATUS'${END}"
-    # sudo cat /etc/ldap.secret | sudo realm join --verbose -U $LDAP_USER $DOMAIN_LOWER --install=/
+    echo "LDAP SEARCH RESULT:"
+    echo "$LDAP_SEARCH"
+    exit 1
 fi
-
-# echo -e "Retesting current realms..."
-# STATUS=$(${STATUS_CMD})
-# if [ "$STATUS" == "" ]; then
-#     echo -e "${RED}No realm memberships found!${END}"
-#     exit 1
-# else
-#     echo -e "${BLUE}Currently a member of realm: '$STATUS'${END}"
-#     exit 0
-# fi
