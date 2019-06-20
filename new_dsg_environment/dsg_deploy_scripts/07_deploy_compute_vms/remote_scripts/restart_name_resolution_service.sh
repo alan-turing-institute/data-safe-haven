@@ -14,7 +14,7 @@ NS_CMD=( nslookup $TEST_HOST )
 RESTART_CMD="sudo systemctl restart systemd-resolved.service"
 
 # Check where resolv.conf is pointing
-echo "/etc/resolv.conf is pointing to $(sudo ls -al /etc/resolv.conf)"
+echo "/etc/resolv.conf is pointing to $(sudo ls -al /etc/resolv.conf | cut -d'>' -f2)"
 
 echo "Testing connectivity for '$TEST_HOST'"
 NS_RESULT_PRE=$(${NS_CMD[@]})
@@ -31,6 +31,8 @@ else
     echo -e "${RED}Name resolution not working. Restarting name resolution service.${END}"
     echo "NS LOOKUP RESULT:"
     echo "$NS_RESULT_PRE"
+    sudo rm /etc/resolv.conf
+    sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
     $(${RESTART_CMD})
 fi
 
