@@ -16,16 +16,16 @@ LDAP_SECRET=$(sudo cat /etc/ldap.secret)
 LDAPSEARCH_CMD="ldapsearch -LLL -D \"${LDAP_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$TEST_HOST\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_USER})\""
 
 echo -e "Testing LDAP search..."
-LDAP_SEARCH=$(eval ${LDAPSEARCH_CMD} 2>&1)
-STATUS=$(echo "${LDAP_SEARCH}" | grep 'sAMAccountName:' | cut -d' ' -f2)
+LDAP_SEARCH_OUTPUT=$(eval ${LDAPSEARCH_CMD} 2>&1)
+STATUS=$(echo "${LDAP_SEARCH_OUTPUT}" | grep 'sAMAccountName:' | cut -d' ' -f2)
 if [ "$STATUS" == "$LDAP_USER" ]; then
     echo -e "${BLUE}LDAP search succeeded: found user '$STATUS'.${END}"
     echo "LDAP SEARCH RESULT:"
-    echo "$LDAP_SEARCH"
+    echo "$LDAP_SEARCH_OUTPUT"
     exit 0
 else
     echo -e "${RED}LDAP search failed: '$STATUS'${END}"
     echo "LDAP SEARCH RESULT:"
-    echo "$LDAP_SEARCH"
+    echo "$LDAP_SEARCH_OUTPUT"
     exit 1
 fi
