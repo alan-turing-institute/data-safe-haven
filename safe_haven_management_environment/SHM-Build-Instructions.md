@@ -45,7 +45,7 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be something like "TURINGSAFEHAVEN@ac.uk"
 
-2. Ensure the domain name is verified. This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
+2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
 
 
 
