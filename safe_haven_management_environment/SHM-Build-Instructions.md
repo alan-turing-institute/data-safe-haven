@@ -51,15 +51,23 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 ## 1. Deploy VNET and Domain Controllers
 
-1. Ensure you are logged into the Azure within PowerShell using the command
-    - `Connect-AzAccount`
+1. Ensure you are logged into the Azure within PowerShell using the command:
+```pwsh
+Connect-AzAccount
+```
  
-2. Set the AzContext to the SHM Azure subscription id
-    - `Set-AzContext -SubscriptionId "<SHM-subscription-id>"`
+2. Set the AzContext to the SHM Azure subscription id:
+```pwsh
+Set-AzContext -SubscriptionId "<SHM-subscription-id>"
+```
 
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
-    - `cd ./data-safe-haven/safe_haven_management_environment/setup`
-    - `./deploy_VNET_DC.ps1 -SubscriptionId "<SHM-subscription-id>"`
+```pwsh
+cd ./data-safe-haven/safe_haven_management_environment/setup
+```
+```pwsh
+./deploy_VNET_DC.ps1 -SubscriptionId "<SHM-subscription-id>"
+```
 
 4. After a while the script will ask for user input:
 
@@ -121,13 +129,13 @@ Once you have accessed SHMDC1 via the Remote Desktop we can configure the DC1.
 
 4. In the powershell enter the following commands:
 
-```
+```pwsh
 New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
 ```
-```
+```pwsh
 Z:
 ```
-```
+```pwsh
 copy dc C:/Scripts -Recurse
 ```
 
@@ -139,10 +147,10 @@ copy dc C:/Scripts -Recurse
     - $domain = "TURINGSAFEHAVEN.ac.uk"
 
 6. In the powershell navigate to `C:/Scripts/`. Run:
-```
+```pwsh
 .\Set_OS_Language.ps1
 ```
-```
+```pwsh
 .\Active_Directory_Configuration.ps1 -oubackuppath c:\Scripts\GPOs
 ```
 You will be promted to enter a password for the adsync account. Note this down as you will need it when configuring the NPS Server later. 
@@ -186,13 +194,13 @@ You will be promted to enter a password for the adsync account. Note this down a
 
 4. In the powershell enter the following commands:
 
-```
+```pwsh
 New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
 ```
-```
+```pwsh
 Z:
 ```
-```
+```pwsh
 copy dc C:/Scripts -Recurse
 ```
 
@@ -204,7 +212,7 @@ copy dc C:/Scripts -Recurse
     - $domain = "TURINGSAFEHAVEN.ac.uk"
 
 6. In the powershell navigate to `C:/Scripts/`. Run:
-```
+```pwsh
 .\Set_OS_Language.ps1
 ```
 
@@ -212,13 +220,17 @@ The Domain Controller configuration is now complete. Exit remote destop
 
 ## 4. Deploy Network Policy Server (NPS)
 
-1. In th data-safe-haven repository, deploy the NPS server using the following commands:
-    - `cd ./data-safe-haven/safe_haven_management_environment/setup`
-    - `./setup_azure2.ps1 -SubscriptionId "<SHM-subscription-id>"`
+1. In the data-safe-haven repository, deploy the NPS server using the following commands:
+ ```pwsh
+ cd ./data-safe-haven/safe_haven_management_environment/setup
+ ```
+```
+./setup_azure2.ps1 -SubscriptionId "<SHM-subscription-id>"
+```
 
 2. When prompted enter the following:
 
-    - Administrator password: In the keyvault under dcpass (must be the same password and username as the DCs)
+    - Administrator password: In the keyvault under `dcpass` (must be the same password and username as the DCs)
     - Virtual Network Resource Group: RG_SHM_VNET (the name of the resource group)
     - Domain name: The custom domain name
 
@@ -238,13 +250,13 @@ The NPS server will now deploy. This may take some time.
 
 4. In the powershell enter the following commands:
 
-```
+```pwsh
 New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
 ```
-```
+```pwsh
 Z:
 ```
-```
+```pwsh
 copy nps C:/Scripts -Recurse
 ```
 
@@ -278,7 +290,7 @@ copy nps C:/Scripts -Recurse
 
 8. Enter the following commands which will install the SQL Server:
 
-```
+```pwsh
 setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicenseTerms
 ```
 
@@ -286,7 +298,7 @@ setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicen
 
 10. Open a new command prompt and navigate to `C:\scripts`. Then enter the following command:
 
-```
+```pwsh
 sqlcmd -i c:\Scripts\Create_Database.sql
 ```
 11. Exit the command promt
@@ -330,7 +342,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
     - Click "Install"
     - Click "Exit"
 
-### Additional AAD Connect Configuration (OSCAR METHOD)
+### Additional AAD Connect Configuration
 
 1. Open the `Synchronization Rules Editor` from the start menu on the SHMNPS VM. 
 2. Change the "Direction" drop down to "Outbound"
@@ -346,26 +358,15 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 
 12. In the powershell run:
 
-```
+```pwsh
 Start-ADSyncSyncCycle -PolicyType Initial
 ```
 
 14. To verify this worked open a powershell and enter:
-```
+```pwsh
 Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
-<!-- ### Additional AAD Connect Configuration (ROB METHOD)
-
-1. Open the `Synchronization Rules Editor` from the start menu on the SHMNPS VM. 
-2. Change the "Direction" drop down to "Outbound"
-3. Select the "Out to AAD - User Join" -> Click "Edit"
-4. Click "No" for the "In the Edit Reserved Rule Confirmation" window (OG - THIS DOESNT WORK FOR ME)
-5. Select "Transformations" and locate the rule with its "Target Attribute" set to "usageLocation" 
-6. Change the "FlowType" column from "Expression" to "Direct"
-7. "Source" column click drop-down and choose "c" attribute
-8. Cick "Save"
-9. Click the X to close the Synchronization Rules Editor window -->
 
 ### MFA Configuation
 
@@ -376,7 +377,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 - Open a PowerShell command windows with administrator privilages
 - Chnage to "C:\Program Files\Microsoft\AzureMfa\Config"
 - Run:
-```
+```pwsh
 .\AzureMfaNpsExtnConfigSetup.ps1
 ```
 - Enter "Y" when prompted
@@ -394,7 +395,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 
 2. After about 30 minutes the new user should appear on the Azure Active Directory account. Or to force a sync, on the NPS machine open a powershell and call:
 
-```
+```pwsh
 Start-ADSyncSyncCycle -PolicyType Delta
 ```
 
