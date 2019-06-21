@@ -211,6 +211,7 @@ runcmd:
   - rm /active_directory_step04_update_pam
   # Update resolv.conf to point to the correct location
   - rm /etc/resolv.conf
+  - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
   # Shutdown so that we can tell when the job has finished by polling the VM state
   - shutdown -P now
