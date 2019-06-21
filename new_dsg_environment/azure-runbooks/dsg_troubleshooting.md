@@ -18,6 +18,7 @@ there are a couple of possible causes
 - Reset the account if there is no other solution
 
 ### Unable to communicate with the login server
+- This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 - Run the script under `dsg_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
 
