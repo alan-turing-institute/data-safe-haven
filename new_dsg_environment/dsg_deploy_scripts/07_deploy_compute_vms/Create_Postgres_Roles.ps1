@@ -42,17 +42,51 @@ if ($null -eq $dbAdminPassword) {
   $dbAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminSecrdbAdminPasswordSecretNameetName).SecretValueText;
 }
 
+# Fetch Postgres DB Writer password (or create if not present)
+$dbWriterRole = "writer"
+$dbWriterUser = "dbwriter"
+$dbWriterPasswordSecretName = ($config.dsg.shortName + "-pgdbwriter-password")
+$dbWriterPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $dbWriterPasswordSecretName).SecretValueText;
+if ($null -eq $dbWriterPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbWriterPasswordSecretName -SecretValue $newPassword;
+  $dbWriterPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbWriterPasswordSecretName).SecretValueText;
+}
+
+# Fetch Postgres DB Reader password (or create if not present)
+$dbReaderRole = "reader"
+$dbReaderUser = "dbreader"
+$dbReaderPasswordSecretName = ($config.dsg.shortName + "-pgdbreader-password")
+$dbReaderPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $dbReaderPasswordSecretName).SecretValueText;
+if ($null -eq $dbReaderPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbReaderPasswordSecretName -SecretValue $newPassword;
+  $dbReaderPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbReaderPasswordSecretName).SecretValueText;
+}
+
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "create_postgres_dbadmin.sh"
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "create_postgres_roles.sh"
 
 $params = @{
     DBADMINROLE = $dbAdminRole
     DBADMINUSER = $dbAdminUser
     DBADMINPWD = $dbAdminPassword
+    DBWRITERROLE = $dbWriterRole
+    DBWRITERUSER = $dbWriterUser
+    DBWRITERPWD = $dbWriterPassword
+    DBREADERROLE = $dbReaderRole
+    DBREADERUSER = $dbReaderUser
+    DBREADERPWD = $dbReaderPassword
 };
   
-Write-Output " - Ensuring Postgres DB admin user exist on VM $computeVmName"
+Write-Output " - Ensuring Postgres DB roles and initial shared users exist on VM $computeVmName"
 Write-Output " - User: '$dbAdminUser'; Role: '$dbAdminRole'; Password stored in secret name '$dbAdminPasswordSecretName'"
+Write-Output " - User: '$dbWriterUser'; Role: '$dbWriterRole'; Password stored in secret name '$dbWriterPasswordSecretName'"
+Write-Output " - User: '$dbReaderUser'; Role: '$dbReaderRole'; Password stored in secret name '$dbReaderPasswordSecretName'"
 
 
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$computeVmName" `
