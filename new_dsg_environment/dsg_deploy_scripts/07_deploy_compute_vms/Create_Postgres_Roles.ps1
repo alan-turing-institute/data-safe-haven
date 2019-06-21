@@ -39,7 +39,7 @@ if ($null -eq $dbAdminPassword) {
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminPasswordSecretName -SecretValue $newPassword;
-  $dbAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminSecrdbAdminPasswordSecretNameetName).SecretValueText;
+  $dbAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminPasswordSecretName).SecretValueText;
 }
 
 # Fetch Postgres DB Writer password (or create if not present)
