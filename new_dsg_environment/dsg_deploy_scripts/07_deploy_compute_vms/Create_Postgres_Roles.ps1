@@ -85,8 +85,8 @@ $params = @{
 
 Write-Output " - Ensuring Postgres DB roles and initial shared users exist on VM $computeVmName"
 Write-Output " - User: '$dbAdminUser'; Role: '$dbAdminRole'; Password in KeyVault secret name '$dbAdminPasswordSecretName'"
-Write-Output " - User: '$dbWriterUser'; Role: '$dbWriterRole'; Password in KeyVault in secret name '$dbWriterPasswordSecretName'"
-Write-Output " - User: '$dbReaderUser'; Role: '$dbReaderRole'; Password in KeyVault in secret name '$dbReaderPasswordSecretName'"
+Write-Output " - User: '$dbWriterUser'; Role: '$dbWriterRole'; Password in KeyVault secret name '$dbWriterPasswordSecretName'"
+Write-Output " - User: '$dbReaderUser'; Role: '$dbReaderRole'; Password in KeyVault secret name '$dbReaderPasswordSecretName'"
 
 
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$computeVmName" `
