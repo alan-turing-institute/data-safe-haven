@@ -11,7 +11,7 @@ create_role(){
     (sudo -i -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${ROLE}'" | grep -q 1 \
         && echo "Role '${ROLE}' already exists, skipping creation.") \
     || (sudo -i -u postgres psql -q -c "CREATE ROLE ${ROLE};" \
-        && echo "'${ROLE}' created.")
+        && echo "Role '${ROLE}' created.")
 }
 
 create_user(){
@@ -23,7 +23,7 @@ create_user(){
         && sudo -i -u postgres psql -q -c "ALTER USER ${USER} WITH INHERIT PASSWORD '${PWD}';" \
         && echo "User '${USER}' already exists - password reset to value provided.") \
     || (sudo -i -u postgres psql -q -c "CREATE USER ${USER} IN ROLE ${ROLE} INHERIT PASSWORD '${PWD}';" \
-        && echo "'${USER}' created.")
+        && echo "User '${USER}' created.")
 }
 
 create_role "${DBADMINROLE}"
@@ -37,7 +37,9 @@ create_user "${DBREADERUSER}" "${DBREADERROLE}" "${DBREADERPWD}"
 sudo -i -u postgres psql -q -c "ALTER USER ${DBADMINUSER} WITH CREATEDB CREATEROLE;" \
     && echo "User '${DBADMINUSER}' granted rights to create databases and users / roles"
 
-# Show current user table
-echo ""
+# Show current user and roles tables
+echo "===USERS==="
 sudo -i -u postgres psql -q -c "SELECT * FROM pg_user"
+echo "===ROLES==="
+sudo -i -u postgres psql -q -c "SELECT * FROM pg_roles"
 
