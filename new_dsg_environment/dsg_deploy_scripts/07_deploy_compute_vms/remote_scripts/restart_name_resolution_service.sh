@@ -30,6 +30,7 @@ test_dnslookup () {
 # Test the /etc/resolv.conf file
 test_resolve_conf() {
     local RESOLVE_CONF_LOCATION=$(sudo ls -al /etc/resolv.conf | cut -d'>' -f2 | sed -e 's/ //g')
+    sudo cat /etc/resolv.conf
     if [ "${RESOLVE_CONF_LOCATION}" != "${RESOLVE_CONF_TARGET}" ]; then
         echo -e "${RED}/etc/resolv.conf is currently pointing to ${RESOLVE_CONF_LOCATION}${END}"
         return 1
