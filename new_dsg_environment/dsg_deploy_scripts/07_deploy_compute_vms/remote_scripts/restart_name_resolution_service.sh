@@ -66,7 +66,7 @@ restart_resolved () {
 
 # Reset /etc/resolv.conf
 reset_resolv_conf () {
-    echo -e "${BLUE}Resetting /etc/resolv.conf symlink${BLUE}"
+    echo -e "${BLUE}Resetting /etc/resolv.conf symlink${END}"
     sudo rm /etc/resolv.conf
     sudo ln -s "$RESOLVE_CONF_TARGET" /etc/resolv.conf
     test_resolve_conf
