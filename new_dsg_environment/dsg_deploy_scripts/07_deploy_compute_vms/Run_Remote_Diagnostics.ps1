@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
 
-# Temporarily switch to management subscription
+# Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
