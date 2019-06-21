@@ -1,5 +1,6 @@
 #!/bin/bash
 # $TEST_HOST must be present as an environment variable
+# $DOMAIN_LOWER must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
@@ -30,7 +31,7 @@ test_dnslookup () {
 # Test the /etc/resolv.conf file
 test_resolve_conf() {
     local RESOLVE_CONF_LOCATION=$(sudo ls -al /etc/resolv.conf | cut -d'>' -f2 | sed -e 's/ //g')
-    sudo cat /etc/resolv.conf
+    cat /etc/resolv.conf
     if [ "${RESOLVE_CONF_LOCATION}" != "${RESOLVE_CONF_TARGET}" ]; then
         echo -e "${RED}/etc/resolv.conf is currently pointing to ${RESOLVE_CONF_LOCATION}${END}"
         return 1
@@ -40,10 +41,27 @@ test_resolve_conf() {
     return 0
 }
 
+# Update /etc/systemd/resolved.conf
+update_systemd_resolved_conf () {
+    sed -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=${DOMAIN_LOWER}/" /etc/systemd/resolved.conf > resolved.conf.new
+    if [ "$(cmp resolved.conf.new /etc/systemd/resolved.conf)" != "" ]; then
+        cat /etc/systemd/resolved.conf
+        echo "Updating /etc/systemd/resolved.conf"
+        sudo mv resolved.conf.new /etc/systemd/resolved.conf
+        sudo chown root:root /etc/systemd/resolved.conf
+        sudo chmod 0644 /etc/systemd/resolved.conf
+        cat /etc/systemd/resolved.conf
+        restart_resolved
+    else
+        echo "No updates needed"
+    fi
+}
+
 # Restart the systemd-resolved.service
 restart_resolved () {
     echo "Restarting systemd-resolved nameservice"
     sudo systemctl restart systemd-resolved.service
+    cat /etc/resolv.conf
 }
 
 # Reset /etc/resolv.conf
@@ -55,7 +73,6 @@ reset_resolv_conf () {
 }
 
 
-
 # Run name resolution checks
 # --------------------------
 echo -e "${BLUE}Checking name resolution${END}"
@@ -64,6 +81,10 @@ echo -e "${BLUE}Checking name resolution${END}"
 echo "Testing connectivity for '$TEST_HOST'"
 test_dnslookup
 DNS_STATUS=$?
+
+# Update /etc/systemd/resolved.conf if necessary
+echo "Testing /etc/systemd/resolved.conf"
+update_systemd_resolved_conf
 
 # Check where resolv.conf is pointing
 echo "Testing /etc/resolv.conf"
