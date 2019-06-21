@@ -14,7 +14,7 @@ $config = Get-DsgConfig($dsgId);
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Find VM with private IP address matching the provided last octect
 ## Turn provided last octect into full IP address in the data subnet
@@ -94,4 +94,4 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$c
 Write-Output $result.Value;
 
 # Switch back to previous subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;
