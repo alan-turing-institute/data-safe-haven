@@ -62,7 +62,8 @@ echo -e "${BLUE}Checking name resolution${END}"
 
 # Check nslookup
 echo "Testing connectivity for '$TEST_HOST'"
-DNS_STATUS=$(test_dnslookup)
+test_dnslookup
+DNS_STATUS=$?
 
 # Check where resolv.conf is pointing
 echo "Testing /etc/resolv.conf"
@@ -70,7 +71,8 @@ test_resolve_conf
 RESOLVE_CONF_STATUS=$?
 if [ "$RESOLVE_CONF_STATUS" != "0" ]; then
     reset_resolv_conf
-    DNS_STATUS=$(test_dnslookup)
+    test_dnslookup
+    DNS_STATUS=$?
 fi
 
 # If the DNS problem is not solved then restart the service
