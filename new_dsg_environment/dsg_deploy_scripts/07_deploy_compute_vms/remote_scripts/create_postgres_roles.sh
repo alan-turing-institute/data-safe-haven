@@ -38,8 +38,8 @@ sudo -i -u postgres psql -q -c "ALTER USER ${DBADMINUSER} WITH CREATEDB CREATERO
     && echo "User '${DBADMINUSER}' granted rights to create databases and users / roles"
 
 # Show current user and roles tables
-echo "===USERS==="
+echo "\nUSERS:"
 sudo -i -u postgres psql -q -c "SELECT * FROM pg_user"
-echo "===ROLES==="
-sudo -i -u postgres psql -q -c "SELECT * FROM pg_roles"
+echo "ROLES:"
+sudo -i -u postgres psql -q -c "SELECT rolname, rolsuper, rolinherit, rolinherit, rolcreatedb, rolcanlogin, oid FROM pg_roles"
 
