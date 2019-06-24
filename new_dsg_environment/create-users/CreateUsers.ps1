@@ -18,7 +18,6 @@ if ($ShmId -eq 'test') {
      $domain="turingsafehaven.ac.uk";
      $userOuPath="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk";
 }
- -UserOUPath "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk"
 
 Add-Type -AssemblyName System.Web
 $Description = "Research User"
@@ -29,23 +28,28 @@ Write-Host $_
 $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
 Write-Host "UserPrincipalName = " $UserPrincipalName
 $password = [System.Web.Security.Membership]::GeneratePassword(12,3)
-New-ADUser  -SamAccountName $_.SamAccountName `
-            -UserPrincipalName $UserPrincipalName `
-            -Name "$($_.GivenName) $($_.Surname)" `
-            -DisplayName "$($_.GivenName) $($_.Surname)" `
-            -GivenName $_.GivenName `
-            -SurName $_.Surname `
-            -Department $Department `
-            -Description $Description `
-            -Path $userOuPath `
-            -Enabled $True `
-            -AccountPassword (ConvertTo-SecureString $Password -AsPlainText -force) `
-            -PasswordNeverExpires $False `
-            -PassThru `
-            -Mobile $_.Mobile `
-            -Email $UserPrincipalName `
-            -Country GB
-    }
+$props = @{
+    SamAccountName = $_.SamAccountName
+    UserPrincipalName = $UserPrincipalName
+    Name = "$($_.GivenName) $($_.Surname)"
+    DisplayName = "$($_.GivenName) $($_.Surname)"
+    GivenName = $_.GivenName
+    SurName = $_.Surname
+    Department = $Department
+    Description = $Description
+    Path = "$userOuPath"
+    Enabled = $True
+    AccountPassword = (ConvertTo-SecureString $Password -AsPlainText -force)
+    PasswordNeverExpires = $False
+    Mobile = $_.Mobile
+    Email = $UserPrincipalName
+    Country = "GB"
+}
+
+Write-Host @props
+
+New-ADUser @props -PassThru
+}
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
 Import-Module ADSync

@@ -54,22 +54,26 @@
     }
   },
   "dsg": {
-    "mirrors": {
-      "vnet": {
-        "rg": "RG_SH_PKG_MIRRORS",
-        "name": "VNET_SH_PKG_MIRRORS"
-      },
-      "cran": {
-        "ip": "10.1.0.21"
-      },
-      "pypi": {
-        "ip": "10.1.0.20"
-      }
-    },
     "subscriptionName": "Data Study Group 11 (Prod)",
     "id": "11",
     "shortName": "dsg11",
     "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
     "domain": {
       "fqdn": "dsgroup11.co.uk",
       "netbiosName": "DSGROUP11",

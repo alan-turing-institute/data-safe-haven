@@ -1,0 +1,231 @@
+{
+  "shm": {
+    "subscriptionName": "Safe Haven Managment",
+    "id": "prod",
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_VM_DC",
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "ip": "10.251.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgartifactsprod"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert"
+      }
+    }
+  },
+  "dsg": {
+    "subscriptionName": "Data Study Group 6 (Prod)",
+    "id": "6",
+    "shortName": "dsg6",
+    "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
+    "domain": {
+      "fqdn": "dsgroup6.co.uk",
+      "netbiosName": "DSGROUP6",
+      "dn": "DC=dsgroup6,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP6 Server Administrators",
+          "description": "SG DSGROUP6 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP6 Research Users",
+          "description": "SG DSGROUP6 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP6_VNET1",
+        "cidr": "10.250.40.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.250.40",
+          "cidr": "10.250.40.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.250.41",
+          "cidr": "10.250.41.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.250.42",
+          "cidr": "10.250.42.0/24"
+        },
+        "gateway": {
+          "prefix": "10.250.47",
+          "cidr": "10.250.47.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG6DC",
+      "hostname": "DSG6DC",
+      "fqdn": "DSG6DC.dsgroup6.co.uk",
+      "ip": "10.250.40.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg6-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP6 Gitlab LDAP",
+          "samAccountName": "dsg6-gitlab-ldap",
+          "passwordSecretName": "dsg6-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP6 HackMD LDAP",
+          "samAccountName": "dsg6-hackmd-ldap",
+          "passwordSecretName": "dsg6-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP6 DSVM LDAP",
+          "samAccountName": "dsg6-dsvm-ldap",
+          "passwordSecretName": "dsg6-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP6 Test Researcher",
+          "samAccountName": "dsg6-test-res",
+          "passwordSecretName": "dsg6-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup6.co.uk",
+        "ip": "10.250.41.250"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup6.co.uk",
+        "ip": "10.250.41.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup6.co.uk",
+        "ip": "10.250.41.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253,193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup6.co.uk",
+      "ip": "10.250.42.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup6.co.uk",
+        "ip": "10.250.42.151",
+        "rootPasswordSecretName": "dsg6-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup6.co.uk",
+        "ip": "10.250.42.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.0.2018120701",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup6-dsvm-admin-password"
+      }
+    }
+  }
+}

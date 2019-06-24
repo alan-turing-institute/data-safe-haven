@@ -8,8 +8,9 @@
         },
         "RDS Gateway VM Size": {
             "type": "string",
-            "defaultValue": "Standard_B8ms",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
                 "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",
@@ -36,8 +37,9 @@
         },
         "RDS Session Host 1 VM Size": {
             "type": "string",
-            "defaultValue": "Standard_B8ms",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
                 "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",
@@ -64,8 +66,9 @@
         },
         "RDS Session Host 2 VM Size": {
             "type": "string",
-            "defaultValue": "Standard_B8ms",
+            "defaultValue": "Standard_B2ms",
             "allowedValues": [
+                "Standard_B2ms",
                 "Standard_B8ms",
                 "Standard_F8s_v2",
                 "Standard_F16s_v2",

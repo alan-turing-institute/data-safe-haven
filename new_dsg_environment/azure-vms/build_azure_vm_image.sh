@@ -10,7 +10,7 @@ END="\033[0m"
 RESOURCEGROUP="RG_SH_IMAGEGALLERY"
 SOURCEIMAGE="Ubuntu"
 SUBSCRIPTION="" # must be provided
-VMSIZE="Standard_E8s_v3"
+VMSIZE="Standard_E16s_v3"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
@@ -26,7 +26,7 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
     echo "  -h                           display help"
     echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
-    echo "  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)"
+    echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
     exit 1
@@ -150,9 +150,8 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --priority 3000
 fi
 
-# Select source image - either Ubuntu 18.04 or Microsoft Data Science (based on Ubuntu 16.04).
+# Select source image - either Ubuntu 18.04 or Ubuntu 18.04 plus Torch
 # If anything else is requested then print usage message and exit.
-# If using the Data Science VM then the terms will be automatically accepted.
 TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
 if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
@@ -166,13 +165,6 @@ if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
     DISKSIZEGB="60"
-elif [ "$SOURCEIMAGE" = "DataScience" ]; then
-    MACHINENAME="${MACHINENAME}-DataScienceBase"
-    SOURCEIMAGE="microsoft-ads:linux-data-science-vm-ubuntu:linuxdsvmubuntubyol:18.08.00"
-    cp cloud-init-buildimage-datascience.yaml $TMP_CLOUD_CONFIG_YAML
-    DISKSIZEGB="60"
-    echo -e "${BLUE}Auto-accepting licence terms for the Data Science VM${END}"
-    az vm image accept-terms --urn $SOURCEIMAGE
 else
     echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
@@ -196,6 +188,7 @@ rm r_package_specs.yaml
 echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
 echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
+
 az vm create \
   --admin-username $ADMIN_USERNAME \
   --custom-data $TMP_CLOUD_CONFIG_YAML \

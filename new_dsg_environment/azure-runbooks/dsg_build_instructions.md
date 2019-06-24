@@ -46,7 +46,7 @@
 ### Access to required DSG resources
 
 - Access to a new Azure subscription which the DSG will be deployed to
-  
+
   - If a subscription does not exist, create one with the name `Data Study Group <dsg-id> (<shm-id>)`, picking a DSG ID that is not yet in use and setting `<shm-id>` to `test` for test and `prod` for production.
 
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
@@ -58,7 +58,7 @@
   - This should be called `dsgroup<dsg-id>.co.uk` and Rob Clarke can buy a new one if required
 
   - A DNS for this domain must exist in the Safe Haven Management subscription, in the `RG_SHM_DNS` resource group. To create a new DNS zone:
-   
+
     - From within the resource group click `"+" Add -> DNS Zone` and click "create"
 
     - Set the **Name** field to the DSG domain (i.e. `dsgroup<dsg-id>.co.uk`)
@@ -66,22 +66,22 @@
     - Click "create and review"
 
     - View the new Azure DNS zone and copy the 4 nameservers in the "NS" record.
-    
+
     - Send the nameservers to Rob Clarke to add the domain's DNS record at the domain registrar
 
 ### Install and configure PowerShell for Azure
 
-- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
+- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 
   - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
 
-- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
+- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 
 ### Install and configure Linux command line
 
-- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10
+- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 
-- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest)
+- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
 
   - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
 
@@ -203,7 +203,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 ### Set up a VPN connection to the DSG
 
 - In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> DSG_VNET1_GW`
-  
+
   - Select "**Point to Site Configuration**" fromt he left-hand navigation
 
   - Download the VPN client from the "Point to Site configuration" menu
@@ -250,17 +250,17 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Change to `C:\Scripts`
 
-- In Powershell run  `Set-executionpolicy Unrestricted` 
+- In Powershell run  `Set-executionpolicy Unrestricted`
 
 - Set the VM to United Kingdom/GMT timezone by running the following command:
 
-  
+
   | **Command**       |      **Parameters** |  **Description** |
   | -- | -- | -- |
   |`Set_OS_Language.ps1`  |  n/a  |             n/a |
-  
+
 - Setup the accounts on the Active Directory by running the following command with these parameters.
- 
+
   |  **Command**            |          **Parameters**  |  **Description** |
   | -- | -- | -- |
   | `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
@@ -351,7 +351,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   | | |
   | -- | -- |
-  | Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk | 
+  | Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk |
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
@@ -428,7 +428,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Change to `C:\Scripts`
 
 - Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
-  
+
   | **Command**   | **Parameters** |  **Description** |
   | -- | -- | -- |
   | `OS_Prep.ps1`  | -domain  |        Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>`
@@ -493,7 +493,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | -- | -- | -- |
   | `DeployRDSEnvironment.ps1` | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
   |                          | -dsg           | Enter the DSG name i.e. DSGROUP`<dsg-id>`|
-  |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test) 
+  |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test)
   |                          | -ipaddress     | Enter the first three octets of the Subnet-Data subnet as per the checklist i.e. 10.250.x+2     (where x is the base address)|
 
 - The RDS deployment will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
@@ -512,7 +512,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 To make this Remote Desktop Service accessible from the internet an `A` record will need to be added to the DNS Zone for the domain associated with the DSG.
 
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal. 
+- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal.
 
 #### Configuration of SSL on RDS Gateway
 
@@ -577,7 +577,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - From the Server Manager dashboard select "Tools -> Internet Information Service (IIS) Manager"
- 
+
 - Open Certificates and select "Complete Certificate Request"
 
 - Browse to the folder that you shared with the RDS Gateway from your local computer when you connected to it.
@@ -599,11 +599,11 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   - Right click this certificate and click on `All Tasks -> Export`
 
   - Select "Yes, export the private key" and click "Next"
-  
+
   - Select the "Personal Information Exchange" format and click "Next"
-  
+
   - Check the "Password" box, enter a password and click "Next"
-  
+
   - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
 
 - Export the certificate without it's private key
@@ -611,10 +611,10 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
   - Right click this certificate and click on `All Tasks -> Export`
 
   - Select "No, do not export the private key" and click "Next"
-  
+
   - Select the "DER encoded binary X.509" format and click "Next"
-  
-  
+
+
   - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
@@ -638,7 +638,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
 
 - Install the Remote Desktop Web Client PowerShell Module:
-   
+
   - Run `Install-Module -Name PowerShellGet -Force` within Powershell (Enter "Y" when prompted)
 
   - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
@@ -752,7 +752,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. 
+  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production.
 
 - Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
 
@@ -869,7 +869,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
   - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
   - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
-- The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0) 
+- The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 - A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
 **NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
@@ -879,7 +879,7 @@ To deploy a compute VM you will need the following available on the machine you 
 - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
-- Ensure you are authenticated in the Azure CLI using `az login`
+- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
@@ -897,43 +897,36 @@ To deploy a compute VM you will need the following available on the machine you 
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
-## 8. Lock down network configuration
+## 8. Apply network configuration
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/08_network_lockdown/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./Lockdown_Network.ps1` script, providing the DSG ID when prompted
+- Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
 ## 9. Peer DSG and package mirror networks
-**WARNING:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
+The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network.
 
-**=== Do not peer Tier 3 or above DSGs to the mirror network ===**
+**==THESE SCRIPTS SHOULD NOT BE RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
 
-This script peers the DSG virtual network with the mirror virtual network in the management subscription so that the compute VMs can talk to the mirror servers.
-
-Note that the "inbound one-way airlock" for packages is enforced by the NSG rules for the external and internal mirrrors.
-
-The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and its associated internal mirrors (for pushing to these mirror servers).
-
-The **internal** mirror NSG rules do not allow **any outbound** communication, while permitting inbound communication from their associated external mirrors (to receive pushed package updates) and from the DSGs that are peered with them (to serve packages to these DSGs).
-
-To peer the DSG and package mirror networks:
+However, if you need to unpeer the mirror networks for some reason (e.g. while preparing a DSG subscription for re-use), you can run the unpeering script separately as described below.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/internal/` directory of the Safe Haven repository
+
+- Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Run the `./Peer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
-
+- Run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
 ## 10. Run smoke tests on shared compute VM
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets.
@@ -979,4 +972,4 @@ To run the smoke tests:
   - RDSSH1
   - RDSSH2
   - An initial shared compute VM
-  
+

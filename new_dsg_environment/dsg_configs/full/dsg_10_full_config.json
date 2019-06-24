@@ -54,22 +54,26 @@
     }
   },
   "dsg": {
-    "mirrors": {
-      "vnet": {
-        "rg": "RG_SH_PKG_MIRRORS",
-        "name": "VNET_SH_PKG_MIRRORS"
-      },
-      "cran": {
-        "ip": "10.1.0.21"
-      },
-      "pypi": {
-        "ip": "10.1.0.20"
-      }
-    },
     "subscriptionName": "Data Study Group 10 (Prod)",
     "id": "10",
     "shortName": "dsg10",
     "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
     "domain": {
       "fqdn": "dsgroup10.co.uk",
       "netbiosName": "DSGROUP10",
@@ -182,7 +186,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.253,193.60.220.240"
+          "allowedSources": "Internet"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -217,7 +221,7 @@
       "rg": "RG_DSG_COMPUTE",
       "vmImageSubscription": "Safe Haven Management Testing",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019041601",
+      "vmImageVersion": "0.1.2019061600",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup10-dsvm-admin-password"
