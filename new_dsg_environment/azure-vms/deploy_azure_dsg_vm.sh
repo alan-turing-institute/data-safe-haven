@@ -460,16 +460,16 @@ echo -e "${BOLD}Running cloud-init for deployment...${END}"
 sleep 30
 
 # Poll VM to see whether it has finished running
-echo -e "${BOLD}Waiting for VM setup to finish (this will take 20+ minutes)...${END}"
+echo -e "${BOLD}Waiting for VM setup to finish (this will take 5+ minutes)...${END}"
 while true; do
     # Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
     VM_DOWN=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
     if [ "$VM_DOWN" == "true" ]; then break; fi
-    # ... otherwise print current status and wait for 30s
+    # ... otherwise print current status and wait for 60s
     echo -e "${BOLD}Current VM status at $(date):${END}"
     az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
-    # Only check status every 5 minutes as deployment is expected to take 20 minutes
-    sleep 300
+    # Check status every minute as deployment should take around 5 minutes
+    sleep 60
 done
 
 # VM must be off for us to switch NSG. Once done we restart
