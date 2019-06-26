@@ -4,7 +4,7 @@ param(
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (defaults to 'Standard_DS2_v2')")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (defaults to 'Standard_DS2_v2')"),
   [Parameter(Position=2, HelpMessage = "Last octet of IP address (if not provided then the next available one will be used)")]
-  [string]$fixedIp = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
+  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
 )
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
@@ -27,11 +27,11 @@ if ($null -eq $computeVmRootPassword) {
 
 # Set IP address if we have a fixed IP
 $vmIpAddress = $null
-if ($fixedIp) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $fixedIp }
+if ($ipLastOctet) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $ipLastOctet }
 
 # Set machine name
 $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
-if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
+if ($ipLastOctet) { $vmName = $vmName + "-" + $ipLastOctet }
 
 $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
 $cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
@@ -96,75 +96,4 @@ if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
 bash -c $cmd
 
-
-# Run PostgreSQL setup
-# ====================
-# Fetch Postgres DB Admin password (or create if not present)
-$dbAdminRole = "admin"
-$dbAdminUser = "dbadmin"
-$dbAdminPasswordSecretName = ($config.dsg.shortName + "-pgdbadmin-password")
-$dbAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $dbAdminPasswordSecretName).SecretValueText;
-if ($null -eq $dbAdminPassword) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminPasswordSecretName -SecretValue $newPassword;
-  $dbAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbAdminPasswordSecretName).SecretValueText;
-}
-
-# Fetch Postgres DB Writer password (or create if not present)
-$dbWriterRole = "writer"
-$dbWriterUser = "dbwriter"
-$dbWriterPasswordSecretName = ($config.dsg.shortName + "-pgdbwriter-password")
-$dbWriterPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $dbWriterPasswordSecretName).SecretValueText;
-if ($null -eq $dbWriterPassword) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbWriterPasswordSecretName -SecretValue $newPassword;
-  $dbWriterPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbWriterPasswordSecretName).SecretValueText;
-}
-
-# Fetch Postgres DB Reader password (or create if not present)
-$dbReaderRole = "reader"
-$dbReaderUser = "dbreader"
-$dbReaderPasswordSecretName = ($config.dsg.shortName + "-pgdbreader-password")
-$dbReaderPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $dbReaderPasswordSecretName).SecretValueText;
-if ($null -eq $dbReaderPassword) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbReaderPasswordSecretName -SecretValue $newPassword;
-  $dbReaderPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $dbReaderPasswordSecretName).SecretValueText;
-}
-
-# Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "create_postgres_roles.sh"
-
-Write-Output " - Ensuring Postgres DB roles and initial shared users exist on VM $vmName"
-Write-Output " - User: '$dbAdminUser'; Role: '$dbAdminRole'; Password in KeyVault secret name '$dbAdminPasswordSecretName'"
-Write-Output " - User: '$dbWriterUser'; Role: '$dbWriterRole'; Password in KeyVault secret name '$dbWriterPasswordSecretName'"
-Write-Output " - User: '$dbReaderUser'; Role: '$dbReaderRole'; Password in KeyVault secret name '$dbReaderPasswordSecretName'"
-
-$params = @{
-  DBADMINROLE = $dbAdminRole
-  DBADMINUSER = $dbAdminUser
-  DBADMINPWD = $dbAdminPassword
-  DBWRITERROLE = $dbWriterRole
-  DBWRITERUSER = $dbWriterUser
-  DBWRITERPWD = $dbWriterPassword
-  DBREADERROLE = $dbReaderRole
-  DBREADERUSER = $dbReaderUser
-  DBREADERPWD = $dbReaderPassword
-};
-
-# Switch to DSG subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $subscriptionTarget;
-
-$result = Invoke-AzVMRunCommand -ResourceGroupName $targetRg -Name "$vmName" `
-          -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
-Write-Output $result.Value;
-
-# Switch back to previous subscription
-$_ = Set-AzContext -Context $prevContext;
+Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
