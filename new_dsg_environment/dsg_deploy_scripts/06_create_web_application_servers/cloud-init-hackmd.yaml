@@ -15,9 +15,11 @@ runcmd:
   - apt update
   - apt install -y docker-ce
   - apt install -y docker-compose
+  - echo "Pulling HackMD Docker image"
   - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
   - |
     sed -i "s/version: '3'/version: '2'/" /src/docker-hackmd/docker-compose.yml
+  - echo "Updating HackMD configuration"
   - |
     export ENVLOC=$(($(grep -n environment /src/docker-hackmd/docker-compose.yml | tail -1 | cut -d : -f 1)+1))
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_ALLOW_ANONYMOUS=false" /src/docker-hackmd/docker-compose.yml
@@ -31,5 +33,6 @@ runcmd:
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_URL=<hackmd-ldap-url>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-bios>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_IMAGE_UPLOAD_TYPE=filesystem" /src/docker-hackmd/docker-compose.yml
+  - echo "Starting HackMD"
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
   
