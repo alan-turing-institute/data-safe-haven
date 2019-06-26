@@ -30,6 +30,6 @@ runcmd:
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_BINDDN=<hackmd-bind-dn>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_URL=<hackmd-ldap-url>" /src/docker-hackmd/docker-compose.yml
   - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-bios>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - CMD_IMAGE_UPLOAD_TYPE=filesystem" /src/docker-hackmd/docker-compose.yml
+  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_IMAGE_UPLOAD_TYPE=filesystem" /src/docker-hackmd/docker-compose.yml
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
   
