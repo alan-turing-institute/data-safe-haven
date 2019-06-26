@@ -88,10 +88,6 @@ Write-Output " - User: '$dbAdminUser'; Role: '$dbAdminRole'; Password in KeyVaul
 Write-Output " - User: '$dbWriterUser'; Role: '$dbWriterRole'; Password in KeyVault secret name '$dbWriterPasswordSecretName'"
 Write-Output " - User: '$dbReaderUser'; Role: '$dbReaderRole'; Password in KeyVault secret name '$dbReaderPasswordSecretName'"
 
-# Switch to DSG subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $subscriptionTarget;
-
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$vmName" `
           -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
 Write-Output $result.Value;
