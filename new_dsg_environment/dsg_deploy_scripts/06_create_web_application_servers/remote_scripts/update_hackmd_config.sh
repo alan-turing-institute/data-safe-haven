@@ -1,6 +1,10 @@
 #!/bin/bash
-# $LDAP_USER must be present as an environment variable
-# $DOMAIN_LOWER must be present as an environment variable
+# $HMD_LDAP_SEARCHFILTER must be present as an environment variable
+# $HMD_LDAP_SEARCHBASE must be present as an environment variable
+# $HMD_LDAP_BINDCREDENTIALS must be present as an environment variable
+# $HMD_LDAP_BINDDN must be present as an environment variable
+# $HMD_LDAP_URL must be present as an environment variable
+# $HMD_LDAP_PROVIDERNAME must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
