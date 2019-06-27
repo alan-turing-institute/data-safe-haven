@@ -25,6 +25,7 @@ $webAppVmNicIds = ($webAppVms | ForEach-Object{(Get-AzVM -ResourceGroupName $con
 $webAppVmNics = ($webAppVmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $_.Split("/")[-1]})
 ## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
 $vmName = ($webAppVmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
+Write-Output " - VM '$vmName' found"
 
 # Set HackMD config values
 $hackmdLdapSearchFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
