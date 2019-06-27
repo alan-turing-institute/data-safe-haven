@@ -18,13 +18,13 @@ database:
     #  - /run/postgresql:size=512K
     #  - /tmp:size=256K
     environment:
-    - POSTGRES_USER=hackmd
-    - POSTGRES_PASSWORD=hackmdpass
-    - POSTGRES_DB=hackmd
+      - POSTGRES_USER=hackmd
+      - POSTGRES_PASSWORD=hackmdpass
+      - POSTGRES_DB=hackmd
     volumes:
-    - database:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
     networks:
-    backend:
+      backend:
     restart: always
 
 app:
@@ -38,49 +38,49 @@ app:
     # Make sure you remove this when you use filesystem as upload type
     #  - /hackmd/public/uploads:size=10M
     volumes:
-    - uploads:/hackmd/public/uploads
+      - uploads:/hackmd/public/uploads
     environment:
-    # DB_URL is formatted like: <databasetype>://<username>:<password>@<hostname>/<database>
-    # Other examples are:
-    # - mysql://hackmd:hackmdpass@database:3306/hackmd
-    # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
-    # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
-    - HMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
-    - HMD_ALLOW_ANONYMOUS=false
-    - HMD_ALLOW_FREEURL=true
-    - HMD_EMAIL=false
-    - HMD_USECDN=false
-    - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
-    - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
-    - HMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
-    - HMD_LDAP_BINDDN=<hackmd-bind-dn>
-    - HMD_LDAP_URL=<hackmd-ldap-url>
-    - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
-    - HMD_IMAGE_UPLOAD_TYPE=filesystem
+      # DB_URL is formatted like: <databasetype>://<username>:<password>@<hostname>/<database>
+      # Other examples are:
+      # - mysql://hackmd:hackmdpass@database:3306/hackmd
+      # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
+      # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
+      - HMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
+      - HMD_ALLOW_ANONYMOUS=false
+      - HMD_ALLOW_FREEURL=true
+      - HMD_EMAIL=false
+      - HMD_USECDN=false
+      - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
+      - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
+      - HMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
+      - HMD_LDAP_BINDDN=<hackmd-bind-dn>
+      - HMD_LDAP_URL=<hackmd-ldap-url>
+      - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
+      - HMD_IMAGE_UPLOAD_TYPE=filesystem
     ports:
-    # Ports that are published to the outside.
-    # The latter port is the port inside the container. It should always stay on 3000
-    # If you only specify a port it'll published on all interfaces. If you want to use a
-    # local reverse proxy, you may want to listen on 127.0.0.1.
-    # Example:
-    # - "127.0.0.1:3000:3000"
-    - "3000:3000"
+      # Ports that are published to the outside.
+      # The latter port is the port inside the container. It should always stay on 3000
+      # If you only specify a port it'll published on all interfaces. If you want to use a
+      # local reverse proxy, you may want to listen on 127.0.0.1.
+      # Example:
+      # - "127.0.0.1:3000:3000"
+      - "3000:3000"
     networks:
-    backend:
+      backend:
     restart: always
     depends_on:
-    - database
+      - database
 
 # Define networks to allow best isolation
 networks:
-# Internal network for communication with PostgreSQL/MySQL
-backend:
+  # Internal network for communication with PostgreSQL/MySQL
+  backend:
     
 # Define named volumes so data stays in place
 volumes:
-# Volume for PostgreSQL/MySQL database
-database:
-uploads:
+  # Volume for PostgreSQL/MySQL database
+  database:
+  uploads:
 EOM
 
 echo "Template HackMD config:"
