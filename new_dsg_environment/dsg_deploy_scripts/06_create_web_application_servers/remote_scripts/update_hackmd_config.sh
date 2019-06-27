@@ -84,9 +84,7 @@ volumes:
     uploads:
 EOM
 
-echo "Template HackMD config:"
-echo "$HACKMD_CONFIG" 
-
+echo "Updating HackMD config"
 TEMP_CONFIG="/tmp/docker-compose-hackmd.yml"
 sudo echo "$HACKMD_CONFIG" > $TEMP_CONFIG
 
@@ -97,13 +95,11 @@ sed -i.bak "s%<hackmd-bind-dn>%${HMD_LDAP_BINDDN}%g" $TEMP_CONFIG
 sed -i.bak "s%<hackmd-ldap-url>%${HMD_LDAP_URL}%g" $TEMP_CONFIG
 sed -i.bak "s%<hackmd-ldap-netbios>%${HMD_LDAP_PROVIDERNAME}%g" $TEMP_CONFIG
 
-echo "Patched HackMD config:"
-sudo cat $TEMP_CONFIG
-
 # copy config to placeholder used by cloud-init (to ensure consistency of this copy)
 sudo cp $TEMP_CONFIG /docker-compose-hackmd.yml
 # Copy config placeholder to location used by docker
 sudo cp $TEMP_CONFIG /src/docker-hackmd/docker-compose.yml
 echo "HackMD configuration updated"
+cat /src/docker-hackmd/docker-compose.yml
 sudo docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
 echo "HackMD restarted"
