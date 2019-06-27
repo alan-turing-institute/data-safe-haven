@@ -22,7 +22,7 @@ Write-Host " - Finding VM with IP $vmIpAddress"
 $webAppVms = Get-AzVM -ResourceGroupName $config.dsg.linux.rg
 ## Get the NICs attached to all the compute VMs
 $webAppVmNicIds = ($webAppVms | ForEach-Object{(Get-AzVM -ResourceGroupName $config.dsg.linux.rg -Name $_.Name).NetworkProfile.NetworkInterfaces.Id})
-$webAppVmNics = ($webAppVmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $config.dsg.dsvm.rg -Name $_.Split("/")[-1]})
+$webAppVmNics = ($webAppVmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $config.dsg.linux.rg -Name $_.Split("/")[-1]})
 ## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
 $vmName = ($webAppVmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
 
