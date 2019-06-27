@@ -119,7 +119,12 @@ uploads:
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "update_hackmd_config.sh"
 
 $params = @{
-    HACKMD_CONFIG = $hackmdConfig
+    HMD_LDAP_SEARCHFILTER=$hackmdLdapSearchFilter
+    HMD_LDAP_SEARCHBASE=$hackmdLdapSearchBase
+    HMD_LDAP_BINDCREDENTIALS=$hackmdBindCreds
+    HMD_LDAP_BINDDN=$hackmdLdapBindDn
+    HMD_LDAP_URL=$hackmdLdapUrl
+    HMD_LDAP_PROVIDERNAME=$hackmdLdapProviderName
 };
 
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.linux.rg -Name "$vmName" `
