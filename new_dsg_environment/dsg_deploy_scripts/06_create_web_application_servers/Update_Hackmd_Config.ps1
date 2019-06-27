@@ -121,9 +121,6 @@ $params = @{
     HACKMS_CONFIG = $hackmdConfig
 };
 
-Write-Output $hackmdConfig
-Exit 1
-
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$vmName" `
           -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
 Write-Output $result.Value;
