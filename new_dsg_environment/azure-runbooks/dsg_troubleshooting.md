@@ -1,23 +1,45 @@
 Troubleshooting Compute VM deployments
 ======================================
 
-## Unable to log in to the Shared VM
+## Login failures
 
-If you see an error message like this:
+There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
 
-![compute_vm_login_failure.png](images/media/compute_vm_login_failure.png)
+### 1. Failure when logging into the environment via web browser
 
-there are a couple of possible causes
+![environment_access_01_password_login](images/environment_access/01_password_login.png)
 
-1. the username or password was incorrect
-2. the computer is unable to communicate with the login server
+#### Possible problems and solutions
+1. User cannot progress pass this screen
+- Check user credentials, password may need to be reset.
 
-### Incorrect username/password
+
+### 2. Failure when authenticating with the Shared VM or presentation server
+
+![environment_access_02_shared_vm](images/environment_access/02_shared_vm.png)
+
+#### Possible problems and solutions
+1. User never gets the MFA prompt on their phone (app or phone call)
+- Check that the user phone number is correctly specified (Microsoft expects the format to be +44 07891234567)
+
+### 3. Failure when logging into the Shared VM
+If users can get to the login screen:
+
+![environment_access_03_compute_vm_login](images/environment_access/03_compute_vm_login.png)
+
+... but then see this error message:
+
+![environment_access_03_compute_vm_login_failure.png](images/environment_access/03_compute_vm_login_failure.png)
+
+there are a couple of possible causes.
+
+#### Possible problems and solutions
+1. the username or password was incorrectly entered
 - Confirm that the username and password have been correctly typed
 - Confirm that there are no unsupported special characters in the password
 - Reset the account if there is no other solution
 
-### Unable to communicate with the login server
+2. the computer is unable to communicate with the login server
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 - Run the script under `dsg_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
