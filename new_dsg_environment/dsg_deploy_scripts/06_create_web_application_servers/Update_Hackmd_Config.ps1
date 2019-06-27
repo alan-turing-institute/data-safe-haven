@@ -86,7 +86,7 @@ app:
     - HMD_LDAP_BINDCREDENTIALS=$hackdBindCreds
     - HMD_LDAP_BINDDN=$hackmdLdapBindDn
     - HMD_LDAP_URL=$hackmdLdapUrl
-    - HMD_LDAP_PROVIDERNAME=$hackmdLdapProviderName
+    - HMD_LDAP_PROVIDERNAME=configUpdated
     - HMD_IMAGE_UPLOAD_TYPE=filesystem
     ports:
     # Ports that are published to the outside.
