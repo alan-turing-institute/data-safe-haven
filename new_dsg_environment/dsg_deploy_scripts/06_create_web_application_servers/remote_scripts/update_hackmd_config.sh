@@ -87,7 +87,7 @@ echo "Template HackMD config:"
 echo "$HACKMD_CONFIG" 
 
 TEMP_CONFIG="/tmp/docker-compose-hackmd.yml"
-echo "$HACKMD_CONFIG" > $TEMP_CONFIG
+sudo echo "$HACKMD_CONFIG" > $TEMP_CONFIG
 
 sed -i.bak "s%<hackmd-user-filter>%${HMD_LDAP_SEARCHFILTER}%g" $TEMP_CONFIG
 sed -i.bak "s%<hackmd-ldap-base>%${HMD_LDAP_SEARCHBASE}%g" $TEMP_CONFIG
@@ -100,11 +100,10 @@ echo "Patched HackMD config:"
 cat $TEMP_CONFIG
 exit 1
 
-# Write config to placeholder used by cloud-init (to ensure consistency of this copy)
-sudo echo "$TEMP_CONFIG" > /docker-compose-hackmd.yml
-cat /tmp/docker-compose-hackmd.yml
+# copy config to placeholder used by cloud-init (to ensure consistency of this copy)
+sudo cp $TEMP_CONFIG /docker-compose-hackmd.yml
 # Copy config placeholder to location used by docker
-sudo cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
+sudo cp $TEMP_CONFIG /src/docker-hackmd/docker-compose.yml
 echo "HackMD configuration updated"
 sudo docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
 echo "HackMD restarted"
