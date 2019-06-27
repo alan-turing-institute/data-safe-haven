@@ -6,6 +6,7 @@
 # passed in its -Parameter argument as environment variables
 
 read -r -d '' HACKMD_CONFIG <<- EOM
+version: '2'
 services:
 database:
     # Don't upgrade PostgreSQL by simply changing the version number
