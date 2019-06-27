@@ -36,6 +36,7 @@ write_files:
             networks:
               backend:
             restart: always
+
           app:
             image: hackmdio/hackmd:1.2.0
             #mem_limit: 256mb         # version 2 only
@@ -68,10 +69,12 @@ write_files:
             restart: always
             depends_on:
               - database
+
         # Define networks to allow best isolation
         networks:
           # Internal network for communication with PostgreSQL/MySQL
           backend:
+            
         # Define named volumes so data stays in place
         volumes:
           # Volume for PostgreSQL/MySQL database
