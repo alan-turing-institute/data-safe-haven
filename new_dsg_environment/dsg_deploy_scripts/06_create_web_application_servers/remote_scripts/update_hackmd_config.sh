@@ -5,7 +5,7 @@
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
 
-read -r -f '' HACKMD_CONFIG <<- EOM
+read -r -d '' HACKMD_CONFIG <<- EOM
 services:
 database:
     # Don't upgrade PostgreSQL by simply changing the version number
@@ -83,15 +83,25 @@ database:
 uploads:
 EOM
 
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-user-filter>/${HMD_LDAP_SEARCHFILTER}/g")
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-ldap-base>/${HMD_LDAP_SEARCHBASE}/g")
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-bind-creds>/${HMD_LDAP_BINDCREDENTIALS}/g")
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-bind-dn>/${HMD_LDAP_BINDDN}/g")
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-ldap-url>/${HMD_LDAP_URL}/g")
-HACKMD_CONFIG=$($HACKMD_CONFIG | sed "s/<hackmd-ldap-netbios>/${HMD_LDAP_PROVIDERNAME}/g")
+echo "Template HackMD config:"
+echo "$HACKMD_CONFIG" 
+
+TEMP_CONFIG="/tmp/docker-compose-hackmd.yml"
+echo "$HACKMD_CONFIG" > $TEMP_CONFIG
+
+sed -i.bak "s%<hackmd-user-filter>%${HMD_LDAP_SEARCHFILTER}%g" $TEMP_CONFIG
+sed -i.bak "s%<hackmd-ldap-base>%${HMD_LDAP_SEARCHBASE}%g" $TEMP_CONFIG
+sed -i.bak "s%<hackmd-bind-creds>%${HMD_LDAP_BINDCREDENTIALS}%g" $TEMP_CONFIG
+sed -i.bak "s%<hackmd-bind-dn>%${HMD_LDAP_BINDDN}%g" $TEMP_CONFIG
+sed -i.bak "s%<hackmd-ldap-url>%${HMD_LDAP_URL}%g" $TEMP_CONFIG
+sed -i.bak "s%<hackmd-ldap-netbios>%${HMD_LDAP_PROVIDERNAME}%g" $TEMP_CONFIG
+
+echo "Patched HackMD config:"
+cat $TEMP_CONFIG
+exit 1
 
 # Write config to placeholder used by cloud-init (to ensure consistency of this copy)
-sudo echo "$HACKMD_CONFIG" > /tmp/docker-compose-hackmd.yml
+sudo echo "$TEMP_CONFIG" > /docker-compose-hackmd.yml
 cat /tmp/docker-compose-hackmd.yml
 # Copy config placeholder to location used by docker
 sudo cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
