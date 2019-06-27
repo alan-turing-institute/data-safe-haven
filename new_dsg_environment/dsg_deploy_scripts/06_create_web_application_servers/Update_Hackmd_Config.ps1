@@ -35,7 +35,7 @@ $hackmdLdapBindDn = "CN=" + $config.dsg.users.ldap.hackmd.name + "," + $config.s
 $hackmdLdapUrl = "ldap://" + $config.shm.dc.fqdn
 $hackmdLdapProviderName = $config.shm.domain.netbiosName
 
-## Creare hackmd docker-compose.yaml config file
+## Create hackmd docker-compose.yaml config file
 $hackmdConfig = @"
 version: '2'
 services:
