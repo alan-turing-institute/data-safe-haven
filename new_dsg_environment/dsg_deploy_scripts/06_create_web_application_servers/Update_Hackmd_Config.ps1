@@ -83,10 +83,10 @@ app:
     - HMD_USECDN=false
     - HMD_LDAP_SEARCHFILTER=$hackmdLdapSearchFilter
     - HMD_LDAP_SEARCHBASE=$hackmdLdapSearchBase
-    - HMD_LDAP_BINDCREDENTIALS=$hackdBindCreds
+    - HMD_LDAP_BINDCREDENTIALS=$hackmdBindCreds
     - HMD_LDAP_BINDDN=$hackmdLdapBindDn
     - HMD_LDAP_URL=$hackmdLdapUrl
-    - HMD_LDAP_PROVIDERNAME=configUpdated
+    - HMD_LDAP_PROVIDERNAME=$hackmdLdapProviderName
     - HMD_IMAGE_UPLOAD_TYPE=filesystem
     ports:
     # Ports that are published to the outside.
@@ -118,7 +118,7 @@ uploads:
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "update_hackmd_config.sh"
 
 $params = @{
-    HACKMS_CONFIG = $hackmdConfig
+    HACKMD_CONFIG = $hackmdConfig
 };
 
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name "$vmName" `
