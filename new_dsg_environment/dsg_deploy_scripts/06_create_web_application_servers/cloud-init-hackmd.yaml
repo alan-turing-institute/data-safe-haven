@@ -17,22 +17,82 @@ runcmd:
   - apt install -y docker-compose
   - echo "Pulling HackMD Docker image"
   - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
-  - |
-    sed -i "s/version: '3'/version: '2'/" /src/docker-hackmd/docker-compose.yml
   - echo "Updating HackMD configuration"
-  - |
-    export ENVLOC=$(($(grep -n environment /src/docker-hackmd/docker-compose.yml | tail -1 | cut -d : -f 1)+1))
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_ALLOW_ANONYMOUS=false" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_ALLOW_FREEURL=true" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_EMAIL=false" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_USECDN=false" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_BINDDN=<hackmd-bind-dn>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_URL=<hackmd-ldap-url>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-bios>" /src/docker-hackmd/docker-compose.yml
-  - sed -i "$ENVLOC i\ \ \ \ \ \ - HMD_IMAGE_UPLOAD_TYPE=filesystem" /src/docker-hackmd/docker-compose.yml
+  - path: "/src/docker-hackmd/docker-compose.yml"
+    content: |
+      version: '2'
+        services:
+          database:
+            # Don't upgrade PostgreSQL by simply changing the version number
+            # You need to migrate the Database to the new PostgreSQL version
+            image: postgres:9.6-alpine
+            #mem_limit: 256mb         # version 2 only
+            #memswap_limit: 512mb     # version 2 only
+            #read_only: true          # not supported in swarm mode please enable along with tmpfs
+            #tmpfs:
+            #  - /run/postgresql:size=512K
+            #  - /tmp:size=256K
+            environment:
+              - POSTGRES_USER=hackmd
+              - POSTGRES_PASSWORD=hackmdpass
+              - POSTGRES_DB=hackmd
+              - HMD_ALLOW_ANONYMOUS=false
+              - HMD_ALLOW_FREEURL=true
+              - HMD_EMAIL=false
+              - HMD_USECDN=false
+              - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
+              - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
+              - HMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
+              - HMD_LDAP_BINDDN=<hackmd-bind-dn>
+              - HMD_LDAP_URL=<hackmd-ldap-url>
+              - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
+              - HMD_IMAGE_UPLOAD_TYPE=filesystem
+            volumes:
+              - database:/var/lib/postgresql/data
+            networks:
+              backend:
+            restart: always
+          app:
+            image: hackmdio/hackmd:1.2.0
+            #mem_limit: 256mb         # version 2 only
+              #memswap_limit: 512mb     # version 2 only
+          #read_only: true          # not supported in swarm mode, enable along with tmpfs
+            #tmpfs:
+            #  - /tmp:size=512K
+            #  - /hackmd/tmp:size=1M
+            # Make sure you remove this when you use filesystem as upload type
+            #  - /hackmd/public/uploads:size=10M
+            volumes:
+              - uploads:/hackmd/public/uploads
+            environment:
+              # DB_URL is formatted like: <databasetype>://<username>:<password>@<hostname>/<database>
+              # Other examples are:
+              # - mysql://hackmd:hackmdpass@database:3306/hackmd
+              # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
+              # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
+              - HMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
+            ports:
+              # Ports that are published to the outside.
+              # The latter port is the port inside the container. It should always stay on 3000
+              # If you only specify a port it'll published on all interfaces. If you want to use a
+              # local reverse proxy, you may want to listen on 127.0.0.1.
+              # Example:
+              # - "127.0.0.1:3000:3000"
+              - "3000:3000"
+              networks:
+                backend:
+            restart: always
+            depends_on:
+              - database
+        # Define networks to allow best isolation
+        networks:
+          # Internal network for communication with PostgreSQL/MySQL
+          backend:
+        # Define named volumes so data stays in place
+        volumes:
+          # Volume for PostgreSQL/MySQL database
+          database:
+          uploads:
   - echo "Starting HackMD"
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
   
