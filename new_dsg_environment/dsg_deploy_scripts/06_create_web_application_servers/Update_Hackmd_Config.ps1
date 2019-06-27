@@ -47,8 +47,6 @@ $params = @{
     HMD_LDAP_PROVIDERNAME="'$hackmdLdapProviderName'"
 };
 
-Write-Output $params
-
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.linux.rg -Name "$vmName" `
           -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
 Write-Output $result.Value;
