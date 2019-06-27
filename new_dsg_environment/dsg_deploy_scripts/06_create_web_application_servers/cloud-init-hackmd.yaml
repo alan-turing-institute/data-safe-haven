@@ -64,8 +64,8 @@ write_files:
             # Example:
             # - "127.0.0.1:3000:3000"
             - "3000:3000"
-            networks:
-              backend:
+          networks:
+            backend:
           restart: always
           depends_on:
             - database
@@ -101,4 +101,3 @@ runcmd:
   - cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
   - echo "Starting HackMD"
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
-  
