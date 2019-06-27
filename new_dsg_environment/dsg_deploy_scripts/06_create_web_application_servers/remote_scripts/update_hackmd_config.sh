@@ -97,8 +97,7 @@ sed -i.bak "s%<hackmd-ldap-url>%${HMD_LDAP_URL}%g" $TEMP_CONFIG
 sed -i.bak "s%<hackmd-ldap-netbios>%${HMD_LDAP_PROVIDERNAME}%g" $TEMP_CONFIG
 
 echo "Patched HackMD config:"
-cat $TEMP_CONFIG
-exit 1
+sudo cat $TEMP_CONFIG
 
 # copy config to placeholder used by cloud-init (to ensure consistency of this copy)
 sudo cp $TEMP_CONFIG /docker-compose-hackmd.yml
