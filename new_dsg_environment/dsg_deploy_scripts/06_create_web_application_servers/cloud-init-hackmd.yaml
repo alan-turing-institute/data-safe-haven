@@ -1,24 +1,8 @@
 #cloud-config
 package_upgrade: false
 
-runcmd:
-  # Install LDAP tools for debugging LDAP issues
-  - apt-get install ldap-utils
-  - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
-  - echo "Europe/London" > /etc/timezone
-  - dpkg-reconfigure -f noninteractive tzdata
-  - apt-get update
-  - apt upgrade
-  - apt install -y apt-transport-https ca-certificates curl software-properties-common
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
-  - apt update
-  - apt install -y docker-ce
-  - apt install -y docker-compose
-  - echo "Pulling HackMD Docker image"
-  - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
-  - echo "Updating HackMD configuration"
-  - path: "/src/docker-hackmd/docker-compose.yml"
+write_files:
+  - path: "/docker-compose-hackmd.yml"
     content: |
       version: '2'
         services:
@@ -93,6 +77,25 @@ runcmd:
           # Volume for PostgreSQL/MySQL database
           database:
           uploads:
+
+runcmd:
+  # Install LDAP tools for debugging LDAP issues
+  - apt-get install ldap-utils
+  - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
+  - echo "Europe/London" > /etc/timezone
+  - dpkg-reconfigure -f noninteractive tzdata
+  - apt-get update
+  - apt upgrade
+  - apt install -y apt-transport-https ca-certificates curl software-properties-common
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
+  - apt update
+  - apt install -y docker-ce
+  - apt install -y docker-compose
+  - echo "Pulling HackMD Docker image"
+  - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
+  - echo "Overwriting HackMD configuration"
+  - cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
   - echo "Starting HackMD"
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
   
