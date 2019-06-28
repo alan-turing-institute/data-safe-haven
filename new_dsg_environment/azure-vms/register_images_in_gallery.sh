@@ -7,15 +7,15 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-SUBSCRIPTION="" # must be provided
+SUBSCRIPTION="Safe Haven VM Images"
 MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
-GALLERYNAME="SIG_SH_COMPUTE" # must be unique within this subscription
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+GALLERYNAME="SIG_SHM_COMPUTE" # must be unique within this subscription
+RESOURCEGROUP="RG_SHM_IMAGE_GALLERY"
 VERSIONSUFFIX=""
 
 # Other constants
-SUPPORTEDIMAGES=("ComputeVM-DataScienceBase" "ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base" "ComputeVM-DsgBase")
+SUPPORTEDIMAGES=("ComputeVM-Ubuntu1804Base" "ComputeVM-UbuntuTorch1804Base")
 VERSIONMAJOR="0"
 VERSIONMINOR="1"
 
@@ -23,7 +23,7 @@ VERSIONMINOR="1"
 print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image | -n machine_name] [-r resource_group] [-v version_suffix]"
     echo "  -h                                        display help"
-    echo "  -s subscription [required]                specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')"
+    echo "  -s subscription                           specify subscription for storing the VM images. (defaults to '${SUBSCRIPTION}')"
     echo "  -i source_image [this or '-n' required]   specify an already existing image to add to the gallery [either this or machine_name are required]."
     echo "  -n machine_name [this or '-i' required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required]."
     echo "  -g gallery_name                           specify which image gallery to use, creating it if it does not exist. Must be unique within the subscription (defaults to '${GALLERYNAME}')"

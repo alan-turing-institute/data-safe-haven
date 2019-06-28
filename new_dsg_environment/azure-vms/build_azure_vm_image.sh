@@ -7,9 +7,9 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 # Options which are configurable at the command line
-RESOURCEGROUP="RG_SH_IMAGEGALLERY"
+RESOURCEGROUP="RG_SHM_IMAGE_BUILD"
 SOURCEIMAGE="Ubuntu"
-SUBSCRIPTION="" # must be provided
+SUBSCRIPTION="Safe Haven VM Images"
 VMSIZE="Standard_E16s_v3"
 
 # Other constants
@@ -25,7 +25,7 @@ IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
     echo "  -h                           display help"
-    echo "  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')"
+    echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${SUBSCRIPTION}')"
     echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
@@ -124,30 +124,30 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
     az network nsg rule create \
-        --resource-group $RESOURCEGROUP \
-        --nsg-name $NSGNAME \
-        --direction Inbound \
-        --name ManualConfigSSH \
         --description "Allow port 22 for management over ssh" \
-        --source-address-prefixes 193.60.220.240 193.60.220.253 \
-        --source-port-ranges "*" \
         --destination-address-prefixes "*" \
         --destination-port-ranges 22 \
-        --protocol TCP \
-        --priority 100
-    az network nsg rule create \
-        --resource-group $RESOURCEGROUP \
-        --nsg-name $NSGNAME \
         --direction Inbound \
-        --name DenyAll \
-        --description "Deny all" \
+        --name ManualConfigSSH \
+        --nsg-name $NSGNAME \
+        --priority 100 \
+        --protocol TCP \
+        --resource-group $RESOURCEGROUP \
+        --source-address-prefixes 193.60.220.240 193.60.220.253 \
+        --source-port-ranges "*"
+    az network nsg rule create \
         --access "Deny" \
-        --source-address-prefixes "*" \
-        --source-port-ranges "*" \
+        --description "Deny all" \
         --destination-address-prefixes "*" \
         --destination-port-ranges "*" \
+        --direction Inbound \
+        --name DenyAll \
+        --nsg-name $NSGNAME \
+        --priority 3000 \
         --protocol "*" \
-        --priority 3000
+        --resource-group $RESOURCEGROUP \
+        --source-address-prefixes "*" \
+        --source-port-ranges "*"
 fi
 
 # Select source image - either Ubuntu 18.04 or Ubuntu 18.04 plus Torch
