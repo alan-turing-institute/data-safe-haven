@@ -1,24 +1,17 @@
 #! /bin/bash
 
-# Constants for colourised output
-BOLD="\033[1m"
-RED="\033[0;31m"
-BLUE="\033[0;36m"
-END="\033[0m"
+# Load common constants and options
+source ${BASH_SOURCE%/*}/configs/text.sh
 
-# Options which are configurable at the command line
-RESOURCEGROUP="RG_SHM_IMAGE_BUILD"
 SOURCEIMAGE="Ubuntu"
-SUBSCRIPTION="Safe Haven VM Images"
 VMSIZE="Standard_E16s_v3"
 
 # Other constants
 ADMIN_USERNAME="atiadmin"
 MACHINENAME="ComputeVM"
-LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 NSGNAME="NSG_IMAGE_BUILD"
 VNETNAME="VNET_IMAGE_BUILD"
-SUBNETNAME="SBNET_IMAGE_BUILD"
+SUBNETNAME="SUBNET_IMAGE_BUILD"
 IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 
 # Document usage for this script
@@ -27,7 +20,7 @@ print_usage_and_exit() {
     echo "  -h                           display help"
     echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${SUBSCRIPTION}')"
     echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
-    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
+    echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP_BUILD}')"
     echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
     exit 1
 }
@@ -42,7 +35,7 @@ while getopts "hi:r:s:z:" opt; do
             SOURCEIMAGE=$OPTARG
             ;;
         r)
-            RESOURCEGROUP=$OPTARG
+            RESOURCEGROUP_BUILD=$OPTARG
             ;;
         s)
             SUBSCRIPTION=$OPTARG
@@ -69,11 +62,18 @@ if [ "$SUBSCRIPTION" = "" ]; then
 fi
 az account set --subscription "$SUBSCRIPTION"
 
-# Setup resource group if it does not already exist
+# Setup building resource group if it does not already exist
 # - have to build in West Europe in order to use Shared Image Gallery
-if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
-    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
-    az group create --name $RESOURCEGROUP --location $LOCATION
+if [ $(az group exists --name $RESOURCEGROUP_BUILD) != "true" ]; then
+    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP_BUILD${END}"
+    az group create --name $RESOURCEGROUP_BUILD --location $LOCATION
+fi
+
+# Setup networking resource group if it does not already exist
+# - have to build in West Europe in order to use Shared Image Gallery
+if [ $(az group exists --name $RESOURCEGROUP_NETWORK) != "true" ]; then
+    echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP_NETWORK${END}"
+    az group create --name $RESOURCEGROUP_NETWORK --location $LOCATION
 fi
 
 # Ensure required features for shared image galleries are enabled for this subscription
@@ -110,29 +110,29 @@ while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_METADATA" = "[]" ]; do
 done
 
 # Create a VNet and subnet for the deployment
-if [ "$(az network vnet list --resource-group $RESOURCEGROUP | grep $VNETNAME 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP_NETWORK | grep $VNETNAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating VNet for image building: ${BLUE}$VNETNAME${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE
+    az network vnet create --resource-group $RESOURCEGROUP_NETWORK --name $VNETNAME --address-prefixes $IP_RANGE
 fi
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP --vnet-name $VNETNAME | grep $SUBNETNAME 2> /dev/null)" = "" ]; then
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP_NETWORK --vnet-name $VNETNAME | grep $SUBNETNAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating subnet for image building: ${BLUE}$SUBNETNAME${END}"
-    az network vnet subnet create --name $SUBNETNAME --resource-group $RESOURCEGROUP --vnet-name $VNETNAME --address-prefixes $IP_RANGE
+    az network vnet subnet create --name $SUBNETNAME --resource-group $RESOURCEGROUP_NETWORK --vnet-name $VNETNAME --address-prefixes $IP_RANGE
 fi
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /dev/null)" = "" ]; then
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $NSGNAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSGNAME${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name $NSGNAME
+    az network nsg create --resource-group $RESOURCEGROUP_NETWORK --name $NSGNAME
     az network nsg rule create \
         --description "Allow port 22 for management over ssh" \
         --destination-address-prefixes "*" \
         --destination-port-ranges 22 \
         --direction Inbound \
-        --name ManualConfigSSH \
+        --name TuringSSH \
         --nsg-name $NSGNAME \
         --priority 100 \
         --protocol TCP \
-        --resource-group $RESOURCEGROUP \
+        --resource-group $RESOURCEGROUP_NETWORK \
         --source-address-prefixes 193.60.220.240 193.60.220.253 \
         --source-port-ranges "*"
     az network nsg rule create \
@@ -145,7 +145,7 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSGNAME 2> /
         --nsg-name $NSGNAME \
         --priority 3000 \
         --protocol "*" \
-        --resource-group $RESOURCEGROUP \
+        --resource-group $RESOURCEGROUP_NETWORK \
         --source-address-prefixes "*" \
         --source-port-ranges "*"
 fi
@@ -185,7 +185,7 @@ sed -i -e '/# === AUTOGENERATED R PACKAGES START HERE ===/r./r_package_specs.yam
 rm r_package_specs.yaml
 
 # Create the VM based off the selected source image
-echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
+echo -e "${BOLD}Provisioning a new VM image in ${BLUE}$RESOURCEGROUP_BUILD${END} ${BOLD}as part of ${BLUE}$SUBSCRIPTION${END}"
 echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
 
@@ -198,7 +198,7 @@ az vm create \
   --nsg $NSGNAME \
   --os-disk-name "${BASENAME}OSDISK" \
   --os-disk-size-gb $DISKSIZEGB \
-  --resource-group $RESOURCEGROUP \
+  --resource-group $RESOURCEGROUP_BUILD \
   --size $VMSIZE \
   --subnet $SUBNETNAME \
   --vnet-name $VNETNAME
@@ -210,7 +210,7 @@ az vm create \
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
+PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP_BUILD --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${BOLD}This process will take several hours to complete.${END}"
 echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"

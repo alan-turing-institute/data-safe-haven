@@ -1,17 +1,12 @@
 #! /bin/bash
 
-# Constants for colourised output
-BOLD="\033[1m"
-RED="\033[0;31m"
-BLUE="\033[0;36m"
-END="\033[0m"
+# Load common constants and options
+source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Options which are configurable at the command line
-SUBSCRIPTION="Safe Haven VM Images"
 MACHINENAME="" # either this or SOURCEIMAGE must be provided
 SOURCEIMAGE="" # either this or MACHINENAME must be provided
 GALLERYNAME="SIG_SHM_COMPUTE" # must be unique within this subscription
-RESOURCEGROUP="RG_SHM_IMAGE_GALLERY"
 VERSIONSUFFIX=""
 
 # Other constants
