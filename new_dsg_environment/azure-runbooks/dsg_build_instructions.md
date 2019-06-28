@@ -246,7 +246,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the `Scripts` folder (**not** to a new `DSG-DC` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
 
 - Change to `C:\Scripts`
 
@@ -617,7 +617,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
   - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
 
 - Navigate to C:\\Scripts
 
@@ -635,7 +635,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
 
 - Install the Remote Desktop Web Client PowerShell Module:
 
@@ -814,7 +814,7 @@ The next step is to install a SSL Certificate onto the RDS Gateway server. This 
 
 - Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new `DSG-DATASERVER` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
 
 - Change to `C:\Scripts`
 
