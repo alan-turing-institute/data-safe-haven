@@ -663,12 +663,12 @@ runcmd:
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
-  # Deprovision
-  - echo "Deprovisioning this VM to allow an image to be made from it"
-  - waagent -deprovision+user -force
-  # Fix internet connectivity that is broken by waagent deprovisioning
-  # NB. this is not needed with newer waagent versions, so we check first
-  - if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
+  # # Deprovision
+  # - echo "Deprovisioning this VM to allow an image to be made from it"
+  # - waagent -deprovision+user -force
+  # # Fix internet connectivity that is broken by waagent deprovisioning
+  # # NB. this is not needed with newer waagent versions, so we check first
+  # - if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
 
 final_message:
   "The system is setup and deprovisioned. Configuration took $UPTIME seconds"

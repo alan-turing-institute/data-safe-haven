@@ -1,6 +1,7 @@
 #! /bin/bash
 
 # Load common constants and options
+source ${BASH_SOURCE%/*}/configs/images.sh
 source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Options which are configurable at the command line
