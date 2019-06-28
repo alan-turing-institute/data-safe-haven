@@ -5,31 +5,44 @@ Troubleshooting Compute VM deployments
 
 There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
 
-### 1. Failure when logging into the environment via web browser
+### 1. Certificate expiry before getting to the environment
 
-![environment_access_01_password_login](images/environment_access/01_password_login.png)
+![01_certificate_expiry](images/environment_access/01_certificate_expiry.png)
+
+#### Possible problems and solutions
+1. The expired certificate can be ignored but login will not be possible
+- Remove the old certificate from the environment
+  - Remove `ssl-cert` secret from the keyvault in the management environment if it exists
+  - Log in to the `RDS` VM in the DSG enviroment and remove the `rds.dsgroupXX - Let's Encrypts Authority X3` certificate
+  - In the `RG_SHM_DNS` group in the Management Subscription, go the the DNS zone for the DSG environment
+    - delete the `_acme-challenge.rds` which is associated with the certificate
+- Generate a new certificate following the `Configuration of SSL on RDS Gateway` [build instructions in the DSG guide](dsg_build_instructions.md)
+
+### 2. Failure when logging into the environment via web browser
+
+![environment_access_02_password_login](images/environment_access/02_password_login.png)
 
 #### Possible problems and solutions
 1. User cannot progress pass this screen
 - Check user credentials, password may need to be reset.
 
 
-### 2. Failure when authenticating with the Shared VM or presentation server
+### 3. Failure when authenticating with the Shared VM or presentation server
 
-![environment_access_02_shared_vm](images/environment_access/02_shared_vm.png)
+![environment_access_03_shared_vm](images/environment_access/03_shared_vm.png)
 
 #### Possible problems and solutions
 1. User never gets the MFA prompt on their phone (app or phone call)
 - Check that the user phone number is correctly specified (Microsoft expects the format to be +44 07891234567)
 
-### 3. Failure when logging into the Shared VM
+### 4. Failure when logging into the Shared VM
 If users can get to the login screen:
 
-![environment_access_03_compute_vm_login](images/environment_access/03_compute_vm_login.png)
+![environment_access_04_compute_vm_login](images/environment_access/04_compute_vm_login.png)
 
 ... but then see this error message:
 
-![environment_access_03_compute_vm_login_failure.png](images/environment_access/03_compute_vm_login_failure.png)
+![environment_access_04_compute_vm_login_failure.png](images/environment_access/04_compute_vm_login_failure.png)
 
 there are a couple of possible causes.
 
