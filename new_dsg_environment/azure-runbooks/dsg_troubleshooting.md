@@ -17,6 +17,8 @@ There are several different ways in which logging into the environment can fail.
   - In the `RG_SHM_DNS` group in the Management Subscription, go the the DNS zone for the DSG environment
     - delete the `_acme-challenge.rds` which is associated with the certificate
 - Generate a new certificate following the `Configuration of SSL on RDS Gateway` [build instructions in the DSG guide](dsg_build_instructions.md)
+  - when you get to the `Configure Remote Desktop Web Client on the RDS Gateway` step, you can skip the `Install the Remote Desktop Web Client PowerShell Module` step as these should already be installed
+  - you will not need to run the `Publish the Remote Desktop Web Client` step as this has already been run
 
 ### 2. Failure when logging into the environment via web browser
 
