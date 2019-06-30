@@ -79,11 +79,15 @@ function Get-ShmFullConfig{
     $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
     $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
-    # -- Secrets config ---
+    # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.name = "dsg-management-" + $shm.id
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+
+    # --- DNS config ---
+    $shm.dns = [ordered]@{}
+    $shm.dns.rg = "rg_shm_dns"
 
     return $shm
 }

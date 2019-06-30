@@ -58,6 +58,9 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "dns": {
+      "rg": "rg_shm_dns"
     }
   },
   "dsg": {
