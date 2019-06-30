@@ -10,7 +10,7 @@ if([String]::IsNullOrEmpty($workingDirectory)) {
 }
 
 Import-Module Az
-Import-Module (Join-Path $PSScriptRoot ".." ".." "DsgConfig.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot ".." ".." ".." "DsgConfig.psm1") -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -67,3 +67,4 @@ Write-Output " - CSR saved to '$csrPath'"
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
 
+return $csrPath

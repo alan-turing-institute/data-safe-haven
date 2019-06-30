@@ -23,7 +23,7 @@ if($dryRun) {
 }
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../DsgConfig.psm1 -Force
+Import-Module (Join-Path $PSScriptRoot ".." ".." ".." "DsgConfig.psm1") -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
