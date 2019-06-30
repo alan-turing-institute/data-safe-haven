@@ -4,7 +4,7 @@ param(
 )
 
 Import-Module Az
-Import-Module (Join-Path $PSScriptRoot ".." ".." ".." "DsgConfig.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot ".." ".." ".." ".." "DsgConfig.psm1") -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -29,7 +29,7 @@ $_ = New-AzDnsRecordSet -Name $dnsRecordname -RecordType TXT -ZoneName $dsgDomai
 
 # Wait to ensure that any previous lookup of this record has expired
 $delaySeconds = $dnsTtlSeconds
-Write-Output " - Wating $delaySeconds seconds to ensure DNS TTL expires"
+Write-Output " - Waiting $delaySeconds seconds to ensure DNS TTL expires"
 Start-Sleep -Seconds $delaySeconds
 
 # Switch back to previous subscription

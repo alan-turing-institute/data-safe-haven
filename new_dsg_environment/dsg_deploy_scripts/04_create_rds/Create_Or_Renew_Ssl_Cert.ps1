@@ -11,7 +11,7 @@ if([String]::IsNullOrEmpty($workingDirectory)) {
     $workingDirectory = [system.io.path]::GetTempPath()
 }
 
-$helperScriptsDir = (Join-Path $PSScriptRoot "Create_Or_Renew_Ssl_Cert_Helper_Scripts" "local_scripts")
+$helperScriptsDir = (Join-Path $PSScriptRoot "helper_scripts" "Create_Or_Renew_Ssl_Cert_Helper_Scripts" "local_scripts")
 
 # Create CSR on RDS Gateway and download to local filesystem
 $getCsrCmd = (Join-Path $helperScriptsDir "Get_Csr_From_Rds_Gateway.ps1")
