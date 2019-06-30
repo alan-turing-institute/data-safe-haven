@@ -38,11 +38,11 @@ KeyUsage = 0xa0 ; 0xa0 = "Digital Signature, Key Encipherment"
  
 OID=1.3.6.1.5.5.7.3.1   ; 1.3.6.1.5.5.7.3.1 = Server authentication
 "@
-$tempDir = New-Item -ItemType Directory -Path "Cert files" -Force
+$certDir = New-Item -ItemType Directory -Path "Cert files" -Force
 $dateString = (Get-Date).ToString("yyyyMMdd-HHmmss")
 $csrFilestem = "$($dateString)_$($rdsFqdn)"
-$csrPath = (Join-Path $tempDir "$csrFilestem.csr")
-$infPath = (Join-Path $tempDir "$csrFilestem.inf")
+$csrPath = (Join-Path $certDir "$csrFilestem.csr")
+$infPath = (Join-Path $certDir "$csrFilestem.inf")
 # Write CSR settings to INF file
 $inf | Out-File -Filepath $infPath -Force
 # Generate CSR (which is output to disk) 
