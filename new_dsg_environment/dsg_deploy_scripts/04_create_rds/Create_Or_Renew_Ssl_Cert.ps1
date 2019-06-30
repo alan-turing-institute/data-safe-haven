@@ -18,7 +18,7 @@ $getCsrCmd = (Join-Path $helperScriptsDir "Get_Csr_From_Rds_Gateway.ps1")
 $result = Invoke-Expression -Command "$getCsrCmd -dsgId $dsgId -workingDirectory $workingDirectory"
 
 # Extract path to saved CSR from result message
-$csrPath = $result[-1]
+$csrPath = $result
 
 # Use CSR to get signed SSL certificate from Let's Encrypt
 $signCertCmd = (Join-Path $helperScriptsDir "Get_LetsEncrypt_Cert_From_Csr.ps1")

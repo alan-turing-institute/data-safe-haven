@@ -14,7 +14,7 @@ if(-not (Test-Path -Path $csrPath)) {
 
 if($dryRun) {
   $tmpDir = [system.io.path]::GetTempPath()
-  $randSubDirName = [System.IO.Path]::GetRandomFileName().Split('.')[0]
+  $randSubDirName = ((97..122) | Get-Random -Count 8) # (97..122) is lower case alpha byte numbers in ASCII
   $tmpDir = New-Item -Path "$tmpDir" -Name "$randSubDirName" -ItemType "directory"
   $certbotDir = (Join-Path "$tmpDir" "certbot-test")
 } else {

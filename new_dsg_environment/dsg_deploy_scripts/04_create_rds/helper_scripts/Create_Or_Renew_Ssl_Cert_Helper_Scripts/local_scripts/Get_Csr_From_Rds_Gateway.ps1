@@ -30,7 +30,7 @@ $vmNicIds = ($vms | ForEach-Object{(Get-AzVM -ResourceGroupName $vmResourceGroup
 $vmNics = ($vmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $vmResourceGroup -Name $_.Split("/")[-1]})
 ## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
 $vmName = ($vmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
-Write-Output " - VM '$vmName' found"
+Write-Host " - VM '$vmName' found"
 
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Create_Ssl_Csr_Remote.ps1"
@@ -44,7 +44,7 @@ $csrParams = @{
     "countryCode" = "`"$($config.shm.organisation.countryCode)`""
 };
 
-Write-Output " - Generating CSR on VM '$vmName'"
+Write-Host " - Generating CSR on VM '$vmName'"
 
 $result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
@@ -62,7 +62,7 @@ $csrFilestem = ($msg -replace "(?sm).*-----BEGIN CSR FILESTEM-----(.*)-----END C
 $csrDir = New-Item -Path "$workingDirectory" -Name "$csrFilestem" -ItemType "directory"
 $csrPath = (Join-Path $csrDir "$csrFilestem.csr")
 $csr | Out-File -Filepath $csrPath
-Write-Output " - CSR saved to '$csrPath'"
+Write-Host " - CSR saved to '$csrPath'"
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;

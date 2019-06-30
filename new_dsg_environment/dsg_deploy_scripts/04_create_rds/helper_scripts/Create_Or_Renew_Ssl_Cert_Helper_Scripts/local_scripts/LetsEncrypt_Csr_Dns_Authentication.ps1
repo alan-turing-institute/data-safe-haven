@@ -21,7 +21,7 @@ $dnsTtlSeconds = 30
 $dnsResourceGroup = $config.shm.dns.rg
 $dsgDomain = $config.dsg.domain.fqdn
 
-Write-Output " - (Re-)creating Let's Encrypt DNS verification record for DSG $dsgId ($certbotDomain)"
+Write-Host " - (Re-)creating Let's Encrypt DNS verification record for DSG $dsgId ($certbotDomain)"
 Remove-AzDnsRecordSet -Name $dnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 $_ = New-AzDnsRecordSet -Name $dnsRecordname -RecordType TXT -ZoneName $dsgDomain `
     -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds `
@@ -29,7 +29,7 @@ $_ = New-AzDnsRecordSet -Name $dnsRecordname -RecordType TXT -ZoneName $dsgDomai
 
 # Wait to ensure that any previous lookup of this record has expired
 $delaySeconds = $dnsTtlSeconds
-Write-Output " - Waiting $delaySeconds seconds to ensure DNS TTL expires"
+Write-Host " - Waiting $delaySeconds seconds to ensure DNS TTL expires"
 Start-Sleep -Seconds $delaySeconds
 
 # Switch back to previous subscription
