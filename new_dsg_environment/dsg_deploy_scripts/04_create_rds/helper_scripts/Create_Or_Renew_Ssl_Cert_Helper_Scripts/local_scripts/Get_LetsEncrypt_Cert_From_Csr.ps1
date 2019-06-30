@@ -61,7 +61,7 @@ $certBotAuthCmd = "pwsh `"$certBotAuthScript`" -dsgId $dsgId"
 $certbotCmd += " --preferred-challenges 'dns' --manual --manual-auth-hook '$certBotAuthCmd' --manual-public-ip-logging-ok"
 
 if($dryRun) {
-  $certbotCmd += " --dry-run --agree-tos -m example@example.com"
+  $certbotCmd += " --dry-run --test-cert --agree-tos -m example@example.com"
 }
 
 bash -c "$certbotCmd"
