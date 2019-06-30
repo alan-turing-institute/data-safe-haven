@@ -1,23 +1,60 @@
 Troubleshooting Compute VM deployments
 ======================================
 
-## Unable to log in to the Shared VM
+## Login failures
 
-If you see an error message like this:
+There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
 
-![compute_vm_login_failure.png](images/media/compute_vm_login_failure.png)
+### 1. Certificate expiry before getting to the environment
 
-there are a couple of possible causes
+![01_certificate_expiry](images/environment_access/01_certificate_expiry.png)
 
-1. the username or password was incorrect
-2. the computer is unable to communicate with the login server
+#### Possible problems and solutions
+1. The expired certificate can be ignored but login will not be possible
+- Remove the old certificate from the environment
+  - Remove `ssl-cert` secret from the keyvault in the management environment if it exists
+  - Log in to the `RDS` VM in the DSG enviroment and remove the `rds.dsgroupXX - Let's Encrypts Authority X3` certificate
+  - In the `RG_SHM_DNS` group in the Management Subscription, go the the DNS zone for the DSG environment
+    - delete the `_acme-challenge.rds` which is associated with the certificate
+- Generate a new certificate following the `Configuration of SSL on RDS Gateway` [build instructions in the DSG guide](dsg_build_instructions.md)
+  - when you get to the `Configure Remote Desktop Web Client on the RDS Gateway` step, you can skip the `Install the Remote Desktop Web Client PowerShell Module` step as these should already be installed
+  - you will not need to run the `Publish the Remote Desktop Web Client` step as this has already been run
 
-### Incorrect username/password
+### 2. Failure when logging into the environment via web browser
+
+![environment_access_02_password_login](images/environment_access/02_password_login.png)
+
+#### Possible problems and solutions
+1. User cannot progress pass this screen
+- Check user credentials, password may need to be reset.
+
+
+### 3. Failure when authenticating with the Shared VM or presentation server
+
+![environment_access_03_shared_vm](images/environment_access/03_shared_vm.png)
+
+#### Possible problems and solutions
+1. User never gets the MFA prompt on their phone (app or phone call)
+- Check that the user phone number is correctly specified (Microsoft expects the format to be +44 07891234567)
+
+### 4. Failure when logging into the Shared VM
+If users can get to the login screen:
+
+![environment_access_04_compute_vm_login](images/environment_access/04_compute_vm_login.png)
+
+... but then see this error message:
+
+![environment_access_04_compute_vm_login_failure.png](images/environment_access/04_compute_vm_login_failure.png)
+
+there are a couple of possible causes.
+
+#### Possible problems and solutions
+1. the username or password was incorrectly entered
 - Confirm that the username and password have been correctly typed
 - Confirm that there are no unsupported special characters in the password
 - Reset the account if there is no other solution
 
-### Unable to communicate with the login server
+2. the computer is unable to communicate with the login server
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 - Run the script under `dsg_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:

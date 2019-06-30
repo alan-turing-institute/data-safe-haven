@@ -76,7 +76,7 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdL
                                             replace('<hackmd-hostname>',$config.dsg.linux.hackmd.hostname).
                                             replace('<hackmd-fqdn>',$hackmdFqdn).
                                             replace('<hackmd-ldap-url>',$hackMdLdapUrl).
-                                            replace('<hackmd-ldap-bios>',$config.shm.domain.netbiosName)
+                                            replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
 # .replace('<gitlab-root-password>',$gitlabRootPassword)
 # .replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
 ## Encode as base64

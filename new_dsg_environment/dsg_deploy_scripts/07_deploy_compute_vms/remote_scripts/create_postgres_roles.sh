@@ -34,8 +34,8 @@ create_user "${DBWRITERUSER}" "${DBWRITERROLE}" "${DBWRITERPWD}"
 create_user "${DBREADERUSER}" "${DBREADERROLE}" "${DBREADERPWD}"
 
 # Ensure admin user has create rights for Databases and Roles
-sudo -i -u postgres psql -q -c "ALTER USER ${DBADMINUSER} WITH CREATEDB CREATEROLE;" \
-    && echo "User '${DBADMINUSER}' granted rights to create databases and users / roles"
+sudo -i -u postgres psql -q -c "ALTER USER ${DBADMINUSER} WITH CREATEDB CREATEROLE SUPERUSER;" \
+    && echo "User '${DBADMINUSER}' made superuser and granted rights to create databases and users / roles"
 
 # Show current user and roles tables
 echo ""
