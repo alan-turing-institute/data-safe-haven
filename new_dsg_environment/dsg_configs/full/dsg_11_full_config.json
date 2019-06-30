@@ -2,6 +2,13 @@
   "shm": {
     "subscriptionName": "Safe Haven Managment",
     "id": "prod",
+    "name": "Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
       "fqdn": "turingsafehaven.ac.uk",

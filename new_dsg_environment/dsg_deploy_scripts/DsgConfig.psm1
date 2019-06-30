@@ -29,6 +29,8 @@ function Get-ShmFullConfig{
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.id = $shmConfigBase.shId
+    $shm.name = $shmConfigBase.name
+    $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
 
     # --- Domain config ---

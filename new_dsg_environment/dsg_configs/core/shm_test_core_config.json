@@ -3,6 +3,13 @@
     "computeVmImageSubscriptionName": "Safe Haven Management Testing",
     "domain": "dsgroupdev.co.uk",
     "shId": "test",
+    "name": "Test Safe Haven",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
     "location": "uksouth",
     "ipPrefix": "10.220.1",
     "dcVmName": "DC",
