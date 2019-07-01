@@ -38,7 +38,7 @@ KeyUsage = 0xa0 ; 0xa0 = "Digital Signature, Key Encipherment"
  
 OID=1.3.6.1.5.5.7.3.1   ; 1.3.6.1.5.5.7.3.1 = Server authentication
 "@
-$certDir = New-Item -ItemType Directory -Path "Cert files" -Force
+$certDir = New-Item -ItemType Directory -Path "/Certificates" -Force
 $dateString = (Get-Date).ToString("yyyyMMdd-HHmmss")
 $csrFilestem = "$($dateString)_$($rdsFqdn)"
 $csrPath = (Join-Path $certDir "$csrFilestem.csr")
