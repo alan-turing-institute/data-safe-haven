@@ -27,5 +27,5 @@ if($result -is [array]) {
 }
 
 # Use CSR to get signed SSL certificate from Let's Encrypt
-$signCertCmd = (Join-Path $helperScriptsDir "Get_LetsEncrypt_Cert_From_Csr.ps1")
+$signCertCmd = (Join-Path $helperScriptsDir "Get_Signed_Cert_From_Lets_Encrypt.ps1")
 $result = Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath $csrPath -dryRun `$dryRun -testCert `$testCert"
