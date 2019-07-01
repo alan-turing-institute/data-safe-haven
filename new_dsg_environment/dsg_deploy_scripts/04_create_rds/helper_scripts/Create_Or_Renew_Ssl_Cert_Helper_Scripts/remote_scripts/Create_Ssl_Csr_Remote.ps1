@@ -10,7 +10,9 @@ param(
   [Parameter(Position=4, Mandatory = $true, HelpMessage = "State/County/Region in which organisation is located (e.g. 'London)")]
   [string]$stateCountyRegion,
   [Parameter(Position=5, Mandatory = $true, HelpMessage = "Two-letter country code in which organisation is located (e.g. 'GB)")]
-  [string]$countryCode
+  [string]$countryCode,
+  [Parameter(Position=6, Mandatory = $true, HelpMessage = "Remote folder to write CSR to")]
+  [string]$remoteDirectory
 )
 $keyLength = 2048
 $Signature = '$Windows NT$' 
@@ -38,7 +40,7 @@ KeyUsage = 0xa0 ; 0xa0 = "Digital Signature, Key Encipherment"
  
 OID=1.3.6.1.5.5.7.3.1   ; 1.3.6.1.5.5.7.3.1 = Server authentication
 "@
-$certDir = New-Item -ItemType Directory -Path "/Certificates" -Force
+$certDir = New-Item -ItemType Directory -Path $remoteDirectory -Force
 $dateString = (Get-Date).ToString("yyyyMMdd-HHmmss")
 $csrFilestem = "$($dateString)_$($rdsFqdn)"
 $csrPath = (Join-Path $certDir "$csrFilestem.csr")

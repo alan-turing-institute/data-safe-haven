@@ -1,13 +1,19 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
   [string]$dsgId,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Working directory (defaults to a temp direcotry)")]
-  [string]$workingDirectory = $null
+  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Remote folder to write SSL certificate to")]
+  [string]$remoteDirectory,
+  [Parameter(Position=2, Mandatory = $false, HelpMessage = "Working directory (defaults to '~/Certificates')")]
+  [string]$localDirectory = $null
 )
 
-if([String]::IsNullOrEmpty($workingDirectory)) {
-  $workingDirectory = [system.io.path]::GetTempPath()
+if([String]::IsNullOrEmpty($localDirectory)) {
+  $localDirectory = "~/Certificates"
 }
+if([String]::IsNullOrEmpty($remoteDirectory)) {
+  $remoteDirectory = "/Certificates"
+}
+
 
 Import-Module Az
 Import-Module (Join-Path $PSScriptRoot ".." ".." ".." ".." "DsgConfig.psm1") -Force
@@ -42,6 +48,7 @@ $csrParams = @{
     "townCity" = "`"$($config.shm.organisation.townCity)`""
     "stateCountyRegion" = "`"$($config.shm.organisation.stateCountyRegion)`""
     "countryCode" = "`"$($config.shm.organisation.countryCode)`""
+    "remoteDirectory" = "`"$remoteDirectory`""
 };
 
 Write-Host " - Generating CSR on VM '$vmName'"
@@ -59,7 +66,7 @@ $csr = ($csr -replace '(?m)^[ \t]*', '')
 $csrFilestem = ($msg -replace "(?sm).*-----BEGIN CSR FILESTEM-----(.*)-----END CSR FILESTEM-----.*", '$1') 
 
 # Write the CSR to temprary storage
-$csrDir = New-Item -Path "$workingDirectory" -Name "$csrFilestem" -ItemType "directory"
+$csrDir = New-Item -Path "$localDirectory" -Name "$csrFilestem" -ItemType "directory"
 $csrPath = (Join-Path $csrDir "$csrFilestem.csr")
 $csr | Out-File -Filepath $csrPath
 Write-Host " - CSR saved to '$csrPath'"

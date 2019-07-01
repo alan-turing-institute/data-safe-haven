@@ -82,3 +82,5 @@ bash -c "$certbotCmd"
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
+
+return $fullChainPath
