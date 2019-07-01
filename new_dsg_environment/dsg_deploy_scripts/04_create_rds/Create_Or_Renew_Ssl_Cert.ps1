@@ -1,10 +1,12 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
   [string]$dsgId,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Enter working directory (defaults to a temp direcotry)")]
+  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Working directory (defaults to a temp direcotry)")]
   [string]$workingDirectory = $null,
-  [Parameter(Position=2, Mandatory = $false, HelpMessage = "Flag to do a test 'dry run' against the Let's Encrypt staging servers (also uses a different local certbot folder)")]
-  [bool]$dryRun = $false
+  [Parameter(Position=2, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server that doesn't download a certificate")]
+  [bool]$dryRun = $false,
+  [Parameter(Position=3, Mandatory = $false, HelpMessage = "Request a fake certificate from the Let's Encrypt staging server")]
+  [bool]$testCert = $false
 )
 
 if([String]::IsNullOrEmpty($workingDirectory)) {
@@ -26,4 +28,4 @@ if($result -is [array]) {
 
 # Use CSR to get signed SSL certificate from Let's Encrypt
 $signCertCmd = (Join-Path $helperScriptsDir "Get_LetsEncrypt_Cert_From_Csr.ps1")
-$result = Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath $csrPath -dryRun `$dryRun"
+$result = Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath $csrPath -dryRun `$dryRun -testCert `$testCert"

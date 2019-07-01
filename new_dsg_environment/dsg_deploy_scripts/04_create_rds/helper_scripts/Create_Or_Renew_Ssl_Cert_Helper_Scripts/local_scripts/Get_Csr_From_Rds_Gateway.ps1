@@ -1,7 +1,7 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
   [string]$dsgId,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Enter working directory (defaults to a temp direcotry)")]
+  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Working directory (defaults to a temp direcotry)")]
   [string]$workingDirectory = $null
 )
 
