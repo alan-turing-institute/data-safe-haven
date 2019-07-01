@@ -7,8 +7,8 @@ param(
   [bool]$dryRun = $false,
   [Parameter(Position=3, Mandatory = $false, HelpMessage = "Request a fake certificate from the Let's Encrypt staging server")]
   [bool]$testCert = $false,
-  [Parameter(Position=4, Mandatory = $false, HelpMessage = "Use a new certbot account to ensure no valid authentication challenge exists")]
-  [bool]$newCertbotAccount = $false
+  [Parameter(Position=4, Mandatory = $false, HelpMessage = "Use a new certbot account to ensure no valid authentication challenge exists (also forces -dryRun to True and -testCert to False)")]
+  [bool]$cleanTest = $false
 
 )
 
@@ -16,11 +16,13 @@ if(-not (Test-Path -Path $csrPath)) {
   throw [System.IO.FileNotFoundException] "$csrPath not found."
 }
 
-if($newCertbotEnv) {
+if($cleanTest) {
   $tmpDir = [system.io.path]::GetTempPath()
   $randSubDirName = -join ((97..122) | Get-Random -Count 8 | ForEach-Object {[char]$_}) # (97..122) is lower case alpha byte numbers in ASCII
   $tmpDir = New-Item -Path "$tmpDir" -Name "$randSubDirName" -ItemType "directory"
   $certbotDir = (Join-Path "$tmpDir" "certbot-test")
+  $dryRun = $true
+  $testCert = $false
 } else {
   $tmpDir = [system.io.path]::GetTempPath()
   $certbotDir = (Join-Path "~" "certbot")
@@ -64,12 +66,16 @@ $certBotAuthScript = (Join-Path $PSScriptRoot "LetsEncrypt_Csr_Dns_Authenticatio
 $certBotAuthCmd = "pwsh `"$certBotAuthScript`" -dsgId $dsgId"
 $certbotCmd += " --preferred-challenges 'dns' --manual --manual-auth-hook '$certBotAuthCmd' --manual-public-ip-logging-ok"
 
-if($dryRun -and $testCert){
-  throw [System.ArgumentException] "Only one of -dryRun and -testCert can be set to True"
-} elseif ($dryRun -and -not $testCert) {
-  $certbotCmd += " --dry-run"
-} elseif ($testCert -and -not $dryRun) {
-  $certbotCmd += " --test-cert"
+if($cleanTest){
+  $certbotCmd += " --dry-run --agree-tos -m example@example.com"
+} else {
+  if($dryRun -and $testCert){
+    throw [System.ArgumentException] "Only one of -dryRun and -testCert can be set to True"
+  } elseif ($dryRun -and -not $testCert) {
+    $certbotCmd += " --dry-run"
+  } elseif ($testCert -and -not $dryRun) {
+    $certbotCmd += " --test-cert"
+  }
 }
 
 bash -c "$certbotCmd"
