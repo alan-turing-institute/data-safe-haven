@@ -47,7 +47,7 @@ if($csrExt) {
   $csrStem = (Split-Path -Leaf -Path $csrPath).Split(".$csrExt")[0]
 } else {
   # No extension to strip so take whole filename
-  $csrStem = (Split-Path -Leaf -Path $csrPath)[0]
+  $csrStem = (Split-Path -Leaf -Path $csrPath)
 }
 $certPath = (Join-Path $certbotWorkingDir "$($csrStem)_cert.pem")
 $fullChainPath = (Join-Path $certbotWorkingDir "$($csrStem)_full_chain.pem")
