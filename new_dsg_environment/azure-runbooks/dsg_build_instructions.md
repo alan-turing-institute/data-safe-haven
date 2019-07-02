@@ -435,6 +435,73 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | |                 -mgmtdomain |     Enter the FQDN of the management domain i.e. turingsafehaven.ac.uk for production or dsgroupdev for test|
   -------------- ---------------- --------------------------------------------------------------------
 
+#### Configuration of RDS services on RDS Gateway
+
+- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
+
+- Change to `C:\Scripts`
+
+- In Powershell run `Set-executionpolicy Unrestricted`
+
+- Install the RDS services by running the following command:
+
+  | **Command**              | **Parameters** | **Description**  |
+  | -- | -- | -- |
+  | `DeployRDSEnvironment.ps1` | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
+  |                          | -dsg           | Enter the DSG name i.e. DSGROUP`<dsg-id>`|
+  |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test)
+  |                          | -ipaddress     | Enter the first three octets of the Subnet-Data subnet as per the checklist i.e. 10.250.x+2     (where x is the base address)|
+
+- The RDS deployment will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
+
+- Once complete open Server Manager, right click on "All Servers" and select "Add Servers"
+
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e2e518.PNG](images/media/image14.png)
+
+- Enter "rds" into the "Name" box and click "Find Now"
+
+- Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
+
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e37aa1.PNG](images/media/image15.png)
+
+### Configure Remote Desktop Web Client on the RDS Gateway
+
+ - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
+
+- Install the Remote Desktop Web Client PowerShell Module:
+
+  - Run `Install-Module -Name PowerShellGet -Force` within Powershell (Enter "Y" when prompted)
+
+  - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
+
+  - Run `Install-Module -Name RDWebClientManagement` within Powershell (entering- Enter "A" when prompted, then "A" again to accept the EULA)
+
+  - Run `Install-RDWebClientPackage`
+
+- Publish the Remote Desktop Web Client using: `Publish-RDWebClientPackage -Type Production -Latest` (don't worry about the warning `WARNING: Using the Remote Desktop web client with per-device licensing is not supported.`. We are not using per-device licencing)
+
+    - If there are any problems running the `Publish-RDWebClientPackage` command, go onto the next step to configure SSL on the RDS Gateway and then return to re-run this step.
+
+### Configuration of SSL on RDS Gateway
+
+- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+
 #### Configuration of RDS remote apps on on RDS Session Hosts
 ##### RDS Session Server 1 (Remote app server)
 
@@ -474,182 +541,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Install the downloaded packages
 
 - Once installed logout of the server
-
-#### Configuration of RDS services on RDS Gateway
-
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
-
-- Change to `C:\Scripts`
-
-- In Powershell run `Set-executionpolicy Unrestricted`
-
-- Install the RDS services by running the following command:
-
-  | **Command**              | **Parameters** | **Description**  |
-  | -- | -- | -- |
-  | `DeployRDSEnvironment.ps1` | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
-  |                          | -dsg           | Enter the DSG name i.e. DSGROUP`<dsg-id>`|
-  |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test)
-  |                          | -ipaddress     | Enter the first three octets of the Subnet-Data subnet as per the checklist i.e. 10.250.x+2     (where x is the base address)|
-
-- The RDS deployment will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
-
-- Once complete open Server Manager, right click on "All Servers" and select "Add Servers"
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e2e518.PNG](images/media/image14.png)
-
-- Enter "rds" into the "Name" box and click "Find Now"
-
-- Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e37aa1.PNG](images/media/image15.png)
-
-### Configure DNS record for RDS server
-
-To make this Remote Desktop Service accessible from the internet an `A` record will need to be added to the DNS Zone for the domain associated with the DSG.
-
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. - Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the "RDS_NIC1" resource within the Azure Portal.
-
-#### Configuration of SSL on RDS Gateway
-
-The next step is to install a SSL Certificate onto the RDS Gateway server. This has to be a certificate that is issued from a Certificate Authority and not self-signed.
-
-##### Generate a Certificate Signing Request (CSR)
-
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway (or you have another way to transfer files between your local machine and the RDS Gateway VM).
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- From the Server Manager dashboard select `Tools -> Internet Information Service (IIS) Manager`
-
--	Open “Server Certificates” and click “Create Certificate Request”
-
-- Fill in the form as below. It is **critically important** that the certificate common name matches the FQDN of the RDS server i.e. `rds.dsgroup<dsg-id>.co.uk`.
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1f40510.PNG](images/media/image16.png)
-
-- Set the "Bit length" to 2048 (this can be set higher but check with your CA provider)
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1f63406.PNG](images/media/image17.png)
-
-- Save the certificate request file to a TXT file to be used to order the SSL Certificate.
-
-- Copy the CSR from the RDS server to the folder on your local computer that you shared with the RDS Gateway when you connected to it.
-
-##### Get an SSL certificate issued by a CA for the RDS server
-
-###### A. Use Let's Encrypt as the CA
-
-  -   [Install Certbot](https://certbot.eff.org/) on your computer if required
-
-  -   Run Certbot, passing in custom folders for config, work and logs directories. This will automatically create a new Let\'s Encrypt account for this particular pairing of Certbot installation and custom directory.
-
-  -   `certbot --config-dir ~/tsh-certbot/config --work-dir ~/tsh-certbot/work --logs-dir ~/tsh-certbot/logs certonly --manual --preferred-challenges "dns" --agree-tos -m <email-for-expiry-notifications> -d <rds-fqdn> --csr <path-to-csr>`, where `<rds-fqdn>` is the fully qualified domain name of the RDS server (e.g. `rds.dsgroup10.co.uk`). If you are using Windows Subsystem for Linux, the Widnows "C:" drive is accessible at `/mnt/c` and your home directory is at `/mnt/c/users/<username>/`).
-
-  -   When presented with the DNS challenge from Certbot, add a record to the DNS Zone for the DSG domain with the following properties. The DNS Zone is located in the SHM subscription at `Resource Groups -> RG_DSG_DNS -> dgroup<dsg-id>.co.uk`).
-
-      -   **Name:** `_acme-challenge.rds`)
-
-      -   **Type: TXT
-
-      -   **TTL:*** 30 seconds
-
-      -   **Value:** The value provided by Certbot (a long random looking string)
-
-    -   Wait for Let\'s Encrypt to verify the challenge
-
-    - CertBot will tell you where it has saved the certificate and chain (should be the same directory you ran it from)
-
-    -   Copy `0000_cert.pem` to the folder on your local computer that you shared with the RDS Gateway when you connected to it. If you are using Windows Subsystem for Linux, use `cp <folder-cert-is-in>/0000_cert.pem /mnt/c/users/<username>/` to copy the cert to your Windows home directory
-
-    -   Securely delete the `~/tsh-certbot` directory. Note that, when using a CSR, neither the CSR nor the signed certificate files are sensitive. However, the private key in the `accounts` subfolder is now authorised to create new certs for the DSG domain, which is sensitive
-
-##### Install the CA certificate on the RDS Server
-
- Once the certificate has been issued by the CA this needs to be installed onto the server.
-
- - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- From the Server Manager dashboard select "Tools -> Internet Information Service (IIS) Manager"
-
-- Open Certificates and select "Complete Certificate Request"
-
-- Browse to the folder that you shared with the RDS Gateway from your local computer when you connected to it.
-
-- Select the certificate file provided by the CA
-
-- Set the friendly name to match the common name you provided in the certificate request (i.e. `dsgroup<dsg-id>.co.uk`).
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1f92aff.PNG](images/media/image18.png)
-
-- Click "OK" to complete the process
-
-- Open "MMC" and add the "Certificates" snap-in targeting the "Computer Account" on the local computer
-
-- Expand `Personal -> Certificates` and locate the CA certificate
-
-- Export the certificate with it's private key
-
-  - Right click this certificate and click on `All Tasks -> Export`
-
-  - Select "Yes, export the private key" and click "Next"
-
-  - Select the "Personal Information Exchange" format and click "Next"
-
-  - Check the "Password" box, enter a password and click "Next"
-
-  - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
-
-- Export the certificate without it's private key
-
-  - Right click this certificate and click on `All Tasks -> Export`
-
-  - Select "No, do not export the private key" and click "Next"
-
-  - Select the "DER encoded binary X.509" format and click "Next"
-
-
-  - Click "Browse", select a location to save the certificate and provide a name. Click "Next" then "Finish"
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
-
-- Navigate to C:\\Scripts
-
-- Add the new certificate and private key to the Remote Desktop service by running the following command:
-
-  |  **Command** |     **Parameters** |   **Description** |
-  | -- | -- | -- |
-  |  `AddSSLCert.ps1`  | -Sslpassword |     The private key password |
-  | |                   -domain |          Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
-  | |                   -certpath |        The path to the `.pfx` file you exported the certificate **including** private key to earlier|
-
-### Configure Remote Desktop Web Client on the RDS Gateway
-
- - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
-
-- Install the Remote Desktop Web Client PowerShell Module:
-
-  - Run `Install-Module -Name PowerShellGet -Force` within Powershell (Enter "Y" when prompted)
-
-  - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-
-  - Run `Install-Module -Name RDWebClientManagement` within Powershell (entering- Enter "A" when prompted, then "A" again to accept the EULA)
-
-  - Run `Install-RDWebClientPackage`
-
-- Install the SSL certicate for the Remote Desktop Web Client using `Import-RDWebClientBrokerCert <.cer-file-path>`, where `<.cer-file-path>` is the `.cer` file you exported the certificate **without** private key to earlier.
-
-- Publish the Remote Desktop Web Client using: `Publish-RDWebClientPackage -Type Production -Latest` (don't worry about the warning `WARNING: Using the Remote Desktop web client with per-device licensing is not supported.`. We are not using per-device licencing)
 
 ### Adding new DSG RDS Server to the SHM NPS server
 
