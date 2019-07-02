@@ -43,7 +43,7 @@ $certbotLogDir = (Join-Path $certbotDir "log")
 $certbotWorkingDir = Split-Path -Parent -Path $csrPath
 $csrExt = (Split-Path -Leaf -Path $csrPath).Split(".")[-1]
 if($csrExt) {
-  # Take all of filename before to extenstion
+  # Take all of filename before to extension
   $csrStem = (Split-Path -Leaf -Path $csrPath).Split(".$csrExt")[0]
 } else {
   # No extension to strip so take whole filename
