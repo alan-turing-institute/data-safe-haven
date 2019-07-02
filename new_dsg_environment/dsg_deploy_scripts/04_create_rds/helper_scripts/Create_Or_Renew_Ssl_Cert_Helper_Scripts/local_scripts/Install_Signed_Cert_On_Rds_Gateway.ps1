@@ -2,7 +2,7 @@ param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
   [string]$dsgId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Path to SSL certificate signed by Certificate Authority (in .pem ASCII format, inclding CA cert chain)")]
-  [string]$certPath,
+  [string]$certFullChainPath,
   [Parameter(Position=2, Mandatory = $true, HelpMessage = "Remote folder to write SSL certificate to")]
   [string]$remoteDirectory
 )
@@ -33,13 +33,14 @@ Write-Host " - VM '$vmName' found"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Install_Signed_Ssl_Cert_Remote.ps1"
 
-$certFilename = (Split-Path -Leaf -Path $certPath)
-$cert = (@(Get-Content -Path $certPath) -join "|")
+$certFilename = (Split-Path -Leaf -Path $certFullChainPath)
+$certFullChain = (@(Get-Content -Path $certFullChainPath) -join "|")
 
 $params = @{
-    cert = "`"$cert`""
+    certFullChain = "`"$certFullChain`""
     certFilename = "`"$certFilename`""
     remoteDirectory = "`"$remoteDirectory`""
+    rdsFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
 };
 
 Write-Host " - Installing SSL certificate on VM '$vmName'"

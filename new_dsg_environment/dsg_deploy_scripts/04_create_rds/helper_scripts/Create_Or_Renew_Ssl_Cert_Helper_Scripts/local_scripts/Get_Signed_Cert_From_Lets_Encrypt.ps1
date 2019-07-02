@@ -41,13 +41,13 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $certbotConfigDir = (Join-Path $certbotDir "config")
 $certbotLogDir = (Join-Path $certbotDir "log")
 $certbotWorkingDir = Split-Path -Parent -Path $csrPath
-$csrExt = (Split-Path -Leaf -Path $csrPath).Split(".")[-1]
+$csrExt = (Split-Path -Leaf -Path "$csrPath").Split(".")[-1]
 if($csrExt) {
-  # Take all of filename before to extension
-  $csrStem = (Split-Path -Leaf -Path $csrPath).Split(".$csrExt")[0]
+  # Take all of filename before extension
+  $csrStem = (Split-Path -Leaf -Path "$csrPath").Split(".$csrExt")[0]
 } else {
   # No extension to strip so take whole filename
-  $csrStem = (Split-Path -Leaf -Path $csrPath)
+  $csrStem = (Split-Path -Leaf -Path "$csrPath")
 }
 $certPath = (Join-Path $certbotWorkingDir "$($csrStem)_cert.pem")
 $fullChainPath = (Join-Path $certbotWorkingDir "$($csrStem)_full_chain.pem")
