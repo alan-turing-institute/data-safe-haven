@@ -394,9 +394,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
 
-### Configure Remote Desktop Services
-
-#### Configuration on Domain Controller
+### Configuration on Domain Controller
 
 - Connect to the **DSG Domain Controller** via Remote Desktop client over the VPN connection
 
@@ -412,7 +410,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1641161.PNG](images/media/image13.png)
 
-#### Initial configuration of RDS Gateway
+### Initial configuration of RDS Gateway
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
@@ -435,7 +433,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | |                 -mgmtdomain |     Enter the FQDN of the management domain i.e. turingsafehaven.ac.uk for production or dsgroupdev for test|
   -------------- ---------------- --------------------------------------------------------------------
 
-#### Configuration of RDS services on RDS Gateway
+### Configuration of RDS services on RDS Gateway
 
 - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
 
@@ -502,8 +500,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
-#### Configuration of RDS remote apps on on RDS Session Hosts
-##### RDS Session Server 1 (Remote app server)
+### Configuration of RDS remote apps on on RDS Session Hosts
+#### RDS Session Server 1 (Remote app server)
 
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
@@ -523,7 +521,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once installed logout of the server
 
-##### RDS Session Server 2 (Presentation VM)
+#### RDS Session Server 2 (Presentation VM)
 
 - Connect to the **RDS Session Server 2 (RDSSH2)** via Remote Desktop client over the DSG VPN connection
 
@@ -637,9 +635,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/04_create_rds/" directory
 
-- Ensure you are logged into the Azure within PowerShell using the command: Connect-AzAccount
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: Set-AzContext -SubscriptionId \"DSG Template Testing\"
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "DSG Template Testing"`
 
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)

@@ -10,15 +10,18 @@ There are several different ways in which logging into the environment can fail.
 ![01_certificate_expiry](images/environment_access/01_certificate_expiry.png)
 
 #### Possible problems and solutions
-1. The expired certificate can be ignored but login will not be possible
-- Remove the old certificate from the environment
-  - Remove `ssl-cert` secret from the keyvault in the management environment if it exists
-  - Log in to the `RDS` VM in the DSG enviroment and remove the `rds.dsgroupXX - Let's Encrypts Authority X3` certificate
-  - In the `RG_SHM_DNS` group in the Management Subscription, go the the DNS zone for the DSG environment
-    - delete the `_acme-challenge.rds` which is associated with the certificate
-- Generate a new certificate following the `Configuration of SSL on RDS Gateway` [build instructions in the DSG guide](dsg_build_instructions.md)
-  - when you get to the `Configure Remote Desktop Web Client on the RDS Gateway` step, you can skip the `Install the Remote Desktop Web Client PowerShell Module` step as these should already be installed
-  - you will not need to run the `Publish the Remote Desktop Web Client` step as this has already been run
+The expired certificate can be ignored but login will not be possible.
+
+#### Replace the SSL certificate with a new one
+- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
 ### 2. Failure when logging into the environment via web browser
 
