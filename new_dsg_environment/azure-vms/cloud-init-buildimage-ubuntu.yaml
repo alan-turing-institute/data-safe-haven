@@ -107,6 +107,22 @@ write_files:
   - path: "/installation/dbeaver_sha512.hash"
     content: |
       d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
+  - path: "/installation/deprovision_on_next_boot.sh"
+    permissions: "0744"
+    content: |
+      # Remove this script from the crontab so it will not be run again
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Descheduling deprovisioning script" > /installation/deprovision.log
+      sed -i '|@reboot root /installation/deprovision_on_next_boot.sh|d' /etc/crontab
+      # Deprovision
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner" >> /installation/deprovision.log
+      waagent -deprovision+user -force
+      # Fix internet connectivity that is broken by waagent deprovisioning
+      # NB. this is not needed with newer waagent versions, so we check first
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Fixing internet connectivity" >> /installation/deprovision.log
+      if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
+      # Remove this file
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Removing script" >> /installation/deprovision.log
+      rm -rf /installation/deprovision_on_next_boot.sh
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -663,12 +679,8 @@ runcmd:
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
-  # # Deprovision
-  # - echo "Deprovisioning this VM to allow an image to be made from it"
-  # - waagent -deprovision+user -force
-  # # Fix internet connectivity that is broken by waagent deprovisioning
-  # # NB. this is not needed with newer waagent versions, so we check first
-  # - if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
+  # Deprovision
+  - echo "@reboot root /installation/deprovision_on_next_boot.sh" >> /etc/crontab
 
 final_message:
-  "The system is setup and deprovisioned. Configuration took $UPTIME seconds"
+  "The system is setup and will be automatically deprovisioned on next reboot. Configuration took $UPTIME seconds"
