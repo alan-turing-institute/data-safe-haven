@@ -51,9 +51,9 @@
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 4. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
-1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be "turingsafehaven.ac.uk" for the primary Turing production SHM and 
+1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be "turingsafehaven.ac.uk" for the primary Turing production SHM.
 
-2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
+2. Ensure the domain name is [verified by following the instrucutions here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
 
 3. Navigate to `Users` and click `New User`
 4. Add a new user with username `<user>.<domain>.ommicrosoft.com` Under directory role set role as Global Administrator 
