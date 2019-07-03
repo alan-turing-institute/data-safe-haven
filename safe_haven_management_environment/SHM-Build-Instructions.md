@@ -21,17 +21,40 @@
 
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
-2. Click `Create a Resourse`  and search for `Azure Active Directory`
-3. Choose an Organisation Name, Initial Domain Name and country
+2. Click `Create a Resource`  and search for `Azure Active Directory`
+3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test B"
+4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
+5 Set the "Country or Region" to "UK South"
 4. Click Create AAD
 
 ![](images/AAD.png)
 
-### Add a new Global Administrator (Optional)
-The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). It is also possible to add another user with the GA Role:
+### Create a Custom Domain Name 
+#### Create a DNS zone for the custom domain
+1. For Turing SHMs, create a new DNS Zone for a subdomain under the `turingsafehaven.ac.uk` domain (for the `production` environment) or under the `test.turingsafehaven.ac.uk` domain (for the `test` environment). For safe havens hosted by other organisations, follow their guidance. This may require purchasing a dedicated domain.
+2. Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
+    - Click `Create a resource` in the far left menu, seach for "DNS Zone" and click "Create.
+    - Select the management subscription created for this managment deployment and select or create the `RG_SHM_DNS` resource group.
+    - For the `Name` field enter the fully qualified domain / subdomain (e.g. `sh2.test.turingsafehaven.ac.uk` for a second test SHM deployed as part of the Turing `test` environment).
+3. Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to it's parent record in the DNS system.
+    - Navigate to the new DNS Zone (click `All resources` in the far left panel and seach for "DNS Zone". The NS record will lists 4 Azure name servers.
+        - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `sh2.test.turingsafehaven.ac.uk`, duplicate its NS record to the Azure DNS Zone for `test.turingsafehaven.ac.uk`, under the name `sh2`).
+       - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+  
 
-1. On the left hand panel click `Azure Active Directory` and ensure you are on the directory you just created
-2. Navigate to `Custom domain names` and make note of the initial domain name. It will be `<domain>.onmicrosoft.com`
+## Add the custom domain to the new AAD 
+1. Once the new AAD and custom domain have been created, ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
+2. Click `Active directory` in the far left panel then `Custom domain names` in the left hand panel
+3. Note the DNS record details displayed
+  ![AAD DNS record details](images/aad_dns_record_details.png)
+3. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 36000 is in seconds)
+  ![Create AAD DNS Record](images/create_aad_dns_record.png)
+4. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
+
+1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be "turingsafehaven.ac.uk" for the primary Turing production SHM and 
+
+2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
+
 3. Navigate to `Users` and click `New User`
 4. Add a new user with username `<user>.<domain>.ommicrosoft.com` Under directory role set role as Global Administrator 
 
@@ -40,14 +63,6 @@ The User who creates the AAD will automatically have the Global Administrator (G
 - Purchase P1 License for the AAD
 
 - Else, **for testing only**, enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-
-### Create a Custom Domain Name 
-
-1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be something like "TURINGSAFEHAVEN@ac.uk"
-
-2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
-
-
 
 ## 1. Deploy VNET and Domain Controllers
 
