@@ -60,7 +60,7 @@
       }
     },
     "dns": {
-      "rg": "rg_shm_dns"
+      "rg": "RG_SHM_DNS"
     }
   },
   "dsg": {

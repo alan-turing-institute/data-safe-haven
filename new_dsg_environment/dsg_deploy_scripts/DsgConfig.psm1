@@ -87,7 +87,7 @@ function Get-ShmFullConfig{
 
     # --- DNS config ---
     $shm.dns = [ordered]@{}
-    $shm.dns.rg = "rg_shm_dns"
+    $shm.dns.rg = "RG_SHM_DNS"
 
     return $shm
 }
