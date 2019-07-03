@@ -55,14 +55,18 @@
 
 2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
 
-3. Navigate to `Users` and click `New User`
-4. Add a new user with username `<user>.<domain>.ommicrosoft.com` Under directory role set role as Global Administrator 
+### Add additional administrators
+The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
 
-### Add P1 License to AAD
-
-- Purchase P1 License for the AAD
-
-- Else, **for testing only**, enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+1. Ensure you're Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current direcotty is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. On the left hand panel click `Azure Active Directory`.
+3. Navigate to `Users` and **either**:
+  - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
+  - If you are creating local users, set their usernames to `firsname.lastname@customdomain`, using the custom domain you set up in the earlier step.
+5. Click on each user and then on `Directory role` in the left sidebar
+6. Click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
+7. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
+   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
 
 ## 1. Deploy VNET and Domain Controllers
 
