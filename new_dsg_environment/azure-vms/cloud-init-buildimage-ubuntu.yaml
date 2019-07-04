@@ -167,6 +167,7 @@ packages:
   - libpam-sss
   - libpoppler-cpp-dev
   - libpq-dev
+  - libreoffice
   - librsvg2-dev
   - libsensors4
   - libssl-dev
