@@ -58,6 +58,7 @@ mpi4py
 NavPy
 networkx
 nltk
+nltk_data
 nose
 notebook
 numba
@@ -107,6 +108,9 @@ seaborn
 six
 spacy
 spacy-langdetect
+spacy-model-en_core_web_lg
+spacy-model-en_core_web_md
+spacy-model-en_core_web_sm
 sphinx
 sqlite
 sympy
