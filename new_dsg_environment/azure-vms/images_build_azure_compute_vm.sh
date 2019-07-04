@@ -86,7 +86,6 @@ if [ "$(az network vnet list --resource-group $RESOURCEGROUP_NETWORK | grep $VNE
     echo -e "${BOLD}Creating VNet for image building: ${BLUE}$VNET_NAME${END}"
     az network vnet create --resource-group $RESOURCEGROUP_NETWORK --name $VNET_NAME --address-prefixes $IP_RANGE
 fi
-VNET_ID=$(az network vnet show --resource-group $RESOURCEGROUP_NETWORK --name $VNET_NAME --query "id" -o tsv)
 
 # Create a subnet for the deployment
 # ----------------------------------
@@ -179,8 +178,7 @@ az vm create \
   --os-disk-size-gb $DISKSIZEGB \
   --resource-group $RESOURCEGROUP_BUILD \
   --size $VMSIZE \
-  --subnet $SUBNET_ID \
-  --vnet-name $VNET_ID
+  --subnet $SUBNET_ID
 
 # --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key
 # the key will be removed from the build machine at the end of VM creation
