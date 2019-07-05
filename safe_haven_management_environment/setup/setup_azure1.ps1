@@ -3,84 +3,107 @@ param(
   [string]$shmId
 )
 
-
 Import-Module Az
 Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
-
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-
-# # Create Resource Groups
+# Create Resource Groups
 New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroup -Name $config.nps.rg -Location $config.location
 New-AzResourceGroup -Name RG_DSG_SECRETS -Location $config.location
 New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 
-# # Create a keyvault and generate passwords
-New-AzKeyVault -Name $vaultName -ResourceGroupName RG_SHM_SECRETS  -Location uksouth
+# Create a keyvault and generate passwords
+New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName RG_DSG_SECRETS -Location $config.location
+
+# # Fetch DC root user password (or create if not present)
+$DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
+if ($null -eq $DCRootPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dc -SecretValue $newPassword;
+  $DCRootPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
+}
+
+# Fetch DC root user password (or create if not present)
+$DCSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.safemode).SecretValueText;
+if ($null -eq $DCSafemodePassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
+  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
+}
+
+# Generate certificates
+$cwd = Get-Location
+Set-Location -Path ../scripts/local/ -PassThru
+sh generate-root-cert.sh
+Set-Location -Path $cwd -PassThru
+
+# Setup resources
+$storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
+new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
+New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
+New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
+
+# Create directories in file share
+New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "dc"
+New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
+
+# Upload files
+Get-ChildItem -File "../dsc/shmdc1/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
+Get-ChildItem -File "../dsc/shmdc2/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
+Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
+Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
+
+# Download executables from microsoft
+New-Item -Name "temp" -ItemType "directory"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
+
+# Upload executables to fileshare
+Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
+
+# Delete the local executable files
+Remove-Item –path 'temp/' –recurse
 
 
-# # VM pass
-# $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-# Set-AzKeyVaultSecret -VaultName $vaultName -Name 'dcpass' -SecretValue $secretvalue
-# # safemode pass
-# $secretvalue = ConvertTo-SecureString (New-Password) -AsPlainText -Force
-# Set-AzKeyVaultSecret -VaultName $vaultName -Name 'safemodepass' -SecretValue $secretvalue
+# Get SAS token
+$artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
+$currentSubscription = $config.subscriptionName;
+$artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
+  -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
+  -permission "rl" -prevSubscription $currentSubscription);
 
-# # Generate certificates
-# $cwd = Get-Location
-# Set-Location -Path ../scripts/local/ -PassThru
-# sh generate-root-cert.sh
-# Set-Location -Path $cwd -PassThru
+$artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
-# # Setup resources
-# $storageAccount = New-AzStorageAccount -ResourceGroupName RG_SHM_RESOURCES -Name "shmfiles" -Location uksouth -SkuName "Standard_LRS"
-# new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
-# New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
-# New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
+# Run template files
+# Deploy the shmvnet template
+# The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
+$cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
+$cert = [string]$cert
+$cert = $cert.replace(" ", "")
+New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate $cert -Virtual_Network_Name $shm.network.vnet.name
 
-# # Create directories in file share
-# New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "dc"
-# New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
-
-# # Upload files
-# Get-ChildItem -File "../dsc/shmdc1/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
-# Get-ChildItem -File "../dsc/shmdc2/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
-# Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
-# Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
-
-# # Download executables from microsoft
-# New-Item -Name "temp" -ItemType "directory"
-# Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
-# Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
-
-# # Upload executables to fileshare
-# Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
-# # Delete the local executable files
-# Remove-Item –path 'temp/' –recurse
-
-# # Run template files
-# # Deploy the shmvnet template
-# # The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
-# $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
-# $cert = [string]$cert
-# $cert = $cert.replace(" ", "")
-# New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_VNET" -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate $cert -Virtual_Network_Name "SHM_VNET1"
-
-# # Deploy the shmdc-template
-# New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_DC" -templatefile "../arm_templates/shmdc/shmdc-template.json"`
-#         -Administrator_User "atiadmin"`
-#         -Administrator_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "dcpass").SecretValue`
-#         -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValue`
-#         -Virtual_Network_Resource_Group "RG_SHM_VNET"
-
+# Deploy the shmdc-template
+New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg -templatefile "../arm_templates/shmdc/shmdc-template.json"`
+        -Administrator_User "atiadmin"`
+        -Administrator_Password $DCRootPassword`
+        -SafeMode_Password $DCSafemodePassword `
+        -Virtual_Network_Resource_Group $config.network.vnet.rg`
+        -Artifacts_Location $artifactLocation`
+        -Artifacts_Location_SAS_Token $artifactSasToken
+        
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
