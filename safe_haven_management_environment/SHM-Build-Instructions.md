@@ -63,6 +63,9 @@ The User who creates the AAD will automatically have the Global Administrator (G
 6. Click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
 7. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
    - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
+      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+    ![](images/set_user_location.png)
 
 ## 1. Deploy VNET and Domain Controllers
 
