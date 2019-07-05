@@ -35,10 +35,10 @@
 2. Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
     - Click `Create a resource` in the far left menu, seach for "DNS Zone" and click "Create.
     - Select the management subscription created for this managment deployment and select or create the `RG_SHM_DNS` resource group.
-    - For the `Name` field enter the fully qualified domain / subdomain (e.g. `shb.test.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment).
+    - For the `Name` field enter the fully qualified domain / subdomain (e.g. `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment).
 3. Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to it's parent record in the DNS system.
     - Navigate to the new DNS Zone (click `All resources` in the far left panel and seach for "DNS Zone". The NS record will lists 4 Azure name servers.
-        - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `shb.test.turingsafehaven.ac.uk`, duplicate its NS record to the Azure DNS Zone for `test.turingsafehaven.ac.uk`, under the name `shb`).
+        - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testb.turingsafehaven.ac.uk`, duplicate its NS record to the Azure DNS Zone for `test.turingsafehaven.ac.uk`, under the name `shb`).
        - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
   
 
