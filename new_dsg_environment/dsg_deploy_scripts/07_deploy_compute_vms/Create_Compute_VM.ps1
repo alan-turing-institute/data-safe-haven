@@ -4,7 +4,7 @@ param(
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (defaults to 'Standard_DS2_v2')")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (defaults to 'Standard_DS2_v2')"),
   [Parameter(Position=2, HelpMessage = "Last octet of IP address (if not provided then the next available one will be used)")]
-  [string]$fixedIp = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
+  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
 )
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
@@ -27,17 +27,18 @@ if ($null -eq $computeVmRootPassword) {
 
 # Set IP address if we have a fixed IP
 $vmIpAddress = $null
-if ($fixedIp) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $fixedIp }
+if ($ipLastOctet) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $ipLastOctet }
 
 # Set machine name
 $vmName = "DSG" + (Get-Date -UFormat "%Y%m%d%H%M")
-if ($fixedIp) { $vmName = $vmName + "-" + $fixedIp }
+if ($ipLastOctet) { $vmName = $vmName + "-" + $ipLastOctet }
 
 $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+$cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "$deployScriptDir/DSG_configs/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -58,6 +59,12 @@ $targetSubnet = $config.dsg.network.subnets.data.name
 $targetVnet = $config.dsg.network.vnet.name
 $vmAdminPasswordSecretName = $config.dsg.dsvm.admin.passwordSecretName
 
+# If there is no custom cloud-init YAML file then use the default
+if (-Not (Test-Path -Path $cloudInitYaml)) {
+  $cloudInitYaml = Join-Path $cloudInitDir "cloud-init-compute-vm-DEFAULT.yaml" -Resolve
+}
+Write-Output "Using cloud-init from '$cloudInitYaml'"
+
 # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
 $arguments = "-s '$subscriptionSource' \
               -t '$subscriptionTarget' \
@@ -76,16 +83,17 @@ $arguments = "-s '$subscriptionSource' \
               -e $managementSubnetIpRange \
               -d $domainName \
               -a $adDcName \
-              -y '$cloudInitYaml' \
               -p $vmAdminPasswordSecretName \
               -n $vmName \
+              -y $cloudInitYaml \
               -z $vmSize"
 
 # Add additional arguments if needed
-if ($vmIpAddress) {$arguments = $arguments + " -q $vmIpAddress"}
-if ($mirrorIpCran) {$arguments = $arguments + " -o $mirrorIpCran"}
-if ($mirrorIpPypi) {$arguments = $arguments + " -k $mirrorIpPypi"}
+if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
+if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
+if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
 
 $cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
-
 bash -c $cmd
+
+Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"

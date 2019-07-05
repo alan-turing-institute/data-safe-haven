@@ -1,11 +1,15 @@
 #cloud-config
 
+# Update package database on first boot (ie. run apt-get update)
+package_update: true
+
+# Upgrade installed packages on first boot (ie. run apt-get upgrade)
+package_upgrade: true
+
+
 apt:
   # Preserves the existing /etc/apt/sources.list
   preserve_sources_list: true
-
-  # Update apt database on first boot (ie run apt-get update)
-  update: true
 
   # Add repositories
   sources:
@@ -23,16 +27,16 @@ apt:
       source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
       keyid: EB3E94ADBE1229CF
 
-    microsoft-vscode.list:
-      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-      keyid: EB3E94ADBE1229CF
+    postgresql.list:
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      keyid: ACCC4CF8
 
     mono-project.list:
       source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
-    nvidia.list:
+    nvidia-cuda.list:
       source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
       key: |
         -----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -73,8 +77,36 @@ apt:
       keyserver: hkp://keyserver.ubuntu.com:80
       keyid: 51716619E084DAB9
 
+    vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      keyid: EB3E94ADBE1229CF
+
     webupd8team-atom.list:
       source: "ppa:webupd8team/atom"
+
+write_files:
+  - path: "/installation/postgresql.install"
+    content: |
+      create schema if not exists postgis;
+      create extension if not exists postgis;
+      create extension if not exists postgis_topology;
+      create extension if not exists postgis_sfcgal;
+      create extension if not exists pgrouting;
+      create extension if not exists fuzzystrmatch;
+      create extension if not exists unaccent;
+      create extension if not exists pg_trgm;
+      create extension if not exists bloom;
+      create extension if not exists citext;
+      create extension if not exists cube;
+      create extension if not exists file_fdw;
+      create extension if not exists postgres_fdw;
+      create extension if not exists earthdistance;
+  - path: "/installation/spark_sha512.hash"
+    content: |
+      80a4c564ceff0d9aff82b7df610b1d34e777b45042e21e2d41f3e497bb1fa5d8  spark-2.4.3-bin-hadoop2.7.tgz
+  - path: "/installation/dbeaver_sha512.hash"
+    content: |
+      d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -99,6 +131,7 @@ packages:
   - libasound2
   - libcanberra-gtk0
   - libgconf-2-4
+  - libgdal-dev
   - libgit2-dev
   - libgl1-mesa-glx
   - libglu1-mesa
@@ -113,11 +146,13 @@ packages:
   - libnss-ldap
   - libnss-sss
   - libnss3
+  - libopenmpi-dev
   - libpam-ldap
   - libpam-sss
   - libpoppler-cpp-dev
   - libpq-dev
   - librsvg2-dev
+  - libsensors4
   - libssl-dev
   - libudunits2-dev
   - libxss1
@@ -126,8 +161,13 @@ packages:
   - octave
   - oddjob
   - oddjob-mkhomedir
-  - postgresql
+  - parallel
+  - pgadmin3
+  - postgresql-10
+  - postgresql-10-postgis-2.5-scripts
+  - postgresql-10-pgrouting
   - postgresql-contrib
+  - qgis
   - r-base
   - r-base-core
   - r-base-dev
@@ -264,7 +304,6 @@ packages:
   - r-cran-plyr
   - r-cran-polycor
   - r-cran-pomp
-  - r-cran-premium
   - r-cran-pscl
   - r-cran-purrr
   - r-cran-pvclust
@@ -284,7 +323,6 @@ packages:
   - r-cran-repr
   - r-cran-reshape
   - r-cran-reshape2
-  - r-cran-rgdal
   - r-cran-rgeos
   - r-cran-rgl
   - r-cran-rjava
@@ -325,7 +363,6 @@ packages:
   - r-cran-tidyr
   - r-cran-tidytext
   - r-cran-tidyverse
-  - r-cran-tmap
   - r-cran-topicmodels
   - r-cran-urca
   - r-cran-uuid
@@ -345,27 +382,34 @@ packages:
   - r-cran-zoo
   - r-recommended
   - realmd
+  - ristretto
   - scala
   - sssd
   - sssd-tools
+  - sysstat
+  - texlive-full
   - xfce4
   - xfce4-terminal
   - xrdp
+  - xsltproc
 
 runcmd:
-  # Clean up installation
+  # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
-  - echo "*** Cleaning up apt-get packages... ***"
-  - apt-get clean
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
-  - echo "*** Installing NVidia requirements for tensorflow ***"
+  - echo ">=== Installing NVidia requirements for tensorflow ===<"
   - apt-get install -y --no-install-recommends nvidia-driver-410
   - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.4.1.5-1+cuda10.0 libcudnn7-dev=7.4.1.5-1+cuda10.0
   - apt-get install -y nvinfer-runtime-trt-repo-ubuntu1804-5.0.2-ga-cuda10.0
 
+  # Clean up installation - getting to this point takes approximately 30 mins
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt-get -y autoremove
+  - apt-get clean
+
   #IF_TORCH_ENABLED # Install torch
-  #IF_TORCH_ENABLED - echo "*** Installing torch... ***"
+  #IF_TORCH_ENABLED - echo ">=== Installing torch... ===<"
   #IF_TORCH_ENABLED - mkdir -p /opt/torch
   #IF_TORCH_ENABLED - cd /opt/torch
   #IF_TORCH_ENABLED - git clone https://github.com/torch/distro.git /opt/torch --recursive
@@ -382,15 +426,13 @@ runcmd:
   #IF_TORCH_ENABLED # ... and now switch them back
   #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
   #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  #IF_TORCH_ENABLED - sed -i 's|\(.*\)"|\1:/opt/torch/install/bin"|' /etc/environment
   #IF_TORCH_ENABLED - export PATH=$PATH:/opt/torch/install/bin
   #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
-  - echo "*** Installing conda... ***"
+  - echo ">=== Installing conda... ===<"
   - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - export ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
-  - echo "*** Installing Anaconda ***"
   - echo "Using installer from $ANACONDA_INSTALLER_URL"
   - cd /tmp
   - curl -O $ANACONDA_INSTALLER_URL
@@ -400,7 +442,7 @@ runcmd:
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda
-  - echo "*** Updating conda installation... ***"
+  - echo ">=== Updating conda installation... ===<"
   - conda update -n base -c defaults conda
   # Add channels
   - conda config --add channels conda-forge
@@ -413,14 +455,14 @@ runcmd:
   - conda config --set remote_max_retries 20
   - conda config --set remote_read_timeout_secs 180
   # List initial environments
-  - echo "*** Initial conda environments... ***"
+  - echo ">=== Initial conda environments... ===<"
   - conda env list
 
   # === AUTOGENERATED ANACONDA PACKAGES START HERE ===
 
   # Create or install conda environments
   # Python 2.7
-  - echo "*** Working on py27 environment. Will take approximately 40 minutes... ***"
+  - echo ">=== Working on py27 environment. Will take approximately 70 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -436,9 +478,9 @@ runcmd:
   - END_TIME=$(date +%s)
   - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo "*** Building py27 environment took $ELAPSED"
+  - echo ">=== Building py27 environment took $ELAPSED ===<"
   # Python 3.6
-  - echo "*** Working on py36 environment. Will take approximately 30 minutes... ***"
+  - echo ">=== Working on py36 environment. Will take approximately 100 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON36_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -452,9 +494,9 @@ runcmd:
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo "*** Building py36 environment took $ELAPSED"
+  - echo ">=== Building py36 environment took $ELAPSED ===<"
   # Python 3.7
-  - echo "*** Working on py37 environment. Will take approximately 15 minutes... ***"
+  - echo ">=== Working on py37 environment. Will take approximately 20 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON37_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -468,10 +510,14 @@ runcmd:
   - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo "*** Building py37 environment took $ELAPSED"
+  - echo ">=== Building py37 environment took $ELAPSED ===<"
   # List environments
-  - echo "*** Final conda environments... ***"
+  - echo ">=== Final conda environments... ===<"
   - conda env list
+  # Set 'other' permissions on the anaconda directory to be equal to that of the owner
+  # We then remove write access so that site-packages can be used but not altered
+  - echo ">=== Updating /anaconda/ permissions... ===<"
+  - chmod -R o=u,o-w /anaconda/
 
   # === AUTOGENERATED R PACKAGES START HERE ===
 
@@ -479,7 +525,7 @@ runcmd:
   # Use the full number of available cores for installation (R builds a lot of packages from source so we can get a decent speedup here)
   - Rscript -e "nCores = parallel::detectCores(); options('Ncpus' = nCores); getOption('Ncpus', 1L)"
   # CRAN
-  - echo "*** Installing additional R packages. Will take approximately 60 minutes... ***"
+  - echo ">=== Installing additional R packages. Will take approximately 70 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
@@ -495,7 +541,7 @@ runcmd:
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
   # Install RStudio
-  - echo "*** Installing RStudio... ***"
+  - echo ">=== Installing RStudio... ===<"
   # Ensure RStudio picks up system R rather than Conda R for all users
   - export RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
@@ -505,10 +551,10 @@ runcmd:
   - rm -f ${RSTUDIO_DEB}
   - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo "*** Installing R packages and RStudio took $ELAPSED"
+  - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
 
   # Install latest julia version
-  - echo "*** Installing Julia... ***"
+  - echo ">=== Installing Julia... ===<"
   - echo "Preparing directory..."
   - mkdir -p /opt/julia
   - cd /opt/julia
@@ -517,13 +563,11 @@ runcmd:
   - echo "Installing and cleaning up..."
   - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
-  - sed -i 's|\(.*\)"|\1:/opt/julia/julia-1.0.1/bin"|' /etc/environment
   - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
-  - echo "export PATH=$PATH:/opt/julia/julia-1.0.1/bin" >> /etc/bash.bashrc
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
-  - echo "*** Setting up R and Julia kernels for jupyter... ***"
+  - echo ">=== Setting up R and Julia kernels for jupyter... ===<"
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
   # - Rscript -e "IRkernel::installspec(user = FALSE)"
   #
@@ -539,77 +583,91 @@ runcmd:
   - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
 
   # Install spark
-  - echo "*** Installing spark... ***"
+  - echo ">=== Installing spark... ===<"
   - mkdir -p /opt/spark
   - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
-  - tar -zxf spark-2.4.0-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.0-bin-hadoop2.7.tgz
-  - sed -i 's|\(.*\)"|\1:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin"|' /etc/environment
-  - export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin
-  - echo "export PATH=$PATH:/opt/spark/spark-2.4.0-bin-hadoop2.7/bin" >> /etc/bash.bashrc
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz
+  - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
+  - tar -zxf spark-2.4.3-bin-hadoop2.7.tgz
+  - rm -rf spark-2.4.3-bin-hadoop2.7.tgz
+  - export PATH=$PATH:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
-  # Install azcopy
-  - echo "*** Installing azcopy... ***"
-  - cd /tmp
-  - wget -O azcopy.tar.gz https://aka.ms/downloadazcopylinux64
-  - tar -xf azcopy.tar.gz
-  - bash install.sh
-  - rm -rf azcopy.tar.gz azcopy install.sh
-  - if [ "$(which azcopy)" = "" ]; then echo "Could not install azcopy"; exit 1; fi
+  # Install dbeaver
+  - echo ">=== Installing dbeaver... ===<"
+  - curl -O https://dbeaver.io/files/6.1.0/dbeaver-ce_6.1.0_amd64.deb
+  - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
+  - dpkg -i dbeaver-ce_6.1.0_amd64.deb
+  - rm dbeaver-ce_6.1.0_amd64.deb
 
-  # Azure Storage Explorer
-  - mkdir -p /opt/azurestorage
-  - cd /opt/azurestorage
-  - wget http://download.microsoft.com/download/A/E/3/AE32C485-B62B-4437-92F7-8B6B2C48CB40/previous-StorageExplorer-linux-x64.tar.gz
-  - tar -zxf previous-StorageExplorer-linux-x64.tar.gz
-  - rm -f previous-StorageExplorer-linux-x64.tar.gz
-  - sed -i 's|\(.*\)"|\1:/opt/azurestorage/"|' /etc/environment
-  - export PATH=$PATH:/opt/azurestorage/
-  - echo "export PATH=$PATH:/opt/azurestorage/" >> /etc/bash.bashrc
-  - if [ "$(which StorageExplorer)" = "" ]; then echo "Could not install StorageExplorer"; exit 1; fi
+  # Install PostgreSQL extensions
+  - echo ">=== Installing PostgreSQL extensions... ===<"
+  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/postgresql.install
+
+  # Install PyCharm
+  - echo ">=== Installing PyCharm... ===<"
+  - snap install pycharm-community --classic
+  - export PATH=$PATH:/snap/bin
 
   # Check for successful installations
-  - echo "*** Checking for successful installation... ***"
-  # - programming languages
+  - echo ">=== Checking for successful installation... ===<"
+  # :: Programming languages
+  - echo ">=== Programming languages... ===<"
+  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
+  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
+  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
+  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
+  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
+  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
   - if [ "$(which python)" != "" ]; then echo "python $(which python)"; echo "$(python --version)"; else echo "python not found!"; exit 1; fi
   - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
-  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
-  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
-  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
-  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
-  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
-  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
-  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
-  # - development tools
-  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
-  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
-  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
-  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
-  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  # :: Editors
+  - echo ">=== Editors... ===<"
+  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
   - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
   - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
-  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
-  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  # :: LaTeX
+  - echo ">=== LaTeX... ===<"
+  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
+  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
+  # :: Development tools
+  - echo ">=== Development tools... ===<"
   - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
-  - if [ "$(which azcopy)" != "" ]; then echo "azcopy $(which azcopy)"; echo "$(azcopy --version)"; else echo "azcopy not found!"; exit 1; fi
+  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
+  - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
+  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
+  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
+  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
+  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
+  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
-  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($CRANPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
   - echo "Bioconductor packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
+  # Set PATH to the current working version which contains all installed packages
+  # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  # We do this at the end of the script so that
+  #   (a) we know this is the PATH that worked when we checked for all the above packages
+  #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
+  - export PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - echo "Setting PATH to '${PATH}'"
+  - echo "export PATH=${PATH}" >> /etc/bash.bashrc
+
   # Deprovision
   - echo "Deprovisioning this VM to allow an image to be made from it"
   - waagent -deprovision+user -force
   # Fix internet connectivity that is broken by waagent deprovisioning
-  # NB. this is not needed with newer versions, so we check first
+  # NB. this is not needed with newer waagent versions, so we check first
   - if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
 
 final_message:

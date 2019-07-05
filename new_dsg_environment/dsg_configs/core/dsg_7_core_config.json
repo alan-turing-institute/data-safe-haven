@@ -1,11 +1,11 @@
 {
     "subscriptionName": "Data Study Group 7 (Prod)",
     "dsgId": "7",
+    "shmId": "prod",
+    "tier": "2",
     "domain": "dsgroup7.co.uk",
     "ipPrefix": "10.250.48",
     "rdsAllowedSources": "193.60.220.253,193.60.220.240",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.0.2019032100",
-    "packageMirrorIpPypi": "",
-    "packageMirrorIpCran": ""
+    "computeVmImageVersion": "0.0.2019032100"
 }

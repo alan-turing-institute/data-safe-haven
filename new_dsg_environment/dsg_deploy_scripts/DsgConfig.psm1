@@ -51,7 +51,7 @@ function Get-ShmFullConfig{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment sautomated, make this: "RG_DSG_VNET"
+    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment automated, make this: "RG_DSG_VNET"
     $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
@@ -89,9 +89,7 @@ Export-ModuleMember -Function Get-ShmFullConfig
 
 function Add-DsgConfig {
     param(
-        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
-        $shmId,
-        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
         $dsgId
     )
     $configRootDir = Get-ConfigRootDir
@@ -100,31 +98,20 @@ function Add-DsgConfig {
     $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
     $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
 
-    # Use hash table for config
-    $config = [ordered]@{
-        shm = Get-ShmFullConfig($shmId)
-        dsg = [ordered]@{}
-    }
-
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
+
+    # Use hash table for config
+    $config = [ordered]@{
+        shm = Get-ShmFullConfig($dsgConfigBase.shmId)
+        dsg = [ordered]@{}
+    }
 
     # === DSG configuration parameters ===
     $dsg = [ordered]@{}
     # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
     $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
     $dsgPrefix = $dsgConfigBase.ipPrefix
-
-    # --- Package mirror config ---
-    $config.dsg.mirrors = [ordered]@{
-        vnet = [ordered]@{}
-        cran = [ordered]@{}
-        pypi = [ordered]@{}
-    }
-    $config.dsg.mirrors.vnet.rg = "RG_SH_PKG_MIRRORS"
-    $config.dsg.mirrors.vnet.name = "VNET_SH_PKG_MIRRORS"
-    $config.dsg.mirrors.cran.ip = $dsgConfigBase.packageMirrorIpCran
-    $config.dsg.mirrors.pypi.ip = $dsgConfigBase.packageMirrorIpPypi
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $dsgPrefixOctets = $dsgPrefix.Split('.')
@@ -136,6 +123,30 @@ function Add-DsgConfig {
     $config.dsg.id = $dsgConfigBase.dsgId
     $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
+    $config.dsg.tier = $dsgConfigBase.tier
+
+    # --- Package mirror config ---
+    $config.dsg.mirrors = [ordered]@{
+        rg = "RG_SHM_PKG_MIRRORS"
+        keyVault = [ordered]@{}
+        vnet = [ordered]@{}
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
+    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
+    if(@("2", "3").Contains($config.dsg.tier)){
+        $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
+        $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
+        $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
+    } elseif(@("0", "1").Contains($config.dsg.tier)) {
+        $config.dsg.mirrors.vnet.name = $null
+        $config.dsg.mirrors.pypi.ip = $null
+        $config.dsg.mirrors.cran.ip = $null
+    } else {
+        Write-Error ("Tier '" + $config.dsg.tier + "' not supported (NOTE: Tier must be provided as a string in the core DSG config.)")
+        return
+    }
 
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}

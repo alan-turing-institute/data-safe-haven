@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -21,8 +22,8 @@ $adminUser = $config.dsg.dc.admin.username
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 # VM sizes
-$hackMdVmSize = "Standard_DS2_v2"
-$gitlabVmSize = "Standard_DS2_v2"
+$hackMdVmSize = "Standard_B2ms"
+$gitlabVmSize = "Standard_B2ms"
 
 # Patch cloud init templates
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
@@ -75,7 +76,7 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdL
                                             replace('<hackmd-hostname>',$config.dsg.linux.hackmd.hostname).
                                             replace('<hackmd-fqdn>',$hackmdFqdn).
                                             replace('<hackmd-ldap-url>',$hackMdLdapUrl).
-                                            replace('<hackmd-ldap-bios>',$config.shm.domain.netbiosName)
+                                            replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
 # .replace('<gitlab-root-password>',$gitlabRootPassword)
 # .replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
 ## Encode as base64
@@ -84,7 +85,7 @@ $hackmdCustomData = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF
 $params = @{
 "GITLab Server Name" = $config.dsg.linux.gitlab.vmName
 "GITLab VM Size" = $gitlabVMSize
-"GITLab IP Address" =  $config.dsg.linux.gitlab.ip 
+"GITLab IP Address" =  $config.dsg.linux.gitlab.ip
 "HACKMD Server Name" = $config.dsg.linux.hackmd.vmName
 "HACKMD VM Size" = $hackmdVMSize
 "HACKMD IP Address" = $config.dsg.linux.hackmd.ip

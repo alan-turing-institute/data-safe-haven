@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 $config = Get-DsgConfig($dsgId)
 
 # Set deployment parameters not directly set in config file
-$vmSize = "Standard_DS2_v2";
+$vmSize = "Standard_B2ms";
 
 # Fetch admin password (or create if not present)
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
@@ -28,7 +28,7 @@ $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 # Get SAS token
 $artifactLocation = "https://" + $config.shm.storage.artifacts.accountName + ".blob.core.windows.net";
 $currentSubscription = (Get-AzContext).Subscription.Name
-Write-Host $currentSubscription 
+Write-Host $currentSubscription
 $artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
   -accountName $config.shm.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -prevSubscription $currentSubscription);
@@ -60,7 +60,6 @@ Write-Output ($params | ConvertTo-JSON -depth 10)
 New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg `
   -TemplateFile $templatePath @params -Verbose
-
 
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
