@@ -16,15 +16,16 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
+
 # # Create Resource Groups
-# New-AzResourceGroup -Name RG_SHM_VNET -Location uksouth
-# New-AzResourceGroup -Name RG_SHM_DC -Location uksouth
-# New-AzResourceGroup -Name RG_SHM_NPS -Location uksouth
-# New-AzResourceGroup -Name RG_SHM_SECRETS -Location uksouth
-# New-AzResourceGroup -Name RG_SHM_RESOURCES -Location uksouth
+New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
+New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
+New-AzResourceGroup -Name $config.nps.rg -Location $config.location
+New-AzResourceGroup -Name RG_DSG_SECRETS -Location $config.location
+New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 
 # # Create a keyvault and generate passwords
-# New-AzKeyVault -Name $vaultName -ResourceGroupName RG_SHM_SECRETS  -Location uksouth
+New-AzKeyVault -Name $vaultName -ResourceGroupName RG_SHM_SECRETS  -Location uksouth
 
 
 # # VM pass
@@ -81,4 +82,5 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 #         -SafeMode_Password (Get-AzKeyVaultSecret -vaultName $vaultName -name "safemodepass").SecretValue`
 #         -Virtual_Network_Resource_Group "RG_SHM_VNET"
 
-
+# Switch back to original subscription
+Set-AzContext -Context $prevContext;

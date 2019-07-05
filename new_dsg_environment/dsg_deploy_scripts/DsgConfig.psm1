@@ -68,6 +68,7 @@ function Get-ShmFullConfig{
 
     # --- NPS config ---
     $shm.nps = [ordered]@{}
+    $shm.nps.rg = $shmConfigBase.npsRgName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
 
     # --- Storage config --

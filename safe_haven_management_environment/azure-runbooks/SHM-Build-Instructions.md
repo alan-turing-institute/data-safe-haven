@@ -85,8 +85,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
     "npsIp": "The IP address of the management environment NPS server",
     "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "vnetName":"The name of the Virtual Network for the management environment",
-    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment",
-    "vaultname": "The name of the key vault which contains SHM secrets"
+    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment"
 }
 ```
 
