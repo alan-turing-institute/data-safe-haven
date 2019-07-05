@@ -68,6 +68,28 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 ## 1. Deploy VNET and Domain Controllers
 
+### Core SHM configuration properties
+The core properties for the Safe Haven Management (SHM) environment must be present in the `dsg_configs/core` folder. These are also used when deploying a DSG environment. 
+The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`.
+
+```json
+{
+    "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
+    "domain": "The fully qualified domain name for the management environment",
+    "shId": "A short ID to identify the management environment",
+    "location": "The Azure location in which the management environment VMs are deployed",
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
+    "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
+    "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
+    "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
+    "npsIp": "The IP address of the management environment NPS server",
+    "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
+    "vnetName":"The name of the Virtual Network for the management environment",
+    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment"
+}
+```
+
+
 1. Ensure you are logged into the Azure within PowerShell using the command:
 ```pwsh
 Connect-AzAccount
