@@ -51,10 +51,6 @@
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 4. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
-1. Follow the instructions [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad) to create a custom domain name for the DSH management environment. This should be "turingsafehaven.ac.uk" for the primary Turing production SHM and 
-
-2. Ensure the domain name is [verified](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/add-custom-domain#add-your-custom-domain-name-to-azure-ad). This is not critical for testing, but you will not be able to add users to the domain name until it has been verified
-
 ### Add additional administrators
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
 
