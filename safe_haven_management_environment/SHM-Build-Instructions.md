@@ -31,7 +31,7 @@
 
 ### Create a Custom Domain Name 
 #### Create a DNS zone for the custom domain
-1. For Turing SHMs, create a new DNS Zone for a subdomain under the `turingsafehaven.ac.uk` domain (for the `production` environment - within the `Safe Haven Managment` subscription) or under the `test.dsgroupdev.co.uk` domain (for the `test` environment  - within the `Safe Haven Management Testing` subscription). For safe havens hosted by other organisations, follow their guidance. This may require purchasing a dedicated domain.
+1. For Turing SHMs, create a new DNS Zone for a subdomain under the `turingsafehaven.ac.uk` domain (for the `production` environment - within the `Safe Haven Managment` subscription) or under the `dsgroupdev.co.uk` domain (for the `test` environment  - within the `Safe Haven Management Testing` subscription). For safe havens hosted by other organisations, follow their guidance. This may require purchasing a dedicated domain.
 2. Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
     - Click `Create a resource` in the far left menu, seach for "DNS Zone" and click "Create.
     - Select the management subscription created for this managment deployment and select or create the `RG_SHM_DNS` resource group.
