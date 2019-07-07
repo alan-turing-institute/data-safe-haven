@@ -25,7 +25,7 @@ New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.locati
 # Create a keyvault and generate passwords
 New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName RG_DSG_SECRETS -Location $config.location
 
-# # Fetch DC root user password (or create if not present)
+# Fetch DC root user password (or create if not present)
 $DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
 if ($null -eq $DCRootPassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
@@ -42,7 +42,7 @@ if ($null -eq $DCSafemodePassword) {
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
-  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
+  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
 }
 
 # Generate certificates
@@ -78,32 +78,35 @@ Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqls
 # Delete the local executable files
 Remove-Item –path 'temp/' –recurse
 
-
 # Get SAS token
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
 $currentSubscription = $config.subscriptionName;
-$artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
+$artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -prevSubscription $currentSubscription);
-
-$artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
-
+ 
 # Run template files
 # Deploy the shmvnet template
 # The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
 $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
 $cert = [string]$cert
 $cert = $cert.replace(" ", "")
-New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg -templatefile "../arm_templates/shmvnet/shmvnet-template.json" -P2S_VPN_Certifciate $cert -Virtual_Network_Name $shm.network.vnet.name
+
+New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
+        -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
+        -P2S_VPN_Certifciate $cert `
+        -Virtual_Network_Name "SHM_VNET1";
 
 # Deploy the shmdc-template
-New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg -templatefile "../arm_templates/shmdc/shmdc-template.json"`
+New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
+        -templatefile "../arm_templates/shmdc/shmdc-template.json"`
         -Administrator_User "atiadmin"`
-        -Administrator_Password $DCRootPassword`
-        -SafeMode_Password $DCSafemodePassword `
-        -Virtual_Network_Resource_Group $config.network.vnet.rg`
-        -Artifacts_Location $artifactLocation`
-        -Artifacts_Location_SAS_Token $artifactSasToken
+        -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force)`
+        -SafeMode_Password (ConvertTo-SecureString $DCSafemodePassword -AsPlainText -Force)`
+        -Virtual_Network_Resource_Group $config.network.vnet.rg `
+        -Artifacts_Location $artifactLocation `
+        -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
+        -Domain_Name $config.domain.fqdn;
         
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

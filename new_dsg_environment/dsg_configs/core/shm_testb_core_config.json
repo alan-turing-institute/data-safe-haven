@@ -11,7 +11,7 @@
     "npsRgName": "RG_DSG_NPS",
     "npsIp": "248",
     "vnetRgName": "RG_DSG_VNET",
-    "vnetName":"DSG_DSGROUPDEV_VNET1",
+    "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgtestbartifacts",
     "vaultname": "testbvault"
 }
