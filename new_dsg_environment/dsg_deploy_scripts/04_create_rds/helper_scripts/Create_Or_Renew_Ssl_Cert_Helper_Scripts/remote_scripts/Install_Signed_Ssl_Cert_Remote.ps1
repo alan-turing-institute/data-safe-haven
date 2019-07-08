@@ -26,7 +26,7 @@ Write-Output "Certificate chain written to $certPath"
 $certStore = "Cert:\LocalMachine\My"
 $cert = Import-Certificate -FilePath "$certPath" -CertStoreLocation $certStore
 Write-Output "Certificate chain installed to '$certStore' certificate store"
-
+Write-Output "Certificate thumbprint: $cert.Thumbprint"
 # Export full certificate
 add-type -AssemblyName System.Web
 $pfxPassword = ConvertTo-SecureString -String ([System.Web.Security.Membership]::GeneratePassword(20,0)) -AsPlainText -Force 
@@ -64,5 +64,4 @@ Write-Output "Certificate installed on all RDS roles"
 # Import certificate to RDS Web Client
 Import-RDWebClientBrokerCert "$certPath"
 Write-Output "Certificate installed on RDS Web Client"
-
 
