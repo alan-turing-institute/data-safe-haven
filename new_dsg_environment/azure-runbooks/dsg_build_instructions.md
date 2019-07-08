@@ -176,8 +176,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"` [TODO: Write a small script to pick this up from the DSG config file (or have all DSG scripts switch subscriptions when they run)]
-
 - Add new DSG users and security group to the AD by running `Create_New_DSG_User_Service_Accounts_Local.ps1`, entering the DSG ID when prompted
 
 - Add new DSG DNS record to the AD by running `Add_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
@@ -191,8 +189,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Create_VNET.ps1` script, providing the DSG ID when prompted.
 
@@ -221,8 +217,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Create_AD_DC.ps1` script, entering the DSG ID when prompted
 
@@ -383,8 +377,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
 - Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
 - The deployment will take around 10 minutes to complete.
@@ -411,8 +403,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Configure_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
@@ -573,8 +563,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "DSG Template Testing"`
-
 - Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
   - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
   - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production.
@@ -601,16 +589,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "DSG Template Testing"`
-
 - Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 - The deployment will take around 15 minutes to complete
-
-### Generate temporary SAS token
-- Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
 
 ### Configure Dataserver on Domain Controller
 
@@ -626,33 +607,14 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)\
 
-#### Configure Dataserver
-[TODO: Replace with remote script execution (untested local and remote `Configure_Dataserver_*.ps1` scripts already in version control)]
+### Configure Dataserver
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Connect to the new **Data Server** via Remote Desktop client over the DSG VPN connection
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
 
-- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Download the `DSG-DATASERVER .zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DATASERVER.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
-
-- Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new `DSG-DATASERVER` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
-
-- Change to `C:\Scripts`
-
-- In Powershell run `Set-executionpolicy Unrestricted`
-
-- Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
-
-  |  **Command** |                 **Parameters** |   **Description** |
-  | -- | -- | -- |
-  | `Configure_DataServer.ps1` |   -mgmtdomain |      Enter the NetBIOS name of the management domain i.e. "dsgroupdev" for test or TURINGSAFEHAVEN for production |
-  | |                              -dsgdomain |       Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
-  | |                              -dsg |             Enter the DSG name i.e. DSGROUP`<dsg-id>` |
-
+- Run the `./Configiue_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 ## 6. Deploy Web Application Servers (Gitlab and HackMD)
 
@@ -663,8 +625,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
 
@@ -730,8 +690,6 @@ To deploy a compute VM you will need the following available on the machine you 
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
 - Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
 ## 9. Peer DSG and package mirror networks
@@ -748,8 +706,6 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 - Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
 - Run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
