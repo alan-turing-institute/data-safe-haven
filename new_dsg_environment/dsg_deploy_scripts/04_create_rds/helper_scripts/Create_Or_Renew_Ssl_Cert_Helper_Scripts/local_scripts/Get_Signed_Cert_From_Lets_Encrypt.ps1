@@ -81,7 +81,7 @@ if($cleanTest){
   }
 }
 
-bash -c "$certbotCmd"
+bash -i -c "$certbotCmd"
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
