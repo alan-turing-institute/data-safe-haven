@@ -39,13 +39,13 @@ $signCertCmd = (Join-Path $helperScriptsDir "Get_Signed_Cert_From_Lets_Encrypt.p
 $result = Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath '$csrPath' -dryRun `$dryRun -testCert `$testCert"
 # Extract path to saved full chain certificate file from result message
 if($result -is [array]) {
-    $certPath = $result[-1]
+    $certFullChainPath = $result[-1]
 } else {
-    $certPath = $result
+    $certFullChainPath = $result
 }
 
 Write-Host "Installing signed SSL certificate on RDS Gateway"
 Write-Host "------------------------------------------------"
 # Install signed SSL certificate on RDS Gateway
 $installCertCmd = (Join-Path $helperScriptsDir "Install_Signed_Cert_On_Rds_Gateway.ps1")
-Invoke-Expression -Command "$installCertCmd -dsgId $dsgId -certPath '$certPath' -remoteDirectory '$remoteDirectory'"
+Invoke-Expression -Command "$installCertCmd -dsgId $dsgId -certFullChainPath '$certFullChainPath' -remoteDirectory '$remoteDirectory'"
