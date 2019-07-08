@@ -42,7 +42,7 @@
        - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
   
 
-## Add the custom domain to the new AAD 
+### Add the custom domain to the new AAD 
 1. Once the new AAD and custom domain have been created, ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
 2. Click `Active directory` in the far left panel then `Custom domain names` in the left hand panel
 3. Note the DNS record details displayed
