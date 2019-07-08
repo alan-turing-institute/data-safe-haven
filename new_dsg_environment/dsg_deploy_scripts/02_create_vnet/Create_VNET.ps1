@@ -11,7 +11,7 @@ $config = Get-DsgConfig($dsgId)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Get P2S Root certificate for VNet Gateway
 $cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.p2sRootCert -VaultName $config.shm.keyVault.name).SecretValue
@@ -73,4 +73,4 @@ Write-Output $dsgPeeringParams
 Add-AzVirtualNetworkPeering @dsgPeeringParams
 
 # Switch back to original subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;

@@ -11,7 +11,7 @@ $config = Get-DsgConfig($dsgId);
 
 # Temporarily switch to management subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Add_New_DSG_To_DNS_Remote.ps1"
@@ -28,5 +28,5 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
     -Parameter @{configJson=$configJson};
 
 # Switch back to previous subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;
 

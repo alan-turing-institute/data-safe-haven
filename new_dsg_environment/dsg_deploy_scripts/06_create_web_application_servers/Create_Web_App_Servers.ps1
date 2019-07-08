@@ -12,7 +12,7 @@ $config = Get-DsgConfig($dsgId)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Make sure terms for gitlab-ce are accepted
 Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
@@ -111,4 +111,4 @@ New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.linux.rg `
   -TemplateFile $templatePath @params -Verbose
 
 # Switch back to original subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;

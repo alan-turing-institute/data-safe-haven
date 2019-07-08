@@ -11,7 +11,7 @@ $config = Get-DsgConfig($($config.dsg.domain.netbiosName)Id)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Do OS Prep on all RDS VMs
 $scriptPath = Join-Path $PSScriptRoot "Configure_RDS_Servers" "remote_scripts" "OS_Prep.ps1"
@@ -56,4 +56,4 @@ Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
     -Parameter $configureRdsParams
 
 # Switch back to original subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;

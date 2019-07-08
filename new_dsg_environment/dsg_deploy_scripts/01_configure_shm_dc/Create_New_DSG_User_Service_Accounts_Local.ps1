@@ -12,7 +12,7 @@ $config = Get-DsgConfig($dsgId);
 
 # Temporarily switch to management subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Fetch HackMD password (or create if not present)
 $hackMdPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.hackmd.passwordSecretName).SecretValueText;
@@ -79,4 +79,4 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $conf
 Write-Output $result.Value;
 
 # Switch back to previous subscription
-Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $prevContext;
