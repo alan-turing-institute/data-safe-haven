@@ -104,20 +104,8 @@ Set-AzContext -SubscriptionId "<SHM-subscription-id>"
 ```pwsh
 cd ./data-safe-haven/safe_haven_management_environment/setup
 ```
-```pwsh
-./deploy_VNET_DC.ps1 -SubscriptionId "<SHM-subscription-id>"
-```
 
-4. After a while the script will ask for user input:
-
-    - In the azure portal navigate to the resource group `RG_SHM_RESOURCES` -> `shmfiles`. Click `Shared Access Signature` and `Generate SAS and connection string`. This will a SAS token. The Connection string will contain the artifact URL, which looks something like:
-
-      - Artifact URL: https://shmfiles.blob.core.windows.net
-      - SAS Token: ***************
-      - Domain Name: The verified custom domain name created in step 0.  
-
-    - Provide these as inputs when requested. NB. Don't include a trailing forward slash on the Artifact URL
-    
+Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
 
 5. Once the script exits successfully you should see the following resource groups under the SHM-subscription:
 
@@ -135,7 +123,7 @@ cd ./data-safe-haven/safe_haven_management_environment/setup
 
 5. Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it (INSERT IMAGE)
+You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
