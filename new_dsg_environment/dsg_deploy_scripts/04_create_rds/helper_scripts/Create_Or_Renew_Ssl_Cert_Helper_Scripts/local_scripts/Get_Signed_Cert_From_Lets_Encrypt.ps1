@@ -39,7 +39,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $certbotConfigDir = (Join-Path $certbotDir "config")
-$certbotLogDir = (Join-Path $certbotDir "log")
+$certbotLogDir = (Join-Path $certbotDir "logs")
 $certbotWorkingDir = Split-Path -Parent -Path $csrPath
 $csrExt = (Split-Path -Leaf -Path "$csrPath").Split(".")[-1]
 if($csrExt) {
