@@ -37,11 +37,12 @@ if ($null -eq $ADSyncPassword ) {
   $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
 }
 
-# # Execute remote script 1
+# Run Set_OS_Language.ps1 remotely
 $result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
 Write-Output $result1.Value;
+
 
 # Map drive to SHMDC1
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
@@ -63,6 +64,9 @@ $result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name SHMDC1 
     
 Write-Output $result2.Value;
 
+
+# Run SActive_Directory_Configuration.ps1 remotely
+# THIS ISNT WORKING. RUN BY LOGGING INTO VM UNTILL FIXED
 $oubackuppath= "`"C:/Scripts/GPOs`""
 
 $params = @{
@@ -79,12 +83,13 @@ $result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
 
 Write-Output $result3.Value;
 
-# # Execute remote script in second DC
+
+# Execute Set_OS_Language.ps1 on second DC
 $result4= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC2 `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
 Write-Output $result4.Value;
 
-# # # # Switch back to previous subscription
+# Switch back to previous subscription
 Set-AzContext -Context $prevContext;
 

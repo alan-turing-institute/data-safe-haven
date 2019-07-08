@@ -15,7 +15,8 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_NPS"`
+$DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
+New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
         -templatefile "../arm_templates/shmnps/shmnps-template.json"`
         -Administrator_User atiadmin `
         -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force) `
