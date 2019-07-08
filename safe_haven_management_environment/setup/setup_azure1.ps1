@@ -54,7 +54,9 @@ Set-Location -Path $cwd -PassThru
 # Setup resources
 $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
 new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
-New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
+new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 
+
+# New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
 New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
 
 # Create directories in file share
@@ -64,8 +66,11 @@ New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Pa
 # Upload files
 Get-ChildItem -File "../dsc/shmdc1/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
 Get-ChildItem -File "../dsc/shmdc2/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
-Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
-Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
+Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
+Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/nps/SHM_NPS.zip"
+
+# Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
+# Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
 
 # Download executables from microsoft
 New-Item -Name "temp" -ItemType "directory"
