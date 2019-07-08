@@ -42,7 +42,7 @@ if ($null -eq $DCSafemodePassword) {
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
-  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
+  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.safemode ).SecretValueText
 }
 
 # Generate certificates
