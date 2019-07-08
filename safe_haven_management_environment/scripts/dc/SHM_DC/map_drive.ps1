@@ -1,10 +1,14 @@
 param(
-  [string]$accountName,
+  [string]$uri,
   [string]$sasToken
 )
 
 
-# Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
+
+Write-Host $uri;
+Write-Host $sasToken;
+
+Invoke-WebRequest -Uri $uri -OutFile C:/Scripts/SHM_DC.zip
 
 
 # azcopy copy
@@ -23,5 +27,5 @@ param(
 
 # Expand-Archive C:/Scripts/SHM_DC.zip -DestinationPath C:\Scripts\
 
-# Write-Host (Get-ChildItem -Path c:\Scripts\)
+Write-Host (Get-ChildItem -Path C:\Scripts\)
 

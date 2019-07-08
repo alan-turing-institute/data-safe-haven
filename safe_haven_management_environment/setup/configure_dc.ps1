@@ -27,39 +27,41 @@ $scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Set_OS_Lang
 $scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "map_drive.ps1"
 $scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Active_Directory_Configuration.ps1"
 
-# Fetch ADSync user password (or create if not present)
-$ADSyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsync).SecretValueText;
-if ($null -eq $ADSyncPassword ) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsync -SecretValue $newPassword;
-  $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
-}
+# # Fetch ADSync user password (or create if not present)
+# $ADSyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsync).SecretValueText;
+# if ($null -eq $ADSyncPassword ) {
+#   # Create password locally but round trip via KeyVault to ensure it is successfully stored
+#   $newPassword = New-Password;
+#   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+#   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsync -SecretValue $newPassword;
+#   $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
+# }
 
-# Execute remote script 1
-$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
-    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
+# # Execute remote script 1
+# $result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
+#     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
-Write-Output $result1.Value;
+# Write-Output $result1.Value;
 
 # Map drive to SHMDC1
+$artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
 $currentSubscription = $config.subscriptionName;
-$artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
+$artifactSasToken = New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -prevSubscription $currentSubscription);
+  -permission "rl" -prevSubscription $currentSubscription;
+
+$artifact_uri = $( $artifactLocation + "/scripts/SHM_DC.zip");
 
 $params = @{
-  accountName = $config.storage.artifacts.accountName
-  sas_token = $artifactSasToken
-}
+  uri = $artifact_uri
+  sasToken= $artifactSasToken 
+};
 
 
-$result2= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
-            -Name SHMDC1 `
-            -CommandId 'RunPowerShellScript'`
-            -ScriptPath $scriptPath2;
-
+$result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name SHMDC1 `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2 `
+    -Parameter $params;
+    
 Write-Output $result2.Value;
 
 # $oubackuppath= "C:\Scripts\GPOs"
