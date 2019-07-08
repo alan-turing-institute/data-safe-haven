@@ -25,7 +25,7 @@ if($cleanTest) {
   $testCert = $false
 } else {
   $tmpDir = [system.io.path]::GetTempPath()
-  $certbotDir = (Join-Path "~" "certbot")
+  $certbotDir = "$HOME/certbot"
 }
 
 Import-Module Az
