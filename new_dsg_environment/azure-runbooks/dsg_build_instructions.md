@@ -389,11 +389,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 10 minutes to complete.
 
-### Generate temporary SAS token
-- Once the deployment in complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
 ### Configuration on Domain Controller
 
 - Connect to the **DSG Domain Controller** via Remote Desktop client over the VPN connection
@@ -410,83 +405,28 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1641161.PNG](images/media/image13.png)
 
-### Initial configuration of RDS Gateway
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
+### Configure RDS Servers
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
-- Download the `DSG-RDS.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-RDS.zip<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts `?sv=`, with no surrounding quotes)
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
+- Ensure the active subscription is set to that you are using for the new DSG environment using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-- Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the "Scripts" folder (not to a new `DSG-RDS` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
+- Run the `./Configure_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
-
-- Change to `C:\Scripts`
-
-- Prepare the VM with the correct country/time-zone and add additional prefixes to the DNS by running the following command:
-
-  | **Command**   | **Parameters** |  **Description** |
-  | -- | -- | -- |
-  | `OS_Prep.ps1`  | -domain  |        Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>`
-  | |                 -mgmtdomain |     Enter the FQDN of the management domain i.e. turingsafehaven.ac.uk for production or dsgroupdev for test|
-  -------------- ---------------- --------------------------------------------------------------------
-
-### Configuration of RDS services on RDS Gateway
-
-- Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe don the `x86` version.
-
-- Change to `C:\Scripts`
-
-- In Powershell run `Set-executionpolicy Unrestricted`
-
-- Install the RDS services by running the following command:
-
-  | **Command**              | **Parameters** | **Description**  |
-  | -- | -- | -- |
-  | `DeployRDSEnvironment.ps1` | -domain        | Enter the NetBIOS name of the domain i.e. DSGROUP`<dsg-id>` |
-  |                          | -dsg           | Enter the DSG name i.e. DSGROUP`<dsg-id>`|
-  |                          | -mgmtdomain    | Enter NetBIOS name of the management domain i.e. TURINGSAFEHAVEN (production) DSGROUPDEV (test)
-  |                          | -ipaddress     | Enter the first three octets of the Subnet-Data subnet as per the checklist i.e. 10.250.x+2     (where x is the base address)|
-
-- The RDS deployment will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
+- The RDS configuration will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
 
 - Once complete open Server Manager, right click on "All Servers" and select "Add Servers"
 
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e2e518.PNG](images/media/image14.png)
+  ![Add RDS session servers to collection - Step 1](images/media/image14.png)
 
 - Enter "rds" into the "Name" box and click "Find Now"
 
 - Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
 
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e37aa1.PNG](images/media/image15.png)
-
-### Configure Remote Desktop Web Client on the RDS Gateway
-
- - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
-
-- Install the Remote Desktop Web Client PowerShell Module:
-
-  - Run `Install-Module -Name PowerShellGet -Force` within Powershell (Enter "Y" when prompted)
-
-  - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-
-  - Run `Install-Module -Name RDWebClientManagement` within Powershell (entering- Enter "A" when prompted, then "A" again to accept the EULA)
-
-  - Run `Install-RDWebClientPackage`
-
-- Publish the Remote Desktop Web Client using: `Publish-RDWebClientPackage -Type Production -Latest` (don't worry about the warning `WARNING: Using the Remote Desktop web client with per-device licensing is not supported.`. We are not using per-device licencing)
-
-    - If there are any problems running the `Publish-RDWebClientPackage` command, go onto the next step to configure SSL on the RDS Gateway and then return to re-run this step.
+  ![Add RDS session servers to collection - Step 2](images/media/image15.png)
 
 ### Configuration of SSL on RDS Gateway
 
@@ -507,8 +447,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
-
 - Download the applications to be served via RDS
 
   - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
@@ -526,8 +464,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Connect to the **RDS Session Server 2 (RDSSH2)** via Remote Desktop client over the DSG VPN connection
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Repeat the "OS Prep" process you just performed on the RDS Gateway (i.e. login, transfer the `DSG_RDS.zip` scripts file and run the `OS_Prep.ps1` script on each VM)
 
 - Download the applications to be served via RDS
   - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
@@ -560,7 +496,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Set the "Shared Secret" to the value of the `sh-management-radius-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when configuring the DSG RDS Gateway security in the next step)
 
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2f36ea.PNG](images/media/image20.png){width="2.5739129483814525in" height="3.1474507874015747in"}
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2f36ea.PNG](images/media/image20.png)
 
 - Click "OK" to finish
 
