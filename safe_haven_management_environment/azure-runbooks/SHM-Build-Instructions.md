@@ -70,7 +70,7 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 ### Core SHM configuration properties
 The core properties for the Safe Haven Management (SHM) environment must be present in the `dsg_configs/core` folder. These are also used when deploying a DSG environment. 
-The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`.
+The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`. The `shm_testb_core_config.json` provides an example. 
 
 ```json
 {
