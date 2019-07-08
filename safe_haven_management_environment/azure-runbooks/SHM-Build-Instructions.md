@@ -114,6 +114,11 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 ## 3. Configure Domain Controllers (DCs)
 
+### Configure Active Directory on SHMDC1 and SHMDC2
+
+1. Run `./configure_dc.ps1` entering the `shId`, defined in the config file, when prompted. This will run remote scripts on the DC VMS
+
+
 ### Download and install the VPN Client from the virtual network VPN gateway 
 
 1. Navigate to `/safe_haven_management/scripts/local/out/certs/` and double click `client.pfx` to install it (on Mac). Enter the `password`. 
@@ -141,50 +146,28 @@ You should now be able to connect to the virtual network. Each time you need to 
 
   - To obtain the password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `dc_pass`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
 
-### Configure Active Directory on SHMDC1
+### Active Directory Configuration
 
-Once you have accessed SHMDC1 via the Remote Desktop we can configure the DC1. 
+1. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file:
 
-1. On the Azure portal navigate to the `RG_SHM_RESOURCES` resource group and then the `shmfiles` container. Click on `Files` and then the `scripts` fileshare. 
+    - $domainou = "DC=CUSTOMDOMAIN,DC=AC,DC=UK"
+    - $domain = "CUSTOMSDOMAIN.ac.uk"
 
-2. Click the connect icon on the top bar and then copy the lower powershell command. 
-
-![](images/drivemap.png)
-
-3. Open a powershell on the SHMDC1 VM. Past the powershell command and run. This will map the `scripts` fileshare to the Z: drive. 
-
-
-4. In the powershell enter the following commands:
-
-```pwsh
-New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
-```
-```pwsh
-Z:
-```
-```pwsh
-copy dc C:/Scripts -Recurse
-```
-
-5. Open windows explorer and navigate to `C:\Scripts\dc`. Unzip `SHM_DC.zip` and then copy the contents of the unzipped file to `C:/Scripts/` 
-
-6. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name and save the file:
-
-    - $domainou = "DC=TURINGSAFEHAVEN,DC=AC,DC=UK"
-    - $domain = "TURINGSAFEHAVEN.ac.uk"
-
-6. In the powershell navigate to `C:/Scripts/`. Run:
+2. In the powershell navigate to `C:/Scripts/`. Run:
 ```pwsh
 .\Set_OS_Language.ps1
 ```
 ```pwsh
 .\Active_Directory_Configuration.ps1 -oubackuppath c:\Scripts\GPOs
 ```
-You will be promted to enter a password for the adsync account. Note this down as you will need it when configuring the NPS Server later. 
+You will be promted to enter a password for the adsync account. Use the password the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
+
 
 ### Configure Group Policies
 
-1. Open the `Group Policy Management` app. You can search for it using the windows search bar. 
+Once you have accessed the VM via Remote Desktop:
+
+1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar. 
 
 2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
 
@@ -209,40 +192,6 @@ You will be promted to enter a password for the adsync account. Note this down a
 
 9. Close the remote desktop instance
 
-### Configure the second domain controller (SHMDC2)
-
-1. Connect to SHMDC2 using Microsoft Remote desktop, the same procedure as for SHMDC1, but using the private IP address for SHMDC2. The Username and Password is the same.
-
-1. On the Azure portal navigate to the `RG_SHM_RESOURCES` resource group and then the `shmfiles` container. Click on `Files` and then the `scripts` fileshare. 
-
-2. Click the connect icon on the top bar and then copy the lower powershell command. 
-
-3. Open a powershell on the SHMDC2 VM. Past the powershell command and run. This will map the `scripts` fileshare to the Z: drive. 
-
-4. In the powershell enter the following commands:
-
-```pwsh
-New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
-```
-```pwsh
-Z:
-```
-```pwsh
-copy dc C:/Scripts -Recurse
-```
-
-5. Open windows explorer and navigate to `C:\Scripts\dc`. Unzip `SHM_DC.zip` and then copy the contents of the unzipped file to `C:/Scripts/` 
-
-6. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name and save the file:
-
-    - $domainou = "DC=TURINGSAFEHAVEN,DC=AC,DC=UK"
-    - $domain = "TURINGSAFEHAVEN.ac.uk"
-
-6. In the powershell navigate to `C:/Scripts/`. Run:
-```pwsh
-.\Set_OS_Language.ps1
-```
-
 The Domain Controller configuration is now complete. Exit remote destop
 
 ## 4. Deploy Network Policy Server (NPS)
@@ -251,19 +200,10 @@ The Domain Controller configuration is now complete. Exit remote destop
  ```pwsh
  cd ./data-safe-haven/safe_haven_management_environment/setup
  ```
-```
-./setup_azure2.ps1 -SubscriptionId "<SHM-subscription-id>"
-```
 
-2. When prompted enter the following:
-
-    - Administrator password: In the keyvault under `dcpass` (must be the same password and username as the DCs)
-    - Virtual Network Resource Group: RG_SHM_VNET (the name of the resource group)
-    - Domain name: The custom domain name
+1. Run `./setup_azure2.ps1` entering the `shId`, defined in the config file, when prompted.
 
 The NPS server will now deploy. This may take some time. 
-
-
 
 ### Configure the Network Policy Server
 
