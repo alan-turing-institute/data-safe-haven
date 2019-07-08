@@ -3,8 +3,6 @@ param(
   [string]$shmId
 )
 
-
-
 Import-Module Az
 Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
 Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GeneratePassword.psm1 -Force
@@ -17,11 +15,12 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-echo $config.npsRgName
-
 New-AzResourceGroupDeployment -resourcegroupname "RG_SHM_NPS"`
         -templatefile "../arm_templates/shmnps/shmnps-template.json"`
-        -Administrator_User atiadmin 
+        -Administrator_User atiadmin `
+        -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force) `
+        -Virtual_Network_Resource_Group $config.network.vnet.rg `
+        -Domain_Name $config.domain.fqdn;
 
-# TO RUN THIS SCRIPT (second is my personal subscription)
-# ./setup_azure2.ps1 -SubscriptionId "ff4b0757-0eb8-4e76-a53d-4065421633a6" -DomainName = ""
+# Switch back to original subscription
+Set-AzContext -Context $prevContext;

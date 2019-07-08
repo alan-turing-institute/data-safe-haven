@@ -22,10 +22,6 @@ $config =  ($configJson.Replace("``","`"") | ConvertFrom-Json)
 $domainou = $config.domain.dn
 $domain = $config.domain.fqdn 
 
-Write-Host $domainou 
-Write-Host $domain 
-Write-Host $adsyncpassword
-Write-Host $oubackuppath
 
 #Enable AD Recycle Bin
 Write-Host -ForegroundColor Green "Configuring AD recycle bin..."
@@ -64,7 +60,7 @@ write-Host -ForegroundColor Cyan "Group created!"
 #Set account OU Paths
 $serviceoupath = "OU=Safe Haven Service Accounts,$domainou"
 
-#Creating global service accounts
+# #Creating global service accounts
 $adsyncaccountname = "localadsync"
 write-Host -ForegroundColor Cyan "Creating AD Sync Service account - $adsyncaccountname - enter password for this account when prompted"
 New-ADUser  -Name "Local AD Sync Administrator" `

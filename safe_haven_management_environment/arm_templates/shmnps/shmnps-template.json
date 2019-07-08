@@ -33,7 +33,7 @@
                     "description": "Enter name of virtual network to provision these VMs"
                 }    
             },
-            "Virtual Network Resource Group": {
+            "Virtual_Network_Resource_Group": {
                 "type": "string",
                 "metadata": {
                     "description": "Enter name of resource group that is assoicated with the virtual network above"
@@ -58,7 +58,7 @@
         "npsnic": "[concat(variables('npsname'),'_','NIC1')]",
         "npsipaddress": "10.251.0.248",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
-        "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
         "oustring": "[replace(parameters('Domain_Name'),'.',',DC=')]",
         "oupath": "[concat('OU=Safe Haven Service Servers,DC=', variables('oustring'))]"
