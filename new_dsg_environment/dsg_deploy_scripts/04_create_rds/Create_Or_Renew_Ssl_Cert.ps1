@@ -36,7 +36,7 @@ Write-Host "Getting signed SSL certificate"
 Write-Host "------------------------------"
 # Use CSR to get signed SSL certificate from Let's Encrypt
 $signCertCmd = (Join-Path $helperScriptsDir "Get_Signed_Cert_From_Lets_Encrypt.ps1")
-$result = Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath '$csrPath' -dryRun `$dryRun -testCert `$testCert"
+Invoke-Expression -Command "$signCertCmd -dsgId $dsgId -csrPath '$csrPath' -dryRun `$dryRun -testCert `$testCert" -OutVariable result
 # Extract path to saved full chain certificate file from result message
 if($result -is [array]) {
     $certFullChainPath = $result[-1]
