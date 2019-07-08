@@ -3,7 +3,7 @@ param(
   [string]$dsgId,
   [Parameter(Position=1, Mandatory = $false, HelpMessage = "Local directory (defaults to '~/Certificates')")]
   [string]$localDirectory = $null,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
+  [Parameter(Position=2, Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
   [string]$remoteDirectory = $null,
   [Parameter(Position=3, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server that doesn't download a certificate")]
   [bool]$dryRun = $false,
@@ -44,8 +44,12 @@ if($result -is [array]) {
     $certFullChainPath = $result
 }
 
-Write-Host "Installing signed SSL certificate on RDS Gateway"
-Write-Host "------------------------------------------------"
-# Install signed SSL certificate on RDS Gateway
-$installCertCmd = (Join-Path $helperScriptsDir "Install_Signed_Cert_On_Rds_Gateway.ps1")
-Invoke-Expression -Command "$installCertCmd -dsgId $dsgId -certFullChainPath '$certFullChainPath' -remoteDirectory '$remoteDirectory'"
+if($dryRun){
+    Write-Host "Dry run does not produce a signed certificate. Skipping installation on RDS Gateway."
+} else {
+    Write-Host "Installing signed SSL certificate on RDS Gateway"
+    Write-Host "------------------------------------------------"
+    # Install signed SSL certificate on RDS Gateway
+    $installCertCmd = (Join-Path $helperScriptsDir "Install_Signed_Cert_On_Rds_Gateway.ps1")
+    Invoke-Expression -Command "$installCertCmd -dsgId $dsgId -certFullChainPath '$certFullChainPath' -remoteDirectory '$remoteDirectory'"
+}
