@@ -12,7 +12,7 @@ param(
 )
 
 if([String]::IsNullOrEmpty($localDirectory)) {
-    $localDirectory = "~/Certificates"
+    $localDirectory = "$HOME/Certificates"
 }
 if([String]::IsNullOrEmpty($remoteDirectory)) {
     $remoteDirectory = "/Certificates"
