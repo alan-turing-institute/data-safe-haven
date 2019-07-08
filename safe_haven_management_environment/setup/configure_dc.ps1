@@ -18,7 +18,8 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Run remote script
 $scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Set_OS_Language.ps1"
-$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Active_Directory_Configuration.ps1"
+$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "map_drive.ps1"
+$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Active_Directory_Configuration.ps1"
 
 
 # Fetch ADSync user password (or create if not present)
@@ -32,12 +33,17 @@ if ($null -eq $ADSyncPassword ) {
 }
 
 
-## Execute remote script 1
-# $result= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
-#     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
+# Execute remote script 1
+$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
-# Write-Output $result.Value;
+Write-Output $result1.Value;
 
+# Map drive to SHMDC1
+$result2= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2;
+
+Write-Output $result2.Value;
 
 # For some reason, passing a JSON string as the -Parameter value for Invoke-AzVMRunCommand
 # results in the double quotes in the JSON string being stripped in transit
@@ -46,7 +52,7 @@ if ($null -eq $ADSyncPassword ) {
 # being stripped in transit, but we can then replace the backticks with double quotes 
 # at the other end to recover a valid JSON string.
 $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```"")
-$oubackuppath= "c:\Scripts\GPOs"
+$oubackuppath= "C:\Scripts\GPOs"
 
 $params = @{
   configJson = $configJson
@@ -54,14 +60,13 @@ $params = @{
   oubackuppath = $oubackuppath
 }
 
-
-$result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
+$result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
                 -Name SHMDC1 `
                 -CommandId 'RunPowerShellScript'`
-                -ScriptPath $scriptPath2 `
+                -ScriptPath $scriptPath3 `
                 -Parameter $params;
 
-Write-Output $result2.Value;
+Write-Output $result3.Value;
 # # # Switch back to previous subscription
 Set-AzContext -Context $prevContext;
 

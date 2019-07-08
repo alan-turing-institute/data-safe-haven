@@ -5,7 +5,7 @@
     "shId": "testb",
     "location": "uksouth",
     "ipPrefix": "10.220.1",
-    "dcVmName": "DC",
+    "dcVmName": "SHMDC1",
     "dcHostname": "MGMTDEVDC",
     "dcRgName": "RG_DSG_DC",
     "npsRgName": "RG_DSG_NPS",

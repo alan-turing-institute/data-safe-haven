@@ -85,6 +85,7 @@ function Get-ShmFullConfig{
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
     $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
     $shm.keyVault.secretNames.safemode='sh-managment-dcsafemode'
+    $shm.keyVault.secretNames.adsync='sh-managment-adsync'
     return $shm
 }
 Export-ModuleMember -Function Get-ShmFullConfig
