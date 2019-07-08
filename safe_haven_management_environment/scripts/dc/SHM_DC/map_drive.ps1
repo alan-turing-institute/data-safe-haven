@@ -8,7 +8,7 @@ param(
 Write-Host $uri;
 Write-Host $sasToken;
 
-Invoke-WebRequest -Uri $uri -OutFile C:/Scripts/SHM_DC.zip
+# Invoke-WebRequest -Uri $uri -OutFile C:/Scripts/SHM_DC.zip
 
 
 # azcopy copy
@@ -27,5 +27,5 @@ Invoke-WebRequest -Uri $uri -OutFile C:/Scripts/SHM_DC.zip
 
 # Expand-Archive C:/Scripts/SHM_DC.zip -DestinationPath C:\Scripts\
 
-Write-Host (Get-ChildItem -Path C:\Scripts\)
+# Write-Host (Get-ChildItem -Path C:\Scripts\)
 

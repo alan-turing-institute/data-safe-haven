@@ -54,9 +54,8 @@ $artifact_uri = $( $artifactLocation + "/scripts/SHM_DC.zip");
 
 $params = @{
   uri = $artifact_uri
-  sasToken= $artifactSasToken 
+  sasToken= "`"$artifactSasToken`""
 };
-
 
 $result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name SHMDC1 `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2 `
