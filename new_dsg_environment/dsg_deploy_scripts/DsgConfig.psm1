@@ -29,6 +29,8 @@ function Get-ShmFullConfig{
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.id = $shmConfigBase.shId
+    $shm.name = $shmConfigBase.name
+    $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
 
     # --- Domain config ---
@@ -77,11 +79,15 @@ function Get-ShmFullConfig{
     $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
     $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
-    # -- Secrets config ---
+    # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.name = "dsg-management-" + $shm.id
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+
+    # --- DNS config ---
+    $shm.dns = [ordered]@{}
+    $shm.dns.rg = "RG_SHM_DNS"
 
     return $shm
 }

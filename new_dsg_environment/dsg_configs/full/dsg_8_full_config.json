@@ -2,6 +2,13 @@
   "shm": {
     "subscriptionName": "Safe Haven Management Testing",
     "id": "test",
+    "name": "Test Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
       "fqdn": "dsgroupdev.co.uk",
@@ -51,6 +58,9 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
     }
   },
   "dsg": {
