@@ -66,6 +66,9 @@ $certBotAuthScript = (Join-Path $PSScriptRoot "LetsEncrypt_Csr_Dns_Authenticatio
 $certBotAuthCmd = "pwsh `"$certBotAuthScript`" -dsgId $dsgId"
 $certbotCmd += " --preferred-challenges 'dns' --manual --manual-auth-hook '$certBotAuthCmd' --manual-public-ip-logging-ok"
 
+# Force interactive mode to ensure that user is prompted for email address and TOS acceptance
+$certbotCmd += " --force-interactive"
+
 if($cleanTest){
   $certbotCmd += " --dry-run --agree-tos -m example@example.com"
 } else {
