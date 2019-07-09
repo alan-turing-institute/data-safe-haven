@@ -234,7 +234,7 @@ copy nps C:/Scripts -Recurse
 
 7. Open the file `C:/Scripts/ConfigurationFile.ini` in an editor. 
 
-8. Find the line `SQLSYSADMINACCOUNTS="TURINGSAFEHAVEN\atiadmin"` and change the domain name to the correct custom domain. Save and exit. 
+8. Find the line `SQLSYSADMINACCOUNTS="TURINGSAFEHAVEN\atiadmin"` and change the domain name to the correct custom domain. Save and exit. NB: If your domain is a subdomain (i.e. `testb.dsgroupdev`) use the first part only (i.e. `"TESTB\atiadmin"`)
 
 
 ### SQL Server installation
@@ -340,7 +340,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 - Agree the license terms and click "Install"
 - Click "Close" once the install has completed
 - Open a PowerShell command windows with administrator privilages
-- Chnage to "C:\Program Files\Microsoft\AzureMfa\Config"
+- Change to "C:\Program Files\Microsoft\AzureMfa\Config"
 - Run:
 ```pwsh
 .\AzureMfaNpsExtnConfigSetup.ps1
