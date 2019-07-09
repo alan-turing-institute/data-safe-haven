@@ -286,7 +286,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 ### Install Azure Active Directory Connect
 
 1. Download the latest version of the AAD Connect tool from [here](https://www.microsoft.com/en-us/download/details.aspx?id=47594)
-    - You will need to temporarily [enable downloads on the VM](https://www.thewindowsclub.com/disable-file-download-option-internet-explorer 
+    - You will need to temporarily [enable downloads on the VM](https://www.thewindowsclub.com/disable-file-download-option-internet-explorer). Disable downloads after download complete.
     - You will be promted to add webpages to exceptions. Do this. 
 
 2. Run the installer
@@ -294,9 +294,10 @@ sqlcmd -i c:\Scripts\Create_Database.sql
     - Select "Customize"
     - Click "Install"
     - Select "Password Hash Synchronization" -> "Next"
-    - Provide a global administrator details for the Azure Active Directory you are connected to. 
+    - Provide a global administrator details for the Azure Active Directory you are connected to (You may need to create an account for this in the Active Directory)
     - Ensure that correct forest (your custom domain name; e.g TURINGSAFEHAVEN.ac.uk) is selected and click "Add Directory"
-    - Select "Use and existing account" -> Enter the details of the "localadsync" user. Domaninusername: <DOMAIN>/localadsync Password: Password entered in SHMDC1 setup -> "OK" -> "Next"
+    - Select "Use and existing account" -> Enter the details of the "localadsync" user. Username: `domain/localadsync` Password: `Look up in keyvault`-> "OK" -> "Next"
+        - Again if your domain contains a subdomain the username should be the first part (i.e. `testb/localadsync` for domain `testb.dsgroupdev.co.uk`)
     - Verify that UPN matches -> "Next"
     - Select "Sync Selected domains and OUs"
     - Expand domain and delselect all objects
@@ -316,9 +317,9 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 5. Set `precedence` to 1. 
 6. Select "Transformations" and locate the rule with its "Target Attribute" set to "usageLocation" 
 7. Change the "FlowType" column from "Expression" to "Direct"
-8. "Source" column click drop-down and choose "c" attribute
+8. On the "Source" column click drop-down and choose "c" attribute
 9. Click "Save"
-10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Enable the new rule. 
+10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. `Enable` the new rule. 
 11. Click the X to close the Synchronization Rules Editor window
 
 12. In the powershell run:
@@ -349,6 +350,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 - Enter "A" when prompted
 - Sign in with the global admin account for your active directory
 - Enter your Azure Active directory ID (Note: if you see a service principal error here this is because you don't have any valid P1 licenses, purchase licenses and then re-run the commands in this section)
+    - On the Azure AAD on the Azure portal click the settings icon on the top bar and click `export all settings`. The AAD ID is found under `"tenant": `
 - Enter "Y" when prompted
 
 #### Installation of Safe Haven Management environment complete.
@@ -356,7 +358,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 
 ## 5. Validation 
 
-1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers` application. 
+1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers` application under `
 
 2. After about 30 minutes the new user should appear on the Azure Active Directory account. Or to force a sync, on the NPS machine open a powershell and call:
 
