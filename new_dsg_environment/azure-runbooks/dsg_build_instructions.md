@@ -337,9 +337,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login to the Safe Haven Management domain controller with a domain administrator account
 
-- Open "Windows Administrative Tools" and then the "Active Directory Domains and Trust" MMC
+- From the "Server Management" application, select `Tools -> Group Policy Management` then `Active Directory Domains and Trust`
 
-- Right click the management domain name and select "Properties"
+- Right click the management domain name and select `Properties`
 
 - Click on "Trusts" tab then click "New Trust"
 
