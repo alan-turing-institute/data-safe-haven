@@ -30,10 +30,6 @@ New-ADGroup -Name ($config.dsg.domain.securityGroups.researchUsers.name) -GroupS
 # ---- Create Service Accounts for DSG ---
 # Hack MD user
 $hackMdPrincipalName = $config.dsg.users.ldap.hackmd.samAccountName + "@" + $config.dsg.domain.fqdn;
-Write-Host $hackMdPrincipalName
-Write-Host $config.dsg.users.ldap.hackmd.name
-Write-Host $config.shm.domain.serviceOuPath
-Write-Host $config.dsg.users.ldap.hackmd.samAccountName
 
 New-ADUser -Name $config.dsg.users.ldap.hackmd.name `
            -UserPrincipalName $hackMdPrincipalName `
