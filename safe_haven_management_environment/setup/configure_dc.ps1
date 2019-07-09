@@ -67,21 +67,21 @@ Write-Output $result2.Value;
 
 # Run SActive_Directory_Configuration.ps1 remotely
 # THIS ISNT WORKING. RUN BY LOGGING INTO VM UNTILL FIXED
-$oubackuppath= "`"C:/Scripts/GPOs`""
+# $oubackuppath= "`"C:/Scripts/GPOs`""
 
-$params = @{
-  configJson = $configJson
-  adsyncpassword = "`"$ADSyncPassword`""
-  oubackuppath = "`"$oubackuppath`""
-}
+# $params = @{
+#   configJson = $configJson
+#   adsyncpassword = "`"$ADSyncPassword`""
+#   oubackuppath = "`"$oubackuppath`""
+# }
 
-$result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
-                -Name SHMDC1 `
-                -CommandId 'RunPowerShellScript'`
-                -ScriptPath $scriptPath3 `
-                -Parameter $params;
+# $result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
+#                 -Name SHMDC1 `
+#                 -CommandId 'RunPowerShellScript'`
+#                 -ScriptPath $scriptPath3 `
+#                 -Parameter $params;
 
-Write-Output $result3.Value;
+# Write-Output $result3.Value;
 
 
 # Execute Set_OS_Language.ps1 on second DC

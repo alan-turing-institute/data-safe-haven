@@ -11,6 +11,8 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
 
+echo $domain.netbiosName
+
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;

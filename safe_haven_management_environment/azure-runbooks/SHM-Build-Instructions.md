@@ -121,7 +121,7 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 ### Download and install the VPN Client from the virtual network VPN gateway 
 
-1. Navigate to `/safe_haven_management/scripts/local/out/certs/` and double click `client.pfx` to install it (on Mac). Enter the `password`. 
+1. Navigate to `/safe_haven_management/scripts/local/out/certs/` and double click `client.pfx` to install it (on Mac). Enter `password`. 
 2. Next, on the portal navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> SHM_VNET1_GW`.
 3.  Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar.
 4. Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml).
@@ -144,7 +144,7 @@ You should now be able to connect to the virtual network. Each time you need to 
     - Username: atiadmin
     - Password: 
 
-  - To obtain the password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `dc_pass`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
+  - To obtain the password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `dc_pass`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
 
 ### Active Directory Configuration
 
@@ -154,9 +154,7 @@ You should now be able to connect to the virtual network. Each time you need to 
     - $domain = "CUSTOMSDOMAIN.ac.uk"
 
 2. In the powershell navigate to `C:/Scripts/`. Run:
-```pwsh
-.\Set_OS_Language.ps1
-```
+
 ```pwsh
 .\Active_Directory_Configuration.ps1 -oubackuppath c:\Scripts\GPOs
 ```
@@ -251,11 +249,11 @@ copy nps C:/Scripts -Recurse
 
 5. In Windows explorer navigate to the Y: driver (sqlserver). Double click on `SQLServer2017-SSEI-Expr` and click `run` when prompted. Then chose `Download Media` and select `Express Advanced`. Then click download. 
 
-6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU`
+6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU`. Double click to unpack it. 
 
-7. Open a command prompt with administrator privileges (right click on command window and click `run as administrator`). Navigate to the `SQLEXPRADV_x64_ENU` folder. 
+7. Open a command prompt with administrator privileges (right click on command window and click `run as administrator`).  
 
-8. Enter the following commands which will install the SQL Server:
+8. Enter the following commands which will install the SQL Server from the `SQLEXPRADV_x64_ENU` folder:
 
 ```pwsh
 setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicenseTerms
