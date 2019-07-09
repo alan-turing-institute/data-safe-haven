@@ -85,9 +85,9 @@
       }
     },
     "domain": {
-      "fqdn": "dsgroup8.co.uk",
+      "fqdn": "dsgroup8.mtspace.net",
       "netbiosName": "DSGROUP8",
-      "dn": "DC=dsgroup8,DC=co,DC=uk",
+      "dn": "DC=dsgroup8,DC=mtspace,DC=net",
       "securityGroups": {
         "serverAdmins": {
           "name": "SG DSGROUP8 Server Administrators",
@@ -140,7 +140,7 @@
       "rg": "RG_DSG_DC",
       "vmName": "DSG8DC",
       "hostname": "DSG8DC",
-      "fqdn": "DSG8DC.dsgroup8.co.uk",
+      "fqdn": "DSG8DC.dsgroup8.mtspace.net",
       "ip": "10.250.56.250",
       "admin": {
         "username": "atiadmin",
@@ -177,19 +177,19 @@
       "gateway": {
         "vmName": "RDS",
         "hostname": "RDS",
-        "fqdn": "RDS.dsgroup8.co.uk",
+        "fqdn": "RDS.dsgroup8.mtspace.net",
         "ip": "10.250.57.250"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
         "hostname": "RDSSH1",
-        "fqdn": "RDSSH1.dsgroup8.co.uk",
+        "fqdn": "RDSSH1.dsgroup8.mtspace.net",
         "ip": "10.250.57.249"
       },
       "sessionHost2": {
         "vmName": "RDSSH2",
         "hostname": "RDSSH2",
-        "fqdn": "RDSSH2.dsgroup8.co.uk",
+        "fqdn": "RDSSH2.dsgroup8.mtspace.net",
         "ip": "10.250.57.248"
       },
       "rg": "RG_DSG_RDS",
@@ -207,21 +207,21 @@
       "rg": "RG_DSG_DATA",
       "vmName": "DATASERVER",
       "hostname": "DATASERVER",
-      "fqdn": "DATASERVER.dsgroup8.co.uk",
+      "fqdn": "DATASERVER.dsgroup8.mtspace.net",
       "ip": "10.250.58.250"
     },
     "linux": {
       "gitlab": {
         "vmName": "GITLAB",
         "hostname": "GITLAB",
-        "fqdn": "GITLAB.dsgroup8.co.uk",
+        "fqdn": "GITLAB.dsgroup8.mtspace.net",
         "ip": "10.250.58.151",
         "rootPasswordSecretName": "dsg8-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD",
         "hostname": "HACKMD",
-        "fqdn": "HACKMD.dsgroup8.co.uk",
+        "fqdn": "HACKMD.dsgroup8.mtspace.net",
         "ip": "10.250.58.152"
       },
       "rg": "RG_DSG_LINUX",

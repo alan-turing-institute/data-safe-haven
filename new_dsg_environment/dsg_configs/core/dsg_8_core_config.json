@@ -3,7 +3,7 @@
     "dsgId": "8",
     "shmId": "test",
     "tier": "2",
-    "domain": "dsgroup8.co.uk",
+    "domain": "dsgroup8.mtspace.net",
     "ipPrefix": "10.250.56",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
