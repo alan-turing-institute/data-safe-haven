@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BackupInst xmlns="http://www.microsoft.com/GroupPolicy/GPOOperations/Manifest">
+	<GPOGuid><![CDATA[{EF1A2835-4706-400D-9A10-ACBD5A1920C4}]]></GPOGuid>
+	<GPODomain><![CDATA[DSGroup1.co.uk]]></GPODomain>
+	<GPODomainGuid><![CDATA[{4d69ca67-c876-43ef-a899-66bbccbc3f1e}]]></GPODomainGuid>
+	<GPODomainController><![CDATA[DSG1DC.DSGroup1.co.uk]]></GPODomainController>
+	<BackupTime><![CDATA[2018-12-07T14:06:46]]></BackupTime>
+	<ID><![CDATA[{D320C1D9-52EF-47D8-80A7-1E73A457CDAD}]]></ID>
+	<Comment><![CDATA[Reseach Users - Mapped Drive]]></Comment>
+	<GPODisplayName><![CDATA[Research Users – Mapped Drives]]></GPODisplayName>
+</BackupInst>

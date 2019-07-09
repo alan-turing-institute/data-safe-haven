@@ -59,14 +59,23 @@ $sasToken = New-AccountSasToken $storageAccountSubscription $storageAccountRg $s
 $sasContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $sasToken
 $numFiles = $blobNames.Length
 $remoteDir = "~/$containerName"
-Remove-Item "$remoteDir" -Recurse
-if(-not (Test-Path -Path $remoteDir )){
+if(Test-Path -Path $remoteDir){
+  Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
+} else {
     New-Item -ItemType directory -Path $remoteDir
 }
-Write-Host " - Downloading $numFiles files to '$remoteDir'"
-$artifactBlobs = $blobNames | ForEach-Object{Get-AzStorageBlobContent -Blob $_ -Container $containerName -Destination "$remoteDir/$_Name" -Context $sasContext}
 
-return $artifactBlobs
+Write-Host " - Downloading $numFiles files to '$remoteDir'"
+foreach($blobName in $blobNames){
+  $fileName = Split-Path -Leaf $blobName
+  $fileDirRel = Split-Path -Parent $blobName
+  $fileDirFull = Join-Path $remoteDir $fileDirRel
+  if(-not (Test-Path -Path $fileDirFull )){
+    New-Item -ItemType directory -Path $fileDirFull
+  }
+  $filePath = Join-Path $fileDirFull $fileName 
+  Get-AzStorageBlobContent -Blob $blobName -Container $containerName -Destination $filePath -Context $sasContext
+}
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;

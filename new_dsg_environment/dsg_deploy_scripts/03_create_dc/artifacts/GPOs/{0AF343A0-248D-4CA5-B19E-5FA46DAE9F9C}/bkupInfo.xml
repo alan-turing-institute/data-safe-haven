@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BackupInst xmlns="http://www.microsoft.com/GroupPolicy/GPOOperations/Manifest">
+	<GPOGuid><![CDATA[{D4C89E6F-D735-477D-B42C-293A6A6CCEA9}]]></GPOGuid>
+	<GPODomain><![CDATA[DSGroup2.co.uk]]></GPODomain>
+	<GPODomainGuid><![CDATA[{01cf6c01-8509-468f-8c10-c228dca13d72}]]></GPODomainGuid>
+	<GPODomainController><![CDATA[DC.DSGroup2.co.uk]]></GPODomainController>
+	<BackupTime><![CDATA[2017-11-23T15:00:33]]></BackupTime>
+	<ID><![CDATA[{0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C}]]></ID>
+	<Comment><![CDATA[Session Servers - Remote Desktop Control]]></Comment>
+	<GPODisplayName><![CDATA[All servers – Local Administrators]]></GPODisplayName>
+</BackupInst>

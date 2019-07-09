@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+<GroupPolicyBackupScheme xmlns:bkp="http://www.microsoft.com/GroupPolicy/GPOOperations" xmlns="http://www.microsoft.com/GroupPolicy/GPOOperations" bkp:version="2.0" bkp:type="GroupPolicyBackupTemplate">
+	<GroupPolicyObject>
+		<SecurityGroups>
+			<Group bkp:Source="FromDACL">
+				<Sid><![CDATA[S-1-5-21-1813578418-120617354-939478454-519]]></Sid>
+				<SamAccountName><![CDATA[Enterprise Admins]]></SamAccountName>
+				<Type><![CDATA[UniversalGroup]]></Type>
+				<NetBIOSDomainName><![CDATA[DSGroup2]]></NetBIOSDomainName>
+				<DnsDomainName><![CDATA[DSGroup2.co.uk]]></DnsDomainName>
+				<UPN><![CDATA[Enterprise Admins@DSGroup2.co.uk]]></UPN>
+			</Group>
+			<Group bkp:Source="FromDACL">
+				<Sid><![CDATA[S-1-5-21-1813578418-120617354-939478454-512]]></Sid>
+				<SamAccountName><![CDATA[Domain Admins]]></SamAccountName>
+				<Type><![CDATA[GlobalGroup]]></Type>
+				<NetBIOSDomainName><![CDATA[DSGroup2]]></NetBIOSDomainName>
+				<DnsDomainName><![CDATA[DSGroup2.co.uk]]></DnsDomainName>
+				<UPN><![CDATA[Domain Admins@DSGroup2.co.uk]]></UPN>
+			</Group>
+		</SecurityGroups>
+		<FilePaths/>
+		<GroupPolicyCoreSettings>
+			<ID><![CDATA[{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}]]></ID>
+			<Domain><![CDATA[DSGroup2.co.uk]]></Domain>
+			<SecurityDescriptor>01 00 04 9c 00 00 00 00 00 00 00 00 00 00 00 00 14 00 00 00 04 00 ec 00 08 00 00 00 05 02 28 00 00 01 00 00 01 00 00 00 8f fd ac ed b3 ff d1 11 b4 1d 00 a0 c9 68 f9 39 01 01 00 00 00 00 00 05 0b 00 00 00 00 00 24 00 ff 00 0f 00 01 05 00 00 00 00 00 05 15 00 00 00 b2 02 19 6c 8a 79 30 07 b6 4d ff 37 00 02 00 00 00 02 24 00 ff 00 0f 00 01 05 00 00 00 00 00 05 15 00 00 00 b2 02 19 6c 8a 79 30 07 b6 4d ff 37 00 02 00 00 00 02 24 00 ff 00 0f 00 01 05 00 00 00 00 00 05 15 00 00 00 b2 02 19 6c 8a 79 30 07 b6 4d ff 37 07 02 00 00 00 02 14 00 94 00 02 00 01 01 00 00 00 00 00 05 09 00 00 00 00 02 14 00 94 00 02 00 01 01 00 00 00 00 00 05 0b 00 00 00 00 02 14 00 ff 00 0f 00 01 01 00 00 00 00 00 05 12 00 00 00 00 0a 14 00 ff 00 0f 00 01 01 00 00 00 00 00 03 00 00 00 00</SecurityDescriptor>
+			<DisplayName><![CDATA[Session Servers – Remote Desktop Control]]></DisplayName>
+			<Options><![CDATA[0]]></Options>
+			<UserVersionNumber><![CDATA[851981]]></UserVersionNumber>
+			<MachineVersionNumber><![CDATA[1572888]]></MachineVersionNumber>
+			<MachineExtensionGuids><![CDATA[[{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F72-3407-48AE-BA88-E8213C6761F1}][{827D319E-6EAC-11D2-A4EA-00C04F79F83A}{803E14A0-B4FB-11D0-A0D0-00A0C90F574B}]]]></MachineExtensionGuids>
+			<UserExtensionGuids><![CDATA[[{35378EAC-683F-11D2-A89A-00C04FBBCFA2}{D02B1F73-3407-48AE-BA88-E8213C6761F1}]]]></UserExtensionGuids>
+			<WMIFilter/>
+		</GroupPolicyCoreSettings>
+		<GroupPolicyExtension bkp:ID="{35378EAC-683F-11D2-A89A-00C04FBBCFA2}" bkp:DescName="Registry">
+			<FSObjectFile bkp:Path="%GPO_MACH_FSPATH%\registry.pol" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\registry.pol" bkp:Location="DomainSysvol\GPO\Machine\registry.pol"/>
+			<FSObjectFile bkp:Path="%GPO_USER_FSPATH%\registry.pol" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\registry.pol" bkp:Location="DomainSysvol\GPO\User\registry.pol"/>
+			<FSObjectFile bkp:Path="%GPO_FSPATH%\Adm\*.*" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Adm\*.*"/>
+		</GroupPolicyExtension>
+		<GroupPolicyExtension bkp:ID="{827D319E-6EAC-11D2-A4EA-00C04F79F83A}" bkp:DescName="Security">
+			<FSObjectFile bkp:Path="%GPO_MACH_FSPATH%\microsoft\windows nt\SecEdit\GptTmpl.inf" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" bkp:ReEvaluateFunction="SecurityValidateSettings" bkp:Location="DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf"/>
+		</GroupPolicyExtension>
+		<GroupPolicyExtension bkp:ID="{F15C46CD-82A0-4C2D-A210-5D0D3182A418}" bkp:DescName="Unknown Extension">
+			<FSObjectFile bkp:Path="%GPO_MACH_FSPATH%\comment.cmtx" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\comment.cmtx" bkp:Location="DomainSysvol\GPO\Machine\comment.cmtx"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Microsoft" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Microsoft" bkp:Location="DomainSysvol\GPO\Machine\Microsoft"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Microsoft\Windows NT" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Microsoft\Windows NT" bkp:Location="DomainSysvol\GPO\Machine\Microsoft\Windows NT"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Microsoft\Windows NT\SecEdit" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Microsoft\Windows NT\SecEdit" bkp:Location="DomainSysvol\GPO\Machine\Microsoft\Windows NT\SecEdit"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Scripts" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Scripts" bkp:Location="DomainSysvol\GPO\Machine\Scripts"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Scripts\Shutdown" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Scripts\Shutdown" bkp:Location="DomainSysvol\GPO\Machine\Scripts\Shutdown"/>
+			<FSObjectDir bkp:Path="%GPO_MACH_FSPATH%\Scripts\Startup" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\Machine\Scripts\Startup" bkp:Location="DomainSysvol\GPO\Machine\Scripts\Startup"/>
+			<FSObjectFile bkp:Path="%GPO_USER_FSPATH%\comment.cmtx" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\comment.cmtx" bkp:Location="DomainSysvol\GPO\User\comment.cmtx"/>
+			<FSObjectDir bkp:Path="%GPO_USER_FSPATH%\Documents &amp; Settings" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\Documents &amp; Settings" bkp:Location="DomainSysvol\GPO\User\Documents &amp; Settings"/>
+			<FSObjectDir bkp:Path="%GPO_USER_FSPATH%\Scripts" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\Scripts" bkp:Location="DomainSysvol\GPO\User\Scripts"/>
+			<FSObjectDir bkp:Path="%GPO_USER_FSPATH%\Scripts\Logoff" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\Scripts\Logoff" bkp:Location="DomainSysvol\GPO\User\Scripts\Logoff"/>
+			<FSObjectDir bkp:Path="%GPO_USER_FSPATH%\Scripts\Logon" bkp:SourceExpandedPath="\\DSG2DC.DSGroup2.co.uk\sysvol\DSGroup2.co.uk\Policies\{16ECB09D-3ED3-4AFF-9FCE-12B56A5F3126}\User\Scripts\Logon" bkp:Location="DomainSysvol\GPO\User\Scripts\Logon"/>
+		</GroupPolicyExtension>
+	</GroupPolicyObject>
+</GroupPolicyBackupScheme>

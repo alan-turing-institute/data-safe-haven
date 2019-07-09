@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Drives clsid="{8FDDCC1A-0C3C-43cd-A6B4-71A6DF20DA8C}"><Drive clsid="{935D1B74-9CB8-4e3c-9914-7DD559B7A417}" name="R:" status="R:" image="2" changed="2017-11-17 15:11:37" uid="{C66EAB9C-BC95-4FFD-ABEE-6D1696E411B0}"><Properties action="U" thisDrive="NOCHANGE" allDrives="NOCHANGE" userName="" path="\\dataserver\Data" label="Data" persistent="1" useLetter="1" letter="R"/></Drive>
+</Drives>
