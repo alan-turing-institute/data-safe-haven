@@ -86,6 +86,7 @@ function Get-ShmFullConfig{
     $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
     $shm.keyVault.secretNames.safemode='sh-managment-dcsafemode'
     $shm.keyVault.secretNames.adsync='sh-managment-adsync'
+    $shm.keyVault.secretNames.vpncertificate='sh-managment-cert'
     return $shm
 }
 Export-ModuleMember -Function Get-ShmFullConfig

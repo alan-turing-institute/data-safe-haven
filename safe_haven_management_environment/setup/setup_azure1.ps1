@@ -53,15 +53,6 @@ Set-Location -Path ../scripts/local/ -PassThru
 sh generate-root-cert.sh
 Set-Location -Path $cwd -PassThru
 
-# Fetch ADSync user password (or create if not present)
-$certPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpncertificate).SecretValueText;
-if ($null -eq $cert) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpncertificate-SecretValue $newPassword;
-  $certPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpncertificate ).SecretValueText
-}
 
 # Import-AzureKeyVaultCertificate -VaultName $config.keyVault.name `
 #            -Name $("DSG-P2S-" + $shmId) `

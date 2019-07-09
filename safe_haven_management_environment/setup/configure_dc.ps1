@@ -34,7 +34,7 @@ if ($null -eq $ADSyncPassword ) {
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsync -SecretValue $newPassword;
-  $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText
+  $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.adsync ).SecretValueText
 }
 
 # Run Set_OS_Language.ps1 remotely
