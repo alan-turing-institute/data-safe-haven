@@ -13,6 +13,7 @@ $config = Get-DsgConfig($dsgId)
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
+$vmResourceGroup = $config.dsg.rds.rg;
 # Do OS Prep on all RDS VMs
 $scriptPath = Join-Path $PSScriptRoot "Configure_RDS_Servers" "remote_scripts" "OS_Prep_Remote.ps1"
 
