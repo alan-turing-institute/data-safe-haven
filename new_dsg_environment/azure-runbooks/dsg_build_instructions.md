@@ -87,23 +87,27 @@
 
 ## Build Process
 
-0. Define DSG configuration
+[0. Define DSG configuration](#0.-Define-DSG-configuration)
 
-1. Prepare the management environment for the new DSG
+[1. Prepare Safe Haven Management Domain](#1.-Prepare-Safe-Haven-Management-Domain)
 
-2. Deploy DSG Virtual Network
+[2. Deploy Virtual Network](#2.-Deploy-Virtual-Network)
 
-3. Deploy DSG Domain Controller
+[3. Deploy DSG Domain Controller](#3.-Deploy-DSG-Domain-Controller)
 
-4. Deploy Remote Desktop Services environment
+[4. Deploy Remote Desktop Service Environment](#4.-Deploy-Remote-Desktop-Service-Environment)
 
-5. Deploy Data Server
+[5. Deploy Data Server](#5.-Deploy-Data-Server)
 
-6. Deploy Support Servers (GitLab, HackMD)
+[6. Deploy Web Application Servers (Gitlab and HackMD)](#6.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
 
-7. Deploy initial shared compute VM
+[7. Deploy initial shared compute VM](#7.-Deploy-initial-shared-compute-VM)
 
-8. Network Lock Down
+[8. Apply network configuration](#8.-Apply-network-configuration)
+
+[9. Peer DSG and package mirror networks](#9.-Peer-DSG-and-package-mirror-networks)
+
+[10. Run smoke tests on shared compute VM](#10.-Run-smoke-tests-on-shared-compute-VM)
 
 ## 0. Define DSG configuration
 
@@ -169,7 +173,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Commit this new full configuration file to the Safe Haven repository
 
-## 0. Prepare Safe Haven Management Domain
+## 1. Prepare Safe Haven Management Domain
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
@@ -180,7 +184,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Add new DSG DNS record to the AD by running `Add_New_DSG_To_DNS_Local.ps1`, entering the DSG ID when prompted
 
-## 1. Deploy Virtual Network
+## 2. Deploy Virtual Network
 
 ### Create the virtual network
 
@@ -605,7 +609,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Drag the "DATASERVER" computer object to the "DSGROUP`<dsg-id>` Data Servers" OU, click "YES" to the warning
 
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)\
+  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)
 
 ### Configure Dataserver
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -644,7 +648,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
-## 7. Deploy initial shared Compute VM
+## 7. Deploy initial shared compute VM
 
 ### Ensure a cloud init file exists for the DSG
   - Make sure a `cloud-init` YAML file exists at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml`.
