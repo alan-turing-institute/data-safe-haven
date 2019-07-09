@@ -153,7 +153,7 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
 }
 ```
 
-#### DSG IP Address prefix
+### DSG IP Address prefix
 
 Each DSG must be assigned it's own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a DSG and capacity to add additional subnets should that be required in the future.
 
@@ -174,6 +174,65 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Commit this new full configuration file to the Safe Haven repository
 
 ## 1. Prepare Safe Haven Management Domain
+
+### Clear out any existing references to DSG from previous deployments
+
+**=== ONLY CARRY OUT THE FOLLOWING STEPS IF THE DSG SUBSCRIPTION IS COMPLETELY EMPTY ===**
+
+**=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
+
+### On the SHM Domain Controller
+- Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
+- Login with local user `atiadmin` and the SHM DC admin password from the SHM KeyVault
+- Delete users for DSG in the SHM DC Active Directory
+    - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
+        - In the `Safe Haven Research Users` OU, delete the `DSGROUP<dsg-id> Test Researcher` user
+        - In the `Safe Haven Service Accounts` OU, delete:
+            -  The `DSGROUP<dsg-id> DSVM LDAP` user
+            -  The `DSGROUP<dsg-id> Gitlab LDAP` user
+            -  The `DSGROUP<dsg-id> HackMD LDAP` user
+        - Delete the `SG DSGROUP<dsg-id> Research Users` security group from the `Safe Haven Security Groups` OU
+- Remove AD Trust for DSG from SHM domain controller (both inbound and outbound)
+    - In the "Server Management" app, click `Tools -> Active Directory Domains and Trusts`
+    - Right click the SHM domain and click `Properties` then the `Trusts` tab
+    - In the `Domains trusted bny this domain` list select the DSG domain and click `Remove`
+    - If warned that trust information for the domain cannot be obtained, click `Yes` to remove the trust anyway.
+    - This will also remove the corresponding entry from the `Domains that trust this domain list`
+- Remove DNS records for DSG from SHM domain controller
+    - In the "Server Management" app, click `Tools -> DNS`
+    - Remove reverse records for DSG subnets
+        - Expand the `Reverse lookup zones` folder
+        - Delete the three `c.b.a.in-addr-arpa` entries, where `a.b.c` are the IP prefixes for the DSG `Identity`, `RDS` and `Data` subnets. Note that the ordering of the three octets for these prefixes is reversed in the `c.b.a.in-addr-arpa` entries.
+    - Remove conditional forwarder record for DSG domain
+        - Expand the `Conditional forwarders` folder
+        - Delete the entry for the DSG domain
+
+### On the SHM NPS VM
+- Connect to the **SHM NPS** via Remote Desktop client over the VPN connection
+- Login with local user `atiadmin` and the SHM DC admin password from the SHM KeyVault
+- Remove DSG RDS RADIUS Client records
+    - In the "Server Management" app, click `Tools -> Network Policy Server`
+    - Expand `NPS (Local) -> RADIUS clients and servers -> RADIUS clients`
+    - Right click `DSG<dsgid>RDS` and select delete
+
+### In the Azure Portal SHM subscription
+- Delete all secrets for DSG in the SHM KeyVault (secrets are prefixed with both`dsgX-` or `dsgroupX-`)
+- Delete pVNet eering with DSG VNet from Management VNet
+    - In the SHM Management subscription navigate to `Resource groups -> RG_DSG_VNET`
+    - Select the SHM VNet, then `Peerings` from the `Configuration` section of the left-hand menu
+    - Delete the peering named `PEER_DSG_DSGROUP<dsg-id>_VNET1`
+- Delete VNet peering with any mirror VNets
+    - In the SHM Management subscription navigate to `Resource groups -> RG_SHM_PKG_MIRRORS`
+    - Select the `VNET_SHM_PKG_MIRRORS_TIER2` VNet, then `Peerings` from the `Configuration` section of the left-hand menu
+    - Delete any peering named `PEER_DSGROUP<dsg-id>_VNET1`
+    - Select the `VNET_SHM_PKG_MIRRORS_TIER3` VNet, then `Peerings` from the `Configuration` section of the left-hand menu
+    - Delete any peering named `PEER_DSG_DSGROUP<dsg-id>_VNET1`
+- Delete DSG RDS DNS zone from DSG domain
+    - In the SHM Management subscription navigate to `Resource groups -> RG_SHM_DNS`
+    - Click on the DSG domain
+    - Delete the `rds` and `_acme-challenge.rds` records
+
+### Set up users and DNS
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
