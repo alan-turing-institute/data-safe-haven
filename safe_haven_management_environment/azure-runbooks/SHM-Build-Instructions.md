@@ -201,7 +201,7 @@ The Domain Controller configuration is now complete. Exit remote destop
 
 1. Run `./setup_azure2.ps1` entering the `shId`, defined in the config file, when prompted.
 
-The NPS server will now deploy. This may take some time. 
+The NPS server will now deploy.
 
 ### Configure the Network Policy Server
 
@@ -319,7 +319,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 7. Change the "FlowType" column from "Expression" to "Direct"
 8. On the "Source" column click drop-down and choose "c" attribute
 9. Click "Save"
-10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. `Enable` the new rule. 
+10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Click `Enable` on the new rule. 
 11. Click the X to close the Synchronization Rules Editor window
 
 12. In the powershell run:
@@ -358,7 +358,7 @@ Start-ADSyncSyncCycle -PolicyType Delta
 
 ## 5. Validation 
 
-1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers` application under `
+1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers`. 
 
 2. After about 30 minutes the new user should appear on the Azure Active Directory account. Or to force a sync, on the NPS machine open a powershell and call:
 
