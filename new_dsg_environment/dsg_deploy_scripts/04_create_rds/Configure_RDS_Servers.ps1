@@ -14,8 +14,9 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $vmResourceGroup = $config.dsg.rds.rg;
+$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
 # Do OS Prep on all RDS VMs
-$scriptPath = Join-Path $PSScriptRoot "Configure_RDS_Servers" "remote_scripts" "OS_Prep_Remote.ps1"
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "OS_Prep_Remote.ps1"
 
 $osPrepParams = @{
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
@@ -41,7 +42,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
     -Parameter $osPrepParams
 
 # Configure RDS servers
-$scriptPath = Join-Path $PSScriptRoot "Configure_RDS_Servers" "remote_scripts" "Configure_RDS_Servers_Remote.ps1"
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Configure_RDS_Servers_Remote.ps1"
 
 $configureRdsParams = @{
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
