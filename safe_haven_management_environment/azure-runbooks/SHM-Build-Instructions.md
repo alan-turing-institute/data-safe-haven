@@ -102,7 +102,7 @@ Set-AzContext -SubscriptionId "<SHM-subscription-id>"
 
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
 ```pwsh
-cd ./data-safe-haven/safe_haven_management_environment/setup
+cd ./safe_haven_management_environment/setup
 ```
 
 Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
