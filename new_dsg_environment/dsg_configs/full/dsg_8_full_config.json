@@ -133,6 +133,12 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg8-artifacts"
+      }
+    },
     "keyVault": {
       "name": "dsg-management-test"
     },

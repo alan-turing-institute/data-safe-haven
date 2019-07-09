@@ -198,6 +198,13 @@ function Add-DsgConfig {
     $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
     $config.dsg.network.nsg.data.name = "NSG_Linux_Servers"
 
+    # --- Storage config --
+    $config.dsg.storage = [ordered]@{
+        artifacts = [ordered]@{}
+    }
+    $config.dsg.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
+    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)-artifacts" 
+    
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
         name = "dsg-management-" + $config.shm.id # TODO: Once all scripts driven by this config make separate KeyVault per DSG
