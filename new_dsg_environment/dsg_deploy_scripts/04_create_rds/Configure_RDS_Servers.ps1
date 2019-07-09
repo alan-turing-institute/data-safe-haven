@@ -29,7 +29,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
 
-Write-Host " - Running OS Prep on RDS Session Host 2"
+Write-Host " - Running OS Prep on RDS Session Host 1"
 Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
     -Name "$($config.dsg.rds.sessionHost1.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
