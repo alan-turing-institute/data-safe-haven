@@ -1,13 +1,13 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$($config.dsg.domain.netbiosName)Id
+  [string]$dsgId
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config
-$config = Get-DsgConfig($($config.dsg.domain.netbiosName)Id)
+$config = Get-DsgConfig($dsgId)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
