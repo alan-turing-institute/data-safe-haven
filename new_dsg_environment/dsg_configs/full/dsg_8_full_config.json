@@ -136,7 +136,7 @@
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsg8-artifacts"
+        "accountName": "dsg8artifacts"
       }
     },
     "keyVault": {

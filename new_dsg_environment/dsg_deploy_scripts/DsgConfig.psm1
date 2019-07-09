@@ -203,7 +203,7 @@ function Add-DsgConfig {
         artifacts = [ordered]@{}
     }
     $config.dsg.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)-artifacts" 
+    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)artifacts" 
     
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
