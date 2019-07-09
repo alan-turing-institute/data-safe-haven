@@ -209,6 +209,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ### On the SHM NPS VM
 - Connect to the **SHM NPS** via Remote Desktop client over the VPN connection
+    - **NOTE:** The last octet for the initial manually deployed SHM (`shm-id: test`) is **`249`** not `248` as specified in the full SHM config. This will be corrected the next time this configuration is deployed.
 - Login with local user `atiadmin` and the SHM DC admin password from the SHM KeyVault
 - Remove DSG RDS RADIUS Client records
     - In the "Server Management" app, click `Tools -> Network Policy Server`
@@ -327,8 +328,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | **Command** |     **Parameters** |   **Description** |
   | -- | -- | -- |
   |  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space e.g. 10.250.0 |
-  | |                     -SubnetRDS |        First 3 octets of the Identity subnet IP address space e.g. 10.250.1 |
-  | |                     -SubnetData        | First 3 octets of the Identity subnet IP address space e.g. 10.250.2 |
+  | |                     -SubnetRDS |        First 3 octets of the RDS subnet IP address space e.g. 10.250.1 |
+  | |                     -SubnetData        | First 3 octets of the Data subnet IP address space e.g. 10.250.2 |
   | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
   | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.251.0.250 (production) or 10.220.1.250 (test)|
 
