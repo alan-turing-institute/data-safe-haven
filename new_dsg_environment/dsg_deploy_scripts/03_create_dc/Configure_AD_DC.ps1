@@ -56,7 +56,7 @@ $blobs = Get-AzStorageBlob -Container $containerName -Context $storageAccount.Co
 $blobNames = $blobs | ForEach-Object{$_.Name}
 
 $sasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
-              -resourceGroup $storageAccountRg -accountName $storageAccountName
+                -resourceGroup $storageAccountRg -accountName $storageAccountName
 # Configure AD DC
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_AD_DC_Remote.ps1"
 
