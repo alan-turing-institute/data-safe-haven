@@ -115,7 +115,7 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_ARTIFACTS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
 
-2. Click 'Select principal` and find the security group that should have access. 
+2. Click `Select principal` and find the security group that should have access. 
     - For Turing test SHMs this should be: `Safe Haven Test Admins`
     - For Turing production SHMs this should be: `Safe Haven Production Admins`
     Safe Haven Test Admins" for test SHMs and "Safe Haven Production Admins" 
