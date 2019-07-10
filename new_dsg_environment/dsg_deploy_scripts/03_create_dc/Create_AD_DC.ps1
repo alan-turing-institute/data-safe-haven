@@ -54,7 +54,7 @@ if($numBlobs -gt 0){
 $zipFileName = "dc-create.zip"
 $zipFilePath = (Join-Path $artifactsDir $zipFileName )
 Write-Host " - Uploading '$zipFilePath' to container '$containerName'"
-Set-AzStorageBlobContent -File $zipFilePath -Container $containerName -Context $storageAccount.Context;
+$_ = Set-AzStorageBlobContent -File $zipFilePath -Container $containerName -Context $storageAccount.Context;
 
 # Fetch admin password (or create if not present)
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
