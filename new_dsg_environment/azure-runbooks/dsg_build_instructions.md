@@ -286,60 +286,25 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
-### Create temporary SAS token
-
-- Once deployment is complete, generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<shm-subscription-name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
 ### Configure DSG Active Directory Domain Controller
+
+#### Upload and run remote configuration scripts
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Run the `./Configure_AD_DC.ps1` script, entering the DSG ID when prompted
+
+- The remote scripts will take a few minutes to return
+
+#### Perform manual configuration steps
 
 - Connect to the new Domain controller via Remote Desktop client over the DSG VPN connection at the IP address `<dsg-identity-subnet-prefix>.250` (e.g. 10.250.x.250)
 
 - Login with the admin credentials for the DSG DC, which were created and stored in the Safe Haven Management KeyVault by the DC deployment script
-
-- Download the `DSG-DC.zip` scripts file using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Scripts/DSG-DC.zip<sas-token>`, where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- You may be prompted to add the site to a whitelist. If so, then add the site and restart Internet Explorer.
-
-- Create the `C:\Scripts` folder, copy the zip file there from the download folder then extract the file contents to the `Scripts` folder (**not** to a new `DSG-DC` folder). To do this right-click on the zip file and select "extract all", ensuring the destination is just `C:\Scripts`.
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, **not** the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the `x86` version.
-
-- Change to `C:\Scripts`
-
-- In Powershell run  `Set-executionpolicy Unrestricted`
-
-- Set the VM to United Kingdom/GMT timezone by running the following command:
-
-
-  | **Command**       |      **Parameters** |  **Description** |
-  | -- | -- | -- |
-  |`Set_OS_Language.ps1`  |  n/a  |             n/a |
-
-- Setup the accounts on the Active Directory by running the following command with these parameters.
-
-  |  **Command**            |          **Parameters**  |  **Description** |
-  | -- | -- | -- |
-  | `Create_Users_Groups_OUs.ps1`  | -domain  |        DSG NetBIOS name i.e. DSGROUP10 |
-
-- Configure the DNS on the server by running the following command with these parameters
-
-  | **Command** |     **Parameters** |   **Description** |
-  | -- | -- | -- |
-  |  `ConfigureDNS.ps1`  | -SubnetIdentity  | First 3 octets of the Identity subnet IP address space e.g. 10.250.0 |
-  | |                     -SubnetRDS |        First 3 octets of the RDS subnet IP address space e.g. 10.250.1 |
-  | |                     -SubnetData        | First 3 octets of the Data subnet IP address space e.g. 10.250.2 |
-  | |                     -mgmtfqdn |         Enter FQDN of management domain i.e. turingsafehaven.ac.uk (production) or dsgroupdev.co.uk (test) |
-  | |                     -mgmtdcip |         Enter IP address of management DC i.e. 10.251.0.250 (production) or 10.220.1.250 (test)|
-
-
-- Configure Active Directory group polices, to install the polices run the following command with these parameters
-
-  |  **Command** |        **Parameters**|   **Description** |
-  | -- | -- | -- |
-  |  `ConfigureGPOs.ps1` |  -backuppath |     `C:\Scripts\GPOs` -- this is the default path, if you copy the scripts to another folder you'll need to change this. \
-  | |                       -domain |          DSG NetBIOS name i.e. DSGROUP10 |
 
 - From the "Server Management" application, select `Tools -> Group Policy Management`
 
@@ -384,10 +349,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML233aaa5.PNG](images/media/image10.png)
 
 - Click "OK" when done and close all Group Policy windows.
-
-- Open `C:\Scripts` in "File Explorer" and copy the "ServerStartMenu" folder
-
-- Navigate to `F:\SYSVOL\domain\scripts` and copy the "ServerStartMenu" folder here. Close "File Explorer"
 
 - Restart the server
 
@@ -539,9 +500,9 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 ### Adding new DSG RDS Server to the SHM NPS server
 
- - Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
+- Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
 
-- Login with domain user `<dsg-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
+- Login with domain user `<shm-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
 
 - In "Server Manager", select `Tools -> Network Policy Server`
 

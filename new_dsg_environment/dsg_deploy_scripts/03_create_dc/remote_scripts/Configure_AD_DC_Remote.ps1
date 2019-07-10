@@ -79,3 +79,8 @@ Write-Output " - Configuring GPOs"
 $cmd = (Join-Path $remoteDir "Configure_GPOs.ps1")
 $gpoBackupPath = (Join-Path $remoteDir "GPOs")
 Invoke-Expression -Command "$cmd -gpoBackupPath `"$gpoBackupPath`" -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`""
+
+# Copy Server Start Menu configuration
+Write-Output " - Copying server start menu"
+$sourceDir = Join-Path $remoteDir "ServerStartMenu"
+Copy-Item "$sourceDir" -Destination "F:\SYSVOL\domain\scripts" -Recurse
