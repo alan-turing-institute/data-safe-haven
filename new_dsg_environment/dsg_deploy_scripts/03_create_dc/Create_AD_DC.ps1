@@ -13,7 +13,8 @@ $config = Get-DsgConfig($dsgId)
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$storageAccountSubscription = $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
 
 # Set deployment parameters not directly set in config file
 $vmSize = "Standard_B2ms";
@@ -56,6 +57,17 @@ $zipFilePath = (Join-Path $artifactsDir $zipFileName )
 Write-Host " - Uploading '$zipFilePath' to container '$containerName'"
 $_ = Set-AzStorageBlobContent -File $zipFilePath -Container $containerName -Context $storageAccount.Context;
 
+# Get SAS token
+$artifactLocation = "https://$storageAccountName.blob.core.windows.net/$containerName/$zipFileName";
+$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
+                      -resourceGroup $storageAccountRg -accountName $storageAccountName
+ Write-Host $artifactSasToken.GetType()
+$artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
+
+
+# Temporarily switch to DSG subscription
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Fetch admin password (or create if not present)
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
 if ($null -eq $adminPassword) {
@@ -66,13 +78,6 @@ if ($null -eq $adminPassword) {
   $adminPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
 }
 $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
-
-# Get SAS token
-$artifactLocation = "https://$storageAccountName.blob.core.windows.net/$containerName/$zipFileName";
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
-                      -resourceGroup $storageAccountRg -accountName $storageAccountName
- Write-Host $artifactSasToken.GetType()
-$artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
