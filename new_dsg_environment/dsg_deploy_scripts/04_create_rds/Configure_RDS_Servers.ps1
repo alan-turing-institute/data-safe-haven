@@ -9,13 +9,60 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $vmResourceGroup = $config.dsg.rds.rg;
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
-# Do OS Prep on all RDS VMs
+
+# Get list of software packages present on storage account
+
+# Temporarily switch to storage account subscription
+$storageAccountSubscription = $config.shm.subscriptionName
+$prevContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
+$storageAccountRg = $config.shm.storage.artifacts.rg
+$storageAccountName = $config.shm.storage.artifacts.accountName
+$shareName = "configpackages"
+$remoteFolder = "packages"
+
+# Get software package file paths
+$storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg
+
+$files = Get-AzStorageFile -ShareName $shareName -path $remoteFolder -Context $storageAccount.Context | Get-AzStorageFile
+$filePaths = $files | ForEach-Object{"$remoteFolder\$($_.Name)"}
+
+$pipeSeparatedFilePaths = $filePaths -join "|"
+
+$sasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
+                -resourceGroup $storageAccountRg -accountName $storageAccountName
+
+# Temporarily switch to DSG subscription to run remote scripts
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
+
+# Download software packages to RDS Session Hosts
+$packageDownloadParams = @{
+    storageAccountName = "`"$storageAccountName`""
+    fileShareName = "`"$shareName`""
+    sasToken = "`"$sasToken`""
+    pipeSeparatedremoteFilePaths = "`"$pipeSeparatedFilePaths`""
+    downloadDir = "C:\Software"
+}
+$packageDownloadParams
+
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Packages.ps1"
+Write-Host " - Copying packages to RDS Session Host 1"
+Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
+    -Name "$($config.dsg.rds.sessionHost1.vmName)" `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+    -Parameter $packageDownloadParams
+
+Write-Host " - Copying packages to RDS Session Host 2"
+Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup `
+    -Name "$($config.dsg.rds.sessionHost2.vmName)" `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+    -Parameter $packageDownloadParams
+
+Exit 0
+# Run OS prep on all RDS VMs
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "OS_Prep_Remote.ps1"
 
 $osPrepParams = @{
