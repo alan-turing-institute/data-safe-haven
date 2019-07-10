@@ -11,8 +11,50 @@ Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Set deployment parameters not directly set in config file
 $vmSize = "Standard_B2ms";
+
+# Upload artifacts to storage account
+$storageAccountLocation = $config.dsg.location
+$storageAccountRg = $config.dsg.storage.artifacts.rg
+$storageAccountName = $config.dsg.storage.artifacts.accountName
+
+# Create storage account if it doesn't exist
+$_ = New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force;
+$storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -ErrorVariable notExists -ErrorAction SilentlyContinue
+if($notExists) {
+  Write-Host " - Creating storage account '$storageAccountName'"
+  $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_GRS" -Kind "StorageV2"
+}
+$artifactsFolderName = "dc-create-scripts"
+$artifactsDir = (Join-Path $PSScriptRoot "artifacts" $artifactsFolderName)
+$containerName = $artifactsFolderName
+# Create container if it doesn't exist
+if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
+  Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
+  $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
+}
+$blobs = Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context
+$numBlobs = $blobs.Length
+if($numBlobs -gt 0){
+  Write-Host " - Deleting $numBlobs blobs aready in container '$containerName'"
+  $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $storageAccount.Context -Force}
+  while($numBlobs -gt 0){
+    Write-Host " - Waiting for deletion of $numBlobs remaining blobs"
+    Start-Sleep -Seconds 10
+    $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context).Length
+  }
+}
+
+# Upload ZIP file with artifacts
+$zipFileName = "dc-create.zip"
+$zipFilePath = (Join-Path $artifactsDir $zipFileName )
+Write-Host " - Uploading '$zipFilePath' to container '$containerName'"
+Set-AzStorageBlobContent -File $zipFilePath -Container $containerName -Context $storageAccount.Context;
 
 # Fetch admin password (or create if not present)
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
@@ -26,18 +68,12 @@ if ($null -eq $adminPassword) {
 $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
 # Get SAS token
-$artifactLocation = "https://" + $config.shm.storage.artifacts.accountName + ".blob.core.windows.net";
-$currentSubscription = (Get-AzContext).Subscription.Name
-Write-Host $currentSubscription
-$artifactSasToken = (New-AccountSasToken -subscriptionName $config.shm.subscriptionName -resourceGroup $config.shm.storage.artifacts.rg `
-  -accountName $config.shm.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -prevSubscription $currentSubscription);
+$artifactLocation = "https://$storageAccountName.blob.core.windows.net/$containerName/$zipFileName";
+$artifactSasToken = (New-AccountSasToken -subscriptionName $config.dsg.subscriptionName -resourceGroup $config.dsg.storage.artifacts.rg `
+  -accountName $config.dsg.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
+  -permission "rl");
  Write-Host $artifactSasToken.GetType()
 $artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
-
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
@@ -57,7 +93,7 @@ $templatePath = Join-Path $PSScriptRoot "dc-master-template.json"
 
 Write-Output ($params | ConvertTo-JSON -depth 10)
 
-New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
+$_ = New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg `
   -TemplateFile $templatePath @params -Verbose
 
