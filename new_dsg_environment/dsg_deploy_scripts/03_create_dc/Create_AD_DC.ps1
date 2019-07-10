@@ -69,9 +69,8 @@ $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
 # Get SAS token
 $artifactLocation = "https://$storageAccountName.blob.core.windows.net/$containerName/$zipFileName";
-$artifactSasToken = (New-AccountSasToken -subscriptionName $config.dsg.subscriptionName -resourceGroup $config.dsg.storage.artifacts.rg `
-  -accountName $config.dsg.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl");
+$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
+                      -resourceGroup $storageAccountRg -accountName $storageAccountName
  Write-Host $artifactSasToken.GetType()
 $artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
