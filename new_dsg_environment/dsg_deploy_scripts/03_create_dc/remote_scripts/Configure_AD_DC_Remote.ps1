@@ -58,21 +58,24 @@ foreach($blobName in $blobNames){
   $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken";
   $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath;
 }
-Exit 0
 
 # Set OS locale
+Write-Output " - Setting OS locale"
 $cmd = (Join-Path $remoteDir "Set_OS_Locale.ps1")
 Invoke-Expression -Command "$cmd"
 
-# Create users, groups and OUs
-$cmd = (Join-Path $remoteDir "Configure_DNS.ps1")
-Invoke-Expression -Command "$cmd -dsgNetbiosName $dsgNetbiosName -dsgDn $dsgDn -dsgServerAdminSgName $dsgServerAdminSgName -dsgDcAdminUsername $dsgDcAdminUsername"
-
 # Configure DNS
+Write-Output " - Configuring DNS"
+$cmd = (Join-Path $remoteDir "Configure_DNS.ps1")
+Invoke-Expression -Command "$cmd -subnetIdentityCidr `"$subnetIdentityCidr`" -subnetRdsCidr `"$subnetRdsCidr`" -subnetDataCidr `"$subnetDataCidr`" -shmFqdn `"$shmFqdn`" -shmDcIp `"$shmDcIp`""
+
+# Create users, groups and OUs
+Write-Output " - Creating users, groups and OUs"
 $cmd = (Join-Path $remoteDir "Create_Users_Groups_OUs.ps1")
-Invoke-Expression -Command "$cmd -subnetIdentityCidr $subnetIdentityCidr -subnetRdsCidr $subnetRdsCidr -subnetDataCidr $subnetDataCidr -shmFqdn $shmFqdn -shmDcIp $shmDcIp"
+Invoke-Expression -Command "$cmd -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`" -dsgServerAdminSgName `"$dsgServerAdminSgName`" -dsgDcAdminUsername `"$dsgDcAdminUsername`""
 
 # Configure GPOs
+Write-Output " - Configuring GPOs"
 $cmd = (Join-Path $remoteDir "Configure_GPOs.ps1")
 $gpoBackupPath = (Join-Path $remoteDir "GPOs")
-Invoke-Expression -Command "$cmd -gpoBackupPath $gpoBackupPath -dsgNetbiosName $dsgNetbiosName -dsgDn $dsgDn"
+Invoke-Expression -Command "$cmd -gpoBackupPath `"$gpoBackupPath`" -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`""

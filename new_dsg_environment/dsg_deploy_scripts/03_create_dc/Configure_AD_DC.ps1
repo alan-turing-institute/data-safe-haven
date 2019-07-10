@@ -81,8 +81,6 @@ $params = @{
 $vmResourceGroup = $config.dsg.dc.rg
 $vmName = $config.dsg.dc.vmName;
 
-Write-Output ($params | ConvertTo-JSON -depth 10)
-
 Write-Host " - Configuring AD DC"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name "$vmName" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
