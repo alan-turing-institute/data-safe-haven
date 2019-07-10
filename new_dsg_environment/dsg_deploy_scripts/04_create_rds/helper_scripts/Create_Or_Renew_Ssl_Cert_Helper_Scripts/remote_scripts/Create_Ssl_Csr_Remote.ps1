@@ -1,17 +1,23 @@
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# and remote execution will stall waiting for the non-present user to enter the missing parameter on the
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in 
+# C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
+# job, but this does not seem to have an immediate effect
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Fully qualified domain name of RDS server (e.g. rds.domain.co.uk)")]
+  [Parameter(Position=0, HelpMessage = "Fully qualified domain name of RDS server (e.g. rds.domain.co.uk)")]
   [string]$rdsFqdn,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Name of Safe Haven (e.g. 'TEST Safe Haven')")]
+  [Parameter(Position=1, HelpMessage = "Name of Safe Haven (e.g. 'TEST Safe Haven')")]
   [string]$shmName,
-  [Parameter(Position=2, Mandatory = $true, HelpMessage = "Full name of organisation administering Safe Haven (e.g. 'The Alan Turing Institute')")]
+  [Parameter(Position=2, HelpMessage = "Full name of organisation administering Safe Haven (e.g. 'The Alan Turing Institute')")]
   [string]$orgName,
-  [Parameter(Position=3, Mandatory = $true, HelpMessage = "Town/City in which organisation is located (e.g. 'London)")]
+  [Parameter(Position=3, HelpMessage = "Town/City in which organisation is located (e.g. 'London)")]
   [string]$townCity,
-  [Parameter(Position=4, Mandatory = $true, HelpMessage = "State/County/Region in which organisation is located (e.g. 'London)")]
+  [Parameter(Position=4, HelpMessage = "State/County/Region in which organisation is located (e.g. 'London)")]
   [string]$stateCountyRegion,
-  [Parameter(Position=5, Mandatory = $true, HelpMessage = "Two-letter country code in which organisation is located (e.g. 'GB)")]
+  [Parameter(Position=5, HelpMessage = "Two-letter country code in which organisation is located (e.g. 'GB)")]
   [string]$countryCode,
-  [Parameter(Position=6, Mandatory = $true, HelpMessage = "Remote folder to write CSR to")]
+  [Parameter(Position=6, HelpMessage = "Remote folder to write CSR to")]
   [string]$remoteDirectory
 )
 $keyLength = 2048

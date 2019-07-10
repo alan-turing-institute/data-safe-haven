@@ -1,11 +1,17 @@
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# and remote execution will stall waiting for the non-present user to enter the missing parameter on the
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in 
+# C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
+# job, but this does not seem to have an immediate effect
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG fully qualified domain name")]
+  [Parameter(Position=0, HelpMessage = "DSG fully qualified domain name")]
   [string]$dsgFqdn,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "DSG Netbios name")]
+  [Parameter(Position=1, HelpMessage = "DSG Netbios name")]
   [string]$dsgNetbiosName,
-  [Parameter(Position=2, Mandatory = $true, HelpMessage = "SHM Netbios name")]
+  [Parameter(Position=2, HelpMessage = "SHM Netbios name")]
   [string]$shmNetbiosName,
-  [Parameter(Position=3, Mandatory = $true, HelpMessage = "First three octets of Data Subnet IP address range")]
+  [Parameter(Position=3, HelpMessage = "First three octets of Data Subnet IP address range")]
   [string]$dataSubnetIpPrefix
 )
 
