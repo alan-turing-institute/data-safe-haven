@@ -11,16 +11,22 @@ function New-AccountSasToken {
         [Parameter(Position=4, Mandatory = $true, HelpMessage = "Enter resource type(s) - one or more of Service,Container,Object")]
         $resourceType,
         [Parameter(Position=5, Mandatory = $true, HelpMessage = "Enter permission string")]
-        [string]$permission
+        [string]$permission,
+        [Parameter(Position=6, Mandatory = $false, HelpMessage = "Enter validity in hours")]
+        [int]$validityHours
     )
 
+    if(-not $validityHours){
+        $validityHours = 1
+    }
     # Temporarily switch to storage account subscription
     $prevContext = Get-AzContext
     $_ = Set-AzContext -Subscription $subscriptionName; # Assign to dummy variable to avoid conmtext being returned
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
-    $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
+    $expiryTime = ((Get-Date) + (New-TimeSpan -Hours $validityHours))
+    $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -ExpiryTime $expiryTime -Context $accountContext);
 
     # Switch back to previous subscription
     $_ = Set-AzContext -Context $prevContext;
