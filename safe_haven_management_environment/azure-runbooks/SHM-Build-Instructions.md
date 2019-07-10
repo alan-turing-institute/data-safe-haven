@@ -107,10 +107,23 @@ cd ./safe_haven_management_environment/setup
 
 Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
 
-5. Once the script exits successfully you should see the following resource groups under the SHM-subscription:
+5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
 ![](images/resource_groups.png)
 
+### Set Keyvault access policies
+
+1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_ARTIFACTS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
+
+2. Click 'Select principal` and find the security group that should have access. 
+    - For Turing test SHMs this should be: `Safe Haven Test Admins`
+    - For Turing production SHMs this should be: `Safe Haven Production Admins`
+    Safe Haven Test Admins" for test SHMs and "Safe Haven Production Admins" 
+    - For non-turing users, create a security group of Users who should have access. 
+
+3. Select all under `Key permissions`, `Secret permissions` and `Certificate permissions`
+
+4. Click ok. 
 
 ## 3. Configure Domain Controllers (DCs)
 
