@@ -64,15 +64,15 @@ Write-Output " - Setting OS locale"
 $cmd = (Join-Path $remoteDir "Set_OS_Locale.ps1")
 Invoke-Expression -Command "$cmd"
 
-# Configure DNS
-Write-Output " - Configuring DNS"
-$cmd = (Join-Path $remoteDir "Configure_DNS.ps1")
-Invoke-Expression -Command "$cmd -subnetIdentityCidr `"$subnetIdentityCidr`" -subnetRdsCidr `"$subnetRdsCidr`" -subnetDataCidr `"$subnetDataCidr`" -shmFqdn `"$shmFqdn`" -shmDcIp `"$shmDcIp`""
-
 # Create users, groups and OUs
 Write-Output " - Creating users, groups and OUs"
 $cmd = (Join-Path $remoteDir "Create_Users_Groups_OUs.ps1")
 Invoke-Expression -Command "$cmd -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`" -dsgServerAdminSgName `"$dsgServerAdminSgName`" -dsgDcAdminUsername `"$dsgDcAdminUsername`""
+
+# Configure DNS
+Write-Output " - Configuring DNS"
+$cmd = (Join-Path $remoteDir "Configure_DNS.ps1")
+Invoke-Expression -Command "$cmd -subnetIdentityCidr `"$subnetIdentityCidr`" -subnetRdsCidr `"$subnetRdsCidr`" -subnetDataCidr `"$subnetDataCidr`" -shmFqdn `"$shmFqdn`" -shmDcIp `"$shmDcIp`""
 
 # Configure GPOs
 Write-Output " - Configuring GPOs"
