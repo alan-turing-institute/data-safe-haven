@@ -195,7 +195,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Remove AD Trust for DSG from SHM domain controller (both inbound and outbound)
     - In the "Server Management" app, click `Tools -> Active Directory Domains and Trusts`
     - Right click the SHM domain and click `Properties` then the `Trusts` tab
-    - In the `Domains trusted bny this domain` list select the DSG domain and click `Remove`
+    - In the `Domains trusted by this domain` list select the DSG domain and click `Remove`
     - If warned that trust information for the domain cannot be obtained, click `Yes` to remove the trust anyway.
     - This will also remove the corresponding entry from the `Domains that trust this domain` list
 - Remove DNS records for DSG from SHM domain controller
