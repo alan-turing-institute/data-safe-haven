@@ -5,7 +5,7 @@ param(
 
 $URI= $($uri + $sasToken);
 
-Write-Host $URI
+
 New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
 
 Invoke-WebRequest -Uri $URI -OutFile C:/Scripts/SHM_DC.zip 
