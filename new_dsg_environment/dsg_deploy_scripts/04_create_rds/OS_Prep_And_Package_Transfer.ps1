@@ -17,12 +17,6 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 $rdsResourceGroup = $config.dsg.rds.rg;
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
 
-# Upload RDS deployment script to RDS Gateway
-$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Script.ps1"
-Invoke-Command -File $scriptPath -ArgumentList $dsgId
-
-Exit 0
-
 # Move RDS VMs into correct OUs
 $vmOuMoveParams = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
@@ -110,6 +104,10 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost2.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $packageDownloadParams
+
+# Upload RDS deployment script to RDS Gateway
+$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Script.ps1"
+Invoke-Command -File $scriptPath -ArgumentList $dsgId
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;
