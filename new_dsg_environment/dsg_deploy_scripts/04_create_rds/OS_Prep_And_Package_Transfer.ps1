@@ -106,7 +106,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Parameter $packageDownloadParams
 
 # Upload RDS deployment script to RDS Gateway
-$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Script.ps1"
+$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Scripts.ps1"
 Invoke-Command -File $scriptPath -ArgumentList $dsgId
 
 # Switch back to original subscription
