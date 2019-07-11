@@ -183,7 +183,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ### On the SHM Domain Controller
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login with local user `atiadmin` and the SHM DC admin password from the SHM KeyVault
+- Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 - Delete users for DSG in the SHM DC Active Directory
     - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
         - In the `Safe Haven Research Users` OU, delete the `DSGROUP<dsg-id> Test Researcher` user
@@ -209,8 +209,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ### On the SHM NPS VM
 - Connect to the **SHM NPS** via Remote Desktop client over the VPN connection
-    - **NOTE:** The last octet for the initial manually deployed SHM (`shm-id: test`) is **`249`** not `248` as specified in the full SHM config. This will be corrected the next time this configuration is deployed.
-- Login with local user `atiadmin` and the SHM DC admin password from the SHM KeyVault
+    - **NOTE:** The last octet for the initial manually deployed SHM segment (`shm-id: test`) is **`249`** not `248` as specified in the full SHM config. This will be corrected the next time this configuration is deployed.
+- Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 - Remove DSG RDS RADIUS Client records
     - In the "Server Management" app, click `Tools -> Network Policy Server`
     - Expand `NPS (Local) -> RADIUS clients and servers -> RADIUS clients`
@@ -304,7 +304,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the new Domain controller via Remote Desktop client over the DSG VPN connection at the IP address `<dsg-identity-subnet-prefix>.250` (e.g. 10.250.x.250)
 
-- Login with the admin credentials for the DSG DC, which were created and stored in the Safe Haven Management KeyVault by the DC deployment script
+- Login with local admin user `atiadmin` and the password for the DSG DC, which was created and stored in the `dsg<dsg-id>-dc-admin-password` secret in the Safe Haven Management KeyVault by the DC deployment script
 
 - From the "Server Management" application, select `Tools -> Group Policy Management`
 
@@ -352,11 +352,13 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Restart the server
 
-### Create Domain Trust
+### Create Domain Trust on SHM DC
 
 - To enable authentication to pass from the DSG to the management active directory we need to establish a trust.
 
-- Login to the Safe Haven Management domain controller with a domain administrator account
+- Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
+
+- Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 
 - From the "Server Management" application, select `Tools -> Group Policy Management` then `Active Directory Domains and Trust`
 
@@ -410,7 +412,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **DSG Domain Controller** via Remote Desktop client over the VPN connection
 
-- Login with local user `atiadmin` and the DSG DC admin password from the SHM KeyVault
+- Login with domain user `<dsg-domain>\atiadmin` and the DSG DC admin password from the `dsg<dsg-id>-dc-admin-password` secret in the Safe Haven Management KeyVault
 
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 
@@ -423,6 +425,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1641161.PNG](images/media/image13.png)
 
 ### Configure RDS Servers
+#### Run the remote configuration scripts
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
@@ -433,7 +437,13 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The RDS configuration will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
 
-- Once complete open Server Manager, right click on "All Servers" and select "Add Servers"
+#### Perform manual configuration steps
+
+- Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+open Server Manager, right click on "All Servers" and select "Add Servers"
 
   ![Add RDS session servers to collection - Step 1](images/media/image14.png)
 
@@ -467,7 +477,7 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
 - Download the applications to be served via RDS
 
