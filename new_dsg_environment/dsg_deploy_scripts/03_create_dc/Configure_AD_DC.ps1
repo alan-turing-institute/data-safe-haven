@@ -36,7 +36,7 @@ if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object 
   Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
   $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
 }
-$blobs = Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context
+$blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
 $numBlobs = $blobs.Length
 if($numBlobs -gt 0){
   Write-Host " - Deleting $numBlobs blobs aready in container '$containerName'"

@@ -39,7 +39,7 @@ if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object 
   Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
   $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
 }
-$blobs = Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context
+$blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
 $numBlobs = $blobs.Length
 if($numBlobs -gt 0){
   Write-Host " - Deleting $numBlobs blobs aready in container '$containerName'"
@@ -61,7 +61,7 @@ $_ = Set-AzStorageBlobContent -File $zipFilePath -Container $containerName -Cont
 $artifactLocation = "https://$storageAccountName.blob.core.windows.net/$containerName/$zipFileName";
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription `
                       -resourceGroup $storageAccountRg -accountName $storageAccountName
- Write-Host $artifactSasToken.GetType()
+
 $artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force);
 
 
