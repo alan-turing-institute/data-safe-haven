@@ -7,13 +7,15 @@
 param(
   [Parameter(Position=0, HelpMessage = "Storage account name")]
   [string]$storageAccountName,
-  [Parameter(Position=1, HelpMessage = "File share name")]
-  [string]$fileShareName,
-  [Parameter(Position=2, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
+  [Parameter(Position=1, HelpMessage = "Storage service")]
+  [string]$storageService,
+  [Parameter(Position=2, HelpMessage = "File share or blob container name")]
+  [string]$shareOrContainerName,
+  [Parameter(Position=3, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
   [string]$sasToken,
-  [Parameter(Position=3, HelpMessage = "Pipe separated list of remote file paths")]
+  [Parameter(Position=4, HelpMessage = "Pipe separated list of remote file paths")]
   [string]$pipeSeparatedremoteFilePaths,
-  [Parameter(Position=4, HelpMessage = "Absolute path to artifacts download directory")]
+  [Parameter(Position=5, HelpMessage = "Absolute path to artifacts download directory")]
   [string]$downloadDir
 )
 
@@ -38,6 +40,7 @@ foreach($remoteFilePath in $remoteFilePaths){
     $_ = New-Item -ItemType directory -Path $fileDirFull
   }
   $filePath = Join-Path $fileDirFull $fileName 
-  $blobUrl = "https://$storageAccountName.file.core.windows.net/$fileShareName/$remoteFilePath$sasToken";
-  $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath;
+  $remoteUrl = "https://$storageAccountName.$storageService.core.windows.net/$shareOrContainerName/$remoteFilePath";
+  Write-Output " - Fetching $remoteUrl"
+  $_ = Invoke-WebRequest -Uri "$remoteUrl$sasToken" -OutFile $filePath;
 }

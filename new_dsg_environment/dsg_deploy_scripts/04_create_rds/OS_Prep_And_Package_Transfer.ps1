@@ -17,6 +17,12 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 $rdsResourceGroup = $config.dsg.rds.rg;
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
 
+# Upload RDS deployment script to RDS Gateway
+$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Script.ps1"
+Invoke-Command -File $scriptPath -ArgumentList $dsgId
+
+Exit 0
+
 # Move RDS VMs into correct OUs
 $vmOuMoveParams = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
@@ -25,7 +31,6 @@ $vmOuMoveParams = @{
     sh1Hostname = "`"$($config.dsg.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.dsg.rds.sessionHost2.hostname)`""
 };
-
 
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Move_RDS_VMs_Into_OUs.ps1"
 Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
@@ -85,14 +90,15 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 # Download software packages to RDS Session Hosts
 $packageDownloadParams = @{
     storageAccountName = "`"$storageAccountName`""
-    fileShareName = "`"$shareName`""
+    storageService = "file"
+    shareOrContainerName = "`"$shareName`""
     sasToken = "`"$sasToken`""
     pipeSeparatedremoteFilePaths = "`"$pipeSeparatedFilePaths`""
     downloadDir = "C:\Software"
 }
 $packageDownloadParams
 
-$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Packages.ps1"
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Files.ps1"
 Write-Host " - Copying packages to RDS Session Host 1"
 Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost1.vmName)" `
