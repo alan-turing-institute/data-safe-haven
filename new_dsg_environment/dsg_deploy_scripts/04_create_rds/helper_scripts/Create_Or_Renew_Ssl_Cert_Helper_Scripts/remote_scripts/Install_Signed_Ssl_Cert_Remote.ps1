@@ -69,5 +69,6 @@ Write-Output "Certificate installed on all RDS roles"
 
 # Import certificate to RDS Web Client
 Import-RDWebClientBrokerCert "$certPath"
+Publish-RDWebClientPackage -Type Production -Latest
 Write-Output "Certificate installed on RDS Web Client"
 
