@@ -105,9 +105,11 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $packageDownloadParams
 
-# Upload RDS deployment script to RDS Gateway
-$scriptPath = Join-Path $helperScriptDir "local" "Upload_RDS_Deployment_Scripts.ps1"
-Invoke-Command -File $scriptPath -ArgumentList $dsgId
+
+# Upload RDS deployment scripts to RDS Gateway
+$scriptPath = Join-Path $helperScriptDir "local_scripts" "Upload_RDS_Deployment_Scripts.ps1"
+Write-Host " - Uploading RDS environment installation scripts"
+Invoke-Expression -Command "$scriptPath -dsgId $dsgId"
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

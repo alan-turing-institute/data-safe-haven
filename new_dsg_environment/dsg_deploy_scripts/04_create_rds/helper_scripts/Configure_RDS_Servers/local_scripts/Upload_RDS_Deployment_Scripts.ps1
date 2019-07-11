@@ -68,9 +68,8 @@ $webclientScript = @"
 # Install RDS webclient
 Write-Output "Installing RDS webclient"
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name RDWebClientManagement -Force -AllowClobber
+Install-Module -Name RDWebClientManagement -Force -AllowClobber -AcceptLicense
 Install-RDWebClientPackage
-Publish-RDWebClientPackage -Type Production -Latest
 "@
 
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
@@ -94,7 +93,7 @@ $storageAccountName = $config.dsg.storage.artifacts.accountName
 $_ = New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force;
 $storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if($notExists) {
-  Write-Host " - Creating storage account '$storageAccountName'"
+  Write-Host "   - Creating storage account '$storageAccountName'"
   $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_GRS" -Kind "StorageV2"
 }
 $containerName =  "rds-config-scripts"
@@ -106,19 +105,19 @@ if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object 
 $blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
 $numBlobs = $blobs.Length
 if($numBlobs -gt 0){
-  Write-Host " - Deleting $numBlobs blobs aready in container '$containerName'"
+  Write-Host "   - Deleting $numBlobs blobs aready in container '$containerName'"
   $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $storageAccount.Context -Force}
   while($numBlobs -gt 0){
-    Write-Host " - Waiting for deletion of $numBlobs remaining blobs"
+    Write-Host "   - Waiting for deletion of $numBlobs remaining blobs"
     Start-Sleep -Seconds 10
     $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context).Length
   }
 }
 
 # Upload script
-Write-Host " - Uploading '$deployScriptName to container '$containerName'"
+Write-Host "   - Uploading '$deployScriptName to container '$containerName'"
 $_ = Set-AzStorageBlobContent -File $deployScriptLocalFilePath -Blob $deployScriptName -Container $containerName -Context $storageAccount.Context;
-Write-Host " - Uploading '$webclientScriptName to container '$containerName'"
+Write-Host "   - Uploading '$webclientScriptName to container '$containerName'"
 $_ = Set-AzStorageBlobContent -File $webclientScriptLocalFilePath -Blob $webclientScriptName -Container $containerName -Context $storageAccount.Context;
 
 # Get SAS token
@@ -143,7 +142,7 @@ $packageDownloadParams = @{
 }
 
 $scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Download_Files.ps1"
-Write-Host " - Copying script(s) to RDS gateway"
+Write-Host "   - Copying script(s) to RDS gateway"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.rds.rg `
     -Name "$($config.dsg.rds.gateway.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
