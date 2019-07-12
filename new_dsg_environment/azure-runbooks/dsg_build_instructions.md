@@ -410,19 +410,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
-- The deployment will take around 10 minutes to complete.
-
-### Prepare RDS VMs for installation of RDS environment
-
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./OS_Prep_Remote.ps1` script, providing the DSG ID when prompted
-
-- This script will prepare the RDS VMs for the installation of an RDS environment in the next steps.
+- The deployment will take around 20 minutes to complete and will do some intial preparation of and file transfers to the RDS VMs.
 
 ### Install software on RDS Session Host 1 (Remote app server)
 
@@ -438,55 +426,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once installed logout of the server
 
-### Install RDS Environment
-
-- Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe doninstalled on the x86 version.
-
-- Deployment will run automatically for about 12 minutes and then you will be presented with a `NuGet provider is required to continue` message. Enter `Y` to this message to continue.
-
-- Change to `C:\Scripts`
-
-- Run `.\Deploy_RDS_Environment.ps1` (the leading `.\` is required to run untrusted scripts)
-
-- This script will take about 12 minutes to run
-
-- Run `Install-Module -Name PowerShellGet -Force` to update Powershell Ge tto the latest version
-
-- Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-
-- Change to `C:\Scripts`
-
-- Run `.\Install_Webclient.ps1` (the leading `.\` is required to run untrusted scripts)
-
-- Accept any requirements or license agreements.
-
-- Once the webclient is instaled, open Server Manager, right click on "All Servers" and select "Add Servers"
-
-  ![Add RDS session servers to collection - Step 1](images/media/image14.png)
-
-- Enter "rds" into the "Name" box and click "Find Now"
-
-- Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
-
-  ![Add RDS session servers to collection - Step 2](images/media/image15.png)
-
-### Configuration of SSL on RDS Gateway
-
-- Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
-
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
-
-### Add DSG RDS Server to the SHM NPS server
+### Add DSG RDS Gateway as a RADIUS client on the SHM NPS server
 
 - Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
 
@@ -509,6 +449,38 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2f36ea.PNG](images/media/image20.png)
 
 - Click "OK" to finish
+
+### Install RDS Environment
+
+- Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe doninstalled on the x86 version.
+
+- Deployment will run automatically for about 12 minutes and then you will be presented with a `NuGet provider is required to continue` message. Enter `Y` to this message to continue.
+
+- Run `C:\Scripts\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
+
+- This script will take about 12 minutes to run
+
+- Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version
+
+- Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
+
+- Run `C:\Scripts\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
+
+- Accept any requirements or license agreements.
+
+- Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
+
+  ![Add RDS session servers to collection - Step 1](images/media/image14.png)
+
+- Enter "rdssh" into the "Name" box and click "Find Now"
+
+- Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
+
+  ![Add RDS session servers to collection - Step 2](images/media/image15.png)
 
 ### Configure security on the RDS Gateway
 
@@ -575,6 +547,18 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
     ![](images/media/rds_local_nps_remote_server_timeouts.png)
 
 -	Click “OK” twice and close “Network Policy Server” MMC
+
+### Configuration of SSL on RDS Gateway
+
+- Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
 ### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
 
