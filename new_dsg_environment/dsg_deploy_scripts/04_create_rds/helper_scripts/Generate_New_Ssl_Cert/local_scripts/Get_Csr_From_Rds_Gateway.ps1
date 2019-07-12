@@ -25,22 +25,10 @@ $config = Get-DsgConfig($dsgId);
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
-# Find RDS Gateway VM name by IP address
-$vmResourceGroup = $config.dsg.rds.rg;
-$vmIpAddress = $config.dsg.rds.gateway.ip
-Write-Host " - Finding VM with IP $vmIpAddress"
-## Get all VMs in resource group
-$vms = Get-AzVM -ResourceGroupName $vmResourceGroup
-## Get the NICs attached to all the VMs in the resource group
-$vmNicIds = ($vms | ForEach-Object{(Get-AzVM -ResourceGroupName $vmResourceGroup -Name $_.Name).NetworkProfile.NetworkInterfaces.Id})
-$vmNics = ($vmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $vmResourceGroup -Name $_.Split("/")[-1]})
-## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
-$vmName = ($vmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
-Write-Host " - VM '$vmName' found"
-
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Create_Ssl_Csr_Remote.ps1"
-
+$vmResourceGroup = $config.dsg.rds.rg
+$vmName = $config.dsg.rds.gateway.vmName
 $csrParams = @{
     "rdsFqdn" = "`"$($config.dsg.rds.gateway.fqdn)`""
     "shmName" = "`"$($config.shm.name)`""
@@ -50,9 +38,7 @@ $csrParams = @{
     "countryCode" = "`"$($config.shm.organisation.countryCode)`""
     "remoteDirectory" = "`"$remoteDirectory`""
 };
-
 Write-Host " - Generating CSR on VM '$vmName'"
-
 $result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $csrParams
@@ -65,7 +51,7 @@ $csr = ($csr -replace '(?m)^[ \t]*', '')
 # Extract CSR filename from result message (to allow easy matching to remote VM for troubleshooting)
 $csrFilestem = ($msg -replace "(?sm).*-----BEGIN CSR FILESTEM-----(.*)-----END CSR FILESTEM-----.*", '$1') 
 
-# Write the CSR to temprary storage
+# Write the CSR to temporary storage
 $csrDir = New-Item -Path "$localDirectory" -Name "$csrFilestem" -ItemType "directory"
 $csrPath = (Join-Path $csrDir "$csrFilestem.csr")
 $csr | Out-File -Filepath $csrPath

@@ -186,7 +186,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 **=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
 
 ### On the SHM Domain Controller
+
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
+
 - Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 - Delete users for DSG in the SHM DC Active Directory
     - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
@@ -442,7 +444,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Enter the friendly name of the server (best practice use the FQDN of the RDS server)
 
-- Add the IP address of the RDS server
+- Add the **private** IP address of the RDS Gateway server
 
 - Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when configuring the DSG RDS Gateway security in the next step)
 
@@ -464,7 +466,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - This script will take about 12 minutes to run
 
-- Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version
+- Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version. Enter "Y" on any prompts.
 
 - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
 
@@ -558,7 +560,49 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+- Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+
+### Test RDS deployment
+
+- Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
+
+- Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
+
+- In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
+
+- Open the `Safe Haven Security Groups` OU
+
+- Right click the `SG DSGROUP<dsg-id> Research Users` security group and select "Properties"
+
+- Click on the "Members" tab and click the "Add" button
+
+- Enter the start of your name and click "Check names"
+
+- Select your name and click "Ok"
+
+- Click "Ok" again to exit the add users dialogue
+
+- Launch a local web browser and go to `https://rds.<dsg-domain>/RDWeb/webclient/` and log in. If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain. Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix) or open a new private / incognito browser window and visit the page.
+
+- Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
+
+- If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://rds.<dsg-domain>`, it is likely that you missed the step of installing the RDS webclient.
+    
+    - Go back to the previous section and run the webcleint installation step.
+    
+    - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
+
+        - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
+
+        - `Publish-RDWebClientPackage -Type Production -Latest`
+
+- If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
+    
+    - Ensure that the SHM NPS server RADIUS Client configuration is using the **private** IP address of the RDS Gateway and **not** its public one.
+    
+    - Ensure the same shared secret from the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the DSG RDS Gateway RD CAP Store configuration (see previous sections for instructions).
+
+- **NOTE:** The other apps will not work until the other servers have been deployed.
 
 ### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
 

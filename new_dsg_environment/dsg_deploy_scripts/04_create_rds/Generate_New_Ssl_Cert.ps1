@@ -18,7 +18,7 @@ if([String]::IsNullOrEmpty($remoteDirectory)) {
     $remoteDirectory = "/Certificates"
 }
 
-$helperScriptsDir = (Join-Path $PSScriptRoot "helper_scripts" "Create_Or_Renew_Ssl_Cert_Helper_Scripts" "local_scripts")
+$helperScriptsDir = (Join-Path $PSScriptRoot "helper_scripts" "Generate_New_Ssl_Cert" "local_scripts")
 
 Write-Host "Creating CSR on RDS Gateway"
 Write-Host "---------------------------"

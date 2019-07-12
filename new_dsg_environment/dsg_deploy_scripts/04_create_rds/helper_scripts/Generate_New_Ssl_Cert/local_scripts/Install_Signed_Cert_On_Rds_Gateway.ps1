@@ -17,22 +17,10 @@ $config = Get-DsgConfig($dsgId);
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
-# Find RDS Gateway VM name by IP address
-$vmResourceGroup = $config.dsg.rds.rg;
-$vmIpAddress = $config.dsg.rds.gateway.ip
-Write-Host " - Finding VM with IP $vmIpAddress"
-## Get all VMs in resource group
-$vms = Get-AzVM -ResourceGroupName $vmResourceGroup
-## Get the NICs attached to all the VMs in the resource group
-$vmNicIds = ($vms | ForEach-Object{(Get-AzVM -ResourceGroupName $vmResourceGroup -Name $_.Name).NetworkProfile.NetworkInterfaces.Id})
-$vmNics = ($vmNicIds | ForEach-Object{Get-AzNetworkInterface -ResourceGroupName $vmResourceGroup -Name $_.Split("/")[-1]})
-## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
-$vmName = ($vmNics | Where-Object{$_.IpConfigurations.PrivateIpAddress -match $vmIpAddress})[0].VirtualMachine.Id.Split("/")[-1]
-Write-Host " - VM '$vmName' found"
-
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Install_Signed_Ssl_Cert_Remote.ps1"
-
+$vmResourceGroup = $config.dsg.rds.rg
+$vmName = $config.dsg.rds.gateway.vmName
 $certFilename = (Split-Path -Leaf -Path $certFullChainPath)
 $certFullChain = (@(Get-Content -Path $certFullChainPath) -join "|")
 
@@ -42,9 +30,7 @@ $params = @{
     remoteDirectory = "`"$remoteDirectory`""
     rdsFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
 };
-
 Write-Host " - Installing SSL certificate on VM '$vmName'"
-
 Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
