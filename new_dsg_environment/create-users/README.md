@@ -35,10 +35,10 @@ If the new user should definitely be a different user, then the following fields
 - Select the users you have recently created and click "Select"
 - Click "Assign" to complete the process
 - Return to "Azure Active Directory" pane
-- Select "Users" from "Manage" section
-- Select "Multi-Factor Authentication" button
-- Check the users you want to apply MFA to
-- Click to "Enable"
+- Click "Users" from "Manage" section
+- Click "Multi-Factor Authentication" button
+- Check the box for the users you want to apply MFA to
+- Click the "Enable" link in the "Quick steps" block on the right and confirm in the pop-up
 - Close MFA console
 - Users are now ready to reset password and set up MFA
 
