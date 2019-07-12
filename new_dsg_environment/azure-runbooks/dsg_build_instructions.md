@@ -525,6 +525,25 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1e37aa1.PNG](images/media/image15.png)
 
+### Configure DNS record for RDS server
+To make this Remote Desktop Service accessible from the internet an A record will need to be added to the DNS Zone for the domain associated with the DSG.
+
+- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. 
+
+- Create or update an A record with the name `rds` and as its value matching the external IP address that is assigned to the `RDS_NIC1` resource within the Azure Portal.
+
+### Configuration of SSL on RDS Gateway
+
+- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+
 ### Configure Remote Desktop Web Client on the RDS Gateway
 
  - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
@@ -545,26 +564,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Publish the Remote Desktop Web Client using: `Publish-RDWebClientPackage -Type Production -Latest` (don't worry about the warning `WARNING: Using the Remote Desktop web client with per-device licensing is not supported.`. We are not using per-device licencing)
 
-    - If there are any problems running the `Publish-RDWebClientPackage` command, go onto the next step to configure SSL on the RDS Gateway and then return to re-run this step.
-
-### Configure DNS record for RDS server
-To make this Remote Desktop Service accessible from the internet an A record will need to be added to the DNS Zone for the domain associated with the DSG.
-
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. 
-
-- Create or update an A record with the name `rds` and as its value matching the external IP address that is assigned to the `RDS_NIC1` resource within the Azure Portal.
-
-### Configuration of SSL on RDS Gateway
-
-- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
-
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
 ### Configuration of RDS remote apps on on RDS Session Hosts
 #### RDS Session Server 1 (Remote app server)
