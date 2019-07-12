@@ -47,5 +47,12 @@ New-AzResourceGroup -Name $config.dsg.rds.rg  -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.rds.rg `
   -TemplateFile $templatePath  @params -Verbose
 
+# Perform OS prep and file transfer
+$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
+# Upload RDS deployment scripts to RDS Gateway
+$scriptPath = Join-Path $helperScriptDir "local_scripts" "Initial_Config_And_File_Transfer.ps1"
+Write-Host "Performing initial RDS configuration and file transfer to RDS VMs"
+Invoke-Expression -Command "$scriptPath -dsgId $dsgId"
+
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

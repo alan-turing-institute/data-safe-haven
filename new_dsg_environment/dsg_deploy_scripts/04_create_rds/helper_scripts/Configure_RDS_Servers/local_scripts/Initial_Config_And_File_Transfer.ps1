@@ -4,24 +4,23 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../../../GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../../../../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../../../GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
+# === Add DNS record for RDS Gateway ===
+# --- Get public IP address of RDS gateway ---
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
-
-# Add DNS record for RDS Gateway
-# Get public IP address of RDS gateway
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
 $rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.dsg.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object {$_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*"}).IpAddress
-# Add DNS record
+# --- Add DNS record to DSG DNS Zone ---
 # Temporarily switch to SHM subscription
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $dnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
@@ -34,13 +33,29 @@ $_ = New-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $dsgDomain 
     -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds `
     -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
 
+# === Create NPS shared secret if it doesn't exist ===
+# Temporarily switch to SHM subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+# Fetch admin password (or create if not present)
+$npsSecret = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+if ($null -eq $npsSecret) {
+  Write-Host " - Creating NPS shared secret for RDS gateway"
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
+  $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+} else {
+    Write-Host " -  NPS shared secret for RDS gateway already exists"
+}
+
+# === Move RDS VMs into correct OUs ===
 # Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
 $rdsResourceGroup = $config.dsg.rds.rg;
-$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
+$helperScriptDir = Join-Path $PSScriptRoot "..";
 
-# Move RDS VMs into correct OUs
 $vmOuMoveParams = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
     dsgNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
@@ -48,7 +63,6 @@ $vmOuMoveParams = @{
     sh1Hostname = "`"$($config.dsg.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.dsg.rds.sessionHost2.hostname)`""
 };
-
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Move_RDS_VMs_Into_OUs.ps1"
 Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
 Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
@@ -56,7 +70,9 @@ Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $vmOuMoveParams
 
-# Run OS prep on all RDS VMs
+# === Run OS prep script on RDS VMs ===
+# Temporarily switch to DSG subscription
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 $osPrepParams = @{
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
     shmFqdn = "`"$($config.shm.domain.fqdn))`""
@@ -81,7 +97,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
 
-# Transfer files
+# === Transfer files to RDS VMs ===
 # Temporarily switch to storage account subscription
 $storageAccountSubscription = $config.shm.subscriptionName
 $_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
@@ -144,20 +160,6 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
 $scriptPath = Join-Path $helperScriptDir "local_scripts" "Upload_RDS_Deployment_Scripts.ps1"
 Write-Host " - Uploading RDS environment installation scripts"
 Invoke-Expression -Command "$scriptPath -dsgId $dsgId"
-
-# Create NPS shared secret if it doesn't exist
-# Fetch admin password (or create if not present)
-$npsSecret = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
-if ($null -eq $npsSecret) {
-  Write-Host " - Creating NPS shared secret for RDS gateway"
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
-  $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
-} else {
-    Write-Host " -  NPS shared secret for RDS gateway already exists"
-}
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;
