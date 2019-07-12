@@ -35,4 +35,3 @@ Start-Sleep -Seconds $delaySeconds
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
 
-Exit 0

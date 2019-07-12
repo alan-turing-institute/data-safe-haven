@@ -11,8 +11,30 @@ Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
-# Temporarily switch to DSG subscription to run remote scripts
+# Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
+
+# Add DNS record for RDS Gateway
+# Get public IP address of RDS gateway
+$rdsGatewayVM = Get-AzVM -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.gateway.vmName
+$rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
+$rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.dsg.rds.rg)
+$rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object {$_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*"}).IpAddress
+# Add DNS record
+# Temporarily switch to SHM subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$dnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
+$dnsResourceGroup = $config.shm.dns.rg
+$dnsTtlSeconds = 30
+$dsgDomain = $config.dsg.domain.fqdn
+Write-Host " - Setting 'A' record for 'rds' host to '$rdsGatewayPublicIp' in DSG $dsgId DNS zone ($dsgDomain)"
+Remove-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
+$_ = New-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $dsgDomain `
+    -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds `
+    -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
+
+# Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
 $rdsResourceGroup = $config.dsg.rds.rg;
