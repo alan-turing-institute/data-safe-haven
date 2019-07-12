@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../../GeneratePassword.psm1 -Force
-Import-Module $PSScriptRoot/../../../../DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../../../../GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -54,7 +54,7 @@ if ($null -eq $npsSecret) {
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
 $rdsResourceGroup = $config.dsg.rds.rg;
-$helperScriptDir = Join-Path $PSScriptRoot "..";
+$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
 
 $vmOuMoveParams = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
@@ -69,7 +69,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
     -Name "$($config.dsg.dc.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $vmOuMoveParams
-
+Exit 0
 # === Run OS prep script on RDS VMs ===
 # Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
