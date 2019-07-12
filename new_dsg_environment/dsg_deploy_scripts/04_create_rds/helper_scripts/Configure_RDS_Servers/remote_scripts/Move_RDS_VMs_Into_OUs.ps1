@@ -17,15 +17,12 @@ param(
   [string]$sh2Hostname
 )
 
-$gatewayIdentity = "CN=$gatewayHostname,CN=Computers,$dsgDn"
 $gatewayTargetPath = "OU=$dsgNetbiosName Service Servers,$dsgDn"
-$sh1Identity = "CN=$sh1Hostname,CN=Computers,$dsgDn"
-$sh2Identity = "CN=$sh2Hostname,CN=Computers,$dsgDn"
 $shTargetPath = "OU=$dsgNetbiosName RDS Session Servers,$dsgDn"
 
-Write-Output "Moving '$gatewayIdentity' to '$gatewayTargetPath'"
-Move-ADObject -Identity "$gatewayIdentity" -TargetPath "$gatewayTargetPath"
-Write-Output "Moving '$sh1Identity' to '$shTargetPath'"
-Move-ADObject -Identity "$sh1Identity" -TargetPath "$shTargetPath"
-Write-Output "Moving '$sh2Identity' to '$shTargetPath'"
-Move-ADObject -Identity "$sh2Identity" -TargetPath "$shTargetPath"
+Write-Output "Moving '$gatewayHostname' to '$gatewayTargetPath'"
+Move-ADObject (Get-ADComputer -Identity $gatewayHostname) -TargetPath "$gatewayTargetPath"
+Write-Output "Moving '$sh1Hostname' to '$shTargetPath'"
+Move-ADObject (Get-ADComputer -Identity $sh1Hostname)  -TargetPath "$shTargetPath"
+Write-Output "Moving '$sh2Hostname' to '$shTargetPath'"
+Move-ADObject (Get-ADComputer -Identity $sh2Hostname)  -TargetPath "$shTargetPath"
