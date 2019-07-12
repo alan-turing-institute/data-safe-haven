@@ -77,13 +77,17 @@
 
 - [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 
-### Install and configure Linux command line
+### Install and configure Azure CLI
 
-- [Install Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+- On Windows, this requires [installing the Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)(WSL) as a prerequisite.
 
-- [Install and configure the Azure CLI for Linux](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
+- [Install and configure the Azure CLI for Linux or OSX](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
 
-  - **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine
+- **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine. In particular there may be issues with some functionality on the Windows Subsystem for Linux.
+
+### Install and configure Certbot
+
+- Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
 
 ## Build Process
 
@@ -408,24 +412,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 10 minutes to complete.
 
-### Configuration on Domain Controller
-
-- Connect to the **DSG Domain Controller** via Remote Desktop client over the VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the DSG DC admin password from the `dsg<dsg-id>-dc-admin-password` secret in the Safe Haven Management KeyVault
-
-- In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
-
-- Expand the "Computers" Container
-
-- Drag the "RDS" computer object to the "DSGROUP`<dsg-id>` Service Servers" OU, click "YES" to the warning
-
-- Select both the "RDSSH1" and "RDSSH2" objects and drag them to the "DSGROUP`<dsg-id>` RDS Session Servers" OU, click "YES" to the warning
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1641161.PNG](images/media/image13.png)
-
-### Configure RDS Servers
-#### Run the remote configuration scripts
+### Prepare RDS VMs for installation of RDS environment
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -433,17 +420,51 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Configure_RDS_Servers.ps1` script, providing the DSG ID when prompted
+- Run the `./OS_Prep_Remote.ps1` script, providing the DSG ID when prompted
 
-- The RDS configuration will now start, this will take around 10 minutes to complete, the session servers will reboot during the process.
+- This script will prepare the RDS VMs for the installation of an RDS environment in the next steps.
 
-#### Perform manual configuration steps
+### Install software on RDS Session Host 1 (Remote app server)
+
+- Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process.
+
+- Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
+
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+
+- Open `C:\Software\rdssh1-app-server` in Windows explorer
+
+- Install the packages present in the folder
+
+- Once installed logout of the server
+
+### Install RDS Environment
 
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-open Server Manager, right click on "All Servers" and select "Add Servers"
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe doninstalled on the x86 version.
+
+- Deployment will run automatically for about 12 minutes and then you will be presented with a `NuGet provider is required to continue` message. Enter `Y` to this message to continue.
+
+- Change to `C:\Scripts`
+
+- Run `.\Deploy_RDS_Environment.ps1` (the leading `.\` is required to run untrusted scripts)
+
+- This script will take about 12 minutes to run
+
+- Run `Install-Module -Name PowerShellGet -Force` to update Powershell Ge tto the latest version
+
+- Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
+
+- Change to `C:\Scripts`
+
+- Run `.\Install_Webclient.ps1` (the leading `.\` is required to run untrusted scripts)
+
+- Accept any requirements or license agreements.
+
+- Once the webclient is instaled, open Server Manager, right click on "All Servers" and select "Add Servers"
 
   ![Add RDS session servers to collection - Step 1](images/media/image14.png)
 
@@ -458,11 +479,11 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 - Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. 
 
-- Create or update an A record with the name `rds` and as its value matching the external IP address that is assigned to the `RDS_NIC1` resource within the Azure Portal.
+- Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the `RDS_NIC1` resource within the Azure Portal.
 
 ### Configuration of SSL on RDS Gateway
 
-- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
+- Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -472,43 +493,7 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 - Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
-### Configuration of RDS remote apps on on RDS Session Hosts
-#### RDS Session Server 1 (Remote app server)
-
-- Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Download the applications to be served via RDS
-
-  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
-
-  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes) (append the SAS token generated above -- starts "?sv=", with no surrounding quotes)
-
-  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- Install the downloaded packages
-
-- Once installed logout of the server
-
-#### RDS Session Server 2 (Presentation VM)
-
-- Connect to the **RDS Session Server 2 (RDSSH2)** via Remote Desktop client over the DSG VPN connection
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
-
-- Download the applications to be served via RDS
-  - Download WinSCP using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinSCP-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
-
-  - Download PuTTY using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/putty.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes
-
-  - Download Chome using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/GoogleChromeStandaloneEnterprise64.msi<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- Install the downloaded packages
-
-- Once installed logout of the server
-
-### Adding new DSG RDS Server to the SHM NPS server
+### Add DSG RDS Server to the SHM NPS server
 
 - Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
 
@@ -526,7 +511,7 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 - Add the IP address of the RDS server
 
-- Set the "Shared Secret" to the value of the `sh-management-radius-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when configuring the DSG RDS Gateway security in the next step)
+- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when configuring the DSG RDS Gateway security in the next step)
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2f36ea.PNG](images/media/image20.png)
 
@@ -552,7 +537,7 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 - Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.251.0.248` for production SHM)
 
-- Set the "Shared Secret" to the value of the `sh-management-radius-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when adding the DSG RDS to the SHM NPS earlier)
+- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when adding the DSG RDS to the SHM NPS earlier)
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2302f1a.PNG](images/media/image23.png)
 
@@ -598,26 +583,17 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 -	Click “OK” twice and close “Network Policy Server” MMC
 
-### Install software on Presentation VM (RDSSSH2)
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+#### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
 
-- Change to the "data-safe-haven/new\_dsg\_environment/dsg_deploy_scripts/04_create_rds/" directory
+- Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Generate a new account-level SAS token with read-only access to the DSG artifacts storage account in the Safe Haven Management Test subscription by running the following commands from the `data-safe-haven/new_dsg_environment/dsg_deploy_scripts/` directory.
-  - `Import-Module ./GenerateSasToken.psm1 -Force` (the `-Force` flag ensure that the module is reloaded)
-  - `New-AccountSasToken "<SH-Management-Subscription-Name>" "RG_DSG_ARTIFACTS" "<shm-artifact-storage-account>"  Blob,File Service,Container,Object "rl"  (Get-AzContext).Subscription.Name` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production.
+- Open `C:\Software\rdssh2-virtual-desktop-server` in Windows explorer
 
-- Connect to the "Remote Desktop Session Server 2" (RDSSH2) via Remote Desktop
+- Install the packages present in the folder
 
-- Download OpenOffice using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/Apache_OpenOffice.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- Download TexLive using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/TexLive-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- Download WinEdt using an SAS-authenticated URL of the form `https://<shm-artifact-storage-account>.file.core.windows.net/configpackages/Packages/WinEdt-Setup.exe<sas-token>` where `<shm-artifact-storage-account>` is `dsgxartifacts` for test and `dsgartifactsprod` for production. Append the SAS token generated earlier (starts `?sv=`, with no surrounding quotes)
-
-- Install the downloaded packages
+- **NOTE:** Intalling TexLive (`install-tl-windows-xxx`) will take a long time (including downloading lots of files from the internet), so it is recommended to leave this until last.
 
 - Once installed logout of the server
 
