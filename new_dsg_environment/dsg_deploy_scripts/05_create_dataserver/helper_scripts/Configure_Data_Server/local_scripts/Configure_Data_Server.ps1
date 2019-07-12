@@ -4,7 +4,7 @@
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../../../DsgConfig.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -14,7 +14,7 @@ $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Configure data server
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote_scripts" "Configure_Data_Server_Remote.ps1"
 
 $params = @{
   dsgNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
