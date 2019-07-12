@@ -474,13 +474,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![Add RDS session servers to collection - Step 2](images/media/image15.png)
 
-### Configure DNS record for RDS server
-To make this Remote Desktop Service accessible from the internet an A record will need to be added to the DNS Zone for the domain associated with the DSG.
-
-- Create a DNS zone for the DSG in the SHM subscription at `Resource Groups -> RG_SHM_DNS -> dgroup<dsg-id>.co.uk`. 
-
-- Create or update an `A` record with the name `rds` and as its value matching the external IP address that is assigned to the `RDS_NIC1` resource within the Azure Portal.
-
 ### Configuration of SSL on RDS Gateway
 
 - Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
@@ -583,7 +576,7 @@ To make this Remote Desktop Service accessible from the internet an A record wil
 
 -	Click “OK” twice and close “Network Policy Server” MMC
 
-#### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
+### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
 
 - Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
