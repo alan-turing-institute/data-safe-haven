@@ -184,7 +184,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup8.co.uk",
-        "ip": "10.250.57.250"
+        "ip": "10.250.57.250",
+        "npsSecretName": "dsg8-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",

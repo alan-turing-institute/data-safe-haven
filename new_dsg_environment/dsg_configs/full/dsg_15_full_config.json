@@ -133,6 +133,12 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg15artifacts"
+      }
+    },
     "keyVault": {
       "name": "dsg-management-prod"
     },
@@ -178,7 +184,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup15.co.uk",
-        "ip": "10.250.113.250"
+        "ip": "10.250.113.250",
+        "npsSecretName": "dsg15-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",

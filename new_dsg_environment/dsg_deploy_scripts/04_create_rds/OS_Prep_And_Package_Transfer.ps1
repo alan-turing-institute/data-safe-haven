@@ -4,6 +4,7 @@ param(
 )
 
 Import-Module Az
+Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 
@@ -110,6 +111,20 @@ Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
 $scriptPath = Join-Path $helperScriptDir "local_scripts" "Upload_RDS_Deployment_Scripts.ps1"
 Write-Host " - Uploading RDS environment installation scripts"
 Invoke-Expression -Command "$scriptPath -dsgId $dsgId"
+
+# Create NPS shared secret if it doesn't exist
+# Fetch admin password (or create if not present)
+$npsSecret = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+if ($null -eq $npsSecret) {
+  Write-Host " - Creating NPS shared secret for RDS gateway"
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
+  $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+} else {
+    Write-Host " -  NPS shared secret for RDS gateway already exists"
+}
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;
