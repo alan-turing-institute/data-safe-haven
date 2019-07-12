@@ -27,7 +27,7 @@ Write-Output " - Clearing all pre-existing files and folders from '$downloadDir'
 if(Test-Path -Path $downloadDir){
   Get-ChildItem $downloadDir -Recurse | Remove-Item -Recurse -Force
 } else {
-    New-Item -ItemType directory -Path $downloadDir
+    $_ = New-Item -ItemType directory -Path $downloadDir
 }
 
 # Download artifacts
