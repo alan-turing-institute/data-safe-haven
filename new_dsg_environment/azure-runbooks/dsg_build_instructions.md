@@ -375,30 +375,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once installed logout of the server
 
-### Add DSG RDS Gateway as a RADIUS client on the SHM NPS server
-
-- Connect to the **SHM NPS** server via Remote Desktop client over the SHM VPN connection.
-
-- Login with domain user `<shm-domain>\atiadmin` and the **SHM DC** admin password from the SHM KeyVault (all SHM Windows servers use the same admin credentials)
-
-- In "Server Manager", select `Tools -> Network Policy Server`
-
-- Expand `NPS (Local) -> RADIUS Clients and Servers -> RADIUS Clients`
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2cf41e.PNG](images/media/image19.png)
-
-- Right click `RADIUS Clients -> New`
-
-- Enter the friendly name of the server (best practice use the FQDN of the RDS server)
-
-- Add the **private** IP address of the RDS Gateway server
-
-- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when configuring the DSG RDS Gateway security in the next step)
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2f36ea.PNG](images/media/image20.png)
-
-- Click "OK" to finish
-
 ### Install RDS Environment
 
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
