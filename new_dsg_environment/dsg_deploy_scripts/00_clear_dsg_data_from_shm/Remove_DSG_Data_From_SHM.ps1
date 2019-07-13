@@ -43,5 +43,16 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 
+# === Remove DSG AD Trust from SHM DC ===
+$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_AD_Trust_Remote.ps1"
+$params = @{
+  shmFqdn = "`"$($config.shm.domain.fqdn)`""
+  dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
+}
+Write-Host "Removing DSG AD Trust from SHM DC"
+Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+    -Parameter $params
+
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
