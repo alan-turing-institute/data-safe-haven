@@ -44,34 +44,40 @@ runcmd:
   - mkdir /media/gitdata
   - mount -a
   # Update Gitlab
-  - echo "Updating Gitlab"
-  - sudo apt-get update
-  - sudo apt-get install gitlab-ce=9.5.6-ce.0
-  - sudo gitlab-ctl reconfigure
-  - sudo gitlab-ctl restart
-  - sudo apt-get update
-  - sudo apt-get install gitlab-ce=11.11.5-ce.0
-  - sudo gitlab-ctl reconfigure
-  - sudo gitlab-ctl restart
-  - sudo apt-get update
-  - sudo apt upgrade
-  - sudo gitlab-ctl reconfigure
-  - sudo gitlab-ctl restart
+  - echo "Updating Gitlab to last v9 release"
+  - apt-get update
+  - apt-get install gitlab-ce=9.5.10-ce.0
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
+  - echo "Updating Gitlab to last v10 release (10.8.7)"
+  - apt-get update
+  - apt-get install gitlab-ce=10.8.7-ce.0
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
+  - echo "Updating Gitlab to specified v11 release (11.10.8)"
+  - apt-get update
+  - apt-get install gitlab-ce=11.10.8-ce.0
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
+  - apt-get update
+  - apt upgrade
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
   - echo "Gitlab updated"
   # Configure Gitlab
   - echo "Configuring Gitlab"
   # Set root password and don't prompt for it to be reset when web app first loaded
   - |
-    echo "user = User.find_by(username: 'root');user.password=user.password_confirmation='<gitlab-root-password>';user.password_automatically_set=false;user.save!;exit;" | sudo gitlab-rails console production
+    echo "user = User.find_by(username: 'root');user.password=user.password_confirmation='<gitlab-root-password>';user.password_automatically_set=false;user.save!;exit;" | gitlab-rails console production
   # Turn off user account creation
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
     # Reload Gitlab configuration and restart Gitlab
-  - sudo gitlab-ctl reconfigure
+  - gitlab-ctl reconfigure
   
     # Restrict login to SHM domain (must be done AFTER Gitlab update)
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-login-domain>'])"
     # Reload Gitlab configuration and restart Gitlab
-  - sudo gitlab-ctl reconfigure
+  - gitlab-ctl reconfigure
   - echo "Gitlab configured"

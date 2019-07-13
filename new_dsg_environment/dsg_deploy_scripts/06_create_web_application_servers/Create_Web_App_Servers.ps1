@@ -98,12 +98,6 @@ $params = @{
     "hackmdCustomData" = $hackmdCustomData
 }
 
-Write-Output $params
-Write-Output "--------"
-Write-Output $gitlabCloudInit
-Write-Output "--------"
-Write-Output $hackmdCloudInit
-
 $templatePath = Join-Path $PSScriptRoot "linux-master-template.json"
 
 New-AzResourceGroup -Name $config.dsg.linux.rg -Location $config.dsg.location
