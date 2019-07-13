@@ -12,17 +12,19 @@ param(
   $dsgResearchUserSG
 )
 
-Write-Output "Removing user '$testResearcherSamAccountName'"
-Remove-ADUser (Get-AdUser $testResearcherSamAccountName)
+function Remove-DsgUser($samAccountName) {
+  Write-Output "Removing user '$samAccountName'"
+  Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
+}
 
-Write-Output "Removing user '$dsvmLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $dsvmLdapSamAccountName)
+function Remove-DsgGroup($groupName) {
+  Write-Output "Removing group '$groupName'"
+  Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
+}
 
-Write-Output "Removing user '$gitlabLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $gitlabLdapSamAccountName)
+Remove-DsgUser($testResearcherSamAccountName)
+Remove-DsgUser($dsvmLdapSamAccountName)
+Remove-DsgUser($gitlabLdapSamAccountName)
+Remove-DsgUser($hackmdLdapSamAccountName)
 
-Write-Output "Removing user '$hackmdLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $hackmdLdapSamAccountName)
-
-Write-Output "Removing group '$securityGroupOuPath'" 
-Remove-ADGroup (Get-ADGroup $dsgResearchUserSG)
+Remove-DsgGroup($dsgResearchUserSG)
