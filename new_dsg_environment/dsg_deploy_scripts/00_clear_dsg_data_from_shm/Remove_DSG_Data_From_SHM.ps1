@@ -16,6 +16,20 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 $helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" 
 
+# === Remove DSG users and groups from SHM DC ===
+$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1"
+$params = @{
+  testResearcherSamAccountName = "`"$($config.dsg.users.researchers.test.samAccountName)`""
+  dsvmLdapSamAccountName = "`"$($config.dsg.users.ldap.dsvm.samAccountName)`""
+  gitlabLdapSamAccountName = "`"$($config.dsg.users.ldap.gitlab.samAccountName)`""
+  hackmdLdapSamAccountName = "`"$($config.dsg.users.ldap.hackmd.samAccountName)`""
+  dsgResearchUserSG = "`"$($config.dsg.domain.securityGroups.researchUsers.name)`""
+}
+Write-Host "Removing DSG users and groups from SHM DC"
+Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+    -Parameter $params
+
 # === Remove DSG DNS records from SHM DC ===
 $scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_DNS_Entries_Remote.ps1"
 $params = @{
@@ -24,7 +38,7 @@ $params = @{
   rdsSubnetPrefix = "`"$($config.dsg.network.subnets.rds.prefix)`""
   dataSubnetPrefix = "`"$($config.dsg.network.subnets.data.prefix)`""
 }
-Write-Host "Removing DSG DNS records from SHM"
+Write-Host "Removing DSG DNS records from SHM" DC
 Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
