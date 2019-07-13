@@ -35,14 +35,9 @@ Write-Output $params
 
 # Deploy data server template
 $templatePath = Join-Path $PSScriptRoot "dataserver-master-template.json"
-New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location $config.dsg.location
+$_ = New-AzResourceGroup -Name $config.dsg.dataserver.rg -Location $config.dsg.location
 New-AzResourceGroupDeployment -ResourceGroupName  $config.dsg.dataserver.rg `
   -TemplateFile $templatePath @params -Verbose
-
-# Configure deployed data server
-$scriptPath = Join-Path $PSScriptRoot "helper_scripts" "local_scripts" "Configure_Data_Server_Remote.ps1"
-Write-Host "Configuring Data Server"
-Invoke-Expression -Command "$scriptPath -dsgId $dsgId"
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

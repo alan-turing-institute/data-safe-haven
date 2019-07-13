@@ -20,7 +20,7 @@ Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) 
 #Format data drive
 Stop-Service ShellHWDetection
 
-$rawDisks = Get-Disk |  Where {$_.PartitionStyle -eq 'raw'} | Sort -Property Number
+$rawDisks = @(Get-Disk |  Where {$_.PartitionStyle -eq 'raw'} | Sort -Property Number)
 if ($rawDisks.Count -gt 0) {
   Write-Output ("Formatting " + $rawDisks.Count + " raw disks")
   Foreach ($rawDisk in $rawDisks) {
@@ -42,7 +42,7 @@ $shareFolder = "Data"
 $sharePath = ($shareDriveLetter + ":\" + $shareFolder)
 $shareName = $shareFolder
 $researcherUserSg = ($shmNetbiosName + "\" + $researcherUserSgName) 
-$serverAdminSg = ($shmNetbiosName + "\" + $serverAdminSgName)
+$serverAdminSg = ($dsgNetbiosName + "\" + $serverAdminSgName)
 Write-Output "  - Creating '$shareName' data share at '$sharePath' with the following permissions"
 Write-Output "    - FullAccess: $serverAdminSg"
 Write-Output "    - ChangeAccess: $researcherUserSg" 
@@ -65,6 +65,7 @@ $_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Acces
 Write-Output "SMB share access for '$shareName' share:"
 Get-SmbShareAccess -Name $shareName | Format-List
 
+Write-Output "Setting ACL rules for folder '$sharePath'"
 # Remove all existing ACL rules on the dataserver folder backing the share
 $acl = Get-Acl $sharePath;
 $_ = ($acl.Access | ForEach-Object{$acl.RemoveAccessRule($_)});
@@ -73,7 +74,7 @@ $serverAdminAccessRule = New-Object System.Security.AccessControl.FileSystemAcce
                             "Full", "ContainerInherit, ObjectInherit", "None", "Allow");
 $researchUserAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($researcherUserSg, 
                             "Modify", "ContainerInherit, ObjectInherit", "None", "Allow");
-                            $_ = $acl.Setaccessrule($serverAdminAccessRule);     
+$_ = $acl.Setaccessrule($serverAdminAccessRule);     
 $_ = $acl.Setaccessrule($researchUserAccessRule);
 $_ = (Set-Acl $sharePath $acl);
 
