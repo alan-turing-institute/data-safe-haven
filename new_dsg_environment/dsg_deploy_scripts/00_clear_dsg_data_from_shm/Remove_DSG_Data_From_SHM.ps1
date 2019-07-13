@@ -11,12 +11,31 @@ Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 $config = Get-DsgConfig($dsgId);
 
 # Directory for local and remote helper scripts
-$helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" 
+$helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" -Resolve
 
-# Temporarily switch to management subscription
+# Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$dsgResourceGroups = @(Get-AzResourceGroup)
+$dsgResources = @(Get-AzResource)
+if($dsgResources -or $dsgResourceGroups) {
+  Write-Host "********************************************************************************"
+  Write-Host "*** DSG $dsgId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
+  Write-Host "********************************************************************************"
+  Write-Host "DSG data should not be deleted from the SHM unless all DSG resources have been deleted from the subscription."
+  Write-Host ""
+  Write-Host "Resource Groups present in DSG subscription:"
+  Write-Host "--------------------------------------"
+  $dsgResourceGroups
+  Write-Host "Resources present in DSG subscription:"
+  Write-Host "--------------------------------------"
+  $dsgResources
+  $_ = Set-AzContext -Context $prevContext;
+  Exit 1
+}
 
+# Temporarily switch to SHM subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # === Remove all DSG secrets from SHM KeyVault ===
 function Remove-DsgSecret($secretName){
   if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
@@ -64,7 +83,7 @@ Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from DSG $dsgId DNS z
 Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 
 # === Remove DSG users and groups from SHM DC ===
-$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1"
+$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
 $params = @{
   testResearcherSamAccountName = "`"$($config.dsg.users.researchers.test.samAccountName)`""
   dsvmLdapSamAccountName = "`"$($config.dsg.users.ldap.dsvm.samAccountName)`""
@@ -78,7 +97,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
     -Parameter $params
 
 # === Remove DSG DNS records from SHM DC ===
-$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_DNS_Entries_Remote.ps1"
+$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
 $params = @{
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
   identitySubnetPrefix = "`"$($config.dsg.network.subnets.identity.prefix)`""
@@ -91,7 +110,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
     -Parameter $params
 
 # === Remove DSG AD Trust from SHM DC ===
-$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_AD_Trust_Remote.ps1"
+$scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_AD_Trust_Remote.ps1" -Resolve
 $params = @{
   shmFqdn = "`"$($config.shm.domain.fqdn)`""
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
@@ -105,7 +124,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
 $npsRadiusClientParams = @{
   rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
 };
-$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
 Write-Host "Removing RDS Gateway RADIUS Client from SHM NPS"
 Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
   -Name "$($config.shm.nps.vmName)" `
