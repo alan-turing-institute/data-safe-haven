@@ -13,13 +13,21 @@ param(
 )
 
 function Remove-DsgUser($samAccountName) {
-  Write-Output "Removing user '$samAccountName'"
-  Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
+  if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
+    Write-Output "Removing user '$samAccountName'"
+    Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
+  } else {
+    Write-Output "No user '$samAccountName' exists"
+  }
 }
 
 function Remove-DsgGroup($groupName) {
-  Write-Output "Removing group '$groupName'"
-  Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
+  if(Get-ADGroup -Filter "Name -eq '$groupName'"){
+    Write-Output "Removing group '$groupName'"
+    Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
+} else {
+  Write-Output "No group '$groupName' exists"
+}
 }
 
 Remove-DsgUser($testResearcherSamAccountName)
