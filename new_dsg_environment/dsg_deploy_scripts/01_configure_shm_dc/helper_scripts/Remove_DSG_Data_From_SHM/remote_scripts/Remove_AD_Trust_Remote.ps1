@@ -11,8 +11,8 @@ param(
 
 $cmd = "netdom trust $shmFqdn /d:$dsgFqdn /remove /force"
 if(Get-ADTrust -Filter {Target -eq $dsgFqdn}) {
-  Write-Output "Removing AD Trust for domain '$dsgFqdn'"
+  Write-Output " - Removing AD Trust for domain '$dsgFqdn'"
   Invoke-Expression -Command "$cmd"
 } else {
-  Write-Output "No AD Trust for domain '$dsgFqdn' exists"
+  Write-Output " - No AD Trust for domain '$dsgFqdn' exists"
 }

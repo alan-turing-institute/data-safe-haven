@@ -20,14 +20,14 @@ function IpPrefixToInAddrArpa($ipPrefix)
 }
 function Remove-DsgDnsZone($zoneName) {
   if(Get-DnsServerZone | Where-Object {$_.ZoneName -eq "$zoneName"}){
-    Write-Output "Removing '$zoneName' DNS record"
+    Write-Output " - Removing '$zoneName' DNS record"
     Remove-DnsServerZone $zoneName -Force 
   } else {
-    Write-Output "No '$zoneName' DNS record exists"
+    Write-Output " - No '$zoneName' DNS record exists"
   }
 }
 
 Remove-DsgDnsZone $dsgFqdn 
 Remove-DsgDnsZone (IpPrefixToInAddrArpa $identitySubnetPrefix)
-Remove-DsgDnsZone (IpPrefixToInAddrArpa $rdsSubnetInAddrArpa)
+Remove-DsgDnsZone (IpPrefixToInAddrArpa $rdsSubnetPrefix)
 Remove-DsgDnsZone (IpPrefixToInAddrArpa $dataSubnetPrefix)
