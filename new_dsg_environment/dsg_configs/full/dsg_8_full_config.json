@@ -45,6 +45,8 @@
       "ip": "10.220.1.250"
     },
     "nps": {
+      "rg": "RG_SH_MGMTNPS",
+      "vmName": "MGMTNPS",
       "ip": "10.220.1.248"
     },
     "storage": {

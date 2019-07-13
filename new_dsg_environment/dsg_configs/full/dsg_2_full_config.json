@@ -45,6 +45,8 @@
       "ip": "10.251.0.250"
     },
     "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "SHMNPS",
       "ip": "10.251.0.248"
     },
     "storage": {

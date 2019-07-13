@@ -15,7 +15,9 @@
     "dcVmName": "SHMDC1",
     "dcHostname": "SHMDC1",
     "dcRgName": "RG_SHM_VM_DC",
-    "npsIp": "248",
+    "npsIpLastOctet": "248",
+    "npsVmName": "SHMNPS",
+    "npsRgName": "RG_SHM_NPS",
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgartifactsprod"
