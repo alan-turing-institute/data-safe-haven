@@ -8,6 +8,8 @@ Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
 
+$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
+
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
@@ -49,12 +51,24 @@ if ($null -eq $npsSecret) {
     Write-Host " -  NPS shared secret for RDS gateway already exists"
 }
 
+# === Add RDS Gateway as RADIUS Client on SHM NPS ===
+$npsRadiusClientParams = @{
+    rdsGatewayIp = "`"$($config.dsg.rds.gateway.ip)`""
+    rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
+    npsSecret = "`"$($npsSecret)`""
+};
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
+Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
+Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
+    -Name "$($config.shm.nps.vmName)" `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+    -Parameter $npsRadiusClientParams
+
 # === Move RDS VMs into correct OUs ===
 # Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
 $rdsResourceGroup = $config.dsg.rds.rg;
-$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Configure_RDS_Servers";
 
 $vmOuMoveParams = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
@@ -69,7 +83,7 @@ Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
     -Name "$($config.dsg.dc.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $vmOuMoveParams
-Exit 0
+
 # === Run OS prep script on RDS VMs ===
 # Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
