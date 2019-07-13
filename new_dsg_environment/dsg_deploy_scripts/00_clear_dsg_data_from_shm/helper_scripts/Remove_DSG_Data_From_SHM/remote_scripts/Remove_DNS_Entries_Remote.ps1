@@ -18,19 +18,16 @@ function IpPrefixToInAddrArpa($ipPrefix)
     $ipPrefixRev = $octetList -join "."
     return "$ipPrefixRev.in-addr.arpa"
 }
+function Remove-DsgDnsZone($zoneName) {
+  if(Get-DnsServerZone | Where-Object {$_.ZoneName -eq "$zoneName"}){
+    Write-Output "Removing '$zoneName' DNS record"
+    Remove-DnsServerZone $zoneName -Force 
+  } else {
+    Write-Output "No '$zoneName' DNS record exists"
+  }
+}
 
-
-Write-Output "Removing DNS record for DSG domain ($dsgFqdn)"
-Remove-DnsServerZone $dsgFqdn -Force -PassThru -Verbose 
-
-$identitySubnetInAddrArpa = IpPrefixToInAddrArpa $identitySubnetPrefix
-Write-Output "Removing DNS record for Identity subnet ($identitySubnetInAddrArpa)" 
-Remove-DnsServerZone $identitySubnetInAddrArpa -Force -PassThru -Verbose
-
-$rdsSubnetInAddrArpa = IpPrefixToInAddrArpa $rdsSubnetPrefix
-Write-Output "Removing DNS record for RDS subnet ($rdsSubnetInAddrArpa)" 
-Remove-DnsServerZone $rdsSubnetInAddrArpa -Force -PassThru -Verbose
-
-$dataSubnetInAddrArpa = IpPrefixToInAddrArpa $dataSubnetPrefix
-Write-Output "Removing DNS record for Data subnet ($dataSubnetInAddrArpa)" 
-Remove-DnsServerZone $dataSubnetInAddrArpa -Force -PassThru -Verbose
+Remove-DsgDnsZone $dsgFqdn 
+Remove-DsgDnsZone (IpPrefixToInAddrArpa $identitySubnetPrefix)
+Remove-DsgDnsZone (IpPrefixToInAddrArpa $rdsSubnetInAddrArpa)
+Remove-DsgDnsZone (IpPrefixToInAddrArpa $dataSubnetPrefix)
