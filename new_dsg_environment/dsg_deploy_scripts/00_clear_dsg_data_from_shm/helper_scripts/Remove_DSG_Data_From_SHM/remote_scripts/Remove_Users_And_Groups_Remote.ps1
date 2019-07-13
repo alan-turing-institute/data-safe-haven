@@ -13,16 +13,16 @@ param(
 )
 
 Write-Output "Removing user '$testResearcherSamAccountName'"
-Remove-ADUser (Get-AdUser $testResearcherSamAccountName) -Force
+Remove-ADUser (Get-AdUser $testResearcherSamAccountName)
 
 Write-Output "Removing user '$dsvmLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $dsvmLdapSamAccountName) -Force
+Remove-ADUser (Get-AdUser $dsvmLdapSamAccountName)
 
 Write-Output "Removing user '$gitlabLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $gitlabLdapSamAccountName) -Force
+Remove-ADUser (Get-AdUser $gitlabLdapSamAccountName)
 
 Write-Output "Removing user '$hackmdLdapSamAccountName'"
-Remove-ADUser (Get-AdUser $hackmdLdapSamAccountName) -Force
+Remove-ADUser (Get-AdUser $hackmdLdapSamAccountName)
 
 Write-Output "Removing group '$securityGroupOuPath'" 
-Remove-ADGroup (Get-ADGroup $dsgResearchUserSG) -Force
+Remove-ADGroup (Get-ADGroup $dsgResearchUserSG)
