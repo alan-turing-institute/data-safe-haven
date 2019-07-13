@@ -16,25 +16,6 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 $helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" 
 
-# === Remove all DSG secrets from SHM KeyVault ===
-function Remove-DsgSecret($secretName){
-  if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
-    Write-Host " - Deleting secret '$secretName'"
-    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force 
-  } else {
-    Write-Host " - No secret '$secretName' exists"
-  }
-}
-Write-Host "Removing DSG secrets from SHM KeyVault"
-Remove-DsgSecret $config.dsg.dc.admin.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.dsvm.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.gitlab.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.hackmd.passwordSecretName
-Remove-DsgSecret $config.dsg.users.researchers.test.passwordSecretName
-Remove-DsgSecret $config.dsg.rds.gateway.npsSecretName
-Remove-DsgSecret $config.dsg.linux.gitlab.rootPasswordSecretName
-Remove-DsgSecret $config.dsg.dsvm.admin.passwordSecretName
-
 # === Remove DSG users and groups from SHM DC ===
 $scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1"
 $params = @{
@@ -83,6 +64,30 @@ Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
   -Name "$($config.shm.nps.vmName)" `
   -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
   -Parameter $npsRadiusClientParams
+
+# === Remove all DSG secrets from SHM KeyVault ===
+function Remove-DsgSecret($secretName){
+  if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
+    Write-Host " - Deleting secret '$secretName'"
+    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force 
+  } else {
+    Write-Host " - No secret '$secretName' exists"
+  }
+}
+Write-Host "Removing DSG secrets from SHM KeyVault"
+Remove-DsgSecret $config.dsg.dc.admin.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.dsvm.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.gitlab.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.hackmd.passwordSecretName
+Remove-DsgSecret $config.dsg.users.researchers.test.passwordSecretName
+Remove-DsgSecret $config.dsg.rds.gateway.npsSecretName
+Remove-DsgSecret $config.dsg.linux.gitlab.rootPasswordSecretName
+Remove-DsgSecret $config.dsg.dsvm.admin.passwordSecretName
+
+# === Remove VNet peerings between DSG and SHM ===
+$unpeeringScriptPath = (Join-Path $PSScriptRoot ".." "09_mirror_peerings" "internal" "Unpeer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
+Write-Host ("Removing DSG mirror peerings")
+Invoke-Expression -Command "$unpeeringScriptPath -dsgId $dsgId";
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;

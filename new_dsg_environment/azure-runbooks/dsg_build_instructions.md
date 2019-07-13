@@ -224,7 +224,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ### In the Azure Portal SHM subscription
 - Delete all secrets for DSG in the SHM KeyVault (secrets are prefixed with both`dsgX-` or `dsgroupX-`)
-- Delete pVNet eering with DSG VNet from Management VNet
+- Delete VNet peering with DSG VNet from Management VNet
     - In the SHM Management subscription navigate to `Resource groups -> RG_DSG_VNET`
     - Select the SHM VNet, then `Peerings` from the `Configuration` section of the left-hand menu
     - Delete the peering named `PEER_DSG_DSGROUP<dsg-id>_VNET1`
@@ -726,7 +726,7 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Change to the `new_dsg_environment/dsg_deploy_scripts/09_peer_mirrors/internal/` directory of the Safe Haven repository
+- Change to the `new_dsg_environment/dsg_deploy_scripts/09_mirror_peerings/internal/` directory of the Safe Haven repository
 
 - Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
