@@ -20,7 +20,7 @@ $helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From
 function Remove-DsgSecret($secretName){
   if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
     Write-Host " - Deleting secret '$secretName'"
-    Remove-DsgSecret $secretName -Force 
+    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force 
   } else {
     Write-Host " - No secret '$secretName' exists"
   }
