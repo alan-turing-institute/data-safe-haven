@@ -54,5 +54,16 @@ Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 
+# === Remove RDS Gateway RADIUS Client from SHM NPS ===
+$npsRadiusClientParams = @{
+  rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
+};
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
+Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
+Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
+  -Name "$($config.shm.nps.vmName)" `
+  -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+  -Parameter $npsRadiusClientParams
+
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
