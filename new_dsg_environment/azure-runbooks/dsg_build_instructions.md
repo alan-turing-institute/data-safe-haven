@@ -632,20 +632,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - The deployment will take around 15 minutes to complete
 
-### Configure Dataserver on Domain Controller
-
-- Connect to the **DSG Domain Controller** via Remote Desktop client over the DSG VPN connection
-
-- Login with local user `atiadmin` and the **DSG DC** admin password from the SHM KeyVault
-
-- In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
-
-- Expand the "Computers" Container
-
-- Drag the "DATASERVER" computer object to the "DSGROUP`<dsg-id>` Data Servers" OU, click "YES" to the warning
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2511d18.PNG](images/media/image28.png)
-
 ### Configure Dataserver
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -653,7 +639,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Configiue_Data_Server.ps1` script, providing the DSG ID when prompted.
+- Run the `./Configure_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 ## 6. Deploy Web Application Servers (Gitlab and HackMD)
 
