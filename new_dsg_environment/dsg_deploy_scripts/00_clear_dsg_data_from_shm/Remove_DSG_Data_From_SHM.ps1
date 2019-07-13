@@ -16,6 +16,25 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 $helperScripDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" 
 
+# === Remove all DSG secrets from SHM KeyVault ===
+function Remove-DsgSecret($secretName){
+  if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
+    Write-Host " - Deleting secret '$secretName'"
+    Remove-DsgSecret $secretName -Force 
+  } else {
+    Write-Host " - No secret '$secretName' exists"
+  }
+}
+Write-Host "Removing DSG secrets from SHM KeyVault"
+Remove-DsgSecret $config.dsg.dc.admin.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.dsvm.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.gitlab.passwordSecretName
+Remove-DsgSecret $config.dsg.users.ldap.hackmd.passwordSecretName
+Remove-DsgSecret $config.dsg.users.researchers.test.passwordSecretName
+Remove-DsgSecret $config.dsg.rds.gateway.npsSecretName
+Remove-DsgSecret $config.dsg.linux.gitlab.rootPasswordSecretName
+Remove-DsgSecret $config.dsg.dsvm.admin.passwordSecretName
+
 # === Remove DSG users and groups from SHM DC ===
 $scriptPath = Join-Path $helperScripDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1"
 $params = @{
@@ -59,7 +78,7 @@ $npsRadiusClientParams = @{
   rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
-Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
+Write-Host "Removing RDS Gateway RADIUS Client from SHM NPS"
 Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
   -Name "$($config.shm.nps.vmName)" `
   -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
