@@ -10,4 +10,9 @@ param(
   $npsSecret
 )
 
-New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+if(Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}){
+  Write-Output " - RADIUS Client '$rdsGatewayFqdn' already exists"
+} else {
+  Write-Output "   - Creating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'"
+  New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+}

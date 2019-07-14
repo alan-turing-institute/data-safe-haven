@@ -20,9 +20,9 @@ param(
 $gatewayTargetPath = "OU=$dsgNetbiosName Service Servers,$dsgDn"
 $shTargetPath = "OU=$dsgNetbiosName RDS Session Servers,$dsgDn"
 
-Write-Output "Moving '$gatewayHostname' to '$gatewayTargetPath'"
+Write-Output "   - Moving '$gatewayHostname' to '$gatewayTargetPath'"
 Move-ADObject (Get-ADComputer -Identity $gatewayHostname) -TargetPath "$gatewayTargetPath"
-Write-Output "Moving '$sh1Hostname' to '$shTargetPath'"
+Write-Output "   - Moving '$sh1Hostname' to '$shTargetPath'"
 Move-ADObject (Get-ADComputer -Identity $sh1Hostname)  -TargetPath "$shTargetPath"
-Write-Output "Moving '$sh2Hostname' to '$shTargetPath'"
+Write-Output "   - Moving '$sh2Hostname' to '$shTargetPath'"
 Move-ADObject (Get-ADComputer -Identity $sh2Hostname)  -TargetPath "$shTargetPath"

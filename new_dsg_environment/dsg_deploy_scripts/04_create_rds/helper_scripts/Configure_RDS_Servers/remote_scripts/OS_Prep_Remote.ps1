@@ -12,7 +12,7 @@ param(
 )
 
 # Set locale
-Write-Output "Setting locale"
+Write-Output "   - Setting locale"
 $_ = Set-WinHomeLocation -GeoId 0xf2
 $_ = Set-TimeZone -Name "GMT Standard Time"
 $_ = Set-WinSystemLocale en-GB
@@ -20,7 +20,7 @@ $_ = Set-Culture en-GB
 $_ = Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
 
 # Set DNS defaults
-Write-Output "Setting DNS suffixes"
+Write-Output "   - Setting DNS suffixes"
 $suffixes = "$dsgFqdn", "$shmFqdn"
 $class = [wmiclass]'Win32_NetworkAdapterConfiguration'
 $_ = $class.SetDNSSuffixSearchOrder($suffixes)

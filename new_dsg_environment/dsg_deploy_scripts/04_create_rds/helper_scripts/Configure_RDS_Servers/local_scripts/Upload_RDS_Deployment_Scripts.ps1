@@ -99,7 +99,7 @@ if($notExists) {
 $containerName =  "rds-config-scripts"
 # Create container if it doesn't exist
 if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
-  Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
+  Write-Host "   - Creating container '$containerName' in storage account '$storageAccountName'"
   $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
 }
 $blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
@@ -147,9 +147,8 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.rds.rg `
     -Name "$($config.dsg.rds.gateway.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $packageDownloadParams
-
-Write-Output $result.Value[0]
-Write-Output $result.Value[1]
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

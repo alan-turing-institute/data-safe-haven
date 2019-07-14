@@ -45,10 +45,10 @@ if ($null -eq $npsSecret) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
+  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
   $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
 } else {
-    Write-Host " -  NPS shared secret for RDS gateway already exists"
+    Write-Host " - NPS shared secret for RDS gateway already exists"
 }
 
 # === Add RDS Gateway as RADIUS Client on SHM NPS ===
@@ -58,11 +58,13 @@ $npsRadiusClientParams = @{
     npsSecret = "`"$($npsSecret)`""
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
-Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
-Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
+Write-Host " - Adding RDS Gateway as RADIUS client on SHM NPS"
+$result = Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
     -Name "$($config.shm.nps.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $npsRadiusClientParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # === Move RDS VMs into correct OUs ===
 # Temporarily switch to DSG subscription
@@ -79,10 +81,12 @@ $vmOuMoveParams = @{
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Move_RDS_VMs_Into_OUs.ps1"
 Write-Host " - Moving RDS VMs to correct OUs on DSG DC"
-Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
     -Name "$($config.dsg.dc.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $vmOuMoveParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # === Run OS prep script on RDS VMs ===
 # Temporarily switch to DSG subscription
@@ -94,22 +98,28 @@ $osPrepParams = @{
 
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "OS_Prep_Remote.ps1"
 Write-Host " - Running OS Prep on RDS Gateway"
-Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.gateway.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 Write-Host " - Running OS Prep on RDS Session Host 1"
-Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost1.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 Write-Host " - Running OS Prep on RDS Session Host 2"
-Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost2.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # === Transfer files to RDS VMs ===
 # Temporarily switch to storage account subscription
@@ -150,10 +160,12 @@ $packageDownloadParams = @{
 }
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Files.ps1"
 Write-Host " - Copying $($filesSh1.Length) packages to RDS Session Host 1"
-Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost1.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $packageDownloadParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # RDSSH2: Remote desktop server
 $packageDownloadParams = @{
@@ -165,10 +177,12 @@ $packageDownloadParams = @{
     downloadDir = "C:\Software"
 }
 Write-Host " - Copying $($filesSh2.Length) packages to RDS Session Host 2"
-Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Name "$($config.dsg.rds.sessionHost2.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $packageDownloadParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # Upload RDS deployment scripts to RDS Gateway
 $scriptPath = Join-Path $helperScriptDir "local_scripts" "Upload_RDS_Deployment_Scripts.ps1"

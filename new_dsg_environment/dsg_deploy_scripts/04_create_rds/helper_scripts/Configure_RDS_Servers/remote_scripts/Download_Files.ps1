@@ -23,7 +23,7 @@ param(
 $remoteFilePaths = $pipeSeparatedremoteFilePaths.Split("|")
 
 # Clear any previously downloaded artifacts
-Write-Output " - Clearing all pre-existing files and folders from '$downloadDir'"
+Write-Output "   - Clearing all pre-existing files and folders from '$downloadDir'"
 if(Test-Path -Path $downloadDir){
   Get-ChildItem $downloadDir -Recurse | Remove-Item -Recurse -Force
 } else {
@@ -31,7 +31,7 @@ if(Test-Path -Path $downloadDir){
 }
 
 # Download artifacts
-Write-Output " - Downloading $numFiles files to '$downloadDir'"
+Write-Output "   - Downloading $numFiles files to '$downloadDir'"
 foreach($remoteFilePath in $remoteFilePaths){
   $fileName = Split-Path -Leaf $remoteFilePath
   $fileDirRel = Split-Path -Parent $remoteFilePath
@@ -41,6 +41,6 @@ foreach($remoteFilePath in $remoteFilePaths){
   }
   $filePath = Join-Path $fileDirFull $fileName 
   $remoteUrl = "https://$storageAccountName.$storageService.core.windows.net/$shareOrContainerName/$remoteFilePath";
-  Write-Output " - Fetching $remoteUrl"
+  Write-Output "     - Fetching $remoteUrl"
   $_ = Invoke-WebRequest -Uri "$remoteUrl$sasToken" -OutFile $filePath;
 }
