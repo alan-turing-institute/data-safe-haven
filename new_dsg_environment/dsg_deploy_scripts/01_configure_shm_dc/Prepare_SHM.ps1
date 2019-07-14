@@ -65,7 +65,7 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $conf
     -Parameter $params   
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message   
-Exit 0
+
 # === Add DSG DNS entries to SHM ====
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_New_DSG_To_DNS_Remote.ps1"
 $params = @{
