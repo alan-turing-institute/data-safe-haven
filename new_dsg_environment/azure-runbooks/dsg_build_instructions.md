@@ -89,6 +89,10 @@
 
 - Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
 
+### Deploying multiple DSGs in parallel
+
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
+
 ## Build Process
 
 [0. Define DSG configuration](#0.-Define-DSG-configuration)
@@ -349,7 +353,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ## 4. Deploy Remote Desktop Service Environment
 
-### Create RDS VMs
+### Create RDS VMs and perform initial configuration
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -357,9 +361,17 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
+#### Create the RDS VMs
+
 - Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
 - The deployment will take around 20 minutes to complete and will do some intial preparation of and file transfers to the RDS VMs.
+
+#### Perform initial configuration and file transfer
+
+- Once VM deployment is complete, run the `./Initial_Config_And_File_Transfer.ps1` script, providing the DSG ID when prompted
+
+- This will take around 5-10 minutes to complete. Most of this is the transfer of files to the RDS session hosts.
 
 ### Install software on RDS Session Host 1 (Remote app server)
 
@@ -375,19 +387,21 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Once installed logout of the server
 
-### Install RDS Environment
+### Install RDS Environment and webclient
 
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
 
 - Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
 
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installe doninstalled on the x86 version.
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
-- Deployment will run automatically for about 12 minutes and then you will be presented with a `NuGet provider is required to continue` message. Enter `Y` to this message to continue.
+#### Install RDS environment
 
 - Run `C:\Scripts\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
 
 - This script will take about 12 minutes to run
+
+#### Install RDS webclient
 
 - Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version. Enter "Y" on any prompts.
 
@@ -396,6 +410,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Run `C:\Scripts\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
 
 - Accept any requirements or license agreements.
+
+#### Move the session hosts under the control of the RDS gateway
 
 - Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
 
@@ -407,11 +423,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   ![Add RDS session servers to collection - Step 2](images/media/image15.png)
 
-### Configure security on the RDS Gateway
-
- - Connect to the **DSG Remote Desktop Gateway (RDS)** server via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares a folder on your local machine with the RDS Gateway.
-
-- Login with domain user `<dsg-domain>\atiadmin` and the **DSG DC** admin password from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+#### Configure RDS to use SHM NPS server for client access policies
 
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
 
@@ -427,11 +439,29 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.251.0.248` for production SHM)
 
-- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault (this must be the same as the "Shared secret" used when adding the DSG RDS to the SHM NPS earlier)
+- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault.
 
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2302f1a.PNG](images/media/image23.png)
 
 - Click "OK" to close the dialogue box.
+
+#### Increase the authorisation timeout to allow for MFA
+
+- In "Server Manager", select `Tools -> Network Policy Server`
+
+- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
+
+  ![](images/media/rds_local_nps_remote_server_selection.png)
+
+-	Highlight the server shown in the “RADIUS Server” column and click “Edit”
+
+-	Change to the “Load Balancing” tab and change the parameters to match the screen below
+
+    ![](images/media/rds_local_nps_remote_server_timeouts.png)
+
+-	Click “OK” twice and close “Network Policy Server” MMC
+
+#### Set the security groups for access to session hosts
 
 - Expand the RDS server object and select `Policies -> Resource Authorization Policies`
 
@@ -458,20 +488,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML23c2d0d.PNG](images/media/image27.png)
 
 - Repeat the process you did for the "RDG_AllDomainComputers" policy and add the correct Research Users security group.
-
-- In "Server Manager", select `Tools -> Network Policy Server`
-
-- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
-
-  ![](images/media/rds_local_nps_remote_server_selection.png)
-
--	Highlight the server shown in the “RADIUS Server” column and click “Edit”
-
--	Change to the “Load Balancing” tab and change the parameters to match the screen below
-
-    ![](images/media/rds_local_nps_remote_server_timeouts.png)
-
--	Click “OK” twice and close “Network Policy Server” MMC
 
 ### Configuration of SSL on RDS Gateway
 
@@ -594,9 +610,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ## 7. Deploy initial shared compute VM
 
-### Ensure a cloud init file exists for the DSG
-  - Make sure a `cloud-init` YAML file exists at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml`.
-  - If one does not exist, create one  by copying the base version at `<data-safe-haven-repo>/new_dsg_environment/azure-vms/cloud-init-compute-vm.yaml`
+### Create a custom cloud init file for the DSG if required
+  - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/new_dsg_environment/dsg_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
+  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<dsg-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
 
 ### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
@@ -604,8 +620,6 @@ To deploy a compute VM you will need the following available on the machine you 
   - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
 - The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 - A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
-
-**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 ### Deploy a compute VM
 
