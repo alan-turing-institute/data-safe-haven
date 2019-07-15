@@ -111,9 +111,9 @@
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "plan": {
-                "name": "8-5",
-                "product": "gitlab",
-                "publisher": "bitnami"
+                "name": "gitlab-ce",
+                "product": "gitlab-ce",
+                "publisher": "gitlab"
             },
             "scale": null,
             "properties": {
@@ -122,9 +122,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "bitnami",
-                        "offer": "gitlab",
-                        "sku": "8-5",
+                        "publisher": "gitlab",
+                        "offer": "gitlab-ce",
+                        "sku": "gitlab-ce",
                         "version": "latest"
                     },
                     "osDisk": {
