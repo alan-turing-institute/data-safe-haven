@@ -365,13 +365,13 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
 
-- The deployment will take around 20 minutes to complete and will do some intial preparation of and file transfers to the RDS VMs.
+- The deployment will take around 10 minutes to complete.
 
 #### Perform initial configuration and file transfer
 
 - Once VM deployment is complete, run the `./Initial_Config_And_File_Transfer.ps1` script, providing the DSG ID when prompted
 
-- This will take around 5-10 minutes to complete. Most of this is the transfer of files to the RDS session hosts.
+- This will take around 10 minutes to complete. Most of this is the transfer of files to the RDS session hosts.
 
 ### Install software on RDS Session Host 1 (Remote app server)
 
