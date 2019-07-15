@@ -15,7 +15,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Make sure terms for gitlab-ce are accepted
-Get-AzMarketplaceTerms -Publisher bitnami -Product gitlab -Name 8-5 |  Set-AzMarketplaceTerms -Accept
+Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
 
 # Admin user credentials (must be same as for DSG DC for now)
 $adminUser = $config.dsg.dc.admin.username
