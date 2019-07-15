@@ -445,22 +445,6 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Click "OK" to close the dialogue box.
 
-#### Increase the authorisation timeout to allow for MFA
-
-- In "Server Manager", select `Tools -> Network Policy Server`
-
-- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
-
-  ![](images/media/rds_local_nps_remote_server_selection.png)
-
--	Highlight the server shown in the “RADIUS Server” column and click “Edit”
-
--	Change to the “Load Balancing” tab and change the parameters to match the screen below
-
-    ![](images/media/rds_local_nps_remote_server_timeouts.png)
-
--	Click “OK” twice and close “Network Policy Server” MMC
-
 #### Set the security groups for access to session hosts
 
 - Expand the RDS server object and select `Policies -> Resource Authorization Policies`
@@ -489,6 +473,22 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Repeat the process you did for the "RDG_AllDomainComputers" policy and add the correct Research Users security group.
 
+#### Increase the authorisation timeout to allow for MFA
+
+- In "Server Manager", select `Tools -> Network Policy Server`
+
+- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
+
+  ![](images/media/rds_local_nps_remote_server_selection.png)
+
+-	Highlight the server shown in the “RADIUS Server” column and click “Edit”
+
+-	Change to the “Load Balancing” tab and change the parameters to match the screen below
+
+    ![](images/media/rds_local_nps_remote_server_timeouts.png)
+
+-	Click “OK” twice and close “Network Policy Server” MMC
+
 ### Configuration of SSL on RDS Gateway
 
 - Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
@@ -500,6 +500,8 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+
+- **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this will not be an issue. However, if you are redeploying a test environment more frequently than this during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 
