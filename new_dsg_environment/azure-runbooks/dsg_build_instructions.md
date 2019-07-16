@@ -660,10 +660,10 @@ To deploy a compute VM you will need the following available on the machine you 
 
 - Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
-## 9. Peer DSG and package mirror networks
-The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network.
+## 09. Unpeering DSG and package mirror networks
+The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network by running `new_dsg_environment/dsg_deploy_scripts/09_mirror_peerings/Configure_Mirror_Peering.ps1` as part of its execution.
 
-**==THESE SCRIPTS SHOULD NOT BE RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
+**==THESE SCRIPTS SHOULD NOT BE MANUALLY RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
 
 However, if you need to unpeer the mirror networks for some reason (e.g. while preparing a DSG subscription for re-use), you can run the unpeering script separately as described below.
 
