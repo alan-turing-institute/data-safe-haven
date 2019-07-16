@@ -387,11 +387,11 @@ In order to set up your user account on the virtual machine, you need to follow 
    If you get an error:
 
    > connecting to sesman ip 127.0.0.1 port 3350
-   > 
+   >
    > sesman connect ok
-   > 
+   >
    > sending login info to session manager, please wait...
-   > 
+   >
    > login failed for display 0
 
    Then it is likely that you have entered your credentials incorrectly. Please try again, entering your username and password carefully. If this keeps happening, ask your admin or tech support for help.
@@ -402,6 +402,8 @@ The analytics environment can be accessed through the `Shared VM` (desktop) app.
 Please log in with username `firstname.lastname` and password `password`.
 
 ![](images/VM_arrived.png)
+
+When you get to this screen, it is important that you select the "Use default config" option.
 
 Applications can be accessed through Terminal or right click on desktop (top left) and:
 
@@ -423,12 +425,12 @@ This VM can also be used to directly access `GitLab` and `HackMD`, via the brosw
 
    ![](images/gitlab_screenshot.png)
 
-3. If you create a new repository, we recommend you make it **public**. As each challenge has it's own secure environment, this will make the repository accessible to your colleagues working on the same challenge but not to anyone else (who will not have access to the challenge environment). 
+3. If you create a new repository, we recommend you make it **public**. As each challenge has it's own secure environment, this will make the repository accessible to your colleagues working on the same challenge but not to anyone else (who will not have access to the challenge environment).
 
 ### Section 4.5: Installing packages
 
 Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
-You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively. 
+You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
 Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For `CRAN`, you will be prompted to make a user package direcory when you install your first package. For `PyPI`, you will need to run `pip install` with the `--user` flag.
 
@@ -469,9 +471,9 @@ trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 ...
 ```
 
-Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment. 
-In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect. 
-If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration. 
+Requests for additional packages may be submitted via the facilitator for Tier 3 environments and above, or if a requested package is not available from the package mirrors in a Tier 2 or below environment.
+In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect.
+If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration.
 
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
 
@@ -490,7 +492,7 @@ If you have not used GitLab before:
 - Ask in the Slack channel for help.
 
 Everything that is not stored in a GitLab repository or on the shared `R:` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
-Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment. Small processed data can also be stored in Gitlab. Larger processed datasets should be transferred to the shared `R:` drive using the `File Transfer` WinSCP app. 
+Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment. Small processed data can also be stored in Gitlab. Larger processed datasets should be transferred to the shared `R:` drive using the `File Transfer` WinSCP app.
 
 You can access the same GitLab repositories from the Work Resources page or via the shared VM desktop.
 
@@ -574,7 +576,7 @@ We will close down the compute virtual machines on the Friday afternoon.
 
 That means that anything that is a valuable output of the week should be stored in the persistent storage area - shared drive -  OR in the GitLab repository, rather than your local user storage.
 
-Make sure that *every* piece of code, image, or processed dataset you think might be at all useful is stored in a GitLab repository (code) or on the shared drive (data, images) before lunchtime on Friday. 
+Make sure that *every* piece of code, image, or processed dataset you think might be at all useful is stored in a GitLab repository (code) or on the shared drive (data, images) before lunchtime on Friday.
 Please see  [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update) for details on how to use WinSCP to transfer files from the VM to the shared drive within the secure environment.
 
 Please do this early and often through the week (not just for the presentation.)
@@ -628,15 +630,15 @@ Three options to transfer files:
 
 ## Appendix B: Gitlab tutorial notes
 
-Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as 
- 
+Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as
+
  - Project wiki - exactly what it says
  - Project pastebin - share bits of code
  - Project issue tracker - track things TODO and bugs
  - Pull requests - Way to keep track of changes individuals have made to be included in master
 
 Some teams design their entire workflows around these things.
-A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/). 
+A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/).
 
 
 ### Repositories
@@ -823,7 +825,7 @@ Your merge request will be ready to be approved and merged.
 #### Symptom
 - You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
 - When you try and launch an app, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
-- When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.  
+- When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
 
   ![](images/unexpected_certificate_error.png)
 
