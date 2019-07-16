@@ -616,7 +616,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 ## 7. Deploy initial shared compute VM
 
-### Create a custom cloud init file for the DSG if required
+### [OPTIONAL] Create a custom cloud init file for the DSG if required
   - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/new_dsg_environment/dsg_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
   - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<dsg-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
 
@@ -720,5 +720,5 @@ To run the smoke tests:
   - RDS
   - RDSSH1
   - RDSSH2
-  - An initial shared compute VM
+  - An initial shared compute VM (at IP address `<data-subnet-prefix>.160`)
 
