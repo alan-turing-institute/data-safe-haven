@@ -385,7 +385,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Install the packages present in the folder
 
-- Once installed logout of the server
+- **Once installed logout of the server**
 
 ### Install RDS Environment and webclient
 
@@ -542,6 +542,10 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
     - Ensure that the SHM NPS server RADIUS Client configuration is using the **private** IP address of the RDS Gateway and **not** its public one.
     
     - Ensure the same shared secret from the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the DSG RDS Gateway RD CAP Store configuration (see previous sections for instructions).
+
+- If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been increased as described in a previous section. It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
+
+- If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and DSG RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
 
 - **NOTE:** The other apps will not work until the other servers have been deployed.
 
