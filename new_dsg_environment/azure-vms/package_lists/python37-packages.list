@@ -58,6 +58,7 @@ markdown
 matplotlib
 mock
 mpi4py
+nb_conda_kernels
 NavPy
 networkx
 nltk

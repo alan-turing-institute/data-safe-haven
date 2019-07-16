@@ -56,6 +56,7 @@ matplotlib
 mock
 mpi4py
 NavPy
+nb_conda_kernels
 networkx
 nltk
 nltk_data
