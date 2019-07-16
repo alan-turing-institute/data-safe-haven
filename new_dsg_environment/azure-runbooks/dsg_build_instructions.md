@@ -559,7 +559,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Install the packages present in the folder
 
-- **NOTE:** Intalling TexLive (`install-tl-windows-xxx`) will take a long time (including downloading lots of files from the internet), so it is recommended to leave this until last.
+- **NOTE:** Intalling TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then ontinue with the remaining sections of this runbook while the TexLive installation completes.
 
 - Once installed logout of the server
 
@@ -575,7 +575,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
 
-- The deployment will take around 15 minutes to complete
+- The deployment will take around 10 minutes to complete
 
 ### Configure Dataserver
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
