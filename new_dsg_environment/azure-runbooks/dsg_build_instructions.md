@@ -187,7 +187,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 ### Clear out any remaining DSG data from previous deployments
 
@@ -209,7 +209,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Create_VNET.ps1` script, providing the DSG ID when prompted.
 
@@ -237,7 +237,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Create_AD_DC.ps1` script, entering the DSG ID when prompted
 
@@ -251,7 +251,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Configure_AD_DC.ps1` script, entering the DSG ID when prompted
 
@@ -359,7 +359,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 #### Create the RDS VMs
 
@@ -497,7 +497,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted
 
@@ -571,7 +571,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
 
@@ -582,7 +582,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Configure_Data_Server.ps1` script, providing the DSG ID when prompted.
 
@@ -594,7 +594,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
 
@@ -656,7 +656,7 @@ To deploy a compute VM you will need the following available on the machine you 
 
 - Change to the `new_dsg_environment/dsg_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
@@ -673,7 +673,7 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 
 - Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
 
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 - Run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
