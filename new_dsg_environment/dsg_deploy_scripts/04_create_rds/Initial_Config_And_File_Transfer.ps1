@@ -43,7 +43,7 @@ $npsSecret = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $c
 if ($null -eq $npsSecret) {
   Write-Host " - Creating NPS shared secret for RDS gateway"
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
+  $newPassword = New-Password -length 12; # We think there are issues authenticating to the NPS RADIUS server if this password is too long
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
   $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
