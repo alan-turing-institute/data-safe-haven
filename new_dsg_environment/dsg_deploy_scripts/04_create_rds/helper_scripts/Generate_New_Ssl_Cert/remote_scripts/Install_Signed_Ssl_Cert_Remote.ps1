@@ -39,7 +39,7 @@ $pfxPassword = ConvertTo-SecureString -String ([System.Web.Security.Membership]:
 $certExt = (Split-Path -Leaf -Path "$certPath").Split(".")[-1]
 if($certExt) {
   # Take all of filename before extension
-  $certStem = (Split-Path -Leaf -Path "$certPath").Split(".$certExt")[0]
+  $certStem = ((Split-Path -Leaf -Path "$certPath") -split ".$certExt")[0]
 } else {
   # No extension to strip so take whole filename
   $certStem = (Split-Path -Leaf -Path "$certPath")
