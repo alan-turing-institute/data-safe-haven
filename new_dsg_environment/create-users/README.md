@@ -29,7 +29,7 @@ If the new user should definitely be a different user, then the following fields
 - Open "Azure Active Directory"
 - Location "Licenses" under "Manage" section
 - Open "All Products" under "Manage"
-- Click "Azure Active Directory Premium P2"
+- Click "Azure Active Directory Premium P1"
 - Click "Assign"
 - Click "Users and groups"
 - Select the users you have recently created and click "Select"
