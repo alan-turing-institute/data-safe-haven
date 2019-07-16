@@ -412,7 +412,8 @@ packages:
 
 runcmd:
   # Suppress apt prompts and warning messages
-  - export DEBIAN_FRONTEND=noninteractive
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
 
   # Make a temporary directory (cloudinit recomends not using /tmp)
   - mkdir /run/cloudinit
@@ -482,7 +483,7 @@ runcmd:
 
   # Create or install conda environments
   # Python 2.7
-  - echo ">=== Working on py27 environment. Will take approximately 70 minutes... ===<"
+  - echo ">=== Working on py27 environment. Will take approximately 75 minutes... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Installing $(echo $PYTHON27_CONDA_PACKAGES | wc -w) packages with conda..."
@@ -492,12 +493,9 @@ runcmd:
   - echo "Installing $(echo $PYTHON27_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON27_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py27/bin/pip install $PYTHON27_PIP_PACKAGES
-  - echo "Got to line 496"
-  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
-  - echo "Got to line 498"
-  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version | grep core | cut -d':' -f2" | bash)
-  - echo "Got to line 500"
-  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
+  - PYTHON27_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
+  - PYTHON27_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version | grep core | cut -d':' -f2" | bash)
+  - if [ "$PYTHON27_JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $PYTHON27_JUPYTER_VERSION) at $PYTHON27_JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
   - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py27 environment took $ELAPSED ===<"
@@ -512,9 +510,9 @@ runcmd:
   - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
-  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
-  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version | grep core | cut -d':' -f2" | bash)
-  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
+  - PYTHON36_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
+  - PYTHON36_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version | grep core | cut -d':' -f2" | bash)
+  - if [ "$PYTHON36_JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $PYTHON36_JUPYTER_VERSION) at $PYTHON36_JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py36 environment took $ELAPSED ===<"
   # Python 3.7
@@ -528,9 +526,9 @@ runcmd:
   - echo "Installing $(echo $PYTHON37_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON37_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py37/bin/pip install $PYTHON37_PIP_PACKAGES
-  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
-  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version | grep core | cut -d':' -f2" | bash)
-  - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
+  - PYTHON37_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
+  - PYTHON37_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version | grep core | cut -d':' -f2" | bash)
+  - if [ "$PYTHON37_JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $PYTHON37_JUPYTER_VERSION) at $PYTHON37_JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py37 environment took $ELAPSED ===<"
   # List environments
