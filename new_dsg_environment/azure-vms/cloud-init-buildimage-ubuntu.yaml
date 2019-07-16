@@ -414,6 +414,9 @@ runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
 
+  # Make a temporary directory (cloudinit recomends not using /tmp)
+  - mkdir /run/cloudinit
+
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== Installing NVidia requirements for tensorflow ===<"
   - apt-get install -y --no-install-recommends nvidia-driver-410
@@ -437,7 +440,7 @@ runcmd:
   #IF_TORCH_ENABLED - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
   #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
   #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
-  #IF_TORCH_ENABLED # Build with half-operators disabled as these are included in CUDA 9
+  #IF_TORCH_ENABLED # Build with half-operators disabled as these are included in CUDA 9+
   #IF_TORCH_ENABLED - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
   #IF_TORCH_ENABLED - bash install.sh -b
   #IF_TORCH_ENABLED # ... and now switch them back
@@ -448,10 +451,10 @@ runcmd:
 
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== Installing conda... ===<"
-  - export ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
-  - export ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
+  - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
+  - ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "Using installer from $ANACONDA_INSTALLER_URL"
-  - cd /tmp
+  - cd /run/cloudinit
   - curl -O $ANACONDA_INSTALLER_URL
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
@@ -489,10 +492,12 @@ runcmd:
   - echo "Installing $(echo $PYTHON27_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON27_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py27/bin/pip install $PYTHON27_PIP_PACKAGES
-  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
-  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version" | bash)
+  - echo "Got to line 496"
+  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py27; which jupyter" | bash)
+  - echo "Got to line 498"
+  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py27; jupyter --version | grep core | cut -d':' -f2" | bash)
+  - echo "Got to line 500"
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py27 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 2.7 environment!"; exit 1; fi
-  - END_TIME=$(date +%s)
   - echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py27 environment took $ELAPSED ===<"
@@ -507,8 +512,8 @@ runcmd:
   - echo "Installing $(echo $PYTHON36_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON36_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py36/bin/pip install $PYTHON36_PIP_PACKAGES
-  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
-  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version" | bash)
+  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py36; which jupyter" | bash)
+  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py36; jupyter --version | grep core | cut -d':' -f2" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py36 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.6 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py36 environment took $ELAPSED ===<"
@@ -523,8 +528,8 @@ runcmd:
   - echo "Installing $(echo $PYTHON37_PIP_PACKAGES | wc -w) additional packages with pip..."
   - echo "$(echo $PYTHON37_PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
   - /anaconda/envs/py37/bin/pip install $PYTHON37_PIP_PACKAGES
-  - export JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
-  - export JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version" | bash)
+  - JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate py37; which jupyter" | bash)
+  - JUPYTER_VERSION=$(echo "source /anaconda/bin/activate py37; jupyter --version | grep core | cut -d':' -f2" | bash)
   - if [ "$JUPYTER_LOCATION" != "" ]; then echo "py37 environment has jupyter (version $JUPYTER_VERSION) at $JUPYTER_LOCATION"; else echo "jupyter not found in python 3.7 environment!"; exit 1; fi
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Building py37 environment took $ELAPSED ===<"
@@ -560,9 +565,9 @@ runcmd:
   # Install RStudio
   - echo ">=== Installing RStudio... ===<"
   # Ensure RStudio picks up system R rather than Conda R for all users
-  - export RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
+  - cd /run/cloudinit
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  - cd /tmp
+  - RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
   - wget https://download1.rstudio.org/${RSTUDIO_DEB}
   - gdebi --non-interactive ${RSTUDIO_DEB}
   - rm -f ${RSTUDIO_DEB}
@@ -580,7 +585,7 @@ runcmd:
   - echo "Installing and cleaning up..."
   - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
   - rm -rf julia-1.0.1-linux-x86_64.tar.gz
-  - export PATH=$PATH:/opt/julia/julia-1.0.1/bin
+  - PATH=$PATH:/opt/julia/julia-1.0.1/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -607,7 +612,7 @@ runcmd:
   - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
   - tar -zxf spark-2.4.3-bin-hadoop2.7.tgz
   - rm -rf spark-2.4.3-bin-hadoop2.7.tgz
-  - export PATH=$PATH:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin
+  - PATH=$PATH:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install dbeaver
@@ -624,7 +629,7 @@ runcmd:
   # Install PyCharm
   - echo ">=== Installing PyCharm... ===<"
   - snap install pycharm-community --classic
-  - export PATH=$PATH:/snap/bin
+  - PATH=$PATH:/snap/bin
 
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
@@ -676,7 +681,7 @@ runcmd:
   # We do this at the end of the script so that
   #   (a) we know this is the PATH that worked when we checked for all the above packages
   #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
-  - export PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
