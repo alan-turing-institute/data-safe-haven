@@ -4,16 +4,9 @@
 source ${BASH_SOURCE%/*}/configs/images.sh
 source ${BASH_SOURCE%/*}/configs/text.sh
 
-SOURCEIMAGE="Ubuntu"
-VMSIZE="Standard_E16s_v3"
-
 # Other constants
 ADMIN_USERNAME="atiadmin"
-MACHINE_NAME="ComputeVM"
-NSG_NAME="NSG_IMAGE_BUILD"
-VNET_NAME="VNET_IMAGE_BUILD"
-SUBNET_NAME="SUBNET_IMAGE_BUILD"
-IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
+SOURCEIMAGE="Ubuntu"
 
 # Document usage for this script
 print_usage_and_exit() {
@@ -22,7 +15,7 @@ print_usage_and_exit() {
     echo "  -s subscription              specify subscription for building the VM. (defaults to '${SUBSCRIPTION}')"
     echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP_BUILD}')"
-    echo "  -z vm_size                   size of the VM to use for build (defaults to '${VMSIZE}')"
+    echo "  -z vm_size                   size of the VM to use for build (defaults to '${BUILD_VMSIZE}')"
     exit 1
 }
 
@@ -42,7 +35,7 @@ while getopts "hi:r:s:z:" opt; do
             SUBSCRIPTION=$OPTARG
             ;;
         z)
-            VMSIZE=$OPTARG
+            BUILD_VMSIZE=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -82,31 +75,31 @@ ensure_image_galleries_enabled
 
 # Create a VNet for the deployment
 # --------------------------------
-if [ "$(az network vnet list --resource-group $RESOURCEGROUP_NETWORK | grep $VNET_NAME 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating VNet for image building: ${BLUE}$VNET_NAME${END}"
-    az network vnet create --resource-group $RESOURCEGROUP_NETWORK --name $VNET_NAME --address-prefixes $IP_RANGE
+if [ "$(az network vnet list --resource-group $RESOURCEGROUP_NETWORK | grep $BUILD_VNET_NAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating VNet for image building: ${BLUE}$BUILD_VNET_NAME${END}"
+    az network vnet create --resource-group $RESOURCEGROUP_NETWORK --name $BUILD_VNET_NAME --address-prefixes $BUILD_IP_RANGE
 fi
 
 # Create a subnet for the deployment
 # ----------------------------------
-if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP_NETWORK --vnet-name $VNET_NAME | grep $SUBNET_NAME 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating subnet for image building: ${BLUE}$SUBNET_NAME${END}"
-    az network vnet subnet create --name $SUBNET_NAME --resource-group $RESOURCEGROUP_NETWORK --vnet-name $VNET_NAME --address-prefixes $IP_RANGE
+if [ "$(az network vnet subnet list --resource-group $RESOURCEGROUP_NETWORK --vnet-name $BUILD_VNET_NAME | grep $BUILD_SUBNET_NAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating subnet for image building: ${BLUE}$BUILD_SUBNET_NAME${END}"
+    az network vnet subnet create --name $BUILD_SUBNET_NAME --resource-group $RESOURCEGROUP_NETWORK --vnet-name $BUILD_VNET_NAME --address-prefixes $BUILD_IP_RANGE
 fi
-SUBNET_ID=$(az network vnet subnet show --resource-group $RESOURCEGROUP_NETWORK --vnet $VNET_NAME --name $SUBNET_NAME --query "id" -o tsv)
+SUBNET_ID=$(az network vnet subnet show --resource-group $RESOURCEGROUP_NETWORK --vnet $BUILD_VNET_NAME --name $BUILD_SUBNET_NAME --query "id" -o tsv)
 
 # Add an NSG group to deny inbound connections except Turing-based SSH
 # --------------------------------------------------------------------
-if [ "$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $NSG_NAME 2> /dev/null)" = "" ]; then
-    echo -e "${BOLD}Creating NSG for image build: ${BLUE}$NSG_NAME${END}"
-    az network nsg create --resource-group $RESOURCEGROUP_NETWORK --name $NSG_NAME
+if [ "$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $BUILD_NSG_NAME 2> /dev/null)" = "" ]; then
+    echo -e "${BOLD}Creating NSG for image build: ${BLUE}$BUILD_NSG_NAME${END}"
+    az network nsg create --resource-group $RESOURCEGROUP_NETWORK --name $BUILD_NSG_NAME
     az network nsg rule create \
         --description "Allow port 22 for management over ssh" \
         --destination-address-prefixes "*" \
         --destination-port-ranges 22 \
         --direction Inbound \
         --name TuringSSH \
-        --nsg-name $NSG_NAME \
+        --nsg-name $BUILD_NSG_NAME \
         --priority 1000 \
         --protocol TCP \
         --resource-group $RESOURCEGROUP_NETWORK \
@@ -119,14 +112,14 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $NSG_
         --destination-port-ranges "*" \
         --direction Inbound \
         --name DenyAll \
-        --nsg-name $NSG_NAME \
+        --nsg-name $BUILD_NSG_NAME \
         --priority 3000 \
         --protocol "*" \
         --resource-group $RESOURCEGROUP_NETWORK \
         --source-address-prefixes "*" \
         --source-port-ranges "*"
 fi
-NSG_ID=$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $NSG_NAME --query "id" -o tsv)
+NSG_ID=$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $BUILD_NSG_NAME --query "id" -o tsv)
 
 # Select source image - either Ubuntu 18.04 or Ubuntu 18.04 plus Torch
 # If anything else is requested then print usage message and exit.
@@ -136,13 +129,12 @@ if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
         echo -e "${BOLD}Enabling ${BLUE}Torch${END}${BOLD} compilation${END}"
         # Make a temporary config file with the Torch lines uncommented
         sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
-        MACHINE_NAME="${MACHINE_NAME}-UbuntuTorch1804Base"
+        BUILD_MACHINE_NAME="${BUILD_MACHINE_NAME}-UbuntuTorch1804Base"
     else
-        MACHINE_NAME="${MACHINE_NAME}-Ubuntu1804Base"
+        BUILD_MACHINE_NAME="${BUILD_MACHINE_NAME}-Ubuntu1804Base"
         cp cloud-init-buildimage-ubuntu.yaml $TMP_CLOUD_CONFIG_YAML
     fi
     SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-    DISKSIZEGB="60"
 else
     echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
     print_usage_and_exit
@@ -150,7 +142,7 @@ fi
 
 # Append timestamp to allow unique naming
 TIMESTAMP="$(date '+%Y%m%d%H%M')"
-BASENAME="Candidate${MACHINE_NAME}-${TIMESTAMP}"
+BASENAME="Candidate${BUILD_MACHINE_NAME}-${TIMESTAMP}"
 
 # Build python package lists
 cd package_lists && source generate_python_package_specs.sh > ../python_package_specs.yaml && cd ..
@@ -175,9 +167,9 @@ az vm create \
   --name $BASENAME \
   --nsg $NSG_ID \
   --os-disk-name "${BASENAME}OSDISK" \
-  --os-disk-size-gb $DISKSIZEGB \
+  --os-disk-size-gb $BUILD_DISKSIZEGB \
   --resource-group $RESOURCEGROUP_BUILD \
-  --size $VMSIZE \
+  --size $BUILD_VMSIZE \
   --subnet $SUBNET_ID
 
 # --generate-ssh-keys will use ~/.ssh/id_rsa if available and otherwise generate a new key

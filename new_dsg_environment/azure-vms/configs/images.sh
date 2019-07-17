@@ -1,10 +1,19 @@
 # Options which are configurable at the command line
+BUILD_VMSIZE="Standard_E16s_v3"
+LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 RESOURCEGROUP_BUILD="RG_SH_BUILD_CANDIDATES"
 RESOURCEGROUP_IMAGES="RG_SH_IMAGE_STORAGE"
 RESOURCEGROUP_GALLERY="RG_SH_IMAGE_GALLERY"
 RESOURCEGROUP_NETWORK="RG_SH_NETWORKING"
 SUBSCRIPTION="Safe Haven VM Images"
-LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+
+# Build constants
+BUILD_MACHINE_NAME="ComputeVM"
+BUILD_NSG_NAME="NSG_IMAGE_BUILD"
+BUILD_VNET_NAME="VNET_IMAGE_BUILD"
+BUILD_SUBNET_NAME="SUBNET_IMAGE_BUILD"
+BUILD_DISKSIZEGB="80"
+BUILD_IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 
 # Other useful constants
 GALLERYNAME="SAFE_HAVEN_COMPUTE_IMAGES" # must be unique within this subscription

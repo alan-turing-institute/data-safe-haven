@@ -78,9 +78,7 @@ if [ "$(az vm show --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME 2>/
 else
     # Deprovision the VM
     echo -e "${BOLD}Deprovisioning VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
-    # # az vm run-command invoke --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD --command-id RunShellScript --scripts "sudo waagent -deprovision+user -force; if [ ! -e /etc/resolv.conf ]; then sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi" --query "value[0].message" -o tsv
-    # # az vm run-command invoke --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD --command-id RunShellScript --scripts "sudo waagent -deprovision+user -force" --query "value[0].message" -o tsv
-    # az vm restart --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
+    az vm restart --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
     # Deallocate and generalize
     echo -e "${BOLD}Deallocating VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
     az vm deallocate --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME
