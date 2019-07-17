@@ -13,20 +13,16 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
     echo "  -h                           display help"
     echo "  -s subscription              specify subscription for building the VM. (defaults to '${SUBSCRIPTION}')"
-    echo "  -i source_image              specify source image: either 'Ubuntu' (default) or 'UbuntuTorch' (as 'Ubuntu' but with Torch included)"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP_BUILD}')"
     echo "  -z vm_size                   size of the VM to use for build (defaults to '${BUILD_VMSIZE}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hi:r:s:z:" opt; do
+while getopts "hr:s:z:" opt; do
     case $opt in
         h)
             print_usage_and_exit
-            ;;
-        i)
-            SOURCEIMAGE=$OPTARG
             ;;
         r)
             RESOURCEGROUP_BUILD=$OPTARG
@@ -48,6 +44,20 @@ if [ "$SOURCEIMAGE" != "Ubuntu" ]; then
     echo -e "${RED}At the moment we only support building the Ubuntu Compute VM${END}"
     print_usage_and_exit
 fi
+
+# Select source image - currently only Ubuntu 18.04 is supported
+# If anything else is requested then print usage message and exit.
+TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
+if [ "$SOURCEIMAGE" = "Ubuntu" ]; then
+    SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
+    BUILD_MACHINE_NAME="${BUILD_MACHINE_NAME}-Ubuntu1804Base"
+    cp cloud-init-buildimage-ubuntu.yaml $TMP_CLOUD_CONFIG_YAML
+else
+    echo -e "${RED}Did not recognise source image name: $SOURCEIMAGE. We only support building on top of Ubuntu.${END}"
+    print_usage_and_exit
+fi
+
+
 
 # Check that a subscription has been provided and switch to it
 if [ "$SUBSCRIPTION" = "" ]; then
@@ -121,24 +131,6 @@ if [ "$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $BUIL
 fi
 NSG_ID=$(az network nsg show --resource-group $RESOURCEGROUP_NETWORK --name $BUILD_NSG_NAME --query "id" -o tsv)
 
-# Select source image - either Ubuntu 18.04 or Ubuntu 18.04 plus Torch
-# If anything else is requested then print usage message and exit.
-TMP_CLOUD_CONFIG_YAML="$(mktemp).yaml"
-if [ "$SOURCEIMAGE" = "Ubuntu" -o "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-    if [ "$SOURCEIMAGE" = "UbuntuTorch" ]; then
-        echo -e "${BOLD}Enabling ${BLUE}Torch${END}${BOLD} compilation${END}"
-        # Make a temporary config file with the Torch lines uncommented
-        sed "s/#IF_TORCH_ENABLED //" cloud-init-buildimage-ubuntu.yaml > $TMP_CLOUD_CONFIG_YAML
-        BUILD_MACHINE_NAME="${BUILD_MACHINE_NAME}-UbuntuTorch1804Base"
-    else
-        BUILD_MACHINE_NAME="${BUILD_MACHINE_NAME}-Ubuntu1804Base"
-        cp cloud-init-buildimage-ubuntu.yaml $TMP_CLOUD_CONFIG_YAML
-    fi
-    SOURCEIMAGE="Canonical:UbuntuServer:18.04-LTS:latest"
-else
-    echo -e "${RED}Did not recognise image name: $SOURCEIMAGE!${END}"
-    print_usage_and_exit
-fi
 
 # Append timestamp to allow unique naming
 TIMESTAMP="$(date '+%Y%m%d%H%M')"

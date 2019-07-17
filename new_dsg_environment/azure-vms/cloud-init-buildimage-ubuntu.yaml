@@ -463,27 +463,6 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
 
-  #IF_TORCH_ENABLED # Install torch
-  #IF_TORCH_ENABLED - echo ">=== Installing torch... ===<"
-  #IF_TORCH_ENABLED - mkdir -p /opt/torch
-  #IF_TORCH_ENABLED - cd /opt/torch
-  #IF_TORCH_ENABLED - git clone https://github.com/torch/distro.git /opt/torch --recursive
-  #IF_TORCH_ENABLED - sed -i '/python-software-properties/s/^/#/g' install-deps
-  #IF_TORCH_ENABLED - bash install-deps
-  #IF_TORCH_ENABLED # Switch compilers to gcc-6 and g++-6 or compilation will fail
-  #IF_TORCH_ENABLED - ln -s /usr/bin/gcc-6 /usr/local/cuda/bin/gcc
-  #IF_TORCH_ENABLED - ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++
-  #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-6 /usr/bin/gcc
-  #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-6 /usr/bin/g++
-  #IF_TORCH_ENABLED # Build with half-operators disabled as these are included in CUDA 9+
-  #IF_TORCH_ENABLED - sed -i 's|/usr/bin/env bash|/usr/bin/env bash\nexport TORCH_NVCC_FLAGS="-D__CUDA_NO_HALF_OPERATORS__"|' install.sh
-  #IF_TORCH_ENABLED - bash install.sh -b
-  #IF_TORCH_ENABLED # ... and now switch them back
-  #IF_TORCH_ENABLED - rm /usr/bin/gcc; ln -s /usr/bin/gcc-7 /usr/bin/gcc
-  #IF_TORCH_ENABLED - rm /usr/bin/g++; ln -s /usr/bin/g++-7 /usr/bin/g++
-  #IF_TORCH_ENABLED - export PATH=$PATH:/opt/torch/install/bin
-  #IF_TORCH_ENABLED - if [ "$(which th)" = "" ]; then echo "Could not build Torch"; exit 1; fi
-
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== Installing conda... ===<"
   - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
@@ -659,7 +638,6 @@ runcmd:
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
-  #IF_TORCH_ENABLED - if [ "$(which th)" != "" ]; then echo "th $(which th)"; else echo "torch not found!"; exit 1; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($CRANPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
