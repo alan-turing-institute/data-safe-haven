@@ -497,11 +497,11 @@ runcmd:
 
   # Create or update conda environments
   # Python 2.7
-  - /installation/create_or_update_conda_python_environment.sh py27 75 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES"
+  - /installation/create_or_update_conda_python_environment.sh py27 75 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   # Python 3.6
-  - /installation/create_or_update_conda_python_environment.sh py36 80 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES"
+  - /installation/create_or_update_conda_python_environment.sh py36 80 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   # Python 3.7
-  - /installation/create_or_update_conda_python_environment.sh py37 15 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES"
+  - /installation/create_or_update_conda_python_environment.sh py37 15 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
   # List environments
   - echo ">=== Final conda environments... ===<"
   - conda env list
