@@ -76,29 +76,33 @@ if [ "$(az vm show --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME 2>/
     az vm list --resource-group $RESOURCEGROUP_BUILD --query "[].name" -o table
     print_usage_and_exit
 else
-    # Deprovision the VM
+    # Deprovision the VM over SSH
     echo -e "${BOLD}Deprovisioning VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
-    az vm restart --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
+    MACHINE_IP=$(az vm list-ip-addresses -g $RESOURCEGROUP_BUILD -n $MACHINENAME --query "[].virtualMachine.network.publicIpAddresses[0].ipAddress" -o tsv)
+    echo -e "${BOLD}... preparing to send deprovisioning command over SSH to: ${BLUE}${MACHINE_IP}${END}${BOLD}...${END}"
+    ssh ${BUILD_ADMIN_USERNAME}@${MACHINE_IP} 'sudo /installation/deprovision_vm.sh | sudo tee /installation/deprovision.log'
+    echo -e "${BOLD}Waiting for deprovisioning to finish: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
+    az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD --custom "instanceView.statuses[?code=='ProvisioningState/succeeded']"
     # Deallocate and generalize
     echo -e "${BOLD}Deallocating VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
-    az vm deallocate --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME
+    az vm deallocate --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
     echo -e "${BOLD}Generalizing VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
-    az vm generalize --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME
+    az vm generalize --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
     # Create an image
     IMAGE="Image$(echo $MACHINENAME | sed 's/Candidate//')"
     echo -e "${BOLD}Creating an image from VM: ${BLUE}${MACHINENAME}${END}${BOLD}...${END}"
     MACHINE_ID=$(az vm show --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME --query "id" -o tsv)
-    az image create --resource-group $RESOURCEGROUP_IMAGES --name $IMAGE --source $MACHINE_ID
+    az image create --name $IMAGE --resource-group $RESOURCEGROUP_IMAGES --source $MACHINE_ID
     # If the image has been successfully created then remove build artifacts
     if [ "$(az image show --resource-group $RESOURCEGROUP_IMAGES --name $IMAGE --query 'id')" != "" ]; then
         echo -e "${BOLD}Removing residual artifacts of the build process from ${BLUE}${RESOURCEGROUP_BUILD}${END}"
         echo -e "${BOLD}... virtual machine: ${BLUE}${MACHINENAME}${END}"
-        az vm delete --yes --resource-group $RESOURCEGROUP_BUILD --name $MACHINENAME
+        az vm delete --yes --name $MACHINENAME --resource-group $RESOURCEGROUP_BUILD
         echo -e "${BOLD}... hard disk: ${BLUE}${MACHINENAME}OSDISK${END}"
-        az disk delete --yes --resource-group $RESOURCEGROUP_BUILD --name "${MACHINENAME}OSDISK"
+        az disk delete --yes --name "${MACHINENAME}OSDISK" --resource-group $RESOURCEGROUP_BUILD
         echo -e "${BOLD}... network card: ${BLUE}${MACHINENAME}VMNic${END}"
-        az network nic delete --resource-group $RESOURCEGROUP_BUILD --name "${MACHINENAME}VMNic"
+        az network nic delete --name "${MACHINENAME}VMNic" --resource-group $RESOURCEGROUP_BUILD
         echo -e "${BOLD}... public IP address: ${BLUE}${MACHINENAME}PublicIP${END}"
-        az network public-ip delete --resource-group $RESOURCEGROUP_BUILD --name "${MACHINENAME}PublicIP"
+        az network public-ip delete --name "${MACHINENAME}PublicIP" --resource-group $RESOURCEGROUP_BUILD
     fi
 fi

@@ -5,7 +5,6 @@ source ${BASH_SOURCE%/*}/configs/images.sh
 source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Other constants
-ADMIN_USERNAME="atiadmin"
 SOURCEIMAGE="Ubuntu"
 
 # Document usage for this script
@@ -152,7 +151,7 @@ echo -e "${BOLD}  VM name: ${BLUE}$BASENAME${END}"
 echo -e "${BOLD}  Base image: ${BLUE}$SOURCEIMAGE${END}"
 
 az vm create \
-  --admin-username $ADMIN_USERNAME \
+  --admin-username $BUILD_ADMIN_USERNAME \
   --custom-data $TMP_CLOUD_CONFIG_YAML \
   --generate-ssh-keys \
   --image $SOURCEIMAGE \
@@ -173,5 +172,5 @@ rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP_BUILD --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${BOLD}This process will take several hours to complete.${END}"
-echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh atiadmin@${PUBLICIP}${END}."
+echo -e "  ${BOLD}You can monitor installation progress using... ${BLUE}ssh ${BUILD_ADMIN_USERNAME}@${PUBLICIP}${END}."
 echo -e "  ${BOLD}Once logged in, check the installation progress with: ${BLUE}tail -f -n+1 /var/log/cloud-init-output.log${END}"
