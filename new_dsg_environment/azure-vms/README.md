@@ -9,54 +9,69 @@ See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/ins
 Before running the build script, make sure you have setup the Azure cli with `az login`.
 You can then run `./images_build_azure_compute_vm.sh`.
 The available options for configuring the base image, resource group and name of the VM can be seen by running `./images_build_azure_compute_vm.sh -h`.
-Building on top of the Data Science VM (which is itself based on Ubuntu 16.04) takes approximately 2 hours.
-Building on top of the Ubuntu VM with Torch takes approximately 3.5 hours.
-Building on top of the Ubuntu VM without Torch takes approximately 3 hours.
+The build (based on Ubuntu 18.04) takes approximately 3 hours
 
-```
-usage: ./images_build_azure_compute_vm.sh [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]
+```bash
+usage: ./images_build_azure_compute_vm.sh [-h] [-s subscription] [-r resource_group] [-z vm_size]
   -h                           display help
-  -s subscription [required]   specify subscription for storing the VM images. (Test using 'Safe Haven Management Testing')
-  -i source_image              specify source image: either 'Ubuntu' (default) 'UbuntuTorch' (as 'Ubuntu' but with Torch included) or 'DataScience' (uses the Microsoft Data Science VM from the Azure Marketplace)
-  -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_IMAGEGALLERY')
-  -z vm_size                   size of the VM to use for build (defaults to 'Standard_F2s_v2')
+  -s subscription              specify subscription for building the VM. (defaults to 'Safe Haven VM Images')
+  -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_BUILD_CANDIDATES')
+  -z vm_size                   size of the VM to use for build (defaults to 'Standard_E16s_v3')
 ```
 
 ### Build examples
-Build an image based off Ubuntu 18.04 (used by default if not specified) called `UbuntuVM`
+Build an image based off Ubuntu 18.04 called `CandidateComputeVM-Ubuntu1804Base-<date>`
 
 ```bash
-./images_build_azure_compute_vm.sh -i Ubuntu -s "Safe Haven Management Testing"
+./images_build_azure_compute_vm.sh -s "Safe Haven VM Images"
 ```
 
-Build an image based off the Microsoft Data Science VM in the `TestBuild` resource group
+Build an image in the `TestBuild` resource group
 
 ```bash
-./images_build_azure_compute_vm.sh -i DataScience -r TestBuild -s "Safe Haven Management Testing"
+./images_build_azure_compute_vm.sh -r TestBuild
 ```
 
-## Registering VMs in the image gallery
-After running `./images_build_azure_compute_vm.sh` script, you should wait several hours for the build to complete.
+## Converting candidate VMs to images
+After running the build script, you should wait several hours for the build to complete.
 Information about how to monitor the build using ssh is given at the end of `./images_build_azure_compute_vm.sh`.
+Once you are happy with a particular candidate, you can convert it into an image using `./images_convert_azure_vm_to_image.sh.sh`.
 
-Once the build has finished, it can be registered in the image gallery using the `./images_register_azure_image_in_gallery.sh` script.
-This must be provided with the name of the machine created during the build step and will register this in the shared gallery as a new version of either the DataScience- or Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
-
+```bash
+usage: ./images_convert_azure_vm_to_image.sh [-h] -n machine_name [-s subscription] [-r resource_group_build] [-t resource_group_images]
+  -h                           display help
+  -n machine_name [required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required].
+  -s subscription              specify subscription for storing the VM images. (defaults to 'Safe Haven VM Images')
+  -r resource_group_build      specify resource group where the machine already exists (defaults to 'RG_SH_BUILD_CANDIDATES')
+  -t resource_group_images     specify resource group where the image will be stored (defaults to 'RG_SH_IMAGE_STORAGE')
 ```
-usage: ./images_register_azure_image_in_gallery.sh [-h] -s subscription [-i source_image | -n machine_name] [-r resource_group] [-v version_suffix]
-  -h                                        display help
-  -s subscription [required]                specify subscription for storing the VM images . (Test using 'Safe Haven Management Testing')
-  -i source_image [this or '-n' required]   specify an already existing image to add to the gallery [either this or machine_name are required].
-  -n machine_name [this or '-i' required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required].
-  -r resource_group                         specify resource group - must match the one where the machine/image already exists (defaults to 'RG_SH_IMAGEGALLERY')
-  -v version_suffix                         this is needed if we build more than one image in a day. Defaults to next unused number. Must follow the pattern 01, 02, 03 etc.
+
+### Conversion example
+Convert the `CandidateComputeVM-Ubuntu1804Base-201907171714` VM into an image
+
+```bash
+./images_convert_azure_vm_to_image.sh -n CandidateComputeVM-Ubuntu1804Base-201907171714
+```
+
+This will build a new image in `RG_SH_IMAGE_STORAGE` and delete the VM plus associated build artifacts (hard disk, network card and public IP address)
+
+## Registering images in the gallery
+Once you have created an image, it can be registered in the image gallery using the `./images_register_azure_image_in_gallery.sh` script.
+This must be provided with the name of the image created during the conversion step and will register this in the shared gallery as a new version of the Ubuntu-based compute machine images. This command can take between 30 minutes and 1 hour to complete, as it has to replicate the VM across 3 different regions.
+
+```bash
+usage: ./images_register_azure_image_in_gallery.sh [-h] -n source_image [-s subscription] [-v version_override]
+  -h                           display help
+  -n source_image [required]   specify an already existing image to add to the gallery.
+  -s subscription              specify subscription for storing the VM images. (defaults to 'Safe Haven VM Images')
+  -v version_override          Override the automatically determined version number. Use with caution.
 ```
 
 ### Registration examples
 For example, if you have recently built a compute VM using Ubuntu 18.04 as the base image, you might run a command like.
 
 ```bash
-./images_register_azure_image_in_gallery.sh -n GeneralizedComputeVM-Ubuntu1804Base-201812030941 -s "Safe Haven Management Testing"
+./images_register_azure_image_in_gallery.sh -n ImageComputeVM-Ubuntu1804Base-201907171714
 ```
 
 ## Creating a DSG environment
@@ -108,7 +123,7 @@ To deploy a compute VM you will need the following available on the machine you 
 During development, VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script with more granular control over configuration parameters.
 However, it is strongly recommended that the core configuration parameters for each new DSG are added to the safer `./deploy_compute_vm_to_turing_dsg.sh` script as soon as the DSG environment is created, and that all compute VMs are deployed using this script instead (see section above).
 
-```
+```bash
 usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]
   -h                                    display help
   -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')
@@ -193,7 +208,7 @@ Example usage:
 
 ### Peer DSG VNet to mirror VNet
 **NOTE:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
-```
+```bash
 usage: ./peer_mirrors_to_compute_vms.sh [-h] -s subscription_compute -t subscription_mirror [-g resource_group_compute] [-h resource_group_mirror] [-n vnet_name_compute] [-m vnet_name_mirror]
   -h                                   display help
   -s subscription_compute [required]   specify subscription where the compute VNet is deployed. (typically this will be 'Data Study Group Testing')

@@ -10,7 +10,7 @@ SOURCEIMAGE="Ubuntu"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription [-i source_image] [-r resource_group] [-z vm_size]"
+    echo "usage: $0 [-h] [-s subscription] [-r resource_group] [-z vm_size]"
     echo "  -h                           display help"
     echo "  -s subscription              specify subscription for building the VM. (defaults to '${SUBSCRIPTION}')"
     echo "  -r resource_group            specify resource group - will be created if it does not already exist (defaults to '${RESOURCEGROUP_BUILD}')"
