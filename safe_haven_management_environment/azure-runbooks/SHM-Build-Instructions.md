@@ -27,7 +27,7 @@
 5 Set the "Country or Region" to "UK South"
 4. Click Create AAD
 
-![](images/AAD.png)
+   ![](images/AAD.png)
 
 ### Create a Custom Domain Name 
 #### Create a DNS zone for the custom domain
