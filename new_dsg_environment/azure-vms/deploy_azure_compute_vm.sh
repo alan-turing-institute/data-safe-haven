@@ -1,10 +1,8 @@
 #! /bin/bash
 
-# Constants for colourised output
-BOLD="\033[1m"
-RED="\033[0;31m"
-BLUE="\033[0;36m"
-END="\033[0m"
+# Load common constants and options
+source ${BASH_SOURCE%/*}/configs/images.sh
+source ${BASH_SOURCE%/*}/configs/text.sh
 
 # Options which are configurable at the command line
 SUBSCRIPTIONSOURCE="" # must be provided
@@ -29,8 +27,7 @@ PYPI_MIRROR_IP=""
 CRAN_MIRROR_IP=""
 
 # Other constants
-IMAGES_RESOURCEGROUP="RG_SH_IMAGEGALLERY"
-IMAGES_GALLERY="SIG_SH_COMPUTE"
+RESOURCEGROUP_IMAGES="RG_SH_IMAGE_GALLERY"
 LOCATION="uksouth"
 LDAP_RESOURCEGROUP="RG_SH_LDAP"
 DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connection during deployment
@@ -42,7 +39,7 @@ OS_DISK_TYPE="Standard_LRS"
 print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range -y yaml_cloud_init [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-k pypi_mirror_ip] [-o cran_mirror_ip]"
     echo "  -h                                    display help"
-    echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')"
+    echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using '${IMAGES_SUBSCRIPTION}')"
     echo "  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')"
     echo "  -m management_vault_name [required]   specify name of KeyVault containing management secrets"
     echo "  -l ldap_secret_name [required]        specify name of KeyVault secret containing LDAP secret"
@@ -238,7 +235,7 @@ if [ "$VERSION" = "" ]; then
     # List available versions and set the last one in the list as default
     echo -e "${BOLD}Found the following versions of ${BLUE}$IMAGE_DEFINITION${END}"
     VERSIONS=$(az sig image-version list \
-                --resource-group $IMAGES_RESOURCEGROUP \
+                --resource-group $RESOURCEGROUP_IMAGES \
                 --gallery-name $IMAGES_GALLERY \
                 --gallery-image-definition $IMAGE_DEFINITION \
                 --query "[].name" -o table)
@@ -251,11 +248,11 @@ fi
 
 # Check that this is a valid version and then get the image ID
 echo -e "${BOLD}Finding ID for image ${BLUE}${IMAGE_DEFINITION}${END} ${BOLD}version ${BLUE}${VERSION}${END}${BOLD}...${END}"
-if [ "$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
+if [ "$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION 2>&1 | grep 'not found')" != "" ]; then
     echo -e "${RED}Version $VERSION could not be found.${END}"
     print_usage_and_exit
 fi
-IMAGE_ID=$(az sig image-version show --resource-group $IMAGES_RESOURCEGROUP --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
+IMAGE_ID=$(az sig image-version show --resource-group $RESOURCEGROUP_IMAGES --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $VERSION --query "id" | xargs)
 
 # Switch subscription and setup resource groups if they do not already exist
 # --------------------------------------------------------------------------
@@ -461,16 +458,8 @@ sleep 30
 
 # Poll VM to see whether it has finished running
 echo -e "${BOLD}Waiting for VM setup to finish (this will take 5+ minutes)...${END}"
-while true; do
-    # Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
-    VM_DOWN=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
-    if [ "$VM_DOWN" == "true" ]; then break; fi
-    # ... otherwise print current status and wait for 60s
-    echo -e "${BOLD}Current VM status at $(date):${END}"
-    az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
-    # Check status every minute as deployment should take around 5 minutes
-    sleep 60
-done
+# Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
+az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`"
 
 # VM must be off for us to switch NSG. Once done we restart
 echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} ${BOLD}at $(date)${END}"
@@ -480,17 +469,10 @@ az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 
 # Poll VM to see whether it has finished restarting
 echo -e "${BOLD}Waiting for VM to restart...${END}"
-while true; do
-    # Check that VM is up by requiring "PowerState/running" and "ProvisioningState/succeeded"
-    VM_UP=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`")
-    if [ "$VM_UP" == "true" ]; then break; fi
-    # ... otherwise print current status and wait for 10s
-    echo -e "${BOLD}Current VM status at $(date):${END}"
-    az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[].code" -o tsv
-    sleep 10
-done
+# Check that VM is up by requiring "PowerState/running" and "ProvisioningState/succeeded"
+az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`"
 
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" | xargs echo)
+PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" -o tsv)
 echo -e "${BOLD}Deployment complete at $(date)${END}"
 echo -e "${BOLD}This new VM can be accessed with SSH or remote desktop at ${BLUE}${PRIVATEIP}${END}"
