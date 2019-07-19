@@ -12,7 +12,7 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -n machine_name [-s subscription] [-r resource_group_build] [-t resource_group_images]"
     echo "  -h                           display help"
     echo "  -n machine_name [required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required]."
-    echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${SUBSCRIPTION}')"
+    echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${IMAGES_SUBSCRIPTION}')"
     echo "  -r resource_group_build      specify resource group where the machine already exists (defaults to '${RESOURCEGROUP_BUILD}')"
     echo "  -t resource_group_images     specify resource group where the image will be stored (defaults to '${RESOURCEGROUP_IMAGES}')"
     exit 1
@@ -31,7 +31,7 @@ while getopts "hn:r:s:t:" opt; do
             RESOURCEGROUP_BUILD=$OPTARG
             ;;
         s)
-            SUBSCRIPTION=$OPTARG
+            IMAGES_SUBSCRIPTION=$OPTARG
             ;;
         t)
             RESOURCEGROUP_IMAGES=$OPTARG
@@ -53,18 +53,18 @@ fi
 
 # Check that a subscription has been provided and switch to it
 # ------------------------------------------------------------
-if [ "$SUBSCRIPTION" = "" ]; then
+if [ "$IMAGES_SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
-az account set --subscription "$SUBSCRIPTION"
+az account set --subscription "$IMAGES_SUBSCRIPTION"
 
 
 # Setup image resource group if it does not already exist
 # -------------------------------------------------------
 if [ $(az group exists --name $RESOURCEGROUP_IMAGES) != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP_IMAGES${END}"
-    az group create --name $RESOURCEGROUP_IMAGES --location $LOCATION
+    az group create --name $RESOURCEGROUP_IMAGES --location $IMAGES_LOCATION
 fi
 
 

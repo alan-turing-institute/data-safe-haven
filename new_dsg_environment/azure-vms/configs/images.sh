@@ -1,11 +1,9 @@
 # Options which are configurable at the command line
 BUILD_VMSIZE="Standard_E16s_v3"
-LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
 RESOURCEGROUP_BUILD="RG_SH_BUILD_CANDIDATES"
 RESOURCEGROUP_IMAGES="RG_SH_IMAGE_STORAGE"
 RESOURCEGROUP_GALLERY="RG_SH_IMAGE_GALLERY"
 RESOURCEGROUP_NETWORK="RG_SH_NETWORKING"
-SUBSCRIPTION="Safe Haven VM Images"
 
 # Build constants
 BUILD_ADMIN_USERNAME="atiadmin"
@@ -16,8 +14,10 @@ BUILD_SUBNET_NAME="SUBNET_IMAGE_BUILD"
 BUILD_DISKSIZEGB="80"
 BUILD_IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deployments
 
-# Other useful constants
-GALLERYNAME="SAFE_HAVEN_COMPUTE_IMAGES" # must be unique within this subscription
+# Image naming constants
+IMAGES_GALLERY="SAFE_HAVEN_COMPUTE_IMAGES" # must be unique within this subscription
+IMAGES_LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
+IMAGES_SUBSCRIPTION="Safe Haven VM Images"
 
 # Ensure required features for shared image galleries are enabled for this subscription
 ensure_image_galleries_enabled() {
@@ -42,8 +42,8 @@ ensure_image_galleries_enabled() {
     while [ "$FEATURE_STATE" != "Registered"  -o  "$RESOURCE_STATE" != "$RESOURCE" ]; do
         if [ "$FEATURE_STATE" = "NotRegistered" ]; then
             # Register feature
-            echo -e "${BOLD}Registering ${BLUE}$FEATURE${END} ${BOLD}for ${BLUE}$SUBSCRIPTION${END}"
-            az feature register --namespace Microsoft.Compute --name "$FEATURE" --subscription "$SUBSCRIPTION"
+            echo -e "${BOLD}Registering ${BLUE}$FEATURE${END} ${BOLD}for ${BLUE}$IMAGES_SUBSCRIPTION${END}"
+            az feature register --namespace Microsoft.Compute --name "$FEATURE" --subscription "$IMAGES_SUBSCRIPTION"
             az provider register --namespace Microsoft.Compute
         elif [ "$FEATURE_STATE" = "Pending" -o "$FEATURE_STATE" = "Registering" -o "$RESOURCE_STATE" != "$RESOURCE" ]; then
             echo -ne "."

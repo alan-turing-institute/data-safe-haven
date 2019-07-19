@@ -20,7 +20,7 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -n source_image [-s subscription] [-v version_override]"
     echo "  -h                           display help"
     echo "  -n source_image [required]   specify an already existing image to add to the gallery."
-    echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${SUBSCRIPTION}')"
+    echo "  -s subscription              specify subscription for storing the VM images. (defaults to '${IMAGES_SUBSCRIPTION}')"
     echo "  -v version_override          Override the automatically determined version number. Use with caution."
     exit 1
 }
@@ -37,7 +37,7 @@ while getopts "hn:s:v:" opt; do
             SOURCEIMAGE=$OPTARG
             ;;
         s)
-            SUBSCRIPTION=$OPTARG
+            IMAGES_SUBSCRIPTION=$OPTARG
             ;;
         v)
             VERSIONOVERRIDE=$OPTARG
@@ -49,22 +49,21 @@ while getopts "hn:s:v:" opt; do
 done
 
 
-# Check that a subscription has been provided
-# -------------------------------------------
-if [ "$SUBSCRIPTION" = "" ]; then
+# Check that a subscription has been provided and switch to it
+# ------------------------------------------------------------
+if [ "$IMAGES_SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
+az account set --subscription "$IMAGES_SUBSCRIPTION"
 
 
-# Switch subscription and check that resource group exists
+# Check that resource group exists
 # --------------------------------------------------------
-az account set --subscription "$SUBSCRIPTION"
 if [ $(az group exists --name $RESOURCEGROUP_IMAGES) != "true" ]; then
     echo -e "${RED}Resource group ${BLUE}$RESOURCEGROUP_IMAGES${END} does not exist!${END}"
     print_usage_and_exit
 fi
-
 
 # Ensure required features for shared image galleries are enabled for this subscription
 # -------------------------------------------------------------------------------------
@@ -75,15 +74,15 @@ ensure_image_galleries_enabled
 # ---------------------------------------------------------
 if [ $(az group exists --name $RESOURCEGROUP_GALLERY) != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP_GALLERY${END}"
-    az group create --name $RESOURCEGROUP_GALLERY --location $LOCATION
+    az group create --name $RESOURCEGROUP_GALLERY --location $IMAGES_LOCATION
 fi
 
 
 # Create image gallery if it doesn't already exist
 # ------------------------------------------------
-if [ "$(az sig list --resource-group $RESOURCEGROUP_GALLERY | grep 'name' | grep $GALLERYNAME)" = "" ]; then
-    echo -e "${BOLD}Creating image gallery ${BLUE}$GALLERYNAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP_GALLERY${END}"
-    az sig create --resource-group $RESOURCEGROUP_GALLERY --gallery-name "$GALLERYNAME"
+if [ "$(az sig list --resource-group $RESOURCEGROUP_GALLERY | grep 'name' | grep $IMAGES_GALLERY)" = "" ]; then
+    echo -e "${BOLD}Creating image gallery ${BLUE}$IMAGES_GALLERY${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP_GALLERY${END}"
+    az sig create --resource-group $RESOURCEGROUP_GALLERY --gallery-name "$IMAGES_GALLERY"
 fi
 
 
@@ -92,11 +91,11 @@ fi
 for SUPPORTEDIMAGE in ${SUPPORTEDIMAGES[@]}; do
     IMAGE_TYPE=$(echo $SUPPORTEDIMAGE | cut -d'-' -f1)
     SKU=$(echo $SUPPORTEDIMAGE | cut -d'-' -f2)
-    if [ "$(az sig image-definition show --resource-group $RESOURCEGROUP_GALLERY --gallery-name $GALLERYNAME --gallery-image-definition $SUPPORTEDIMAGE 2>&1 | grep 'not found')" != "" ]; then
+    if [ "$(az sig image-definition show --resource-group $RESOURCEGROUP_GALLERY --gallery-name $IMAGES_GALLERY --gallery-image-definition $SUPPORTEDIMAGE 2>&1 | grep 'not found')" != "" ]; then
         echo -e "${BOLD}Ensuring that ${BLUE}${SUPPORTEDIMAGE}${END} ${BOLD}is correctly registered in the image gallery${END}"
         az sig image-definition create \
             --resource-group $RESOURCEGROUP_GALLERY \
-            --gallery-name $GALLERYNAME \
+            --gallery-name $IMAGES_GALLERY \
             --gallery-image-definition $SUPPORTEDIMAGE \
             --publisher Turing \
             --offer $IMAGE_TYPE \
@@ -140,7 +139,7 @@ if [ "${VERSIONOVERRIDE}" = "" ]; then
     SKU=$(echo $IMAGE_DEFINITION | cut -d'-' -f2)
     # Determine lowest image version that has not already been used
     IMAGE_VERSION_BASE=${VERSIONMAJOR}.${VERSIONMINOR}.$(date '+%Y%m%d')
-    EXISTINGIMAGES=$(az sig image-version list --resource-group $RESOURCEGROUP_GALLERY --gallery-name $GALLERYNAME --gallery-image-definition $IMAGE_DEFINITION --query "[].name" -o tsv | grep $IMAGE_VERSION_BASE | sort)
+    EXISTINGIMAGES=$(az sig image-version list --resource-group $RESOURCEGROUP_GALLERY --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --query "[].name" -o tsv | grep $IMAGE_VERSION_BASE | sort)
     # Iterate through possible version suffices until finding one that has not been used
     if [ "$VERSIONSUFFIX" = "" ]; then
         for TESTVERSIONSUFFIX in $(seq -w 0 99); do
@@ -168,13 +167,13 @@ RESOURCEID="$(az image show --resource-group $RESOURCEGROUP_IMAGES --name $SOURC
 
 az sig image-version create \
     --resource-group $RESOURCEGROUP_GALLERY \
-    --gallery-name $GALLERYNAME \
+    --gallery-name $IMAGES_GALLERY \
     --gallery-image-definition $IMAGE_DEFINITION \
     --gallery-image-version "$IMAGE_VERSION" \
     --target-regions "West Europe" "UK South" "UK West" \
     --managed-image $RESOURCEID
 echo -e "${BOLD}Result of replication...${END}"
-az sig image-version list --resource-group $RESOURCEGROUP_GALLERY --gallery-name $GALLERYNAME --gallery-image-definition $IMAGE_DEFINITION
+az sig image-version list --resource-group $RESOURCEGROUP_GALLERY --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION
 
 # Final message
 ELAPSED=$(date -u -r $(($(date +%s) - $STARTTIME)) +"%H:%M:%S") # OSX
