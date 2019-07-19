@@ -231,7 +231,7 @@
       "rg": "RG_DSG_COMPUTE",
       "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019061600",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup2-dsvm-admin-password"
