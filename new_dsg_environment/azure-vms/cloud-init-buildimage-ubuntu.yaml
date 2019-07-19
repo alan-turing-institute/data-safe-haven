@@ -609,7 +609,6 @@ runcmd:
   - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
   - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
   - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
-  - if [ "$(which python)" != "" ]; then echo "python $(which python)"; echo "$(python --version)"; else echo "python not found!"; exit 1; fi
   - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
   # :: Editors
   - echo ">=== Editors... ===<"
@@ -653,4 +652,4 @@ runcmd:
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
 
 final_message:
-  "The system is setup and will be automatically deprovisioned on next reboot. Configuration took $UPTIME seconds"
+  "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
