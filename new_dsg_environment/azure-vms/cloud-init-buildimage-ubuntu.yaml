@@ -533,8 +533,8 @@ runcmd:
   # Ensure RStudio picks up system R rather than Conda R for all users
   - cd /run/cloudinit
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  - RSTUDIO_DEB="rstudio-xenial-1.1.463-amd64.deb"
-  - wget https://download1.rstudio.org/${RSTUDIO_DEB}
+  - RSTUDIO_DEB="rstudio-1.2.1335-amd64.deb"
+  - wget https://download1.rstudio.org/desktop/bionic/amd64/${RSTUDIO_DEB}
   - gdebi --non-interactive ${RSTUDIO_DEB}
   - rm -f ${RSTUDIO_DEB}
   - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
@@ -547,11 +547,12 @@ runcmd:
   - mkdir -p /opt/julia
   - cd /opt/julia
   - echo "Downloading package..."
-  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.1-linux-x86_64.tar.gz
+  - JULIA_TARBALL="julia-1.1.1-linux-x86_64.tar.gz"
+  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.1/${JULIA_TARBALL}
   - echo "Installing and cleaning up..."
-  - tar -zxf julia-1.0.1-linux-x86_64.tar.gz
-  - rm -rf julia-1.0.1-linux-x86_64.tar.gz
-  - PATH=$PATH:/opt/julia/julia-1.0.1/bin
+  - tar -zxf ${JULIA_TARBALL}
+  - rm -rf ${JULIA_TARBALL}
+  - PATH=$PATH:/opt/julia/julia-1.1.1/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
