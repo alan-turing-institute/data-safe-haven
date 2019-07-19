@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Safe Haven Managment",
-    "computeVmImageSubscriptionName": "Safe Haven Management Testing",
+    "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",
     "shId": "prod",
     "location": "uksouth",
