@@ -172,8 +172,9 @@ az sig image-version create \
     --gallery-image-version "$IMAGE_VERSION" \
     --target-regions "West Europe" "UK South" "UK West" \
     --managed-image $RESOURCEID
+
 echo -e "${BOLD}Result of replication...${END}"
-az sig image-version list --resource-group $RESOURCEGROUP_GALLERY --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION
+az sig image-version show --resource-group $RESOURCEGROUP_GALLERY --gallery-name $IMAGES_GALLERY --gallery-image-definition $IMAGE_DEFINITION --gallery-image-version $IMAGE_VERSION
 
 # Final message
 ELAPSED=$(date -u -r $(($(date +%s) - $STARTTIME)) +"%H:%M:%S") # OSX
