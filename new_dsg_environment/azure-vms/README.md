@@ -118,13 +118,12 @@ To deploy a compute VM you will need the following available on the machine you 
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 
-
 ## Deploying a VM from the image gallery into a DSG environment
-During development, VMs can be deployed into a DSG environment using the `./deploy_azure_dsg_vm.sh` script with more granular control over configuration parameters.
-However, it is strongly recommended that the core configuration parameters for each new DSG are added to the safer `./deploy_compute_vm_to_turing_dsg.sh` script as soon as the DSG environment is created, and that all compute VMs are deployed using this script instead (see section above).
+During development, VMs can be deployed into a DSG environment using the `./deploy_azure_compute_vm.sh` script with more granular control over configuration parameters.
+However, it is strongly recommended that the wrapper Powershell script `Create_Compute_VM.ps1` in `dsg_deploy_scripts/07_deploy_compute_vms` is used for this purpose, as the configuration parameters will then be loaded from the appropriate config file.
 
 ```bash
-usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]
+usage: ./deploy_azure_compute_vm.sh [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-y yaml_cloud_init ] [-k pypi_mirror_ip]
   -h                                    display help
   -s subscription_source [required]     specify source subscription that images are taken from. (Test using 'Safe Haven Management Testing')
   -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')
@@ -155,7 +154,7 @@ usage: ./deploy_azure_dsg_vm.sh [-h] -s subscription_source -t subscription_targ
 Example usage
 
 ```bash
-./deploy_azure_dsg_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing"
+./deploy_azure_compute_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing"
 ```
 
 For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
