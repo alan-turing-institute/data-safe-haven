@@ -106,7 +106,7 @@ DSG security configuration
 - Researchers must log into the RDS Gateway using a Turing managed Safe Haven user account, created in the Safe Haven Management segment and separate from any credentials used to access other Turing IT services.
 - Only Researchers assigned to the security group associated with a specific project in the Management segment can log into that project's DSG environment.
 - Once successfully logged into the RDS Gateway, users must additionally authenticate with their user credentials and multifactor authentication (MFA) to access specific DSG resources. Multifactor authentication is via a phone call to the user's mobile or a notification on the Microsoft Authenticator app on their mobile.
-- Access to the internet from within the DSG environment is blocked by the DSG's Network Security Group (NSG) rules.
+- For Tier 2 and above, access to the internet from within the DSG environment is blocked by the DSG's Network Security Group (NSG) rules.
 - The copying of information into or out of any of the resources in the DSG environment is prevented by the RDS configuration.
 - Researchers are not provided with any administrative rights on the data science compute VMs, but can install additional Python or R packages in their own user directories from internal mirrors of the PyPI and CRAN package servers.
   - For Tier 2, access is provided to a local copy of all packages on the official PyPI and CRAN servers.
