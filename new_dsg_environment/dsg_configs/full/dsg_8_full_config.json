@@ -64,7 +64,7 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Data Study Group 8 (Test)",
+    "subscriptionName": "DSG 8 Test",
     "id": "8",
     "shortName": "dsg8",
     "location": "uksouth",
@@ -231,7 +231,7 @@
       "rg": "RG_DSG_COMPUTE",
       "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.0.2019032100",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup8-dsvm-admin-password"
