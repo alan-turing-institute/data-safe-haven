@@ -321,7 +321,7 @@ This protocol should limit all aspects of the transfer to provide the minimum ne
 
 To deposit the dataset, a time limited or one-time access token, providing write-only access to the secure transfer volume, will be generated and transferred via a secure channel to the Dataset Provider Representative.
 
-### Lower tier transfer protocol
+### Lower tier transfer protocol
 
 This protocol does not restrict time windows or networks for deposit, supports read-write transfer volumes (volumes which can be both read and edited), and is used for less sensitive datasets. Non-publically available data (Tier 1 and above) must still be encrypted in transit, with the encryption key transferred via a separate secure channel to the data.
 
