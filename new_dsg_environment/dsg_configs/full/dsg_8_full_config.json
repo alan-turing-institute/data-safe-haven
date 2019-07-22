@@ -1,22 +1,17 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Testing",
-    "id": "test",
-    "name": "Test Safe Haven",
-    "organisation": {
-      "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London",
-      "countryCode": "GB"
-    },
+    "subscriptionName": "SHM Test B",
+    "id": "testc",
+    "name": null,
+    "organisation": null,
     "location": "uksouth",
     "domain": {
-      "fqdn": "dsgroupdev.co.uk",
-      "netbiosName": "DSGROUPDEV",
-      "dn": "DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "testc.dsgroupdev.co.uk",
+      "netbiosName": "TESTC",
+      "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -27,7 +22,7 @@
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUPDEV_VNET1",
+        "name": "SHM_VNET1",
         "cidr": "10.220.1.0/21"
       },
       "subnets": {
@@ -39,24 +34,24 @@
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC",
+      "vmName": "SHMDC1",
       "hostname": "MGMTDEVDC",
-      "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
+      "fqdn": "MGMTDEVDC.testc.dsgroupdev.co.uk",
       "ip": "10.220.1.250"
     },
     "nps": {
-      "rg": "RG_SH_MGMTNPS",
-      "vmName": "MGMTNPS",
-      "ip": "10.220.1.248"
+      "rg": "RG_DSG_NPS",
+      "vmName": null,
+      "ip": "10.220.1."
     },
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgxartifacts"
+        "accountName": "dsgtestcartifacts"
       }
     },
     "keyVault": {
-      "name": "dsg-management-test",
+      "name": "dsg-management-testc",
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
@@ -74,7 +69,7 @@
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
-        "name": "kv-shm-pkg-mirrors-test"
+        "name": "kv-shm-pkg-mirrors-testc"
       },
       "vnet": {
         "name": "VNET_SHM_PKG_MIRRORS_TIER2"
@@ -142,7 +137,7 @@
       }
     },
     "keyVault": {
-      "name": "dsg-management-test"
+      "name": "dsg-management-testc"
     },
     "dc": {
       "rg": "RG_DSG_DC",
@@ -238,7 +233,7 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageSubscription": "SHM Test B",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.0.2019032100",
       "admin": {
