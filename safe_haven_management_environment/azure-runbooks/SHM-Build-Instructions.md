@@ -132,7 +132,7 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 ### Configure Active Directory on SHMDC1 and SHMDC2
 
-1. Run `./configure_dc.ps1` entering the `shId`, defined in the config file, when prompted. This will run remote scripts on the DC VMS
+1. Run `./configure_dc.ps1` entering the `shId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs
 
 
 ### Download and install the VPN Client from the virtual network VPN gateway 
@@ -148,7 +148,7 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 ### Upload VPN certificates
 
-1. You must upload the `client.pfx` file to keyvault. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS ->  Certificates` and click `Generate/Import`.
+1. You must upload the `client.pfx` file to keyvault. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and click `Generate/Import`.
 
 2. Set the method of certificate creation to `Import` and set the name as `DSG-P2S-<shm-id>-ClientCert`. Select the `client.pfx` as the file. Finally enter the password `password`. 
 
@@ -166,16 +166,18 @@ You should now be able to connect to the virtual network. Each time you need to 
     - Username: atiadmin
     - Password: 
 
-  - To obtain the password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `dc_pass`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
+  - To obtain the password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `shm-managment-dcadmin`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
 
 ### Active Directory Configuration
 
-1. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file:
+1. Navigate to `C:/Scripts/`
 
-    - $domainou = "DC=CUSTOMDOMAIN,DC=AC,DC=UK"
-    - $domain = "CUSTOMSDOMAIN.ac.uk"
+2. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file:
 
-2. In the powershell navigate to `C:/Scripts/`. Run:
+    - $domainou = "DC=TESTB,DC=DSGROUPDEV,DC=CO,DC=UK"
+    - $domain = "TESTB.DSGROUPDEV.CO.UK"
+
+3. Open powershell and navigate to `C:/Scripts/`. Run:
 
 ```pwsh
 .\Active_Directory_Configuration.ps1 -oubackuppath c:\Scripts\GPOs
@@ -247,6 +249,10 @@ Z:
 copy nps C:/Scripts -Recurse
 ```
 
+```
+ Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
+ ```
+
 5. Open windows explorer and navigate to `C:\Scripts\dc`. Unzip `SHM_NPS.zip` and then copy the contents of the unzipped file to `C:/Scripts/` 
 
 6. From the PowerShell command window change to `C:\Scripts` and run:
@@ -271,7 +277,7 @@ copy nps C:/Scripts -Recurse
 
 5. In Windows explorer navigate to the Y: driver (sqlserver). Double click on `SQLServer2017-SSEI-Expr` and click `run` when prompted. Then chose `Download Media` and select `Express Advanced`. Then click download. 
 
-6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU`. Double click to unpack it. 
+6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU` to the `downloads` folder. Double click to unpack it. 
 
 7. Open a command prompt with administrator privileges (right click on command window and click `run as administrator`).  
 
