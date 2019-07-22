@@ -24,7 +24,7 @@
 2. Click `Create a Resource`  and search for `Azure Active Directory`
 3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test B"
 4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-5 Set the "Country or Region" to "UK South"
+5 Set the "Country or Region" to "United Kingdom"
 4. Click Create AAD
 
    ![](images/AAD.png)
@@ -41,26 +41,28 @@
         - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testb.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testb`).
        - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
   
+### Create and add the custom domain to the new AAD 
+1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
 
-### Add the custom domain to the new AAD 
-1. Once the new AAD and custom domain have been created, ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
-2. Click `Active directory` in the far left panel then `Custom domain names` in the left hand panel
+2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testb.dsgroupdev.co.uk`)
+
 3. Note the DNS record details displayed
   ![AAD DNS record details](images/aad_dns_record_details.png)
-3. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 36000 is in seconds)
+4. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 36000 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
-4. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
+5. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
 ### Add additional administrators
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
 
-1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current direcotty is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and **either**:
     - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
     - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
 5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
-7. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
+
+6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
    - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
    - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
@@ -69,7 +71,7 @@ The User who creates the AAD will automatically have the Global Administrator (G
 ## 1. Deploy VNET and Domain Controllers
 
 ### Core SHM configuration properties
-The core properties for the Safe Haven Management (SHM) environment must be present in the `dsg_configs/core` folder. These are also used when deploying a DSG environment. 
+The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment. 
 The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`. The `shm_testb_core_config.json` provides an example. 
 
 ```json
