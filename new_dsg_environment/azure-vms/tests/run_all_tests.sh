@@ -109,7 +109,7 @@ python_37_pypi() { _python_pypi py37; }
 
 do_test() {
     TEST_NAME=$1
-    echo -e "\033[0;36m[ RUN      ]\033[0m $TEST_NAME"
+    echo -e "\033[0;36m[ RUNNING  ]\033[0m $TEST_NAME"
     START_TIME=$(date +%s)
     $TEST_NAME; TEST_RESULT=$?
     DURATION=$(($(date +%s) - $START_TIME))
