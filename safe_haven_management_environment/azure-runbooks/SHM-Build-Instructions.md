@@ -72,7 +72,7 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 ### Core SHM configuration properties
 The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment. 
-The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`. The `shm_testb_core_config.json` provides an example. 
+The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. 
 
 ```json
 {
@@ -87,7 +87,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
     "npsIp": "The IP address of the management environment NPS server",
     "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "vnetName":"The name of the Virtual Network for the management environment",
-    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment"
+    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment",
+    "vaultname": "testbvault"
 }
 ```
 
@@ -115,7 +116,7 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 ### Set Keyvault access policies
 
-1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_ARTIFACTS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
+1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_SECRETS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
 
 2. Click `Select principal` and find the security group that should have access. 
     - For Turing test SHMs this should be: `Safe Haven Test Admins`
