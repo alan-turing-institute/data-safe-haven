@@ -102,7 +102,7 @@ The following access is restricted to members of the Safe Haven Administrators s
 DSG security configuration
 --------------------------
 
-- Researchers can only access the DSG environment by connecting via SSH/TLS to the Remote Desktop Services (RDS) Gateway, which allows them to then access other DSG resources via the RDS HTML5 web application.
+- Researchers can only access the DSG environment by connecting via SSL/TLS to the Remote Desktop Services (RDS) Gateway, which allows them to then access other DSG resources via the RDS HTML5 web application.
 - Researchers must log into the RDS Gateway using a Turing managed Safe Haven user account, created in the Safe Haven Management segment and separate from any credentials used to access other Turing IT services.
 - Only Researchers assigned to the security group associated with a specific project in the Management segment can log into that project's DSG environment.
 - Once successfully logged into the RDS Gateway, users must additionally authenticate with their user credentials and multifactor authentication (MFA) to access specific DSG resources. Multifactor authentication is via a phone call to the user's mobile or a notification on the Microsoft Authenticator app on their mobile.
