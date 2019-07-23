@@ -146,11 +146,10 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
-### Upload VPN certificates (NOT WORKING)
+### Upload VPN certificates 
 
-1. You must upload the `client.pfx` file to keyvault. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and click `Generate/Import`.
+1. You must upload the `caCert.pem` file to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Set the method of certificate creation to `Import` and set the name as `sh-management-p2s-root-cert`. Select the `client.pfx` as the file. Finally enter the password `password`. 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
