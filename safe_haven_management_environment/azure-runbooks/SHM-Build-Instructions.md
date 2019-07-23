@@ -72,7 +72,7 @@ The User who creates the AAD will automatically have the Global Administrator (G
 
 ### Core SHM configuration properties
 The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment. 
-The following core SHM properties must be defined in a JSON file named `shm_<shm-id>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. 
+The following core SHM properties must be defined in a JSON file named `shm_<shId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shId>` is a short ID to identify the environment (e.g. `testb`).
 
 ```json
 {
@@ -152,7 +152,7 @@ The following are required to enable deployment of a DSG.
 
 1. You must upload the `caCert.pem` file to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shm-id>-ClientCert`. 
+2. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shId>-ClientCert`, . 
 
 
 
