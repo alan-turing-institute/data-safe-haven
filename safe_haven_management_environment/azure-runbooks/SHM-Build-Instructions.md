@@ -148,7 +148,13 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 ### Upload VPN certificates 
 
+The following are required to enable deployment of a DSG. 
+
 1. You must upload the `caCert.pem` file to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+
+2. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shm-id>-ClientCert`. 
+
+
 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
