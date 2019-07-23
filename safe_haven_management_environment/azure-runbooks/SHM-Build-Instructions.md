@@ -258,7 +258,7 @@ copy nps C:/Scripts -Recurse
  Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
  ```
 
-5. Open windows explorer and navigate to `C:\Scripts\dc`. Unzip `SHM_NPS.zip` and then copy the contents of the unzipped file to `C:/Scripts/` 
+5. Open windows explorer and navigate to `C:\Scripts\dc`. 
 
 6. From the PowerShell command window change to `C:\Scripts` and run:
 ```
