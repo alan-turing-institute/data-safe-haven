@@ -146,7 +146,7 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 
 You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
-### Upload VPN certificates
+### Upload VPN certificates (NOT WORKING)
 
 1. You must upload the `client.pfx` file to keyvault. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and click `Generate/Import`.
 
