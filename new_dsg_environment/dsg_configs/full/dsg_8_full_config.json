@@ -2,8 +2,13 @@
   "shm": {
     "subscriptionName": "SHM Test B",
     "id": "testc",
-    "name": null,
-    "organisation": null,
+    "name": "Test Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
       "fqdn": "testc.dsgroupdev.co.uk",
@@ -23,26 +28,26 @@
       "vnet": {
         "rg": "RG_DSG_VNET",
         "name": "SHM_VNET1",
-        "cidr": "10.220.1.0/21"
+        "cidr": "10.250.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.220.1",
-          "cidr": "10.220.1.0/24"
+          "prefix": "10.250.0",
+          "cidr": "10.250.0.0/24"
         }
       }
     },
     "dc": {
       "rg": "RG_DSG_DC",
       "vmName": "SHMDC1",
-      "hostname": "MGMTDEVDC",
-      "fqdn": "MGMTDEVDC.testc.dsgroupdev.co.uk",
-      "ip": "10.220.1.250"
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.testc.dsgroupdev.co.uk",
+      "ip": "10.250.0.250"
     },
     "nps": {
       "rg": "RG_DSG_NPS",
-      "vmName": null,
-      "ip": "10.220.1."
+      "vmName": "SHMNPS",
+      "ip": "10.250.0.248"
     },
     "storage": {
       "artifacts": {
