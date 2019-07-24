@@ -11,7 +11,7 @@
         "countryCode": "GB"
     },
     "location": "uksouth",
-    "ipPrefix": "10.250.0",
+    "ipPrefix": "10.251.0",
     "dcVmName": "SHMDC1",
     "dcHostname": "SHMDC1",
     "dcRgName": "RG_DSG_DC",

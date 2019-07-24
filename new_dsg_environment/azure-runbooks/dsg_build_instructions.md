@@ -449,7 +449,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Select the "Central Server Running NPS"
 
-- Enter the IP address of the NPS within the management domain (`10.220.1.249` for `test` SHM, `10.251.0.248` for production SHM)
+- Enter the IP address of the NPS within the management domain (`10.251.0.248`)
 
 - Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the SHM KeyVault.
 
