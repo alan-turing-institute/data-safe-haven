@@ -97,30 +97,33 @@ $osPrepParams = @{
 };
 
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "OS_Prep_Remote.ps1"
-Write-Host " - Running OS Prep on RDS Gateway"
+$vmName = "$($config.dsg.rds.gateway.vmName)"
+Write-Host " - Running OS Prep on RDS Gateway ($vmName)"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
-    -Name "$($config.dsg.rds.gateway.vmName)" `
+    -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
-Write-Host " - Running OS Prep on RDS Session Host 1"
+$vmName = "$($config.dsg.rds.sessionHost1.vmName)"
+Write-Host " - Running OS Prep on RDS Session Host 1 ($vmName)"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
-    -Name "$($config.dsg.rds.sessionHost1.vmName)" `
+    -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
-Write-Host " - Running OS Prep on RDS Session Host 2"
+$vmName = "$($config.dsg.rds.sessionHost2.vmName)"
+Write-Host " - Running OS Prep on RDS Session Host 2 ($vmName)"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
-    -Name "$($config.dsg.rds.sessionHost2.vmName)" `
+    -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $osPrepParams
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
-
+Exit 0
 # === Transfer files to RDS VMs ===
 # Temporarily switch to storage account subscription
 $storageAccountSubscription = $config.shm.subscriptionName
