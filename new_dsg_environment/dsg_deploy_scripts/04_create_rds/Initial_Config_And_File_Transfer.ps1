@@ -51,11 +51,12 @@ if ($null -eq $npsSecret) {
     Write-Host " - NPS shared secret for RDS gateway already exists"
 }
 
-# === Add RDS Gateway as RADIUS Client on SHM NPS ===
+# === Configure SHM NPS for DSG RDS RADIUS client ===
 $npsRadiusClientParams = @{
     rdsGatewayIp = "`"$($config.dsg.rds.gateway.ip)`""
     rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
     npsSecret = "`"$($npsSecret)`""
+    dsgId = "`"$($config.dsg.id)`""
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 Write-Host " - Adding RDS Gateway as RADIUS client on SHM NPS"

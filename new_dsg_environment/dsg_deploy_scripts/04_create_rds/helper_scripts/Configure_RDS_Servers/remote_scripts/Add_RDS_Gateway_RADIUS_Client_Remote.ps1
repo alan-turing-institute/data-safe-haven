@@ -7,12 +7,21 @@
 param(
   $rdsGatewayIp,
   $rdsGatewayFqdn,
-  $npsSecret
+  $npsSecret,
+  $dsgId
 )
 
 if(Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}){
-  Write-Output " - RADIUS Client '$rdsGatewayFqdn' already exists"
+  Write-Output "   - RADIUS Client '$rdsGatewayFqdn' already exists"
 } else {
   Write-Output "   - Creating RADIUS client '$rdsGatewayFqdn' at '$rdsGatewayIp'"
-  New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+  $_ = New-NpsRadiusClient -Address $rdsGatewayIp -Name "$rdsGatewayFqdn" -SharedSecret "$npsSecret"
+}
+
+$ruleName = "DSGROUP$dsgId RDS Gateway RADIUS inbound ($rdsGatewayIp)"
+if(Get-NetFirewallRule | Where-Object {$_.DisplayName -eq "$ruleName"}){
+  Write-Output "   - Inbound RADIUS firewall rule '$ruleName' already exists"
+} else {
+  Write-Output "   - Adding '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)"
+  $_ = New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1812","1813" -Profile Domain -Enabled True
 }
