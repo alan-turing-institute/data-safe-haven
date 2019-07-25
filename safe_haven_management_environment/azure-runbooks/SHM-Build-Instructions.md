@@ -272,63 +272,44 @@ The NPS server will now deploy.
 
 1. Connect to NPS Server using Microsoft Remote desktop, the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group. The Username and Password is the same as for SHMDC1 and SHMDC2.
 
-2. On the Azure portal navigate to the `RG_SHM_RESOURCES` resource group and then the `shmfiles` container. Click on `Files` and then the `scripts` fileshare. 
+2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare. 
 
-2. Click the connect icon on the top bar and then copy the lower powershell command. 
+3. Click the connect icon on the top bar and then copy the lower powershell command. 
 
-3. Open a powershell on the `SHMNPS` VM. Past the powershell command and run. This will map the `scripts` fileshare to the Z: drive. 
+4. On the `SHMNPS` VM run Powershell as an administrator, paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive. 
 
-4. In the powershell enter the following commands:
+5. Run Powershell as an administrator and enter the following commands:
+  - `New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"`
+  - `copy z:\nps c:\scripts -Recurse`
+  - `Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force`
+  - `cd c:\scripts`
+  - `./Prepare_NPS_Server.ps1`
 
-```pwsh
-New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
-```
-```pwsh
-Z:
-```
-```pwsh
-copy nps C:/Scripts -Recurse
-```
+6. Open the file `C:/Scripts/ConfigurationFile.ini` in an editor. 
 
-```
- Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
- ```
-
-5. Open windows explorer and navigate to `C:\Scripts\dc`. 
-
-6. From the PowerShell command window change to `C:\Scripts` and run:
-```
-.\Prepare_NPS_Server.ps1
-```
-
-7. Open the file `C:/Scripts/ConfigurationFile.ini` in an editor. 
-
-8. Find the line `SQLSYSADMINACCOUNTS="TURINGSAFEHAVEN\atiadmin"` and change the domain name to the correct custom domain. Save and exit. NB: If your domain is a subdomain (i.e. `testb.dsgroupdev`) use the first part only (i.e. `"TESTB\atiadmin"`)
+7. Find the line `SQLSYSADMINACCOUNTS="TURINGSAFEHAVEN\atiadmin"` and change the domain name to the correct custom domain. Save and exit. NB: If your domain is a subdomain (e.g. `testb.dsgroupdev`) use the first part only (i.e. `"TESTB\atiadmin"`)
 
 
 ### SQL Server installation
 
-1. Go back to the Azure portal and navigate to the `RG_SHM_RESOURCES` resource group and then the `shmfiles` container. Click on `Files` and then the `sqlserver` fileshare. 
+1. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `sqlserver` fileshare. 
 
 2. Click the connect icon on the top bar. **Change the driver letter to Y**. Then copy the lower powershell command. 
 
-3. Open a powershell on the `SHMNPS` VM. Past the powershell command and run. This will map the `sqlserver` fileshare to the Y: drive. 
+3. On the `SHMNPS` VM run Powershell as an administrator. Past the powershell command copied from the Azure portal and hit enter. This will map the `sqlserver` fileshare to the Y: drive. 
 
-4. Close the powershell. 
-
-5. In Windows explorer navigate to the Y: driver (sqlserver). Double click on `SQLServer2017-SSEI-Expr` and click `run` when prompted. Then chose `Download Media` and select `Express Advanced`. Then click download. 
+4. In Windows explorer navigate to the Y: driver (sqlserver). Double click on `SQLServer2017-SSEI-Expr` and click `run` when prompted. Then chose `Download Media` and select `Express Advanced`. Then click download. 
 
 6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU` to the `downloads` folder. Double click to unpack it. 
 
-7. Open a command prompt with administrator privileges (right click on command window and click `run as administrator`).  
+7. Open a command prompt (**not** powershell) with administrator privileges (click on the start menu, start typing "command prompt", right click on the icon and then click `run as administrator`).  
 
 8. Enter the following commands which will install the SQL Server from the `SQLEXPRADV_x64_ENU` folder:
 
-```pwsh
-setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicenseTerms
-```
+  - `cd C:\Users\atiadmin\downloads\SQLEXPRADV_x64_ENU\`
+  - `setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicenseTerms`
 
-9. In Windows explorer navigate to the Y: driver (sqlserver). Run the SSMS-Setup-ENU (SQL Management Studio installation) and install with the default settings. When prompted restart the VM. You will need to log back in with Windows Remote Desktop. 
+9. In Windows explorer navigate to the Y: driver (sqlserver). Run "SSMS-Setup-ENU" (SQL Management Studio installation) and install with the default settings. When prompted restart the VM. You will need to log back in with Windows Remote Desktop. 
 
 10. Open a new command prompt and navigate to `C:\scripts`. Then enter the following command:
 
