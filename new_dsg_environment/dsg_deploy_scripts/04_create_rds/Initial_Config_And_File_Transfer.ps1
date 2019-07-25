@@ -123,7 +123,7 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
     -Parameter $osPrepParams
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
-Exit 0
+
 # === Transfer files to RDS VMs ===
 # Temporarily switch to storage account subscription
 $storageAccountSubscription = $config.shm.subscriptionName
