@@ -311,11 +311,9 @@ The NPS server will now deploy.
 
 9. In Windows explorer navigate to the Y: driver (sqlserver). Run "SSMS-Setup-ENU" (SQL Management Studio installation) and install with the default settings. When prompted restart the VM. You will need to log back in with Windows Remote Desktop. 
 
-10. Open a new command prompt and navigate to `C:\scripts`. Then enter the following command:
+10. Open a new command prompt (not powershell) and navigate to `C:\scripts`. Then enter the following command:
+  - `sqlcmd -i c:\Scripts\Create_Database.sql`
 
-```pwsh
-sqlcmd -i c:\Scripts\Create_Database.sql
-```
 11. Exit the command promt
 
 ### NPS Configuration
@@ -326,7 +324,7 @@ sqlcmd -i c:\Scripts\Create_Database.sql
 3. Select "Configure Accounting"
 4. Click "Next" -> "Log to a SQL Server Database" -> "Next" -> "Configure"
 5. Enter "SHMNPS" in the "Select or enter server name" box
-6. Select "User Windows NT Intergrated Security"
+6. Select "User Windows NT Integrated Security"
 7. Select "NPSAccounting" database from "Select the database on the server" drop down
 8. Click "OK"
 9. Click "Next" -> "Next" -> "Rebuild" -> "Close"
