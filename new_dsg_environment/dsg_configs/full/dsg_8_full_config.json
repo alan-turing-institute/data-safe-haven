@@ -240,7 +240,7 @@
       "rg": "RG_DSG_COMPUTE",
       "vmImageSubscription": "SHM Test B",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.0.2019032100",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup8-dsvm-admin-password"

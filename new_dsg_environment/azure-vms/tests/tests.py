@@ -13,11 +13,15 @@ PACKAGE_SUFFIX = "-packages.list"
 
 # Some packages cannot be imported so we skip them.
 PACKAGES_TO_SKIP = [
-    "backports",      # not an importable package
-    "jupyter",        # not a python package
-    "numpy-base",     # not an importable package
-    "r-irkernel",     # not a python package
-    "tensorflow-gpu", # add a special test for this
+    "backports",                   # not an importable package
+    "jupyter",                     # not a python package
+    "numpy-base",                  # not an importable package
+    "nltk_data",                   # not a python package
+    "r-irkernel",                  # not a python package
+    "spacy-model-en_core_web_lg",  # not a python package
+    "spacy-model-en_core_web_md",  # not a python package
+    "spacy-model-en_core_web_sm",  # not a python package
+    "tensorflow-gpu",              # add a special test for this
 ]
 
 # Some packages have different names in conda from the importable name
@@ -94,6 +98,7 @@ def check_tensorflow():
     try:
         warnings.simplefilter("ignore")
         from tensorflow.python.client import device_lib
+        os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         device_names = [d.name for d in device_lib.list_local_devices()]
         print("Tensorflow can see the following devices:\n{}".format(device_names))
         return True

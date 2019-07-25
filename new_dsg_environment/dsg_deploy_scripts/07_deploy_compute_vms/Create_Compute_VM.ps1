@@ -93,7 +93,7 @@ if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
 if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
 if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
 
-$cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
+$cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
 bash -c $cmd
 
 Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"

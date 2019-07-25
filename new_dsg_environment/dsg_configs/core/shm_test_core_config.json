@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Safe Haven Management Testing",
-    "computeVmImageSubscriptionName": "Safe Haven Management Testing",
+    "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "dsgroupdev.co.uk",
     "shId": "test",
     "name": "Test Safe Haven",

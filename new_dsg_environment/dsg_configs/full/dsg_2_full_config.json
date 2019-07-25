@@ -205,7 +205,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.240,137.205.213.46"
+          "allowedSources": "193.60.220.240,137.205.213.46,167.98.26.243"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -238,9 +238,9 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019061600",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup2-dsvm-admin-password"
