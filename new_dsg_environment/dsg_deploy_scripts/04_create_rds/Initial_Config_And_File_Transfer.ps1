@@ -93,7 +93,7 @@ Write-Host $result.Value[1].Message
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 $osPrepParams = @{
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
-    shmFqdn = "`"$($config.shm.domain.fqdn))`""
+    shmFqdn = "`"$($config.shm.domain.fqdn)`""
 };
 
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "OS_Prep_Remote.ps1"
