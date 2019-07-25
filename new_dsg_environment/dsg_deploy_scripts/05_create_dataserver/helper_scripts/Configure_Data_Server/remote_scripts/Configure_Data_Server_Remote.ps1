@@ -10,7 +10,7 @@
 )
 
 # Set language and time-zone
-Write-Output "Setting system locale"
+Write-Output " - Setting system locale"
 Set-WinHomeLocation -GeoId 0xf2
 Set-TimeZone -Name "GMT Standard Time"
 Set-WinSystemLocale en-GB
@@ -36,23 +36,26 @@ if ($rawDisks.Count -gt 0) {
 Start-Service ShellHWDetection
 
 # Setup disk shares
-Write-Output "Configuring disk shares"
+Write-Output " - Configuring disk shares"
 $shareDriveLetter = "F"
 $shareFolder = "Data"
 $sharePath = ($shareDriveLetter + ":\" + $shareFolder)
 $shareName = $shareFolder
 $researcherUserSg = ($shmNetbiosName + "\" + $researcherUserSgName) 
 $serverAdminSg = ($dsgNetbiosName + "\" + $serverAdminSgName)
-Write-Output "  - Creating '$shareName' data share at '$sharePath' with the following permissions"
-Write-Output "    - FullAccess: $serverAdminSg"
-Write-Output "    - ChangeAccess: $researcherUserSg" 
 
-# Create share, being robust to case where share already exists
-if(!(Test-Path -Path $sharePath )){
-  $_ = New-Item -ItemType directory -Path $sharePath;
+if(Get-SmbShare | Where-Object {$_.Name -eq "$shareName"}){
+  Write-Output "   - SMB share '$shareName' already exists"
+} else {
+  Write-Output "  - Creating '$shareName' data share at '$sharePath'"
+  # Create share, being robust to case where share folder already exists
+  if(!(Test-Path -Path $sharePath )){
+    $_ = New-Item -ItemType directory -Path $sharePath;
+  }
+  $_ = New-SmbShare -Path $sharePath -Name $shareName -ErrorAction:Continue;
 }
-$_ = New-SmbShare -Path "F:\Data" -Name "Data" -ErrorAction:Continue;
 
+Write-Output " - Setting SMB share access for  '$shareName' share"
 # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
 $_ = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue;
 $_ = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue;
@@ -62,10 +65,10 @@ $_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorA
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force;
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force;
 
-Write-Output "SMB share access for '$shareName' share:"
+Write-Output "   - SMB share access for '$shareName' share:"
 Get-SmbShareAccess -Name $shareName | Format-List
 
-Write-Output "Setting ACL rules for folder '$sharePath'"
+Write-Output " - Setting ACL rules for folder '$sharePath'"
 # Remove all existing ACL rules on the dataserver folder backing the share
 $acl = Get-Acl $sharePath;
 $_ = ($acl.Access | ForEach-Object{$acl.RemoveAccessRule($_)});
@@ -78,6 +81,6 @@ $_ = $acl.Setaccessrule($serverAdminAccessRule);
 $_ = $acl.Setaccessrule($researchUserAccessRule);
 $_ = (Set-Acl $sharePath $acl);
 
-Write-Output "ACL access rules for '$sharePath' folder:"
+Write-Output "   - ACL access rules for '$sharePath' folder:"
 Get-Acl $sharePath | Format-List
 

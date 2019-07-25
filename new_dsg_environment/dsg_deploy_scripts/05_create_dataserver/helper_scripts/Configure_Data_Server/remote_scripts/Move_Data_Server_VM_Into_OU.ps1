@@ -15,5 +15,5 @@ param(
 
 $targetPath = "OU=$dsgNetbiosName Data Servers,$dsgDn"
 
-Write-Output "Moving '$dataServerHostname' to '$targetPath'"
+Write-Output " - Moving '$dataServerHostname' to '$targetPath'"
 Move-ADObject (Get-ADComputer -Identity $dataServerHostname) -TargetPath "$targetPath"

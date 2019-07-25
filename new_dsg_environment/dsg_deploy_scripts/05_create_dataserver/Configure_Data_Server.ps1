@@ -21,11 +21,13 @@ $vmOuMoveParams = @{
     dataServerHostname = "`"$($config.dsg.dataserver.hostname)`""
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Move_Data_Server_VM_Into_OU.ps1"
-Write-Host " - Moving Data Server VM to correct OU on DSG DC"
-Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
+Write-Host "Moving Data Server VM to correct OU on DSG DC"
+$result = Invoke-AzVMRunCommand -ResourceGroupName $($config.dsg.dc.rg) `
     -Name "$($config.dsg.dc.vmName)" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $vmOuMoveParams
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # === Configure data server ===
 $scriptPath = Join-Path $helperScriptDir  "remote_scripts" "Configure_Data_Server_Remote.ps1"
@@ -39,10 +41,12 @@ $params = @{
 $vmResourceGroup = $config.dsg.dataserver.rg
 $vmName = $config.dsg.dataserver.vmName;
 
-Write-Host " - Configuring Data Server"
-Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name "$vmName" `
+Write-Host "Configuring Data Server"
+$result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name "$vmName" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
+Write-Host $result.Value[0].Message
+Write-Host $result.Value[1].Message
 
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
