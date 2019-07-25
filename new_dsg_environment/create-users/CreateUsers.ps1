@@ -52,5 +52,5 @@ New-ADUser @props -PassThru
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-Import-Module ADSync
+Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
 Start-ADSyncSyncCycle -PolicyType Delta
