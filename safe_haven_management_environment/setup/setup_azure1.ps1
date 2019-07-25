@@ -20,7 +20,6 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 # Create Resource Groups
 New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
-New-AzResourceGroup -Name $config.nps.rg -Location $config.location
 New-AzResourceGroup -Name RG_DSG_SECRETS -Location $config.location
 New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 
