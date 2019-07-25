@@ -341,49 +341,34 @@ The NPS server will now deploy.
   - `cd c:\scripts`
   - `./Prepare_NPS_Server.ps1`
 
-6. Open the file `C:/Scripts/ConfigurationFile.ini` in an editor. 
-
-7. Find the line `SQLSYSADMINACCOUNTS="TURINGSAFEHAVEN\atiadmin"` and change the domain name to the correct custom domain. Save and exit. NB: If your domain is a subdomain (e.g. `testb.dsgroupdev`) use the first part only (i.e. `"TESTB\atiadmin"`)
-
-
-### SQL Server installation
-
-1. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `sqlserver` fileshare. 
-
-2. Click the connect icon on the top bar. **Change the driver letter to Y**. Then copy the lower powershell command. 
-
-3. On the `SHMNPS` VM run Powershell as an administrator. Past the powershell command copied from the Azure portal and hit enter. This will map the `sqlserver` fileshare to the Y: drive. 
-
-4. In Windows explorer navigate to the Y: driver (sqlserver). Double click on `SQLServer2017-SSEI-Expr` and click `run` when prompted. Then chose `Download Media` and select `Express Advanced`. Then click download. 
-
-6. Once downloaded run the downloaded installer. This will extract a folder called `SQLEXPRADV_x64_ENU` to the `downloads` folder. Double click to unpack it. 
-
-7. Open a command prompt (**not** powershell) with administrator privileges (click on the start menu, start typing "command prompt", right click on the icon and then click `run as administrator`).  
-
-8. Enter the following commands which will install the SQL Server from the `SQLEXPRADV_x64_ENU` folder:
-
-  - `cd C:\Users\atiadmin\downloads\SQLEXPRADV_x64_ENU\`
-  - `setup /configurationfile=c:\Scripts\ConfigurationFile.ini /IAcceptSQLServerLicenseTerms`
-
-9. In Windows explorer navigate to the Y: driver (sqlserver). Run "SSMS-Setup-ENU" (SQL Management Studio installation) and install with the default settings. When prompted restart the VM. You will need to log back in with Windows Remote Desktop. 
-
-10. Open a new command prompt (not powershell) and navigate to `C:\scripts`. Then enter the following command:
-  - `sqlcmd -i c:\Scripts\Create_Database.sql`
-
-11. Exit the command promt
-
-### NPS Configuration
+### Configure NPS server to log to text file
 
 1. On the NPS VM open the "Network Policy Server" desktop app
 2. Click on "Accounting"
 3. Select "Configure Accounting"
-4. Click "Next" -> "Log to a SQL Server Database" -> "Next" -> "Configure"
-5. Enter "SHMNPS" in the "Select or enter server name" box
-6. Select "User Windows NT Integrated Security"
-7. Select "NPSAccounting" database from "Select the database on the server" drop down
-8. Click "OK"
-9. Click "Next" -> "Next" -> "Rebuild" -> "Close"
-10. Close the "Network Policy Server" app
+4. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Close"
+5. In the "Log file properties" section, click "Configure log file properties"
+6. On the "Log file" tab, select "Daily" under "Create a new log file"
+7. Click "Ok"
+
+
+### Add NPS policy to allow connections
+
+- In Server Manager select "Tools -> Network Policy Server"
+- Expand "NPS (Local)" and then "Policies" and select "Network policies"
+- Right click on "Network policies" and select "Add"
+   - Set the policy name to "RDG_CAP" and click "Next"
+   - Click "Add" to add a restriction
+   - Select "Day and Time Restrictions" and click "Add"
+   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next" and "Next" again (leaving "Access granted checked")
+   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox 
+
+**NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
+This is because, without this policy, the NPS server will reject their authentication with the following error:
+  - Event ID: 6273
+  - First line of even message: Network Policy Server discarded the request for a user.
+  - Reason Code: 21
+  - Reason: An NPS extension dynamic link library (DLL) that is installed on the NPS server rejected the connection request.
 
 ### MFA Configuation
 
@@ -402,9 +387,7 @@ The NPS server will now deploy.
     - In the Azure Active Directory pane in the Azure portal, click "Properties" in the left-hand menu. The tenant ID is the "Directory ID" on this pane.
 - Enter "Y" when prompted
 
-#### Installation of Safe Haven Management environment complete.
-
-## 6. Package mirrors
+## 5. Package mirrors
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
