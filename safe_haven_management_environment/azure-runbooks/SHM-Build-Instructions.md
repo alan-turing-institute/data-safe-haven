@@ -68,6 +68,12 @@ The User who creates the AAD will automatically have the Global Administrator (G
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
     ![](images/set_user_location.png)
 
+6. Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
+![](images/enable_writeback.png)
+
+7. Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
+![](images/enable_passwordreset.png)
+
 ## 1. Deploy VNET and Domain Controllers
 
 ### Core SHM configuration properties
@@ -127,6 +133,36 @@ Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, w
 3. Select all under `Key permissions`, `Secret permissions` and `Certificate permissions`
 
 4. Click ok. 
+
+### Download software and upload to blob storage
+A number of files are critical for the DSG deployment. They must be added to blob storage:
+
+1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and then create a new container called `rdssh-packages`. It will then appear in the storage account:
+
+![](images/blobstorage.png)
+2. On your local machine download the following and place into a folder called `rdssh1-app-server`. Then upload to the container to the `rdssh-packages`, ensuring it has the same name. 
+
+    - [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
+    - [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+    - [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
+
+The container will now look like this:
+![](images/rdssh1-app-server.png)
+
+3. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
+
+- [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
+- [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+- [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
+
+- [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html)
+- [Texlive: install-tl-windows-20190429.exe](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe)
+
+The container will now look like this:
+![](images/rdshh2-virtual-desktop-server.png)
+
+Go back up a level and ensure the folders are names match:
+![](images/rdsspackages.png)
 
 ## 3. Configure Domain Controllers (DCs)
 
