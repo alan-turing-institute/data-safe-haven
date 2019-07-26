@@ -186,9 +186,9 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 The following are required to enable deployment of a DSG. 
 
-1. You must upload the `caCert.pem` file to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+1. Rename the `caCert.pem` file in `scripts/local/out` to `DSG-P2S-<shm-id>-RootCert.pem` and upload to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shId>-ClientCert`, . 
+2. Rename the `client.pfx` file in `scripts/local/out` to `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shId>-ClientCert`, . 
 
 
 
