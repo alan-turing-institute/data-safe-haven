@@ -113,16 +113,16 @@ IP_RANGE_SBNT_EXTERNAL="${VNET_IPTRIPLET}.0/28"
 # Create VNet if it does not already exist
 if [ "$(az network vnet list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $VNETNAME)" != "$VNETNAME" ]; then
     echo -e "${BOLD}Creating mirror VNet ${BLUE}$VNETNAME${END}${BOLD} using the IP range ${BLUE}$IP_RANGE_VNET${END}"
-    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE_VNET
+    az network vnet create --resource-group $RESOURCEGROUP --name $VNETNAME --address-prefixes $IP_RANGE_VNET --output none
 fi
 
 # Create external NSG if it does not already exist
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for external mirrors: ${BLUE}$NSG_EXTERNAL${END}"
-    az network nsg create --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name updateOutbound --description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" --access "Allow" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 443 873 --protocol TCP --destination-address-prefixes Internet --priority 300
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000
+    az network nsg create --resource-group $RESOURCEGROUP --name $NSG_EXTERNAL --output none
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Inbound --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000 --output none
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name updateOutbound --description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" --access "Allow" --source-address-prefixes $IP_RANGE_SBNT_EXTERNAL --destination-port-ranges 443 873 --protocol TCP --destination-address-prefixes Internet --priority 300 --output none
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name IgnoreOutboundRulesBelowHere --description "Deny all other outbound" --access "Deny" --source-address-prefixes "*" --destination-port-ranges "*" --protocol "*" --destination-address-prefixes "*" --priority 3000 --output none
 fi
 
 # Create external subnet if it does not already exist
@@ -133,7 +133,8 @@ if [ "$(az network vnet subnet show --resource-group $RESOURCEGROUP --vnet-name 
         --name $SUBNET_EXTERNAL \
         --network-security-group $NSG_EXTERNAL \
         --resource-group $RESOURCEGROUP \
-        --vnet-name $VNETNAME
+        --vnet-name $VNETNAME \
+        --output none
 fi
 echo -e "${BOLD}External tier-${TIER} mirrors will be deployed in the IP range ${BLUE}$IP_RANGE_SBNT_EXTERNAL${END}"
 
@@ -168,7 +169,7 @@ else
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
         echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME${END}"
-        az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
+        az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32) --output none
     fi
     # Retrieve admin password from keyvault
     ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
@@ -180,13 +181,13 @@ else
     # Create the data disk
     echo -e "${BOLD}Creating ${PYPIDATADISKSIZE} datadisk...${END}"
     DISKNAME=${MACHINENAME}_DATADISK
-    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${PYPIDATADISKSIZEGB}
+    az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${PYPIDATADISKSIZEGB} --output none
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${VNET_IPTRIPLET}.4
     echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 150
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 150 --output none
 
     # Create the VM
     echo -e "${BOLD}Creating VM...${END}"
@@ -207,7 +208,8 @@ else
         --size $MIRROR_VM_SIZE \
         --storage-sku $MIRROR_DISK_TYPE \
         --subnet $SUBNET_EXTERNAL \
-        --vnet-name $VNETNAME
+        --vnet-name $VNETNAME \
+        --output none
     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME${END}${BOLD} server${END}"
     rm $TMP_CLOUDINITYAML
 
@@ -220,10 +222,10 @@ else
     done
 
     # Delete the configuration NSG rule and restart the VM
-    echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
-    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
-    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary
-    az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
+    echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}" --output none
+    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary --output none
+    az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary --output none
+    az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME --output none
 fi
 
 
@@ -253,7 +255,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         # Ensure that admin password is available
         if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
             echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME${END}"
-            az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32)
+            az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32) --output none
         fi
         # Retrieve admin password from keyvault
         ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
@@ -265,13 +267,13 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         # Create the data disk
         echo -e "${BOLD}Creating ${CRANDATADISKSIZE} datadisk...${END}"
         DISKNAME=${MACHINENAME}_DATADISK
-        az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB}
+        az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB} --output none
 
         # Temporarily allow outbound internet connections through the NSG from this IP address only
         PRIVATEIPADDRESS=${VNET_IPTRIPLET}.5
         echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
-        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100
-        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200
+        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
+        az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200 --output none
 
         # Create the VM
         echo -e "${BOLD}Creating VM...${END}"
@@ -292,7 +294,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
             --size $MIRROR_VM_SIZE \
             --storage-sku $MIRROR_DISK_TYPE \
             --subnet $SUBNET_EXTERNAL \
-            --vnet-name $VNETNAME
+            --vnet-name $VNETNAME \
+            --output none
         echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME${END}${BOLD} server${END}"
 
         # Poll VM to see whether it has finished running
@@ -305,8 +308,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Delete the configuration NSG rule and restart the VM
         echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
-        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary
-        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary
-        az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
+        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary --output none
+        az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary --output none
+        az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME --output none
     fi
 fi
