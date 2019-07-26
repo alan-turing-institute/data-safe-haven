@@ -49,7 +49,7 @@ if [ "$SUBSCRIPTION" = "" ]; then
     echo -e "${RED}Subscription is a required argument!${END}"
     print_usage_and_exit
 fi
-az account set --subscription "$SUBSCRIPTION"
+az account set --subscription "$SUBSCRIPTION" --output none
 
 
 # Check that Tier is either 2 or 3
@@ -90,7 +90,7 @@ fi
 # -------------------------------------------------------------------------
 if [ $(az group exists --name $RESOURCEGROUP) != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END}"
-    az group create --name $RESOURCEGROUP --location $LOCATION
+    az group create --name $RESOURCEGROUP --location $LOCATION --output none
 fi
 
 
@@ -98,7 +98,7 @@ fi
 # ------------------------------------------------------------------
 if [ "$(az keyvault list --resource-group $RESOURCEGROUP --query '[].name' -o tsv | grep $KEYVAULT_NAME)" != "$KEYVAULT_NAME" ]; then
     echo -e "${BOLD}Creating keyvault ${BLUE}$KEYVAULT_NAME${END}"
-    az keyvault create --name $KEYVAULT_NAME --resource-group $RESOURCEGROUP --enabled-for-deployment true
+    az keyvault create --name $KEYVAULT_NAME --resource-group $RESOURCEGROUP --enabled-for-deployment true --output none
     # Wait for DNS propagation of keyvault
     sleep 10
 fi
