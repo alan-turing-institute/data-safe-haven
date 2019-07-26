@@ -238,7 +238,7 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "SHM Test B",
+      "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019071900",
       "admin": {
