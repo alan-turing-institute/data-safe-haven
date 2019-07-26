@@ -18,6 +18,7 @@ STATUS=$(${STATUS_CMD})
 if [ "$STATUS" == "" ]; then
     echo -e "${RED}No realm memberships found. Attempting to join $DOMAIN_LOWER${END}"
     sudo cat /etc/ldap.secret | sudo realm join --verbose -U $LDAP_USER $DOMAIN_LOWER --install=/
+    sleep 30  # allow time for the realm join to propagate
 else
     echo -e "${BLUE}Currently a member of realm: '$STATUS'. No need to rejoin.${END}"
     echo "REALM LIST RESULT:"

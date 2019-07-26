@@ -29,6 +29,8 @@ function Get-ShmFullConfig{
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.id = $shmConfigBase.shId
+    $shm.name = $shmConfigBase.name
+    $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
 
     # --- Domain config ---
@@ -69,7 +71,8 @@ function Get-ShmFullConfig{
     # --- NPS config ---
     $shm.nps = [ordered]@{}
     $shm.nps.rg = $shmConfigBase.npsRgName
-    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIp
+    $shm.nps.vmName = $shmConfigBase.npsVmName
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIpLastOctet
 
     # --- Storage config --
     $shm.storage = [ordered]@{
@@ -78,7 +81,7 @@ function Get-ShmFullConfig{
     $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
     $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
-    # -- Secrets config ---
+    # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.name = "dsg-management-" + $shm.id
     $shm.keyVault.secretNames = [ordered]@{}
@@ -87,6 +90,11 @@ function Get-ShmFullConfig{
     $shm.keyVault.secretNames.safemode='sh-managment-dcsafemode'
     $shm.keyVault.secretNames.adsync='sh-managment-adsync'
     $shm.keyVault.secretNames.vpncertificate='sh-managment-cert'
+
+    # --- DNS config ---
+    $shm.dns = [ordered]@{}
+    $shm.dns.rg = "RG_SHM_DNS"
+
     return $shm
 }
 Export-ModuleMember -Function Get-ShmFullConfig
@@ -196,6 +204,13 @@ function Add-DsgConfig {
     $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
     $config.dsg.network.nsg.data.name = "NSG_Linux_Servers"
 
+    # --- Storage config --
+    $config.dsg.storage = [ordered]@{
+        artifacts = [ordered]@{}
+    }
+    $config.dsg.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
+    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)artifacts" 
+    
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
         name = "dsg-management-" + $config.shm.id # TODO: Once all scripts driven by this config make separate KeyVault per DSG
@@ -255,6 +270,7 @@ function Add-DsgConfig {
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
+    $config.dsg.rds.gateway.npsSecretName = "dsg$($config.dsg.id)-nps-secret"
     $config.dsg.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn

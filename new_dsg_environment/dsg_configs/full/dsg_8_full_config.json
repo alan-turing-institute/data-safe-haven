@@ -1,15 +1,22 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Testing",
-    "id": "test",
+    "subscriptionName": "SHM Test B",
+    "id": "testc",
+    "name": "Test Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
-      "fqdn": "dsgroupdev.co.uk",
-      "netbiosName": "DSGROUPDEV",
-      "dn": "DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "testc.dsgroupdev.co.uk",
+      "netbiosName": "TESTC",
+      "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -20,58 +27,63 @@
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUPDEV_VNET1",
-        "cidr": "10.220.1.0/21"
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.220.1",
-          "cidr": "10.220.1.0/24"
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
         }
       }
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC",
-      "hostname": "MGMTDEVDC",
-      "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
-      "ip": "10.220.1.250"
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.testc.dsgroupdev.co.uk",
+      "ip": "10.251.0.250"
     },
     "nps": {
-      "ip": "10.220.1.248"
+      "rg": "RG_DSG_NPS",
+      "vmName": "SHMNPS",
+      "ip": "10.251.0.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgxartifacts"
+        "accountName": "dsgtestcartifacts"
       }
     },
     "keyVault": {
-      "name": "dsg-management-test",
+      "name": "dsg-management-testc",
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
     }
   },
   "dsg": {
-    "subscriptionName": "Data Study Group 8 (Test)",
+    "subscriptionName": "DSG 8 Test",
     "id": "8",
     "shortName": "dsg8",
     "location": "uksouth",
-    "tier": "2",
+    "tier": "3",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
-        "name": "kv-shm-pkg-mirrors-test"
+        "name": "kv-shm-pkg-mirrors-testc"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": "10.20.2.21"
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": "10.20.2.20"
+        "ip": "10.20.3.20"
       }
     },
     "domain": {
@@ -123,8 +135,14 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg8artifacts"
+      }
+    },
     "keyVault": {
-      "name": "dsg-management-test"
+      "name": "dsg-management-testc"
     },
     "dc": {
       "rg": "RG_DSG_DC",
@@ -168,7 +186,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup8.co.uk",
-        "ip": "10.250.57.250"
+        "ip": "10.250.57.250",
+        "npsSecretName": "dsg8-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
@@ -219,9 +238,9 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.0.2019032100",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup8-dsvm-admin-password"

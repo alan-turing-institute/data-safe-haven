@@ -12,20 +12,44 @@ function New-AccountSasToken {
         $resourceType,
         [Parameter(Position=5, Mandatory = $true, HelpMessage = "Enter permission string")]
         [string]$permission,
-        [Parameter(Position=6, Mandatory = $true, HelpMessage = "Provide current Azure subscription context")]
-        [string]$prevSubscription
+        [Parameter(Position=6, Mandatory = $false, HelpMessage = "Enter validity in hours")]
+        [int]$validityHours
     )
 
+    if(-not $validityHours){
+        $validityHours = 1
+    }
     # Temporarily switch to storage account subscription
+    $prevContext = Get-AzContext
     $_ = Set-AzContext -Subscription $subscriptionName; # Assign to dummy variable to avoid conmtext being returned
     # Generate SAS token
     $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
     $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
-    $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -Context $accountContext);
+    $expiryTime = ((Get-Date) + (New-TimeSpan -Hours $validityHours))
+    $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -ExpiryTime $expiryTime -Context $accountContext);
 
     # Switch back to previous subscription
-    $_ = Set-AzContext -Subscription $prevSubscription; # Assign to dummy variable to avoid conmtext being returned
-
+    $_ = Set-AzContext -Context $prevContext;
     return $sasToken
 }
 Export-ModuleMember -Function New-AccountSasToken
+
+function New-ReadOnlyAccountSasToken {
+
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter subscription name")]
+        [string]$subscriptionName,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
+        [string]$resourceGroup,
+        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter storage account name")]
+        [string]$accountName
+    )
+
+        return New-AccountSasToken -subscriptionName "$subscriptionName" `
+                                   -resourceGroup "$resourceGroup" `
+                                   -accountName "$accountName" `
+                                   -service Blob,File `
+                                   -resourceType Service,Container,Object `
+                                   -permission "rl"
+}
+Export-ModuleMember -Function New-ReadOnlyAccountSasToken

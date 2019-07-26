@@ -2,6 +2,13 @@
   "shm": {
     "subscriptionName": "Safe Haven Managment",
     "id": "prod",
+    "name": "Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
       "fqdn": "turingsafehaven.ac.uk",
@@ -38,6 +45,8 @@
       "ip": "10.251.0.250"
     },
     "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "SHMNPS",
       "ip": "10.251.0.248"
     },
     "storage": {
@@ -51,6 +60,9 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
     }
   },
   "dsg": {
@@ -123,6 +135,12 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg3artifacts"
+      }
+    },
     "keyVault": {
       "name": "dsg-management-prod"
     },
@@ -168,7 +186,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup3.co.uk",
-        "ip": "10.250.17.250"
+        "ip": "10.250.17.250",
+        "npsSecretName": "dsg3-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
@@ -186,7 +205,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.253,193.60.220.240,137.205.213.46,137.205.238.0/24,194.66.251.0/24"
+          "allowedSources": "193.60.220.253,193.60.220.240,137.205.213.46,137.205.238.0/24,194.66.251.0/24,146.169.128.0/17,146.179.192.0/22,146.179.196.0/22,146.179.200.0/22,146.179.204.0/22"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -219,9 +238,9 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019061600",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup3-dsvm-admin-password"

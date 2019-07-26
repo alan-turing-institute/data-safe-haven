@@ -2,6 +2,13 @@
   "shm": {
     "subscriptionName": "Safe Haven Management Testing",
     "id": "test",
+    "name": "Test Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
     "location": "uksouth",
     "domain": {
       "fqdn": "dsgroupdev.co.uk",
@@ -38,6 +45,8 @@
       "ip": "10.220.1.250"
     },
     "nps": {
+      "rg": "RG_SH_MGMTNPS",
+      "vmName": "MGMTNPS",
       "ip": "10.220.1.248"
     },
     "storage": {
@@ -51,6 +60,9 @@
       "secretNames": {
         "p2sRootCert": "sh-management-p2s-root-cert"
       }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
     }
   },
   "dsg": {
@@ -123,6 +135,12 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg9artifacts"
+      }
+    },
     "keyVault": {
       "name": "dsg-management-test"
     },
@@ -168,7 +186,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup9.co.uk",
-        "ip": "10.250.65.250"
+        "ip": "10.250.65.250",
+        "npsSecretName": "dsg9-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
@@ -219,9 +238,9 @@
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven Management Testing",
+      "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019061600",
+      "vmImageVersion": "0.1.2019071900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup9-dsvm-admin-password"

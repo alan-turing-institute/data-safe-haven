@@ -3,8 +3,8 @@ param(
   [string]$dsgId,
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (defaults to 'Standard_DS2_v2')")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (defaults to 'Standard_DS2_v2')"),
-  [Parameter(Position=2, HelpMessage = "Last octet of IP address (if not provided then the next available one will be used)")]
-  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
+  [Parameter(Position=2, Mandatory = $true, HelpMessage = "Last octet of IP address")]
+  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address")
 )
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
@@ -38,7 +38,7 @@ $cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Re
 
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id.ToLower() + ".yaml"
+$cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id + ".yaml"
 $domainName = $config.shm.domain.fqdn
 $ldapBaseDn = $config.shm.domain.userOuPath
 $ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
@@ -93,7 +93,9 @@ if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
 if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
 if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
 
-$cmd =  "$deployScriptDir/deploy_azure_dsg_vm.sh $arguments"
+$cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
 bash -c $cmd
 
-Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
+Write-Host "Configuring Postgres shared admin, write and read users"
+$_ = Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
+Write-Host "VM deployment done."
