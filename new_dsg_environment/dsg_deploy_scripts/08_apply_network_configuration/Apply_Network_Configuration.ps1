@@ -160,7 +160,7 @@ Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + 
 # We do this as the Tier of the DSG may have changed and we want to ensure we are peered
 # to the correct mirror set fo its current Tier and not peered to the mirror set for 
 # any other Tier
-$peeringDir = (Join-Path $PSScriptRoot ".." "09_peer_mirrors" -Resolve)
+$peeringDir = (Join-Path $PSScriptRoot ".." "09_mirror_peerings" -Resolve)
 $peeringScriptPath = (Join-Path $peeringDir "Configure_Mirror_Peering.ps1"  -Resolve)
 
 # (Re-)configure Mirror peering for the DSG

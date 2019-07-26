@@ -1,8 +1,8 @@
 {
     "subscriptionName": "DSG 8 Test",
     "dsgId": "8",
-    "shmId": "test",
-    "tier": "2",
+    "shmId": "testc",
+    "tier": "3",
     "domain": "dsgroup8.co.uk",
     "ipPrefix": "10.250.56",
     "rdsAllowedSources": "Internet",

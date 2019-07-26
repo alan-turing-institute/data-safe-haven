@@ -45,6 +45,8 @@
       "ip": "10.251.0.250"
     },
     "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "SHMNPS",
       "ip": "10.251.0.248"
     },
     "storage": {
@@ -133,6 +135,12 @@
         }
       }
     },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg6artifacts"
+      }
+    },
     "keyVault": {
       "name": "dsg-management-prod"
     },
@@ -178,7 +186,8 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup6.co.uk",
-        "ip": "10.250.41.250"
+        "ip": "10.250.41.250",
+        "npsSecretName": "dsg6-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",

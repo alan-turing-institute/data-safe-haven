@@ -264,7 +264,7 @@ fi
 
 if [ "$(az group exists --name $RESOURCEGROUP)" != "true" ]; then
     echo -e "${BOLD}Creating resource group ${BLUE}$RESOURCEGROUP${END} ${BOLD}in ${BLUE}$SUBSCRIPTIONTARGET${END}"
-    az group create --name $RESOURCEGROUP --location $LOCATION
+    az group create --name $RESOURCEGROUP --location $LOCATION --output none
 fi
 
 # Check that secure NSG exists
@@ -288,7 +288,7 @@ fi
 # -------------------------------------------------------------------------------
 if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access ${RED}(for use during deployment *only*)${END}${BOLD} in resource group ${BLUE}$DSG_NSG_RG${END}"
-    az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG
+    az network nsg create --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --output none
 
     # Inbound: allow LDAP then deny all
     az network nsg rule create \
@@ -303,7 +303,8 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
         --protocol "*" \
-        --priority 2000
+        --priority 2000 \
+        --output none
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
         --nsg-name $DEPLOYMENT_NSG \
@@ -316,7 +317,8 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --destination-address-prefixes "*" \
         --destination-port-ranges "*" \
         --protocol "*" \
-        --priority 3000
+        --priority 3000 \
+        --output none
     # Outbound: allow LDAP then deny all Virtual Network
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
@@ -330,7 +332,8 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --destination-address-prefixes $MGMNT_SUBNET_IP_RANGE \
         --destination-port-ranges "*" \
         --protocol "*" \
-        --priority 2000
+        --priority 2000 \
+        --output none
     az network nsg rule create \
         --resource-group $DSG_NSG_RG \
         --nsg-name $DEPLOYMENT_NSG \
@@ -343,7 +346,8 @@ if [ "$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG 
         --destination-address-prefixes VirtualNetwork \
         --destination-port-ranges "*" \
         --protocol "*" \
-        --priority 3000
+        --priority 3000 \
+        --output none
 fi
 DEPLOYMENT_NSG_ID=$(az network nsg show --resource-group $DSG_NSG_RG --name $DEPLOYMENT_NSG --query 'id' | xargs)
 echo -e "${BOLD}Deploying into NSG ${BLUE}$DEPLOYMENT_NSG${END} ${BOLD}with outbound internet access to allow package installation. Will switch NSGs at end of deployment.${END}"
@@ -429,7 +433,8 @@ if [ "$IP_ADDRESS" = "" ]; then
         --resource-group $RESOURCEGROUP \
         --size $VM_SIZE \
         --storage-sku $OS_DISK_TYPE \
-        --subnet $DSG_SUBNET_ID
+        --subnet $DSG_SUBNET_ID \
+        --output none
 else
     echo -e "${BOLD}Creating VM with static IP address ${BLUE}$IP_ADDRESS${END}"
     az vm create ${PLANDETAILS} \
@@ -446,7 +451,8 @@ else
         --resource-group $RESOURCEGROUP \
         --size $VM_SIZE \
         --storage-sku $OS_DISK_TYPE \
-        --subnet $DSG_SUBNET_ID
+        --subnet $DSG_SUBNET_ID \
+        --output none
 fi
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
@@ -463,7 +469,7 @@ az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "length(
 
 # VM must be off for us to switch NSG. Once done we restart
 echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} ${BOLD}at $(date)${END}"
-az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID
+az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID --output none
 echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END} ${BOLD}at $(date)${END}"
 az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
 
