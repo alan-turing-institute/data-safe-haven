@@ -96,4 +96,6 @@ if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
 $cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
 bash -c $cmd
 
-Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
+Write-Host "Configuring Postgres shared admin, write and read users"
+$_ = Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
+Write-Host "VM deployment done."
