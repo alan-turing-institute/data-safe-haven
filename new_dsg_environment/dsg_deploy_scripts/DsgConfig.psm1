@@ -86,6 +86,10 @@ function Get-ShmFullConfig{
     $shm.keyVault.name = "dsg-management-" + $shm.id
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
+    $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
+    $shm.keyVault.secretNames.safemode='sh-managment-dcsafemode'
+    $shm.keyVault.secretNames.adsync='sh-managment-adsync'
+    $shm.keyVault.secretNames.vpncertificate='sh-managment-cert'
 
     # --- DNS config ---
     $shm.dns = [ordered]@{}

@@ -1,0 +1,17 @@
+{
+    "subscriptionName": "SHM Test B",
+    "computeVmImageSubscriptionName": "SHM Test B",
+    "domain": "testb.dsgroupdev.co.uk",
+    "shId": "testb",
+    "location": "uksouth",
+    "ipPrefix": "10.220.1",
+    "dcVmName": "SHMDC1",
+    "dcHostname": "MGMTDEVDC",
+    "dcRgName": "RG_DSG_DC",
+    "npsRgName": "RG_DSG_NPS",
+    "npsIp": "248",
+    "vnetRgName": "RG_DSG_VNET",
+    "vnetName":"SHM_VNET1",
+    "artifactStorageAccount": "dsgtestbartifacts",
+    "vaultname": "testbvault"
+}

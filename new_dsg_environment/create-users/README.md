@@ -3,10 +3,10 @@
 ## Create new user file (Project Investigator or Research Co-ordinator)
 - Make a new copy of the user details file `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
-  - `SamAccountName`: Log in username **without** the @domain bit). Use "firstname.lastname" format
+  - `SamAccountName`: Log in username **without** the @domain bit). Use `firstname.lastname` format
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
-  - `Mobile`: Phone number to use for initial password reset. This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA. They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+  - `Mobile`: Phone number to use for initial password reset. This must include country code in the format `+<country-code> <local number>`. Include a space between the country code and local number parts and include the leading `0` in the country code if present. This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA. They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
    - `SecondaryEmail`: An existing organisational email address for the user. Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation emails with the right usernames to the right email addresses.
  - Send the file to IT
 
@@ -35,10 +35,10 @@ If the new user should definitely be a different user, then the following fields
 - Select the users you have recently created and click "Select"
 - Click "Assign" to complete the process
 - Return to "Azure Active Directory" pane
-- Select "Users" from "Manage" section
-- Select "Multi-Factor Authentication" button
-- Check the users you want to apply MFA to
-- Click to "Enable"
+- Click "Users" from "Manage" section
+- Click "Multi-Factor Authentication" button
+- Check the box for the users you want to apply MFA to
+- Click the "Enable" link in the "Quick steps" block on the right and confirm in the pop-up
 - Close MFA console
 - Users are now ready to reset password and set up MFA
 
@@ -50,8 +50,8 @@ These are a summary. The user should be sent a delegate pack / guide that has fu
 
 #### Reset password
 For security we do not store your initial password, so you must reset it before you can log in.
-1. Open a private browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
-2. Paste the following UR into the private browser address bar - https://aka.ms/ssprsetup
+1. Open a private/incognito browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
+2. Paste the following UR into the private/incognito browser address bar - https://aka.ms/ssprsetup
 3. At the login prompt enter your username (provided in the welcome email)
 4. At password prompt click "Forgotten password"
 5. Complete the requested information (captcha and the phone number you provided on registration).
