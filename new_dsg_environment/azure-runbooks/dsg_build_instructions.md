@@ -511,9 +511,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+- Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted.
 
-- **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this will not be an issue. However, if you are redeploying a test environment more frequently than this during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+- **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this should usually not be an issue. However, if you find yourself needing to re-run this step, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 
