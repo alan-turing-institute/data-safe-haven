@@ -3,8 +3,8 @@ param(
   [string]$dsgId,
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (defaults to 'Standard_DS2_v2')")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (defaults to 'Standard_DS2_v2')"),
-  [Parameter(Position=2, HelpMessage = "Last octet of IP address (if not provided then the next available one will be used)")]
-  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address (if not provided then the next available one will be used)")
+  [Parameter(Position=2, Mandatory = $true, HelpMessage = "Last octet of IP address")]
+  [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address")
 )
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
