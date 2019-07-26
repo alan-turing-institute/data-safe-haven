@@ -19,7 +19,7 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 # Find VM with private IP address matching the provided last octect
 ## Turn provided last octect into full IP address in the data subnet
 $vmIpAddress = ($config.dsg.network.subnets.data.prefix + "." + $ipLastOctet)
-Write-Host " - Finding VM with IP $vmIpAddress"
+Write-Output " - Finding VM with IP $vmIpAddress"
 ## Get all compute VMs
 $computeVms = Get-AzVM -ResourceGroupName $config.dsg.dsvm.rg
 ## Get the NICs attached to all the compute VMs
