@@ -275,11 +275,7 @@ else
 
     # Poll VM to see whether it has finished running
     echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-    while true; do
-        POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-        if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-        sleep 10
-    done
+    az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
 
     # Delete the configuration NSG rule and restart the VM
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
@@ -287,14 +283,21 @@ else
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
+    # Get hostname from internal server
+    INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
+    az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated
+
     # Update known hosts on the external server to allow connections to the internal server
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
-    INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
 
     # Update known IP addresses on the external server to schedule pushing to the internal server
     echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
+    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+
+    # Finished updating
     echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
 fi
 
@@ -366,11 +369,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Poll VM to see whether it has finished running
         echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-        while true; do
-            POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-            if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-            sleep 10
-        done
+        az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
 
         # Delete the configuration NSG rule and restart the VM
         echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
@@ -378,14 +377,21 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary
         az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL
 
+        # Get hostname from internal server
+        INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
+        az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated
+
         # Update known hosts on the external server to allow connections to the internal server
         echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
-        INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
 
         # Update known IP addresses on the external server to schedule pushing to the internal server
         echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
+        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+
+        # Finished updating
         echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
     fi
 fi
