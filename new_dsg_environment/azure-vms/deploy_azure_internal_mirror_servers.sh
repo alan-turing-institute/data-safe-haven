@@ -285,17 +285,17 @@ else
 
     # Get hostname from internal server
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
-    az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated
+    az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
     # Update known hosts on the external server to allow connections to the internal server
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
-    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
     # Update known IP addresses on the external server to schedule pushing to the internal server
     echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
-    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
     # Finished updating
     echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
@@ -379,17 +379,17 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Get hostname from internal server
         INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
-        az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated
+        az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
         # Update known hosts on the external server to allow connections to the internal server
         echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
-        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
         # Update known IP addresses on the external server to schedule pushing to the internal server
         echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
-        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
+        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # updated checks the transition from 'Updating' to 'Succeeding'
 
         # Finished updating
         echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
