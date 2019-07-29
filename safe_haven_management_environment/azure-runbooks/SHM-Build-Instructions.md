@@ -24,8 +24,8 @@
 2. Click `Create a Resource`  and search for `Azure Active Directory`
 3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test B"
 4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-5 Set the "Country or Region" to "United Kingdom"
-4. Click Create AAD
+5. Set the "Country or Region" to "United Kingdom"
+6. Click Create AAD
 
    ![](images/AAD.png)
 
@@ -48,31 +48,10 @@
 
 3. Note the DNS record details displayed
   ![AAD DNS record details](images/aad_dns_record_details.png)
-4. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 36000 is in seconds)
+4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
+5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
-5. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
-
-### Add additional administrators
-The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
-
-1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. On the left hand panel click `Azure Active Directory`.
-3. Navigate to `Users` and **either**:
-    - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
-    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
-5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
-
-6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
-   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
-      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
-    ![](images/set_user_location.png)
-
-6. Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
-![](images/enable_writeback.png)
-
-7. Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
-![](images/enable_passwordreset.png)
+6. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
 ## 1. Deploy VNET and Domain Controllers
 
@@ -90,14 +69,17 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
     "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
     "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
     "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
-    "npsIp": "The IP address of the management environment NPS server",
+    "npsRgName": "The name of the Resource Group containing the managment environment Network Policy Server",
+    "npsIpLastOctet": "The IP address of the management environment NPS server",
+    "dcVmName":  "The VM name of the managment environment NPS server",
     "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "vnetName":"The name of the Virtual Network for the management environment",
-    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment",
-    "vaultname": "testbvault"
+    "artifactStorageAccount": "The name of the storage account that will contain installation artifacts for new DSGs within the mangement  environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg<shm-id>artifacts`",
+    "keyVaultName": "The name of the KeyVault that will contain secrets mangement environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg-management-<shm-id>`"
 }
 ```
 
+### Deploy KeyVault for SHM secrets
 
 1. Ensure you are logged into the Azure within PowerShell using the command:
 ```pwsh
@@ -114,25 +96,43 @@ Set-AzContext -SubscriptionId "<SHM-subscription-id>"
 cd ./safe_haven_management_environment/setup
 ```
 
-Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
+4. Run `./setup_azure0.ps1` entering the `shId`, defined in the config file, when prompted 
+
+
+### Set KeyVault access policies
+
+- Once the KeyVault deployment script exits successfully, follow the instructions to add a policy to the KeyVault so that you are able to manage secrets.
+    - Navigate to the "RG_DSG_SECRETS" resource group in the management subscription in the Azure portal and click on the KeyVault shown there
+    - Click on "Access Policies" in the "Settings" section of the left-hand menu and click "+Add Access Policy".
+    - In the "Configure from template" drop-down, select "Key, Secret & Certificate Management"
+    - In the "Select Principal" section, select the security group that will administer this Safe haven instance
+        - For Turing test SHMs this should be: `Safe Haven Test Admins`
+        - For Turing production SHMs this should be: `Safe Haven Production Admins`
+        - For non-turing Safe Haven instances, this should be the security group that will administer that instance.
+    - Click the "Add" button.
+
+### Deploy the Virtual Network and Active Directory Domain Controller
+
+1. Ensure you are logged into the Azure within PowerShell using the command:
+```pwsh
+Connect-AzAccount
+```
+ 
+2. Set the AzContext to the SHM Azure subscription id:
+```pwsh
+Set-AzContext -SubscriptionId "<SHM-subscription-id>"
+```
+
+3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
+```pwsh
+cd ./safe_haven_management_environment/setup
+```
+
+4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
 
 5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
 ![](images/resource_groups.png)
-
-### Set Keyvault access policies
-
-1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_SECRETS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
-
-2. Click `Select principal` and find the security group that should have access. 
-    - For Turing test SHMs this should be: `Safe Haven Test Admins`
-    - For Turing production SHMs this should be: `Safe Haven Production Admins`
-    Safe Haven Test Admins" for test SHMs and "Safe Haven Production Admins" 
-    - For non-turing users, create a security group of Users who should have access. 
-
-3. Select all under `Key permissions`, `Secret permissions` and `Certificate permissions`
-
-4. Click ok. 
 
 ### Download software and upload to blob storage
 A number of files are critical for the DSG deployment. They must be added to blob storage:
@@ -189,9 +189,6 @@ The following are required to enable deployment of a DSG.
 1. Rename the `caCert.pem` file in `scripts/local/out` to `DSG-P2S-<shm-id>-RootCert.pem` and upload to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
 2. Rename the `client.pfx` file in `scripts/local/out` to `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shId>-ClientCert`, . 
-
-
-
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
@@ -309,9 +306,29 @@ Once you have accessed the VM via Remote Desktop:
 ### Configure AAD side of AD connect
 - Select "Password reset" from the left hand menu
   - In the inital "Properties" panel, set "Self service password reset enabled" to "All"
-  - Select "On-prtemises integration" from the left-hand menu and ensure "Write back passwords to your on-premises directory" is set to "Yes"
+  - Select "On-premises integration" from the left-hand menu and ensure "Write back passwords to your on-premises directory" is set to "Yes"
 
-The Domain Controller configuration is now complete. Exit remote desktop
+### Add additional administrators
+The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
+
+For some steps, a dedicated **internal** Global Administrator is required (e.g. to add P1 licences), so at least this additional administrator will need to be created.
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. On the left hand panel click `Azure Active Directory`.
+3. Navigate to `Users` and **either**:
+    - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
+    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
+4. Create a dedicated **internal** GLobal Administrator user called `admin@customdomain`.
+5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
+6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
+   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
+      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+    ![](images/set_user_location.png)
+6. Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
+![](images/enable_writeback.png)
+7. Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
+![](images/enable_passwordreset.png)
 
 ## 4. Deploy Network Policy Server (NPS)
 

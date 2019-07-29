@@ -20,5 +20,6 @@
     "npsRgName": "RG_SHM_NPS",
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
-    "artifactStorageAccount": "dsgartifactsprod"
+    "artifactStorageAccount": "dsgartifactsprod",
+    "keyVaultName": "dsg-management-prod"
 }
