@@ -48,7 +48,7 @@
 
 3. Note the DNS record details displayed
   ![AAD DNS record details](images/aad_dns_record_details.png)
-4. In a separate Azure portal window, switch to the Turing direcotry and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
+4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
 5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 6. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
