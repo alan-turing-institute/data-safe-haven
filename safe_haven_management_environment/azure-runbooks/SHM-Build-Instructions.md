@@ -48,7 +48,7 @@
 
 3. Note the DNS record details displayed
   ![AAD DNS record details](images/aad_dns_record_details.png)
-4. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 36000 is in seconds)
+4. In a separate Azure portal window, navigate to the DNS Zone for your custom domain and create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 5. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
