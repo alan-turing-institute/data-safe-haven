@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
 
-# Temporarily switch to DSG subscription
+# Temporarily switch to SHM subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
