@@ -75,10 +75,11 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
     "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "vnetName":"The name of the Virtual Network for the management environment",
     "artifactStorageAccount": "The name of the storage account that will contain installation artifacts for new DSGs within the mangement  environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg<shm-id>artifacts`",
-    "vaultname": "The name of the KeyVault that will contain secrets mangement environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg-management-<shm-id>`"
+    "keyVaultName": "The name of the KeyVault that will contain secrets mangement environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg-management-<shm-id>`"
 }
 ```
 
+### Deploy KeyVault for SHM secrets
 
 1. Ensure you are logged into the Azure within PowerShell using the command:
 ```pwsh
@@ -95,7 +96,39 @@ Set-AzContext -SubscriptionId "<SHM-subscription-id>"
 cd ./safe_haven_management_environment/setup
 ```
 
-Next run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
+4. Run `./setup_azure0.ps1` entering the `shId`, defined in the config file, when prompted 
+
+
+### Set KeyVault access policies
+
+- Once the KeyVault deployment script exits successfully, follow the instructions to add a policy to the KeyVault so that you are able to manage secrets.
+    - Navigate to the "RG_DSG_SECRETS" resource group in the management subscription in the Azure portal and click on the KeyVault shown there
+    - Click on "Access Policies" in the "Settings" section of the left-hand menu and click "+Add Access Policy".
+    - In the "Configure from template" drop-down, select "Key, Secret & Certificate Management"
+    - In the "Select Principal" section, select the security group that will administer this Safe haven instance
+        - For Turing test SHMs this should be: `Safe Haven Test Admins`
+        - For Turing production SHMs this should be: `Safe Haven Production Admins`
+        - For non-turing Safe Haven instances, this should be the security group that will administer that instance.
+    - Click the "Add" button.
+
+### Deploy the Virtual Network and Active Directory Domain Controller
+
+1. Ensure you are logged into the Azure within PowerShell using the command:
+```pwsh
+Connect-AzAccount
+```
+ 
+2. Set the AzContext to the SHM Azure subscription id:
+```pwsh
+Set-AzContext -SubscriptionId "<SHM-subscription-id>"
+```
+
+3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
+```pwsh
+cd ./safe_haven_management_environment/setup
+```
+
+4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
 
 5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
@@ -274,20 +307,6 @@ Once you have accessed the VM via Remote Desktop:
 - Select "Password reset" from the left hand menu
   - In the inital "Properties" panel, set "Self service password reset enabled" to "All"
   - Select "On-premises integration" from the left-hand menu and ensure "Write back passwords to your on-premises directory" is set to "Yes"
-
-### Set KeyVault access policies
-
-1. Go the the Azure portal. Under the subscription entered in the config file there will be a newly created resource group called `RG_DSG_SECRETS`. Go to the `key-vault` inside it and click `access policies` in the left panel. 
-
-2. Click `Select principal` and find the security group that should have access. 
-    - For Turing test SHMs this should be: `Safe Haven Test Admins`
-    - For Turing production SHMs this should be: `Safe Haven Production Admins`
-    Safe Haven Test Admins" for test SHMs and "Safe Haven Production Admins" 
-    - For non-turing users, create a security group of Users who should have access. 
-
-3. Select all under `Key permissions`, `Secret permissions` and `Certificate permissions`
-
-4. Click ok. 
 
 ### Add additional administrators
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.

@@ -11,21 +11,6 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
 
-echo $domain.netbiosName
-
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.subscriptionName;
-
-# Create Resource Groups
-New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
-New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
-New-AzResourceGroup -Name RG_DSG_SECRETS -Location $config.location
-New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
-
-# Create a keyvault and generate passwords
-New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName RG_DSG_SECRETS -Location $config.location
-
 # Fetch DC root user password (or create if not present)
 $DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
 if ($null -eq $DCRootPassword) {
@@ -105,12 +90,15 @@ $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Ob
 $cert = [string]$cert
 $cert = $cert.replace(" ", "")
 
+New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
         -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
         -P2S_VPN_Certifciate $cert `
         -Virtual_Network_Name "SHM_VNET1";
 
 # Deploy the shmdc-template
+
+New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -templatefile "../arm_templates/shmdc/shmdc-template.json"`
         -Administrator_User "atiadmin"`
