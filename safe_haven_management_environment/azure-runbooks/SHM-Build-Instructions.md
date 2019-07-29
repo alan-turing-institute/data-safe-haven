@@ -133,37 +133,37 @@ cd ./safe_haven_management_environment/setup
 
 5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
-![](images/resource_groups.png)
+   ![](images/resource_groups.png)
 
 ### Download software and upload to blob storage
 A number of files are critical for the DSG deployment. They must be added to blob storage:
 
 1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and then create a new container called `rdssh-packages`. It will then appear in the storage account:
 
-![](images/blobstorage.png)
-2. On your local machine download the following and place into a folder called `rdssh1-app-server`. Then upload to the container to the `rdssh-packages`, ensuring it has the same name. 
+   ![](images/blobstorage.png)
+
+2. On your local machine download the following and place into a folder called `rdssh1-app-server`, renaming them so that the filenames include the full version if the downloaded files do not already.
 
     - [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
     - [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
     - [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
 
-The container will now look like this:
-![](images/rdssh1-app-server.png)
+3. Upload the folder to the `rdssh-packages`, ensuring it has the same name. The container will now look like this:
+   ![](images/rdssh1-app-server.png)
 
-3. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
+4. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
+   - [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
+   - [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+   - [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
 
-- [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
-- [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-- [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
+   - [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html)
+   - [Texlive: install-tl-windows-20190429.exe](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe)
 
-- [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html)
-- [Texlive: install-tl-windows-20190429.exe](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe)
+5. The container will now look like this:
+   ![](images/rdshh2-virtual-desktop-server.png)
 
-The container will now look like this:
-![](images/rdshh2-virtual-desktop-server.png)
-
-Go back up a level and ensure the folders are names match:
-![](images/rdsspackages.png)
+6. Go back up a level and ensure the folders are names are as expected.
+   ![](images/rdsspackages.png)
 
 ## 3. Configure Domain Controllers (DCs)
 
