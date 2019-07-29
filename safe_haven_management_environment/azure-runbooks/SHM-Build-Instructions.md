@@ -24,8 +24,8 @@
 2. Click `Create a Resource`  and search for `Azure Active Directory`
 3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test B"
 4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-5 Set the "Country or Region" to "United Kingdom"
-4. Click Create AAD
+5. Set the "Country or Region" to "United Kingdom"
+6. Click Create AAD
 
    ![](images/AAD.png)
 
