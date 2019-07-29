@@ -110,6 +110,7 @@ cd ./safe_haven_management_environment/setup
         - For Turing production SHMs this should be: `Safe Haven Production Admins`
         - For non-turing Safe Haven instances, this should be the security group that will administer that instance.
     - Click the "Add" button.
+    - Click the "Save" icon on the next screen
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 
