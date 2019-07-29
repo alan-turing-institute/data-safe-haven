@@ -20,7 +20,7 @@ New-AzResourceGroup -Name $config.keyVault.rg  -Location $config.location
 New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 
 # Create a keyvault and generate passwords
-New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName RG_DSG_SECRETS -Location $config.location
+New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
 Write-Host "Before running the next step, make sure to add a policy to the KeyVault '$($config.keyVault.name)' in the '$($config.keyVault.rg)' resource group that allows gives the administrator security group for this Safe Haven instance rights to manage Keys, Secrets and Certificates."
         
