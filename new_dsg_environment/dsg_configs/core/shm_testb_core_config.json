@@ -3,15 +3,23 @@
     "computeVmImageSubscriptionName": "SHM Test B",
     "domain": "testb.dsgroupdev.co.uk",
     "shId": "testb",
+    "name": "Test Safe Haven",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
     "location": "uksouth",
-    "ipPrefix": "10.220.1",
+    "ipPrefix": "10.251.0",
     "dcVmName": "SHMDC1",
-    "dcHostname": "MGMTDEVDC",
-    "dcRgName": "RG_DSG_DC",
-    "npsRgName": "RG_DSG_NPS",
-    "npsIp": "248",
-    "vnetRgName": "RG_DSG_VNET",
+    "dcHostname": "SHMDC1",
+    "dcRgName": "RG_SHM_VM_DC",
+    "npsIpLastOctet": "248",
+    "npsVmName": "SHMNPS",
+    "npsRgName": "RG_SHM_NPS",
+    "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgtestbartifacts",
-    "vaultname": "testbvault"
+    "vaultname": "dsg-management-testb"
 }

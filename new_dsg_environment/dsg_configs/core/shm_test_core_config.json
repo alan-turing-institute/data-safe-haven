@@ -15,10 +15,11 @@
     "dcVmName": "DC",
     "dcHostname": "MGMTDEVDC",
     "dcRgName": "RG_DSG_DC",
+    "npsRgName": "RG_SH_MGMTNPS",
     "npsIpLastOctet": "248",
     "npsVmName": "MGMTNPS",
-    "npsRgName": "RG_SH_MGMTNPS",
     "vnetRgName": "RG_DSG_VNET",
     "vnetName":"DSG_DSGROUPDEV_VNET1",
-    "artifactStorageAccount": "dsgxartifacts"
+    "artifactStorageAccount": "dsgxartifacts",
+    "vaultname": "dsg-management-test"
 }

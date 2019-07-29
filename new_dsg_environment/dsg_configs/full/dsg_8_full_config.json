@@ -58,7 +58,11 @@
     "keyVault": {
       "name": "dsg-management-testc",
       "secretNames": {
-        "p2sRootCert": "sh-management-p2s-root-cert"
+        "p2sRootCert": "sh-management-p2s-root-cert",
+        "dc": "sh-managment-dcadmin",
+        "safemode": "sh-managment-dcsafemode",
+        "adsync": "sh-managment-adsync",
+        "vpncertificate": "sh-managment-cert"
       }
     },
     "dns": {

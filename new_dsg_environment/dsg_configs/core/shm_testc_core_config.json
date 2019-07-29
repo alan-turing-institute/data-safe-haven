@@ -18,10 +18,8 @@
     "npsRgName": "RG_DSG_NPS",
     "npsIpLastOctet": "248",
     "npsVmName": "SHMNPS",
-    "npsRgName": "RG_DSG_NPS",
-    "npsIp": "248",
     "vnetRgName": "RG_DSG_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgtestcartifacts",
-    "vaultname": "testcvault"
+    "vaultname": "dsg-management-testc"
 }
