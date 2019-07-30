@@ -196,6 +196,7 @@ A number of files are critical for the DSG deployment. They must be added to blo
 7. Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml).
 
 8. Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+  - **NOTE:** Despite renaming the `client.pfx` file, the cert is imported into the OSX KeyVault under the name "client" and this is the name you must use for the "Local ID"
 
 You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
