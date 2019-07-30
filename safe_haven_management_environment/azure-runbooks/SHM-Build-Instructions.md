@@ -269,6 +269,24 @@ Once you have accessed the VM via Remote Desktop:
 
 8. Click next, then Select "Read", "Write", "Create All Child Objects","Delete All Child Objects" -> "Next" -> "Finish". Close the `Active Directory Users and Computers` app.
 
+### Add additional administrators
+The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
+
+For some steps, a dedicated **internal** Global Administrator is required (e.g. to add P1 licences), so at least this additional administrator will need to be created.
+
+1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+2. On the left hand panel click `Azure Active Directory`.
+3. Navigate to `Users` and **either**:
+    - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
+    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
+4. Create a dedicated **internal** GLobal Administrator user called `admin@customdomain`.
+5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
+6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
+   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
+      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+    ![](images/set_user_location.png)
+
 ### Install Azure Active Directory Connect
 
 1. Download the latest version of the AAD Connect tool from [here](https://www.microsoft.com/en-us/download/details.aspx?id=47594)
@@ -322,30 +340,10 @@ Once you have accessed the VM via Remote Desktop:
 
 ### Configure AAD side of AD connect
 - Select "Password reset" from the left hand menu
-  - In the inital "Properties" panel, set "Self service password reset enabled" to "All"
-  - Select "On-premises integration" from the left-hand menu and ensure "Write back passwords to your on-premises directory" is set to "Yes"
-
-### Add additional administrators
-The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
-
-For some steps, a dedicated **internal** Global Administrator is required (e.g. to add P1 licences), so at least this additional administrator will need to be created.
-
-1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-2. On the left hand panel click `Azure Active Directory`.
-3. Navigate to `Users` and **either**:
-    - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
-    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
-4. Create a dedicated **internal** GLobal Administrator user called `admin@customdomain`.
-5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
-6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
-   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
-      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
-    ![](images/set_user_location.png)
-6. Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
-![](images/enable_writeback.png)
-7. Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
-![](images/enable_passwordreset.png)
+  - Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
+    ![](images/enable_writeback.png)
+  - Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
+    ![](images/enable_passwordreset.png)
 
 ## 4. Deploy Network Policy Server (NPS)
 
