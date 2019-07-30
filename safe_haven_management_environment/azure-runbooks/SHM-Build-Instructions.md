@@ -228,7 +228,7 @@ The following are required to enable deployment of a DSG.
 
 1. Navigate to `C:/Scripts/`
 
-2. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file:
+2. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file. The `$domainou` should be your custom domain split into parts separated by dots, with each of the parts included in the `$domainou` as comma-separated parts in the format `DC=<domain-part>`.
 
     - $domainou = "DC=TESTB,DC=DSGROUPDEV,DC=CO,DC=UK"
     - $domain = "TESTB.DSGROUPDEV.CO.UK"
@@ -236,7 +236,7 @@ The following are required to enable deployment of a DSG.
 3. Open powershell and navigate to `C:/Scripts/`. Run:
 
 ```pwsh
-.\Active_Directory_Configuration.ps1 -oubackuppath c:\Scripts\GPOs
+.\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
 ```
 You will be promted to enter a password for the adsync account. Use the password the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
 
