@@ -49,6 +49,7 @@ Set-Location -Path $cwd -PassThru
            
 
 # Setup resources
+New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
 new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
 new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 

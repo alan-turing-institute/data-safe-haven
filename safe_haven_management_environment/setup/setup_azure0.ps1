@@ -17,7 +17,6 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Create Resource Groups
 New-AzResourceGroup -Name $config.keyVault.rg  -Location $config.location
-New-AzResourceGroup -Name $config.keyVault.rg  -Location $config.location
 
 # Create a keyvault and generate passwords
 New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName $config.keyVault.rg -Location $config.location
