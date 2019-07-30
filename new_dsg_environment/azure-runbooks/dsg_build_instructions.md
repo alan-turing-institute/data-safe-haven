@@ -146,14 +146,14 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
     "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
     "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
     "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
+    "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "npsIpLastOctet": "248",
     "npsVmName": "The VM Name of the NPS VM",
     "npsRgName": "The resources group containing the NPS VM",
     "npsIp": "The IP address of the management environment NPS server",
-    "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
     "vnetName":"The name of the Virtual Network for the management environment",
-    "artifactStorageAccount": "The name of the storage account containing installation artifacts for new DSGs within the mangement  environment",
-    "vaultname": "A unique keyvault name for the deployment"
+    "artifactStorageAccount": "The name of the storage account that will contain installation artifacts for new DSGs within the mangement  environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg<shm-id>artifacts`",
+    "keyVaultName": "The name of the KeyVault that will contain secrets mangement environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg-management-<shm-id>`"
 }
 ```
 

@@ -19,7 +19,6 @@
     "npsRgName": "RG_DSG_NPS",
     "npsIpLastOctet": "248",
     "npsVmName": "SHMNPS",
-    "npsRgName": "RG_DSG_NPS",
     "vnetRgName": "RG_DSG_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "dsgbris1artifacts",

@@ -64,18 +64,27 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
+    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
     "domain": "The fully qualified domain name for the management environment",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
     "shId": "A short ID to identify the management environment",
+    "name": "Deployment name",
+    "organisation": {
+        "name": "Organisation name",
+        "townCity": "Location",
+        "stateCountyRegion": "Location",
+        "countryCode": "e.g. GB"
+    },
     "location": "The Azure location in which the management environment VMs are deployed",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
+    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.250.0",
     "dcVmName":  "The VM name of the managment environment Active Directory Domain Controller",
     "dcHostname":  "The hostname of the managment environment Active Directory Domain Controller",
     "dcRgName": "The name of the Resource Group containing the managment environment Active Directory Domain Controller",
-    "npsRgName": "The name of the Resource Group containing the managment environment Network Policy Server",
-    "npsIpLastOctet": "The IP address of the management environment NPS server",
-    "dcVmName":  "The VM name of the managment environment NPS server",
     "vnetRgName":"The name of the Resource Group containing the Virtual Network for the management environment",
+    "npsIpLastOctet": "248",
+    "npsVmName": "The VM Name of the NPS VM",
+    "npsRgName": "The resources group containing the NPS VM",
+    "npsIp": "The IP address of the management environment NPS server",
     "vnetName":"The name of the Virtual Network for the management environment",
     "artifactStorageAccount": "The name of the storage account that will contain installation artifacts for new DSGs within the mangement  environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg<shm-id>artifacts`",
     "keyVaultName": "The name of the KeyVault that will contain secrets mangement environment. Must be GLOBALLY unique within Azure. We suggest the format `dsg-management-<shm-id>`"
