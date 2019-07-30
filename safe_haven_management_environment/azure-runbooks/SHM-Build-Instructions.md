@@ -140,7 +140,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - Click "Create"
     - Click on the username in the users list in the Azure Active Directory
     - Click the "Reset password" icon to generate a temporary password
-    - Use this password to log into `https://portal.azure.com` as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognitio/private browsing window.
+    - Use this password to log into https://portal.azure.com as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognitio/private browsing window.
     - When prompted to change your password on first login:
       - Create a strong password for this user.
       - Create a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
@@ -154,6 +154,29 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Click on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator"
    - Select this role and click `Add`
    - Navigate back to the user list and select the next user.
+6. To enable MFA, purchase sufficient P1 licences and add them to all the new users.
+   - You will also need P1 licences for standard users accessing the Safe Haven.
+   - You will need to be logged in as the "Local admin" user `admin@customdomain` to purchase a P1 subscription
+   - To buy P1 licences:
+     - Click on `Azure Active Directory` in the left hand sidebar
+     - Click on "Licences" under the "Manage" section of the left habd side bar
+     - Click on "All products" in the left hand sidebar
+     - Click on the "+Try/Buy" text above the empty product list
+     - Click the "Purchase services" link in the infomation panel above the trial options.
+     - In the "Microsoft 365 Admin Centre" portal that opens:
+       - Expand the "Billing" section of the left hand side bar
+       - Click on "Purchase services"
+       - Scroll down the list of products and select "Azure Active Directory Premium P1" and click "Buy"
+       - Select "Pay monthly"
+       - Enter the number of licences required.
+       - Leave "automatically assign all of your users with no licences" checked
+       - Click "Check out now"
+       - Enter the address of the organisation running the Safe Haven on the next screen
+       - Click next and enter payment details when requested
+   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
+      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+    ![](images/set_user_location.png)
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 
@@ -447,11 +470,3 @@ This is because, without this policy, the NPS server will reject their authentic
 
 ### 5.1 Tear down package mirrors
 - Run the `./Teardown_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will remove all the mirrors for the tier corresponding to that SAE. **NB. This will remove the mirrors from all SAEs of the same tier.**
-
-
-
-6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
-   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
-      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
-    ![](images/set_user_location.png)
