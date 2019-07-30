@@ -118,7 +118,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -Artifacts_Location $artifactLocation `
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
         -Domain_Name $config.domain.fqdn `
-        -Domain_Name_NetBIOS_Name $config.dsg.netbiosName;
+        -Domain_Name_NetBIOS_Name $config.netbiosName;
         
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
