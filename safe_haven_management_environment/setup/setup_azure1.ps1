@@ -83,10 +83,10 @@ Remove-Item –path 'temp/' –recurse
 
 # Get SAS token
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
-$currentSubscription = $config.subscriptionName;
+
 $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -prevSubscription $currentSubscription);
+  -permission "rl" -validityHours 2);
  
 # Run template files
 # Deploy the shmvnet template
