@@ -290,8 +290,8 @@ else
     az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 
     # Update known hosts on the external server to allow connections to the internal server
-    echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
-    az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+    echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} (removing known_hosts.old when done)${END}"
+    az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old; ls -alh ~mirrordaemon/.ssh/" --query "value[0].message" -o tsv
     az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 
     # Update known IP addresses on the external server to schedule pushing to the internal server
@@ -384,8 +384,8 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 
         # Update known hosts on the external server to allow connections to the internal server
-        echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}"
-        az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/known_hosts; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old" --query "value[0].message" -o tsv
+        echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} (removing known_hosts.old when done)${END}"
+        az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old; ls -alh ~mirrordaemon/.ssh/" --query "value[0].message" -o tsv
         az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 
         # Update known IP addresses on the external server to schedule pushing to the internal server
