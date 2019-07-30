@@ -15,25 +15,25 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-# # Fetch DC root user password (or create if not present)
-# $DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
-# if ($null -eq $DCRootPassword) {
-#   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-#   $newPassword = New-Password;
-#   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-#   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dc -SecretValue $newPassword;
-#   $DCRootPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
-# }
+# Fetch DC root user password (or create if not present)
+$DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
+if ($null -eq $DCRootPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dc -SecretValue $newPassword;
+  $DCRootPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
+}
 
-# # Fetch DC root user password (or create if not present)
-# $DCSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.safemode).SecretValueText;
-# if ($null -eq $DCSafemodePassword) {
-#   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-#   $newPassword = New-Password;
-#   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-#   Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
-#   $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.safemode ).SecretValueText
-# }
+# Fetch DC root user password (or create if not present)
+$DCSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.safemode).SecretValueText;
+if ($null -eq $DCSafemodePassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
+  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.safemode ).SecretValueText
+}
 
 # # Generate certificates
 # $cwd = Get-Location
@@ -62,6 +62,8 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 # New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
 
 # Upload files
+# Remove the Get-StorageAccount line below when uncommenting the rest of the file
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc1/CreateADPDC.zip"
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc2/CreateADBDC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
@@ -81,12 +83,12 @@ Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -
 # # Delete the local executable files
 # Remove-Item –path 'temp/' –recurse
 
-# # Get SAS token
-# $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
+# Get SAS token
+$artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
 
-# $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
-#   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-#   -permission "rl" -validityHours 2);
+$artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
+  -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
+  -permission "rl" -validityHours 2);
  
 # # Run template files
 # # Deploy the shmvnet template
@@ -103,8 +105,8 @@ Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -
 
 # Deploy the shmdc-template
 $netbiosNameMaxLength = 15
-if($dsg.config.netbiosName.length -gt $netbiosNameMaxLength) {
-    throw "Netbios name must be no more than 15 characters long. '$($dsg.config.netbiosName)' is $($dsg.config.netbiosName.length) characters long."
+if($config.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "Netbios name must be no more than 15 characters long. '$($config.netbiosName)' is $($config.netbiosName.length) characters long."
 } 
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
