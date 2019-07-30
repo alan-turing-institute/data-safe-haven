@@ -11,6 +11,10 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
 
+# Temporarily switch to SHM subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.subscriptionName;
+
 # Fetch DC root user password (or create if not present)
 $DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
 if ($null -eq $DCRootPassword) {
