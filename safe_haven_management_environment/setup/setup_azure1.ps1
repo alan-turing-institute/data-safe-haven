@@ -105,8 +105,8 @@ $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionN
 
 # Deploy the shmdc-template
 $netbiosNameMaxLength = 15
-if($config.netbiosName.length -gt $netbiosNameMaxLength) {
-    throw "Netbios name must be no more than 15 characters long. '$($config.netbiosName)' is $($config.netbiosName.length) characters long."
+if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "Netbios name must be no more than 15 characters long. '$($config.domain.netbiosName)' is $($config.domain.netbiosName.length) characters long."
 } 
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
@@ -118,7 +118,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -Artifacts_Location $artifactLocation `
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
         -Domain_Name $config.domain.fqdn `
-        -Domain_Name_NetBIOS_Name $config.netbiosName;
+        -Domain_Name_NetBIOS_Name $config.domain.netbiosName;
         
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

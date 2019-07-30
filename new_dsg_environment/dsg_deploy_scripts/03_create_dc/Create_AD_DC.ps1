@@ -80,8 +80,8 @@ if ($null -eq $adminPassword) {
 $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
 $netbiosNameMaxLength = 15
-if($config.dsg.netbiosName.length -gt $netbiosNameMaxLength) {
-    throw "Netbios name must be no more than 15 characters long. '$($config.dsg.netbiosName)' is $($config.dsg.netbiosName.length) characters long."
+if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "Netbios name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
 } 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
