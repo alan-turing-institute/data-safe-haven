@@ -35,53 +35,51 @@ if ($null -eq $DCSafemodePassword) {
   $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.safemode ).SecretValueText
 }
 
-# # Generate certificates
-# $cwd = Get-Location
-# Set-Location -Path ../scripts/local/ -PassThru
-# sh generate-root-cert.sh
-# Set-Location -Path $cwd -PassThru
+# Generate certificates
+$cwd = Get-Location
+Set-Location -Path ../scripts/local/ -PassThru
+sh generate-root-cert.sh
+Set-Location -Path $cwd -PassThru
 
 
-# # Import-AzureKeyVaultCertificate -VaultName $config.keyVault.name `
-# #            -Name $("DSG-P2S-" + $shmId) `
-# #            -FilePath '../scripts/local/out/certs/client.pfx' `
-# #            -Password $securepfxpwd;
+# Import-AzureKeyVaultCertificate -VaultName $config.keyVault.name `
+#            -Name $("DSG-P2S-" + $shmId) `
+#            -FilePath '../scripts/local/out/certs/client.pfx' `
+#            -Password $securepfxpwd;
            
 
-# # Setup resources
-# New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
-# $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
-# new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
-# new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 
+# Setup resources
+New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
+$storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
+new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
+new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 
 
-# New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
-# New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
+New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
+New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
 
-# # Create directories in file share
-# # New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "dc"
-# New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
+# Create directories in file share
+# New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "dc"
+New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
 
 # Upload files
-# Remove the Get-StorageAccount line below when uncommenting the rest of the file
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc1/CreateADPDC.zip"
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc2/CreateADBDC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/nps/SHM_NPS.zip"
 
-# # Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
-# Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
+# Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
+Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
 
-# # Download executables from microsoft
-# New-Item -Name "temp" -ItemType "directory"
-# Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
-# Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
+# Download executables from microsoft
+New-Item -Name "temp" -ItemType "directory"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
+Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
 
-# # Upload executables to fileshare
-# Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
+# Upload executables to fileshare
+Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
 
-# # Delete the local executable files
-# Remove-Item –path 'temp/' –recurse
+# Delete the local executable files
+Remove-Item –path 'temp/' –recurse
 
 # Get SAS token
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
@@ -90,18 +88,18 @@ $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionN
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -validityHours 2);
  
-# # Run template files
-# # Deploy the shmvnet template
-# # The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
-# $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
-# $cert = [string]$cert
-# $cert = $cert.replace(" ", "")
+# Run template files
+# Deploy the shmvnet template
+# The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
+$cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
+$cert = [string]$cert
+$cert = $cert.replace(" ", "")
 
-# New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
-# New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
-#         -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
-#         -P2S_VPN_Certifciate $cert `
-#         -Virtual_Network_Name "SHM_VNET1";
+New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
+New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
+        -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
+        -P2S_VPN_Certifciate $cert `
+        -Virtual_Network_Name "SHM_VNET1";
 
 # Deploy the shmdc-template
 $netbiosNameMaxLength = 15
