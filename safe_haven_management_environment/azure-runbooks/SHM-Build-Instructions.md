@@ -59,10 +59,13 @@
 The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment. 
 The following core SHM properties must be defined in a JSON file named `shm_<shId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shId>` is a short ID to identify the environment (e.g. `testb`).
 
+**NOTE:** The `netbiosName` must have a maximum length of 15 characters.
+
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
     "domain": "The fully qualified domain name for the management environment",
+    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
     "shId": "A short ID to identify the management environment",
     "location": "The Azure location in which the management environment VMs are deployed",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
