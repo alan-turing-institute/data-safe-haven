@@ -2,6 +2,7 @@
     "subscriptionName": "SHM Test B",
     "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "testc.dsgroupdev.co.uk",
+    "netbiosName": "TESTC",
     "shId": "testc",
     "name": "Test Safe Haven",
     "organisation": {

@@ -2,6 +2,7 @@
     "subscriptionName": "Safe Haven Managment",
     "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",
+    "netbiosName": "TURINGSAFEHAVEN",
     "shId": "prod",
     "name": "Safe Haven",
     "organisation": {

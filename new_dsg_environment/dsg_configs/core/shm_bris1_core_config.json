@@ -2,6 +2,7 @@
     "subscriptionName": "Bristol Safe Haven Management (Prod)",
     "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "bristolsafehaven.uk",
+    "netbiosName": "BRISTOLSH",
     "shId": "bris1",
     "name": "JGI/Turing Safe Haven",
     "organisation": {
