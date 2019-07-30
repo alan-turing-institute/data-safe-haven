@@ -132,16 +132,28 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. On the left hand panel click `Azure Active Directory`.
-3. Navigate to `Users` and **either**:
+3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
+    - Click on "+New user" and enter the following details:
+      - Name: "Local admin"
+      - Username:`admin@customdomain`
+      - Select the directory role to "Global Administrator"
+      - Click "Create"
+    - Click on the username in the users list in the Azure Active Directory
+    - Click the "Reset password" icon to generate a temporary password
+    - Use this password to log into `https://portal.azure.com` as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognitio/private browsing window.
+    - When prompted to change your password on first login:
+      - Create a strong password for this user.
+      - Create a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
+      - Set the value of this secret to the password you just generated.
+    - Once you have set your password and logged in you can administrate the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
+4. Navigate to `Users` and **either**:
     - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
     - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
-4. Create a dedicated **internal** Global Administrator user called `admin@customdomain`. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
-5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
-6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
-   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
-      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
-    ![](images/set_user_location.png)
+5. In the user list on the Azure Active Directory, for each of the new admin users:
+   - Click on the username in the user list to view the user's details
+   - Click on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator"
+   - Select this role and click `Add`
+   - Navigate back to the user list and select the next user.
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 
@@ -435,3 +447,11 @@ This is because, without this policy, the NPS server will reject their authentic
 
 ### 5.1 Tear down package mirrors
 - Run the `./Teardown_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will remove all the mirrors for the tier corresponding to that SAE. **NB. This will remove the mirrors from all SAEs of the same tier.**
+
+
+
+6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
+   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
+      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+    ![](images/set_user_location.png)
