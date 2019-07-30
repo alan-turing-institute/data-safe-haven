@@ -134,8 +134,8 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and **either**:
     - If your administrators already exist in an external AAD you trust (e.g. one managing access to the subscription you are deploying the SHM into), add each user by clicking `+ New guest user` and entering their external email address. For the Turing, add all users in the "Safe Haven `<environment>` Admins" group in the Turing corporate AAD as they all have Owner rights on all Turing safe haven subscriptions.
-    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
-4. Create a dedicated **internal** GLobal Administrator user called `admin@customdomain`.
+    - If you are creating local users, set their usernames to `firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
+4. Create a dedicated **internal** Global Administrator user called `admin@customdomain`. Store the password for this user in a secret named `sh-management-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
 5. Click on each user and then on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator", select this role and click `Add`.
 6. To enable MFA, purchase sufficient P1 licences and add them to all the new users. Note you will also need P1 licences for standard users accessing the Safe Haven.
    - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
