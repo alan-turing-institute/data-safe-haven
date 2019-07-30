@@ -187,12 +187,15 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
 ### Download and install the VPN Client from the virtual network VPN gateway 
 
-1. Navigate to `/safe_haven_management/scripts/local/out/certs/` and double click `client.pfx` to install it (on Mac). Enter `password`. 
-2. Next, on the portal navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> SHM_VNET1_GW`.
-3.  Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar.
-4. Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml).
+1. Navigate to `/safe_haven_management/scripts/local/out/certs/out`.
+2. Rename the `client.pfx` file `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault. 
+3. Rename the `caCert.pem` file `DSG-P2S-<shm-id>-RootCert.pem` 
+4. Double click `client.pfx` to install it (on Mac). Enter `password`. 
+5. Next, on the portal navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> SHM_VNET1_GW`.
+6.  Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar.
+7. Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml).
 
-5. Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+8. Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
 You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
@@ -200,9 +203,9 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 The following are required to enable deployment of a DSG. 
 
-1. Rename the `caCert.pem` file in `scripts/local/out` to `DSG-P2S-<shm-id>-RootCert.pem` and upload to the keyvault.  On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `caCert.pem` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of ``DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs/out` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Rename the `client.pfx` file in `scripts/local/out` to `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault. Next go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `client.pfx` file and name it `DSG-P2S-<shId>-ClientCert`, . 
+2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certs/out` and name it `DSG-P2S-<shId>-ClientCert`. 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
