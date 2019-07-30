@@ -63,7 +63,7 @@ if ($null -eq $DCSafemodePassword) {
 
 # Upload files
 # Remove the Get-StorageAccount line below when uncommenting the rest of the file
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc1/CreateADPDC.zip"
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc2/CreateADBDC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
