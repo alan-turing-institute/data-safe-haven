@@ -249,26 +249,25 @@ Once you have accessed the VM via Remote Desktop:
 
 2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
 
-![](images/group_policy_management.png)
+   ![](images/group_policy_management.png)
 
-3. Navigate to "Computer Configuration" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
+3. Navigate to "Computer Configuration" "Policies" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
 
-![](images/restricted_groups.png)
+   ![](images/restricted_groups.png)
 
-4. Open "Administrators" group object and delete all entries from "Members of this group".
+4. Open "Administrators" group object and:
+    - Delete all entries from "Members of this group".
     - Click "Add" -> Add "SG Safe Haven Server Administrators" and "Domain Admins". Click `apply` then `ok`. Now close "Group Policy Management" MMC
 
 5. Open `Active Directory Users and Computers` app (search in windows search bar)
 
-![](images/delegate_control.png)
+   ![](images/delegate_control.png)
 
-6. Right click on "Computers" container. Click "Deletegate Control" -> "Next" -> "Add" -> "SG Data Science LDAP Users".
+6. Right click on "Computers" container. Click "Delegate Control" -> "Next" -> "Add" -> "SG Data Science LDAP Users".
 
 7. Click next -> "Create a custom task to delegate" -> "This folder, existing objects in this folder...."
 
-8. Click next, then Select "Read", "Write", "Create All Child Objects" -> "Delete All Child Objects" -> "Next" -> "Finish". Close the `Active Directory Users and Computers` app.
-
-9. Close the remote desktop instance
+8. Click next, then Select "Read", "Write", "Create All Child Objects","Delete All Child Objects" -> "Next" -> "Finish". Close the `Active Directory Users and Computers` app.
 
 ### Install Azure Active Directory Connect
 
