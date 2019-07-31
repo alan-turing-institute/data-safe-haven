@@ -34,6 +34,7 @@ DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connectio
 OS_DISK_SIZE_GB="80"
 OS_DISK_TYPE="Standard_LRS"
 DATA_DISK_SIZE_GB="512"
+DATA_DISK_TYPE="Standard_LRS"
 
 
 # Document usage for this script
@@ -415,7 +416,7 @@ sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" 
 # Create the data disk
 echo -e "${BOLD}Creating ${BLUE}${DATA_DISK_SIZE_GB} GB${END}${BOLD} datadisk...${END}"
 DATA_DISK_NAME="${MACHINENAME}DATADISK"
-az disk create --resource-group $RESOURCEGROUP --name $DATA_DISK_NAME --location $LOCATION --sku "Standard_LRS" --size-gb ${DATA_DISK_SIZE_GB} --output none
+az disk create --resource-group $RESOURCEGROUP --name $DATA_DISK_NAME --location $LOCATION --sku $DATA_DISK_TYPE --size-gb $DATA_DISK_SIZE_GB --output none
 
 # Create the VM based off the selected source image
 # -------------------------------------------------
