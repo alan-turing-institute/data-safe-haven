@@ -79,6 +79,13 @@
             "metadata": {
                 "Description": "Enter the correct public domain name"
             }
+        },
+        "NetBIOS Name":{
+            "type": "string",
+            "defaultValue": "DSGROUPx",
+            "metadata": {
+                "Description": "Enter the correct NetBIOS name"
+            }
         }
     },
     "variables": {
@@ -181,6 +188,7 @@
                             "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
                             "Properties": {
                                 "DomainName": "[parameters('Domain Name')]",
+                                "DomainNetBIOSName": "[parameters('NetBIOS Name')]",
                                 "AdminCreds": {
                                     "UserName": "[parameters('Administrator User')]",
                                     "Password": "PrivateSettingsRef:AdminPassword"

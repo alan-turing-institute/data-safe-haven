@@ -79,6 +79,10 @@ if ($null -eq $adminPassword) {
 }
 $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 
+$netbiosNameMaxLength = 15
+if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "Netbios name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
+} 
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
  "VM Size" = $vmSize
@@ -91,6 +95,7 @@ $params = @{
  "Artifacts Location" = $artifactLocation
  "Artifacts Location SAS Token" = $artifactSasToken
  "Domain Name" = $config.dsg.domain.fqdn
+ "NetBIOS Name" = $config.dsg.domain.netbiosName
 }
 
 $templatePath = Join-Path $PSScriptRoot "dc-master-template.json"

@@ -15,10 +15,6 @@ New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -Action Allow -Protoco
 New-NetFirewallRule -DisplayName "SQL" -Direction Outbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 write-Host -ForegroundColor Cyan "Completed"
 
-Write-Host -Foregroundcolor Green "Settng Inbound RADIUS traffic from DSG environments rule"
-New-NetFirewallRule -DisplayName "Inbound RADIUS traffic from DSG environments" -Direction Inbound -RemoteAddress 10.250.1.250 -Action Allow -Protocol UDP -LocalPort "1812","1813" -Profile Domain -Enabled True
-write-Host -ForegroundColor Cyan "Completed"
-
 #Initialise  the data drives
 Write-Host -Foregroundcolor Green "Formatting data drive"
 Stop-Service ShellHWDetection
