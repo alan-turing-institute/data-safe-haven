@@ -355,7 +355,7 @@ Once you have accessed the VM via Remote Desktop:
 
 ### Additional AAD Connect Configuration
 
-1. Open the `Synchronization Rules Editor` from the start menu on the SHMNPS VM. 
+1. Open the `Synchronization Rules Editor` from the start menu 
 2. Change the "Direction" drop down to "Outbound"
 3. Select the "Out to AAD - User Join" -> Click "Disable". Click edit.
 4. Click "Yes" for the "In the Edit Reserved Rule Confirmation" window
