@@ -284,8 +284,10 @@ else
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary --output none
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary --output none
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --output none
+    echo -e "${BOLD}...done.${END}"
 
     # Get hostname from internal server
+    echo -e "${BOLD}Getting IP address of ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 
@@ -378,8 +380,10 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary --output none
         az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary --output none
         az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --output none
+        echo -e "${BOLD}...done.${END}"
 
         # Get hostname from internal server
+        echo -e "${BOLD}Getting IP address of ${BLUE}$MACHINENAME_INTERNAL${END}"
         INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
         az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
 

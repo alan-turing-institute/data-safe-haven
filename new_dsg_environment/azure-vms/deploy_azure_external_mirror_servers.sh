@@ -222,7 +222,7 @@ else
     done
 
     # Delete the configuration NSG rule and restart the VM
-    echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}" --output none
+    echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary --output none
     az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary --output none
     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME --output none
