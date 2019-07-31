@@ -335,8 +335,14 @@ Once you have accessed the VM via Remote Desktop:
     - Select "Password Hash Synchronization" -> "Next"
     - Provide a global administrator details for the Azure Active Directory you are connected to (You may need to create an account for this in the Azure Active Directory)
     - Ensure that correct forest (your custom domain name; e.g TURINGSAFEHAVEN.ac.uk) is selected and click "Add Directory"
-    - Select "Use and existing account" -> Enter the details of the "localadsync" user. Username: `domain/localadsync` Password: `Look up in keyvault`-> "OK" -> "Next"
-        - Again if your domain contains a subdomain the username should be the first part (i.e. `testb/localadsync` for domain `testb.dsgroupdev.co.uk`)
+    - Select "Use and existing account" -> Enter the details of the "localadsync" user. Username: `localadsync@<full-domain-name>` (e.g. localadsync) Password: Look in the `sh-management-adsync` secret in the management KeyVault. Click "OK" -> "Next"
+      - If you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
+         - In Server Manager click "Tools -> Active Directory Users and Computers"
+         - Expand the domain in theleft hand panel
+         - Expand the "Safe Haven Service Accounts" OU
+         - Right click on the "Local AD Sync Administrator" user and select "reset password"
+         - Set the password to the the secret value from the `sh-management-adsync` secret in the management KeyVault.
+         - Leave the other settings as is and click "Ok"
     - Verify that UPN matches -> "Next"
     - Select "Sync Selected domains and OUs"
     - Expand domain and deselect all objects
