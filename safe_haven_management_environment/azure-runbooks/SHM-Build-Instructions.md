@@ -94,19 +94,19 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
 ### Deploy KeyVault for SHM secrets
 
 1. Ensure you are logged into the Azure within PowerShell using the command:
-```pwsh
-Connect-AzAccount
-```
+   ```pwsh
+   Connect-AzAccount
+   ```
  
 2. Set the AzContext to the SHM Azure subscription id:
-```pwsh
-Set-AzContext -SubscriptionId "<SHM-subscription-id>"
-```
+   ```pwsh
+   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
+   ```
 
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
-```pwsh
-cd ./safe_haven_management_environment/setup
-```
+   ```pwsh
+   cd ./safe_haven_management_environment/setup
+   ```
 
 4. Run `./setup_azure0.ps1` entering the `shId`, defined in the config file, when prompted 
 
@@ -181,19 +181,19 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 
 1. Ensure you are logged into the Azure within PowerShell using the command:
-```pwsh
-Connect-AzAccount
-```
+   ```pwsh
+   Connect-AzAccount
+   ```
  
 2. Set the AzContext to the SHM Azure subscription id:
-```pwsh
-Set-AzContext -SubscriptionId "<SHM-subscription-id>"
-```
+   ```pwsh
+   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
+   ```
 
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
-```pwsh
-cd ./safe_haven_management_environment/setup
-```
+   ```pwsh
+   cd ./safe_haven_management_environment/setup
+   ```
 
 4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
 
@@ -288,9 +288,9 @@ The following are required to enable deployment of a DSG.
 
 3. Open powershell and navigate to `C:/Scripts/`. Run:
 
-```pwsh
-.\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
-```
+   ```pwsh
+   .\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
+   ```
 You will be promted to enter a password for the adsync account. Use the password the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
 
 
@@ -367,8 +367,10 @@ Once you have accessed the VM via Remote Desktop:
 10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Click `Enable` on the new rule. 
 11. Click the X to close the Synchronization Rules Editor window
 12. Run powershell as administrator and run:
-  - `Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"`
-  - `Start-ADSyncSyncCycle -PolicyType Initial`
+    ```pws
+    Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+    Start-ADSyncSyncCycle -PolicyType Initial
+    ```
 
 ### Validation of AD sync
 
@@ -385,8 +387,10 @@ Once you have accessed the VM via Remote Desktop:
     - Click Finish
 2. Force a sync to the Azure Active Dirctory
   - Run powershell as administrator and run:
-    - `Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"`
-    - `Start-ADSyncSyncCycle -PolicyType Delta`
+    ```pwsh
+    Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+    Start-ADSyncSyncCycle -PolicyType Delta
+    ```
 3. Go to the Azure Active Directory and click "Users -> All users" and confirm that the new user is shown in the user list. It may take a few minutes for the synchrinisation to fully propagate in Azure.
 
 ### Configure AAD side of AD connect
@@ -404,9 +408,9 @@ Once you have accessed the VM via Remote Desktop:
 ## 4. Deploy Network Policy Server (NPS)
 
 1. In the data-safe-haven repository, deploy the NPS server using the following commands:
- ```pwsh
- cd ./data-safe-haven/safe_haven_management_environment/setup
- ```
+   ```pwsh
+   cd ./data-safe-haven/safe_haven_management_environment/setup
+   ```
 
 1. Run `./setup_azure2.ps1` entering the `shId`, defined in the config file, when prompted.
 
@@ -423,11 +427,14 @@ The NPS server will now deploy.
 4. On the `SHMNPS` VM run Powershell as an administrator, paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive. 
 
 5. Run Powershell as an administrator and enter the following commands:
-  - `New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"`
-  - `copy z:\nps c:\scripts -Recurse`
-  - `Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force`
-  - `cd c:\scripts`
-  - `./Prepare_NPS_Server.ps1`
+
+   ```pwsh
+   New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
+   copy z:\nps c:\scripts -Recurse
+   Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
+   cd c:\scripts
+   ./Prepare_NPS_Server.ps1
+   ```
 
 ### Configure NPS server to log to text file
 
