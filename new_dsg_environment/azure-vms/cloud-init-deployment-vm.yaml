@@ -32,6 +32,12 @@ runcmd:
   - pwsh -command "Install-Module -Name Az -Force -AllowClobber"
   - pwsh -command "Install-Module -Name Az.Accounts -Force -AllowClobber"
 
+  # Install Eternal Terminal
+  - apt-get install -y software-properties-common
+  - add-apt-repository ppa:jgmath2000/et
+  - apt-get update
+  - apt-get install et
+
   # Clean up
   - apt-get -y upgrade
   - apt-get -y clean

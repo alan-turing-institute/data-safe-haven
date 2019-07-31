@@ -13,13 +13,14 @@
     - azure-cli
     - powershell
     - pip
+    - eternal terminal
 - You will need to clone the safe haven repo via `git clone git@github.com:alan-turing-institute/data-safe-haven.git`. This will automatically authenticate using the VM's `id_rsa` SSH key you just added to the safe haven repo as a deploy key.
 
 
 ## Use a deployment VM to deploy to the Safe Haven
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
-- Install [mosh](https://mosh.org/) locally for more stable SSH (e.g. via `brew install mosh` on OSX)
-- Connect to the VM using `mosh atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in the `RG_DSG_SECRETS` resource group of the `Safe Haven Management Testing` subscription)
+- [OPTIONAL] Install [Eternal Terminal](https://eternalterminal.dev/). Eternal Terminal supports recovering SSH connections like [mosh](https://mosh.org/), but also supports scrolling back in the remote terminal to copy out a full deployment log.
+- Connect to the VM using `et atiadmin@sh-deployment-0X.westeurope.cloudapp.azure.com` (replacing `et` with `ssh` if Eternal Terminal is not installed; replacing `0X` with the zero padded number of the deployment VM you want to use; and using the password from the `deployment-vm-admin-password` secret in `dsg-management-test` KeyVault in the `RG_DSG_SECRETS` resource group of the `Safe Haven Management Testing` subscription)
 - Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the master branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
