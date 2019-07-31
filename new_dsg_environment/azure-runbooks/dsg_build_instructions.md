@@ -166,14 +166,14 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
 {
     "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
     "dsgId": "A short ID to identify the management environment",
+    "shmId": "The short ID for the SHM segment to deploy against",
+    "tier": "The data classification tier for the DSG. This controls the outbound network restrictions on the DSG and which mirror set the DSG is peered with",
     "domain": "The fully qualified domain name for the DSG environment",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
+    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less. If the first part of the domain is less than 15 characters, use this for the netbiosName",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
-    "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox",
+    "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 DSGs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure)",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
-    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)",
-    "packageMirrorIpPypi": "IP address of the internal PyPI mirror (e.g 10.1.0.20)",
-    "packageMirrorIpCran": "IP address of the internal CRAN mirror (e.g 10.1.0.21)"
+    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)"
 }
 ```
 

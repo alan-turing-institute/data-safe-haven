@@ -507,7 +507,7 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
     -  The output of the `whoami` command in powershell should be `netBiosDomain\atiadmin` rather than `SHMNPS\atiadmin`
     - If it is not, reconnect to the remote desktop with the username `atiadmin@<full-domain>`, using the same password as before
   - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
-    - Go to the Azure Portal and click "Azure Active Directories" in the lecft hand side bar
+    - Go to the Azure Portal and click "Azure Active Directories" in the left hand side bar
     - Click "Licenses" in the left hand side bar
     - You should see "1 product" in the main panel list of products. Click on this.
     - You should see "Azure Active Directory Premium P1" in the list of products, with a non-zero number of available licenses.
@@ -515,7 +515,10 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 
 ## 5. Package mirrors
 ### When to deploy mirrors
-A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG. Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for. See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions#0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions) for instructions on creating these full configuration files.
+A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG.
+
+### Prerequisites
+Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md##0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md) for instructions on creating these full configuration files.
 
 ### Deploying package mirrors
 
