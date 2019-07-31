@@ -520,6 +520,10 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 ### Prerequisites
 Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md##0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md) for instructions on creating these full configuration files.
 
+Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script make use of the `--output none` option, which is only available in version `2.0.55` and above.
+  - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
+  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+
 ### Deploying package mirrors
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
