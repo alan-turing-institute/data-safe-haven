@@ -369,15 +369,25 @@ Once you have accessed the VM via Remote Desktop:
 12. Run powershell as administrator and run:
   - `Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"`
   - `Start-ADSyncSyncCycle -PolicyType Initial`
-13. To verify this worked, run `Start-ADSyncSyncCycle -PolicyType Delta`
 
 ### Validation of AD sync
 
-1. Add a user on the SHMDC1 machine using the `Active Directory Users and Computers`. 
-
-2. After about 30 minutes the new user should appear on the Azure Active Directory account, or to force a sync, run powershell ad administrator and run:
-  - `Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"`
-  - `Start-ADSyncSyncCycle -PolicyType Delta`
+1. Add a research user:
+  - In computer Manager click `Tools -> Active Directory Users and Computers`
+  - Expand the domain
+  - Right click on the `Safe Haven Research Users` OU and select `New -> User`
+  - Create a new user:
+    - First name: Test
+    - Lastname: Research User
+    - User login name: test-res
+    - Click next
+    - Enter a default password and click next
+    - Click Finish
+2. Force a sync to the Azure Active Dirctory
+  - Run powershell as administrator and run:
+    - `Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"`
+    - `Start-ADSyncSyncCycle -PolicyType Delta`
+3. Go to the Azure Active Directory and click "Users -> All users" and confirm that the new user is shown in the user list. It may take a few minutes for the synchrinisation to fully propagate in Azure.
 
 ### Configure AAD side of AD connect
 - Select "Password reset" from the left hand menu
