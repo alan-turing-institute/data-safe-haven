@@ -28,9 +28,8 @@ runcmd:
   - mkdir -p /home/atiadmin/.ssh
   - ssh-keygen -t rsa -b 4096 -N "" -f /home/atiadmin/.ssh/id_rsa
   - chown atiadmin:atiadmin /home/atiadmin/.ssh/id_rsa*
-  # Install Azure CLI support for Powershell
-  - pwsh -command "Install-Module -Name Az -Force -AllowClobber"
-  - pwsh -command "Install-Module -Name Az.Accounts -Force -AllowClobber"
+  # Install Azure support for Powershell (needs to install for the shared admin user, not root)
+  - sudo -u atiadmin pwsh -command "Install-Module -Name Az -Force -AllowClobber"
 
   # Install Eternal Terminal
   - apt-get install -y software-properties-common
