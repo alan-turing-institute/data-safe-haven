@@ -52,7 +52,7 @@ function New-DsgGroup($name, $description, $path, $groupCategory, $groupScope) {
   if(Get-ADGroup -Filter "Name -eq '$name'"){
     Write-Output " - Group '$name' already exists"
   } else {
-    Write-Output " - Creating group '$name' in OU '$ouPath'"
+    Write-Output " - Creating group '$name' in OU '$serviceOuPath'"
     return (New-ADGroup -Name $name -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
   }
 }
