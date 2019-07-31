@@ -413,7 +413,7 @@ CRAN_MIRROR_IP_REGEX="s/CRAN_MIRROR_IP/${CRAN_MIRROR_IP}/"
 sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" -e "${CRAN_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
 # Create the data disk
-echo -e "${BOLD}Creating ${DATA_DISK_SIZE_GB} GB datadisk...${END}"
+echo -e "${BOLD}Creating ${BLUE}${DATA_DISK_SIZE_GB} GB${END}${BOLD} datadisk...${END}"
 DATA_DISK_NAME="${MACHINENAME}DATADISK"
 az disk create --resource-group $RESOURCEGROUP --name $DATA_DISK_NAME --location $LOCATION --sku "Standard_LRS" --size-gb ${DATA_DISK_SIZE_GB} --output none
 

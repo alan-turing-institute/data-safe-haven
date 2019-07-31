@@ -167,10 +167,6 @@ runcmd:
   - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
-  # Create shared data folder and grant all users access
-  - echo "Creating shared data folder"
-  - sudo mkdir /data
-  - sudo chmod go+rw /data
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
@@ -194,17 +190,18 @@ runcmd:
   # Restart xrdp to reflect changes made above
   - echo "Restart xrdp"
   - service xrdp restart
-  # Set up and partition data disk
-  - echo "Setting up data disk"
+  # Create shared data folder and grant all users access
+  - echo "Creating shared data folder using data disk"
   - parted /dev/sdc mklabel gpt
   - parted /dev/sdc mkpart primary ext4 0% 100%
   - parted /dev/sdc print
   - sleep 5
   - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /datadrive
-  - mount /dev/sdc1 /datadrive
+  - mkdir -p /data
+  - chmod go+rw /data
+  - mount /dev/sdc1 /data
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+  - sed "s|UUID|UUID=$UUID\t/data\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
   # Add execute permission to the Active Directory set up scripts
   - chmod +x /active_directory_step01_pre
