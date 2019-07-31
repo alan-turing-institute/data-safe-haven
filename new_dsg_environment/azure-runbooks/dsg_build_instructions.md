@@ -166,8 +166,9 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
 {
     "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
     "dsgId": "A short ID to identify the management environment",
-    "domain": "The fully qualified domain name for the DSG environment",
     "shmId": "The short ID for the SHM segment to deploy against",
+    "tier": "The data classification tier for the DSG. This controls the network configuration and which mirror set the DSG is peered with",
+    "domain": "The fully qualified domain name for the DSG environment",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
     "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox",
