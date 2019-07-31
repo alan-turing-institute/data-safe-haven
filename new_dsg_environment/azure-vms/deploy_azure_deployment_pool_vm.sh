@@ -52,16 +52,20 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription -n machine_number [-r resource_group]"
     echo "  -h                                    display help"
     echo "  -s subscription [required]            specify subscription to deploy into. (Test using 'Safe Haven Management Testing')"
+    echo "  -i shm_id [required]                  specify the short ID for the Safe Haven Management segment (e.g. prod, test etc)"
     echo "  -n machine_number [required]          specify number of created VM, which must be unique in this resource group (VM will be called '${MACHINENAMEPREFIX}-<number>')"
     echo "  -r resource_group                     specify resource group for deploying the VM image - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hn:r:s:" opt; do
+while getopts "hi:n:r:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
+            ;;
+        i)
+            SHMID=$OPTARG
             ;;
         n)
             MACHINENUMBER=$OPTARG
@@ -87,13 +91,19 @@ if [ "$SUBSCRIPTION" = "" ]; then
 fi
 
 
-# Check that a machine name has been provided
+# Check that an SHM ID has been provided
+# -------------------------------------------
+if [ "$SHMID" = "" ]; then
+    echo -e "${RED}SHM ID is a required argument!${END}"
+    print_usage_and_exit
+fi
+# Check that a machine number has been provided
 # -------------------------------------------
 if [ "$MACHINENUMBER" = "" ]; then
     echo -e "${RED}Machine number is a required argument!${END}"
     print_usage_and_exit
 fi
-MACHINENAME="${MACHINENAMEPREFIX}-${MACHINENUMBER}"
+MACHINENAME="${MACHINENAMEPREFIX}-${SHMID}-${MACHINENUMBER}"
 DNSNAME="$(echo $MACHINENAME | tr '[:upper:]' '[:lower:]')"
 
 
