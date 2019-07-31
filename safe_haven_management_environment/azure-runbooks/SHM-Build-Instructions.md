@@ -482,7 +482,7 @@ This is because, without this policy, the NPS server will reject their authentic
   ```
 - Enter "Y" when prompted
 - Enter "A" when prompted
-- Sign in with the global admin account for your active directory
+- Sign in with the "Local Admin" global admin account for your active directory (`admin@customdomain`)
 - Enter your Azure Active directory ID (Note: if you see a service principal error here this is because you don't have any valid P1 licenses, purchase licenses and then re-run the commands in this section)
     - In the Azure Active Directory pane in the Azure portal, click "Properties" in the left-hand menu. The tenant ID is the "Directory ID" on this pane.
 - Enter "Y" when prompted
