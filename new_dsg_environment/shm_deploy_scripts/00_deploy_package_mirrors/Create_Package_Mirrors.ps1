@@ -10,6 +10,7 @@ Import-Module $PSScriptRoot/../../dsg_deploy_scripts/DsgConfig.psm1 -Force
 $config = Get-DsgConfig($dsgId)
 
 # Switch to appropriate management subscription
+$prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Read additional parameters that will be passed to the bash script from the config file
@@ -36,3 +37,6 @@ bash -c $cmd
 Write-Host "Deploying internal mirror servers"
 $cmd = "$deployScriptDir/deploy_azure_internal_mirror_servers.sh $arguments"
 bash -c $cmd
+
+# Switch back to original subscription
+$_ = Set-AzContext -Context $prevContext;
