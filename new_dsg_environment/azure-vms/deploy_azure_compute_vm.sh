@@ -31,8 +31,10 @@ RESOURCEGROUP_IMAGES="RG_SH_IMAGE_GALLERY"
 LOCATION="uksouth"
 LDAP_RESOURCEGROUP="RG_SH_LDAP"
 DEPLOYMENT_NSG="NSG_IMAGE_DEPLOYMENT" # NB. this will *allow* internet connection during deployment
-OS_DISK_SIZE_GB="512"
+OS_DISK_SIZE_GB="128"
 OS_DISK_TYPE="Standard_LRS"
+DATA_DISK_SIZE_GB="512"
+DATA_DISK_TYPE="Standard_LRS"
 
 
 # Document usage for this script
@@ -411,6 +413,11 @@ CRAN_MIRROR_IP_REGEX="s/CRAN_MIRROR_IP/${CRAN_MIRROR_IP}/"
 # Substitute regexes
 sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" -e "${CRAN_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
+# Create the data disk
+echo -e "${BOLD}Creating ${BLUE}${DATA_DISK_SIZE_GB} GB${END}${BOLD} datadisk...${END}"
+DATA_DISK_NAME="${MACHINENAME}DATADISK"
+az disk create --resource-group $RESOURCEGROUP --name $DATA_DISK_NAME --location $LOCATION --sku $DATA_DISK_TYPE --size-gb $DATA_DISK_SIZE_GB --output none
+
 # Create the VM based off the selected source image
 # -------------------------------------------------
 echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END} ${BOLD}as part of ${BLUE}$RESOURCEGROUP${END}"
@@ -423,6 +430,7 @@ if [ "$IP_ADDRESS" = "" ]; then
     az vm create ${PLANDETAILS} \
         --admin-password $ADMIN_PASSWORD \
         --admin-username $USERNAME \
+        --attach-data-disks $DATA_DISK_NAME \
         --custom-data $TMP_CLOUD_CONFIG_YAML \
         --image $IMAGE_ID \
         --name $MACHINENAME \
@@ -440,6 +448,7 @@ else
     az vm create ${PLANDETAILS} \
         --admin-password $ADMIN_PASSWORD \
         --admin-username $USERNAME \
+        --attach-data-disks $DATA_DISK_NAME \
         --custom-data $TMP_CLOUD_CONFIG_YAML \
         --image $IMAGE_ID \
         --name $MACHINENAME \
