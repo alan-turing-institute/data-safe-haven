@@ -450,12 +450,16 @@ The NPS server will now deploy.
 
 - In Server Manager select "Tools -> Network Policy Server"
 - Expand "NPS (Local)" and then "Policies" and select "Network policies"
-- Right click on "Network policies" and select "Add"
+- Right click on "Network policies" and select "New"
    - Set the policy name to "RDG_CAP" and click "Next"
    - Click "Add" to add a restriction
    - Select "Day and Time Restrictions" and click "Add"
-   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next" and "Next" again (leaving "Access granted checked")
-   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox 
+   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
+   - On the next screen click "Next", leaving "Access granted checked"
+   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox then click "Next". Click "No" on the "Connection Request Policy" pop up.
+   - On the "Configure constraints" screen click "Next"
+   - On the "Configure settings" screen, clcik "Next"
+   - On the "Completing network policy" screen click "Finish"
 
 **NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
 This is because, without this policy, the NPS server will reject their authentication with the following error:
