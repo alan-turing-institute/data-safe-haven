@@ -13,14 +13,14 @@ param(
 )
 
 #Create Reverse Lookup Zones
-Write-Output "Adding reverse lookup record for DSG Identity subnet (CIDR: $identitySubnetCidr)"
+Write-Output " - Adding reverse lookup record for DSG Identity subnet (CIDR: $identitySubnetCidr)"
 Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $identitySubnetCidr -ReplicationScope Domain
-Write-Output "Adding reverse lookup record for DSG RDS subnet (CIDR: $rdsSubnetCidr)"
+Write-Output " - Adding reverse lookup record for DSG RDS subnet (CIDR: $rdsSubnetCidr)"
 Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $rdsSubnetCidr -ReplicationScope Domain
-Write-Output "Adding reverse lookup record for DSG Data subnet (CIDR: $dataSubnetCidr)"
+Write-Output " - Adding reverse lookup record for DSG Data subnet (CIDR: $dataSubnetCidr)"
 Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $dataSubnetCidr -ReplicationScope Domain
 
 #Create conditional forwarders
-Write-Output "Adding conditional forwarder record for DSG domain (domain: $dsgFqdn; DSG DC IP: $dsgDcIp)"
+Write-Output " - Adding conditional forwarder record for DSG domain (domain: $dsgFqdn; DSG DC IP: $dsgDcIp)"
 Add-DnsServerConditionalForwarderZone -name $dsgFqdn -MasterServers $dsgDcIp -ReplicationScope "Forest"
 
