@@ -266,9 +266,9 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 The following are required to enable deployment of a DSG. 
 
-1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs/out` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certs/out` and name it `DSG-P2S-<shId>-ClientCert`. 
+2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certst` and name it `DSG-P2S-<shId>-ClientCert`. 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
