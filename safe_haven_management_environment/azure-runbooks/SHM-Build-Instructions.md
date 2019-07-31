@@ -427,7 +427,8 @@ The NPS server will now deploy.
 
 ### Configure the Network Policy Server
 
-1. Connect to NPS Server using Microsoft Remote desktop, the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group. The Username and Password is the same as for SHMDC1 and SHMDC2.
+1. Connect to NPS Server using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `atiadmin@<full-domain>` rather than just `atiadmin`). 
 
 2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare. 
 
@@ -491,10 +492,26 @@ This is because, without this policy, the NPS server will reject their authentic
   ```
 - Enter "Y" when prompted
 - Enter "A" when prompted
-- Sign in with the "Local Admin" global admin account for your active directory (`admin@customdomain`)
-- Enter your Azure Active directory ID (Note: if you see a service principal error here this is because you don't have any valid P1 licenses, purchase licenses and then re-run the commands in this section)
-    - In the Azure Active Directory pane in the Azure portal, click "Properties" in the left-hand menu. The tenant ID is the "Directory ID" on this pane.
-- Enter "Y" when prompted
+- Sign in as the "Local Administrator" (`admin@customdomain`) user. Other administrators added as guests will not work for this step.
+  - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@customdomain` accountat this point.
+- Enter your Azure Active directory ID. To get this:
+  - In the Azure portal select "Azure Active Directory" in the left hand side bar
+  - Select "Properties" in the left hand side bar
+  - Copy the "Directory ID" field
+- If you do not get the "Service Principal" error, then enter "Y" when prompted
+
+#### Troubleshooting MFA configuration
+If you get a `New-msolserviceprincipalcredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
+  - Make sure you authenticate as the "Local Administrator" (`admin@customdomain`) user when prompted by the script. Other administrators added as guests will not work for this step.
+  - Make sure you are logged in as a **domain** user rather than a local user.
+    -  The output of the `whoami` command in powershell should be `netBiosDomain\atiadmin` rather than `SHMNPS\atiadmin`
+    - If it is not, reconnect to the remote desktop with the username `atiadmin@<full-domain>`, using the same password as before
+  - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
+    - Go to the Azure Portal and click "Azure Active Directories" in the lecft hand side bar
+    - Click "Licenses" in the left hand side bar
+    - You should see "1 product" in the main panel list of products. Click on this.
+    - You should see "Azure Active Directory Premium P1" in the list of products, with a non-zero number of available licenses.
+    - If you do not have P1 licences, purchase some following the instructions at the end of the [Add additional administrators](#Add-additional-administrators) section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
 
 ## 5. Package mirrors
 ### When to deploy mirrors
