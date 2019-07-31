@@ -440,8 +440,8 @@ The NPS server will now deploy.
 1. On the NPS VM open the "Network Policy Server" desktop app
 2. Click on "Accounting"
 3. Select "Configure Accounting"
-4. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Close"
-5. In the "Log file properties" section, click "Configure log file properties"
+4. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
+5. In the "Log file properties" section, click "Change log file properties"
 6. On the "Log file" tab, select "Daily" under "Create a new log file"
 7. Click "Ok"
 
