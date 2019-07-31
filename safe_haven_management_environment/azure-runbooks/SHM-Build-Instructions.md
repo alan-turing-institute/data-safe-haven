@@ -461,6 +461,11 @@ This is because, without this policy, the NPS server will reject their authentic
 - Enter "Y" when prompted
 
 ## 5. Package mirrors
+### When to deploy mirrors
+A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG. Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for. See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions#0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions) for instructions on creating these full configuration files.
+
+### Deploying package mirrors
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
 - Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
@@ -471,8 +476,20 @@ This is because, without this policy, the NPS server will reject their authentic
 
 - Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
 
-### 5.1 Deploy package mirrors
 - Run the `./Create_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will set up mirrors for the tier corresponding to that DSG. If some DSGs use Tier-2 mirrors and some use Tier-3 you will have to run this multiple times. You do not have to run it more than once for the same tier (eg. if there are two DSGs which are both Tier-2, you only need to run the script for one of them).
 
-### 5.1 Tear down package mirrors
+### Tearing down package mirrors
+If you ever need to tear down the package mirrors, use the following script. Again, you will need a full DSG configuration file for each Tier you want to tear down.
+
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+
+- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
+
+- Open a Powershell terminal with `pwsh` and navigate to the `new_dsg_environment/shm_deploy_scripts/00_deploy_package_mirrors/` directory within the Safe Haven repository.
+
+- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+
+- Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
+
 - Run the `./Teardown_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will remove all the mirrors for the tier corresponding to that SAE. **NB. This will remove the mirrors from all SAEs of the same tier.**
