@@ -476,8 +476,10 @@ This is because, without this policy, the NPS server will reject their authentic
 - Agree the license terms and click "Install"
 - Click "Close" once the install has completed
 - Run PowerShell as administrator and run:
-    - `cd "C:\Program Files\Microsoft\AzureMfa\Config"`
-    - `.\AzureMfaNpsExtnConfigSetup.ps1`
+  ```pwsh
+  cd "C:\Program Files\Microsoft\AzureMfa\Config"
+  .\AzureMfaNpsExtnConfigSetup.ps1
+  ```
 - Enter "Y" when prompted
 - Enter "A" when prompted
 - Sign in with the global admin account for your active directory
