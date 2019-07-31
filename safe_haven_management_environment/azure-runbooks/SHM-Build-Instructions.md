@@ -515,7 +515,10 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 
 ## 5. Package mirrors
 ### When to deploy mirrors
-A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG. Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for. See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions#0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions) for instructions on creating these full configuration files.
+A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG.
+
+### Prerequisites
+Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions#0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions) for instructions on creating these full configuration files.
 
 ### Deploying package mirrors
 
