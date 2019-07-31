@@ -198,8 +198,8 @@ runcmd:
   - sleep 5
   - mkfs -t ext4 /dev/sdc1
   - mkdir -p /data
-  - chmod go+rw /data
   - mount /dev/sdc1 /data
+  - chmod go+rw /data
   - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - sed "s|UUID|UUID=$UUID\t/data\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
   - mv fstab.tmp /etc/fstab
