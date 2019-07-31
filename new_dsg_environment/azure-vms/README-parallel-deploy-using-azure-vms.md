@@ -20,6 +20,7 @@
 ## Use a deployment VM to deploy to the Safe Haven
 The VM(s) you want to use may be stopped to save money, so you may need to start the VM(s) you want to use from the Azure Portal
 - Connect to the VM using `ssh atiadmin@sh-deployment-<shm-id>-<number>.westeurope.cloudapp.azure.com` (replacing `0X` with the zero padded number of the deployment VM you want to use; and using the password from the `deployment-vm-admin-password` secret in `dsg-management-<shm-id>` KeyVault in the `RG_DSG_SECRETS` resource group of the `<sh-management-subscription-name>` subscription)
+- If you have not yet cloned the safe haven GitHub repository, run `git clone git@github.com:alan-turing-institute/data-safe-haven.git`
 - Navigate to the folder in the safe haven repo with the deployment scripts using `cd data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the master branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
