@@ -177,6 +177,15 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
     ![](images/set_user_location.png)
+7. Configuring MPA on Azure Active Directory
+   - Go to the Azure Portla and select "Azure Active Directory" from the left hand side bar
+   - Click on "MFA" in the "Security" section of the left hand side bar
+   - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
+   - Configure MFA as follows:
+     - In "App passwords" section select "Do not allow users to creat eapp passwords to sign in to non browser apps"
+     - In "Verification options" section. Check "Call to phone" and "Notification through mobiel app" and **uncheck** "Text message to0 phone" and "Verification code from mobile app or hardware token"
+     - Click "Save" and close window
+       ![](images/aad_mfa_settings.png)
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 
