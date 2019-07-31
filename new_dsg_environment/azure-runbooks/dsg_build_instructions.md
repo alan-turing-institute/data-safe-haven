@@ -167,13 +167,12 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
     "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
     "dsgId": "A short ID to identify the management environment",
     "domain": "The fully qualified domain name for the DSG environment",
+    "shmId": "The short ID for the SHM segment to deploy against",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
     "rdsAllowedSources": "A comma-separated string of Turing IP addresses ('193.60.220.253,193.60.220.240') for Tier 2 production DSGs and 'Internet' for test DSGs and production sandbox",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
-    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)",
-    "packageMirrorIpPypi": "IP address of the internal PyPI mirror (e.g 10.1.0.20)",
-    "packageMirrorIpCran": "IP address of the internal CRAN mirror (e.g 10.1.0.21)"
+    "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.0.2019032100)"
 }
 ```
 
