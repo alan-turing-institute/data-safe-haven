@@ -3,7 +3,7 @@
 - Go to the `new_dsg_environment/azure-vms` directory
 - Run `./deploy_azure_deployment_pool_vm.sh -s "<sh-management-subscription-name>" -i <shm-id> -n <number>` where `<number>` is a zero padded number one greater than largest one currently used by an existing deployment VM (eg. 01, 02, etc.)
 - This will deploy a VM that you can use for deployment (ie. it has the necessary tools already installed)
-- You will need to take the public keypair output at the end of deployment and add it to the `Secrets > Deploy Keys` tab in the safe haven repo on GitHub.
+- You will need to take the public keypair output at the end of deployment and add it to the `Settings > Deploy Keys` tab in the safe haven repo on GitHub. The keys **do not** need write access, so leave this box **unchecked**. 
 
 ### VM information
 - The username is `atiadmin`
