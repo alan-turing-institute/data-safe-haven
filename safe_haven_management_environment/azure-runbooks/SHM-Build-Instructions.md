@@ -266,9 +266,9 @@ You should now be able to connect to the virtual network. Each time you need to 
 
 The following are required to enable deployment of a DSG. 
 
-1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of ``DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs/out` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
 
-2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and upload the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certs/out` and name it `DSG-P2S-<shId>-ClientCert`. 
+2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and import the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certst` and name it `DSG-P2S-<shId>-ClientCert`. 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
@@ -513,12 +513,16 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
     - You should see "Azure Active Directory Premium P1" in the list of products, with a non-zero number of available licenses.
     - If you do not have P1 licences, purchase some following the instructions at the end of the [Add additional administrators](#Add-additional-administrators) section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
 
-## 5. Package mirrors
+## 5. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG.
 
 ### Prerequisites
 Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md##0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md) for instructions on creating these full configuration files.
+
+Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script make use of the `--output none` option, which is only available in version `2.0.55` and above.
+  - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
+  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ### Deploying package mirrors
 
@@ -534,7 +538,21 @@ Note that you will need a DSG full config JSON file present covering each Tier y
 
 - Run the `./Create_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will set up mirrors for the tier corresponding to that DSG. If some DSGs use Tier-2 mirrors and some use Tier-3 you will have to run this multiple times. You do not have to run it more than once for the same tier (eg. if there are two DSGs which are both Tier-2, you only need to run the script for one of them).
 
-### Tearing down package mirrors
+### Setting KeyVault access policies
+
+- Once the KeyVault deployment script exits successfully, follow the instructions to add a policy to the KeyVault so that you are able to manage secrets.
+    - Navigate to the "RG_SHM_PKG_MIRRORS" resource group in the management subscription in the Azure portal and click on the KeyVault shown there
+    - Click on "Access Policies" in the "Settings" section of the left-hand menu and click "+Add Access Policy".
+    - In the "Configure from template" drop-down, select "Key, Secret & Certificate Management"
+    - In the "Select Principal" section, select the security group that will administer this Safe haven instance
+        - For Turing test SHMs this should be: `Safe Haven Test Admins`
+        - For Turing production SHMs this should be: `Safe Haven Production Admins`
+        - For non-turing Safe Haven instances, this should be the security group that will administer that instance.
+    - Click the "Add" button.
+    - If there was already an existing access policy for your user, delete it. You should be part of the administrator security group and access to all resources should be managed by secirity group rather than individual users.
+    - Click the "Save" icon on the next screen
+
+## 6. Tear down package mirrors
 If you ever need to tear down the package mirrors, use the following script. Again, you will need a full DSG configuration file for each Tier you want to tear down.
 
 

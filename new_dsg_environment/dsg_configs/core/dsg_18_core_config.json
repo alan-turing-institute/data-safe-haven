@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "Bristol DSGN 18 (Prod)",
+    "dsgId": "18",
+    "shmId": "bris1",
+    "tier": "0",
+    "domain": "dsgroup18.co.uk",
+    "netbiosname": "DSGROUP18",
+    "ipPrefix": "10.250.136",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019071900"
+}
