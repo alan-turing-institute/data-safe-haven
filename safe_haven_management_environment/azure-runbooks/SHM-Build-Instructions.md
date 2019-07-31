@@ -424,17 +424,16 @@ The NPS server will now deploy.
 
 3. Click the connect icon on the top bar and then copy the lower powershell command. 
 
-4. On the `SHMNPS` VM run Powershell as an administrator, paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive. 
-
-5. Run Powershell as an administrator and enter the following commands:
-
-   ```pwsh
-   New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
-   copy z:\nps c:\scripts -Recurse
-   Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
-   cd c:\scripts
-   ./Prepare_NPS_Server.ps1
-   ```
+4. On the `SHMNPS` VM run Powershell as an administrator.
+   - Paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive. 
+   - Once the drive is successfully mapped, run the following commands:
+     ```pwsh
+     New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
+     copy z:\nps c:\scripts -Recurse
+     Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
+     cd c:\scripts
+     ./Prepare_NPS_Server.ps1
+     ```
 
 ### Configure NPS server to log to text file
 
