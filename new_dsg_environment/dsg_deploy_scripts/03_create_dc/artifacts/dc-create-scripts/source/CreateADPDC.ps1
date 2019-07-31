@@ -4,6 +4,8 @@
    ( 
         [Parameter(Mandatory)]
         [String]$DomainName,
+        [Parameter(Mandatory)]
+        [String]$DomainNetBIOSName,
 
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$Admincreds,
@@ -99,6 +101,7 @@
         xADDomain FirstDS 
         {
             DomainName = $DomainName
+            DomainNetBIOSName = $DomainNetBIOSName
             DomainAdministratorCredential = $DomainCreds
             SafemodeAdministratorPassword = $DomainCreds
             DatabasePath = "F:\NTDS"

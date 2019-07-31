@@ -38,6 +38,5 @@ Write-Host "Deploying internal mirror servers"
 $cmd = "$deployScriptDir/deploy_azure_internal_mirror_servers.sh $arguments"
 bash -c $cmd
 
-
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

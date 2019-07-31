@@ -2,6 +2,7 @@
     "subscriptionName": "Safe Haven Managment",
     "computeVmImageSubscriptionName": "Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",
+    "netbiosName": "TURINGSAFEHAVEN",
     "shId": "prod",
     "name": "Safe Haven",
     "organisation": {
@@ -20,5 +21,6 @@
     "npsRgName": "RG_SHM_NPS",
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
-    "artifactStorageAccount": "dsgartifactsprod"
+    "artifactStorageAccount": "dsgartifactsprod",
+    "keyVaultName": "dsg-management-prod"
 }

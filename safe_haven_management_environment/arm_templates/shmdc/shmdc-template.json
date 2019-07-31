@@ -68,6 +68,12 @@
             "metadata": {
                 "Description": "Enter the correct public domain name"
             }
+        },
+        "Domain_Name_NetBIOS_Name":{
+            "type": "string",
+            "metadata": {
+                "Description": "Enter the correct NetBIOS name"
+            }
         }
     },
     "variables": {
@@ -196,7 +202,8 @@
                             "function": "CreateADPDC"
                             },
                             "configurationArguments": {
-                                "DomainName": "[parameters('Domain_Name')]"
+                                "DomainName": "[parameters('Domain_Name')]",
+                                "DomainNetBIOSName": "[parameters('Domain_Name_NetBIOS_Name')]"
                             }
                         },
                         "protectedSettings": {

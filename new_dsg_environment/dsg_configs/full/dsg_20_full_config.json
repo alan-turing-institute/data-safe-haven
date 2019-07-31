@@ -1,0 +1,255 @@
+{
+  "shm": {
+    "subscriptionName": "Bristol Safe Haven Management (Prod)",
+    "id": "bris1",
+    "name": "JGI/Turing Safe Haven",
+    "organisation": {
+      "name": "University of Bristol",
+      "townCity": "Bristol",
+      "stateCountyRegion": "Bristol",
+      "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "bristolsafehaven.uk",
+      "netbiosName": "BRISTOLSH",
+      "dn": "DC=bristolsafehaven,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=bristolsafehaven,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=bristolsafehaven,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=bristolsafehaven,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.bristolsafehaven.uk",
+      "ip": "10.251.0.250"
+    },
+    "nps": {
+      "rg": "RG_DSG_NPS",
+      "vmName": "SHMNPS",
+      "ip": "10.251.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgbris1artifacts"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_DSG_SECRETS",
+      "name": "dsg-management-bris1",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert",
+        "dc": "sh-managment-dcadmin",
+        "safemode": "sh-managment-dcsafemode",
+        "adsync": "sh-managment-adsync",
+        "vpncertificate": "sh-managment-cert"
+      }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
+    }
+  },
+  "dsg": {
+    "subscriptionName": "Bristol DSGN 20 (Prod)",
+    "id": "20",
+    "shortName": "dsg20",
+    "location": "uksouth",
+    "tier": "1",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-bris1"
+      },
+      "vnet": {
+        "name": null
+      },
+      "cran": {
+        "ip": null
+      },
+      "pypi": {
+        "ip": null
+      }
+    },
+    "domain": {
+      "fqdn": "dsgroup20.co.uk",
+      "netbiosName": "DSGROUP20",
+      "dn": "DC=dsgroup20,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP20 Server Administrators",
+          "description": "SG DSGROUP20 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP20 Research Users",
+          "description": "SG DSGROUP20 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP20_VNET1",
+        "cidr": "10.250.152.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.250.152",
+          "cidr": "10.250.152.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.250.153",
+          "cidr": "10.250.153.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.250.154",
+          "cidr": "10.250.154.0/24"
+        },
+        "gateway": {
+          "prefix": "10.250.159",
+          "cidr": "10.250.159.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg20artifacts"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-bris1"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG20DC",
+      "hostname": "DSG20DC",
+      "fqdn": "DSG20DC.dsgroup20.co.uk",
+      "ip": "10.250.152.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg20-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP20 Gitlab LDAP",
+          "samAccountName": "dsg20-gitlab-ldap",
+          "passwordSecretName": "dsg20-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP20 HackMD LDAP",
+          "samAccountName": "dsg20-hackmd-ldap",
+          "passwordSecretName": "dsg20-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP20 DSVM LDAP",
+          "samAccountName": "dsg20-dsvm-ldap",
+          "passwordSecretName": "dsg20-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP20 Test Researcher",
+          "samAccountName": "dsg20-test-res",
+          "passwordSecretName": "dsg20-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup20.co.uk",
+        "ip": "10.250.153.250",
+        "npsSecretName": "dsg20-nps-secret"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup20.co.uk",
+        "ip": "10.250.153.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup20.co.uk",
+        "ip": "10.250.153.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "Internet"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup20.co.uk",
+      "ip": "10.250.154.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup20.co.uk",
+        "ip": "10.250.154.151",
+        "rootPasswordSecretName": "dsg20-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup20.co.uk",
+        "ip": "10.250.154.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2019071900",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup20-dsvm-admin-password"
+      }
+    }
+  }
+}

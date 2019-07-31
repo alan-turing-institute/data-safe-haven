@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "Bristol DSGN 20 (Prod)",
+    "dsgId": "20",
+    "shmId": "bris1",
+    "tier": "1",
+    "domain": "dsgroup20.co.uk",
+    "netbiosname": "DSGROUP20",
+    "ipPrefix": "10.250.152",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019071900"
+}

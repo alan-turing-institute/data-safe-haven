@@ -11,20 +11,9 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
 
-echo $domain.netbiosName
-
-# Temporarily switch to DSG subscription
+# Temporarily switch to SHM subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
-
-# Create Resource Groups
-New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
-New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
-New-AzResourceGroup -Name RG_DSG_SECRETS -Location $config.location
-New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
-
-# Create a keyvault and generate passwords
-New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName RG_DSG_SECRETS -Location $config.location
 
 # Fetch DC root user password (or create if not present)
 $DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
@@ -60,6 +49,7 @@ Set-Location -Path $cwd -PassThru
            
 
 # Setup resources
+New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
 new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
 new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 
@@ -72,8 +62,8 @@ New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
 New-AzStorageDirectory -Context $storageAccount.Context -ShareName "scripts" -Path "nps"
 
 # Upload files
-Get-ChildItem -File "../dsc/shmdc1/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
-Get-ChildItem -File "../dsc/shmdc2/" -Recurse | Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context
+Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc1/CreateADPDC.zip"
+Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "../dsc/shmdc2/CreateADBDC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/nps/SHM_NPS.zip"
 
@@ -93,10 +83,10 @@ Remove-Item –path 'temp/' –recurse
 
 # Get SAS token
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
-$currentSubscription = $config.subscriptionName;
+
 $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -prevSubscription $currentSubscription);
+  -permission "rl" -validityHours 2);
  
 # Run template files
 # Deploy the shmvnet template
@@ -105,12 +95,18 @@ $cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Ob
 $cert = [string]$cert
 $cert = $cert.replace(" ", "")
 
+New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
         -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
         -P2S_VPN_Certifciate $cert `
         -Virtual_Network_Name "SHM_VNET1";
 
 # Deploy the shmdc-template
+$netbiosNameMaxLength = 15
+if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "Netbios name must be no more than 15 characters long. '$($config.domain.netbiosName)' is $($config.domain.netbiosName.length) characters long."
+} 
+New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -templatefile "../arm_templates/shmdc/shmdc-template.json"`
         -Administrator_User "atiadmin"`
@@ -119,7 +115,8 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Artifacts_Location $artifactLocation `
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
-        -Domain_Name $config.domain.fqdn;
+        -Domain_Name $config.domain.fqdn `
+        -Domain_Name_NetBIOS_Name $config.domain.netbiosName;
         
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

@@ -4,6 +4,7 @@
     "shmId": "test",
     "tier": "3",
     "domain": "dsgroup9.co.uk",
+    "netbiosName": "DSGROUP9",
     "ipPrefix": "10.250.64",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",

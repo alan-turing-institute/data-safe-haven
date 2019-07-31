@@ -36,7 +36,11 @@ function Get-ShmFullConfig{
     # --- Domain config ---
     $shm.domain = [ordered]@{}
     $shm.domain.fqdn = $shmConfigBase.domain
-    $shm.domain.netbiosName = $shm.domain.fqdn.Split('.')[0].ToUpper()
+    $netbiosNameMaxLength = 15
+    if($shmConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
+        throw "Netbios name must be no more than 15 characters long. '$($shmConfigBase.netbiosName)' is $($shmConfigBase.netbiosName.length) characters long."
+    } 
+    $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
     $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
@@ -83,7 +87,8 @@ function Get-ShmFullConfig{
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
-    $shm.keyVault.name = "dsg-management-" + $shm.id
+    $shm.keyVault.rg = "RG_DSG_SECRETS"
+    $shm.keyVault.name = $shmConfigBase.keyVaultName
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
     $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
@@ -163,7 +168,11 @@ function Add-DsgConfig {
     # -- Domain config ---
     $config.dsg.domain = [ordered]@{}
     $config.dsg.domain.fqdn = $dsgConfigBase.domain
-    $config.dsg.domain.netbiosName = $config.dsg.domain.fqdn.Split('.')[0].ToUpper()
+    $netbiosNameMaxLength = 15
+    if($dsgConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
+        throw "Netbios name must be no more than 15 characters long. '$($dsgConfigBase.netbiosName)' is $($dsgConfigBase.netbiosName.length) characters long."
+    } 
+    $config.dsg.domain.netbiosName = $dsgConfigBase.netBiosname
     $config.dsg.domain.dn = "DC=" + ($config.dsg.domain.fqdn.replace('.',',DC='))
     $config.dsg.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{}
