@@ -323,3 +323,23 @@ Time          :
 
 Safe Haven Managment (1814d074-10fe-4... jrobinson@turing.ac.uk                            Safe Haven Managment                             AzureCloud                                       4395f4a7-e455-4f95-8a9f-1fbaef6384f9
 ```
+
+## Package installation from package mirrors not possible
+If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
+
+### 1. Internal mirror does not have the required package
+To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
+Check the packages directory (ie. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
+
+![package_mirrors_01_internal_mirror_packages.png](images/package_mirrors/01_internal_mirror_packages.png)
+
+If this is missing the packages that you need, then try to [force a mirror update](#Forcing-a-mirror-update).
+
+
+### Forcing a mirror update
+Rebooting the `External` mirrors will trigger the following actions:
+
+1. Synchronisation of the external mirror with the remote, internet repository (a `pull` update)
+2. Synchronisation of the internal mirror with the external mirror (a `push` update)
+
+If the problem has been caused by missing packages on the internal mirror, this should solve it.

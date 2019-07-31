@@ -11,7 +11,7 @@ $config = Get-DsgConfig($dsgId)
 
 # Switch to appropriate management subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Read additional parameters that will be passed to the bash script from the config file
 $subscription = $config.shm.subscriptionName
