@@ -224,9 +224,12 @@ else
     fi
 
     # Construct a new cloud-init YAML file with the appropriate SSH key included
+    echo -e "${BOLD}Constructing cloud-init file containing public SSH key for: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
     TMPCLOUDINITYAML="$(mktemp).yaml"
     EXTERNAL_PUBLIC_SSH_KEY=$(az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" -o tsv | grep "^ssh")
+    az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
     sed -e "s|EXTERNAL_PUBLIC_SSH_KEY|${EXTERNAL_PUBLIC_SSH_KEY}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+    echo -e "${BOLD}...done.${END}"
 
     # Ensure that admin password is available
     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -290,16 +293,19 @@ else
     echo -e "${BOLD}Getting IP address of ${BLUE}$MACHINENAME_INTERNAL${END}"
     INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
     az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+    echo -e "${BOLD}...done.${END}"
 
     # Update known hosts on the external server to allow connections to the internal server
     echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} (removing known_hosts.old when done)${END}"
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old; ls -alh ~mirrordaemon/.ssh/" --query "value[0].message" -o tsv
     az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+    echo -e "${BOLD}...done.${END}"
 
     # Update known IP addresses on the external server to schedule pushing to the internal server
     echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
     az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
     az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+    echo -e "${BOLD}...done.${END}"
 
     # Finished updating
     echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"
@@ -321,9 +327,12 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         fi
 
         # Construct a new cloud-init YAML file with the appropriate SSH key included
+        echo -e "${BOLD}Constructing cloud-init file containing public SSH key for: ${BLUE}${MACHINENAME_EXTERNAL}${END}"
         TMPCLOUDINITYAML="$(mktemp).yaml"
         EXTERNAL_PUBLIC_SSH_KEY=$(az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --command-id RunShellScript --scripts "cat /home/mirrordaemon/.ssh/id_rsa.pub" --query "value[0].message" -o tsv | grep "^ssh")
+        az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated
         sed -e "s|EXTERNAL_PUBLIC_SSH_KEY|${EXTERNAL_PUBLIC_SSH_KEY}|" $CLOUDINITYAML > $TMPCLOUDINITYAML
+        echo -e "${BOLD}...done.${END}"
 
         # Ensure that admin password is available
         if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
@@ -386,16 +395,19 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         echo -e "${BOLD}Getting IP address of ${BLUE}$MACHINENAME_INTERNAL${END}"
         INTERNAL_HOSTS=$(az vm run-command invoke --name ${MACHINENAME_INTERNAL} --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "ssh-keyscan 127.0.0.1 2> /dev/null" --query "value[0].message" -o tsv | grep "^127.0.0.1" | sed "s/127.0.0.1/${PRIVATEIPADDRESS}/")
         az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+        echo -e "${BOLD}...done.${END}"
 
         # Update known hosts on the external server to allow connections to the internal server
         echo -e "${BOLD}Update known hosts on ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} to allow connections to ${BLUE}$MACHINENAME_INTERNAL${END}${BOLD} (removing known_hosts.old when done)${END}"
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo \"$INTERNAL_HOSTS\" > ~mirrordaemon/.ssh/known_hosts; ls -alh ~mirrordaemon/.ssh/; ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1; chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts; rm ~mirrordaemon/.ssh/known_hosts.old; ls -alh ~mirrordaemon/.ssh/" --query "value[0].message" -o tsv
         az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+        echo -e "${BOLD}...done.${END}"
 
         # Update known IP addresses on the external server to schedule pushing to the internal server
         echo -e "${BOLD}Registering IP address ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} with ${BLUE}$MACHINENAME_EXTERNAL${END}${BOLD} as the location of ${BLUE}$MACHINENAME_INTERNAL${END}"
         az vm run-command invoke --name $MACHINENAME_EXTERNAL --resource-group ${RESOURCEGROUP} --command-id RunShellScript --scripts "echo $PRIVATEIPADDRESS >> ~mirrordaemon/internal_mirror_ip_addresses.txt; ls -alh ~mirrordaemon/internal_mirror_ip_addresses.txt; cat ~mirrordaemon/internal_mirror_ip_addresses.txt" --query "value[0].message" -o tsv
         az vm wait --name $MACHINENAME_EXTERNAL --resource-group $RESOURCEGROUP --updated  # az vm run-command places the VM into 'Updating' state while running the command. The --updated flag waits for the transition from 'Updating' to 'Succeeding'
+        echo -e "${BOLD}...done.${END}"
 
         # Finished updating
         echo -e "${BOLD}Finished updating ${BLUE}$MACHINENAME_EXTERNAL${END}"

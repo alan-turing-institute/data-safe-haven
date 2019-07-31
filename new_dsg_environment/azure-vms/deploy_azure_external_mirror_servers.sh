@@ -215,11 +215,7 @@ else
 
     # Poll VM to see whether it has finished running
     echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-    while true; do
-        POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-        if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-        sleep 10
-    done
+    az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
 
     # Delete the configuration NSG rule and restart the VM
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
@@ -300,11 +296,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Poll VM to see whether it has finished running
         echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-        while true; do
-            POLL=$(az vm get-instance-view --resource-group $RESOURCEGROUP --name $MACHINENAME --query "instanceView.statuses[?code == 'PowerState/running'].displayStatus")
-            if [ "$(echo $POLL | grep 'VM running')" == "" ]; then break; fi
-            sleep 10
-        done
+        az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
 
         # Delete the configuration NSG rule and restart the VM
         echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
