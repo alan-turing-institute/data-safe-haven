@@ -391,10 +391,15 @@ Once you have accessed the VM via Remote Desktop:
 
 ### Configure AAD side of AD connect
 - Select "Password reset" from the left hand menu
-  - Ensure that enable writeback is set on AAD. On the Azure Active Directory click `password reset` and then `on-premises integration`. Ensure `write back passwords to your on-premises directory` is set to yes.
+- Ensure that enable writeback is set on AAD:
+  - Select `On-premises integration` from the left hand side bar
+  - Ensure `write back passwords to your on-premises directory` is set to yes.
     ![](images/enable_writeback.png)
-  - Go back to `password reset` and make sure that `self service password reset enabled` is set to `All`
+  - If you changed this setting, click the "Save" icon 
+- Select `Properties` from the left hand side bar
+  - Make sure that `self service password reset enabled` is set to `All`
     ![](images/enable_passwordreset.png)
+  - If you changed this setting, click the "Save" icon 
 
 ## 4. Deploy Network Policy Server (NPS)
 
