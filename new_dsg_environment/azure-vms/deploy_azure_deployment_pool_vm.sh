@@ -199,7 +199,7 @@ else
         --os-disk-name $OSDISKNAME \
         --public-ip-address-dns-name $DNSNAME \
         --resource-group $RESOURCEGROUP \
-        --size Standard_F4s_v2 \
+        --size Standard_B2ms \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_NAME \
         --vnet-name $VNET_NAME
