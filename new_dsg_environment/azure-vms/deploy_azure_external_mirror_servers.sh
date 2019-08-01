@@ -185,7 +185,7 @@ else
 
     # Temporarily allow outbound internet connections through the NSG from this IP address only
     PRIVATEIPADDRESS=${VNET_IPTRIPLET}.4
-    echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
+    echo -e "${BOLD}Temporarily allowing outbound internet access on ports 80, 443 and 3128 from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for installing software during deployment *only*)${END}"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 150 --output none
 
@@ -215,7 +215,7 @@ else
 
     # Poll VM to see whether it has finished running
     echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-    az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
+    az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/stopped'].displayStatus" --output none
 
     # Delete the configuration NSG rule and restart the VM
     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
@@ -267,7 +267,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Temporarily allow outbound internet connections through the NSG from this IP address only
         PRIVATEIPADDRESS=${VNET_IPTRIPLET}.5
-        echo -e "${BOLD}Temporarily allowing outbound internet access from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for use during deployment *only*)${END}"
+        echo -e "${BOLD}Temporarily allowing outbound internet access on ports 80, 443 and 3128 from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for installing software during deployment *only*)${END}"
         az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
         az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200 --output none
 
@@ -296,7 +296,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
 
         # Poll VM to see whether it has finished running
         echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-        az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus"
+        az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/stopped'].displayStatus" --output none
 
         # Delete the configuration NSG rule and restart the VM
         echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
