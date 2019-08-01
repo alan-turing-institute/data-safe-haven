@@ -385,7 +385,7 @@ if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
         az vm wait --name $MACHINENAME_INTERNAL --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/running'].displayStatus" --output none
 
         # Delete the configuration NSG rule and restart the VM
-        echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}" --output none
+        echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME_INTERNAL}${END}"
         az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name configurationOutboundTemporary --output none
         az network nsg rule delete --resource-group $RESOURCEGROUP --nsg-name $NSG_INTERNAL --name vnetOutboundTemporary --output none
         az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME_INTERNAL --output none
