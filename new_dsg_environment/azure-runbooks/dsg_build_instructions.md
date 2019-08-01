@@ -333,7 +333,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 
-- From the "Server Management" application, select `Tools -> Group Policy Management` then `Active Directory Domains and Trust`
+- From the "Server Management" application, select `Tools -> Active Directory Domains and Trust`
 
 - Right click the management domain name and select `Properties`
 
