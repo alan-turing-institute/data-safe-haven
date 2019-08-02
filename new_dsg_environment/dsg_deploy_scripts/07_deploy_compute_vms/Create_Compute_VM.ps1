@@ -37,14 +37,14 @@ $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" 
 $cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
 
 if($config.dsg.mirrors.cran.ip) {
-  $mirrorIpCran = "http:\/\/$($config.dsg.mirrors.cran.ip)"
+  $mirrorIpCran = "http://$($config.dsg.mirrors.cran.ip)"
 } else {
-  $mirrorIpCran = "https:\/\/cran.r-project.org"
+  $mirrorIpCran = "https://cran.r-project.org"
 }
 if($config.dsg.mirrors.pypi.ip) {
-  $mirrorIpPypi = "http:\/\/$($config.dsg.mirrors.pypi.ip):3128"
+  $mirrorIpPypi = "http://$($config.dsg.mirrors.pypi.ip):3128"
 } else {
-  $mirrorIpPypi = "https:\/\/pypi.org"
+  $mirrorIpPypi = "https://pypi.org"
 }
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
