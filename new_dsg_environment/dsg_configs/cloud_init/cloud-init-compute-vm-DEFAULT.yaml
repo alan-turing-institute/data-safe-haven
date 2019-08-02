@@ -140,8 +140,8 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = http://PYPI_MIRROR_IP:3128
-      index-url = http://PYPI_MIRROR_IP:3128/simple
+      index = PYPI_MIRROR_IP
+      index-url = PYPI_MIRROR_IP/simple
       trusted-host = PYPI_MIRROR_IP
   - path: "/Rprofile.site"
     content: |
@@ -153,7 +153,7 @@ write_files:
       ## see help(Startup) for documentation on ~/.Rprofile and Rprofile.site
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "http://CRAN_MIRROR_IP"
+          r["CRAN"] <- "CRAN_MIRROR_IP"
           options(repos = r)
       })
 
