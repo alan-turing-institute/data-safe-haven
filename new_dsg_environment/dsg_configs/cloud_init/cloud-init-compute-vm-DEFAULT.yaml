@@ -138,24 +138,29 @@ write_files:
       cat /etc/pam.d/common-session
   - path: "/etc/pip.conf"
     content: |
-      # Add the PyPI mirror to our global settings
+      # Add our PyPI mirror to the global settings
       [global]
       index = http://PYPI_MIRROR_IP:3128
       index-url = http://PYPI_MIRROR_IP:3128/simple
       trusted-host = PYPI_MIRROR_IP
   - path: "/Rprofile.site"
     content: |
-      ## Emacs please make this -*- R -*-
-      ## empty Rprofile.site for R on Debian
-      ##
-      ## Copyright (C) 2008 - 2018  Dirk Eddelbuettel and GPL'ed
-      ##
-      ## see help(Startup) for documentation on ~/.Rprofile and Rprofile.site
+      # Add our CRAN mirror to the global settings
       local({
           r <- getOption("repos")
           r["CRAN"] <- "http://CRAN_MIRROR_IP"
           options(repos = r)
       })
+  - path: "/etc/skel/reset_desktop.sh"
+    permissions: "0744"
+    content: |
+      # Reset the desktop
+      echo "Please ensure that you are running this from a PuTTY session and that all your desktop sessions are closed!"
+      echo "Killing xfce panel..."
+      killall -9 xfce4-panel
+      xfce4-panel --quit
+      echo "Removing local xfce settings"
+      rm -rf ~/.config/xfce4/panel ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
 
 runcmd:
   # ==========================================
