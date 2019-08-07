@@ -178,7 +178,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
     ![](images/set_user_location.png)
 7. Configuring MPA on Azure Active Directory
-   - Go to the Azure Portl aand select "Azure Active Directory" from the left hand side bar
+   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
    - Click on "MFA" in the "Security" section of the left hand side bar
    - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
    - Configure MFA as follows:
@@ -188,7 +188,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
      - Click "Save" and close window
        ![](images/aad_mfa_settings.png)
 8. Require MFA for all admins
-   - Go to the Azure Portl aand select "Azure Active Directory" from the left hand side bar
+   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
    - Click on "Conditional access" in the "Security" section of the left hand side bar
    - Click "Baseline policy: Require MFA for admins"
    - Select "Use policy immediately" in the left hand side bar
