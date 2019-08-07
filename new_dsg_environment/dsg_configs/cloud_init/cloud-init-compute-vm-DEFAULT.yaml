@@ -186,12 +186,12 @@ runcmd:
   - mv /startwm.sh /etc/xrdp/startwm.sh
   - chmod 0755 /etc/xrdp/startwm.sh
   - echo xfce4-session > ~USERNAME/.xsession
-  # Set default terminal for xfce
-  - echo "Set default xfce terminal"
-  - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that user owns their home directory
   - echo "Ensure that user owns their home directory"
   - chown -R USERNAME ~USERNAME
+  # Set default terminal for xfce
+  - echo "Set default xfce terminal"
+  - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Disable thinclients_drive folder created by xrdp
   - sed -i "s/allow_channels=true/allow_channels=false/" /etc/xrdp/xrdp.ini
   # Restart xrdp to reflect changes made above
