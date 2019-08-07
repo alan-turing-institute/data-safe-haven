@@ -187,6 +187,8 @@ runcmd:
   # Ensure that user owns their home directory
   - echo "Ensure that user owns their home directory"
   - chown -R USERNAME ~USERNAME
+  # Disable thinclients_drive folder created by xrdp
+  - sed -i "s/allow_channels=true/allow_channels=false/" /etc/xrdp/xrdp.ini
   # Restart xrdp to reflect changes made above
   - echo "Restart xrdp"
   - service xrdp restart
