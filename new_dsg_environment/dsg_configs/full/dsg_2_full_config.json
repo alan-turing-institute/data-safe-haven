@@ -44,6 +44,12 @@
       "fqdn": "SHMDC1.turingsafehaven.ac.uk",
       "ip": "10.251.0.250"
     },
+    "dcb": {
+      "vmName": "SHMDC2",
+      "hostname": "SHMDC2",
+      "fqdn": "SHMDC2.turingsafehaven.ac.uk",
+      "ip": "10.251.0.249"
+    },
     "nps": {
       "rg": "RG_SHM_NPS",
       "vmName": "SHMNPS",
