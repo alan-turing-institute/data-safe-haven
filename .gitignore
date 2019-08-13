@@ -6,3 +6,4 @@ new_dsg_environment/azure-vms/tests/logistic.csv
 # All secrets folders, no matter how nested
 secrets/
 temp/
+.vscode

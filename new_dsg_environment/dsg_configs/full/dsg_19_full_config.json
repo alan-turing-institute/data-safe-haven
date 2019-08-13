@@ -44,6 +44,12 @@
       "fqdn": "SHMDC1.bristolsafehaven.uk",
       "ip": "10.251.0.250"
     },
+    "dcb": {
+      "vmName": "SHMDC2",
+      "hostname": "SHMDC2",
+      "fqdn": "SHMDC2.bristolsafehaven.uk",
+      "ip": "10.251.0.249"
+    },
     "nps": {
       "rg": "RG_DSG_NPS",
       "vmName": "SHMNPS",
@@ -210,7 +216,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS_Server",
-          "allowedSources": "137.222.0.0/16,193.60.220.253,193.60.220.240"
+          "allowedSources": "137.222.0.0/16,193.60.220.253,193.60.220.240,193.60.198.0/25"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"

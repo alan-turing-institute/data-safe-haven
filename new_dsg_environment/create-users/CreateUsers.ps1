@@ -6,7 +6,7 @@ Param (
 
      [Parameter(Mandatory=$true, 
           HelpMessage="Safe Haven Management environment ('test' for test and 'prod' for production")]
-     [ValidateSet('test','prod')]
+     [ValidateSet('test','prod','bris1')]
      [string]$shmId
 )
 
@@ -14,6 +14,9 @@ Param (
 if ($ShmId -eq 'test') {
      $domain="dsgroupdev.co.uk";
      $userOuPath="OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk";
+} elseif ($shmId -eq 'bris1') {
+     $domain="bristolsafehaven.uk";
+     $userOuPath="OU=Safe Haven Research Users,DC=bristolsafehaven,DC=uk";
 } elseif ($shmId -eq 'prod') {
      $domain="turingsafehaven.ac.uk";
      $userOuPath="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk";

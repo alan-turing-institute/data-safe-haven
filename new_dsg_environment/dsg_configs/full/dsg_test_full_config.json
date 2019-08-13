@@ -44,6 +44,12 @@
       "fqdn": "MGMTDEVDC.dsgroupdev.co.uk",
       "ip": "10.220.1.250"
     },
+    "dcb": {
+      "vmName": "SHMDC2",
+      "hostname": "SHMDC2",
+      "fqdn": "SHMDC2.dsgroupdev.co.uk",
+      "ip": "10.220.1.249"
+    },
     "nps": {
       "rg": "RG_SH_MGMTNPS",
       "vmName": "MGMTNPS",

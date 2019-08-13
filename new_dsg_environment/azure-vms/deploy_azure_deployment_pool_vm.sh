@@ -52,16 +52,20 @@ print_usage_and_exit() {
     echo "usage: $0 [-h] -s subscription -n machine_number [-r resource_group]"
     echo "  -h                                    display help"
     echo "  -s subscription [required]            specify subscription to deploy into. (Test using 'Safe Haven Management Testing')"
+    echo "  -i shm_id [required]                  specify the short ID for the Safe Haven Management segment (e.g. prod, test etc)"
     echo "  -n machine_number [required]          specify number of created VM, which must be unique in this resource group (VM will be called '${MACHINENAMEPREFIX}-<number>')"
     echo "  -r resource_group                     specify resource group for deploying the VM image - will be created if it does not already exist (defaults to '${RESOURCEGROUP}')"
     exit 1
 }
 
 # Read command line arguments, overriding defaults where necessary
-while getopts "hn:r:s:" opt; do
+while getopts "hi:n:r:s:" opt; do
     case $opt in
         h)
             print_usage_and_exit
+            ;;
+        i)
+            SHMID=$OPTARG
             ;;
         n)
             MACHINENUMBER=$OPTARG
@@ -87,13 +91,19 @@ if [ "$SUBSCRIPTION" = "" ]; then
 fi
 
 
-# Check that a machine name has been provided
+# Check that an SHM ID has been provided
+# -------------------------------------------
+if [ "$SHMID" = "" ]; then
+    echo -e "${RED}SHM ID is a required argument!${END}"
+    print_usage_and_exit
+fi
+# Check that a machine number has been provided
 # -------------------------------------------
 if [ "$MACHINENUMBER" = "" ]; then
     echo -e "${RED}Machine number is a required argument!${END}"
     print_usage_and_exit
 fi
-MACHINENAME="${MACHINENAMEPREFIX}-${MACHINENUMBER}"
+MACHINENAME="${MACHINENAMEPREFIX}-${SHMID}-${MACHINENUMBER}"
 DNSNAME="$(echo $MACHINENAME | tr '[:upper:]' '[:lower:]')"
 
 
@@ -129,8 +139,10 @@ fi
 if [ "$(az network nsg show --resource-group $RESOURCEGROUP --name $NSG_NAME 2> /dev/null)" = "" ]; then
     echo -e "${BOLD}Creating NSG for deployment: ${BLUE}$NSG_NAME${END}"
     az network nsg create --resource-group $RESOURCEGROUP --name $NSG_NAME
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 1000 --name AllowMosh --description "Allow Mosh" --access "Allow" --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "VirtualNetwork" --destination-port-ranges "60000-61000" --protocol "UDP"
-    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 2000 --name AllowTuringIPs --description "Allow inbound Turing connections on port 22 (SSH)" --access "Allow" --source-address-prefixes 193.60.220.253 193.60.220.240 --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges "22" --protocol "TCP"
+    PERMITTED_IPS="193.60.220.253 193.60.220.240"
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 1000 --name AllowMosh --description "Allow Mosh" --access "Allow" --source-address-prefixes "$PERMITTED_IPS" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges "60000-61000" --protocol "UDP"
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 1500 --name AllowEternalTerminal --description "Allow Eternal Terminal" --access "Allow" --source-address-prefixes "$PERMITTED_IPS" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges "2022" --protocol "TCP"
+    az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 2000 --name AllowTuringIPs --description "Allow inbound Turing connections on port 22 (SSH)" --access "Allow" --source-address-prefixes "$PERMITTED_IPS" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges "22" --protocol "TCP"
     az network nsg rule create --resource-group $RESOURCEGROUP --nsg-name $NSG_NAME --direction Inbound --priority 3000 --name IgnoreInboundRulesBelowHere --description "Deny all other inbound" --access "Deny" --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges "*" --protocol "*"
 fi
 
@@ -189,7 +201,7 @@ else
         --os-disk-name $OSDISKNAME \
         --public-ip-address-dns-name $DNSNAME \
         --resource-group $RESOURCEGROUP \
-        --size Standard_F4s_v2 \
+        --size Standard_B2ms \
         --storage-sku Standard_LRS \
         --subnet $SUBNET_NAME \
         --vnet-name $VNET_NAME
