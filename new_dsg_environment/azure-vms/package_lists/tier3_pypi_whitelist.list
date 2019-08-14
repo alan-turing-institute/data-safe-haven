@@ -73,6 +73,7 @@ distributed
 docutils
 dominate
 dtw
+eli5
 entrypoints
 enum34
 ephem
@@ -193,6 +194,7 @@ pathlib
 pathlib2
 patsy
 pbr
+pdfminer.six
 pep8
 pexpect
 pg8000
@@ -231,6 +233,7 @@ PyOpenGL
 PyOpenGL-accelerate
 pyOpenSSL
 pyparsing
+PyPDF2
 PyPDF2
 pyproj
 pyrsistent
@@ -306,6 +309,7 @@ testfixtures
 testpath
 Theano
 thinc
+tika
 toolz
 torch
 torchvision
