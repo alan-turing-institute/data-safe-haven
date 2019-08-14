@@ -80,6 +80,7 @@ ephem
 fastcache
 fbprophet
 Fiona
+flair
 Flask
 Flask-Bootstrap
 Flask-Compress
