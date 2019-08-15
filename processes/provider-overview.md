@@ -227,9 +227,9 @@ We therefore believe it will be possible to make secure shell access just as sec
 The classification process
 --------------------------
 
-The Dataset Provider Representative and Investigator must agree on an Environment classification for a work package. If the Environment is likely to be Tier 2 or higher, they should also involve an independent Referee.
+The Dataset Provider Representative and Investigator must agree on a classification for a work package. If the classification is likely to be Tier 2 or higher, they should also involve an independent Referee.
 
-Individual datasets should initially be ingressed into a Tier 3 Environment to which the Investigator has access, so that they can make a full classification based on complete information. The exception to this is when any party feels the data may be Tier 4, in which case the project should be reconsidered.
+Prior to datasets being transfered to the Turing, a preliminary classification should be made to determine whether the work package the dataset(s) will be part of might potentially be classified at Tier 4. Only the Dataset Provider Representative will have access to the actual dataset(s) at this point, so the Investigator (and Refereee if necessary) will need to make their preliminary classification judgements based on discussions with the Dataset Provider Representative, alongside a clear description of the dataset and associated metadata such as data dictionaries. If all preliminary classification are Tier 3 or below, the dataset(s) should initially be ingressed into a Tier 3 Environment to which the Investigator (and Refereee if necessary) has access, so that they can make a full classification based on complete information. If **any** party feels the data may be Tier 4 at the preliminary classification stage the project should be reconsidered.
 
 Once the Investigator has access to the full dataset, they go through the full classification process using the flowchart provided. The Dataset Provider Representative (and Referee if necessary) should go through this flowchart separately and come up with their own classification.
 
