@@ -248,15 +248,13 @@ The initial classification of a work package will often be for the purpose of in
 
 It is a central premise of our model that any output data is classified as a new work package, separate from the work package that it is derived from.
 
-This is the case whether the output data is for publication (which should only be from a Tier 1 or Tier 0 Environment) or will be analysed in a new Environment.
+This is the case whether the output data is for publication (in which case the output data should be Tier 1 or Tier 0) or will be analysed in a new Environment.
 
 As a convenience, if derived data resulting from analysis is in a form which has been agreed with Dataset Provider Representatives at the initial classification stage – for example, a summary statistic which was the intended output for analysis of a sensitive dataset – then this re-classification may be pre-approved.
 
 We recommend that, whenever data egress is conducted with the intent of establishing a new environment for further research, a Referee is consulted to ensure balance.
 
-In all cases, classification of a work package at the point of egress should be done with all parties fully aware of the analytical processes which created the derived data from the initial work package – and these should be fully reproducible.
-
-In most cases, this will necessitate an executable script describing, in code, the processes used. This script should be written by a project member placed on thee software volume or home volume, and run so that the derived dataset is placed on the Output Volume.
+In all cases, classification of a work package at the point of egress should be done with all parties fully aware of the analytical processes which created the derived data from the initial work package. These processes should be well documented and ideally fully reproducible (e.g. as code that can be run to regenerate the exact output data from the input data).
 
 Data sharing agreement
 ----------------------------------------------------------------
