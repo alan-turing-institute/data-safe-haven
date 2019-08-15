@@ -46,7 +46,11 @@ if ($null -eq $npsSecret) {
   $newPassword = New-Password -length 12; # We think there are issues authenticating to the NPS RADIUS server if this password is too long
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
   $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName -SecretValue $newPassword;
-  $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+  Do {
+    "   - Fetching NPS shared secret from KeyVault"
+    $npsSecret = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.rds.gateway.npsSecretName).SecretValueText;
+    Start-Sleep -Seconds 1
+  } Until (-not ($null -eq $npsSecret))
 } else {
     Write-Host " - NPS shared secret for RDS gateway already exists"
 }

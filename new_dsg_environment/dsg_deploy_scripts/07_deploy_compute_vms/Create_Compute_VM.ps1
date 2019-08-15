@@ -36,6 +36,16 @@ if ($ipLastOctet) { $vmName = $vmName + "-" + $ipLastOctet }
 $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
 $cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
 
+if($config.dsg.mirrors.cran.ip) {
+  $mirrorIpCran = "http://$($config.dsg.mirrors.cran.ip)"
+} else {
+  $mirrorIpCran = "https://cran.r-project.org"
+}
+if($config.dsg.mirrors.pypi.ip) {
+  $mirrorIpPypi = "http://$($config.dsg.mirrors.pypi.ip):3128"
+} else {
+  $mirrorIpPypi = "https://pypi.org"
+}
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
 $cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id + ".yaml"
@@ -47,8 +57,6 @@ $ldapSecretName = $config.dsg.users.ldap.dsvm.passwordSecretName
 $ldapUserName = $config.dsg.users.ldap.dsvm.samAccountName
 $managementKeyvault = $config.dsg.keyvault.name
 $managementSubnetIpRange = $config.shm.network.subnets.identity.cidr
-$mirrorIpCran = $config.dsg.mirrors.cran.ip
-$mirrorIpPypi = $config.dsg.mirrors.pypi.ip
 $sourceImage = $config.dsg.dsvm.vmImageType
 $sourceImageVersion = $config.dsg.dsvm.vmImageVersion
 $subscriptionSource = $config.dsg.dsvm.vmImageSubscription

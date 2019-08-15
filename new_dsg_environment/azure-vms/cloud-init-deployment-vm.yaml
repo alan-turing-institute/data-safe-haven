@@ -37,6 +37,9 @@ runcmd:
   - apt-get update
   - apt-get install et
 
+  # Install certbot
+  - apt install certbot
+
   # Clean up
   - apt-get -y upgrade
   - apt-get -y clean

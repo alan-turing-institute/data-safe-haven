@@ -333,7 +333,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<shm-domain>\atiadmin` and the SHM DC admin password from the `sh-management-dc-admin-password` secret in the Safe Haven Management KeyVault
 
-- From the "Server Management" application, select `Tools -> Group Policy Management` then `Active Directory Domains and Trust`
+- From the "Server Management" application, select `Tools -> Active Directory Domains and Trust`
 
 - Right click the management domain name and select `Properties`
 
@@ -575,7 +575,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Install the packages present in the folder
 
-- **NOTE:** Intalling TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
+- **NOTE:** Installing TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
 
 - Once installed logout of the server
 

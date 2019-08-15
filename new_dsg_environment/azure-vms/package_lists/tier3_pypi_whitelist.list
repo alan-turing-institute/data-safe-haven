@@ -38,6 +38,7 @@ boto3
 botocore
 Bottleneck
 box2d-py
+bpemb
 branca
 bz2file
 catboost
@@ -55,6 +56,7 @@ constantly
 contextlib2
 convertdate
 cryptography
+cycler
 Cycler
 cymem
 Cython
@@ -68,17 +70,20 @@ dask
 DataShape
 decorator
 defusedxml
+deprecated
 descartes
 distributed
 docutils
 dominate
 dtw
+eli5
 entrypoints
 enum34
 ephem
 fastcache
 fbprophet
 Fiona
+flair
 Flask
 Flask-Bootstrap
 Flask-Compress
@@ -98,6 +103,7 @@ gmpy2
 GPy
 GPyOpt
 graph-tool
+graphviz
 grpcio
 gym
 h5py
@@ -106,6 +112,7 @@ holidays
 html5lib
 httplib2
 hyperlink
+hyperopt
 idna
 imageio
 imagesize
@@ -119,6 +126,7 @@ ipywidgets
 isort
 itsdangerous
 jedi
+jinja2
 Jinja2
 jmespath
 joblib
@@ -158,6 +166,7 @@ mock
 monocle
 more-itertools
 mpi4py
+mpld3
 mpmath
 msgpack
 multipledispatch
@@ -193,6 +202,7 @@ pathlib
 pathlib2
 patsy
 pbr
+pdfminer.six
 pep8
 pexpect
 pg8000
@@ -216,6 +226,7 @@ pycairo
 pycodestyle
 pycosat
 pycparser
+pycryptodome
 pycurl
 pyglet
 Pygments
@@ -226,6 +237,7 @@ PyJWT
 pyLDAvis
 pylint
 pymc3
+pymongo
 pyod
 PyOpenGL
 PyOpenGL-accelerate
@@ -248,6 +260,7 @@ python-editor
 python-geohash
 python-louvain
 pytorch
+pytorch-pretrained-bert
 pytz
 PyWavelets
 PyYAML
@@ -265,7 +278,9 @@ scikit-image
 scikit-learn
 scipy
 seaborn
+segtok
 Send2Trash
+sentencepiece
 service_identity
 setuptools
 setuptools-git
@@ -274,6 +289,7 @@ simplegeneric
 singledispatch
 SIP
 six
+sklearn
 smart-open
 snowballstemmer
 sortedcontainers
@@ -289,6 +305,7 @@ sphinxcontrib-qthelp
 sphinxcontrib-serializinghtml
 sphinxcontrib-websupport
 SQLAlchemy
+sqlitedict
 srsly
 statsmodels
 subprocess32
@@ -306,6 +323,7 @@ testfixtures
 testpath
 Theano
 thinc
+tika
 toolz
 torch
 torchvision

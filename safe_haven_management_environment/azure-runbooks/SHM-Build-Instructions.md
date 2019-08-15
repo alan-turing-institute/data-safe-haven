@@ -178,14 +178,21 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
     ![](images/set_user_location.png)
 7. Configuring MPA on Azure Active Directory
-   - Go to the Azure Portla and select "Azure Active Directory" from the left hand side bar
+   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
    - Click on "MFA" in the "Security" section of the left hand side bar
    - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
    - Configure MFA as follows:
      - In "App passwords" section select "Do not allow users to creat eapp passwords to sign in to non browser apps"
      - In "Verification options" section. Check "Call to phone" and "Notification through mobiel app" and **uncheck** "Text message to0 phone" and "Verification code from mobile app or hardware token"
+     - In "Remember multi-factor authentication", ensure "Allow users to remember multi-factor authentication on devices they trust" is **unchecked**
      - Click "Save" and close window
        ![](images/aad_mfa_settings.png)
+8. Require MFA for all admins
+   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
+   - Click on "Conditional access" in the "Security" section of the left hand side bar
+   - Click "Baseline policy: Require MFA for admins"
+   - Select "Use policy immediately" in the left hand side bar
+   - Click "Save"
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 

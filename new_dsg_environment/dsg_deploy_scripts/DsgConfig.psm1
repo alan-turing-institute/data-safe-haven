@@ -71,6 +71,12 @@ function Get-ShmFullConfig{
     $shm.dc.hostname = $shmConfigBase.dcHostname
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
+    # Backup AD DC details 
+    $shm.dcb = [ordered]@{}
+    $shm.dcb.vmName = "SHMDC2"
+    $shm.dcb.hostname = $shm.dcb.vmName
+    $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
+    $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
 
     # --- NPS config ---
     $shm.nps = [ordered]@{}
