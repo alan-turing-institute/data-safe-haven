@@ -287,13 +287,23 @@ The policies defined here minimise the number of people who have access to restr
 
 Datasets must only be transferred from the Dataset Provider to the Turing after an initial classification has been completed and the data sharing agreement executed.
 
-The transfer process should be initiated by the Project Manager in the management framework, opening a new empty secure data volume for deposit. The Investigator should authorise the mounting of the data volume in the Tier 3 Environment, using th web interface.
+All data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location. Prior to access to the ingress volume being provided, the Dataset Provider Representative must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent. Once these details have been received, the Turing will open the data ingress volume for upload of data.
 
-After their dataset has been transferred, the Dataset Provider Representative should immediately indicate that the transfer is complete. In doing so, they lose access to the data volume.
+To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
 
-Data should always be uploaded directly into the secure volume to avoid the risk of individuals unintentionally retaining the dataset for longer than intended.
+  - Access to the ingress volume is restricted to a limited range of IP addresses associated with the Dataset Provider and the Turing.
 
-While open for deposit, this volume provides an additional risk of a third party accessing the dataset. To deposit the dataset, a time-limited or one-time access token, providing write-only access to the secure transfer volume, is granted and transferrd via a secure channel to the Dataset Provider Representative.
+  - The Dataset Provider receives a **write-only** upload token. This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data. This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
+
+  - The upload token expires after a time-limited upload window.
+
+  - The upload token is transferred to the Dataset Provider via a secure email system.
+
+To further minimise the risk of unauthorised access to the dataset during the upload window, the Dataset Provider should take the following precautions.
+
+  - Data should always be uploaded directly into the secure volume to avoid the risk of individuals unintentionally retaining the dataset for longer than intended.
+
+  - After their dataset has been transferred, the Dataset Provider should immediately indicate that the transfer is complete. In doing so, they lose access to the data volume.
 
 When a work package is fully classified, data will either be ingressed from the initial Tier 3 Environment to a new Environment, or will stay in the original Tier 3 Environment, depending on sensitivity. The web management workflows should ensure that all parties have reached consensus on the classification tier at this stage before allowing analysis to begin.
 
