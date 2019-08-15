@@ -60,9 +60,14 @@ Classification is carried out on work packages rather than individual datasets.
 
 Once a work package has been classified, an appropriate secure analysis Environment is instantiated depending on the tier assigned.
 
-A project will create one Environment for each work package.
+For the initial work package in a project, a new Environment must always be deployed. For additional work packages, the project may deploy a new environment per work package or, where appropriate, add the new work package to an existing Environment deployed for the project.
 
-Depending on the classification assigned, a work package may instantiate its Environment on one of several Platforms. For example, the management system may allow instantiation of Environments both on the public cloud or an on-premises private infrastructure, on a remote HPC cluster.
+When considering adding a work package to an existing environment, the **combination** of the new work package plus all existing work packages the Environment has already been used for must be considered as the effective work package when making classification decisions.
+The classification tier of a combination of work package(s) can never be lower than the highest classification tier of any of the individual work packages, but may be higher due to additional risks introduced by combining datasets and activities across work packages.
+If the combined classification is higher than the tier associated with the existing Environment, a new Environment must be deployed.
+The classification tier of an Environment cannot be upgraded or downgraded "in place". 
+
+Depending on the classification assigned, an Environment may be instantiated on one of several supported Platforms. The Turing currently supports secure deployments to Microsoft's Azure cloud platform and to its own dedicated secure compute cluster.
 
 ### Researcher
 
