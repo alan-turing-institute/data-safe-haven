@@ -408,22 +408,34 @@ Firewall rules for the Environments must enforce Restricted network IP ranges co
 Software ingress (software entering a secure Environment from an external source)
 ------------------------------------------------------------------------------
 
-Package mirrors allow ingress of standard software.
+The base data science virtual machine provided in the secure analysis Environments comes with a side range of common data science software pre-installed. Package mirrors also allow access to a wide range of libraries for the programming languages for which package mirrors are provided (currently Python and R).
 
-But since we disable copy-paste, how should researcher-written software, written outside the Environment, arrive inside?
+For other languages for which no package mirror is provided, or for software which is not available from a package repository, an alternative method of software ingress must be provided. This includes custom researcher-written code not available via the package mirrors (e.g. code available on a researcher's personal or institutional Github repositories).
 
-If we allow access to the internet to git clone such software, this might allow for data to leave the Environment, and at higher tiers, there is no access to the open internet in any case.
-Instead, for researcher-written code developed elsewhere, we implement a **one-way airlock policy**: installation is performed in an isolated environment without access to the data; after installations are completed, internet access must then be disabled and data access enabled.
+For Tier 0 and Tier 1 environments, the data science virtual machine has outbound access to the internet and software can be installed in the usual manner by either a normal user or an administrator as required.
 
-For software that does not require admin rights to install, software is ingressed in a similar manner as data, using a software ingress volume:
+For Tier 2 environments and above, the following software ingress options are available.
 
-In **external mode** the researcher is provided temporary **write-only** access to a software ingress volume.
+### Installation during virtual machine deployment
 
-Once the Researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
+Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software sucan be installed during deployment. In this case, software installation is performed while the virtual machine is outside of the Environment with outbound internet access available, but no access to any project data. Once the additional software has been installed, the virtual machine is ingressed to the Environment via a one-way airlock.
 
-Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to Researchers within the analysis Environment with **read-only** access. They can then install the software or transfer the source to a version control repository within the Environment as appropriate.
+### Installation after virtual machine deployment
 
-For software that requires admin rights to install, the software installer is again brought in via a software ingress volume, but the installation process requires a System Manager to run the install process.
+Once a virtual machine has been deployed into a secure analysis Environment, it cannot be moved outside of the Environment, as is has had access to the data in the Environment and therefore represents an unauthorised data egress risk. As Environments at Tier 2 and above do not have access to the internet, any additional software required must be brought into the Environment in order to be installed.
+
+Software is ingressed in a similar manner as data, using a software ingress volume:
+
+  - In **external mode** the researcher is provided temporary **write-only** access to a software ingress volume.
+
+  - Once the Researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
+
+  - Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to Researchers within the analysis Environment with **read-only** access.
+  
+  - For software that does not require administrative rights to install, the Researcher can then install the software or transfer the source to a version control repository within the Environment as appropriate.
+
+  - For software that requires administrative rights to install, the a System Manager must run the installation process.
+
 
 The choices
 ------------
