@@ -258,7 +258,7 @@ In all cases, classification of a work package at the point of egress should be 
 
 Data sharing agreement
 ----------------------------------------------------------------
-This should be a formal data sharing agreement as required under data protection law, and drafted with the benefit of legal advice, and should be signed before a dataset is ingressed to the initial Tier 3 environment. This agreement should include any specific commitments to be made by Researchers working with the dataset. The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required.
+This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice, and should be signed before a dataset is ingressed to the initial Tier 3 environment. Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must  specify the legal basis under which the Dataset Provider is permitted to share this data with the Turing. This agreement should include any specific commitments required from Researchers working with the dataset. The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required. 
 
 After the full classification process is carried out, the agreement may need to be updated. We recommend that the wording of the initial agreement is such that it enables research at the tier anticipated by the Dataset Provider, or worded flexibly enough that changes after the initial classification are minimal.
 
@@ -275,9 +275,10 @@ The Project Manager has the authority to assign Referees and Data Provider Repre
 
 At some tiers, new Referees or members of the research team must also be approved by the Dataset Provider Representative.
 
-Before joining a project, Researchers, Investigators and Referees must certify in the management system that they have received training in handling data in the system.
+Before joining a project, Researchers, Investigators and Referees must agree to any additional commitments required by the project.
 
-As required by law, the Dataset Provider Representative must also certify that the organisation providing the dataset has permission from the dataset owner, if they are not the dataset owner themselves, to share it with the Turing, and this should be recorded within the management system database.
+Users are removed from a project promptly once their involvement with the project ends.
+
 
 Data ingress (data entering a secure Environment from an external source)
 ----------------------------------------------------------------
