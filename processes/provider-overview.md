@@ -310,11 +310,9 @@ When a work package is fully classified, data will either be ingressed from the 
 Software library distributions
 ------------------------------
 
-Maintainers of shared research computing Environments face a difficult challenge in keeping research algorithm libraries and platforms up to date - and in many cases these conflict. While sophisticated tools to help with this such as Spack exist, the use of single-project virtual Environments opens another possibility: downloading the software as needed for the project from package managers such as the Python package index, which automate the process of installing and configuring programs. To achieve this in a secure Environment, without access to the external internet, requires maintenance of mirrors (exact copies) of package repositories inside the Environment.
+Maintainers of shared research computing Environments face a difficult challenge in keeping research algorithm libraries and platforms up to date - and in many cases these conflict. While sophisticated tools to help with this exist, the use of single-project virtual Environments opens another possibility: downloading the software as needed for the project from package repositories (such as PyPI for Python or CRAN for R), which automate the process of installing and configuring programs. To achieve this in a secure Environment, without access to the external internet, requires maintenance of full or partial mirrors (exact copies) of package repositories inside the Environment.
 
 Use of package mirrors inside the Environment means that the set of default installed packages can be kept to a minimum, reducing the likelihood of encountering package-conflict problems (where a package can be prevented from being installed due to the presence of an existing package with the same name) and saving on System Manager time.
-
-At Tiers 2 and above, however, not all software in the public repositories are immediately mirrored. Malicious software has occasionally been able to become an official download on official package mirrors. This is a low risk, since the Environment will not have access to the internet, but must still be guarded against at the higher tiers.
 
 At Tiers 3 and above we mirror only a subset of whitelisted packages (packages which are explicitly marked as safe). At other tiers we mirror the full package list but with a delay, during which the wider international research community will catch most malicious code on package mirrors.
 
