@@ -453,13 +453,13 @@ At Tier 1 and 0, installation should be from the original package server on the 
 
 ### Inbound network
 
-At Tier 2 and 3, the analysis machines themselves are not accessible directly. Instead, only a small group of user devices are exposed to the network, termed "access nodes". These provide the remote desktop facilities used indirectly to access the analysis Environments.
+At Tier 2 and above, the analysis machines themselves are not accessible directly. Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments.
 
-Only the Restricted network will be able to access "access nodes" for Tier 3 and above.
+Tier 3 and above Environment access nodes are only available from approved Restricted networks.
 
-Tier 2 Environment access nodes should only be accessible from an Institutional network.
+Tier 2 Environment access nodes are only be accessible from approved Institutional networks.
 
-Tier 1 and 0 Environments should be accessible from the open internet.
+Tier 1 and 0 Environments are accessible from the open internet.
 
 ### Outbound network
 
