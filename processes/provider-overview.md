@@ -516,7 +516,7 @@ Tier 2 Environment access nodes are only be accessible from approved Institution
 
 Tier 1 and 0 Environments are accessible from the open internet.
 
-### Outbound network
+### Outbound network and internet access
 
 At Tier 1 and 0 the internet is accessible from inside the Environment. At all other tiers the virtual network inside the Environment is completely isolated.
 
@@ -538,51 +538,7 @@ Each Restricted network is only available from within a suitably secure physical
 
 Managed devices laptops will therefore have no access to Tier 3 or above Environments while 'roaming' away from a secure network, and access to Tier 3 and Tier 4 Environments can be restricted to appropriate physical spaces.
 
-### User management
-
-New user accounts are requested by users on the system and approved by Research Managers before they're assigned to projects.
-
-At Tier 2 and below, the Investigator has the authority to add new members to the research team, and the Research Manager has the authority to assign Referees.
-
-At Tier 3 and above, new Referees or members of the research team must be counter-approved by the Dataset Provider Representative.
-
-### Connection
-
-At Tier 1 and Tier 0, secure shell access to the Environment is possible without restrictions. The user should be able to set up port forwarding (redirecting a communication request from the secure Environment to the user's device) and use this to access remotely-running user interface clients from outside the Environment.
-
-At Tier 2 and above only remote desktop access is enabled.
-
-We may, in future, enable secure shell access at Tier 2, but this remains a work in progress.
-
-### Internet access
-
-Tier 2 and above Environments have no access to the internet, other than inbound through the 
-access connection.
-
-Tier 0 and Tier 1 Environments have access to the open internet.
-
-### Software ingress
-
-For Tier 3, additional software or virtual machines arriving through the software ingress process
-must be reviewed and signed off by the Investigator and Referee before they can be accessed inside 
-the Environment (with the exception of pre-approved virtual machines or package mirrors).
-
-For Tier 2, additional software or virtual machines requested by Researchers do not require 
-review and/or sign off by anyone else, but must arrive through the software ingress process.
-
-For Tier 0 and Tier 1, users should be able to install software directly into the Environment 
-(in user space) from the open internet.
-
-### Data ingress
-
-For Tier 3 and above, the high-security data transfer process is required.
-Lower-security data transfer processes are allowed at Tier 2 and below.
-
 ### Copy-paste
-
-At Tier 1 and 0 users should be permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
-
-At Tier 2 and above, copy-paste is disabled into and out of the remote desktop. (Copy-paste within the remote desktop is possible, but the paste-buffer which stores the short-term data is remote.)
 
 ### Refereeing of classification
 
@@ -596,9 +552,12 @@ Environment in which the derived data is generated is Tier 3 or higher.
 
 ### Data egress
 
-At Tier 3 and higher, the Data Provider Representative is required to sign off all egress of data or code from the
-Environment.
+At Tier 1 and 0 users should be permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
+
+At Tier 2 and above, the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
+
+At Tier 3 and above, the Data Provider Representative is also required to sign off all egress of data or code from the Environment.
 
 ### Two factor authentication
 
-At Tier 2 and higher, two factor authentication is required.
+At Tier 2 and higher, two factor authentication is required to access the Environment.
