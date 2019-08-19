@@ -508,13 +508,14 @@ At Tier 1 and 0, installation should be from the original package server on the 
 
 ### Inbound network
 
-At Tier 2 and above, the analysis machines themselves are not accessible directly. Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments.
+At Tier 2 and 3, the analysis machines themselves are not accessible directly. Instead, only 
+a small group of user devices are exposed to the network, termed "access nodes". These provide the remote desktop facilities used indirectly to access the analysis Environments.
 
-Tier 3 and above Environment access nodes are only available from approved Restricted networks.
+Only the Restricted network will be able to access "access nodes" for Tier 3 and above.
 
-Tier 2 Environment access nodes are only be accessible from approved Institutional networks.
+Tier 2 Environment access nodes should only be accessible from an Institutional network.
 
-Tier 1 and 0 Environments are accessible from the open internet.
+Tier 1 and 0 Environments should be accessible from the open internet.
 
 ### Outbound network
 
@@ -522,21 +523,17 @@ At Tier 1 and 0 the internet is accessible from inside the Environment. At all o
 
 ### User devices
 
-Access to Tier 3 and above Environments is restricted to Managed devices on which users do not have administrative rights. This access restriction is enforced by limiting access to the Restricted networks approved for each Environment to Managed devices.
+Open devices should not be able to access the Restricted network.
 
-Access to Tier 2 and below Environments is permitted from Open devices on which users have administrative rights.
+Managed laptop devices should be able to leave the physical office where the Restricted network exists, but should have no access to Tier 3 or above Environments while 'roaming'.
 
 ### Physical security
 
-Each Restricted network is only available from within a suitably secure physical space (see above for definitions):
+Tier 2 and below Environments should not be subject to physical security.
 
-  - Access to Tier 4 Environments must be from a high security space 
+Tier 3 access should be from the medium security space.
 
-  - Access to Tier 3 Environments must be from a medium security space
-
-  - Tier 2 and below Environments are not subject to physical security restrictions and may be accessed from anywhere
-
-Managed devices laptops will therefore have no access to Tier 3 or above Environments while 'roaming' away from a secure network, and access to Tier 3 and Tier 4 Environments can be restricted to appropriate physical spaces.
+Tier 4 access must be from the high security space (see above for definitions).
 
 ### User management
 
