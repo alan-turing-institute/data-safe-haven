@@ -447,9 +447,9 @@ can be made for each Environment. These are all separately configurable on an en
 
 At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only white-listed software.
 
-At Tier 2, package mirrors should include all software, one month behind the server of the original package. Critical security updates should be fast-tracked.
+At Tier 2, package mirrors should include all software. 
 
-At Tier 1 and 0, installation should be from the original package's server on the external internet.
+At Tier 1 and 0, installation should be from the original package server on the external internet.
 
 ### Inbound network
 
