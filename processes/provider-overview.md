@@ -578,9 +578,12 @@ Lower-security data transfer processes are allowed at Tier 2 and below.
 
 ### Copy-paste
 
-At Tier 1 and 0 users should be permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
+At Tier 1 and 0 users are permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
 
-At Tier 2 and above, copy-paste is disabled into and out of the remote desktop. (Copy-paste within the remote desktop is possible, but the paste-buffer which stores the short-term data is remote.)
+At Tier 2 and above, the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
+
+At Tier 3 and above, the Data Provider Representative is also required to sign off all egress of data or code from the Environment.
+
 
 ### Refereeing of classification
 
