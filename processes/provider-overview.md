@@ -470,7 +470,7 @@ At Tier 1 and 0 the internet is accessible from inside the Environment. At all o
 For Tier 3 and above, the high-security data transfer process is required. Lower-security data transfer processes are allowed at Tier 2 and below.
 
 ### Data egress
-At Tier 1 and 0 users should be permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
+At Tier 1 and 0 users are permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
 
 At Tier 2 and above, the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
 
