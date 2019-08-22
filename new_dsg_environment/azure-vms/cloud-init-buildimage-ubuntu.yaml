@@ -213,12 +213,16 @@ packages:
   - octave
   - oddjob
   - oddjob-mkhomedir
+  - osm2pgsql
   - p7zip
   - parallel
   - pgadmin3
-  - postgresql-10
-  - postgresql-10-pgrouting
-  - postgresql-10-postgis-2.5-scripts
+  - postgresql-11
+  - postgresql-11-pgrouting
+  - postgresql-11-postgis-2.5-scripts
+  # - postgresql-10
+  # - postgresql-10-pgrouting
+  # - postgresql-10-postgis-2.5-scripts
   - postgresql-contrib
   - qgis
   - r-base
