@@ -1,0 +1,261 @@
+{
+  "shm": {
+    "subscriptionName": "Safe Haven Managment",
+    "id": "prod",
+    "name": "Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "SHM_VNET1",
+        "cidr": "10.251.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.251.0",
+          "cidr": "10.251.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_VM_DC",
+      "vmName": "SHMDC1",
+      "hostname": "SHMDC1",
+      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
+      "ip": "10.251.0.250"
+    },
+    "dcb": {
+      "vmName": "SHMDC2",
+      "hostname": "SHMDC2",
+      "fqdn": "SHMDC2.turingsafehaven.ac.uk",
+      "ip": "10.251.0.249"
+    },
+    "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "SHMNPS",
+      "ip": "10.251.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgartifactsprod"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_DSG_SECRETS",
+      "name": "dsg-management-prod",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert",
+        "dc": "sh-managment-dcadmin",
+        "safemode": "sh-managment-dcsafemode",
+        "adsync": "sh-managment-adsync",
+        "vpncertificate": "sh-managment-cert"
+      }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
+    }
+  },
+  "dsg": {
+    "subscriptionName": "Data Study Group 22 (Prod)",
+    "id": "22",
+    "shortName": "dsg22",
+    "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-prod"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
+    "domain": {
+      "fqdn": "dsgroup22.co.uk",
+      "netbiosName": "DSGROUP22",
+      "dn": "DC=dsgroup22,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP22 Server Administrators",
+          "description": "SG DSGROUP22 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP22 Research Users",
+          "description": "SG DSGROUP22 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP22_VNET1",
+        "cidr": "10.250.168.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.250.168",
+          "cidr": "10.250.168.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.250.169",
+          "cidr": "10.250.169.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.250.170",
+          "cidr": "10.250.170.0/24"
+        },
+        "gateway": {
+          "prefix": "10.250.175",
+          "cidr": "10.250.175.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg22artifacts"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-prod"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG22DC",
+      "hostname": "DSG22DC",
+      "fqdn": "DSG22DC.dsgroup22.co.uk",
+      "ip": "10.250.168.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg22-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP22 Gitlab LDAP",
+          "samAccountName": "dsg22-gitlab-ldap",
+          "passwordSecretName": "dsg22-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP22 HackMD LDAP",
+          "samAccountName": "dsg22-hackmd-ldap",
+          "passwordSecretName": "dsg22-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP22 DSVM LDAP",
+          "samAccountName": "dsg22-dsvm-ldap",
+          "passwordSecretName": "dsg22-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP22 Test Researcher",
+          "samAccountName": "dsg22-test-res",
+          "passwordSecretName": "dsg22-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup22.co.uk",
+        "ip": "10.250.169.250",
+        "npsSecretName": "dsg22-nps-secret"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup22.co.uk",
+        "ip": "10.250.169.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup22.co.uk",
+        "ip": "10.250.169.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "193.60.220.253,193.60.220.240"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup22.co.uk",
+      "ip": "10.250.170.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup22.co.uk",
+        "ip": "10.250.170.151",
+        "rootPasswordSecretName": "dsg22-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup22.co.uk",
+        "ip": "10.250.170.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2019071900",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup22-dsvm-admin-password"
+      }
+    }
+  }
+}
