@@ -17,7 +17,7 @@
 
 To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute. 
 
-### Data governance and challenge overview**
+### Data governance and challenge overview
 
 The challenges in this DSG are all categorised as Tier 2: "Official".
 
