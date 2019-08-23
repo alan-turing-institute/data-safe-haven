@@ -191,9 +191,6 @@ packages:
   - postgresql-11
   - postgresql-11-pgrouting
   - postgresql-11-postgis-2.5-scripts
-  # - postgresql-10
-  # - postgresql-10-pgrouting
-  # - postgresql-10-postgis-2.5-scripts
   - postgresql-contrib
   - qgis
   - r-base
@@ -472,11 +469,11 @@ runcmd:
 
   # Create or update conda environments
   # Python 2.7
-  - /installation/create_or_update_conda_python_environment.sh py27 65 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py27 80 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   # Python 3.6
-  - /installation/create_or_update_conda_python_environment.sh py36 15 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   # Python 3.7
-  - /installation/create_or_update_conda_python_environment.sh py37 15 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py37 10 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
   # List environments
   - echo ">=== Final conda environments... ===<"
   - conda env list
