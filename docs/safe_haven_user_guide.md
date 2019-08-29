@@ -7,11 +7,11 @@
 * [**Section 2:** Logging in for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time)
 * [**Section 3:** Accessing the Safe Haven for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-3-accessing-the-safe-haven-for-the-first-time)
 * [**Section 4:** Using the Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-4-using-the-safe-haven)
-* [**Section 5:** Fixing bugs]()
-* [**Appendix A:** Migrating to a new data science VM post package update]()
-* [**Appendix B:**  Gitlab tutorial notes]()
-* [**Appendix C:** Troubleshooting]()
-* [**Appendix D:** Safe Haven setup]()
+* [**Section 5:** Fixing bugs](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-5-fixing-bugs)
+* [**Appendix A:** Migrating to a new data science VM post package update](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+* [**Appendix B:**  Gitlab tutorial notes](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-b-gitlab-tutorial-notes)
+* [**Appendix C:** Troubleshooting](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-c-troubleshooting)
+* [**Appendix D:** Safe Haven setup](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-d-safe-haven-setup)
 
 ## Introduction: The Turing Safe Haven
 
