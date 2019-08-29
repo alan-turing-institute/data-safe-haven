@@ -2,7 +2,7 @@
 
 **Table of contents:**
 
-* **Intro:** The Turing Safe Haven
+* [**Introduction:** The Turing Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#introduction-the-turing-safe-haven)
 * **Section 1:** Setting up
 * **Section 2:** Logging in for the first time
 * **Section 3:** Accessing the Safe Haven for the first time
