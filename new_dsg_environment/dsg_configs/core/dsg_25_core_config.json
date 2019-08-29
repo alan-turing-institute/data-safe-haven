@@ -2,7 +2,7 @@
     "subscriptionName": "Data Study Group 25 (Prod)",
     "dsgId": "25",
     "shmId": "prod",
-    "tier": "2",
+    "tier": "3",
     "domain": "dsgroup25.co.uk",
     "netbiosName": "DSGROUP25",
     "ipPrefix": "10.250.192.",
