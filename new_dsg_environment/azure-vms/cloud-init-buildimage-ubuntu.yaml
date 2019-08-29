@@ -469,7 +469,7 @@ runcmd:
 
   # Create or update conda environments
   # Python 2.7
-  - /installation/create_or_update_conda_python_environment.sh py27 80 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py27 45 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   # Python 3.6
   - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   # Python 3.7
@@ -480,6 +480,7 @@ runcmd:
   # Set 'other' permissions on the anaconda directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
   - echo ">=== Updating /anaconda/ permissions... ===<"
+  - rm -rf /anaconda/.cph_tmp*
   - chmod -R o=u,o-w /anaconda/
   - ls -alh /anaconda/
 
