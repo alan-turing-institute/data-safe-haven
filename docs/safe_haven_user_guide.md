@@ -118,7 +118,7 @@ If you feel you may struggle to remember your password, make a note of it on a s
     ![](images/login_1.png)
     ![](images/login_2.png)
 
-    If you get a message saying "account or password is correct" , check that you:
+    If you get a message saying "account or password is incorrect" , check that you:
      * typed the right username
      * typed the right domain (see below example!)
 
