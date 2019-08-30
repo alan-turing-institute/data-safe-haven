@@ -277,15 +277,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    ![](images/1st_logon_putty.png)
 
-3. Log into Putty with your `username` (`firstname.lastname`) and `password`.
-
-    Note that **the cursor will not move** while you are typing your password!
-
-4. Once you have confirmed log in, you can close this window.
-
-   **NOTE:** Be careful not to close the browser when you close the tab in the remote desktop!
-
-5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
+3. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
 
    `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
@@ -293,7 +285,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    ![](images/1st_logon_sharedVMdesktop.png)
 
-6. Insert your credentials as per the example below:
+4. Insert your credentials as per the example below:
 
    ![](images/logon_VMdesktop.png)
 
