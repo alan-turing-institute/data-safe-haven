@@ -465,6 +465,8 @@ You can now drag and drop any files between the data science VM and the Windows 
 
 ![](images/WinSCP_screenshot.png)
 
+If only one person in your group completes this step, everyone will then be able to access the data.
+
 ### 4.6: Creating and presenting the report-out slides for Friday
 
 To create the presentation slides, go to the `Presentation server` on the Work Resources list and then open the Open Office icon on the Windows desktop.
