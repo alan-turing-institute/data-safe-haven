@@ -221,11 +221,10 @@ Follow the steps below to access the Azure safe haven environment:
 
 3. Replace `X` by one of the following numbers, depending on challenge
 
-   * X = 10 : Spend Network
-   * X = 11 : NATS
-   * X = 13 : GOSH
-   * X = 14 : Roche
-   * X = 15 : British Antarctic Survey
+   * X = 22 : Telenor
+   * X = 23 : Turkcell
+   * X = 24 : Telus
+   * X = 25 : STC
 
 **NOTE:** Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
    However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
