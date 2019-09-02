@@ -23,7 +23,7 @@ The challenges in this DSG are all categorised as Tier 2: "Official" or Tier 3: 
 
 While you are having an initial problem discussion and brainstorming session, the DSG team will take a participant register and grant you access to the Turing safe haven and to the relevant challenge data. When this is ready, your facilitator will guide you through logging in and using  the Safe Haven following the instructions in this document.
 
-The Tier 2 environment does not allow connection to the internet. However, there are local copies of the PyPI and CRAN package repositories available inside of the Azure virtual machine. You can install packages you need from these copies in the usual way, for example pip install --user and packages.install for Python and R respectively. 
+The environments do not allow connection to the internet. However, there are local copies of the PyPI and CRAN package repositories available inside of the Azure virtual machine. You can install packages you need from these copies in the usual way, for example pip install --user and packages.install for Python and R respectively. 
 
 Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For CRAN, you will be prompted to make a user package directory when you install your first package. For PyPI, you will need to run pip install with the --user flag. See Section 4.2: Installing packages for further details.
 Turing Safe Haven setup
