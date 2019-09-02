@@ -19,7 +19,7 @@ To maintain security of the data and challenge insights, we are legally required
 
 ### Data governance and challenge overview
 
-The challenges in this DSG are all categorised as Tier 2: "Official".
+The challenges in this DSG are all categorised as Tier 2: "Official" or Tier 3: "Official Sensitive".
 
 While you are having an initial problem discussion and brainstorming session, the DSG team will take a participant register and grant you access to the Turing safe haven and to the relevant challenge data. When this is ready, your facilitator will guide you through logging in and using  the Safe Haven following the instructions in this document.
 
