@@ -33,10 +33,10 @@ Rscript test_package_installation.R
 The installation check will take several minutes to run.
 
 There are a few known packages that will cause warnings and errors during this test.
-- `rgl`: This package is successfully installed, but required a GUI to load
 - `clusterProfiler`: Error is `multiple methods tables found for ‘toTable’`. Not yet understood
 - `GOSemSim`: False positive - no warning on package load
 - `graphite`: False positive - no warning on package load
+- `tmap`: False positive - no warning on package load
 
 The expected output for a successful test is:
 
