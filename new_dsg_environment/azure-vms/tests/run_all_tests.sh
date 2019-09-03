@@ -6,13 +6,14 @@ R_packages () {
     OUTPUT=$(Rscript test_package_installation.R 2>&1)
     echo "$OUTPUT"
     PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -A1 "The following packages gave a warning" | grep -v "gave a warning" | cut -d']' -f2)
+    OUTCOME=0
     for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
-        echo $PROBLEMATIC_PACKAGE
-        if [[ "$PROBLEMATIC_PACKAGE" != *"clusterProfiler"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"GOSemSim"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"graphite"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"rgl"* ]]; then
-            return 1
+        if [[ "$PROBLEMATIC_PACKAGE" != *"clusterProfiler"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"GOSemSim"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"graphite"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"tmap"* ]]; then
+            echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
+            OUTCOME=1
         fi
     done
-    return 0
+    return $OUTCOME
 }
 
 
