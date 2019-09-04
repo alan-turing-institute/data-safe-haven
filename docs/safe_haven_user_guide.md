@@ -2,163 +2,90 @@
 
 **Table of contents:**
 
-* [Section 1: Support for bugs and reports](#section-1-support-for-bugs-and-reports)
-* [Section 2: Overview of the Turing DSG IT setup](#section-2-overview-of-the-turing-dsg-it-setup)
-  * [2.1: Data governance and challenge overview](#section-21-data-governance-and-challenge-overview)
-  * [2.2: Turing safe haven set-up](#section-22-turing-safe-haven-set-up)
-  * [2.3: Wi-Fi access](#section-23-wi-fi-access)
-  * [2.4: Multi-factor authentication](#section-24-multi-factor-authentication)
-* [Section 3: User activation instructions](#section-3-user-activation-instructions)
-  * [Section 3.1. Initial User Sign In, configuring MFA](#section-31-initial-user-sign-in-configuring-mfa)
-* [Section 4: Using the safe haven](#section-4-using-the-safe-haven)
-  * [Section 4.1: Access credentials](#section-41-access-credentials)
-  * [Section 4.2: Logging into the Windows Azure environment](#section-42-logging-into-the-windows-azure-environment)
-  * [Section 4.3: First-time set-up](#section-43-first-time-set-up)
-  * [Section 4.4: Using the data analytics virtual machine](#section-44-using-the-data-analytics-virtual-machine)
-  * [Section 4.5:  Installing packages](#section-45-installing-packages)
-  * [Section 4.6: Accessing GitLab and storing code](#section-46-accessing-gitlab-and-storing-code)
-  * [Section 4.7: Accessing HackMD and writing the report](#section-47-accessing-hackmd-and-writing-the-report)
-  * [Section 4.8: Accessing the data and exporting figures](#section-48-accessing-the-data-and-exporting-figures)
-  * [Section 4.9: Creating and presenting the report-out slides for Friday](#section-49-creating-and-presenting-the-report-out-slides-for-friday)
-  * [Section 4.10: Outputs from the week](#section-410-outputs-from-the-week)
-* [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
-* [Appendix B: Gitlab tutorial notes](#appendix-b-Gitlab-tutorial-notes)
-* [Appendix C: Troubleshooting](#appendix-c-troubleshooting)
+* [**Introduction:** The Turing Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#introduction-the-turing-safe-haven)
+* [**Section 1:** Setting up](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-1-setting-up)
+* [**Section 2:** Logging in for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time)
+* [**Section 3:** Accessing the Safe Haven for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-3-accessing-the-safe-haven-for-the-first-time)
+* [**Section 4:** Using the Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-4-using-the-safe-haven)
+* [**Section 5:** Fixing bugs](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-5-fixing-bugs)
+* [**Appendix A:** Migrating to a new data science VM post package update](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+* [**Appendix B:**  Gitlab tutorial notes](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-b-gitlab-tutorial-notes)
+* [**Appendix C:** Troubleshooting](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-c-troubleshooting)
+* [**Appendix D:** Safe Haven setup](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-d-safe-haven-setup)
 
-## Section 1: Support for bugs and reports
+## Introduction: The Turing Safe Haven
 
-*You may be surprised that we're starting this document with a section about bugs and problems!*
-*Our logic is that once you're set up, this is going to be the most important part.*
-*Good luck with your analyses, we're here to help if you need us.*
+To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute. 
 
-The Turing IT, Research Engineering Group (REG) and the data study group teams attempt to solve IT infrastructure issues arising as soon as possible.
+### Data governance and challenge overview
 
-The process for requesting help with the issue is as follows:
+The challenges in this DSG are all categorised as Tier 2: "Official" or Tier 3: "Official Sensitive".
 
-1. Make sure you have **read this document** and checked if it answers your query.
+While you are having an initial problem discussion and brainstorming session, the DSG team will take a participant register and grant you access to the Turing safe haven and to the relevant challenge data. When this is ready, your facilitator will guide you through logging in and using  the Safe Haven following the instructions in this document.
 
-    *Please do not log an issue before you have read all of the sections in this document.*
+The environments do not allow connection to the internet. However, there are local copies of the PyPI and CRAN package repositories available inside of the Azure virtual machine. You can install packages you need from these copies in the usual way, for example pip install --user and packages.install for Python and R respectively. 
 
-2. Log out and log back in again (to the safe haven or data science environment) at least once, re-attempt the process leading to the bug/error at least twice.
+Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For CRAN, you will be prompted to make a user package directory when you install your first package. For PyPI, you will need to run pip install with the --user flag. See Section 4.2: Installing packages for further details.
+Turing Safe Haven setup
 
-    We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well!
-    (Particularly when there are lots of folks trying these steps at the same time.)
+For full details on the technical setup of the Safe Haven, see **Appendix D**.
 
-3. Let your challenge facilitator know of the issue.
-  They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
+## Section 1: Setting up
 
-    Please help your facilitator with a summary, and an appropriate tag for the issue.
-    For example: `[feature request]`, `[package request]`, `[bug report]` are all nice and easy to understand.
-
-    If you are reporting a bug, please include:
-
-    * Your client machine’s operating system and operating system version.
-    * Precise condition under which the bug occurs.
-    How to reproduce it.
-    * Precise description of the bug.
-    What happens?
-    What would you expect to happen instead if there were no bug?
-    * Any workarounds/fixes you have found
-
-## Section 2: Overview of the Turing DSG IT setup
-
-To maintain security of the data and challenge insights we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute.
-Each challenge data set has a data governance and security tier which may impose restrictions on the analysis environment.
-
-This section outlines the different tiers and explains some of the restrictions that apply to the more sensitive data classifications.
-
-### Section 2.1: Data governance and challenge overview
-
-The challenges in this DSG are all categorised as *Tier 2: "Official"*.
-
-In order to access tier 2 data, the DSG team will come to each room and take a participant register for each challenge.
-While you are having an initial problem discussion and brainstorming session, access will be granted to the Turing safe haven and to the relevant challenge data.
-When this is ready, your facilitator will guide you through user registration and a safe haven usage tutorial following the instructions in this document.
-
-### Section 2.2: Turing safe haven set-up
-
-The original data is hosted on a server at the Alan Turing Institute.
-You will not have access to that data server.
-
-A copy of the data is available inside a [Windows Azure environment](https://azure.microsoft.com/en-gb/overview/what-is-azure/).
-
-The Azure environment also contains a Unix data science VM, which can only be accessed from the dashboard.
-
-&rarr; Your laptop
-
-&nbsp;&nbsp;&nbsp;&rarr; Turing Guest Wi-Fi
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Windows remote desktop (multi-factor authentication required)
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&rarr; Unix Azure environment
-
-The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
-
-You also have access to HackMD for collaborative writing and GitLab for version control and to share your code.
-
-The Tier 2 environment does not allow connection to the internet.
-However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
-You can install packages you need from these copies in the usual way, for example `pip install --user` and `packages.install` for Python and R respectively.
-Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For `CRAN`, you will be prompted to make a user package direcory when you install your first package. For `PyPI`, you will need to run `pip install` with the `--user` flag.
-See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
-
-### Section 2.3: Wi-Fi access
+### 1.1  Wi-Fi Access
 
 You need to be connected to the Turing’s internal Wi-fi network to access any of the challenges:
+
 
 > Wi-Fi Name: Turing Guest
 >
 > Password  : *Available on signage throughout the Turing Institute*
 
-The password is the full string *including spaces*.
+The password is the full string including spaces.
 
-### Section 2.4: Multi-factor authentication
+### 1.2 Multi-Factor Authentication
 
-Multi-factor authentication (MFA, also known as two-factor authentication, "2FA", even if there are more than two factors) is one of the most powerful ways of protecting your personal information online.
-In this case, we use MFA to protect the challenge data.
+Multi-factor authentication is one of the most powerful ways of protecting your personal information online. In this case, we use MFA to protect the challenge data.
 
-Very briefly, MFA will ask you to confirm your identity via another mechanism whenever you connect to the Windows Azure environment.
-You can think of your username and password as being the first authentication, and the second being a the phone call or notification via the mobile app.
-*This is why we ask that you bring a mobile device with you to the Data Study Group.*
+MFA will ask you to confirm your identity (using your phone number) whenever you connect to the Windows Azure environment. *This is why we ask that you bring a mobile device with you to the Data Study Group.*
 
-The instructions below recommend using notifications via the Authenticator app, but a phone call will work too.
+Full instructions on setting this up are given in Section 2 below. We recommend using notifications via the Authenticator app, but a phone call will work too.
 
-This process may cause some connectivity challenges on the first (and maybe second) days of the Data Study Group, especially if your phone provider’s network has low connectivity at the British Library.
-The DSG team are here to help smooth these processes for you, but it is important to emphasise that we are always balancing ease of analysis with our responsibilities as data controllers for the DSG week.
-Thank you for your patience as we and your facilitators work to get you connected securely.
+You may encounter some connectivity challenges if your phone provider’s network has low connectivity at the British Library. The DSG team are here to help smooth these processes for you, and balance ease of analysis with our responsibilities as data controllers for the DSG week. Thank you for your patience as we and your facilitators work to get you connected securely.
 
-## Section 3: User activation instructions
+## Section 2: Logging in for the first time
 
-This section describes user activation and verification procedures which are a requirement for the tier 2 or higher Turing safe haven.
-As a result, you will possess user credentials that allow you to use the safe haven.
-Instructions should be followed only once, at the start of the data study week.
-Please let your facilitator know if any of the below fails despite multiple tries.
+This section should help you log in to the Safe Haven for the first time. Please let your facilitator know if any of the below fails despite multiple tries.
 
-### Section 3.1. Initial User Sign In, configuring MFA
+You should have provided a phone number when you registered for the DSG. If you did not provide your number, your account may not have been set up - please let your facilitator know and they will set you up with an account.
 
-You should have provided a phone number when you registered for the DSG.
-If you did not provide your number, please let you facilitator know, so they can log this with the IT and DSG team and get you an account set up ready to activate.
+### 2.1 Username
 
-Your username will be in the format `firstname.lastname` – you will see this mentioned again later in this document, on its own, or together with the Turing safe haven domain, as `firstname.lastname@turingsafehaven.ac.uk`.
+Your **username** will be in the format `firstname.lastname`
 
- **NOTE:** If you have a hyphenated lastname, or surnames, or long family name, your username will (usually!) have been set with `lastname` as the second part of your surname. Please check in with the DSG team if you are having any issues with your username.
+At times, you will need to enter it in the form `username@turingsafehaven.ac.uk` (so `firstname.lastname@turingsafehaven.ac.uk`).
 
-You will have to (1) set a password and (2) configure MFA before you are able to log in to the safe haven.
+**NOTE:** If you have a hyphenated last name, or multiple surnames, or a long family name, please check in with the DSG team to check your assigned username.
 
-#### Set your password
+### 2.2 Setting a password
 
 For security reasons, you must (re-)set your password before you can log in:
 
-1. Open a private browser session ('incognito mode') on your laptop – this will avoid picking up any existing Azure / Microsoft accounts you have.
-2. Paste the following URL into the private browser address bar - https://aka.ms/ssprsetup
-3. At the login prompt enter your username `username@turingsafehaven.ac.uk` and confirm/proceed.
-  (Remember that your username will be in the format `firstname.lastname`.)
-4. There will then be a password prompt.
-   The first time you log-in **you haven’t set a password yet** so click "Forgotten password"
+1.	Open a private/incognito browser session on your laptop (this will avoid picking up any existing Azure / Microsoft accounts you have).
+
+2.	Copy and paste the following URL into the private browser address bar: 
+        https://aka.ms/ssprsetup
+        
+3.	At the login prompt enter 	username@turingsafehaven.ac.uk 	and confirm/proceed. 
+(Remember that your username will be in the format `firstname.lastname`.)
+
+4.	There will then be a password prompt. The first time you log in you need to click **“Forgotten my password”**
 
    ![](images/resetpassword_1.png)
+   
+   **NOTE:** If you do reset your password during the week, wait 5-10 mins before logging in again, to allow the user management to sync up with the new password.
 
-5. Complete the requested information (captcha and the phone number you provided on registration).
+5. Complete the requested information (a captcha and the phone number you provided on registration).
 
    ![](images/resetpassword_2.png)
    ![](images/resetpassword_3.png)
@@ -168,16 +95,21 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
 
     **NOTE:** Do **not** use special characters or symbols in your password.
     If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
-    Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
+    
+  Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
 
-    - uppercase character
-    - lowercase character
-    - number
+ - uppercase character
+ - lowercase character
+ - number
+ 
+If you feel you may struggle to remember your password, make a note of it on a separate password protected device.
+
+7. Enter your password into the ‘new password’ and ‘confirm new password’ fields.
 
     ![](images/resetpassword_4.png)
     ![](images/resetpassword_5.png)
 
-7. Log into your account
+8. Log into your account
 
     **NOTE:** During this process, you will need to provide a phone number or an email for account recovery.
     This is **not** MFA.
@@ -186,28 +118,21 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
     ![](images/login_1.png)
     ![](images/login_2.png)
 
-    If you get a "account or password is correct" message, there are a few things to check:
-     * that you typed the right username
-     * that you typed the right domain (see below example!)
+    If you get a message saying "account or password is incorrect" , check that you:
+     * typed the right username
+     * typed the right domain (see below example!)
 
-    Also note that if you just **reset your password** (i.e. not the first time setup, but if you forgot your password during the week and reset it) - it may take 5-10 mins for the user management to sync up with the new password - try again shortly.
-
-   ![](images/resetpassword_incorrect_1.PNG)
-
-8. Answer your phone when it rings!
+9. Answer your phone when it rings!
 
    ![](images/login_3.png)
 
-9. Finish logging in
+10. Finish logging in
 
    ![](images/login_4.png)
 
-#### Configure the MFA
+### Configuring Multi-Factor Authentication
 
-Before any user can access the secure environment, you need to setup your multifactor authentication.
-The authentication method can be either via a call to your phone or via the Microsoft Authenticator app.
-
-**Step 1**: Log into your account
+Once you have logged in, you need to setup multi-factor authentication before you can access the secure environment. The authentication method is either a call to your phone or a code from the Microsoft Authenticator app.
 
 1. Open a private browser session on your laptop.
 2. Enter https://aka.ms/MFASetup into the address bar.
@@ -216,7 +141,7 @@ The authentication method can be either via a call to your phone or via the Micr
   (This is why we suggest using a private (incognito) browser session.)
   If that doesn’t work, **log out of your personal account** and try again with your data study group username.
 
-4. Set up the second authentication method
+4. Set up the second authentication method following the instructions on screen. If you select phone verification, go to step 5. If you select app verification, go to step 6.
 
     ![](images/setup_mfa.png)
 
@@ -227,9 +152,7 @@ The authentication method can be either via a call to your phone or via the Micr
     ![](images/setup_mfa_phone_1.png)
     ![](images/setup_mfa_phone_2.png)
 
-    Note that when you click `close` the page will switch to your dashboard.
-
-    You can close your browser at this point.
+    **NOTE:** when you click `close` the page will switch to your dashboard. You can close your browser at this point.
 
 6. **App option**:
 
@@ -239,19 +162,19 @@ The authentication method can be either via a call to your phone or via the Micr
    * Android: https://bit.ly/androidauthenticator
    * Windows mobile: https://bit.ly/windowsauthenticator
 
-    ii. Select the "Receive notifications for verification" radio button
+    ii. Select the **"Receive notifications for verification"** radio button
 
-    iii. Click on "Set up"
+    iii. Click on **"Set up"**
 
-    iv. Open your Microsoft Authenticator app on your phone and select "Add an account"
+    iv. Open your Microsoft Authenticator app on your phone and select **"Add an account"**
 
-    v. Select "Work or School" account
+    v. Select **"Work or School"** account
 
     vi. Scan the QR code on the screen
 
-    vii. Click "Next" to start verification
+    vii. Click **"Next"** to start verification
 
-    viii. Click "Next" again to test the app, you will get a verification on your app.
+    viii. Click **"Next"** again to test the app, you will get a verification on your app.
 
     ![](images/setup_mfa_app_1.png)
     ![](images/setup_mfa_app_2.png)
@@ -261,7 +184,7 @@ The authentication method can be either via a call to your phone or via the Micr
 
    ![](images/setup_mfa_app_4.png)
 
-#### Top tips regarding MFA
+#### MFA:Top tips
 
 ***If at first you don’t succeed: do the exact same thing a few more times!***
 
@@ -271,65 +194,63 @@ We’ve collected a few top tips here, but really, the answer is to be patient a
 * Verifying your account in the Authenticator app can be weirdly buggy.
   Sometimes it doesn’t work the first time, but for the facilitators we all connected after somewhere between 1 and 10 attempts.
 * Make sure you allow notifications on your authenticator app.
-* Check you don’t have Do not Disturb mode on.
+* Check you don’t have *Do not Disturb* mode on.
 * You have to be SUPER FAST at acknowledging the notification on your app!
   The access codes update every 30 seconds.
   If at first you don’t succeed...
 
-## Section 4: Using the safe haven
+## Section 3: Accessing the Safe Haven for the first time
 
-### Section 4.1: Access credentials
+### 3.1: Access credentials
 
-From the user registration process ([Section 3](#section-3-user-activation-instructions)), you should have the following ready:
+From the user registration process (Section 2), you should have the following ready:
 
 - A `username` in the format `firstname.lastname`.
 
 - A user `password`.
 
-You (re-)set your password in the registration/MFA set-up process ([Section 3](#section-3-user-activation-instructions)).
+### 3.2: Logging into the Windows Azure environment
 
-### Section 4.2: Logging into the Windows Azure environment
+Follow the steps below to access the Azure safe haven environment:
 
-In order to access the Azure safe haven environment, follow the below steps:
+1. Open a private/incognito browser session 
 
-1. Open a private web browser session and enter the following URL in an incognito tab/private mode): https://rds.dsgroupX.co.uk/RDWeb/webclient/
+2. Copy and paste the below URL but **don't** hit enter: https://rds.dsgroupX.co.uk/RDWeb/webclient/
 
-   Replace `X` by one of the following numbers, depending on challenge
+ **NOTE:** Don’t forget the `https://` - it won’t work without that prefix.
 
-   * X = 10 : Spend Network
-   * X = 11 : NATS
-   * X = 13 : GOSH
-   * X = 14 : Roche
-   * X = 15 : British Antarctic Survey
+3. Replace `X` by one of the following numbers, depending on challenge
 
-   Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
-   (However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
+   * X = 22 : Telenor
+   * X = 23 : Turkcell
+   * X = 24 : Telus
+   * X = 25 : STC
+
+**NOTE:** Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
+   However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
    You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
    Note that you will need to use the `--user` flag with `pip install`.
-   See [Section 4.5:  Installing packages](#section-45-installing-packages) for further details.
+   See **Section 4.2:  Installing packages** for further details.
 
    Additionally there is **no copy/paste functionality** from outside to inside the environment.
 
-   **NOTE:** Don’t forget the `https://` - it won’t work without that prefix.
+
 
    ![](images/logon_environment.PNG)
 
-2. Enter the username you’ve been provided, ensure that you use the following format:
+4. Enter the username you’ve been provided, ensuring that you use the following format:
 
    - `firstname.lastname@turingsafehaven.ac.uk`
 
-    **NOTE:** that's an `ac.uk` address not `.co.uk`
+5. Enter your password and confirm.
 
-3. Enter your password and confirm.
-
-   You will now **receive a call or mobile app notification** for the MFA to confirm.
-   For the call, you may have to move to a place with good reception and/or press the hash (#) key multiple times in-call.
+6. You will now **receive a call or mobile app notification** for the MFA to confirm. For the call, you may have to move to an area with good reception and/or press the hash (#) key multiple times in-call.
 
    After success, you’ll see the following screen:
 
    ![](images/RDS_app_selection_options.png)
 
-4. *(First time only)* Follow the steps in [Section 4.3](#section-43-first-time-set-up) if this is the first time you are logging in.
+7. *(First time only)* Follow the steps in Section 3.3 if this is the first time you are logging in.
 
    Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
@@ -339,7 +260,7 @@ In order to access the Azure safe haven environment, follow the below steps:
    We recommend opening a text editor to check what keys the remote desktop thinks you're typing – especially if you have special characters you are using.
    You can right click on `Desktop` and `Applications`->`Settings`->`Keyboard` to change the layout.
 
-### Section 4.3: First-time set-up
+### 3.3: First-time set-up
 
 In order to set up your user account on the virtual machine, you need to follow the below steps **once**.
 
@@ -356,15 +277,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    ![](images/1st_logon_putty.png)
 
-3. Log into Putty with your `username` (`firstname.lastname`) and `password`.
-
-    Note that **the cursor will not move** while you are typing your password!
-
-4. Once you have confirmed log in, you can close this window.
-
-   **NOTE:** Be careful not to close the browser when you close the tab in the remote desktop!
-
-5. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
+3. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
 
    `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
@@ -372,7 +285,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    ![](images/1st_logon_sharedVMdesktop.png)
 
-6. Insert your credentials as per the example below:
+4. Insert your credentials as per the example below:
 
    ![](images/logon_VMdesktop.png)
 
@@ -396,7 +309,9 @@ In order to set up your user account on the virtual machine, you need to follow 
 
    Then it is likely that you have entered your credentials incorrectly. Please try again, entering your username and password carefully. If this keeps happening, ask your admin or tech support for help.
 
-### Section 4.4: Using the data analytics virtual machine
+## Section 4: Using the Safe Haven
+
+### 4.1: Using the data analytics virtual machine
 
 The analytics environment can be accessed through the `Shared VM` (desktop) app.
 Please log in with username `firstname.lastname` and password `password`.
@@ -427,7 +342,7 @@ This VM can also be used to directly access `GitLab` and `HackMD`, via the brosw
 
 3. If you create a new repository, we recommend you make it **public**. As each challenge has it's own secure environment, this will make the repository accessible to your colleagues working on the same challenge but not to anyone else (who will not have access to the challenge environment).
 
-### Section 4.5: Installing packages
+### 4.2: Installing packages
 
 Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
@@ -478,7 +393,7 @@ If a package request is not critical to the success of the project, the Research
 For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
 
 
-### Section 4.6: Accessing GitLab and storing code
+### 4.3: Accessing GitLab and storing code
 
 GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
 
@@ -504,7 +419,7 @@ Please make all your repositories public so they are easy to share within your g
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
 
 
-### Section 4.7: Accessing HackMD and writing the report
+### 4.4: Accessing HackMD and writing the report
 
 HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
 It uses markdown which is a simple way to format your text so that it renders nicely in full html.
@@ -533,7 +448,7 @@ We recommend that one person start the document, then let everyone know the URL 
 
 ![](images/hackmd_screenshot.png)
 
-### Section 4.8: Accessing the data and exporting figures
+### 4.5: Accessing the data and exporting figures
 
 The data can be found in the `R` drive on the Windows Azure environment.
 Everyone in your group will be able to access it, so please make a copy of it to your own desktop or working directory.
@@ -550,7 +465,9 @@ You can now drag and drop any files between the data science VM and the Windows 
 
 ![](images/WinSCP_screenshot.png)
 
-### Section 4.9: Creating and presenting the report-out slides for Friday
+If only one person in your group completes this step, everyone will then be able to access the data.
+
+### 4.6: Creating and presenting the report-out slides for Friday
 
 To create the presentation slides, go to the `Presentation server` on the Work Resources list and then open the Open Office icon on the Windows desktop.
 An example template is provided for you in the windows Azure environment (shared drive).
@@ -570,7 +487,7 @@ You do not have time to try to fix the demo during your presentation.
 And that’s ok!
 You can always show the demo to the challenge owners in a quiet space after lunchtime.
 
-### Section 4.10: Outputs from the week
+### 4.7: Outputs from the week
 
 We will close down the compute virtual machines on the Friday afternoon.
 
@@ -590,6 +507,30 @@ Suggested folders for the shared drive:
 - Report
 - Code
 - Images
+
+## Section 5: Fixing bugs
+
+The Turing IT, Research Engineering Group (REG) and the data study group teams attempt to solve IT infrastructure issues arising as soon as possible.
+
+The process for requesting help with the issue is as follows:
+
+1.	Make sure you have **read this document** and checked if it answers your query.
+Please do not log an issue before you have read all of the sections in this document.
+
+2.	Log out and log back in again (to the safe haven or data science environment) at least once, re-attempt the process leading to the bug/error at least twice.
+
+We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
+
+3.	Let your challenge facilitator know of the issue. They have been given access to an internal Github issue tracker and will relay issues to Turing IT and REG.
+
+Please help your facilitator with a summary, and an appropriate tag for the issue. For example: [feature request], [package request], [bug report] are all nice and easy to understand.
+
+If you are reporting a bug, please include:
+* Your client machine’s operating system and operating system version.
+* Precise condition under which the bug occurs. How to reproduce it.
+*	Precise description of the bug. What happens? What would you expect to happen instead if there were no bug?
+*	Any workarounds/fixes you have found
+
 
 ## Acknowledgments
 
@@ -838,4 +779,20 @@ This downloaded certificate is cached by your browser, which means that the old 
 ### Solution
 Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://rds.dsgroupX.co.uk/RDWeb/weblient` (instructions vary by browser and operating system).
 This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
+
+## Appendix D: Safe Haven setup
+
+The original data is hosted on a server at the Alan Turing Institute. You will not have access to that data server.
+A copy of the data is available inside a [Windows Azure environment].(https://azure.microsoft.com/en-gb/overview/what-is-azure/)
+
+The Azure environment also contains a Unix data science VM, which can only be accessed from the dashboard.
+→ Your laptop
+   → Turing Guest Wi-Fi
+        → Windows remote desktop (multi-factor authentication required)
+            → Unix Azure environment
+            
+The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
+
+You also have access to HackMD for collaborative writing and GitLab for version control and to share your code.
+
 
