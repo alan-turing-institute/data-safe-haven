@@ -156,6 +156,21 @@ write_files:
           r["CRAN"] <- "CRAN_MIRROR_IP"
           options(repos = r)
       })
+  - path: "/etc/audit/rules.d/audit.rules"
+    content: |
+      # First rule - delete all
+      -D
+      # Increase the buffers to survive stress events.
+      # Make this bigger for busy systems
+      -b 8192
+      # This determins how long to wait in bursts of events
+      --backlog_wait_time 0
+      # Set failure mode to syslog
+      -f 1
+      # Monitor sockets
+      -a always,exit -F arch=b64 -F a0=2 -F a1\&=2 -S socket -k SAFEHAVEN_SOCKET
+      # Monitor connections
+      -a always,exit -F arch=b64 -F a0=2 -F a1\&=2 -S connect -k SAFEHAVEN_CONNECT
 
 packages:
   - auditd
@@ -173,6 +188,9 @@ runcmd:
   # Make sure that sssd is running
   - echo "Restart sssd service"
   - service sssd restart
+  # Make sure that auditd is running
+  - echo "Restart auditd service"
+  - service auditd restart
   # Set py36 as default environment when launching a new shell
   - echo "Add py36 conda environment setup to global bashrc"
   - echo "conda activate py36" >> /etc/bash.bashrc
