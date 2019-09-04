@@ -166,6 +166,7 @@ packages:
   - apt-transport-https
   - atom
   - attr
+  - auditd
   - azure-cli
   - code
   - default-jdk
@@ -592,6 +593,10 @@ runcmd:
   # Install PostgreSQL extensions
   - echo ">=== Installing PostgreSQL extensions... ===<"
   - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/postgresql.install
+
+  # Install VSCode extensions
+  - echo ">=== Installing VSCode extensions... ===<"
+  - code --install-extension ms-python.python
 
   # Install PyCharm
   - echo ">=== Installing PyCharm... ===<"

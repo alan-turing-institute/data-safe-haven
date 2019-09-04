@@ -157,6 +157,9 @@ write_files:
           options(repos = r)
       })
 
+packages:
+  - auditd
+
 runcmd:
   # ==========================================
   # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
