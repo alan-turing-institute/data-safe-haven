@@ -603,6 +603,10 @@ runcmd:
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
 
+  # Remove unnecessary and CPU-heavy screensaver
+  - echo ">=== Remove screensaver... ===<"
+  - echo "xscreensaver.mode: blank" >> /etc/X11/Xresources/x11-common
+
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
   # :: Programming languages
