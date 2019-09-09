@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "Data Study Group 22 (Prod)",
+    "dsgId": "22",
+    "shmId": "prod",
+    "tier": "2",
+    "domain": "dsgroup22.co.uk",
+    "netbiosName": "DSGROUP22",
+    "ipPrefix": "10.250.168.",
+    "rdsAllowedSources": "193.60.220.253,193.60.220.240",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019071900"
+}
