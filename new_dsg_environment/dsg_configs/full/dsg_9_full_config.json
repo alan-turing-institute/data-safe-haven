@@ -77,24 +77,24 @@
     }
   },
   "dsg": {
-    "subscriptionName": "DSG Template Testing",
+    "subscriptionName": "DSG 9 Test",
     "id": "9",
     "shortName": "dsg9",
     "location": "uksouth",
-    "tier": "3",
+    "tier": "2",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
         "name": "kv-shm-pkg-mirrors-test"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
       },
       "cran": {
-        "ip": "10.20.3.21"
+        "ip": "10.20.2.21"
       },
       "pypi": {
-        "ip": "10.20.3.20"
+        "ip": "10.20.2.20"
       }
     },
     "domain": {
@@ -251,7 +251,7 @@
       "rg": "RG_DSG_COMPUTE",
       "vmImageSubscription": "Safe Haven VM Images",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019071900",
+      "vmImageVersion": "0.1.2019082900",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsgroup9-dsvm-admin-password"

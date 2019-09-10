@@ -8,5 +8,5 @@
     "ipPrefix": "10.250.160",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.1.2019071900"
+    "computeVmImageVersion": "0.1.2019082900"
 }

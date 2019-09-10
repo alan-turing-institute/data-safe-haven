@@ -1,12 +1,12 @@
 {
-    "subscriptionName": "DSG Template Testing",
+    "subscriptionName": "DSG 9 Test",
     "dsgId": "9",
     "shmId": "test",
-    "tier": "3",
+    "tier": "2",
     "domain": "dsgroup9.co.uk",
     "netbiosName": "DSGROUP9",
     "ipPrefix": "10.250.64",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.1.2019071900"
+    "computeVmImageVersion": "0.1.2019082900"
 }

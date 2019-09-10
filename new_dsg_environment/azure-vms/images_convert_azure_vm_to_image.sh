@@ -105,4 +105,5 @@ else
         echo -e "${BOLD}... public IP address: ${BLUE}${MACHINENAME}PublicIP${END}"
         az network public-ip delete --name "${MACHINENAME}PublicIP" --resource-group $RESOURCEGROUP_BUILD
     fi
+    echo -e "${BOLD}Finished creating image ${BLUE}${IMAGE}${END}"
 fi
