@@ -761,6 +761,13 @@ Your merge request will be ready to be approved and merged.
 
 ## Appendix C: Troubleshooting
 
+### Apps not appearing
+
+  ![](images/No_folders_present.png)
+
+When you haven't set up your two factor authentication, the applications present in the safe haven aren't visible.
+To fix this, go back to the guide and set up two factor authentication.
+
 ### Unexpected certificate error
 
 #### Symptom
