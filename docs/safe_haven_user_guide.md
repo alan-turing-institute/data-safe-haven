@@ -2,16 +2,16 @@
 
 **Table of contents:**
 
-* [**Introduction:** The Turing Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#introduction-the-turing-safe-haven)
-* [**Section 1:** Setting up](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-1-setting-up)
-* [**Section 2:** Logging in for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time)
-* [**Section 3:** Accessing the Safe Haven for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-3-accessing-the-safe-haven-for-the-first-time)
-* [**Section 4:** Using the Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-4-using-the-safe-haven)
-* [**Section 5:** Fixing bugs](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#section-5-fixing-bugs)
-* [**Appendix A:** Migrating to a new data science VM post package update](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
-* [**Appendix B:**  Gitlab tutorial notes](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-b-gitlab-tutorial-notes)
-* [**Appendix C:** Troubleshooting](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-c-troubleshooting)
-* [**Appendix D:** Safe Haven setup](https://github.com/alan-turing-institute/data-safe-haven/blob/updated-user-guide/docs/safe_haven_user_guide.md#appendix-d-safe-haven-setup)
+* [**Introduction:** The Turing Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#introduction-the-turing-safe-haven)
+* [**Section 1:** Setting up](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-1-setting-up)
+* [**Section 2:** Logging in for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time)
+* [**Section 3:** Accessing the Safe Haven for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-3-accessing-the-safe-haven-for-the-first-time)
+* [**Section 4:** Using the Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-4-using-the-safe-haven)
+* [**Section 5:** Fixing bugs](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-5-fixing-bugs)
+* [**Appendix A:** Migrating to a new data science VM post package update](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+* [**Appendix B:**  Gitlab tutorial notes](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-b-gitlab-tutorial-notes)
+* [**Appendix C:** Troubleshooting](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-c-troubleshooting)
+* [**Appendix D:** Safe Haven setup](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-d-safe-haven-setup)
 
 ## Introduction: The Turing Safe Haven
 
@@ -761,12 +761,19 @@ Your merge request will be ready to be approved and merged.
 
 ## Appendix C: Troubleshooting
 
-### Apps not appearing
+### No applications available
+
+#### Symptom
+- You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
+- You do not see any available apps
 
   ![](images/No_folders_present.png)
 
-When you haven't set up your two factor authentication, the applications present in the safe haven aren't visible.
-To fix this, go back to the guide and set up two factor authentication.
+#### Cause
+You have not yet set up your two factor authentication.
+
+#### Solution
+Follow the two factor authentication section from the [logging in section](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time) of the user guide.
 
 ### Unexpected certificate error
 
