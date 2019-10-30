@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-### An Azure subscription with sufficient credits to build the environment in 
+### An Azure subscription with sufficient credits to build the environment in
 
 ### Install and configure PowerShell for Azure
   - Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
@@ -11,11 +11,11 @@
 ### Microsoft Remote Desktop
 - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 
-### Azure CLI 
+### Azure CLI
 - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ### Docker desktop
-- Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Docker is used to generate certificates. 
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Docker is used to generate certificates.
 
 ## 0. Setup Azure Active Directory (AAD) with P1 Licenses
 
@@ -29,19 +29,23 @@
 
    ![](images/AAD.png)
 
-### Create a Custom Domain Name 
+### Create a Custom Domain Name
 #### Create a DNS zone for the custom domain
-1. For Turing SHMs, create a new DNS Zone for a subdomain under the `turingsafehaven.ac.uk` domain (for the `production` environment - within the `Safe Haven Managment` subscription) or under the `dsgroupdev.co.uk` domain (for the `test` environment  - within the `Safe Haven Management Testing` subscription). For safe havens hosted by other organisations, follow their guidance. This may require purchasing a dedicated domain.
-2. Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
-    - Click `Create a resource` in the far left menu, seach for "DNS Zone" and click "Create.
-    - Select the management subscription created for this managment deployment and select or create the `RG_SHM_DNS` resource group.
-    - For the `Name` field enter the fully qualified domain / subdomain (e.g. `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment).
-3. Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to it's parent record in the DNS system.
-    - Navigate to the new DNS Zone (click `All resources` in the far left panel and seach for "DNS Zone". The NS record will lists 4 Azure name servers.
-        - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testb.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testb`).
-       - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
-  
-### Create and add the custom domain to the new AAD 
+For Turing SHMs, create a new DNS Zone for a subdomain under the `turingsafehaven.ac.uk` domain (for the `production` environment - within the `Safe Haven Management` subscription) or under the `dsgroupdev.co.uk` domain (for the `test` environment  - within the `Safe Haven Management Testing` subscription). For safe havens hosted by other organisations, follow their guidance. This may require purchasing a dedicated domain.
+1. Ensure that the `RG_SHM_DNS` resource group exists in your chosen subscription. For the Turing SHM, we use the `UK South` region.
+
+Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
+1. Click `Create a resource` in the far left menu, seach for "DNS Zone" and click "Create.
+2. Use the `RG_SHM_DNS` resource group created above.
+3. For the `Name` field enter the fully qualified domain / subdomain (e.g. `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment or `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment).
+
+Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to it's parent record in the DNS system.
+
+1. Navigate to the new DNS Zone (click `All resources` in the far left panel and seach for "DNS Zone". The NS record will lists 4 Azure name servers.
+  - If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testb.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testb`).
+  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+
+### Create and add the custom domain to the new AAD
 1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
 
 2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testb.dsgroupdev.co.uk`)
@@ -56,7 +60,7 @@
 ## 1. Deploy VNET and Domain Controllers
 
 ### Core SHM configuration properties
-The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment. 
+The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment.
 The following core SHM properties must be defined in a JSON file named `shm_<shId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shId>` is a short ID to identify the environment (e.g. `testb`).
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
@@ -97,7 +101,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
    ```pwsh
    Connect-AzAccount
    ```
- 
+
 2. Set the AzContext to the SHM Azure subscription id:
    ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
@@ -108,7 +112,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shI
    cd ./safe_haven_management_environment/setup
    ```
 
-4. Run `./setup_azure0.ps1` entering the `shId`, defined in the config file, when prompted 
+4. Run `./setup_azure0.ps1` entering the `shId`, defined in the config file, when prompted
 
 
 ### Set KeyVault access policies
@@ -200,7 +204,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    ```pwsh
    Connect-AzAccount
    ```
- 
+
 2. Set the AzContext to the SHM Azure subscription id:
    ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
@@ -211,7 +215,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    cd ./safe_haven_management_environment/setup
    ```
 
-4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted 
+4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted
 
 5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
@@ -254,12 +258,12 @@ A number of files are critical for the DSG deployment. They must be added to blo
 1. Run `./configure_dc.ps1` entering the `shId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs
 
 
-### Download and install the VPN Client from the virtual network VPN gateway 
+### Download and install the VPN Client from the virtual network VPN gateway
 
 1. Navigate to `/safe_haven_management/scripts/local/out/certs/out`.
-2. Rename the `client.pfx` file `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault. 
-3. Rename the `caCert.pem` file `DSG-P2S-<shm-id>-RootCert.pem` 
-4. Double click `client.pfx` to install it (on Mac). Enter `password`. 
+2. Rename the `client.pfx` file `DSG-P2S-<shm-id>-ClientCert.pfx` and updoad to the keyvault.
+3. Rename the `caCert.pem` file `DSG-P2S-<shm-id>-RootCert.pem`
+4. Double click `client.pfx` to install it (on Mac). Enter `password`.
 5. Next, on the portal navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> SHM_VNET1_GW`.
 6.  Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar.
 7. Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml).
@@ -269,13 +273,13 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
 You should now be able to connect to the virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
-### Upload VPN certificates 
+### Upload VPN certificates
 
-The following are required to enable deployment of a DSG. 
+The following are required to enable deployment of a DSG.
 
-1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines. 
+1. On the Azure portal navigate to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Secrets`. Then create a new secret called `sh-management-p2s-root-cert` and copy the contents of `DSG-P2S-<shm-id>-RootCert.pem` in `/safe_haven_management/scripts/local/out/certs` without the `BEGIN CERTIFICATE` and `END CERTIFICATE` lines.
 
-2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and import the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certst` and name it `DSG-P2S-<shId>-ClientCert`. 
+2. Go to `Resource Groups -> RG_DSG_SECRETS -> keyvault -> Certificates` and import the `DSG-P2S-<shm-id>-ClientCert.pfx` file from `/safe_haven_management/scripts/local/out/certst` and name it `DSG-P2S-<shId>-ClientCert`.
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
@@ -283,15 +287,15 @@ The following are required to enable deployment of a DSG.
 
 2. Click `Add Desktop`
 
-3. Navigate to the `RG_SHM_DC` resource group and then to the `SHMDC1` virtual machine (VM). 
+3. Navigate to the `RG_SHM_DC` resource group and then to the `SHMDC1` virtual machine (VM).
 
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 
 5. Double click on the desktop that appears under `saved desktops`. Enter the username and password:
     - Username: atiadmin
-    - Password: 
+    - Password:
 
-  - To obtain the password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `shm-managment-dcadmin`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop. 
+  - To obtain the password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `shmvault` key vault. On the left panel select `secrets` and click on `shm-managment-dcadmin`. You can then copy the secret to the clipboard and paste it into Microsoft Remote Desktop.
 
 ### Active Directory Configuration
 
@@ -314,7 +318,7 @@ You will be promted to enter a password for the adsync account. Use the password
 
 Once you have accessed the VM via Remote Desktop:
 
-1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar. 
+1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar.
 
 2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
 
@@ -342,7 +346,7 @@ Once you have accessed the VM via Remote Desktop:
 
 1. Download the latest version of the AAD Connect tool from [here](https://www.microsoft.com/en-us/download/details.aspx?id=47594)
     - You will need to temporarily [enable downloads on the VM](https://www.thewindowsclub.com/disable-file-download-option-internet-explorer). Disable downloads after download complete.
-    - You will be promted to add webpages to exceptions. Do this. 
+    - You will be promted to add webpages to exceptions. Do this.
 
 2. Run the installer
     - Agree the license terms -> "Continue"
@@ -371,16 +375,16 @@ Once you have accessed the VM via Remote Desktop:
 
 ### Additional AAD Connect Configuration
 
-1. Open the `Synchronization Rules Editor` from the start menu 
+1. Open the `Synchronization Rules Editor` from the start menu
 2. Change the "Direction" drop down to "Outbound"
 3. Select the "Out to AAD - User Join" -> Click "Disable". Click edit.
 4. Click "Yes" for the "In the Edit Reserved Rule Confirmation" window
-5. Set `precedence` to 1. 
-6. Select "Transformations" and locate the rule with its "Target Attribute" set to "usageLocation" 
+5. Set `precedence` to 1.
+6. Select "Transformations" and locate the rule with its "Target Attribute" set to "usageLocation"
 7. Change the "FlowType" column from "Expression" to "Direct"
 8. On the "Source" column click drop-down and choose "c" attribute
 9. Click "Save"
-10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Click `Enable` on the new rule. 
+10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Click `Enable` on the new rule.
 11. Click the X to close the Synchronization Rules Editor window
 12. Run powershell as administrator and run:
     ```pws
@@ -415,11 +419,11 @@ Once you have accessed the VM via Remote Desktop:
   - Select `On-premises integration` from the left hand side bar
   - Ensure `write back passwords to your on-premises directory` is set to yes.
     ![](images/enable_writeback.png)
-  - If you changed this setting, click the "Save" icon 
+  - If you changed this setting, click the "Save" icon
 - Select `Properties` from the left hand side bar
   - Make sure that `self service password reset enabled` is set to `All`
     ![](images/enable_passwordreset.png)
-  - If you changed this setting, click the "Save" icon 
+  - If you changed this setting, click the "Save" icon
 
 ## 4. Deploy Network Policy Server (NPS)
 
@@ -435,14 +439,14 @@ The NPS server will now deploy.
 ### Configure the Network Policy Server
 
 1. Connect to NPS Server using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `atiadmin@<full-domain>` rather than just `atiadmin`). 
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `atiadmin@<full-domain>` rather than just `atiadmin`).
 
-2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare. 
+2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare.
 
-3. Click the connect icon on the top bar and then copy the lower powershell command. 
+3. Click the connect icon on the top bar and then copy the lower powershell command.
 
 4. On the `SHMNPS` VM run Powershell as an administrator.
-   - Paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive. 
+   - Paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive.
    - Once the drive is successfully mapped, run the following commands:
      ```pwsh
      New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
@@ -488,7 +492,7 @@ This is because, without this policy, the NPS server will reject their authentic
 ### MFA Configuation
 
 - Download the "NPS Extension" from Microsoft [here](https://aka.ms/npsmfa).
-    - You will be promted to add webpages to exceptions. Do this. 
+    - You will be promted to add webpages to exceptions. Do this.
 - Run the installer
 - Agree the license terms and click "Install"
 - Click "Close" once the install has completed
