@@ -38,8 +38,14 @@ if ($null -eq $DCSafemodePassword) {
 # Generate certificates
 $cwd = Get-Location
 Set-Location -Path ../scripts/local/ -PassThru
-# sh generate-root-cert.sh
-docker-compose -f ./build/docker-compose.certs.yml up
+# NB. Windows uses docker-compose.exe so check for this first, falling back to docker-compose
+if ((Get-Command "docker-compose.exe" -ErrorAction SilentlyContinue) -ne $null) {
+  Write-Host "Using docker-compose.exe"
+  docker-compose.exe -f ./build/docker-compose.certs.yml up
+} else {
+  Write-Host "Using docker-compose"
+  docker-compose -f ./build/docker-compose.certs.yml up
+}
 Set-Location -Path $cwd -PassThru
 
 
