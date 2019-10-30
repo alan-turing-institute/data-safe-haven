@@ -22,5 +22,5 @@
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
     "artifactStorageAccount": "turingsafehavenartifacts",
-    "keyVaultName": "turingsafehaven-management"
+    "keyVaultName": "turingsafehavensecrets"
 }
