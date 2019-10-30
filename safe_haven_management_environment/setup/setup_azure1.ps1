@@ -46,13 +46,13 @@ Set-Location -Path $cwd -PassThru
 #            -Name $("DSG-P2S-" + $shmId) `
 #            -FilePath '../scripts/local/out/certs/client.pfx' `
 #            -Password $securepfxpwd;
-           
+
 
 # Setup resources
 New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
-new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context 
-new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context 
+new-AzStoragecontainer -Name "dsc" -Context $storageAccount.Context
+new-AzStoragecontainer -Name "scripts" -Context $storageAccount.Context
 
 New-AzStorageShare -Name 'scripts' -Context $storageAccount.Context
 New-AzStorageShare -Name 'sqlserver' -Context $storageAccount.Context
@@ -67,16 +67,26 @@ Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/dc/SHM_DC.zip"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "../scripts/nps/SHM_NPS.zip"
 
-# Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context 
-Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context 
+# Get-ChildItem -File "../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context
+Get-ChildItem -File "../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context
 
-# Download executables from microsoft
-New-Item -Name "temp" -ItemType "directory"
-Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile "temp/SQLServer2017-SSEI-Expr.exe"
-Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile "temp/SSMS-Setup-ENU.exe"
+# Create folder for downloaded executables from Microsoft
+if (-Not (Test-Path "temp")) {
+  New-Item -Name "temp" -ItemType "directory"
+}
+# Download SQLServer2017
+$outputFile = "temp/SQLServer2017-SSEI-Expr.exe"
+if (-Not (Test-Path $outputFile -PathType Leaf)) {
+  Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853017" -OutFile $outputFile
+}
+# Download SSMS-Setup
+$outputFile = "temp/SSMS-Setup-ENU.exe"
+if (-Not (Test-Path $outputFile -PathType Leaf)) {
+  Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2088649" -OutFile $outputFile
+}
 
 # Upload executables to fileshare
-Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context 
+Get-ChildItem -File "temp/" -Recurse | Set-AzStorageFileContent -ShareName "sqlserver" -Context $storageAccount.Context
 
 # Delete the local executable files
 Remove-Item –path 'temp/' –recurse
@@ -87,7 +97,7 @@ $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.
 $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -validityHours 2);
- 
+
 # Run template files
 # Deploy the shmvnet template
 # The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
@@ -105,7 +115,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
 $netbiosNameMaxLength = 15
 if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "Netbios name must be no more than 15 characters long. '$($config.domain.netbiosName)' is $($config.domain.netbiosName.length) characters long."
-} 
+}
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -templatefile "../arm_templates/shmdc/shmdc-template.json"`
@@ -117,6 +127,6 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
         -Domain_Name $config.domain.fqdn `
         -Domain_Name_NetBIOS_Name $config.domain.netbiosName;
-        
+
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
