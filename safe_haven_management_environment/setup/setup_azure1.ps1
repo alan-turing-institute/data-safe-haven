@@ -38,7 +38,8 @@ if ($null -eq $DCSafemodePassword) {
 # Generate certificates
 $cwd = Get-Location
 Set-Location -Path ../scripts/local/ -PassThru
-sh generate-root-cert.sh
+# sh generate-root-cert.sh
+docker-compose -f ./build/docker-compose.certs.yml up
 Set-Location -Path $cwd -PassThru
 
 
