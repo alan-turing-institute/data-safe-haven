@@ -39,7 +39,7 @@ function Get-ShmFullConfig{
     $netbiosNameMaxLength = 15
     if($shmConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
         throw "Netbios name must be no more than 15 characters long. '$($shmConfigBase.netbiosName)' is $($shmConfigBase.netbiosName.length) characters long."
-    } 
+    }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
@@ -71,7 +71,7 @@ function Get-ShmFullConfig{
     $shm.dc.hostname = $shmConfigBase.dcHostname
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
-    # Backup AD DC details 
+    # Backup AD DC details
     $shm.dcb = [ordered]@{}
     $shm.dcb.vmName = "SHMDC2"
     $shm.dcb.hostname = $shm.dcb.vmName
@@ -88,12 +88,12 @@ function Get-ShmFullConfig{
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
-    $shm.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
+    $shm.storage.artifacts.rg = "RG_SHM_ARTIFACTS"
     $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
-    $shm.keyVault.rg = "RG_DSG_SECRETS"
+    $shm.keyVault.rg = "RG_SHM_SECRETS"
     $shm.keyVault.name = $shmConfigBase.keyVaultName
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
@@ -177,7 +177,7 @@ function Add-DsgConfig {
     $netbiosNameMaxLength = 15
     if($dsgConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
         throw "Netbios name must be no more than 15 characters long. '$($dsgConfigBase.netbiosName)' is $($dsgConfigBase.netbiosName.length) characters long."
-    } 
+    }
     $config.dsg.domain.netbiosName = $dsgConfigBase.netBiosname
     $config.dsg.domain.dn = "DC=" + ($config.dsg.domain.fqdn.replace('.',',DC='))
     $config.dsg.domain.securityGroups = [ordered]@{
@@ -224,8 +224,8 @@ function Add-DsgConfig {
         artifacts = [ordered]@{}
     }
     $config.dsg.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)artifacts" 
-    
+    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)artifacts"
+
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
         name = "dsg-management-" + $config.shm.id # TODO: Once all scripts driven by this config make separate KeyVault per DSG
