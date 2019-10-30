@@ -21,6 +21,6 @@
     "npsRgName": "RG_SHM_NPS",
     "vnetRgName":"RG_SHM_VNET",
     "vnetName":"SHM_VNET1",
-    "artifactStorageAccount": "turingsafehavenartifactsprod",
-    "keyVaultName": "turingsafehaven-management-prod"
+    "artifactStorageAccount": "turingsafehavenartifacts",
+    "keyVaultName": "turingsafehaven-management"
 }
