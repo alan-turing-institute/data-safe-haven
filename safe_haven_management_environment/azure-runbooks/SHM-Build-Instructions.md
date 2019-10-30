@@ -215,9 +215,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    cd ./safe_haven_management_environment/setup
    ```
 
-4. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted
+4. **Ensure docker is running before attempting the next step**
 
-5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
+5. Run `./setup_azure1.ps1` entering the `shId`, defined in the config file, when prompted
+
+6. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
    ![](images/resource_groups.png)
 
