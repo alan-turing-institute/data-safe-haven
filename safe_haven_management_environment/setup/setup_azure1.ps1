@@ -48,13 +48,6 @@ if ((Get-Command "docker-compose.exe" -ErrorAction SilentlyContinue) -ne $null) 
 }
 Set-Location -Path $cwd -PassThru
 
-
-# Import-AzureKeyVaultCertificate -VaultName $config.keyVault.name `
-#            -Name $("DSG-P2S-" + $shmId) `
-#            -FilePath '../scripts/local/out/certs/client.pfx' `
-#            -Password $securepfxpwd;
-
-
 # Setup resources
 New-AzResourceGroup -Name $config.storage.artifacts.rg  -Location $config.location
 $storageAccount = New-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName -Location $config.location -SkuName "Standard_LRS"
