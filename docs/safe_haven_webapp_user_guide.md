@@ -70,15 +70,15 @@ Now you can log into your account. During this process, you will need to provide
 
 To access the web-app, open a new incognito window on your browser, and go to the following address: https://turingsafehaven.azurewebsites.net 
 
-![screen1](/images/screen1.png)
-Format: ![Alt Text](url) 
+![screen1](https://user-images.githubusercontent.com/54804128/68021687-0f197300-fc9a-11e9-87d8-9a6dabe09ee5.png)
+Format: ![Alt Text](url)  
 
  
 
 
 Welcome to the safe haven web app. Press the button to log in to the application.
 
-![screen2](/images/screen2.png)
+![screen2](https://user-images.githubusercontent.com/54804128/68021690-117bcd00-fc9a-11e9-9d4d-3f19a8ea4cec.png)
 Format: ![Alt Text](url)  
 
 
@@ -87,7 +87,7 @@ Format: ![Alt Text](url)
 
 At the login prompt enter username@turingsafehaven.ac.uk and confirm/proceed. (Remember that your username will be in the format firstname.lastname).
 
-![screen3](/images/screen3.png)
+![screen3](https://user-images.githubusercontent.com/54804128/68021694-13de2700-fc9a-11e9-97bd-e4afa68e0540.png)
 Format: ![Alt Text](url) 
  
 
@@ -95,10 +95,10 @@ Format: ![Alt Text](url)
 
 The first time you log in, you'll need to reset your password - click “Forgotten my password”. Complete the requested information (a captcha and the phone number you provided on registration).
 
-![screen3b](/images/screen3b.png)
+![screen3b](https://user-images.githubusercontent.com/54804128/68021738-2b1d1480-fc9a-11e9-9dc3-e13999415309.png)
 Format: ![Alt Text](url)  
 
-![screen3c](/images/screen3c.png)
+![screen3c](https://user-images.githubusercontent.com/54804128/68021732-26f0f700-fc9a-11e9-8cd6-a6668e68898b.png)
 Format: ![Alt Text](url)  
 
  
@@ -109,7 +109,7 @@ Once you've finished resetting your password, you'll be taken to the front page.
 
 ## Welcome to the web-app
 
-![screen4](/images/screen4.png)
+![screen4](https://user-images.githubusercontent.com/54804128/68021696-1476bd80-fc9a-11e9-9ec9-be9c39f1b452.png)
 Format: ![Alt Text](url)  
 
 
@@ -117,7 +117,7 @@ Format: ![Alt Text](url)
 
 From the front page, you'll be able to see all of the projects to which you've been assigned a role. Click on the project you want to classify data for to see the details.
 
-![screen5](/images/screen5.png)
+![screen5](https://user-images.githubusercontent.com/54804128/68021702-15a7ea80-fc9a-11e9-868e-781eb5477ed7.png)
 Format: ![Alt Text](url) 
 
 
@@ -145,27 +145,27 @@ In our model, projects are divided into work packages, which we use here to refe
 
 Now that you're all set up on the web-app, you can begin classifying the work package to be used over the project, containing the different datasets. Click on the work package you'd like to classify to see its details.
 
-![screen6](/images/screen6.png)
+![screen6](https://user-images.githubusercontent.com/54804128/68021708-180a4480-fc9a-11e9-9b16-2c3746126f1e.png)
 Format: ![Alt Text](url) 
 
 
 This page shows you which of the available datasets this work package contains. You can now begin classifying the data - click to classify the work package.
  
-![screen7](/images/screen7.png)
+![screen7](https://user-images.githubusercontent.com/54804128/68021717-1f315280-fc9a-11e9-836b-a4ec10bab008.png)
 Format: ![Alt Text](url) 
 
 
 
 The web-app will now guide you through a series of 'yes or no' questions to classify the work package. After each choice, you can see the question it will bring you to, so you don't accidentally get onto the wrong track. Additional guidance on how to understand and answer each question is given below. If you've made a mistake, or want to cancel your classification at any time - you can click on the grey button and start again later. Work your way through the questions for this work package, answering yes or no for each.
  
-![screen8](/images/screen8.png)
+![screen8](https://user-images.githubusercontent.com/54804128/68021720-20fb1600-fc9a-11e9-92ef-d9498e939812.png)
 Format: ![Alt Text](url) 
 
 
 
 Before you classify the data as a particular tier of sensitivity, the web-app will warn you of the classification you're about to make. You can click previous question to go back, or cancel classification to restart from scratch.
 
-![screen9](/images/screen9.png)
+![screen9](https://user-images.githubusercontent.com/54804128/68021726-235d7000-fc9a-11e9-8221-5d0b8eeb35d9.png)
 Format: ![Alt Text](url) 
 
 
