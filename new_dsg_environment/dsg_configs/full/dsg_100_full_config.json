@@ -1,0 +1,261 @@
+{
+  "shm": {
+    "subscriptionName": "Turing Safe Haven Management",
+    "id": "turing1",
+    "name": "Turng Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "turing1-VNET",
+        "cidr": "10.0.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.0.0",
+          "cidr": "10.0.0.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_DC",
+      "vmName": "turing1-DC1",
+      "hostname": "turing1-DC1",
+      "fqdn": "turing1-DC1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.250"
+    },
+    "dcb": {
+      "vmName": "turing1-DC2",
+      "hostname": "turing1-DC2",
+      "fqdn": "turing1-DC2.turingsafehaven.ac.uk",
+      "ip": "10.0.0.249"
+    },
+    "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "turing1-NPS",
+      "ip": "10.0.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "turing1artifacts"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "turing1secrets",
+      "secretNames": {
+        "p2sRootCert": "sh-management-p2s-root-cert",
+        "dc": "sh-managment-dcadmin",
+        "safemode": "sh-managment-dcsafemode",
+        "adsync": "sh-managment-adsync",
+        "vpncertificate": "sh-managment-cert"
+      }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
+    }
+  },
+  "dsg": {
+    "subscriptionName": "Turing Sandbox Secure Research Environment",
+    "id": "100",
+    "shortName": "dsg100",
+    "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-turing1"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
+    "domain": {
+      "fqdn": "dsgroup100.co.uk",
+      "netbiosName": "DSGROUP100",
+      "dn": "DC=dsgroup100,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUP100 Server Administrators",
+          "description": "SG DSGROUP100 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUP100 Research Users",
+          "description": "SG DSGROUP100 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "DSG_DSGROUP100_VNET1",
+        "cidr": "10.0.72.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.0.72",
+          "cidr": "10.0.72.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.0.73",
+          "cidr": "10.0.73.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.0.74",
+          "cidr": "10.0.74.0/24"
+        },
+        "gateway": {
+          "prefix": "10.0.79",
+          "cidr": "10.0.79.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsg100artifacts"
+      }
+    },
+    "keyVault": {
+      "name": "dsg-management-turing1"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DSG100DC",
+      "hostname": "DSG100DC",
+      "fqdn": "DSG100DC.dsgroup100.co.uk",
+      "ip": "10.0.72.250",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsg100-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUP100 Gitlab LDAP",
+          "samAccountName": "dsg100-gitlab-ldap",
+          "passwordSecretName": "dsg100-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUP100 HackMD LDAP",
+          "samAccountName": "dsg100-hackmd-ldap",
+          "passwordSecretName": "dsg100-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUP100 DSVM LDAP",
+          "samAccountName": "dsg100-dsvm-ldap",
+          "passwordSecretName": "dsg100-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUP100 Test Researcher",
+          "samAccountName": "dsg100-test-res",
+          "passwordSecretName": "dsg100-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS",
+        "hostname": "RDS",
+        "fqdn": "RDS.dsgroup100.co.uk",
+        "ip": "10.0.73.250",
+        "npsSecretName": "dsg100-nps-secret"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1",
+        "hostname": "RDSSH1",
+        "fqdn": "RDSSH1.dsgroup100.co.uk",
+        "ip": "10.0.73.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2",
+        "hostname": "RDSSH2",
+        "fqdn": "RDSSH2.dsgroup100.co.uk",
+        "ip": "10.0.73.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "Internet"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATASERVER",
+      "hostname": "DATASERVER",
+      "fqdn": "DATASERVER.dsgroup100.co.uk",
+      "ip": "10.0.74.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB",
+        "hostname": "GITLAB",
+        "fqdn": "GITLAB.dsgroup100.co.uk",
+        "ip": "10.0.74.151",
+        "rootPasswordSecretName": "dsg100-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD",
+        "hostname": "HACKMD",
+        "fqdn": "HACKMD.dsgroup100.co.uk",
+        "ip": "10.0.74.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Turing Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2019082900",
+      "admin": {
+        "username": "atiadmin",
+        "passwordSecretName": "dsgroup100-dsvm-admin-password"
+      }
+    }
+  }
+}
