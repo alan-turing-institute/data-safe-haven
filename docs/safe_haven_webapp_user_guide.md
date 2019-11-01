@@ -26,7 +26,7 @@ In the safe haven model, there are three key roles:
 
  
 
-* **The Dataset Provider** - Representative of the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the Investigator, authorised to certify sharing of datasets with the researchers.
+* **Dataset Provider** - A representative of the organisation who provided the dataset under analysis. The Dataset Provider will designate a single representative contact to liaise with the Investigator, authorised to certify sharing of datasets with the researchers.
 
  
 
@@ -93,7 +93,7 @@ Format: ![Alt Text](url)
 
 
 
-The first time you log in, you'll need to reset your password - click “Forgotten my password”. Complete the requested information (a captcha and the phone number you provided on registration).
+The first time you log in, you'll need to reset your password - click “Forgotten my password”. Complete the requested information (a captcha and the phone number you provided on registration). Make sure you add your number as +44 7XXX, rather than 0 7XXX.ben
 
 ![screen3b](https://user-images.githubusercontent.com/54804128/68022787-3aea2800-fc9d-11e9-9d10-52c8829318df.png)
 Format: ![Alt Text](url)  
