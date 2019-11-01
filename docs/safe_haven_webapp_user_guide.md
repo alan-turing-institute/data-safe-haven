@@ -71,7 +71,7 @@ Now you can log into your account. During this process, you will need to provide
 To access the web-app, open a new incognito window on your browser, and go to the following address: https://turingsafehaven.azurewebsites.net 
 
 ![screen1](https://user-images.githubusercontent.com/54804128/68021687-0f197300-fc9a-11e9-87d8-9a6dabe09ee5.png)
-Format: ![Alt Text](url)  
+Format: ![Alt Text](url) 
 
  
 
