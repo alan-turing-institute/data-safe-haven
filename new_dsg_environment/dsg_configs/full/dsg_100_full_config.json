@@ -77,7 +77,7 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Turing Sandbox Secure Research Environment",
+    "subscriptionName": "Turing SRE - Sandbox",
     "id": "100",
     "shortName": "dsg100",
     "location": "uksouth",
@@ -116,27 +116,27 @@
       "vnet": {
         "rg": "RG_DSG_VNET",
         "name": "DSG_DSGROUP100_VNET1",
-        "cidr": "10.0.72.0/21"
+        "cidr": "10.150.0.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.0.72",
-          "cidr": "10.0.72.0/24"
+          "prefix": "10.150.0",
+          "cidr": "10.150.0.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.0.73",
-          "cidr": "10.0.73.0/24"
+          "prefix": "10.150.1",
+          "cidr": "10.150.1.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.0.74",
-          "cidr": "10.0.74.0/24"
+          "prefix": "10.150.2",
+          "cidr": "10.150.2.0/24"
         },
         "gateway": {
-          "prefix": "10.0.79",
-          "cidr": "10.0.79.0/27"
+          "prefix": "10.150.7",
+          "cidr": "10.150.7.0/27"
         }
       },
       "nsg": {
@@ -160,7 +160,7 @@
       "vmName": "DSG100DC",
       "hostname": "DSG100DC",
       "fqdn": "DSG100DC.dsgroup100.co.uk",
-      "ip": "10.0.72.250",
+      "ip": "10.150.0.250",
       "admin": {
         "username": "atiadmin",
         "passwordSecretName": "dsg100-dc-admin-password"
@@ -197,20 +197,20 @@
         "vmName": "RDS",
         "hostname": "RDS",
         "fqdn": "RDS.dsgroup100.co.uk",
-        "ip": "10.0.73.250",
+        "ip": "10.150.1.250",
         "npsSecretName": "dsg100-nps-secret"
       },
       "sessionHost1": {
         "vmName": "RDSSH1",
         "hostname": "RDSSH1",
         "fqdn": "RDSSH1.dsgroup100.co.uk",
-        "ip": "10.0.73.249"
+        "ip": "10.150.1.249"
       },
       "sessionHost2": {
         "vmName": "RDSSH2",
         "hostname": "RDSSH2",
         "fqdn": "RDSSH2.dsgroup100.co.uk",
-        "ip": "10.0.73.248"
+        "ip": "10.150.1.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
@@ -228,21 +228,21 @@
       "vmName": "DATASERVER",
       "hostname": "DATASERVER",
       "fqdn": "DATASERVER.dsgroup100.co.uk",
-      "ip": "10.0.74.250"
+      "ip": "10.150.2.250"
     },
     "linux": {
       "gitlab": {
         "vmName": "GITLAB",
         "hostname": "GITLAB",
         "fqdn": "GITLAB.dsgroup100.co.uk",
-        "ip": "10.0.74.151",
+        "ip": "10.150.2.151",
         "rootPasswordSecretName": "dsg100-gitlab-root-password"
       },
       "hackmd": {
         "vmName": "HACKMD",
         "hostname": "HACKMD",
         "fqdn": "HACKMD.dsgroup100.co.uk",
-        "ip": "10.0.74.152"
+        "ip": "10.150.2.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
