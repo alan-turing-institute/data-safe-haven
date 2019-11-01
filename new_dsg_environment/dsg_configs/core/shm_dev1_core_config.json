@@ -1,0 +1,16 @@
+{
+    "subscriptionName": "Development SHM1",
+    "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
+    "domain": "safehavendev1.co.uk",
+    "netbiosName": "SAFEHAVENDEV1",
+    "shId": "dev1",
+    "name": "Development Safe Haven 1",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "ipPrefix": "10.0.0.0"
+}
