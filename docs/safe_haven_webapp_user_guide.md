@@ -98,12 +98,12 @@ The first time you log in, you'll need to reset your password - click “Forgott
 ![screen3b](https://user-images.githubusercontent.com/54804128/68022787-3aea2800-fc9d-11e9-9d10-52c8829318df.png)
 Format: ![Alt Text](url)  
 
-![screen3c](https://user-images.githubusercontent.com/54804128/68021732-26f0f700-fc9a-11e9-8cd6-a6668e68898b.png)
+![screen3c](https://user-images.githubusercontent.com/54804128/68023096-32462180-fc9e-11e9-8690-df48eca313ef.png)
 Format: ![Alt Text](url)  
 
  
 
-Once you've finished resetting your password, you'll be taken to the front page.
+Once you've finished resetting your password, you'll be taken to the front page (if this doesn't happen, reload the web-app on a new incognito browser, and enter in your username and new password).
 
  
 
