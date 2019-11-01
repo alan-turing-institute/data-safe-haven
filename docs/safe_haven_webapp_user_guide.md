@@ -95,7 +95,7 @@ Format: ![Alt Text](url)
 
 The first time you log in, you'll need to reset your password - click “Forgotten my password”. Complete the requested information (a captcha and the phone number you provided on registration).
 
-![screen3b](https://user-images.githubusercontent.com/54804128/68021738-2b1d1480-fc9a-11e9-9dc3-e13999415309.png)
+![screen3b](https://user-images.githubusercontent.com/54804128/68022787-3aea2800-fc9d-11e9-9d10-52c8829318df.png)
 Format: ![Alt Text](url)  
 
 ![screen3c](https://user-images.githubusercontent.com/54804128/68021732-26f0f700-fc9a-11e9-8cd6-a6668e68898b.png)
