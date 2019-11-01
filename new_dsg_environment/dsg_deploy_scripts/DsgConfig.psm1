@@ -57,8 +57,8 @@ function Get-ShmFullConfig{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment automated, make this: "RG_DSG_VNET"
-    $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
+    $shm.network.vnet.rg = "RG_SHM_VNET"
+    $shm.network.vnet.name =  $shm.id + "-VNET"
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
@@ -66,35 +66,35 @@ function Get-ShmFullConfig{
 
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
-    $shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
-    $shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
-    $shm.dc.hostname = $shmConfigBase.dcHostname
+    $shm.dc.rg = "RG_SHM_DC"
+    $shm.dc.vmName = $shm.id + "-DC1"
+    $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "SHMDC2"
+    $shm.dcb.vmName = $shm.id + "-DC2"
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
 
     # --- NPS config ---
     $shm.nps = [ordered]@{}
-    $shm.nps.rg = $shmConfigBase.npsRgName
-    $shm.nps.vmName = $shmConfigBase.npsVmName
-    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIpLastOctet
+    $shm.nps.rg = "RG_SHM_NPS"
+    $shm.nps.vmName = $shm.id + "-NPS"
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
     $shm.storage.artifacts.rg = "RG_SHM_ARTIFACTS"
-    $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
+    $shm.storage.artifacts.accountName = $shm.id + "artifacts"
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.rg = "RG_SHM_SECRETS"
-    $shm.keyVault.name = $shmConfigBase.keyVaultName
+    $shm.keyVault.name = $shm.id + "secrets" 
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
     $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
@@ -234,7 +234,7 @@ function Add-DsgConfig {
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_DSG_DC"
-    $config.dsg.dc.vmName = "DSG" + $config.dsg.id + "DC" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DC"
+    $config.dsg.dc.vmName = "DSG" + $config.dsg.id + "DC"
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
