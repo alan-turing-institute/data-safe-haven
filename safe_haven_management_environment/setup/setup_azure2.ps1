@@ -16,11 +16,11 @@ $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
 New-AzResourceGroup -Name $config.nps.rg -Location $config.location
-$DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
+$dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
 New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
         -templatefile "../arm_templates/shmnps/shmnps-template.json"`
-        -Administrator_User atiadmin `
-        -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force) `
+        -Administrator_User $config.keyVault.secretNames.dcAdminUsername `
+        -Administrator_Password (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force) `
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Domain_Name $config.domain.fqdn;
 

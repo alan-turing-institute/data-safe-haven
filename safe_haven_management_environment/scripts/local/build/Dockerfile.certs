@@ -1,22 +1,28 @@
 FROM ubuntu:18.04
+ARG SHM_ID
+ARG CERT_NAME
+ARG CLIENT_CERT_PASSWORD
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 strongswan \
 libstrongswan-standard-plugins \
 strongswan-pki \
 openssl
-ENV USERNAME client
-ENV PASSWORD password
+
+ENV CA_KEY_FILESTEM ${CERT_NAME}-CaKey
+ENV CA_CERT_FILESTEM ${CERT_NAME}-CaCert
+ENV CLIENT_KEY_FILESTEM ${CERT_NAME}-ClientKey
+ENV CLIENT_CERT_FILESTEM ${CERT_NAME}-ClientCert
 
 RUN mkdir /certs/
 RUN mkdir /out/
 
-RUN ipsec pki --gen --outform pem > /certs/caKey.pem
-RUN ipsec pki --self --in /certs/caKey.pem --dn "CN=VPN CA" --ca --outform pem > /certs/caCert.pem
+RUN ipsec pki --gen --outform pem > /certs/${CA_KEY_FILESTEM}.pem
+RUN ipsec pki --self --in /certs/${CA_KEY_FILESTEM}.pem --dn "CN=VPN CA" --ca --outform pem > /certs/${CA_CERT_FILESTEM}.pem 
 
-RUN openssl x509 -in /certs/caCert.pem -outform der | base64 -w0 ; echo
+RUN openssl x509 -in /certs/${CA_CERT_FILESTEM}.pem -outform der | base64 -w0 ; echo
 
-RUN ipsec pki --gen --outform pem > "/certs/${USERNAME}Key.pem"
-RUN ipsec pki --pub --in "/certs/${USERNAME}Key.pem" | ipsec pki --issue --cacert /certs/caCert.pem --cakey /certs/caKey.pem --dn "CN=${USERNAME}" --san "${USERNAME}" --flag clientAuth --outform pem > "/certs/${USERNAME}Cert.pem"
+RUN ipsec pki --gen --outform pem > "/certs/${CLIENT_KEY_FILESTEM}.pem"
+RUN ipsec pki --pub --in "/certs/${CLIENT_KEY_FILESTEM}.pem" | ipsec pki --issue --cacert /certs/${CA_CERT_FILESTEM}.pem --cakey /certs/${CA_KEY_FILESTEM}.pem --dn "CN=${CERT_NAME}" --san "${CERT_NAME}" --flag clientAuth --outform pem > "/certs/${CLIENT_CERT_FILESTEM}.pem"
 
-RUN openssl pkcs12 -in "/certs/${USERNAME}Cert.pem" -inkey "/certs/${USERNAME}Key.pem" -certfile /certs/caCert.pem -export -out "/certs/${USERNAME}.pfx" -password "pass:${PASSWORD}"
+RUN openssl pkcs12 -in "/certs/${CLIENT_CERT_FILESTEM}.pem" -inkey "/certs/${CLIENT_KEY_FILESTEM}.pem" -certfile /certs/${CA_CERT_FILESTEM}.pem -export -out "/certs/${CLIENT_CERT_FILESTEM}.pfx" -password "pass:${CLIENT_CERT_PASSWORD}"

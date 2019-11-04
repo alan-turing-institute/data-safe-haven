@@ -18,10 +18,10 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 # Create Resource Groups
 New-AzResourceGroup -Name $config.keyVault.rg  -Location $config.location
 
-# Create a keyvault and generate passwords
+# Create a keyvault
 New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName $config.keyVault.rg -Location $config.location
 
-Write-Host "Before running the next step, make sure to add a policy to the KeyVault '$($config.keyVault.name)' in the '$($config.keyVault.rg)' resource group that allows gives the administrator security group for this Safe Haven instance rights to manage Keys, Secrets and Certificates."
+Write-Host "Before running the next step, make sure to add a policy to the KeyVault '$($config.keyVault.name)' in the '$($config.keyVault.rg)' resource group that gives the administrator security group for this Safe Haven instance rights to manage Keys, Secrets and Certificates."
         
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

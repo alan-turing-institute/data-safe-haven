@@ -3,7 +3,7 @@
     "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",
     "netbiosName": "TURINGSAFEHAVEN",
-    "shId": "turing1",
+    "shmId": "turing1",
     "name": "Turng Safe Haven",
     "organisation": {
         "name": "The Alan Turing Institute",
@@ -12,5 +12,5 @@
         "countryCode": "GB"
     },
     "location": "uksouth",
-    "ipPrefix": "10.0.0.0"
+    "ipPrefix": "10.0.0"
 }

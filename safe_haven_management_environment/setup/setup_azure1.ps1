@@ -18,35 +18,46 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 # Set VM Default Size
 $vmSize = "Standard_DS2_v2"
 # Fetch DC root user password (or create if not present)
-$DCRootPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dc).SecretValueText;
-if ($null -eq $DCRootPassword) {
+$dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
+if ($null -eq $dcAdminPassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dc -SecretValue $newPassword;
-  $DCRootPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dc ).SecretValueText;
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminPassword -SecretValue $newPassword;
+  $dcAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminPassword ).SecretValueText;
 }
 
 # Fetch DC root user password (or create if not present)
-$DCSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.safemode).SecretValueText;
-if ($null -eq $DCSafemodePassword) {
+$dcSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcSafemodePasword).SecretValueText;
+if ($null -eq $dcSafemodePassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
   $newPassword = New-Password;
   $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.safemode -SecretValue $newPassword;
-  $DCSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.safemode ).SecretValueText
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcSafemodePassword -SecretValue $newPassword;
+  $dcSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcSafemodePassword ).SecretValueText
+}
+
+# Fetch VPN Client certificate password (or create if not present)
+$vpnClientCertPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnClientCertPassword).SecretValueText;
+if ($null -eq $dcSafemodePassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnClientCertPassword -SecretValue $newPassword;
+  $vpnClientCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertPassword ).SecretValueText
 }
 
 # Generate certificates
 $cwd = Get-Location
 Set-Location -Path ../scripts/local/ -PassThru
+$dockerArgs = "SHM_ID=${$config.id} CERT_NAME=SHM-P2S-${$config.id} CLIENT_CERT_PASSWORD=${vpnClientCertPassword}"
 # NB. Windows uses docker-compose.exe so check for this first, falling back to docker-compose
 if ((Get-Command "docker-compose.exe" -ErrorAction SilentlyContinue) -ne $null) {
   Write-Host "Using docker-compose.exe"
-  docker-compose.exe -f ./build/docker-compose.certs.yml up
+  docker-compose.exe -f ./build/docker-compose.certs.yml up -e $dockerArgs
 } else {
   Write-Host "Using docker-compose"
-  docker-compose -f ./build/docker-compose.certs.yml up
+  docker-compose -f ./build/docker-compose.certs.yml up -e $dockerArgs
 }
 Set-Location -Path $cwd -PassThru
 
@@ -100,16 +111,17 @@ $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionN
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -validityHours 2);
 
-# Run template files
-# Deploy the shmvnet template
-# The certificate only seems to works if the first and last line are removed, passed as a single string and white space removed
-$cert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
-$cert = [string]$cert
-$cert = $cert.replace(" ", "")
+# The certificate only seems to works if the first and last line are removed and it is passed as a single string with white space removed
+$caCert = $(Get-Content -Path "../scripts/local/out/certs/caCert.pem") | Select-Object -Skip 1 | Select-Object -SkipLast 1
+$caCert = [string]$caCert
+$caCert = $caCert.replace(" ", "")
+# Store CA cert in KeyVault
+Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnCaCert -SecretValue $caCert;
+$caCert = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCert ).SecretValueText;
 
 $vnetCreateParams = @{
  "Virtual_Network_Name" = $config.network.vnet.name
- "P2S_VPN_Certificate" = $cert
+ "P2S_VPN_Certificate" = $caCert
  "VNET_CIDR" = $config.network.vnet.cidr
  "Subnet_Identity_Name" = $config.network.subnets.identity.name
  "Subnet_Identity_CIDR" = $config.network.subnets.identity.cidr
@@ -134,9 +146,9 @@ if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -templatefile "../arm_templates/shmdc/shmdc-template.json"`
-        -Administrator_User "atiadmin"`
-        -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force)`
-        -SafeMode_Password (ConvertTo-SecureString $DCSafemodePassword -AsPlainText -Force)`
+        -Administrator_User $config.dc.admin.username `
+        -Administrator_Password (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)`
+        -SafeMode_Password (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)`
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Artifacts_Location $artifactLocation `
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
