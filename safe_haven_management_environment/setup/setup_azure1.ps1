@@ -120,6 +120,7 @@ $vnetCreateParams = @{
  "VNET_DNS1" = $config.dc.ip
  "VNET_DNS2" = $config.dcb.ip
 }
+
 New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location
 New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
         -templatefile "../arm_templates/shmvnet/shmvnet-template.json" `
@@ -131,7 +132,7 @@ if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "Netbios name must be no more than 15 characters long. '$($config.domain.netbiosName)' is $($config.domain.netbiosName.length) characters long."
 }
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location
-New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg`
+New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -templatefile "../arm_templates/shmdc/shmdc-template.json"`
         -Administrator_User "atiadmin"`
         -Administrator_Password (ConvertTo-SecureString $DCRootPassword -AsPlainText -Force)`

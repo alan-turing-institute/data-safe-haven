@@ -72,7 +72,7 @@ function Get-ShmFullConfig{
 
     $shm.network.subnets.gateway = [ordered]@{}
     $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 7)
-    $shm.network.subnets.gateway.name = "Subnet-Gateway"
+    $shm.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
     # --- Domain controller config ---
