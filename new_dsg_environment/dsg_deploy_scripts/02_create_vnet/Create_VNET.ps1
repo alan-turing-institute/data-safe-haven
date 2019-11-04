@@ -23,7 +23,7 @@ $vnetCreateParams = @{
  "Subnet-Identity Address Prefix" = $config.dsg.network.subnets.identity.cidr
  "Subnet-RDS Address Prefix" = $config.dsg.network.subnets.rds.cidr 
  "Subnet-Data Address Prefix" = $config.dsg.network.subnets.data.cidr 
- "Subnet-Gateway Address Prefix" = $config.dsg.network.subnets.gateway.cidr
+ "GatewaySubnet Address Prefix" = $config.dsg.network.subnets.gateway.cidr
  "DNS Server IP Address" =  $config.dsg.dc.ip
 }
 
