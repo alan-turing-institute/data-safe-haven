@@ -93,7 +93,7 @@
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'Subnet-Gateway')]"
                             }
                         }
                     }
@@ -131,7 +131,7 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'Subnet-Gateway')]"
             ]
         },
         {
@@ -178,7 +178,7 @@
                         }
                     },
                     {
-                        "name": "GatewaySubnet",
+                        "name": "Subnet-Gateway",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Gateway Address Prefix')]",
                             "serviceEndpoints": [],
@@ -235,7 +235,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', 'GatewaySubnet')]",
+            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-Gateway')]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {

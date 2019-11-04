@@ -62,7 +62,18 @@ function Get-ShmFullConfig{
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
+    $shm.network.subnets.identity.name = "Subnet-Identity"
     $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
+    
+    $shm.network.subnets.web = [ordered]@{}
+    $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 1)
+    $shm.network.subnets.web.name = "Subnet-Web"
+    $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
+
+    $shm.network.subnets.gateway = [ordered]@{}
+    $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 7)
+    $shm.network.subnets.gateway.name = "Subnet-Gateway"
+    $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}

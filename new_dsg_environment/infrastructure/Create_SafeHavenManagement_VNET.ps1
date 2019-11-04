@@ -6,7 +6,7 @@ $rg = "RG_SHM_VNET"
 $region = "UK South"
 $subnetid = "Subnet-Identity"
 $subnetweb = "Subnet-Web"
-$subnetgw = "GatewaySubnet"
+$subnetgw = "Subnet-Gateway"
 
 $vnetprefix = "10.251.0.0/21"
 $idsubprefix = "10.251.0.0/24"
@@ -49,7 +49,7 @@ write-Host -ForegroundColor Green "Done!"
 write-Host -ForegroundColor Cyan "Creating virtual network...."
 New-AzureRmVirtualNetwork -Name $vnetname -ResourceGroupName $rg -Location $region -AddressPrefix $vnetprefix -Subnet $idsub, $websub, $gwsub
 $vnet = Get-AzureRmVirtualNetwork -Name $vnetname -ResourceGroupName $rg
-$subnet = Get-AzureRmVirtualNetworkSubnetConfig -Name "GatewaySubnet" -VirtualNetwork $vnet
+$subnet = Get-AzureRmVirtualNetworkSubnetConfig -Name "Subnet-Gateway" -VirtualNetwork $vnet
 write-Host -ForegroundColor Green "Done!"
 
 #Create public IP address
