@@ -10,12 +10,23 @@ Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
 
-# Temporarily switch to management subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Directory for local and remote helper scripts
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resolve
+
+# Create DSG KeyVault if it does not exist
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -SubscriptionId $config.subscriptionName;
+
+# Create Resource Groups
+New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.location
+
+# Create a keyvault
+New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
+    
+# Temporarily switch to management subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # === Add DSG users and groups to SHM ====
 Write-Host "Creating or retrieving user passwords"
@@ -83,6 +94,8 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $conf
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
+Write-Host "Before running the next step, make sure to add a policy to the KeyVault '$($config.dsg.keyVault.name)' in the '$($config.dsg.keyVault.rg)' resource group that  gives the administrator security group for this Safe Haven instance rights to manage Keys, Secrets and Certificates."
+    
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
 
