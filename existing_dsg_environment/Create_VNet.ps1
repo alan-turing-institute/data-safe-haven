@@ -10,7 +10,7 @@ $region = "UK South"
 $subnetrds = "Subnet_RDS" # RDS subnet
 $subnetdata = "Subnet_Data" # Data subnet
 $subnetid = "Subnet_Identity" # Identity subnet
-$subnetgw = "GatewaySubnet" # VPN gateway subnet
+$subnetgw = "Subnet-Gateway" # VPN gateway subnet
 $vnetprefix = "0.0.0.0/0" # Address space
 $datasubprefix = "0.0.0.0/0" # Data subnet ip range
 $idsubprefix = "0.0.0.0/0" # identity subnet ip range
@@ -54,7 +54,7 @@ write-Host -ForegroundColor Green "Done!"
 write-Host -ForegroundColor Cyan "Creating virtual network...."
 New-AzureRmVirtualNetwork -Name $vnetname -ResourceGroupName $rg -Location $region -AddressPrefix $vnetprefix -Subnet $rdssub, $datasub, $idsub, $gwsub
 $vnet = Get-AzureRmVirtualNetwork -Name $vnetname -ResourceGroupName $rg
-$subnet = Get-AzureRmVirtualNetworkSubnetConfig -Name "GatewaySubnet" -VirtualNetwork $vnet
+$subnet = Get-AzureRmVirtualNetworkSubnetConfig -Name "Subnet-Gateway" -VirtualNetwork $vnet
 write-Host -ForegroundColor Green "Done!"
 
 #Create public IP address
