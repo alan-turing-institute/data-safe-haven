@@ -1,8 +1,8 @@
 {
   "shm": {
-    "subscriptionName": "Development SHM1",
+    "subscriptionName": "Turing Development SHM1",
     "id": "dev1",
-    "name": "Development Safe Haven 1",
+    "name": "Turing Development Safe Haven 1",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -11,12 +11,12 @@
     },
     "location": "uksouth",
     "domain": {
-      "fqdn": "safehavendev1.co.uk",
+      "fqdn": "dev1.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENDEV1",
-      "dn": "DC=safehavendev1,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=safehavendev1,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=safehavendev1,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=safehavendev1,DC=co,DC=uk",
+      "dn": "DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -52,13 +52,13 @@
       "rg": "RG_SHM_DC",
       "vmName": "DC1_SHM_dev1",
       "hostname": "DC1_SHM_dev1",
-      "fqdn": "DC1_SHM_dev1.safehavendev1.co.uk",
+      "fqdn": "DC1_SHM_dev1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
       "vmName": "DC2_SHM_dev1",
       "hostname": "DC2_SHM_dev1",
-      "fqdn": "DC2_SHM_dev1.safehavendev1.co.uk",
+      "fqdn": "DC2_SHM_dev1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
