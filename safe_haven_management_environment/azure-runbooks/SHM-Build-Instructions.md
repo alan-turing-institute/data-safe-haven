@@ -128,7 +128,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
     - Click on "+New user" and enter the following details:
-      - Name: "Local admin"
+      - Name: "AAD Global Admin"
       - Username:`admin@customdomain`
       - Select the directory role to "Global Administrator"
       - Click "Create"
@@ -140,7 +140,8 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - Create a secret named `shm-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
       - Set the value of this secret to the password you just generated.
     - Once you have set your password and logged in you can administrate the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
-4. Navigate to `Users` and add new admin users, setting their usernames to `admin.firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
+4. Navigate to `Users` and add new admin users, setting their names to `Admin - Firstname Lastname` and their usernames to `admin.firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
+4. Let Azure set their passwords. They can reset these later.
 5. In the user list on the Azure Active Directory, for each of the new admin users:
    - Click on the username in the user list to view the user's details
    - Click on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator"
