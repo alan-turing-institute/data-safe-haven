@@ -268,7 +268,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the new Domain controller via Remote Desktop client over the DSG VPN connection at the IP address `<dsg-identity-subnet-prefix>.250` (e.g. 10.250.x.250)
 
-- Login with local admin user `dsgadmin` and the password for the DSG DC, which was created and stored in the `dsg<dsg-id>-dc-admin-password` secret in the DSG KeyVault by the DC deployment script
+- Login with local admin user and password for the DSG DC, which were created and stored in the `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in the DSG KeyVault by the DC deployment script
 
 - From the "Server Management" application, select `Tools -> Group Policy Management`
 
@@ -322,7 +322,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
 
-- Login with domain user `<shm-domain>\shmadmin` and the SHM DC admin password from the `shm-dc-admin-password` secret in the Safe Haven Management KeyVault
+- Login with domain user `<shm-domain>\User` and the SHM DC admin password from the `shm-dc-admin-password` secret in the Safe Haven Management KeyVault
 
 - From the "Server Management" application, select `Tools -> Active Directory Domains and Trust`
 
@@ -340,7 +340,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
-  |   User name and password:                               | Domain admin user on the DSG domain. Format: `<dsg-domain>\Username>. User is "dsgadmin ". See DSG DC admin secret in DSG KeyVault for password. |
+  |   User name and password:                               | Domain admin user on the DSG domain. Format: <dsg-domain>\Username>. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. |
   | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
   | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
 
@@ -386,7 +386,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<dsg-domain>\dsgadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 
 - Open `C:\Software\rdssh1-app-server` in Windows explorer
 
@@ -398,7 +398,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<dsg-domain>\dsgadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the DSG KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. (all DSG Windows servers use the same admin credentials)
 
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
@@ -514,7 +514,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
 
-- Login with domain user `<shm-domain>\shmadmin` and the SHM DC admin password from the `shm-dc-admin-password` secret in the Safe Haven Management KeyVault
+- Login with **SHM** domain user `<shm-domain>\User` See **SHM** `dsg<dsg-id>-dc-admin-username` and `shm-dc-admin-password` secrets in the **SHM** KeyVault for username and password.
 
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 
@@ -560,7 +560,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
 
-- Login with domain user `<dsg-domain>\dsgadmin` and the **DSG DC** admin password from the `dsg<dsg-id>-dc-admin-password` secret from the SHM KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 
 - Open `C:\Software\rdssh2-virtual-desktop-server` in Windows explorer
 
@@ -654,7 +654,7 @@ To deploy a compute VM you will need the following available on the machine you 
 - Activate boot diagnostics on the VM and click save. You need to stay on that screen until the activation is complete.
 - Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
 - If you are not prompted with `login:`, hit enter until the prompt appears
-- Enter `dsgadmin` for the username
+- Enter the username from the `dsg<dsg-id>-dsvm-admin-password` secret in the DSG KeyVault.
 - Enter the password from the `dsg<dsg-id>-dsvm-admin-password` secret in the DSG KeyVault.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
@@ -695,7 +695,7 @@ To run the smoke tests:
 
 - Connect to the **DSG Dataserver** via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares the Safe Haven repository folder on your local machine with the  Dataserver (or you have another way to transfer files between your local machine and the Dataserver VM).
 
-- Login with domain user `<dsg-domain>\dsgadmin` and the **DSG DC** admin password from the DSG KeyVault (all DSG Windows servers use the same admin credentials)
+- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 
 - Copy the `package_lists` and `tests` folders from your local `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to a `dsg_tests` folder on within the `F:\Data` folder on the DSG Dataserver.
 

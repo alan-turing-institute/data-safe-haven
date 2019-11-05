@@ -17,7 +17,16 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Set VM Default Size
 $vmSize = "Standard_DS2_v2"
-# Fetch DC root user password (or create if not present)
+# Fetch DC admin username (or create if not present)
+$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
+if ($null -eq $dcAdminPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $newPassword;
+  $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminUsername ).SecretValueText;
+}
+# Fetch DC admin user password (or create if not present)
 $dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
 if ($null -eq $dcAdminPassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
@@ -26,8 +35,7 @@ if ($null -eq $dcAdminPassword) {
   $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminPassword -SecretValue $newPassword;
   $dcAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminPassword ).SecretValueText;
 }
-
-# Fetch DC root user password (or create if not present)
+# Fetch DC safe mode password (or create if not present)
 $dcSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcSafemodePassword).SecretValueText;
 if ($null -eq $dcSafemodePassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
@@ -170,7 +178,7 @@ $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionN
 
 $vnetCreateParams = @{
  "Virtual_Network_Name" = $config.network.vnet.name
- "P2S_VPN_Certificate" = $vpnCaCertificate
+ "P2S_VPN_Certificate" = $vpnCaCertificatePlain
  "VNET_CIDR" = $config.network.vnet.cidr
  "Subnet_Identity_Name" = $config.network.subnets.identity.name
  "Subnet_Identity_CIDR" = $config.network.subnets.identity.cidr
@@ -195,7 +203,7 @@ if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location -Force
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -templatefile "$PSScriptRoot/../arm_templates/shmdc/shmdc-template.json"`
-        -Administrator_User $config.keyvault.secretNames.dcAdminUsername `
+        -Administrator_User $dcAdminUsername `
         -Administrator_Password (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)`
         -SafeMode_Password (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)`
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
