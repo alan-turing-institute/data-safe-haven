@@ -23,9 +23,9 @@ $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Run remote script
-$scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "Set_OS_Language.ps1"
-$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "map_drive.ps1"
-$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "Active_Directory_Configuration.ps1"
+$scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "Set_OS_Language.ps1"
+$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "map_drive.ps1"
+$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "Active_Directory_Configuration.ps1"
 
 # Fetch ADSync user password (or create if not present)
 $ADSyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsyncPassword).SecretValueText;
