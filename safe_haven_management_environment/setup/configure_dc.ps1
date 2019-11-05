@@ -23,9 +23,9 @@ $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Run remote script
-$scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Set_OS_Language.ps1"
-$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "map_drive.ps1"
-$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "SHM_DC" "Active_Directory_Configuration.ps1"
+$scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "Set_OS_Language.ps1"
+$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "map_drive.ps1"
+$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "Active_Directory_Configuration.ps1"
 
 # Fetch ADSync user password (or create if not present)
 $ADSyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsyncPassword).SecretValueText;
@@ -38,13 +38,13 @@ if ($null -eq $ADSyncPassword ) {
 }
 
 # Run Set_OS_Language.ps1 remotely
-$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC1 `
+$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
 Write-Output $result1.Value;
 
 
-# Map drive to SHMDC1
+# Map drive to DC1-SHM-SHMID
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
 $artifactSasToken = New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
@@ -57,7 +57,7 @@ $params = @{
   sasToken= "`"$artifactSasToken`""
 };
 
-$result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name SHMDC1 `
+$result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name $config.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2 `
     -Parameter $params;
     
@@ -84,7 +84,7 @@ Write-Output $result2.Value;
 
 
 # Execute Set_OS_Language.ps1 on second DC
-$result4= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name SHMDC2 `
+$result4= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dcb.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
 
 Write-Output $result4.Value;
