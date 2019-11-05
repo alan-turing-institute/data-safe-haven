@@ -15,6 +15,7 @@
       "fqdn": "dev1.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENDEV1",
       "dn": "DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
       "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
       "userOuPath": "OU=Safe Haven Research Users,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
       "securityOuPath": "OU=Safe Haven Security Groups,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
@@ -65,6 +66,7 @@
     "nps": {
       "rg": "RG_SHM_NPS",
       "vmName": "NPS-SHM-dev1",
+      "hostname": "NPS-SHM-dev1",
       "ip": "10.0.0.248"
     },
     "storage": {
@@ -82,6 +84,8 @@
         "dcSafemodePassword": "shm-dc-safemode-password",
         "adsyncPassword": "shm-adsync-password",
         "vpnCaCertificate": "shm-vpn-ca-cert",
+        "vpnCaCertPassword": "shm-vpn-ca-cert-password",
+        "vpnCaCertificatePlain": "shm-vpn-ca-cert-plain",
         "vpnClientCertificate": "shm-vpn-client-cert",
         "vpnClientCertPassword": "shm-vpn-client-cert-password"
       }
@@ -177,7 +181,7 @@
       "fqdn": "DC-DSGdev1.dsgroupdev1.co.uk",
       "ip": "10.100.0.250",
       "admin": {
-        "username": "dsgadmin",
+        "usernameSecretName": "dsgdev1-dc-admin-username",
         "passwordSecretName": "dsgdev1-dc-admin-password"
       }
     },
