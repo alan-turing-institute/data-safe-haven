@@ -14,7 +14,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Admin user credentials (must be same as for DSG DC for now)
-$adminUser = $config.dsg.dc.admin.username
+$adminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.dsg.dc.usernameSecretName).SecretValueText;
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 $vmSize = "Standard_B2ms"
@@ -24,7 +24,7 @@ $params = @{
 "Domain Name" = $config.dsg.domain.fqdn
 "VM Size" = $vmSize
 "IP Address" = $config.dsg.dataserver.ip
-"Administrator User" = $adminUser
+"Administrator User" = $adminUsername
 "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg

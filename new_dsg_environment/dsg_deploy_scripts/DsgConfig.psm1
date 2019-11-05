@@ -255,8 +255,8 @@ function Add-DsgConfig {
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
     $config.dsg.dc.admin = [ordered]@{
-        username = "dsgadmin"
-        passwordSecretName = "dsg" + $config.dsg.id + "-dc-admin-password" # TODO: Current format targeted at using shm keyvault. Update if this changes.
+        usernameSecretName = "dsg" + $config.dsg.id + "-dc-admin-username"
+        passwordSecretName = "dsg" + $config.dsg.id + "-dc-admin-password"
     }
 
     # --- Domain users ---
