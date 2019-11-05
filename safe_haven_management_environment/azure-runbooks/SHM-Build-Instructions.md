@@ -248,19 +248,13 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
 1. Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs
 
-
-### Upload the P2S VPN CA Client certificate
-
-1. Go to `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id> -> Secrets` and copy the `shm-vpn-client-cert-password` secret. 
-2. Go to `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id> -> Certificates` and import the `SHM-P2S-<shm-id>-Client.pfx` file from `/safe_haven_management/setup/certs/`. Make the certificate name `SHM-P2S-<shmId>-Client` and enter the password you previously copied from the `shm-vpn-client-cert-password` secret. Note that this password is only used to decrypt the client certificate on upload. When you subsequently donwload the certificate, it will not be secured with a password.
-
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>`.
 
   - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 
-  - Click on the certificate named `SHM-P2S-<shm-id>-Client`, click on the "current version" and click the "Download in PFX/PEM format" link.
+  - Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 
   - To install, double click on the downloaded certificate, leaving the password field blank.
 

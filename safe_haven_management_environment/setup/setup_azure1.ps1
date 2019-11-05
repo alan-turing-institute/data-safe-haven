@@ -37,9 +37,15 @@ if ($null -eq $dcSafemodePassword) {
   $dcSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcSafemodePassword ).SecretValueText
 }
 
-$vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).SecretValueText
-$vpnCaCertificate = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
-if($vpnClientCertificate -And $vpnCaCertificate){
+$vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
+$vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+$vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+
+# Define cert folder outside of conditional cert creation to ensure cleanup on nest run if code exits with error during cert creation 
+$certFolderPathName = "certs"
+$certFolderPath = "$PSScriptRoot/$certFolderPathName"
+
+if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
   Write-Host "Both CA and Client certificates already exist in KeyVault. Skipping certificate creation."
 } else {
   # Generate certificates
@@ -53,40 +59,57 @@ if($vpnClientCertificate -And $vpnCaCertificate){
     $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnClientCertPassword -SecretValue $newPassword;
     $vpnClientCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertPassword ).SecretValueText
   }
+  # Fetch VPN CA certificate password (or create if not present)
+  $vpnCaCertPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertPassword).SecretValueText;
+  if ($null -eq $vpnCaCertPassword) {
+    # Create password locally but round trip via KeyVault to ensure it is successfully stored
+    $newPassword = New-Password;
+    $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnCaCertPassword -SecretValue $newPassword;
+    $vpnCaCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertPassword ).SecretValueText
+  }
+
   # Generate keys and certificates
-  $validityDays = 365
-  $certFolderPathName = "certs"
-  $certFolderPath = "$PSScriptRoot/$certFolderPathName"
+  $caValidityDays = 2196 # 5 years
+  $clientValidityDays = 732 # 2 years
   $_ = new-item -Path $PSScriptRoot -Name $certFolderPathName -ItemType directory -Force
   $caStem = "SHM-P2S-$($config.id)-CA"
   $clientStem = "SHM-P2S-$($config.id)-Client"
   # Create self-signed CA certificate
-  openssl req -subj "/CN=$caStem" -new -newkey rsa:2048 -sha256 -days $validityDays -nodes -x509 -keyout $certFolderPath/$caStem.key -out $certFolderPath/$caStem.crt
+  openssl req -subj "/CN=$caStem" -new -newkey rsa:2048 -sha256 -days $caValidityDays -nodes -x509 -keyout $certFolderPath/$caStem.key -out $certFolderPath/$caStem.crt
   # Create Client key
   openssl genrsa -out $certFolderPath/$clientStem.key 2048
   # Create Client CSR
   openssl req -new -sha256 -key $certFolderPath/$clientStem.key -subj "/CN=$clientStem" -out $certFolderPath/$clientStem.csr
   # Sign Client cert
-  openssl x509 -req -in $certFolderPath/$clientStem.csr -CA $certFolderPath/$caStem.crt -CAkey $certFolderPath/$caStem.key -CAcreateserial -out $certFolderPath/$clientStem.crt -days $validityDays -sha256
+  openssl x509 -req -in $certFolderPath/$clientStem.csr -CA $certFolderPath/$caStem.crt -CAkey $certFolderPath/$caStem.key -CAcreateserial -out $certFolderPath/$clientStem.crt -days $clientValidityDays -sha256
   # Create Client private key + signed cert bundle
   openssl pkcs12 -in "$certFolderPath/$clientStem.crt" -inkey "$certFolderPath/$clientStem.key" -certfile $certFolderPath/$caStem.crt -export -out "$certFolderPath/$clientStem.pfx" -password "pass:$vpnClientCertPassword"
+  # Create CA private key + signed cert bundle
+  openssl pkcs12 -in "$certFolderPath/$caStem.crt" -inkey "$certFolderPath/$caStem.key" -export -out "$certFolderPath/$caStem.pfx" -password "pass:$vpnCaCertPassword"
   Write-Host "===Completed creating certificates==="
 
   # The certificate only seems to work for the VNET Gateway if the first and last line are removed and it is passed as a single string with white space removed
-  $vpnCaCertificate = $(Get-Content -Path "$certFolderPath/$caStem.crt") | Select-Object -Skip 1 | Select-Object -SkipLast 1
-  $vpnCaCertificate = [string]$vpnCaCertificate
-  $vpnCaCertificate = $vpnCaCertificate.replace(" ", "")
+  $vpnCaCertificatePlain = $(Get-Content -Path "$certFolderPath/$caStem.crt") | Select-Object -Skip 1 | Select-Object -SkipLast 1
+  $vpnCaCertificatePlain = [string]$vpnCaCertificatePlain
+  $vpnCaCertificatePlain = $vpnCaCertificatePlain.replace(" ", "")
 
   # Store CA cert in KeyVault
-  Write-Host "Storing CA cert in '$($config.keyVault.name)' KeyVault as secret $($config.keyVault.secretNames.vpnCaCertificate) (no private key)"
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -SecretValue (ConvertTo-SecureString $vpnCaCertificate -AsPlainText -Force);
-  $vpnCaCertificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate ).SecretValueText;
+  Write-Host "Storing CA cert in '$($config.keyVault.name)' KeyVault as secret $($config.keyVault.secretNames.vpnCaCertificatePlain) (no private key)"
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString $vpnCaCertificatePlain -AsPlainText -Force);
+  $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain ).SecretValueText;
 
+  # Store CA key + cert bundle in KeyVault
+  Write-Host "Storing CA private key + cert bundle in '$($config.keyVault.name)' KeyVault as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
+  $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath "$certFolderPath/$caStem.pfx" -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
+  
   # Store Client key + cert bundle in KeyVault
-  Write-Host "Storing Client private key + cert bundle in '$($config.keyVault.name)' KeyVault as certificate $($config.keyVault.secretNames.vpnClientCertificate) (nincludes private key)"
+  Write-Host "Storing Client private key + cert bundle in '$($config.keyVault.name)' KeyVault as certificate $($config.keyVault.secretNames.vpnClientCertificate) (includes private key)"
   $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnClientCertificate -FilePath "$certFolderPath/$clientStem.pfx" -Password (ConvertTo-SecureString $vpnClientCertPassword -AsPlainText -Force);
 
 }
+# Delete local copies of certificates and private keys
+Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
 
 # Setup storage account and upload artifacts
 $storageAccountRg = $config.storage.artifacts.rg;
