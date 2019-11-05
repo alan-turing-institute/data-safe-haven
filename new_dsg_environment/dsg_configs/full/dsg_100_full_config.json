@@ -50,20 +50,20 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1_SHM_turing1",
-      "hostname": "DC1_SHM_turing1",
-      "fqdn": "DC1_SHM_turing1.turingsafehaven.ac.uk",
+      "vmName": "DC1-SHM-turing1",
+      "hostname": "DC1-SHM-turing1",
+      "fqdn": "DC1-SHM-turing1.turingsafehaven.ac.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "DC2_SHM_turing1",
-      "hostname": "DC2_SHM_turing1",
-      "fqdn": "DC2_SHM_turing1.turingsafehaven.ac.uk",
+      "vmName": "DC2-SHM-turing1",
+      "hostname": "DC2-SHM-turing1",
+      "fqdn": "DC2-SHM-turing1.turingsafehaven.ac.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS_SHM_turing1",
+      "vmName": "NPS-SHM-turing1",
       "ip": "10.0.0.248"
     },
     "storage": {
@@ -81,7 +81,8 @@
         "dcSafemodePassword": "shm-dc-safemode-password",
         "adsyncPassword": "shm-adsync-password",
         "vpnCaCertificate": "shm-vpn-ca-cert",
-        "vpnClientCertPassword": "shm-vpn-client-cert-pwd"
+        "vpnClientCertificate": "shm-vpn-client-cert",
+        "vpnClientCertPassword": "shm-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -170,9 +171,9 @@
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC_DSG100",
-      "hostname": "DC_DSG100",
-      "fqdn": "DC_DSG100.dsgroup100.co.uk",
+      "vmName": "DC-DSG100",
+      "hostname": "DC-DSG100",
+      "fqdn": "DC-DSG100.dsgroup100.co.uk",
       "ip": "10.150.0.250",
       "admin": {
         "username": "dsgadmin",
@@ -207,22 +208,22 @@
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS_DSG100",
-        "hostname": "RDS_DSG100",
-        "fqdn": "RDS_DSG100.dsgroup100.co.uk",
+        "vmName": "RDS-DSG100",
+        "hostname": "RDS-DSG100",
+        "fqdn": "RDS-DSG100.dsgroup100.co.uk",
         "ip": "10.150.1.250",
         "npsSecretName": "dsg100-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1_DSG100",
-        "hostname": "RDSSH1_DSG100",
-        "fqdn": "RDSSH1_DSG100.dsgroup100.co.uk",
+        "vmName": "RDSSH1-DSG100",
+        "hostname": "RDSSH1-DSG100",
+        "fqdn": "RDSSH1-DSG100.dsgroup100.co.uk",
         "ip": "10.150.1.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2_DSG100",
-        "hostname": "RDSSH2_DSG100",
-        "fqdn": "RDSSH2_DSG100.dsgroup100.co.uk",
+        "vmName": "RDSSH2-DSG100",
+        "hostname": "RDSSH2-DSG100",
+        "fqdn": "RDSSH2-DSG100.dsgroup100.co.uk",
         "ip": "10.150.1.248"
       },
       "rg": "RG_DSG_RDS",
@@ -238,23 +239,23 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATA_DSG100",
-      "hostname": "DATA_DSG100",
-      "fqdn": "DATA_DSG100.dsgroup100.co.uk",
+      "vmName": "DATA-DSG100",
+      "hostname": "DATA-DSG100",
+      "fqdn": "DATA-DSG100.dsgroup100.co.uk",
       "ip": "10.150.2.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB_DSG100",
-        "hostname": "GITLAB_DSG100",
-        "fqdn": "GITLAB_DSG100.dsgroup100.co.uk",
+        "vmName": "GITLAB-DSG100",
+        "hostname": "GITLAB-DSG100",
+        "fqdn": "GITLAB-DSG100.dsgroup100.co.uk",
         "ip": "10.150.2.151",
         "rootPasswordSecretName": "dsg100-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD_DSG100",
-        "hostname": "HACKMD_DSG100",
-        "fqdn": "HACKMD_DSG100.dsgroup100.co.uk",
+        "vmName": "HACKMD-DSG100",
+        "hostname": "HACKMD-DSG100",
+        "fqdn": "HACKMD-DSG100.dsgroup100.co.uk",
         "ip": "10.150.2.152"
       },
       "rg": "RG_DSG_LINUX",

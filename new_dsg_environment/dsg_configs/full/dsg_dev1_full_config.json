@@ -50,20 +50,20 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1_SHM_dev1",
-      "hostname": "DC1_SHM_dev1",
-      "fqdn": "DC1_SHM_dev1.dev1.dsgroupdev.co.uk",
+      "vmName": "DC1-SHM-dev1",
+      "hostname": "DC1-SHM-dev1",
+      "fqdn": "DC1-SHM-dev1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "DC2_SHM_dev1",
-      "hostname": "DC2_SHM_dev1",
-      "fqdn": "DC2_SHM_dev1.dev1.dsgroupdev.co.uk",
+      "vmName": "DC2-SHM-dev1",
+      "hostname": "DC2-SHM-dev1",
+      "fqdn": "DC2-SHM-dev1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS_SHM_dev1",
+      "vmName": "NPS-SHM-dev1",
       "ip": "10.0.0.248"
     },
     "storage": {
@@ -81,7 +81,8 @@
         "dcSafemodePassword": "shm-dc-safemode-password",
         "adsyncPassword": "shm-adsync-password",
         "vpnCaCertificate": "shm-vpn-ca-cert",
-        "vpnClientCertPassword": "shm-vpn-client-cert-pwd"
+        "vpnClientCertificate": "shm-vpn-client-cert",
+        "vpnClientCertPassword": "shm-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -170,9 +171,9 @@
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC_DSGdev1",
-      "hostname": "DC_DSGdev1",
-      "fqdn": "DC_DSGdev1.dsgroupdev1.co.uk",
+      "vmName": "DC-DSGdev1",
+      "hostname": "DC-DSGdev1",
+      "fqdn": "DC-DSGdev1.dsgroupdev1.co.uk",
       "ip": "10.100.0.250",
       "admin": {
         "username": "dsgadmin",
@@ -207,22 +208,22 @@
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS_DSGdev1",
-        "hostname": "RDS_DSGdev1",
-        "fqdn": "RDS_DSGdev1.dsgroupdev1.co.uk",
+        "vmName": "RDS-DSGdev1",
+        "hostname": "RDS-DSGdev1",
+        "fqdn": "RDS-DSGdev1.dsgroupdev1.co.uk",
         "ip": "10.100.1.250",
         "npsSecretName": "dsgdev1-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1_DSGdev1",
-        "hostname": "RDSSH1_DSGdev1",
-        "fqdn": "RDSSH1_DSGdev1.dsgroupdev1.co.uk",
+        "vmName": "RDSSH1-DSGdev1",
+        "hostname": "RDSSH1-DSGdev1",
+        "fqdn": "RDSSH1-DSGdev1.dsgroupdev1.co.uk",
         "ip": "10.100.1.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2_DSGdev1",
-        "hostname": "RDSSH2_DSGdev1",
-        "fqdn": "RDSSH2_DSGdev1.dsgroupdev1.co.uk",
+        "vmName": "RDSSH2-DSGdev1",
+        "hostname": "RDSSH2-DSGdev1",
+        "fqdn": "RDSSH2-DSGdev1.dsgroupdev1.co.uk",
         "ip": "10.100.1.248"
       },
       "rg": "RG_DSG_RDS",
@@ -238,23 +239,23 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATA_DSGdev1",
-      "hostname": "DATA_DSGdev1",
-      "fqdn": "DATA_DSGdev1.dsgroupdev1.co.uk",
+      "vmName": "DATA-DSGdev1",
+      "hostname": "DATA-DSGdev1",
+      "fqdn": "DATA-DSGdev1.dsgroupdev1.co.uk",
       "ip": "10.100.2.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB_DSGdev1",
-        "hostname": "GITLAB_DSGdev1",
-        "fqdn": "GITLAB_DSGdev1.dsgroupdev1.co.uk",
+        "vmName": "GITLAB-DSGdev1",
+        "hostname": "GITLAB-DSGdev1",
+        "fqdn": "GITLAB-DSGdev1.dsgroupdev1.co.uk",
         "ip": "10.100.2.151",
         "rootPasswordSecretName": "dsgdev1-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD_DSGdev1",
-        "hostname": "HACKMD_DSGdev1",
-        "fqdn": "HACKMD_DSGdev1.dsgroupdev1.co.uk",
+        "vmName": "HACKMD-DSGdev1",
+        "hostname": "HACKMD-DSGdev1",
+        "fqdn": "HACKMD-DSGdev1.dsgroupdev1.co.uk",
         "ip": "10.100.2.152"
       },
       "rg": "RG_DSG_LINUX",
