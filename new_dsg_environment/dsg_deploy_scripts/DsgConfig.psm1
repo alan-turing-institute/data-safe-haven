@@ -78,13 +78,13 @@ function Get-ShmFullConfig{
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
-    $shm.dc.vmName = "DC1_SHM_" + $shm.id
+    $shm.dc.vmName = "DC1-SHM-" + $shm.id
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "DC2_SHM_" + $shm.id
+    $shm.dcb.vmName = "DC2-SHM-" + $shm.id
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
@@ -92,7 +92,7 @@ function Get-ShmFullConfig{
     # --- NPS config ---
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
-    $shm.nps.vmName = "NPS_SHM_" + $shm.id
+    $shm.nps.vmName = "NPS-SHM-" + $shm.id
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
@@ -248,7 +248,7 @@ function Add-DsgConfig {
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_DSG_DC"
-    $config.dsg.dc.vmName = "DC_DSG" + $config.dsg.id
+    $config.dsg.dc.vmName = "DC-DSG" + $config.dsg.id
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
@@ -295,16 +295,16 @@ function Add-DsgConfig {
     $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
-    $config.dsg.rds.gateway.vmName = "RDS_DSG" + $config.dsg.id
+    $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.gateway.npsSecretName = "dsg$($config.dsg.id)-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "RDSSH1_DSG" + $config.dsg.id
+    $config.dsg.rds.sessionHost1.vmName = "RDSSH1-DSG" + $config.dsg.id
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "RDSSH2_DSG" + $config.dsg.id
+    $config.dsg.rds.sessionHost2.vmName = "RDSSH2-DSG" + $config.dsg.id
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
@@ -314,7 +314,7 @@ function Add-DsgConfig {
     # Data server
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_DSG_DATA"
-    $config.dsg.dataserver.vmName = "DATA_DSG" + $config.dsg.id
+    $config.dsg.dataserver.vmName = "DATA-DSG" + $config.dsg.id
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
@@ -326,12 +326,12 @@ function Add-DsgConfig {
     }
     $config.dsg.linux.rg = "RG_DSG_LINUX"
     $config.dsg.linux.nsg = "NSG_Linux_Servers"
-    $config.dsg.linux.gitlab.vmName = "GITLAB_DSG" + $config.dsg.id
+    $config.dsg.linux.gitlab.vmName = "GITLAB-DSG" + $config.dsg.id
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
     $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
-    $config.dsg.linux.hackmd.vmName = "HACKMD_DSG" + $config.dsg.id
+    $config.dsg.linux.hackmd.vmName = "HACKMD-DSG" + $config.dsg.id
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
