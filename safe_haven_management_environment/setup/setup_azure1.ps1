@@ -138,19 +138,11 @@ if($notExists) {
   }
 }
 # Create file storage shares
-"scripts", "sqlserver" | ForEach-Object {
+"sqlserver" | ForEach-Object {
   $shareName = $_
   if(-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })){
     Write-Host " - Creating share '$shareName' in storage account '$storageAccountName'"
     $_ = New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
-  }
-}
-# Create directories in file share
-"dc", "nps" | ForEach-Object {
-  $dirName = $_
-  if(-not (Get-AzStorageFile -Context $storageAccount.Context -ShareName "scripts" | Where-Object { $_.Name -eq "$dirName" })){
-    Write-Host " - Creating directory '$dirName' in file share 'scripts' in storage account '$storageAccountName'"
-    $_ = New-AzStorageDirectory -Path $dirName -Context $storageAccount.Context -ShareName "scripts";
   }
 }
 
@@ -159,10 +151,6 @@ Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc2/CreateADBDC.zip" -Force
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/SHM_DC.zip" -Force
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
-
-Get-ChildItem -File "$PSScriptRoot/../scripts/dc/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "dc/" -Context $storageAccount.Context -Force
-Get-ChildItem -File "$PSScriptRoot/../scripts/nps/" -Recurse | Set-AzStorageFileContent -ShareName "scripts" -Path "nps/" -Context $storageAccount.Context -Force
-
 
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
