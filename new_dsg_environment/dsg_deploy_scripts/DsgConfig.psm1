@@ -112,7 +112,8 @@ function Get-ShmFullConfig{
     $shm.keyVault.secretNames.dcSafemodePassword='shm-dc-safemode-password'
     $shm.keyVault.secretNames.adsyncPassword='shm-adsync-password'
     $shm.keyVault.secretNames.vpnCaCertificate='shm-vpn-ca-cert'
-    $shm.keyVault.secretNames.vpnClientCertPassword='shm-vpn-client-cert-pwd'
+    $shm.keyVault.secretNames.vpnClientCertificate='shm-vpn-client-cert'
+    $shm.keyVault.secretNames.vpnClientCertPassword='shm-vpn-client-cert-password'
 
     # --- DNS config ---
     $shm.dns = [ordered]@{}
