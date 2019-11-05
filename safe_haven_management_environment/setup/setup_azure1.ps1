@@ -207,7 +207,8 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -DC1_Host_Name $config.dc.hostname `
         -DC2_Host_Name $config.dcb.hostname `
         -DC1_IP_Address $config.dc.ip `
-        -DC2_IP_Address $config.dcb.ip; 
+        -DC2_IP_Address $config.dcb.ip `
+        -Verbose; 
 
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

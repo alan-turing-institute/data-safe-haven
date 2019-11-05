@@ -43,6 +43,7 @@ function Get-ShmFullConfig{
     }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
+    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers," + $shm.domain.dn
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
     $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
     $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
@@ -94,6 +95,7 @@ function Get-ShmFullConfig{
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
     $shm.nps.vmName = "NPS-SHM-" + $shm.id
+    $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --

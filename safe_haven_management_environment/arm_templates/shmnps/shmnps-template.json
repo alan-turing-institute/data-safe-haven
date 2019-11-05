@@ -2,77 +2,56 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "VM Size": {
-            "type": "string",
-            "defaultValue": "Standard_D2s_v3",
-            "allowedValues": [
-                "Standard_F4s_v2",
-                "Standard_DS2_v2",
-                "Standard_D2s_v3"                
-            ],
-            "metadata": {
-                "description": "Select size of VM"
-                }
-            },
-            "Administrator_User": {
-                "type": "string",
-                "metadata": {
-                    "description": "Enter name for VM Administrator"
-                }    
-            },
-            "Administrator_Password": {
-                "type": "securestring",
-                "metadata": {
-                    "description": "Enter name for VM Administrator_Password"
-                }    
-            },
-            "Virtual Network Name": {
-                "type": "string",
-                "defaultValue": "SHM_VNET1",
-                "metadata": {
-                    "description": "Enter name of virtual network to provision these VMs"
-                }    
-            },
-            "Virtual_Network_Resource_Group": {
-                "type": "string",
-                "metadata": {
-                    "description": "Enter name of resource group that is assoicated with the virtual network above"
-                }    
-            },
-            "Virtual Network Subnet": {
-                "type": "string",
-                "defaultValue": "Subnet-Identity",
-                "metadata": {
-                    "description": "Enter name of subnet where you want to provision this VM"
-                }    
-            },
-            "Domain_Name": {
-                "type": "string",
-                "metadata": {
-                    "description": "Enter domain name"
-                }
-            }    
+        "VM_Size": {
+            "type": "string"
         },
+        "Administrator_User": {
+            "type": "string"
+        },
+        "Administrator_Password": {
+            "type": "securestring"
+        },
+        "Virtual_Network_Name": {
+            "type": "string",
+        },
+        "Virtual_Network_Resource_Group": {
+            "type": "string"
+        },
+        "Virtual_Network_Subnet": {
+            "type": "string"
+        },
+        "Domain_Name": {
+            "type": "string"
+        }, 
+        "NPS_VM_Name": {
+            "type": "string"
+        }, 
+        "NPS_Host_Name": {
+            "type": "string"
+        }, 
+        "NPS_IP_Address": {
+            "type": "string"
+        }, 
+        "OU_Path": {
+            "type": "string"
+        }           
+    },
     "variables": {
-        "npsname": "SHMNPS",
-        "npsnic": "[concat(variables('npsname'),'_','NIC1')]",
-        "npsipaddress": "10.251.0.248",
+        "npsnic": "[concat(parameters('NPS_VM_Name'),'_','NIC1')]",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
-        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
-        "oustring": "[replace(parameters('Domain_Name'),'.',',DC=')]",
-        "oupath": "[concat('OU=Safe Haven Service Servers,DC=', variables('oustring'))]"
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
        },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[variables('npsname')]",
+            "name": "[parameters('NPS_VM_Name')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM Size')]"
+                    "vmSize": "[parameters('VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -83,7 +62,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(variables('npsname'),'_OS_DISK')]",
+                        "name": "[concat(parameters('NPS_VM_Name'),'_OS_DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -95,7 +74,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(variables('npsname'), '_Data_Disk1')]",
+                            "name": "[concat(parameters('NPS_VM_Name'), '_Data_Disk1')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -107,7 +86,7 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[variables('npsname')]",
+                    "computerName": "[parameters('NPS_Host_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
                     "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
@@ -150,7 +129,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[variables('npsipaddress')]",
+                            "privateIPAddress": "[parameters('NPS_IP_Address')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -207,7 +186,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('npsname'), '/', 'bginfo')]",
+            "name": "[concat(parameters('NPS_VM_Name'), '/', 'bginfo')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -218,17 +197,17 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('npsname'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('NPS_VM_Name'))]"
             ]
         },
         {
             "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('npsname'),'/joindomain')]",
+            "name": "[concat(parameters('NPS_VM_Name'),'/joindomain')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('npsname'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('npsname'),'bginfo')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('NPS_VM_Name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('NPS_VM_Name'),'bginfo')]"
             ],
             "properties": {
               "publisher": "Microsoft.Compute",
@@ -237,7 +216,7 @@
               "autoUpgradeMinorVersion": true,
               "settings": {
                 "Name": "[parameters('Domain_Name')]",
-                "OUPath": "[variables('oupath')]",
+                "OUPath": "[parameters('OU_Path')]",
                 "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
                 "Restart": "true",
                 "Options": "3"
