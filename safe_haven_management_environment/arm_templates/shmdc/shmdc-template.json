@@ -2,13 +2,8 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "VM Size": {
+        "VM_Size": {
         "type": "string",
-        "defaultValue": "Standard_DS2_v2",
-        "allowedValues": [
-            "Standard_F4s_v2",
-            "Standard_DS2_v2"                
-        ],
         "metadata": {
             "description": "Select size of VM"
             }
@@ -31,9 +26,8 @@
                 "description": "Enter SafeMode_Password"
             }    
         },
-        "Virtual Network Name": {
+        "Virtual_Network_Name": {
             "type": "string",
-            "defaultValue": "SHM_VNET1",
             "metadata": {
                 "description": "Enter name of virtual network to provision these VMs"
             }    
@@ -44,9 +38,8 @@
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
             }    
         },
-        "Virtual Network Subnet": {
+        "Virtual_Network_Subnet": {
             "type": "string",
-            "defaultValue": "Subnet-Identity",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
             }    
@@ -74,19 +67,33 @@
             "metadata": {
                 "Description": "Enter the correct NetBIOS name"
             }
+        },
+        "DC1_VM_Name":{
+            "type": "string"
+        },
+        "DC2_VM_Name":{
+            "type": "string"
+        },
+        "DC1_Host_Name":{
+            "type": "string"
+        },
+        "DC2_Host_Name":{
+            "type": "string"
+        },
+        "DC1_IP_Address":{
+            "type": "string"
+        },
+        "DC2_IP_Address":{
+            "type": "string"
         }
     },
     "variables": {
-        "dc1name": "SHMDC1",
-        "dc2name": "SHMDC2",
-        "dc1nic": "[concat(variables('dc1name'),'_','NIC1')]",
-        "dc2nic": "[concat(variables('dc2name'),'_','NIC1')]",
-        "dc1ipaddress": "10.251.0.250",
-        "dc2ipaddress": "10.251.0.249",
+        "dc1nic": "[concat(parameters('DC1_VM_Name'),'_','NIC1')]",
+        "dc2nic": "[concat(parameters('DC2_VM_Name'),'_','NIC1')]",
         "avsetname": "AVSET_SHM_VM_DC",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
-        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
     "resources": [
         {
@@ -105,7 +112,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[variables('dc1name')]",
+            "name": "[parameters('DC1_VM_Name')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -114,7 +121,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM Size')]"
+                    "vmSize": "[parameters('VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -125,7 +132,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(variables('dc1name'),'_OS_Disk')]",
+                        "name": "[concat(parameters('DC1_VM_Name'),'_OS_Disk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -137,7 +144,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(variables('dc1name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('DC1_VM_Name'),'_Data_Disk1')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -149,7 +156,7 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[variables('dc1name')]",
+                    "computerName": "[parameters('DC1_Host_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
                     "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
@@ -183,11 +190,11 @@
             "resources": [
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(variables('dc1name'), '/CreateADForest')]",
+                    "name": "[concat(parameters('DC1_VM_Name'), '/CreateADForest')]",
                     "apiVersion": "2019-03-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', variables('dc1name'))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC1_VM_Name'))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -234,7 +241,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[variables('dc1ipaddress')]",
+                            "privateIPAddress": "[parameters('DC1_IP_Address')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -257,7 +264,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('dc1name'), '/', 'bginfo')]",
+            "name": "[concat(parameters('DC1_VM_Name'), '/', 'bginfo')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -268,12 +275,12 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('dc1name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC1_VM_Name'))]"
             ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[variables('dc2name')]",
+            "name": "[parameters('DC2_VM_Name')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -282,7 +289,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]"
                 },
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM Size')]"
+                    "vmSize": "[parameters('VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -293,7 +300,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(variables('dc2name'),'_OS_Disk')]",
+                        "name": "[concat(parameters('DC2_VM_Name'),'_OS_Disk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -305,7 +312,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(variables('dc2name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('DC2_VM_Name'),'_Data_Disk1')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -317,7 +324,7 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[variables('dc2name')]",
+                    "computerName": "[parameters('DC2_Host_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
                     "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
@@ -351,12 +358,12 @@
             "resources": [
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat(variables('dc2name'), '/CreateADBDC')]",
+                    "name": "[concat(parameters('DC2_VM_Name'), '/CreateADBDC')]",
                     "apiVersion": "2019-03-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', variables('dc2name'))]",
-                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('dc1name'), 'CreateADForest')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]",
+                        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('DC1_VM_Name'), 'CreateADForest')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -372,7 +379,7 @@
                             },
                             "configurationArguments": {
                                 "DomainName": "[parameters('Domain_Name')]",
-                                "DNSServer": "[variables('dc1ipaddress')]"
+                                "DNSServer": "[parameters('DC1_IP_Address')]"
                             }
                         },
                         "protectedSettings": {
@@ -403,7 +410,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[variables('dc2ipaddress')]",
+                            "privateIPAddress": "[parameters('DC2_IP_Address')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -426,7 +433,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('dc2name'), '/', 'bginfo')]",
+            "name": "[concat(parameters('DC2_VM_Name'), '/', 'bginfo')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -437,7 +444,7 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('dc2name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]"
             ]
         },
         {

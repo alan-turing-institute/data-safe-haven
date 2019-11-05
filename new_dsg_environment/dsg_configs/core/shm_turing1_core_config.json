@@ -1,0 +1,17 @@
+{
+    "subscriptionName": "Turing Safe Haven Management",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
+    "domain": "turingsafehaven.ac.uk",
+    "netbiosName": "TURINGSAFEHAVEN",
+    "shmId": "turing1",
+    "name": "Turng Safe Haven",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "ipPrefix": "10.0.0"
+}

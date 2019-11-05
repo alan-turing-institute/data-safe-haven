@@ -14,7 +14,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Get P2S Root certificate for VNet Gateway
-$cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.p2sRootCert -VaultName $config.shm.keyVault.name).SecretValue
+$cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.vpnCaCertificatePlain -VaultName $config.shm.keyVault.name).SecretValue
 
 $vnetCreateParams = @{
  "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -23,7 +23,11 @@ $vnetCreateParams = @{
  "Subnet-Identity Address Prefix" = $config.dsg.network.subnets.identity.cidr
  "Subnet-RDS Address Prefix" = $config.dsg.network.subnets.rds.cidr 
  "Subnet-Data Address Prefix" = $config.dsg.network.subnets.data.cidr 
- "Subnet-Gateway Address Prefix" = $config.dsg.network.subnets.gateway.cidr
+ "GatewaySubnet Address Prefix" = $config.dsg.network.subnets.gateway.cidr
+ "Subnet-Identity Name" = $config.dsg.network.subnets.identity.name
+ "Subnet-RDS Name" = $config.dsg.network.subnets.rds.name 
+ "Subnet-Data Name" = $config.dsg.network.subnets.data.name 
+ "GatewaySubnet Name" = $config.dsg.network.subnets.gateway.name
  "DNS Server IP Address" =  $config.dsg.dc.ip
 }
 

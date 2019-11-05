@@ -28,10 +28,11 @@ function Get-ShmFullConfig{
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
-    $shm.id = $shmConfigBase.shId
+    $shm.id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
+    $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
 
     # --- Domain config ---
     $shm.domain = [ordered]@{}
@@ -42,6 +43,7 @@ function Get-ShmFullConfig{
     }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.replace('.',',DC='))
+    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers," + $shm.domain.dn
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
     $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
     $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
@@ -57,50 +59,66 @@ function Get-ShmFullConfig{
         vnet = [ordered]@{}
         subnets = [ordered]@{}
     }
-    $shm.network.vnet.rg = $shmConfigBase.vnetRgName # TODO: When SHM deployment automated, make this: "RG_DSG_VNET"
-    $shm.network.vnet.name = $shmConfigBase.vnetName # TODO: When SHM deployment automated, make this "DSG_" + $shm.domain.netbiosName + "_VNET1"
+    $shm.network.vnet.rg = "RG_SHM_VNET"
+    $shm.network.vnet.name =  "VNET_SHM_" + $shm.id
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
+    $shm.network.subnets.identity.name = "Subnet-Identity"
     $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
+    
+    $shm.network.subnets.web = [ordered]@{}
+    $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 1)
+    $shm.network.subnets.web.name = "Subnet-Web"
+    $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
+
+    $shm.network.subnets.gateway = [ordered]@{}
+    $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 7)
+    $shm.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
-    $shm.dc.rg = $shmConfigBase.dcRgName # TODO: When SHM deploy automated, make this "RG_DSG_DC"
-    $shm.dc.vmName = $shmConfigBase.dcVmName # When SHM deploy automated, make this "SHMDC1"
-    $shm.dc.hostname = $shmConfigBase.dcHostname
+    $shm.dc.rg = "RG_SHM_DC"
+    $shm.dc.vmName = "DC1-SHM-" + $shm.id
+    $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "SHMDC2"
+    $shm.dcb.vmName = "DC2-SHM-" + $shm.id
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
 
     # --- NPS config ---
     $shm.nps = [ordered]@{}
-    $shm.nps.rg = $shmConfigBase.npsRgName
-    $shm.nps.vmName = $shmConfigBase.npsVmName
-    $shm.nps.ip = $shm.network.subnets.identity.prefix + "." + $shmConfigBase.npsIpLastOctet
+    $shm.nps.rg = "RG_SHM_NPS"
+    $shm.nps.vmName = "NPS-SHM-" + $shm.id
+    $shm.nps.hostname = $shm.nps.vmName
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
     $shm.storage.artifacts.rg = "RG_SHM_ARTIFACTS"
-    $shm.storage.artifacts.accountName = $shmConfigBase.artifactStorageAccount # When SHM deploy is automated use: "dsgartifacts" + $shm.id
+    $shm.storage.artifacts.accountName = "shm" + $shm.id + "artifacts"
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.rg = "RG_SHM_SECRETS"
-    $shm.keyVault.name = $shmConfigBase.keyVaultName
+    $shm.keyVault.name = "kv-shm-" + $shm.id
     $shm.keyVault.secretNames = [ordered]@{}
-    $shm.keyVault.secretNames.p2sRootCert= "sh-management-p2s-root-cert"
-    $shm.keyVault.secretNames.dc='sh-managment-dcadmin'
-    $shm.keyVault.secretNames.safemode='sh-managment-dcsafemode'
-    $shm.keyVault.secretNames.adsync='sh-managment-adsync'
-    $shm.keyVault.secretNames.vpncertificate='sh-managment-cert'
+    $shm.keyVault.secretNames.dcAdminUsername='shm-dc-admin-username'
+    $shm.keyVault.secretNames.dcAdminPassword='shm-dc-admin-password'
+    $shm.keyVault.secretNames.dcSafemodePassword='shm-dc-safemode-password'
+    $shm.keyVault.secretNames.adsyncPassword='shm-adsync-password'
+    $shm.keyVault.secretNames.vpnCaCertificate='shm-vpn-ca-cert'
+    $shm.keyVault.secretNames.vpnCaCertPassword='shm-vpn-ca-cert-password'
+    $shm.keyVault.secretNames.vpnCaCertificatePlain='shm-vpn-ca-cert-plain'
+    $shm.keyVault.secretNames.vpnClientCertificate='shm-vpn-client-cert'
+    $shm.keyVault.secretNames.vpnClientCertPassword='shm-vpn-client-cert-password'
 
     # --- DNS config ---
     $shm.dns = [ordered]@{}
@@ -203,7 +221,7 @@ function Add-DsgConfig {
         }
     }
     $config.dsg.network.vnet.rg = "RG_DSG_VNET"
-    $config.dsg.network.vnet.name = "DSG_" + $config.dsg.domain.netbiosName + "_VNET1"
+    $config.dsg.network.vnet.name = "VNET_DSG" + $config.dsg.id
     $config.dsg.network.vnet.cidr = $dsgBasePrefix + "." + $dsgThirdOctet + ".0/21"
     $config.dsg.network.subnets.identity.name = "Subnet-Identity"
     $config.dsg.network.subnets.identity.prefix =  $dsgBasePrefix + "." + $dsgThirdOctet
@@ -214,6 +232,7 @@ function Add-DsgConfig {
     $config.dsg.network.subnets.data.name = "Subnet-Data"
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
     $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
+    $config.dsg.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
     $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
@@ -228,19 +247,19 @@ function Add-DsgConfig {
 
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
-        name = "dsg-management-" + $config.shm.id # TODO: Once all scripts driven by this config make separate KeyVault per DSG
+        name = "kv-" + $config.shm.id + "-dsg" + $config.dsg.id
     }
 
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_DSG_DC"
-    $config.dsg.dc.vmName = "DSG" + $config.dsg.id + "DC" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DC"
+    $config.dsg.dc.vmName = "DC-DSG" + $config.dsg.id
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
     $config.dsg.dc.admin = [ordered]@{
-        username = "atiadmin"
-        passwordSecretName = "dsg" + $config.dsg.id + "-dc-admin-password" # TODO: Current format targeted at using shm keyvault. Update if this changes.
+        usernameSecretName = "dsg" + $config.dsg.id + "-dc-admin-username"
+        passwordSecretName = "dsg" + $config.dsg.id + "-dc-admin-password"
     }
 
     # --- Domain users ---
@@ -281,16 +300,16 @@ function Add-DsgConfig {
     $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
-    $config.dsg.rds.gateway.vmName = "RDS" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDS"
+    $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.gateway.npsSecretName = "dsg$($config.dsg.id)-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "RDSSH1" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH1"
+    $config.dsg.rds.sessionHost1.vmName = "RDSSH1-DSG" + $config.dsg.id
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "RDSSH2" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_RDSSH2"
+    $config.dsg.rds.sessionHost2.vmName = "RDSSH2-DSG" + $config.dsg.id
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
@@ -300,7 +319,7 @@ function Add-DsgConfig {
     # Data server
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_DSG_DATA"
-    $config.dsg.dataserver.vmName = "DATASERVER" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_DATASERVER"
+    $config.dsg.dataserver.vmName = "DATA-DSG" + $config.dsg.id
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
@@ -312,12 +331,12 @@ function Add-DsgConfig {
     }
     $config.dsg.linux.rg = "RG_DSG_LINUX"
     $config.dsg.linux.nsg = "NSG_Linux_Servers"
-    $config.dsg.linux.gitlab.vmName = "GITLAB" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_GITLAB"
+    $config.dsg.linux.gitlab.vmName = "GITLAB-DSG" + $config.dsg.id
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
     $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
-    $config.dsg.linux.hackmd.vmName = "HACKMD" # TODO: Once all scripts driven by this config, change to: $config.dsg.domain.netbiosName + "_HACKMD"
+    $config.dsg.linux.hackmd.vmName = "HACKMD-DSG" + $config.dsg.id
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
@@ -330,8 +349,8 @@ function Add-DsgConfig {
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
     $config.dsg.dsvm.admin = [ordered]@{
-        username = "atiadmin"
-        passwordSecretName = "dsgroup" + $config.dsg.id + "-dsvm-admin-password" # TODO: Current format targeted at using shm keyvault. Update if this changes.
+        username = "dsgadmin"
+        passwordSecretName = "dsg" + $config.dsg.id + "-dsvm-admin-password"
     }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
