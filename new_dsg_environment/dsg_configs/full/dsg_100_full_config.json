@@ -10,6 +10,7 @@
       "countryCode": "GB"
     },
     "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
       "fqdn": "turingsafehaven.ac.uk",
       "netbiosName": "TURINGSAFEHAVEN",

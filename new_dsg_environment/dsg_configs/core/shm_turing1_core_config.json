@@ -1,5 +1,6 @@
 {
     "subscriptionName": "Turing Safe Haven Management",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
     "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",
     "netbiosName": "TURINGSAFEHAVEN",

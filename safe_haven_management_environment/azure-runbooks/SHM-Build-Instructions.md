@@ -104,20 +104,6 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 4. Run `./setup_azure0.ps1` entering the `shmId`, defined in the config file, when prompted
 
 
-### Set KeyVault access policies
-
-- Once the KeyVault deployment script exits successfully, follow the instructions to add a policy to the KeyVault so that you are able to manage secrets.
-    - Navigate to the "RG_DSG_SECRETS" resource group in the management subscription in the Azure portal and click on the KeyVault shown there
-    - Click on "Access Policies" in the "Settings" section of the left-hand menu and click "+Add Access Policy".
-    - In the "Configure from template" drop-down, select "Key, Secret & Certificate Management"
-    - In the "Select Principal" section, select the security group that will administer this Safe haven instance
-        - For Turing test SHMs this should be: `Safe Haven Test Admins`
-        - For Turing production SHMs this should be: `Safe Haven Production Admins`
-        - For non-turing Safe Haven instances, this should be the security group that will administer that instance.
-    - Click the "Add" button.
-    - If there was already an existing access policy for your user, delete it. You should be part of the administrator security group and access to all resources should be managed by secirity group rather than individual users.
-    - Click the "Save" icon on the next screen
-
 ### Add additional administrators
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
 
