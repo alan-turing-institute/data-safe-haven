@@ -16,6 +16,7 @@
 
 ### Docker desktop
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Docker is used to generate certificates.
+- If running on Linux, ensure that both `docker.io` and `docker-compose` are installed.
 
 ## 0. Setup Azure Active Directory (AAD) with P1 Licenses
 
