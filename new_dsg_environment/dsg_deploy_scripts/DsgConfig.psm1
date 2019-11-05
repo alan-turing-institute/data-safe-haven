@@ -32,6 +32,7 @@ function Get-ShmFullConfig{
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
+    $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
 
     # --- Domain config ---
     $shm.domain = [ordered]@{}
