@@ -37,8 +37,8 @@ if ($null -eq $dcSafemodePassword) {
   $dcSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcSafemodePassword ).SecretValueText
 }
 
-$vpnClientCertificate = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
-$vpnCaCertificate = Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate 
+$vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).SecretValueText
+$vpnCaCertificate = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
 if($vpnClientCertificate -And $vpnCaCertificate){
   Write-Host "Both CA and Client certificates already exist in KeyVault. Skipping certificate creation."
 } else {
