@@ -223,8 +223,11 @@ It is at Tier 4 that the risk of hostile actors penetrating the project team bec
 All data at the UK government SECRET classification will be Tier 4.
 
 
-Connections to the Environment
+Connections to and from the Environment
 -------------------------------------
+
+At lower tiers direct inbound connections to resources within the Environment may be permitted.
+At higher tiers inbound connections are only permitted via a secure access node (e.g. Microsoft Remote Desktop Services).
 
 A remote desktop connection allowing access to graphical interface applications should be provided to allow researchers to connect to the remote secure analysis Environment. At all but the lowest tiers, this requires two-factor authentication, and, at some tiers, the copy paste function is disabled.
 
@@ -236,9 +239,13 @@ The text-based access this grants is sufficient for some professional data scien
 
 At some tiers, specific commands commonly used for copying out data can therefore be blocked for users.
 
-In neither case is the user absolutely prevented from copying out to the device used to access the Environment (with remote desktop software, malicious users can script automated screen-grabs). However, this can be made difficult in order to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the Environment from user devices permanently located within a secure physical Environment.
+In neither case is the user absolutely prevented from copying out to the device used to access the Environment (with remote desktop software, malicious users can script automated screen-grabs).
+However, this can be made difficult in order to deter casual workaround risk, and, at the highest tiers, prevented by only permitting access to the Environment from user devices permanently located within a secure physical Environment.
 
 We therefore believe it will be possible to make secure shell access just as secure as remote desktop access, but this remains a work in progress.
+
+At lower tiers outbound connections from the Environment to the internet and other external resources are permitted.
+At higher tiers connections to resources outside the Environment's private network are not permitted.
 
 The classification process
 --------------------------
