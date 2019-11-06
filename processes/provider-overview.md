@@ -306,7 +306,11 @@ The policies defined here minimise the number of people who have access to restr
 
 Datasets must only be transferred from the Dataset Provider to the Turing after an initial classification has been completed and the data sharing agreement executed.
 
-All data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location. Prior to access to the ingress volume being provided, the Dataset Provider Representative must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent. Once these details have been received, the Turing will open the data ingress volume for upload of data.
+For lower tiers, where the Environment is accessible from the internet, standard secure data transfer mechanisms such as secure copy (SCP) and secure file transfer protocol (SFTP) may be used.
+
+For higher tiers, all data transfer to the Turing should be via our secure data transfer process, which provides the Dataset Provider time-limited, write-only access to a dedicated data ingress volume from a specific location.
+Prior to access to the ingress volume being provided, the Dataset Provider Representative must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
+Once these details have been received, the Turing will open the data ingress volume for upload of data.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
 
@@ -324,7 +328,9 @@ To further minimise the risk of unauthorised access to the dataset during the up
 
   - After their dataset has been transferred, the Dataset Provider should immediately indicate that the transfer is complete. In doing so, they lose access to the data volume.
 
-When a work package is fully classified, data will either be ingressed from the initial Tier 3 Environment to a new Environment, or will stay in the original Tier 3 Environment, depending on sensitivity. The web management workflows should ensure that all parties have reached consensus on the classification tier at this stage before allowing analysis to begin.
+If consensus on data classification cannot be made from metadata, an initial conservative classification may be made to permit the data to be ingressed into a higher tier environment.
+If the final classification of a work package is lower than the initial classification, the data may be egressed from this higher tier environment Environment to a new Environment matching the final classification tier.
+The web management workflows should ensure that all parties have reached consensus on the classification tier at this stage before allowing analysis to begin.
 
 Software library distributions
 ------------------------------
