@@ -269,11 +269,17 @@ We recommend that, whenever data egress is conducted with the intent of establis
 In all cases, classification of a work package at the point of egress should be done with all parties fully aware of the analytical processes which created the derived data from the initial work package. These processes should be well documented and ideally fully reproducible (e.g. as code that can be run to regenerate the exact output data from the input data).
 
 The initial classification of a work package may be for the purpose of ingress into an initial high-tier environment to carry out anonymisation, pseudonymisation or synthetic data generation work, with the intention of making the data appropriate for treatment in a lower-tier Environment. In this case, the egress review should include validation that the anonymised, pseudonymised or synthetic data undergoes its own classification process for analysis that will be performed in the "downstream" work package. This should include a review of the anonymisation, pseudonymisation or synthetic data generation process, including all associated code.
+
 Data sharing agreement
 ----------------------------------------------------------------
-This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice, and should be signed before a dataset is ingressed to the initial Tier 3 environment. Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must  specify the legal basis under which the Dataset Provider is permitted to share this data with the Turing. This agreement should include any specific commitments required from Researchers working with the dataset. The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required. 
+This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice, and should be signed after the initial classification of a work package but before a dataset is received by the Turing.
+Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must  specify the legal basis under which the Dataset Provider is permitted to share this data with the Turing.
+This agreement should include any specific commitments required from Researchers working with the dataset.
+The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required. 
 
-After the full classification process is carried out, the agreement may need to be updated. We recommend that the wording of the initial agreement is such that it enables research at the tier anticipated by the Dataset Provider, or worded flexibly enough that changes after the initial classification are minimal.
+The classification tier may potentially be raised from that agreed prior to data ingress, once the Investigator and Referee have had a chance to view the actual data.
+The classification tier for later work packages in a project may also be higher than that for the original work package, depending on the planned analysis and any additional data required.
+We therefore recommend that the data sharing agreement is worded to permit this.
 
 User lifecycle
 ---------------
