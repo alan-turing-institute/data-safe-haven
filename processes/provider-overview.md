@@ -424,8 +424,10 @@ Access to a particular Environment may be permitted from multiple Restricted net
 This can permit users from multiple organisations to access an Environment, as well permitting users to access the Environment while away from their home institution at another partner institution.
 However, remote access to a Restricted network (for example via VPN) is not permitted.
 
-Firewall rules for the Environments restrict access to network IP ranges corresponding to these Institutional and Restricted networks.
-Note that these restrictions on networks that can access Environments relate to inbound connectivity only. Separate controls determine whether outbound connections can be made from an Environment and whether inbound connections are permitted directly to resources within the Environment or must be made via a secure access node.
+At higher tiers Environment firewall rules permit access only from network IP ranges corresponding to specific Institutional and Restricted networks approved for the Environment.
+Note that these restrictions on networks that can access Environments relate to inbound connectivity only.
+Separate controls determine whether outbound connections can be made from an Environment and whether inbound connections are permitted directly to resources within the Environment or must be made via a secure access node.
+In addition to these netwrok level restrictions, users must additionally authenticate to the Environment in order to access it.
 
 Physical security
 -----------------
