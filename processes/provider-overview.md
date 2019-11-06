@@ -185,6 +185,13 @@ Tier 2 Environments are also used to handle, combine or generate information whi
 
 At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised, when in fact re-identification might be possible.
 
+#### Relationships to other classification schemes
+
+Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification.
+
+All [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are absolutely confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
+
+
 ### Tier 3
 
 Tier 3 Environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be Tier 4).
@@ -197,6 +204,12 @@ The difference between Tier 2 and Tier 3 Environments is the most significant in
 
 At Tier 3, the risk of hostile actors attempting to break into the Environment becomes significant.
 
+#### Relationships to other classification schemes
+
+All data at the UK government OFFICIAL-SENSTIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
+
+All [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
+
 ### Tier 4
 
 Tier 4 Environments are used to handle, combine or generate personal data where disclosure poses a substantial threat to the personal safety, health or security of the data subjects.
@@ -204,6 +217,11 @@ Tier 4 Environments are used to handle, combine or generate personal data where 
 This also includes handling, combining or generating datasets which are sensitive in commercial or national security terms, and are likely to be subject to attack by sophisticated, well-resourced and determined actors, such as serious organised crime groups and state actors.
 
 It is at Tier 4 that the risk of hostile actors penetrating the project team becomes significant.
+
+#### Relationships to other classification schemes
+
+All data at the UK government SECRET classification will be Tier 4.
+
 
 Connections to the Environment
 -------------------------------------
