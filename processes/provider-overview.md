@@ -495,41 +495,54 @@ Software is ingressed in a similar manner as data, using a software ingress volu
 The choices
 ------------
 
-Having described the full model, processes, and lifecycles, we can now enumerate the list of choices that
-can be made for each Environment. These are all separately configurable on an environment-by-environment basis. However, we recommend the following at each tier.
+Having described the full model, processes, and lifecycles, we can now enumerate the list of choices that can be made for each Environment.
+These are all separately configurable on an environment-by-environment basis.
+However, we recommend the following at each tier.
 
-### Package mirrors
+### Software installation
 
-At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only white-listed software.
+At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only white-listed software packages.
 
-At Tier 2, package mirrors should include all software. 
+At Tier 2, package mirrors should include all software packages. 
 
-At Tier 1 and 0, installation should be from the original package server on the external internet.
+At Tier 2 and above, all software not available from a package mirror must be installed either at the time the analysis machine is first deployed or by ingressing the software installer as data, with an associated ingress review.
 
-### Inbound network
+At Tier 1 and 0, all software installation should be from the internet.
 
-At Tier 2 and above, the analysis machines themselves are not accessible directly. Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments.
 
-Tier 3 and above Environment access nodes are only available from approved Restricted networks.
+### Inbound connections
 
-Tier 2 Environment access nodes are only be accessible from approved Institutional networks.
+At Tier 2 and above, analysis machines and other Environment resources are not accessible directly from client devices.
+Instead, secure "access nodes" provide secure web-based remote desktop facilities used to indirectly access the analysis Environments (e.g. Microsoft Remote Desktop Services).
 
-Tier 1 and 0 Environments are accessible from the open internet.
+At Tier 1 and 0, analysis machines and other Environment resources are directly accessible from client devices.
 
-### Outbound network and internet access
+At Tier 3 and above Environment access nodes are only available from approved Restricted networks.
 
-At Tier 1 and 0 the internet is accessible from inside the Environment. At all other tiers the virtual network inside the Environment is completely isolated.
+At Tier 2 Environment access nodes are only be accessible from approved Institutional networks.
+
+At Tier 1 and 0 Environment resources are accessible from the open internet
+
+
+### Outbound connections
+
+At Tier 2 and above no connections are permitted from the Environment private network to the internet or other external resources.
+
+At Tier 1 and 0 the internet is accessible from inside the Environment.
 
 ### Data ingress
 
-For Tier 3 and above, the high-security data transfer process is required. Lower-security data transfer processes are allowed at Tier 2 and below.
+At Tier 2 and above, the high-security data transfer process is required (i.e. write only access from particular locations for a limited time).
+
+At Tier 1 and 0 the use of standard secure data transfer processes (e.g. SCP/SFTP) may be permitted.
 
 ### Data egress
+
+At Tier 3 and above, the Data Provider Representative, Investigator and Referee are all required to sign off all egress of data or code from the Environment.
+
+At Tier 2, only the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
+
 At Tier 1 and 0 users are permitted to copy out data when they believe their local device is secure, with the permission of the Investigator.
-
-At Tier 2 and above, the Investigator and Referee are required to review and approve all egress of data or code from the Environment.
-
-At Tier 3 and above, the Data Provider Representative is also required to sign off all egress of data or code from the Environment.
 
 ### Refereeing of classification
 
