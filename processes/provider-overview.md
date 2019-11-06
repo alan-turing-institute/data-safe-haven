@@ -458,21 +458,26 @@ Firewall rules for the higher tier Environments can permit access only from Rest
 Software ingress (software entering a secure Environment from an external source)
 ------------------------------------------------------------------------------
 
-The base data science virtual machine provided in the secure analysis Environments comes with a side range of common data science software pre-installed. Package mirrors also allow access to a wide range of libraries for the programming languages for which package mirrors are provided (currently Python and R).
+The base data science virtual machine provided in the secure analysis Environments comes with a wide range of common data science software pre-installed.
+Package mirrors also allow access to a wide range of libraries for the programming languages for which package mirrors are provided (currently Python and R).
 
-For other languages for which no package mirror is provided, or for software which is not available from a package repository, an alternative method of software ingress must be provided. This includes custom researcher-written code not available via the package mirrors (e.g. code available on a researcher's personal or institutional Github repositories).
+For other languages for which no package mirror is provided, or for software which is not available from a package repository, an alternative method of software ingress must be provided.
+This includes custom researcher-written code not available via the package mirrors (e.g. code available on a researcher's personal or institutional Github repositories).
 
-For Tier 0 and Tier 1 environments, the data science virtual machine has outbound access to the internet and software can be installed in the usual manner by either a normal user or an administrator as required.
+For lower tier environments, the data science virtual machine has outbound access to the internet and software can be installed in the usual manner by either a normal user or an administrator as required.
 
-For Tier 2 environments and above, the following software ingress options are available.
+For higher tier environments, the following software ingress options are available.
 
 ### Installation during virtual machine deployment
 
-Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software sucan be installed during deployment. In this case, software installation is performed while the virtual machine is outside of the Environment with outbound internet access available, but no access to any project data. Once the additional software has been installed, the virtual machine is ingressed to the Environment via a one-way airlock.
+Where requirements for additional software are known in advance of the data science virtual machine being deployed to a secure analysis Environment, the additional software sucan be installed during deployment.
+In this case, software installation is performed while the virtual machine is outside of the Environment with outbound internet access available, but no access to any project data.
+Once the additional software has been installed, the virtual machine is ingressed to the Environment via a one-way airlock.
 
 ### Installation after virtual machine deployment
 
-Once a virtual machine has been deployed into a secure analysis Environment, it cannot be moved outside of the Environment, as is has had access to the data in the Environment and therefore represents an unauthorised data egress risk. As Environments at Tier 2 and above do not have access to the internet, any additional software required must be brought into the Environment in order to be installed.
+Once a virtual machine has been deployed into a secure analysis Environment, it cannot be moved outside of the Environment, as is has had access to the data in the Environment and therefore represents an unauthorised data egress risk.
+As higher tier Environments do not have access to the internet, any additional software required must be brought into the Environment in order to be installed.
 
 Software is ingressed in a similar manner as data, using a software ingress volume:
 
@@ -484,7 +489,7 @@ Software is ingressed in a similar manner as data, using a software ingress volu
   
   - For software that does not require administrative rights to install, the Researcher can then install the software or transfer the source to a version control repository within the Environment as appropriate.
 
-  - For software that requires administrative rights to install, the a System Manager must run the installation process.
+  - For software that requires administrative rights to install, a System Manager must run the installation process.
 
 
 The choices
