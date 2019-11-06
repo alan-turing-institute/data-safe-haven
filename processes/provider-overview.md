@@ -433,7 +433,7 @@ Physical security
 -----------------
 
 Some data requires a physical security layer around not just the data centre,
-but the physical Environment users use to connect to it.
+but the physical space users are in when they connect to it.
 
 We distinguish three levels of physical security for research spaces:
 
@@ -443,7 +443,17 @@ We distinguish three levels of physical security for research spaces:
 
 Open research spaces include university libraries, cafes and common rooms.
 
-Medium security research spaces control the possibility of unauthorised viewing. Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required. Screen adaptations or desk partitions can be adopted in open-plan Environments if there is a high risk of "visual eavesdropping".
+Medium security research spaces control the possibility of unauthorised viewing.
+Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
+Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
+
+Secure research spaces control the possibility of the researcher deliberately removing data.
+Devices will be locked to appropriate desks, and neither enter nor leave the space.
+Mobile devices should be removed before entering, to block the 'photographic hole', where mobile phones are used to capture secure data from a screen.
+Only researchers associated with a secure project have access to such a space.
+
+Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
+
 
 Secure research spaces control the possibility of the researcher deliberately removing data. Devices will be locked to appropriate desks, and neither enter nor leave the space. Mobile devices should be removed before entering, to block the 'photographic hole', where mobile phones are used to capture secure data from a screen. Only researchers associated with a secure project have access to such a space.
 
