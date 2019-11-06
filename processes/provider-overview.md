@@ -243,19 +243,17 @@ We therefore believe it will be possible to make secure shell access just as sec
 The classification process
 --------------------------
 
-The Dataset Provider Representative and Investigator must agree on a classification for a work package. If the classification is likely to be Tier 2 or higher, they should also involve an independent Referee.
+The Dataset Provider Representative and Investigator must agree on a classification for a work package. If the classification is likely to be Tier 2 or higher, they should also involve an independent Referee. Prior to datasets being transfered to the Turing, only the Dataset Provider Representative will have access to the actual dataset(s). The Investigator (and Refereee if necessary) will need to make their classification judgements based on discussions with the Dataset Provider Representative, alongside a clear description of the dataset and associated metadata such as data dictionaries.
 
-Prior to datasets being transfered to the Turing, a preliminary classification should be made to determine whether the work package the dataset(s) will be part of might potentially be classified at Tier 4. Only the Dataset Provider Representative will have access to the actual dataset(s) at this point, so the Investigator (and Refereee if necessary) will need to make their preliminary classification judgements based on discussions with the Dataset Provider Representative, alongside a clear description of the dataset and associated metadata such as data dictionaries. If all preliminary classification are Tier 3 or below, the dataset(s) should initially be ingressed into a Tier 3 Environment to which the Investigator (and Refereee if necessary) has access, so that they can make a full classification based on complete information. If **any** party feels the data may be Tier 4 at the preliminary classification stage the project should be reconsidered.
+The Dataset Provider Representative, Investigator and Referee (if applicable) should independently classify the work package using the classification web application or classification flowchart. If the flowchart is used, the full path of decisions made should be recorded, not just the final outcome. If the web application is used, this is done automatically.
 
-Once the Investigator has access to the full dataset, they go through the full classification process using the flowchart provided. The Dataset Provider Representative (and Referee if necessary) should go through this flowchart separately and come up with their own classification.
+The project should only proceed if the Investigator, the Dataset Provider Representative, and the Referee (if applicable), can come to a consensus on a work package classification. If consensus cannot be reached, the work package should be reconsidered.
 
-The project should only proceed if the Investigator, the Dataset Provider Representative, and the Referee if applicable, can come to a consensus for which tier the dataset should be classified at. 
+The Turing does not currently have access to a Tier 4 Environment. Therefore, if the work package classification is Tier 4, it should be reconsidered.
 
-If consensus cannot be reached, the Investigator should seriously reconsider whether to proceed with the project.
+If the classification is Tier 3 or below, the dataset(s) should be ingressed into an Environment at that Tier to which the Investigator and Referee (if applicable) have access, so that they can verify the classification based on complete information. If at this point either the Investigator or Referee disagree with the original classification, the consensus seeking process between the Data Provider Representative, Investigator and Referee (if applicable) should be repeated. If consensus cannot be achieved the dataset(s) must be deleted from the Environment.
 
-Once the work package has been classified by all parties, and a consensus reached, a new environment is instantiated at the appropriate tier, unless it has been classified at Tier 3, in which case analysis can begin in the existing environment.
-
-If, at any point during the project, the research team decides to analyse the data differently or for a different purpose than previously agreed, this constitutes a new work package, and should be newly classified by repeating this process. This is also the case if the team wishes to ingress another dataset in combination, which will require Representatives from all Dataset Providers to arrive at the same consensus.
+If, at any point during the project, the research team decides to analyse the data differently or for a different purpose than previously agreed, this constitutes a new work package, and should be newly classified by repeating this process. This is also the case if the team wishes to ingress another dataset in combination, which will require Representatives from all Dataset Providers to arrive at the same consensus as the Investigator and Referee (if applicable).
 
 Data egress and new classification
 ----------------------------------------------------------------
