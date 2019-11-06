@@ -12,7 +12,7 @@
             "type": "securestring"
         },
         "Virtual_Network_Name": {
-            "type": "string",
+            "type": "string"
         },
         "Virtual_Network_Resource_Group": {
             "type": "string"
