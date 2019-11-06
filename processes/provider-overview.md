@@ -335,11 +335,16 @@ The web management workflows should ensure that all parties have reached consens
 Software library distributions
 ------------------------------
 
-Maintainers of shared research computing Environments face a difficult challenge in keeping research algorithm libraries and platforms up to date - and in many cases these conflict. While sophisticated tools to help with this exist, the use of single-project virtual Environments opens another possibility: downloading the software as needed for the project from package repositories (such as PyPI for Python or CRAN for R), which automate the process of installing and configuring programs. To achieve this in a secure Environment, without access to the external internet, requires maintenance of full or partial mirrors (exact copies) of package repositories inside the Environment.
+Maintainers of shared research computing environments face a difficult challenge in keeping research algorithm libraries and platforms up to date - and in many cases these conflict.
+While sophisticated tools to help with this exist, the use of independent virtual environments opens another possibility: downloading the software as needed from package repositories (such as PyPI for Python or CRAN for R), which automate the process of installing and configuring programs.
+
+For lower tiers, with access to the internet, required software packages can be installed directly from their canonical sources on the internet.
+For higher tiers, without access to the external internet, this requires maintenance of full or partial mirrors (exact copies) of package repositories inside the Environment.
 
 Use of package mirrors inside the Environment means that the set of default installed packages can be kept to a minimum, reducing the likelihood of encountering package-conflict problems (where a package can be prevented from being installed due to the presence of an existing package with the same name) and saving on System Manager time.
 
-At Tiers 3 and above we mirror only a subset of whitelisted packages (packages which are explicitly marked as safe). At other tiers we mirror the full package list but with a delay, during which the wider international research community will catch most malicious code on package mirrors.
+At the the highest tiers a subset of whitelisted packages (packages which are explicitly marked as safe) is maintained. This whitelist can be specific to the work package if required.
+At other tiers the full package list is mirrored, but with a short delato provide an opportunity for the wider community to catch any malicious code uploaded to the canonical package mirrors.
 
 Storage
 -------
