@@ -370,38 +370,6 @@ The Software volume is a read-only area which contains software used for analysi
 
 A Home volume is a smaller read-write volume used for local programming and configuration files. It should not be used for data analysis outputs, though this is enforced only in policy, not technically. Configuration files for software in the software volume point to the Home volume.
 
-User Devices
-------------
-
-What devices should researchers use to connect to the Environment?
-
-We define two types of devices: 
-
-* Managed devices
-* Open devices
-
-### Managed devices
-
-Managed devices do not have administrator/root access.
-
-Managed devices could be provided by the Turing, or one of the partner organisations for a work package.
-
-They have an extensive suite of research software installed.
-
-This includes the ability to install packages for standard programming environments without the need for administrator access.
-
-Researchers can compile and run executables they code in User Space (the portion of system memory in which user processes run).
-
-### Open Devices
-
-Staff researchers and students should be able to choose that an employer-supplied device should instead have an administrator/root account to which they do have access.
-
-These devices permit the easy use of a wider range of software than managed devices, as well as easier access to peripheral hardware.
-
-However, such devices are not able to access the highest tier Environments.
-
-They may include personal devices such as researcher-owned laptops.
-
 User device networks
 --------------------
 
@@ -454,10 +422,38 @@ Only researchers associated with a secure project have access to such a space.
 
 Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
 
+User Devices
+------------
 
-Secure research spaces control the possibility of the researcher deliberately removing data. Devices will be locked to appropriate desks, and neither enter nor leave the space. Mobile devices should be removed before entering, to block the 'photographic hole', where mobile phones are used to capture secure data from a screen. Only researchers associated with a secure project have access to such a space.
+What devices should researchers use to connect to the Environment?
 
-Firewall rules for the Environments must enforce Restricted network IP ranges corresponding to these research spaces.
+We define two types of devices: 
+
+* Managed devices
+* Open devices
+
+### Managed devices
+
+Managed devices are devices provided by a partner institution on which the user does not have administrator/root access, with the device instead administered by the institution's IT team.
+
+Managed devices could be provided by the Turing, or one of the partner organisations for a work package.
+
+They have an extensive suite of research software installed.
+
+This includes the ability to install packages for standard programming environments without the need for administrator access.
+
+Researchers can compile and run executables they code in User Space (the portion of system memory in which user processes run).
+
+### Open Devices
+
+These include personal devices such as researcher-owned laptops, but also include devices provided by a partner institution where the user has administrator/root access.
+
+These devices permit the easy use of a wider range of software than managed devices, as well as easier access to peripheral hardware.
+
+However, such devices should not be used to access the highest tier Environments.
+
+Firewall rules for the higher tier Environments can permit access only from Restricted network IP ranges that only permit managed devices to connect.
+
 
 Software ingress (software entering a secure Environment from an external source)
 ------------------------------------------------------------------------------
