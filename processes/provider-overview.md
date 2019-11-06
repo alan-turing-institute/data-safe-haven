@@ -377,11 +377,11 @@ We define two types of devices:
 
 Managed devices do not have administrator/root access.
 
-Managed devices could be provided by the Turing, or one of the partner research universities.
+Managed devices could be provided by the Turing, or one of the partner organisations for a work package.
 
 They have an extensive suite of research software installed.
 
-This includes the ability to install packages for standard programming Environments without the need for administrator access.
+This includes the ability to install packages for standard programming environments without the need for administrator access.
 
 Researchers can compile and run executables they code in User Space (the portion of system memory in which user processes run).
 
@@ -389,9 +389,9 @@ Researchers can compile and run executables they code in User Space (the portion
 
 Staff researchers and students should be able to choose that an employer-supplied device should instead have an administrator/root account to which they do have access.
 
-These devices are needed by researchers who work on a variety of bare-metal programming tasks (programming directly to hardware without an operating system).
+These devices permit the easy use of a wider range of software than managed devices, as well as easier access to peripheral hardware.
 
-However, such devices are not able to access higher tier Environments.
+However, such devices are not able to access the highest tier Environments.
 
 They may include personal devices such as researcher-owned laptops.
 
