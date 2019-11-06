@@ -67,7 +67,7 @@ The classification tier of a combination of work package(s) can never be lower t
 If the combined classification is higher than the tier associated with the existing Environment, a new Environment must be deployed.
 The classification tier of an Environment cannot be upgraded or downgraded "in place". 
 
-Depending on the classification assigned, an Environment may be instantiated on one of several supported Platforms. The Turing currently supports secure deployments to Microsoft's Azure cloud platform and to its own dedicated secure compute cluster.
+Depending on the classification assigned, an Environment may be instantiated on one of several supported Platforms. The Turing currently supports secure deployments to Microsoft's Azure cloud platform.
 
 ### Researcher
 
