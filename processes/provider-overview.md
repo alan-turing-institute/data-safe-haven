@@ -288,15 +288,15 @@ Users who wish to have access to the Environment first complete an online form c
 
 Projects are created in the management system by a Programme Manager, and an Investigator and Project Manager assigned.
 
-Programme Managers and Project Managers may add users to groups corresponding to specific research projects through the management framework.
+Programme Managers and Project Managers may add users to groups corresponding to specific projects or work packages through the management framework.
 
-The Project Manager has the authority to assign Referees and Data Provider Representatives to a project.
+The Project Manager has the authority to assign Referees and Data Provider Representatives to a project or work package.
 
 At some tiers, new Referees or members of the research team must also be approved by the Dataset Provider Representative.
 
-Before joining a project, Researchers, Investigators and Referees must agree to any additional commitments required by the project.
+Before joining a project or work package, Researchers, Investigators and Referees must agree to any additional commitments specific to that project or work package.
 
-Users are removed from a project promptly once their involvement with the project ends.
+Users are removed from a project or work package promptly once their involvement with it ends.
 
 
 Data ingress (data entering a secure Environment from an external source)
