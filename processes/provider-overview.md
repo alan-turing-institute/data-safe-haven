@@ -185,15 +185,13 @@ Tier 2 Environments are also used to handle, combine or generate information whi
 
 At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised, when in fact re-identification might be possible.
 
-Tier 2 corresponds to the government OFFICIAL classification.
-
 ### Tier 3
 
 Tier 3 Environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be Tier 4).
 
 This also includes pseudonymised or synthetic information generated from personal data, where we have only weak confidence in the quality of pseudonymisation.
 
-Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms. This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources. This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups. The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors. This tier corresponds to the governmental ‘OFFICIAL–SENSITIVE’ categorisation.
+Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms. This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources. This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups. The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
 
 The difference between Tier 2 and Tier 3 Environments is the most significant in this model, both for researcher productivity and organisational risk.
 
@@ -203,7 +201,7 @@ At Tier 3, the risk of hostile actors attempting to break into the Environment b
 
 Tier 4 Environments are used to handle, combine or generate personal data where disclosure poses a substantial threat to the personal safety, health or security of the data subjects.
 
-This also includes handling, combining or generating datasets which are sensitive in commercial or national security terms, and are likely to be subject to attack by sophisticated, well-resourced and determined actors, such as serious organised crime groups and state actors. This tier corresponds to the UK government "SECRET" categorisation.
+This also includes handling, combining or generating datasets which are sensitive in commercial or national security terms, and are likely to be subject to attack by sophisticated, well-resourced and determined actors, such as serious organised crime groups and state actors.
 
 It is at Tier 4 that the risk of hostile actors penetrating the project team becomes significant.
 
