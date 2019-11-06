@@ -401,19 +401,24 @@ User device networks
 Our network security model distinguishes three dedicated research networks for
 user devices.
 
-* The open internet (any network outside a research institution, such as in a researcher's home)
+* The open internet (any network outside a partner institution)
 * An Institutional network
 * A Restricted network
 
-An Institutional network corresponds to organisational guest network access (such as Eduroam). Access to Environments can be restricted such that access is only allowed by devices which are connected to an Institutional network, but it is assumed that the whole research community can access this network, though this access may be remote for authorised users (for example, via VPN).
+An Institutional network corresponds to a network managed by a partner institution.
+Guest access may be permitted on such networks (e.g. eduroam), but these guests should be known users.
+Access to Environments can be restricted such that access is only allowed by devices which are connected to a particular set of Institutional networks.
+However, it is assumed that a wide segment of the research community can access these networks.
+This access may also be remote for authorised users (for example, via VPN).
 
-A Restricted network may be linked between multiple institutions (such as partner research institutions), so that researchers travelling to collaborators' sites will be able to connect to Restricted networks, and thus to secure Environments, while away from their home institution.
+A Restricted network corresponds to a network managed by a partner institution that can support additional controls such as restricting access to a narrower set of users, devices or locations.
+Access to Environments can be restricted such that access is only allowed by devices which are connected to a particular set of Restricted networks.
+Access to a particular Environment may be permitted from multiple Restricted networks at multiple partner organisations.
+This can permit users from multiple organisations to access an Environment, as well permitting users to access the Environment while away from their home institution at another partner institution.
+However, remote access to a Restricted network (for example via VPN) is not permitted.
 
-Remote access to a Restricted network (for example via VPN) should not be possible.
-
-Firewall rules for the Environments enforce Restricted network IP ranges corresponding to these networks.
-
-Of course, Environments themselves should, at some tiers, be restricted from accessing anything outside an isolated network for that Environment.
+Firewall rules for the Environments restrict access to network IP ranges corresponding to these Institutional and Restricted networks.
+Note that these restrictions on networks that can access Environments relate to inbound connectivity only. Separate controls determine whether outbound connections can be made from an Environment and whether inbound connections are permitted directly to resources within the Environment or must be made via a secure access node.
 
 Physical security
 -----------------
