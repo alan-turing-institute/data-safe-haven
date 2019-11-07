@@ -1,5 +1,3 @@
-Interim Ingress Process, to be used pending the web application automation being ready.
-
 # Data Ingress to the Turing Data Safe Haven 
 
  
@@ -58,7 +56,7 @@ When we receive the IP address, we will send the person responsible for the data
 2. Then on the left hand side click on socket image  
 
  
-![](https://github.com/alan-turing-institute/data-safe-haven/blob/master/images/Azurestorageexplorer1.png)
+![](provider-data-ingress-images/Azurestorageexplorer1.png)
  
 
 3. This will open up a prompt box asking how you want to connect. Please select “Use a shared access signature URI” click next and enter the address from the secure email 
@@ -67,7 +65,7 @@ When we receive the IP address, we will send the person responsible for the data
 
  
 
-![](https://github.com/alan-turing-institute/data-safe-haven/blob/master/images/Azurestorageexplorer2.png)
+![](provider-data-ingress-images/Azurestorageexplorer2.png)
 
 4. Then click connect 
 
