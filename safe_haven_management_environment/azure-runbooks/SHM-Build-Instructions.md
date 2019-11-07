@@ -205,22 +205,22 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
    ![](images/blobstorage.png)
 
-2. On your local machine download the following and place into a folder called `rdssh1-app-server`, renaming them so that the filenames include the full version if the downloaded files do not already.
+2. On your local machine download the following and place into a folder called `rdssh1-app-server`.
 
-    - [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
-    - [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-    - [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
+    - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
+    - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+    - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
 
 3. Upload the folder to the `rdssh-packages`, ensuring it has the same name. The container will now look like this:
    ![](images/rdssh1-app-server.png)
 
 4. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
-   - [Chrome Enterprise 64 bit The GoogleChromeStandaloneEnterprise64-v.75.0.3770.100.msi file; unpack zip to find it](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en)
-   - [Putty 64bit - windows .msi](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-   - [WinSCP](https://winscp.net/download/WinSCP-5.15.2-Setup.exe)
-
-   - [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html)
-   - [Texlive: install-tl-windows-20190429.exe](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe)
+    - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
+    - `install-tl-windows-<date>.exe` taking the [latex TexLive version from here](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe), appending the creation date.
+    - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
+    - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+    - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
+    <!-- - [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html) -->
 
 5. The container will now look like this:
    ![](images/rdshh2-virtual-desktop-server.png)
@@ -258,7 +258,7 @@ You should now be able to connect to the SHM virtual network. Each time you need
 
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 
-5. Double click on the desktop that appears under `saved desktops`. 
+5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel. The username is in the `shm-dc-admin-username` secret and the password in the  `shm-dc-admin-password` secret.
 
 ### Active Directory Configuration
