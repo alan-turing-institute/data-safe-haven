@@ -60,16 +60,16 @@ function Get-ShmFullConfig{
         subnets = [ordered]@{}
     }
     $shm.network.vnet.rg = "RG_SHM_VNET"
-    $shm.network.vnet.name =  "VNET_SHM_" + $shm.id
+    $shm.network.vnet.name =  "VNET_SHM_" + "$($shm.id)".ToUpper()
     $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
     $shm.network.subnets.identity = [ordered]@{}
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
-    $shm.network.subnets.identity.name = "Subnet-Identity"
+    $shm.network.subnets.identity.name = "IdentitySubnet"
     $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
-    
+
     $shm.network.subnets.web = [ordered]@{}
     $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 1)
-    $shm.network.subnets.web.name = "Subnet-Web"
+    $shm.network.subnets.web.name = "WebSubnet"
     $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
 
     $shm.network.subnets.gateway = [ordered]@{}
@@ -80,13 +80,13 @@ function Get-ShmFullConfig{
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
-    $shm.dc.vmName = "DC1-SHM-" + $shm.id
+    $shm.dc.vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "DC2-SHM-" + $shm.id
+    $shm.dcb.vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
@@ -94,7 +94,7 @@ function Get-ShmFullConfig{
     # --- NPS config ---
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
-    $shm.nps.vmName = "NPS-SHM-" + $shm.id
+    $shm.nps.vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
@@ -103,12 +103,12 @@ function Get-ShmFullConfig{
         artifacts = [ordered]@{}
     }
     $shm.storage.artifacts.rg = "RG_SHM_ARTIFACTS"
-    $shm.storage.artifacts.accountName = "shm" + $shm.id + "artifacts"
+    $shm.storage.artifacts.accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{}
     $shm.keyVault.rg = "RG_SHM_SECRETS"
-    $shm.keyVault.name = "kv-shm-" + $shm.id
+    $shm.keyVault.name = "kv-shm-" + "$($shm.id)".ToLower()
     $shm.keyVault.secretNames = [ordered]@{}
     $shm.keyVault.secretNames.dcAdminUsername='shm-dc-admin-username'
     $shm.keyVault.secretNames.dcAdminPassword='shm-dc-admin-password'
