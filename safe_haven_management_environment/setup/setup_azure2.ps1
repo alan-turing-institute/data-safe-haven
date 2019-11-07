@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -30,7 +30,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
         -VM_Size $vmSize `
         -Virtual_Network_Name $config.network.vnet.name `
         -Virtual_Network_Subnet $config.network.subnets.identity.name `
-        -NPS_VM_Name $config.nps.vmName ` 
+        -NPS_VM_Name $config.nps.vmName `
         -NPS_Host_Name $config.nps.hostname `
         -NPS_IP_Address $config.nps.ip `
         -OU_Path $config.domain.serviceServerOuPath `
