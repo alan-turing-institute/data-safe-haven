@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -49,7 +49,7 @@ $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.n
 $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
 $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
 
-# Define cert folder outside of conditional cert creation to ensure cleanup on nest run if code exits with error during cert creation 
+# Define cert folder outside of conditional cert creation to ensure cleanup on nest run if code exits with error during cert creation
 $certFolderPathName = "certs"
 $certFolderPath = "$PSScriptRoot/$certFolderPathName"
 
@@ -110,7 +110,7 @@ if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
   # Store CA key + cert bundle in KeyVault
   Write-Host "Storing CA private key + cert bundle in '$($config.keyVault.name)' KeyVault as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
   $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath "$certFolderPath/$caStem.pfx" -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
-  
+
   # Store Client key + cert bundle in KeyVault
   Write-Host "Storing Client private key + cert bundle in '$($config.keyVault.name)' KeyVault as certificate $($config.keyVault.secretNames.vpnClientCertificate) (includes private key)"
   $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnClientCertificate -FilePath "$certFolderPath/$clientStem.pfx" -Password (ConvertTo-SecureString $vpnClientCertPassword -AsPlainText -Force);
@@ -171,7 +171,7 @@ $vnetCreateParams = @{
  "Subnet_Identity_Name" = $config.network.subnets.identity.name
  "Subnet_Identity_CIDR" = $config.network.subnets.identity.cidr
  "Subnet_Web_Name" = $config.network.subnets.web.name
- "Subnet_Web_CIDR" = $config.network.subnets.web.cidr  
+ "Subnet_Web_CIDR" = $config.network.subnets.web.cidr
  "Subnet_Gateway_Name" = $config.network.subnets.gateway.name
  "Subnet_Gateway_CIDR" = $config.network.subnets.gateway.cidr
  "VNET_DNS1" = $config.dc.ip
@@ -208,7 +208,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -DC2_Host_Name $config.dcb.hostname `
         -DC1_IP_Address $config.dc.ip `
         -DC2_IP_Address $config.dcb.ip `
-        -Verbose; 
+        -Verbose;
 
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

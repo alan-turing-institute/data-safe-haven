@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId
 )
 
@@ -14,7 +14,7 @@ $config = Get-ShmFullConfig($shmId)
 # results in the double quotes in the JSON string being stripped in transit
 # Escaping these with a single backslash retains the double quotes but the transferred
 # string is truncated. Escaping these with backticks still results in the double quotes
-# being stripped in transit, but we can then replace the backticks with double quotes 
+# being stripped in transit, but we can then replace the backticks with double quotes
 # at the other end to recover a valid JSON string.
 $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```"")
 
@@ -60,7 +60,7 @@ $params = @{
 $result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name $config.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2 `
     -Parameter $params;
-    
+
 Write-Output $result2.Value;
 
 
