@@ -236,15 +236,35 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
-1. Navigate to the SHM KeyVault via `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>`.
+1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
 
   - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 
   - Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 
-  - To install, double click on the downloaded certificate, leaving the password field blank.
+  - To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
   - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
+
+### Configure a VPN connection to the Safe Haven Management VNet
+
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+
+  - Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+
+  - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+
+  - **NB. You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+
+  - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
+
+  - **Windows:** do not rename the vpn client as this will break it
+
+  - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
+
+    ![image1.png](images/media/image1.png)
+
+  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
 You should now be able to connect to the SHM virtual network. Each time you need to access the virtual network ensure you are connected to it.
 
@@ -254,7 +274,7 @@ You should now be able to connect to the SHM virtual network. Each time you need
 
 2. Click `Add Desktop`
 
-3. Navigate to the `RG_SHM_DC` resource group and then to the `DC1_SHM_<shm-id>` virtual machine (VM).
+3. Navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
 
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 
@@ -275,7 +295,7 @@ You should now be able to connect to the SHM virtual network. Each time you need
    ```pwsh
    .\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
    ```
-You will be promted to enter a password for the adsync account. Use the password the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
+You will be prompted to enter a password for the adsync account. Use the password from the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
 
 
 ### Configure Group Policies
