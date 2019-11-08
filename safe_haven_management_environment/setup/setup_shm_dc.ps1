@@ -19,29 +19,29 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 $vmSize = "Standard_DS2_v2"
 # Fetch DC admin username (or create if not present)
 $dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
-if ($null -eq $dcAdminPassword) {
+if ($null -eq $dcAdminUsername) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $newPassword;
+  $secretValue = "shm$($config.id)admin".ToLower()
+  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $secretValue;
   $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminUsername ).SecretValueText;
 }
 # Fetch DC admin user password (or create if not present)
 $dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
 if ($null -eq $dcAdminPassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminPassword -SecretValue $newPassword;
+  $secretValue = New-Password;
+  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminPassword -SecretValue $secretValue;
   $dcAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminPassword ).SecretValueText;
 }
 # Fetch DC safe mode password (or create if not present)
 $dcSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcSafemodePassword).SecretValueText;
 if ($null -eq $dcSafemodePassword) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcSafemodePassword -SecretValue $newPassword;
+  $secretValue = New-Password;
+  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcSafemodePassword -SecretValue $secretValue;
   $dcSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcSafemodePassword ).SecretValueText
 }
 
@@ -62,18 +62,18 @@ if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
   $vpnClientCertPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnClientCertPassword).SecretValueText;
   if ($null -eq $vpnClientCertPassword) {
     # Create password locally but round trip via KeyVault to ensure it is successfully stored
-    $newPassword = New-Password;
-    $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnClientCertPassword -SecretValue $newPassword;
+    $secretValue = New-Password;
+    $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnClientCertPassword -SecretValue $secretValue;
     $vpnClientCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertPassword ).SecretValueText
   }
   # Fetch VPN CA certificate password (or create if not present)
   $vpnCaCertPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertPassword).SecretValueText;
   if ($null -eq $vpnCaCertPassword) {
     # Create password locally but round trip via KeyVault to ensure it is successfully stored
-    $newPassword = New-Password;
-    $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnCaCertPassword -SecretValue $newPassword;
+    $secretValue = New-Password;
+    $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnCaCertPassword -SecretValue $secretValue;
     $vpnCaCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertPassword ).SecretValueText
   }
 
@@ -149,6 +149,8 @@ if($notExists) {
 # Upload files
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc1/CreateADPDC.zip" -Force
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc2/CreateADBDC.zip" -Force
+
+# TODOJR: call a script that uploads files individually
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/SHM_DC.zip" -Force
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
 
@@ -209,6 +211,10 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -DC1_IP_Address $config.dc.ip `
         -DC2_IP_Address $config.dcb.ip `
         -Verbose;
+
+
+# TODOJR: call a script that uploads files individually
+# configure the DC and configure NPS
 
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
