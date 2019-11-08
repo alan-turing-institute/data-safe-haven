@@ -78,47 +78,54 @@ function Get-ShmFullConfig{
     $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
     # --- Domain controller config ---
-    $shm.dc = [ordered]@{}
-    $shm.dc.rg = "RG_SHM_DC"
-    $shm.dc.vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
-    $shm.dc.hostname = $shm.dc.vmName
-    $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
-    $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
+    $shm.dc = [ordered]@{
+        rg = "RG_SHM_DC"
+        vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
+        hostname = $shm.dc.vmName
+        fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
+        ip = $shm.network.subnets.identity.prefix + ".250"
+    }
     # Backup AD DC details
-    $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
-    $shm.dcb.hostname = $shm.dcb.vmName
-    $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
-    $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
+    $shm.dcb = [ordered]@{
+        vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
+        hostname = $shm.dcb.vmName
+        fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
+        ip = $shm.network.subnets.identity.prefix + ".249"
+    }
 
     # --- NPS config ---
-    $shm.nps = [ordered]@{}
-    $shm.nps.rg = "RG_SHM_NPS"
-    $shm.nps.vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
-    $shm.nps.hostname = $shm.nps.vmName
-    $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
+    $shm.nps = [ordered]@{
+        rg = "RG_SHM_NPS"
+        vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
+        hostname = $shm.nps.vmName
+        ip = $shm.network.subnets.identity.prefix + ".248"
+    }
 
     # --- Storage config --
-    $shm.storage = [ordered]@{
+    $shm.storage = [ordered]@{}
         artifacts = [ordered]@{}
     }
-    $shm.storage.artifacts.rg = "RG_SHM_ARTIFACTS"
-    $shm.storage.artifacts.accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
+    $shm.storage.artifacts = [ordered]@{
+        rg = "RG_SHM_ARTIFACTS"
+        accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
+    }
 
     # --- Secrets config ---
-    $shm.keyVault = [ordered]@{}
-    $shm.keyVault.rg = "RG_SHM_SECRETS"
-    $shm.keyVault.name = "kv-shm-" + "$($shm.id)".ToLower()
-    $shm.keyVault.secretNames = [ordered]@{}
-    $shm.keyVault.secretNames.dcAdminUsername='shm-dc-admin-username'
-    $shm.keyVault.secretNames.dcAdminPassword='shm-dc-admin-password'
-    $shm.keyVault.secretNames.dcSafemodePassword='shm-dc-safemode-password'
-    $shm.keyVault.secretNames.adsyncPassword='shm-adsync-password'
-    $shm.keyVault.secretNames.vpnCaCertificate='shm-vpn-ca-cert'
-    $shm.keyVault.secretNames.vpnCaCertPassword='shm-vpn-ca-cert-password'
-    $shm.keyVault.secretNames.vpnCaCertificatePlain='shm-vpn-ca-cert-plain'
-    $shm.keyVault.secretNames.vpnClientCertificate='shm-vpn-client-cert'
-    $shm.keyVault.secretNames.vpnClientCertPassword='shm-vpn-client-cert-password'
+    $shm.keyVault = [ordered]@{
+        rg = "RG_SHM_SECRETS"
+        name = "kv-shm-" + "$($shm.id)".ToLower()
+    }
+    $shm.keyVault.secretNames = [ordered]@{
+        dcAdminUsername='shm-dc-admin-username'
+        dcAdminPassword='shm-dc-admin-password'
+        dcSafemodePassword='shm-dc-safemode-password'
+        adsyncPassword='shm-adsync-password'
+        vpnCaCertificate='shm-vpn-ca-cert'
+        vpnCaCertPassword='shm-vpn-ca-cert-password'
+        vpnCaCertificatePlain='shm-vpn-ca-cert-plain'
+        vpnClientCertificate='shm-vpn-client-cert'
+        vpnClientCertPassword='shm-vpn-client-cert-password'
+    }
 
     # --- DNS config ---
     $shm.dns = [ordered]@{}
