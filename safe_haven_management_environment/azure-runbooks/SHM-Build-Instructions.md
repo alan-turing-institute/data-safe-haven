@@ -28,7 +28,7 @@
 5. Set the "Country or Region" to "United Kingdom"
 6. Click Create AAD
 
-   ![](images/AAD.png)
+   ![AAD](images/AAD.png)
 
 ### Create a Custom Domain Name
 #### Create a DNS zone for the custom domain
@@ -155,7 +155,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
    - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
-    ![](images/set_user_location.png)
+    ![Set user location](images/set_user_location.png)
 7. Configuring MFA on Azure Active Directory
    - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
    - Click on "MFA" in the "Security" section of the left hand side bar
@@ -165,7 +165,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
      - In "Verification options" section. Check "Call to phone" and "Notification through mobiel app" and **uncheck** "Text message to0 phone" and "Verification code from mobile app or hardware token"
      - In "Remember multi-factor authentication", ensure "Allow users to remember multi-factor authentication on devices they trust" is **unchecked**
      - Click "Save" and close window
-       ![](images/aad_mfa_settings.png)
+       ![AAD MFA settings](images/aad_mfa_settings.png)
 8. Require MFA for all admins
    - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
    - Click on "Conditional access" in the "Security" section of the left hand side bar
@@ -196,14 +196,14 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 
 6. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
-   ![](images/resource_groups.png)
+   ![Resource groups](images/resource_groups.png)
 
 ### Download software and upload to blob storage
 A number of files are critical for the DSG deployment. They must be added to blob storage:
 
 1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and then create a new container called `rdssh-packages`. It will then appear in the storage account:
 
-   ![](images/blobstorage.png)
+   ![Blob storage](images/blobstorage.png)
 
 2. On your local machine download the following and place into a folder called `rdssh1-app-server`.
 
@@ -212,7 +212,7 @@ A number of files are critical for the DSG deployment. They must be added to blo
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
 
 3. Upload the folder to the `rdssh-packages`, ensuring it has the same name. The container will now look like this:
-   ![](images/rdssh1-app-server.png)
+   ![rdssh1-app-server contents](images/rdssh1-app-server.png)
 
 4. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
     - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
@@ -223,10 +223,10 @@ A number of files are critical for the DSG deployment. They must be added to blo
     <!-- - [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html) -->
 
 5. The container will now look like this:
-   ![](images/rdshh2-virtual-desktop-server.png)
+   ![rdshh2-virtual-desktop-server contents](images/rdshh2-virtual-desktop-server.png)
 
 6. Go back up a level and ensure the folders are names are as expected.
-   ![](images/rdsspackages.png)
+   ![rdsspackages contents](images/rdsspackages.png)
 
 ## 3. Configure Domain Controllers (DCs)
 
@@ -252,17 +252,17 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
   - Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 
-  - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+  - Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
   - **NB. You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
 
-  - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
+  - **Windows:** do not rename the VPN client as this will break it
 
-  - **Windows:** do not rename the vpn client as this will break it
+  - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
 
   - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
-    ![image1.png](images/media/image1.png)
+    ![certificate details](images/certificate_details.png)
 
   - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
@@ -306,11 +306,11 @@ Once you have accessed the VM via Remote Desktop:
 
 2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
 
-   ![](images/group_policy_management.png)
+   ![group policy management](images/group_policy_management.png)
 
 3. Navigate to "Computer Configuration" "Policies" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
 
-   ![](images/restricted_groups.png)
+   ![restricted groups](images/restricted_groups.png)
 
 4. Open "Administrators" group object and:
     - Delete all entries from "Members of this group".
@@ -318,7 +318,7 @@ Once you have accessed the VM via Remote Desktop:
 
 5. Open `Active Directory Users and Computers` app (search in windows search bar)
 
-   ![](images/delegate_control.png)
+   ![delegate control](images/delegate_control.png)
 
 6. Right click on "Computers" container. Click "Delegate Control" -> "Next" -> "Add" -> "SG Data Science LDAP Users".
 
@@ -402,11 +402,11 @@ Once you have accessed the VM via Remote Desktop:
 - Ensure that enable writeback is set on AAD:
   - Select `On-premises integration` from the left hand side bar
   - Ensure `write back passwords to your on-premises directory` is set to yes.
-    ![](images/enable_writeback.png)
+    ![enable_writeback](images/enable_writeback.png)
   - If you changed this setting, click the "Save" icon
 - Select `Properties` from the left hand side bar
   - Make sure that `self service password reset enabled` is set to `All`
-    ![](images/enable_passwordreset.png)
+    ![enable_passwordreset](images/enable_passwordreset.png)
   - If you changed this setting, click the "Save" icon
 
 ## 4. Deploy Network Policy Server (NPS)
