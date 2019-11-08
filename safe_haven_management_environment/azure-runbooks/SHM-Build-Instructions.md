@@ -102,7 +102,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
    cd ./safe_haven_management_environment/setup
    ```
 
-4. Run `./setup_azure0.ps1` entering the `shmId`, defined in the config file, when prompted
+4. Run `./setup_keyvault.ps1.ps1` entering the `shmId`, as defined in the config file, when prompted
 
 
 ### Add additional administrators
@@ -192,7 +192,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 
 4. **Ensure docker is running before attempting the next step**
 
-5. Run `./setup_azure1.ps1` entering the `shmId`, defined in the config file, when prompted
+5. Run `./setup_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted
 
 6. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
 
@@ -266,7 +266,7 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
   - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
-You should now be able to connect to the SHM virtual network. Each time you need to access the virtual network ensure you are connected to it.
+You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
 
@@ -416,7 +416,7 @@ Once you have accessed the VM via Remote Desktop:
    cd ./data-safe-haven/safe_haven_management_environment/setup
    ```
 
-1. Run `./setup_azure2.ps1` entering the `shmId`, defined in the config file, when prompted.
+1. Run `./setup_nps.ps1` entering the `shmId`, defined in the config file, when prompted.
 
 The NPS server will now deploy.
 
