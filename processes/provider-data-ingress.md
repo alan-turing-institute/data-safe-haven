@@ -32,7 +32,7 @@ Under no circumstance should sensitive data be sent via email, including encrypt
 
 The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
 You do not require log in credentials to upload data via the Azure Storage Explorer. 
-Instead we ill provide a temporary access token to allow you to upload data. 
+Instead we will provide a temporary secure access link to allow you to upload data. 
 
 ### Before we can begin…  
 
@@ -41,7 +41,7 @@ We use the [Egress secure email](https://www.egress.com/) service, which is free
 
 You will need to send us the public IP address (or range of IP addresses) that are used by the people in your organisation with permission to upload the data.
 The data ingress volumes are by default not accessible outside of the Turing, and we will provide temporary access to the upload volume from your IP addresses during the upload period.
-Actually uploading data will from these IP addresses will also require the person uploading the data to have access to the temporary access token we provide.
+Actually uploading data will from these IP addresses will also require the person uploading the data to have access to the temporary secure access link we provide.
 
 Checklist: 
 
@@ -50,8 +50,10 @@ Checklist:
 * Send Turing the public IP address (s) of the computer that will conduct the transfer 
 
  
-
-When we receive the IP address, we will send the person responsible for the data transfer a link via secure email. 
+When we receive the IP address, we will send the person responsible for the data transfer a temporary secure access link via secure email.
+This "write-only" access link has write, list and delete privileges, which will allow you to upload files, verify they have been successfully uploaded and remove or overwrite uploaded files if you need to amend the uploaded data.
+It will not allow you to download the contents of the uploaded files.
+This provides an added layer of protection in case the upload link is inadvertantly  
 
 (Whilst the connection between your computers and our repository is one way – you can only send data, not retrieve it  – if a malicious actor got hold of the link, they could poison your data)   
 
