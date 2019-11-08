@@ -1,28 +1,45 @@
-﻿Param(
-  [Parameter(Mandatory = $true, 
-             HelpMessage="Enter Path to GPO backup files")]
+﻿# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# and remote execution will stall waiting for the non-present user to enter the missing parameter on the
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
+# C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
+# job, but this does not seem to have an immediate effect
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
+Param(
+  [Parameter(Position=0, HelpMessage="Enter Path to GPO backup files")]
   [ValidateNotNullOrEmpty()]
-  [string]$oubackuppath
+  [string]$oubackuppath,
+  [Parameter(Position=1, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
+  [ValidateNotNullOrEmpty()]
+  [string]$domainou,
+  [Parameter(Position=2, HelpMessage = "Domain (eg. TURINGSAFEHAVEN.ac.uk)")]
+  [ValidateNotNullOrEmpty()]
+  [string]$domain,
+  [Parameter(Position=3, HelpMessage = "Server name")]
+  [ValidateNotNullOrEmpty()]
+  [string]$serverName,
+  [Parameter(Position=4, HelpMessage = "ADSync account password")]
+  [ValidateNotNullOrEmpty()]
+  [string]$adsyncAccountPassword
 )
 
-#Domain Details
-$domainou = "DC=TURINGSAFEHAVEN,DC=AC,DC=UK"
-$domain = "TURINGSAFEHAVEN.ac.uk"
+# # Domain Details
+# $domainou = "DC=TURINGSAFEHAVEN,DC=AC,DC=UK"
+# $domain = "TURINGSAFEHAVEN.ac.uk"
 
 #Enable AD Recycle Bin
 Write-Host -ForegroundColor Green "Configuring AD recycle bin..."
-Enable-ADOptionalFeature -Identity "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target $domain -Server shmdc1 -confirm:$false
-write-Host -ForegroundColor Cyan "Done!"
+Enable-ADOptionalFeature -Identity "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target $domain -Server $serverName -confirm:$false
+Write-Host -ForegroundColor Cyan "Done!"
 
 #Set ATIAdmin user account password to never expire
 Write-Host -ForegroundColor Green "Setting admin account to never expire..."
 Set-ADUser -Identity "atiadmin" -PasswordNeverExpires $true
-write-Host -ForegroundColor Cyan "Done!"
+Write-Host -ForegroundColor Cyan "Done!"
 
 #Set minumium password age to 0
 Write-Host -ForegroundColor Green "Changing minimum password age to 0"
 Set-ADDefaultDomainPasswordPolicy -Identity $domain -MinPasswordAge 0.0:0:0.0
-write-Host -ForegroundColor Cyan "Done!"
+Write-Host -ForegroundColor Cyan "Done!"
 
 # Create OUs
 Write-Host -ForegroundColor Green "Creating management OUs..."
@@ -30,44 +47,45 @@ New-ADOrganizationalUnit -Name "Safe Haven Research Users" -Description "Safe Ha
 New-ADOrganizationalUnit -Name "Safe Haven Security Groups" -Description "Safe Haven Security Groups"
 New-ADOrganizationalUnit -Name "Safe Haven Service Accounts" -Description "Safe Haven Service Accounts"
 New-ADOrganizationalUnit -Name "Safe Haven Service Servers" -Description "Safe Haven Service Servers"
-write-Host -ForegroundColor Cyan "OU Created!"
+Write-Host -ForegroundColor Cyan "OU Created!"
 
 #Create Server administrators group and add atiadmin to group
 Write-Host -ForegroundColor Green "Setting up security groups..."
 New-ADGroup -Name "SG Safe Haven Server Administrators" -GroupScope Global -Description "SG Safe Haven Server Administrators" -GroupCategory Security -Path "OU=Safe Haven Security Groups,$domainou"
 Add-ADGroupMember "SG Safe Haven Server Administrators" "atiadmin"
-write-Host -ForegroundColor Cyan "Groups configured!"
+Write-Host -ForegroundColor Cyan "Groups configured!"
 
 #Create DSG Security Groups
 Write-Host -ForegroundColor Green "Creating DSG LDAP users group..."
-New-ADGroup -Name "SG Data Science LDAP Users" -GroupScope Global -Description "SG Data Science LDAP Users" -GroupCategory Security -Path "OU=Safe Haven Security Groups,$domainou" 
-write-Host -ForegroundColor Cyan "Group created!"
+New-ADGroup -Name "SG Data Science LDAP Users" -GroupScope Global -Description "SG Data Science LDAP Users" -GroupCategory Security -Path "OU=Safe Haven Security Groups,$domainou"
+Write-Host -ForegroundColor Cyan "Group created!"
 
 #Set account OU Paths
 $serviceoupath = "OU=Safe Haven Service Accounts,$domainou"
 
 #Creating global service accounts
-$adsyncaccountname = "localadsync"
-write-Host -ForegroundColor Cyan "Creating AD Sync Service account - $adsyncaccountname - enter password for this account when prompted"
+$adsyncAccountName = "localadsync"
+Write-Host -ForegroundColor Cyan "Creating AD Sync Service account - $adsyncAccountName - enter password for this account when prompted"
 New-ADUser  -Name "Local AD Sync Administrator" `
-            -UserPrincipalName "$adsyncaccountname@$domain" `
+            -UserPrincipalName "$adsyncAccountName@$domain" `
             -Path  $serviceoupath `
-            -SamAccountName  $adsyncaccountname `
+            -SamAccountName  $adsyncAccountName `
             -DisplayName "Local AD Sync Administrator" `
             -Description "Azure AD Connect service account" `
-            -AccountPassword (Read-Host -Prompt "User Password:" -AsSecureString) `
+            -AccountPassword $adsyncAccountPassword `
             -Enabled $true `
             -PasswordNeverExpires $true
+#  -AccountPassword (Read-Host -Prompt "User Password:" -AsSecureString) `
 
-Add-ADGroupMember "Enterprise Admins" $adsyncaccountname
-write-Host -ForegroundColor Cyan "Users, Groups, OUs etc all created!"
+Add-ADGroupMember "Enterprise Admins" $adsyncAccountName
+Write-Host -ForegroundColor Cyan "Users, Groups, OUs etc all created!"
 
 #Import GPOs into Domain
 Write-Host -ForegroundColor Green "Importing GPOs..."
 Import-GPO -BackupId 0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C -TargetName "All servers – Local Administrators" -Path $oubackuppath -CreateIfNeeded
 Import-GPO -BackupId EE9EF278-1F3F-461C-9F7A-97F2B82C04B4 -TargetName "All Servers – Windows Update" -Path $oubackuppath -CreateIfNeeded
 Import-GPO -BackupId 742211F9-1482-4D06-A8DE-BA66101933EB -TargetName "All Servers – Windows Services" -Path $oubackuppath -CreateIfNeeded
-write-Host -ForegroundColor Cyan "Import complete!"
+Write-Host -ForegroundColor Cyan "Import complete!"
 
 #Link GPO with OUs
 Write-Host -ForegroundColor Green "Linking GPOs..."
@@ -76,11 +94,11 @@ Get-GPO -Name "All Servers – Windows Services" | New-GPLink -Target "OU=Domain
 Get-GPO -Name "All Servers – Windows Services" | New-GPLink -Target "OU=Safe Haven Service Servers,$domainou" -LinkEnabled Yes
 Get-GPO -Name "All Servers – Windows Update" | New-GPLink -Target  "OU=Domain Controllers,$domainou" -LinkEnabled Yes
 Get-GPO -Name "All Servers – Windows Update" | New-GPLink -Target  "OU=Safe Haven Service Servers,$domainou" -LinkEnabled Yes
-write-Host -ForegroundColor Cyan "GPO linking complete!"
+Write-Host -ForegroundColor Cyan "GPO linking complete!"
 
 #Create Reverse Lookup Zones
 #SHM
-write-host -ForegroundColor Green "Creating reverse lookup zones..."
+Write-Host -ForegroundColor Green "Creating reverse lookup zones..."
 Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "10.251.0.0/24" -ReplicationScope Domain
 Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "10.251.1.0/24" -ReplicationScope Domain
-write-Host -ForegroundColor Cyan "Reverse zones created!"
+Write-Host -ForegroundColor Cyan "Reverse zones created!"
