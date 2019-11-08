@@ -85,7 +85,7 @@ Write-Host " - Configuring AD DC"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name "$vmName" `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
-    
+
 Write-Output $result.Value;
 
 # Switch back to previous subscription

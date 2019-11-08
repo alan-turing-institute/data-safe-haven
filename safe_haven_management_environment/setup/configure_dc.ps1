@@ -22,46 +22,71 @@ $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```""
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-# Run remote script
-$scriptPath1 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "Set_OS_Language.ps1"
-$scriptPath2 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "map_drive.ps1"
-$scriptPath3 = Join-Path $PSScriptRoot ".." "scripts" "dc" "source" "Active_Directory_Configuration.ps1"
+# Set paths to local scripts
+$scriptPathSetOSLanguage = Join-Path $PSScriptRoot ".." "scripts" "dc" "local" "Set_OS_Language.ps1"
+$scriptPathExtractRemoteScripts = Join-Path $PSScriptRoot ".." "scripts" "dc" "local" "Extract_Remote_Scripts.ps1"
+$scriptPathADConfiguration = Join-Path $PSScriptRoot ".." "scripts" "dc" "local" "Active_Directory_Configuration.ps1"
+
+
+# Extract configuration scripts remotely
+Write-Host "Extracting configuration scripts for: $($config.dc.vmName)"
+# Get list of blobs in the storage account
+$storageAccount = Get-AzStorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+$storageContainerName = "dc_scripts"
+$blobs = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context
+$blobNames = $blobs | ForEach-Object{$_.Name}
+$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName `
+                    -resourceGroup $config.storage.artifacts.rg -accountName $config.storage.artifacts.accountName `
+                    -service Blob,File -resourceType Service,Container,Object `
+                    -permission "rl" -validityHours 2;
+# $pipeSeparatedBlobNames = $blobNames -join "|"
+$params = @{
+  remoteDir = "C:\Scripts"
+  pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
+  storageAccountName = "`"$($config.storage.artifacts.accountName)`""
+  storageContainerName = "`"$storageContainerName`""
+  sasToken = "`"$artifactSasToken`""
+};
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPathExtractRemoteScripts `
+    -Parameter $params
+Write-Output $result.Value;
+
+# Run Set_OS_Language.ps1 remotely
+Write-Host "Setting OS language for: $($config.dc.vmName)"
+$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPathSetOSLanguage;
+Write-Output $result1.Value;
+
 
 # Fetch ADSync user password (or create if not present)
 $ADSyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsyncPassword).SecretValueText;
 if ($null -eq $ADSyncPassword ) {
   # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $newPassword = New-Password;
-  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsyncPassword -SecretValue $newPassword;
+  $secretValue = New-Password;
+  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsyncPassword -SecretValue $secretValue;
   $ADSyncPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.adsyncPassword ).SecretValueText
 }
 
-# Run Set_OS_Language.ps1 remotely
-$result1= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
-    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
-
-Write-Output $result1.Value;
-
-
-# Map drive to DC1-SHM-SHMID
-$artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
-$artifactSasToken = New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
-  -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
-  -permission "rl" -validityHours 2;
-
-$artifact_uri = $( $artifactLocation + "/scripts/SHM_DC.zip");
-
+# Configure Active Directly remotely
+Write-Host "Configuring Active Directory for: $($config.dc.vmName)"
 $params = @{
-  uri = $artifact_uri
-  sasToken= "`"$artifactSasToken`""
-};
-
-$result2 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg  -Name $config.dc.vmName `
-    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath2 `
+  oubackuppath = "`"C:/Scripts/GPOs`""
+  domainou = "`"$($config.domain.dn)`""
+  domain = "`"$($config.domain.fqdn)`""
+  serverName = "`"$($config.dc.vmName)`""
+  adsyncAccountPassword = "`"$ADSyncPassword`""
+}
+$result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPathADConfiguration `
     -Parameter $params;
+Write-Output $result3.Value;
 
-Write-Output $result2.Value;
+
+
+
+
 
 
 # Run SActive_Directory_Configuration.ps1 remotely
@@ -77,15 +102,16 @@ Write-Output $result2.Value;
 # $result3 = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg `
 #                 -Name SHMDC1 `
 #                 -CommandId 'RunPowerShellScript'`
-#                 -ScriptPath $scriptPath3 `
+#                 -ScriptPath $scriptPathADConfiguration `
 #                 -Parameter $params;
 
 # Write-Output $result3.Value;
 
 
 # Execute Set_OS_Language.ps1 on second DC
+Write-Host "Setting OS language for: $($config.dcb.vmName)"
 $result4= Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dcb.vmName `
-    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath1;
+    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPathSetOSLanguage;
 
 Write-Output $result4.Value;
 

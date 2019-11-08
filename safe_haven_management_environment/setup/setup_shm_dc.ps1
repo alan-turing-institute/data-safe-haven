@@ -150,8 +150,13 @@ if($notExists) {
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc1/CreateADPDC.zip" -Force
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc2/CreateADBDC.zip" -Force
 
+Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Active_Directory_Configuration.ps1" -Force
+Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Add_New_DSG_To_DNS.ps1" -Force
+Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Create_New_DSG_User_Service_Accounts.ps1" -Force
+Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Set_OS_Language.ps1" -Force
+Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/GPOs.zip" -Force
+
 # TODOJR: call a script that uploads files individually
-Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/SHM_DC.zip" -Force
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
 
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
