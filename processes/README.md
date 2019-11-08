@@ -1,8 +1,15 @@
 # Process and system documentation
 
+The Markdown files linked by the document names are always up to date.
+
+The shareable PDF versions **do not automatically update** when the Markdown versions are updated.
+See the Git commit dates for each PDF file to determine when each snapshot was taken.
+
 ## Documents for external stakeholders
-- [Safe Haven overview](./provider-overview.md)
-- [Azure implementation overview](./provider-azure-implementation-details.md)
+- [Overview of Safe Haven for data providers](provider-overview.md) ([PDF](provider-overview.pdf))
+- [Work package classification workflow](tiersflowchart.md) ([PDF](tiersflowchart.pdf))
+- [Data ingress guide for data providers](provider-data-ingress.md) ([PDF](provider-data-ingress.pdf))
+- [Technical overview of Safe Haven architecture](provider-azure-implementation-details.md) ([PDF](provider-azure-implementation-details.pdf))
 
 ## Documents for Safe Haven administrators
 
