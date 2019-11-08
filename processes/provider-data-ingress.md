@@ -30,13 +30,18 @@ Under no circumstance should sensitive data be sent via email, including encrypt
 
 ## Azure 
 
-The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the Azure Storage Explorer from here. You do not require log in credentials to access the Azure Storage Explorer. 
+The Safe Haven is built upon the Microsoft Azure platform. The most convenient way of transferring data from your organisation safely is to use the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+You do not require log in credentials to upload data via the Azure Storage Explorer. 
+Instead we ill provide a temporary access token to allow you to upload data. 
 
 ### Before we can begin…  
 
-You will need to confirm that you are able to receive a secure email (we use the service https://www.egress.com/ - free setup for receiving secure emails).  
+You will need to confirm that you are able to receive a secure email.
+We use the [Egress secure email](https://www.egress.com/) service, which is free to setup for receiving secure emails.
 
-You will need to send us the public IP address (or range of IP addresses) that are used by the people in your organisation with permission to upload the data. We will ensure that only computers from these IP addresses will be able to connect to our servers.  
+You will need to send us the public IP address (or range of IP addresses) that are used by the people in your organisation with permission to upload the data.
+The data ingress volumes are by default not accessible outside of the Turing, and we will provide temporary access to the upload volume from your IP addresses during the upload period.
+Actually uploading data will from these IP addresses will also require the person uploading the data to have access to the temporary access token we provide.
 
 Checklist: 
 
