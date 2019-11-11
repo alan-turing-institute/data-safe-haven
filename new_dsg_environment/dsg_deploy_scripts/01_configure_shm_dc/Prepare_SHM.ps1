@@ -17,7 +17,7 @@ $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resol
 # Create DSG KeyVault if it does not exist
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.subscriptionName;
+Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Create Resource Groups
 New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.location
@@ -26,7 +26,7 @@ New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.location
 New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
     
 # Temporarily switch to management subscription
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
 # === Add DSG users and groups to SHM ====
 Write-Host "Creating or retrieving user passwords"
