@@ -1,5 +1,6 @@
 {
     "subscriptionName": "Turing SRE – Sandbox",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
     "dsgId": "100",
     "shmId": "turing1",
     "tier": "2",
