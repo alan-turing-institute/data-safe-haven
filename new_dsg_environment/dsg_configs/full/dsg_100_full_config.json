@@ -29,18 +29,18 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_VNET",
-        "name": "VNET_SHM_turing1",
+        "name": "VNET_SHM_TURING1",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
           "prefix": "10.0.0",
-          "name": "Subnet-Identity",
+          "name": "IdentitySubnet",
           "cidr": "10.0.0.0/24"
         },
         "web": {
           "prefix": "10.0.1",
-          "name": "Subnet-Web",
+          "name": "WebSubnet",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
@@ -52,21 +52,21 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1-SHM-turing1",
-      "hostname": "DC1-SHM-turing1",
-      "fqdn": "DC1-SHM-turing1.turingsafehaven.ac.uk",
+      "vmName": "DC1-SHM-TURING1",
+      "hostname": "DC1-SHM-TURING1",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "DC2-SHM-turing1",
-      "hostname": "DC2-SHM-turing1",
-      "fqdn": "DC2-SHM-turing1.turingsafehaven.ac.uk",
+      "vmName": "DC2-SHM-TURING1",
+      "hostname": "DC2-SHM-TURING1",
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS-SHM-turing1",
-      "hostname": "NPS-SHM-turing1",
+      "vmName": "NPS-SHM-TURING1",
+      "hostname": "NPS-SHM-TURING1",
       "ip": "10.0.0.248"
     },
     "storage": {
@@ -95,7 +95,7 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Turing SRE - Sandbox",
+    "subscriptionName": "Turing SRE – Sandbox",
     "id": "100",
     "shortName": "dsg100",
     "location": "uksouth",
@@ -172,7 +172,8 @@
       }
     },
     "keyVault": {
-      "name": "kv-turing1-dsg100"
+      "name": "kv-turing1-dsg100",
+      "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
