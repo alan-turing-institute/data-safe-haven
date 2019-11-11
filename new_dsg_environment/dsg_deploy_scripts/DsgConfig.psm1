@@ -248,6 +248,7 @@ function Add-DsgConfig {
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
         name = "kv-" + $config.shm.id + "-dsg" + $config.dsg.id
+        rg = "RG_DSG_SECRETS"
     }
 
     # --- Domain controller ---

@@ -29,18 +29,18 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_VNET",
-        "name": "VNET_SHM_dev1",
+        "name": "VNET_SHM_DEV1",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
           "prefix": "10.0.0",
-          "name": "Subnet-Identity",
+          "name": "IdentitySubnet",
           "cidr": "10.0.0.0/24"
         },
         "web": {
           "prefix": "10.0.1",
-          "name": "Subnet-Web",
+          "name": "WebSubnet",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
@@ -52,21 +52,21 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1-SHM-dev1",
-      "hostname": "DC1-SHM-dev1",
-      "fqdn": "DC1-SHM-dev1.dev1.dsgroupdev.co.uk",
+      "vmName": "DC1-SHM-DEV1",
+      "hostname": "DC1-SHM-DEV1",
+      "fqdn": "DC1-SHM-DEV1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "DC2-SHM-dev1",
-      "hostname": "DC2-SHM-dev1",
-      "fqdn": "DC2-SHM-dev1.dev1.dsgroupdev.co.uk",
+      "vmName": "DC2-SHM-DEV1",
+      "hostname": "DC2-SHM-DEV1",
+      "fqdn": "DC2-SHM-DEV1.dev1.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS-SHM-dev1",
-      "hostname": "NPS-SHM-dev1",
+      "vmName": "NPS-SHM-DEV1",
+      "hostname": "NPS-SHM-DEV1",
       "ip": "10.0.0.248"
     },
     "storage": {
@@ -172,7 +172,8 @@
       }
     },
     "keyVault": {
-      "name": "kv-dev1-dsgdev1"
+      "name": "kv-dev1-dsgdev1",
+      "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
