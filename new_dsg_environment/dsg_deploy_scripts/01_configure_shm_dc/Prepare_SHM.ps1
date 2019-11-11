@@ -20,7 +20,7 @@ $prevContext = Get-AzContext
 Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Create Resource Groups
-New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.location
+New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.location
 
 # Create a keyvault
 New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
