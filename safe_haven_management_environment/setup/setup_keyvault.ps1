@@ -10,6 +10,8 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
+$jsonOut = ($config | ConvertTo-Json -depth 10)
+Write-Host $jsonOut
 
 # Temporarily switch to SHM subscription
 $prevContext = Get-AzContext
@@ -22,8 +24,8 @@ New-AzResourceGroup -Name $config.keyVault.rg  -Location $config.location
 New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName $config.keyVault.rg -Location $config.location
 
 # Add group access and remove user access
-Set-AzKeyVaultAccessPolicy -VaultName $config.shm.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
-Remove-AzKeyVaultAccessPolicy -VaultName $config.shm.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
+Set-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+Remove-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
 
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;
