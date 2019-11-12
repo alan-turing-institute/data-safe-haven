@@ -10,6 +10,8 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)
+$jsonOut = ($config | ConvertTo-Json -depth 10)
+Write-Host $jsonOut
 
 # Temporarily switch to SHM subscription
 $prevContext = Get-AzContext
