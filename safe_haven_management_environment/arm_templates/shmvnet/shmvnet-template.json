@@ -4,7 +4,6 @@
     "parameters": {
         "Virtual_Network_Name": {
             "type": "string"
-
         },
         "P2S_VPN_Certificate": {
             "type": "string"

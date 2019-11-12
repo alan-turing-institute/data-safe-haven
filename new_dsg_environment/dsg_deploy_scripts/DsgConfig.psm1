@@ -56,58 +56,58 @@ function Get-ShmFullConfig{
 
     # --- Network config ---
     $shm.network = [ordered]@{
-        vnet = [ordered]@{}
+        vnet = [ordered]@{
+            rg = "RG_SHM_VNET"
+            name =  "VNET_SHM_" + "$($shm.id)".ToUpper()
+            cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+        }
         subnets = [ordered]@{}
     }
-    $shm.network.vnet.rg = "RG_SHM_VNET"
-    $shm.network.vnet.name =  "VNET_SHM_" + "$($shm.id)".ToUpper()
-    $shm.network.vnet.cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+    # --- Identity subnet
     $shm.network.subnets.identity = [ordered]@{}
+    $shm.network.subnets.identity.name = "IdentitySubnet" # Name to match required format of GatewaySubnet
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
-    $shm.network.subnets.identity.name = "IdentitySubnet"
     $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
-
+    # --- Web subnet
     $shm.network.subnets.web = [ordered]@{}
+    $shm.network.subnets.web.name = "WebSubnet" # Name to match required format of GatewaySubnet
     $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 1)
-    $shm.network.subnets.web.name = "WebSubnet"
     $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
-
+    # --- Gateway subnet
     $shm.network.subnets.gateway = [ordered]@{}
-    $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 7)
     $shm.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int] $shmThirdOctet + 7)
     $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
+
     # --- Domain controller config ---
-    $shm.dc = [ordered]@{
-        rg = "RG_SHM_DC"
-        vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
-        hostname = $shm.dc.vmName
-        fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
-        ip = $shm.network.subnets.identity.prefix + ".250"
-    }
+    $shm.dc = [ordered]@{}
+    $shm.dc.rg = "RG_SHM_DC"
+    $shm.dc.vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
+    $shm.dc.hostname = $shm.dc.vmName
+    $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
+    $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
+
     # Backup AD DC details
-    $shm.dcb = [ordered]@{
-        vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
-        hostname = $shm.dcb.vmName
-        fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
-        ip = $shm.network.subnets.identity.prefix + ".249"
-    }
+    $shm.dcb = [ordered]@{}
+    $shm.dcb.vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
+    $shm.dcb.hostname = $shm.dcb.vmName
+    $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
+    $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
 
     # --- NPS config ---
-    $shm.nps = [ordered]@{
-        rg = "RG_SHM_NPS"
-        vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
-        hostname = $shm.nps.vmName
-        ip = $shm.network.subnets.identity.prefix + ".248"
-    }
+    $shm.nps = [ordered]@{}
+    $shm.nps.rg = "RG_SHM_NPS"
+    $shm.nps.vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
+    $shm.nps.hostname = $shm.nps.vmName
+    $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
-    $shm.storage = [ordered]@{}
-        artifacts = [ordered]@{}
-    }
-    $shm.storage.artifacts = [ordered]@{
-        rg = "RG_SHM_ARTIFACTS"
-        accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
+    $shm.storage = [ordered]@{
+        artifacts = [ordered]@{
+            rg = "RG_SHM_ARTIFACTS"
+            accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
+        }
     }
 
     # --- Secrets config ---
@@ -128,8 +128,9 @@ function Get-ShmFullConfig{
     }
 
     # --- DNS config ---
-    $shm.dns = [ordered]@{}
-    $shm.dns.rg = "RG_SHM_DNS"
+    $shm.dns = [ordered]@{
+        rg = "RG_SHM_DNS"
+    }
 
     return $shm
 }

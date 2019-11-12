@@ -232,7 +232,7 @@ A number of files are critical for the DSG deployment. They must be added to blo
 
 ### Configure Active Directory on SHMDC1 and SHMDC2
 
-1. Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs
+1. Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 
@@ -281,7 +281,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel. The username is in the `shm-dc-admin-username` secret and the password in the  `shm-dc-admin-password` secret.
 
-### Active Directory Configuration
+<!-- ### Active Directory Configuration
 
 1. Navigate to `C:/Scripts/`
 
@@ -295,7 +295,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
    ```pwsh
    .\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
    ```
-You will be prompted to enter a password for the adsync account. Use the password from the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`.
+You will be prompted to enter a password for the adsync account. Use the password from the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`. -->
 
 
 ### Configure Group Policies
@@ -308,7 +308,7 @@ Once you have accessed the VM via Remote Desktop:
 
    ![group policy management](images/group_policy_management.png)
 
-3. Navigate to "Computer Configuration" "Policies" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
+3. Navigate to "Computer Configuration" -> "Policies" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
 
    ![restricted groups](images/restricted_groups.png)
 
