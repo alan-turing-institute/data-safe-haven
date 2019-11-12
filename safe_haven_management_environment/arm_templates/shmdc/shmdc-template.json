@@ -88,8 +88,8 @@
         }
     },
     "variables": {
-        "dc1nic": "[concat(parameters('DC1_VM_Name'),'_','NIC1')]",
-        "dc2nic": "[concat(parameters('DC2_VM_Name'),'_','NIC1')]",
+        "dc1nic": "[concat(parameters('DC1_VM_Name'),'_','NIC')]",
+        "dc2nic": "[concat(parameters('DC2_VM_Name'),'_','NIC')]",
         "avsetname": "AVSET_SHM_VM_DC",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",

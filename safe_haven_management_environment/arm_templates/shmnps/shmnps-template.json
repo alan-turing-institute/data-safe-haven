@@ -37,7 +37,7 @@
         }
     },
     "variables": {
-        "npsnic": "[concat(parameters('NPS_VM_Name'),'_','NIC1')]",
+        "npsnic": "[concat(parameters('NPS_VM_Name'),'_','NIC')]",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
