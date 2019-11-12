@@ -9,6 +9,7 @@ Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/Generat
 Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GenerateSasToken.psm1 -Force
 
 # Get DSG config
+# --------------
 $config = Get-ShmFullConfig($shmId)
 # # For some reason, passing a JSON string as the -Parameter value for Invoke-AzVMRunCommand
 # # results in the double quotes in the JSON string being stripped in transit
@@ -21,6 +22,7 @@ $config = Get-ShmFullConfig($shmId)
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
+
 
 # Import artifacts from blob storage
 # ----------------------------------
@@ -104,6 +106,15 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.d
           -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
 Write-Output $result.Value;
 
-# Switch back to previous subscription
-Set-AzContext -Context $prevContext;
 
+# Configure group policies
+# ------------------------
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Configure_Group_Policies.ps1"
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
+          -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
+Write-Output $result.Value;
+
+
+# Switch back to previous subscription
+# ------------------------------------
+Set-AzContext -Context $prevContext;

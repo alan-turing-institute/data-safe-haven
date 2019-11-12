@@ -302,7 +302,7 @@ You will be prompted to enter a password for the adsync account. Use the passwor
 
 Once you have accessed the VM via Remote Desktop:
 
-1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar.
+<!-- 1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar.
 
 2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
 
@@ -314,7 +314,7 @@ Once you have accessed the VM via Remote Desktop:
 
 4. Open "Administrators" group object and:
     - Delete all entries from "Members of this group".
-    - Click "Add" -> Add "SG Safe Haven Server Administrators" and "Domain Admins". Click `apply` then `ok`. Now close "Group Policy Management" MMC
+    - Click "Add" -> Add "SG Safe Haven Server Administrators" and "Domain Admins". Click `apply` then `ok`. Now close "Group Policy Management" MMC -->
 
 5. Open `Active Directory Users and Computers` app (search in windows search bar)
 
