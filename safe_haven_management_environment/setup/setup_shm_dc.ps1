@@ -20,7 +20,7 @@ $vmSize = "Standard_DS2_v2"
 # Fetch DC admin username (or create if not present)
 $dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
 if ($null -eq $dcAdminUsername) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  # Create secret locally but round trip via KeyVault to ensure it is successfully stored
   $secretValue = "shm$($config.id)admin".ToLower()
   $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
   $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $secretValue;
@@ -130,7 +130,7 @@ if($notExists) {
   $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_LRS" -Kind "StorageV2"
 }
 # Create blob storage containers
-"dsc", "scripts" | ForEach-Object {
+"dsc", "scripts", "dcconfiguration" | ForEach-Object {
   $containerName = $_
   if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
     Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
@@ -147,18 +147,19 @@ if($notExists) {
 }
 
 # Upload files
+Write-Host " - Uploading DSC files to storage account '$storageAccountName'"
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc1/CreateADPDC.zip" -Force
 Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc2/CreateADBDC.zip" -Force
 
-Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Active_Directory_Configuration.ps1" -Force
-Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Add_New_DSG_To_DNS.ps1" -Force
-Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Create_New_DSG_User_Service_Accounts.ps1" -Force
-Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/Set_OS_Language.ps1" -Force
-Set-AzStorageBlobContent -Container "dc_scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/remote/GPOs.zip" -Force
+# Scripts for configuring the DC
+Write-Host " - Uploading DC configuration files to storage account '$storageAccountName'"
+Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/GPOs.zip" -Force
 
 # TODOJR: call a script that uploads files individually
+Write-Host " - Uploading NPS configuration files to storage account '$storageAccountName'"
 Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
 
+Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
