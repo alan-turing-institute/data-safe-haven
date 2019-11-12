@@ -12,37 +12,37 @@
             "type": "string",
             "metadata": {
                 "description": "Enter name for VM Administrator"
-            }    
+            }
         },
         "Administrator_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter VM Administrator_Password"
-            }    
+            }
         },
         "SafeMode_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter SafeMode_Password"
-            }    
+            }
         },
         "Virtual_Network_Name": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of virtual network to provision these VMs"
-            }    
+            }
         },
         "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
-            }    
+            }
         },
         "Virtual_Network_Subnet": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }    
+            }
         },
         "Artifacts_Location": {
             "type": "string",
@@ -132,7 +132,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('DC1_VM_Name'),'_OS_Disk')]",
+                        "name": "[concat(parameters('DC1_VM_Name'),'_OS_DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -144,7 +144,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('DC1_VM_Name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('DC1_VM_Name'),'_DATA_DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -300,7 +300,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('DC2_VM_Name'),'_OS_Disk')]",
+                        "name": "[concat(parameters('DC2_VM_Name'),'_OS_DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -312,7 +312,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('DC2_VM_Name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('DC2_VM_Name'),'_DATA_DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -391,7 +391,7 @@
                                 "SafeModeAdminCreds" :{
                                     "UserName": "[parameters('Administrator_User')]",
                                     "Password": "[parameters('SafeMode_Password')]"
-                                    }   
+                                    }
                                 },
                             "configurationUrlSasToken": "[parameters('Artifacts_Location_SAS_Token')]"
                         }

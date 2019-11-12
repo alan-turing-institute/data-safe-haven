@@ -22,19 +22,19 @@
         },
         "Domain_Name": {
             "type": "string"
-        }, 
+        },
         "NPS_VM_Name": {
             "type": "string"
-        }, 
+        },
         "NPS_Host_Name": {
             "type": "string"
-        }, 
+        },
         "NPS_IP_Address": {
             "type": "string"
-        }, 
+        },
         "OU_Path": {
             "type": "string"
-        }           
+        }
     },
     "variables": {
         "npsnic": "[concat(parameters('NPS_VM_Name'),'_','NIC1')]",
@@ -74,7 +74,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('NPS_VM_Name'), '_Data_Disk1')]",
+                            "name": "[concat(parameters('NPS_VM_Name'), '_DATA_DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
