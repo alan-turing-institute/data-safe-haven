@@ -154,6 +154,7 @@ Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File
 # Scripts for configuring the DC
 Write-Host " - Uploading DC configuration files to storage account '$storageAccountName'"
 Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/GPOs.zip" -Force
+Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/Run_ADSync.ps1" -Force
 
 # TODOJR: call a script that uploads files individually
 Write-Host " - Uploading NPS configuration files to storage account '$storageAccountName'"

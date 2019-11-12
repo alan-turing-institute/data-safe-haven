@@ -35,9 +35,9 @@ $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storag
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -accountName $config.storage.artifacts.accountName;
 
 # Run import script remotely
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Import_Artifacts.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Import_Artifacts.ps1" -Resolve
 $params = @{
-  remoteDir = "`"C:\Scripts`""
+  remoteDir = "`"C:\Installation`""
   pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
   storageAccountName = "`"$($config.storage.artifacts.accountName)`""
   storageContainerName = "`"$storageContainerName`""

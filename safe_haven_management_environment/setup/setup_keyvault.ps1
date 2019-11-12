@@ -27,5 +27,15 @@ New-AzKeyVault -Name $config.keyVault.name  -ResourceGroupName $config.keyVault.
 Set-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
 Remove-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
 
+# Generate AAD Global Administrator password
+$aadAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
+if ($null -eq $dcAdminUsername) {
+  # Create secret locally but round trip via KeyVault to ensure it is successfully stored
+  $secretValue = "shm$($config.id)admin".ToLower()
+  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $secretValue;
+  $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminUsername ).SecretValueText;
+}
+
 # Switch back to original subscription
 Set-AzContext -Context $prevContext;

@@ -116,6 +116,7 @@ function Get-ShmFullConfig{
         name = "kv-shm-" + "$($shm.id)".ToLower()
     }
     $shm.keyVault.secretNames = [ordered]@{
+        aadAdminPassword='shm-aad-admin-password'
         dcAdminUsername='shm-dc-admin-username'
         dcAdminPassword='shm-dc-admin-password'
         dcSafemodePassword='shm-dc-safemode-password'

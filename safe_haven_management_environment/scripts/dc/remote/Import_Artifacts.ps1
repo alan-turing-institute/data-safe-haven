@@ -35,7 +35,7 @@ if(Test-Path -Path $remoteDir){
 
 # Download artifacts
 $numBlobs = $blobNames.Length
-Write-Host -ForegroundColor Cyan "Downloading $numBlobs files to '$remoteDir'"
+Write-Host -ForegroundColor Cyan "Downloading $numBlobs files to '$remoteDir'..."
 foreach($blobName in $blobNames){
   $fileName = Split-Path -Leaf $blobName
   $fileDirRel = Split-Path -Parent $blobName
@@ -48,7 +48,14 @@ foreach($blobName in $blobNames){
   $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath;
 }
 
-# Extract GPOs and list items
+# Download AzureADConnect
+Write-Host -ForegroundColor Cyan "Downloading AzureADConnect to '$remoteDir'..."
+Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $remoteDir\AzureADConnect.msi;
+
+# Extract GPOs
 Write-Host -ForegroundColor Cyan "Extracting zip files..."
-Expand-Archive C:\Scripts\GPOs.zip -DestinationPath C:\Scripts\ -Force
-Write-Host (Get-ChildItem -Path C:\Scripts\)
+Expand-Archive $remoteDir\GPOs.zip -DestinationPath $remoteDir -Force
+
+# List items
+Write-Host -ForegroundColor Cyan "Contents of '$remoteDir' are:"
+Write-Host (Get-ChildItem -Path $remoteDir)

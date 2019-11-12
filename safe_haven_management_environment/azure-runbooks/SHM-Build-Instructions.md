@@ -120,12 +120,13 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - Click "Create"
     - Click on the username in the users list in the Azure Active Directory
     - Click the "Reset password" icon to generate a temporary password
-    - Use this password to log into https://portal.azure.com as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognitio/private browsing window.
+    - Use this password to log into https://portal.azure.com as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
-      - Create a strong password for this user.
-      - Create a secret named `shm-aadadmin-password` in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
-      - Set the value of this secret to the password you just generated.
-    - Once you have set your password and logged in you can administrate the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
+      - Look in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
+      - There should be a secret there called `shm-aad-admin-password`
+      - Use this as the new password
+      - If Microsoft tries to get you to associate a phone number with the account, you can safely ignore this and close the browser window.
+    - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
 4. Navigate to `Users` and add new admin users, setting their names to `Admin - Firstname Lastname` and their usernames to `admin.firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
 4. Let Azure set their passwords. They can reset these later.
 5. In the user list on the Azure Active Directory, for each of the new admin users:
@@ -220,7 +221,6 @@ A number of files are critical for the DSG deployment. They must be added to blo
     - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
     - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
-    <!-- - [Apache (WIndows v 4.1.6)](https://www.openoffice.org/download/index.html) -->
 
 5. The container will now look like this:
    ![rdshh2-virtual-desktop-server contents](images/rdshh2-virtual-desktop-server.png)
@@ -231,191 +231,147 @@ A number of files are critical for the DSG deployment. They must be added to blo
 ## 3. Configure Domain Controllers (DCs)
 
 ### Configure Active Directory on SHMDC1 and SHMDC2
-
-1. Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
+- Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
+2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
+3. Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
-  - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-
-  - Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
-
-  - To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
-
-  - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
+**Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
 
 ### Configure a VPN connection to the Safe Haven Management VNet
+1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+Please note:
+- **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+- **Windows:** do not rename the VPN client as this will break it
+- **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
+- **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
+  ![certificate details](images/certificate_details.png)
 
-  - Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-
-  - Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
-
-  - **NB. You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
-
-  - **Windows:** do not rename the VPN client as this will break it
-
-  - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
-
-  - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
-
-    ![certificate details](images/certificate_details.png)
-
-  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
+4. Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
-
 1. Open Microsoft Remote Desktop
-
 2. Click `Add Desktop`
-
 3. Navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
-
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
-
 5. Double click on the desktop that appears under `saved desktops`.
-  - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel. The username is in the `shm-dc-admin-username` secret and the password in the  `shm-dc-admin-password` secret.
-
-<!-- ### Active Directory Configuration
-
-1. Navigate to `C:/Scripts/`
-
-2. Open `Active_Directory_Configuration.ps1` in a file editor. Then edit the following lines to use the custom domain name created earlier and save the file. The `$domainou` should be your custom domain split into parts separated by dots, with each of the parts included in the `$domainou` as comma-separated parts in the format `DC=<domain-part>`.
-
-    - $domainou = "DC=DSGROUPDEV,DC=CO,DC=UK"
-    - $domain = "TESTB.DSGROUPDEV.CO.UK"
-
-3. Open powershell and navigate to `C:/Scripts/`. Run:
-
-   ```pwsh
-   .\Active_Directory_Configuration.ps1 -oubackuppath "c:\Scripts\GPOs"
-   ```
-You will be prompted to enter a password for the adsync account. Use the password from the keyvault in the `RG_DSG_SECRETS` resource group called `sh-managment-adsync`. -->
-
-
-### Configure Group Policies
-
-Once you have accessed the VM via Remote Desktop:
-
-<!-- 1. On the VM open the `Group Policy Management` app. You can search for it using the windows search bar.
-
-2. Navigate to the "All Servers - Local Administrators" GPO, right click and then click edit
-
-   ![group policy management](images/group_policy_management.png)
-
-3. Navigate to "Computer Configuration" -> "Policies" -> "Windows Settings" -> "Security Settings" -> "Restricted Groups"
-
-   ![restricted groups](images/restricted_groups.png)
-
-4. Open "Administrators" group object and:
-    - Delete all entries from "Members of this group".
-    - Click "Add" -> Add "SG Safe Haven Server Administrators" and "Domain Admins". Click `apply` then `ok`. Now close "Group Policy Management" MMC -->
-
-<!-- 5. Open `Active Directory Users and Computers` app (search in windows search bar)
-
-   ![delegate control](images/delegate_control.png)
-
-6. Right click on "Computers" container. Click "Delegate Control" -> "Next" -> "Add" -> "SG Data Science LDAP Users".
-
-7. Click next -> "Create a custom task to delegate" -> "This folder, existing objects in this folder...."
-
-8. Click next, then Select "Read", "Write", "Create All Child Objects","Delete All Child Objects" -> "Next" -> "Finish". Close the `Active Directory Users and Computers` app. -->
+  - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
+  - The username is in the `shm-dc-admin-username` secret.
+  - The password in the `shm-dc-admin-password` secret.
 
 ### Install Azure Active Directory Connect
-
-1. Download the latest version of the AAD Connect tool from [here](https://www.microsoft.com/en-us/download/details.aspx?id=47594)
-    - You will need to temporarily [enable downloads on the VM](https://www.thewindowsclub.com/disable-file-download-option-internet-explorer). Disable downloads after download complete.
-    - You will be promted to add webpages to exceptions. Do this.
-
-2. Run the installer
-    - Agree the license terms -> "Continue"
+1. Navigate to `C:\Installation`
+2. Run the `AzureADConnect.msi` installer
+    - Agree to the license terms -> "Continue"
     - Select "Customize"
     - Click "Install"
     - Select "Password Hash Synchronization" -> "Next"
-    - Provide a global administrator details for the Azure Active Directory you are connected to (You may need to create an account for this in the Azure Active Directory)
-    - Ensure that correct forest (your custom domain name; e.g TURINGSAFEHAVEN.ac.uk) is selected and click "Add Directory"
-    - Select "Use and existing account" -> Enter the details of the "localadsync" user. Username: `localadsync@<full-domain-name>` (e.g. localadsync) Password: Look in the `sh-management-adsync` secret in the management KeyVault. Click "OK" -> "Next"
+    - Provide a global administrator details for the Azure Active Directory you are connected to
+      - you should have created `admin@customdomain` during the `Add additional administrators` step
+    - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
+    - Select "Use and existing account" -> Enter the details of the "localadsync" user.
+      - Username: `localadsync@<full-domain-name>` (e.g. localadsync)
+      - Password: Look in the `shm-adsync-password` secret in the management KeyVault. Click "OK" -> "Next"
       - If you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
-         - In Server Manager click "Tools -> Active Directory Users and Computers"
-         - Expand the domain in theleft hand panel
-         - Expand the "Safe Haven Service Accounts" OU
-         - Right click on the "Local AD Sync Administrator" user and select "reset password"
-         - Set the password to the the secret value from the `sh-management-adsync` secret in the management KeyVault.
-         - Leave the other settings as is and click "Ok"
-    - Verify that UPN matches -> "Next"
-    - Select "Sync Selected domains and OUs"
-    - Expand domain and deselect all objects
-    - Select "Safe Haven Research Users" -> "Next"
-    - Click "Next" on "Uniquely identifying your users"
-    - Select "Synchronize all users and devices" -> "Next"
-    - Select "Password Writeback" -> "Next"
-    - Click "Install"
-    - Click "Exit"
+        - In Server Manager click "Tools -> Active Directory Users and Computers"
+        - Expand the domain in theleft hand panel
+        - Expand the "Safe Haven Service Accounts" OU
+        - Right click on the "Local AD Sync Administrator" user and select "reset password"
+        - Set the password to the the secret value from the `sh-management-adsync` secret in the management KeyVault.
+        - Leave the other settings as is and click "Ok"
+    - On the `Azure AD sign-in configuration` screen:
+      - Verify that the `User Principal Name` is set to `userPrincipalName`
+      - Click "Next"
+    - On the `Domain and OU filtering` screen:
+      - Select "Sync Selected domains and OUs"
+      - Expand the domain and deselect all objects
+      - Select "Safe Haven Research Users"
+      - Click "Next"
+    - On the `Domain and OU filtering` screen:
+      - Click "Next"
+    - On the `Filter users and devices` screen:
+      - Select "Synchronize all users and devices"
+      - Click "Next"
+    - On the `Optional features` screen:
+      - Select "Password Writeback"
+      - Click "Next"
+    - On the `Ready to configure` screen:
+      - Click "Install"
+    - On the `Configuration complete` screen:
+      - Click "Exit"
 
 ### Additional AAD Connect Configuration
-
 1. Open the `Synchronization Rules Editor` from the start menu
 2. Change the "Direction" drop down to "Outbound"
-3. Select the "Out to AAD - User Join" -> Click "Disable". Click edit.
-4. Click "Yes" for the "In the Edit Reserved Rule Confirmation" window
-5. Set `precedence` to 1.
-6. Select "Transformations" and locate the rule with its "Target Attribute" set to "usageLocation"
-7. Change the "FlowType" column from "Expression" to "Direct"
-8. On the "Source" column click drop-down and choose "c" attribute
-9. Click "Save"
-10. You will now see a cloned version of the `Out to AAD - User Join`. Delete the original. Then edit the cloned version. Change `Precedence to 115` and edit the name to `Out to AAD - User Join`. Click save. Click `Enable` on the new rule.
-11. Click the X to close the Synchronization Rules Editor window
-12. Run powershell as administrator and run:
-    ```pws
-    Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
-    Start-ADSyncSyncCycle -PolicyType Initial
-    ```
+3. Select the `Out to AAD - User Join` rule.
+  - Click "Disable".
+  - Click "Edit".
+  - In the "Edit Reserved Rule Confirmation" dialog box click "Yes"
+4. In the editing view set `precedence` to 1.
+  - Select "Transformations" from the sidebar and locate the rule with its "Target Attribute" set to "usageLocation"
+    - Change the "FlowType" column from "Expression" to "Direct"
+    - On the "Source" column click drop-down and choose "c" attribute
+    - Click "Save" (in the "Warning" dialog box click "Yes")
+5. You will now see a cloned version of the `Out to AAD - User Join`.
+  - Delete the original.
+  - In the "Warning" dialog box click "Yes"
+6. Edit the cloned version.
+  - Change `Precedence to 115`
+  - Edit the name to `Out to AAD - User Join`.
+  - Click "Save" (in the "Warning" dialog box click "Yes").
+7. Click `Enable` on the `Out to AAD - User Join` rule that you have just edited
+8. Click the `X` to close the Synchronization Rules Editor window
+9. Open Powershell as an administrator
+  - Navigate to `C:\Installation`
+  - Run `.\Run_ADSync.ps1`
 
 ### Validation of AD sync
-
 1. Add a research user:
-  - In computer Manager click `Tools -> Active Directory Users and Computers`
+  - Open `Active Directory Users and Computers`
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
     - First name: Test
     - Lastname: Research User
     - User login name: test-res
-    - Click next
-    - Enter a default password and click next
-    - Click Finish
-2. Force a sync to the Azure Active Dirctory
-  - Run powershell as administrator and run:
-    ```pwsh
-    Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
-    Start-ADSyncSyncCycle -PolicyType Delta
-    ```
-3. Go to the Azure Active Directory and click "Users -> All users" and confirm that the new user is shown in the user list. It may take a few minutes for the synchrinisation to fully propagate in Azure.
+    - Click "Next"
+  - Enter a default password (eg. `Default@Test1234!`)
+    - Click "Next"
+  - Click "Finish"
+2. Force a sync to the Azure Active Directory
+  - Open Powershell as an administrator
+  - Navigate to `C:\Installation`
+  - Run `.\Run_ADSync.ps1 -sync Delta`
+3. Go to the Azure Active Directory in `portal.azure.com`
+  - Click "Users -> All users" and confirm that the new user is shown in the user list.
+  - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
 ### Configure AAD side of AD connect
-- Select "Password reset" from the left hand menu
-- Ensure that enable writeback is set on AAD:
-  - Select `On-premises integration` from the left hand side bar
-  - Ensure `write back passwords to your on-premises directory` is set to yes.
+1. Go to the Azure Active Directory in `portal.azure.com`
+  - Select "Manage > Password reset" from the left hand menu
+2. Select `On-premises integration` from the left hand side bar
+  - Ensure `Write back passwords to your on-premises directory` is set to yes.
     ![enable_writeback](images/enable_writeback.png)
   - If you changed this setting, click the "Save" icon
 - Select `Properties` from the left hand side bar
-  - Make sure that `self service password reset enabled` is set to `All`
+  - Make sure that `Self service password reset enabled` is set to `All`
     ![enable_passwordreset](images/enable_passwordreset.png)
   - If you changed this setting, click the "Save" icon
 
-## 4. Deploy Network Policy Server (NPS)
 
+## 4. Deploy Network Policy Server (NPS)
 1. In the data-safe-haven repository, deploy the NPS server using the following commands:
    ```pwsh
    cd ./data-safe-haven/safe_haven_management_environment/setup
    ```
-
 1. Run `./setup_nps.ps1` entering the `shmId`, defined in the config file, when prompted.
 
 The NPS server will now deploy.
