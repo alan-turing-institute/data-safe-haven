@@ -37,7 +37,7 @@
         }
     },
     "variables": {
-        "npsnic": "[concat(parameters('NPS_VM_Name'),'_','NIC')]",
+        "npsnic": "[concat(parameters('NPS_VM_Name'),'-','NIC')]",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
@@ -62,7 +62,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('NPS_VM_Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('NPS_VM_Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -74,7 +74,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('NPS_VM_Name'), '_DATA_DISK')]",
+                            "name": "[concat(parameters('NPS_VM_Name'), '-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
