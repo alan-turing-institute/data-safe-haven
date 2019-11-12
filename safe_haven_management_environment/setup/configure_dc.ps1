@@ -115,6 +115,18 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.d
 Write-Output $result.Value;
 
 
+# Active directory delegation
+# ---------------------------
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Active_Directory_Delegation.ps1"
+$params = @{
+  netbiosName = "`"$($config.domain.netbiosName)`""
+  ldapUsersGroup = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
+}
+$result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `
+          -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
+Write-Output $result.Value;
+
+
 # Switch back to previous subscription
 # ------------------------------------
 Set-AzContext -Context $prevContext;
