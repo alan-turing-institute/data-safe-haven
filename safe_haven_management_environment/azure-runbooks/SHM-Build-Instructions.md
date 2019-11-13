@@ -189,9 +189,8 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    ```pwsh
    cd ./safe_haven_management_environment/setup
    ```
-4. **Ensure docker is running before attempting the next step**
-5. Run `./setup_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted
-6. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
+4. Run `./setup_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted
+5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
    ![Resource groups](images/resource_groups.png)
 
 
