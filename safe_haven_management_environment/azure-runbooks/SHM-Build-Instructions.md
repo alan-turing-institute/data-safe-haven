@@ -1,25 +1,18 @@
 # Safe Haven Management Environment Build Instructions
 
 ## Prerequisites
+- An Azure subscription with sufficient credits to build the environment in
+- PowerShell for Azure
+  - Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
+  - Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
+- Microsoft Remote Desktop
+  - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
+- Azure CLI (bash)
+  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
-### An Azure subscription with sufficient credits to build the environment in
 
-### Install and configure PowerShell for Azure
-- Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
-- Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
-
-### Microsoft Remote Desktop
-- On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
-
-### Azure CLI
-- Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
-
-<!-- ### Docker desktop
-- Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Docker is used to generate certificates.
-- If running on Linux, ensure that both `docker.io` and `docker-compose` are installed. -->
 
 ## 0. Setup Azure Active Directory (AAD) with P1 Licenses
-
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
@@ -27,8 +20,8 @@
 4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
 5. Set the "Country or Region" to "United Kingdom"
 6. Click Create AAD
-
    ![AAD](images/AAD.png)
+
 
 ### Create a Custom Domain Name
 #### Create a DNS zone for the custom domain
@@ -66,10 +59,11 @@ Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / su
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 6. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
 
-## 1. Deploy VNET and Domain Controllers
 
+
+## 1. Deploy VNET and Domain Controllers
 ### Core SHM configuration properties
-The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying a DSG environment.
+The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying an SRE environment.
 The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shmId>` is a short ID to identify the environment (e.g. `testb`).
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
@@ -94,22 +88,18 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 ```
 
 ### Deploy KeyVault for SHM secrets
-
 1. Ensure you are logged into the Azure within PowerShell using the command:
    ```pwsh
    Connect-AzAccount
    ```
-
 2. Set the AzContext to the SHM Azure subscription id:
    ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
    ```pwsh
    cd ./safe_haven_management_environment/setup
    ```
-
 4. Run `./setup_keyvault.ps1.ps1` entering the `shmId`, as defined in the config file, when prompted
 
 
@@ -171,8 +161,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
    - Configure MFA as follows:
      - In "App passwords" section select "Do not allow users to creat eapp passwords to sign in to non browser apps"
-     - In "Verification options" section. Check "Call to phone" and "Notification through mobiel app" and **uncheck** "Text message to0 phone" and "Verification code from mobile app or hardware token"
-     - In "Remember multi-factor authentication", ensure "Allow users to remember multi-factor authentication on devices they trust" is **unchecked**
+     - In "Verification options" section.
+       - **check** "Call to phone" and "Notification through mobile app"
+       - **uncheck** "Text message to phone" and "Verification code from mobile app or hardware token"
+     - In "Remember multi-factor authentication" section
+       - ensure "Allow users to remember multi-factor authentication on devices they trust" is **unchecked**
      - Click "Save" and close window
        ![AAD MFA settings](images/aad_mfa_settings.png)
 8. Require MFA for all admins
@@ -182,64 +175,45 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Select "Use policy immediately" in the left hand side bar
    - Click "Save"
 
-### Deploy the Virtual Network and Active Directory Domain Controller
 
+### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into the Azure within PowerShell using the command:
    ```pwsh
    Connect-AzAccount
    ```
-
 2. Set the AzContext to the SHM Azure subscription id:
    ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-
 3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
    ```pwsh
    cd ./safe_haven_management_environment/setup
    ```
-
 4. **Ensure docker is running before attempting the next step**
-
 5. Run `./setup_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted
-
 6. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
-
    ![Resource groups](images/resource_groups.png)
 
+
 ### Download software and upload to blob storage
-A number of files are critical for the DSG deployment. They must be added to blob storage:
+A number of files are needed for the SRE deployment. They must be added to blob storage:
 
-1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and then create a new container called `rdssh-packages`. It will then appear in the storage account:
-
+1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `rdssh-packages`:
    ![Blob storage](images/blobstorage.png)
-
-2. On your local machine download the following and place into a folder called `rdssh1-app-server`.
-
-    - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
-    - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-    - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
-
-3. Upload the folder to the `rdssh-packages`, ensuring it has the same name. The container will now look like this:
-   ![rdssh1-app-server contents](images/rdssh1-app-server.png)
-
-4. Do the same again but with a folder called `rdssh2-virtual-desktop-server` with the following files:
+2. On your local machine download the following files, appending version numbers manually if needed:
     - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
     - `install-tl-windows-<date>.exe` taking the [latex TexLive version from here](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe), appending the creation date.
     - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
     - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
+3. Use the Azure portal to upload all of these files to the `rdssh-packages` folder. The container will now look like this:
+   ![rdssh-packages contents](images/rdssh-packages.png)
 
-5. The container will now look like this:
-   ![rdshh2-virtual-desktop-server contents](images/rdshh2-virtual-desktop-server.png)
-
-6. Go back up a level and ensure the folders are names are as expected.
-   ![rdsspackages contents](images/rdsspackages.png)
 
 ## 3. Configure Domain Controllers (DCs)
-
 ### Configure Active Directory on SHMDC1 and SHMDC2
 - Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
+
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
@@ -248,6 +222,7 @@ A number of files are critical for the DSG deployment. They must be added to blo
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
 **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
+
 
 ### Configure a VPN connection to the Safe Haven Management VNet
 1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
@@ -265,6 +240,7 @@ Please note:
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
+
 ### Access the first Domain Controller (DC1) via Remote Desktop
 1. Open Microsoft Remote Desktop
 2. Click `Add Desktop`
@@ -274,6 +250,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
   - The username is in the `shm-dcnps-admin-username` secret.
   - The password in the `shm-dcnps-admin-password` secret.
+
 
 ### Install Azure Active Directory Connect
 1. Navigate to `C:\Installation`
@@ -316,6 +293,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - On the `Configuration complete` screen:
       - Click "Exit"
 
+
 ### Additional AAD Connect Configuration
 1. Open the `Synchronization Rules Editor` from the start menu
 2. Change the "Direction" drop down to "Outbound"
@@ -341,6 +319,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - Navigate to `C:\Installation`
   - Run `.\Run_ADSync.ps1`
 
+
 ### Validation of AD sync
 1. Add a research user:
   - Open `Active Directory Users and Computers`
@@ -362,6 +341,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - Click "Users -> All users" and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
+
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`
   - Select "Manage > Password reset" from the left hand menu
@@ -375,6 +355,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - If you changed this setting, click the "Save" icon
 
 
+
 ## 4. Deploy Network Policy Server (NPS)
 1. In the data-safe-haven repository, deploy the NPS server using the following commands:
    ```pwsh
@@ -384,34 +365,14 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 The NPS server will now deploy.
 
-### Configure the Network Policy Server
 
-### Configure Active Directory on SHMDC1 and SHMDC2
+### Configure the Network Policy Server
 - Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM.
 
 
-<!-- 1. Connect to NPS Server using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `dsgadmin@<custom domain>` rather than just `dsgadmin`).
-
-2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare.
-
-3. Click the connect icon on the top bar and then copy the lower powershell command.
-
-4. On the `SHMNPS` VM run Powershell as an administrator.
-   - Paste the powershell command copied from the Azure portal and hit enter. This will map the `scripts` fileshare to the Z: drive.
-   - Once the drive is successfully mapped, run the following commands:
-     ```pwsh
-     New-Item -Path "c:\" -Name "Scripts" -ItemType "directory"
-     copy z:\nps c:\scripts -Recurse
-     Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
-     cd c:\scripts
-     ./Prepare_NPS_Server.ps1
-     ``` -->
-
 ### Configure NPS server to log to text file
-
 1. Connect to the NPS Server VM using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `dsgadmin@<custom domain>` rather than just `dsgadmin`).
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `admin@<custom domain>` rather than just `admin`).
 2. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
 3. Click on "Accounting"
 4. Select "Configure Accounting"
@@ -422,7 +383,6 @@ The NPS server will now deploy.
 
 
 ### Add NPS policy to allow connections
-
 1. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
 2. Expand "NPS (Local)" and then "Policies" and select "Network policies"
 3. Right click on "Network policies" and select "New"
@@ -443,6 +403,7 @@ This is because, without this policy, the NPS server will reject their authentic
   - First line of even message: Network Policy Server discarded the request for a user.
   - Reason Code: 21
   - Reason: An NPS extension dynamic link library (DLL) that is installed on the NPS server rejected the connection request.
+
 
 ### MFA Configuation
 1. Navigate to `C:\Installation`
@@ -469,8 +430,8 @@ This is because, without this policy, the NPS server will reject their authentic
 If you get a `New-msolserviceprincipalcredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
   - Make sure you authenticate as the "Local Administrator" (`admin@<custom domain>`) user when prompted by the script. Other administrators added as guests will not work for this step.
   - Make sure you are logged in as a **domain** user rather than a local user.
-    -  The output of the `whoami` command in powershell should be `netBiosDomain\dsgadmin` rather than `SHMNPS\dsgadmin`
-    - If it is not, reconnect to the remote desktop with the username `dsgadmin@<custom domain>`, using the same password as before
+    - The output of the `whoami` command in powershell should be `netBiosDomain\admin` rather than `SHMNPS\admin`
+    - If it is not, reconnect to the remote desktop with the username `admin@<custom domain>`, using the same password as before
   - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
     - Go to the Azure Portal and click "Azure Active Directories" in the left hand side bar
     - Click "Licenses" in the left hand side bar
@@ -478,33 +439,31 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
     - You should see "Azure Active Directory Premium P1" in the list of products, with a non-zero number of available licenses.
     - If you do not have P1 licences, purchase some following the instructions at the end of the [Add additional administrators](#Add-additional-administrators) section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
 
+
+
 ## 5. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first DSG.
 
+
 ### Prerequisites
-Note that you will need a DSG full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md##0.-Define-DSG-configuration) section of the [DSG deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md) for instructions on creating these full configuration files.
+Note that you will need a SRE full config JSON file present covering each Tier you want to deploy mirrors for.See the [0. Define DSG Configuration](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md##0.-Define-DSG-configuration) section of the [SRE deployment guide](../../new_dsg_environment/azure-runbooks/dsg_build_instructions.md) for instructions on creating these full configuration files.
 
 Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script make use of the `--output none` option, which is only available in version `2.0.55` and above.
   - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
   - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
+
 ### Deploying package mirrors
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
-
 - Open a Powershell terminal with `pwsh` and navigate to the `new_dsg_environment/shm_deploy_scripts/00_deploy_package_mirrors/` directory within the Safe Haven repository.
-
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure the active subscription is set to that you are using for the new SRE using the command: `Set-AzContext -SubscriptionId "<sre-subscription-name>"`
+- Run the `./Create_Package_Mirrors.ps1` script, providing the SRE ID when prompted. This will set up mirrors for the tier corresponding to that SRE. If some SREs use Tier-2 mirrors and some use Tier-3 you will have to run this multiple times. You do not have to run it more than once for the same tier (eg. if there are two SREs which are both Tier-2, you only need to run the script for one of them).
 
-- Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
-- Run the `./Create_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will set up mirrors for the tier corresponding to that DSG. If some DSGs use Tier-2 mirrors and some use Tier-3 you will have to run this multiple times. You do not have to run it more than once for the same tier (eg. if there are two DSGs which are both Tier-2, you only need to run the script for one of them).
 
 ### Setting KeyVault access policies
-
 - Once the KeyVault deployment script exits successfully, follow the instructions to add a policy to the KeyVault so that you are able to manage secrets.
     - Navigate to the "RG_SHM_PKG_MIRRORS" resource group in the management subscription in the Azure portal and click on the KeyVault shown there
     - Click on "Access Policies" in the "Settings" section of the left-hand menu and click "+Add Access Policy".
@@ -517,18 +476,14 @@ Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progre
     - If there was already an existing access policy for your user, delete it. You should be part of the administrator security group and access to all resources should be managed by secirity group rather than individual users.
     - Click the "Save" icon on the next screen
 
-## 6. Tear down package mirrors
-If you ever need to tear down the package mirrors, use the following script. Again, you will need a full DSG configuration file for each Tier you want to tear down.
 
+
+## 6. Tear down package mirrors
+If you ever need to tear down the package mirrors, use the following script. Again, you will need a full SRE configuration file for each Tier you want to tear down.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
-
 - Open a Powershell terminal with `pwsh` and navigate to the `new_dsg_environment/shm_deploy_scripts/00_deploy_package_mirrors/` directory within the Safe Haven repository.
-
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<dsg-subscription-name>"`
-
-- Run the `./Teardown_Package_Mirrors.ps1` script, providing the DSG ID when prompted. This will remove all the mirrors for the tier corresponding to that SAE. **NB. This will remove the mirrors from all SAEs of the same tier.**
+- Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<sre-subscription-name>"`
+- Run the `./Teardown_Package_Mirrors.ps1` script, providing the SRE ID when prompted. This will remove all the mirrors for the tier corresponding to that SRE. **NB. This will remove the mirrors from all SREs of the same tier.**

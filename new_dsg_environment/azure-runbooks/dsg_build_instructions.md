@@ -388,7 +388,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 
-- Open `C:\Software\rdssh1-app-server` in Windows explorer
+- Open `C:\Software` in Windows explorer
 
 - Install the packages present in the folder
 
@@ -562,7 +562,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 
-- Open `C:\Software\rdssh2-virtual-desktop-server` in Windows explorer
+- Open `C:\Software` in Windows explorer
 
 - Install the packages present in the folder
 

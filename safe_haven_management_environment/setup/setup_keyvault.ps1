@@ -46,22 +46,25 @@ Remove-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -UserPrincipalNam
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 # :: AAD Global Administrator password
-$aadAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
-                                         -secretName $config.keyVault.secretNames.aadAdminPassword
+$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
+                          -secretName $config.keyVault.secretNames.aadAdminPassword
 
 # :: DC/NPS admin username
-$dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
-                                           -secretName $config.keyVault.secretNames.dcNpsAdminUsername `
-                                           -defaultValue "shm$($config.id)admin".ToLower()
+$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
+                          -secretName $config.keyVault.secretNames.dcNpsAdminUsername `
+                          -defaultValue "shm$($config.id)admin".ToLower()
 
 # :: DC/NPS admin password
-$dcNpsAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
-                                             -secretName $config.keyVault.secretNames.dcNpsAdminPassword
+$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
+                          -secretName $config.keyVault.secretNames.dcNpsAdminPassword
 
 # :: DC safe mode password
-$dcSafemodePassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
-                                             -secretName $config.keyVault.secretNames.dcSafemodePassword
+$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
+                          -secretName $config.keyVault.secretNames.dcSafemodePassword
 
+# :: AD sync password
+$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
+                          -secretName $config.keyVault.secretNames.adsyncPassword
 
 # Switch back to original subscription
 # ------------------------------------

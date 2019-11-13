@@ -139,14 +139,17 @@ $containerName = "rdssh-packages"
 $storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg
 
 # Get list of packages for each session host
-$packageFolderSh1 = "rdssh1-app-server"
-$filesSh1 = Get-AzStorageBlob -Container $containerName -Prefix $packageFolderSh1 -Context $storageAccount.Context
-$filePathsSh1 = $filesSh1 | ForEach-Object{"$($_.Name)"}
+$filePathsSh1 = New-Object System.Collections.ArrayList($null)
+$filePathsSh2 = New-Object System.Collections.ArrayList($null)
+ForEach ($blob in Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context) {
+    if (($blob.Name -like "GoogleChromeStandaloneEnterprise64*") -or ($blob.Name -like "putty-64bit*") -or ($blob.Name -like "WinSCP-*")) {
+        $filePathsSh1.Add($blob.Name)
+        $filePathsSh2.Add($blob.Name)
+    } elseif (($blob.Name -like "install-tl-windows*") -or ($blob.Name -like "LibreOffice_*")) {
+        $filePathsSh2.Add($blob.Name)
+    }
+}
 $pipeSeparatedFilePathsSh1 = $filePathsSh1 -join "|"
-# RDSSH2 (remote desktop server)
-$packageFolderSh2 = "rdssh2-virtual-desktop-server"
-$filesSh2 = Get-AzStorageBlob -Container $containerName -Prefix $packageFolderSh2 -Context $storageAccount.Context
-$filePathsSh2 = $filesSh2 | ForEach-Object{"$($_.Name)"}
 $pipeSeparatedFilePathsSh2 = $filePathsSh2 -join "|"
 
 # Get SAS token to download files from storage account
@@ -158,7 +161,9 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
 # Download software packages to RDS Session Hosts
 # RDSSH1: App server
-$packageDownloadParams = @{
+Write-Host " - Copying $($filesSh1.Length) packages to RDS Session Host 1"
+$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Files.ps1"
+$params = @{
     storageAccountName = "`"$storageAccountName`""
     storageService = "blob"
     shareOrContainerName = "`"$containerName`""
@@ -166,12 +171,8 @@ $packageDownloadParams = @{
     pipeSeparatedremoteFilePaths = "`"$pipeSeparatedFilePathsSh1`""
     downloadDir = "C:\Software"
 }
-$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Download_Files.ps1"
-Write-Host " - Copying $($filesSh1.Length) packages to RDS Session Host 1"
-$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup `
-    -Name "$($config.dsg.rds.sessionHost1.vmName)" `
-    -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
-    -Parameter $packageDownloadParams
+$result = Invoke-AzVMRunCommand -ResourceGroupName $rdsResourceGroup -Name "$($config.dsg.rds.sessionHost1.vmName)" `
+                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 

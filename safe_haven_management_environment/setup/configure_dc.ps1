@@ -8,16 +8,11 @@ Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 
-# Get DSG config
+
+# Get SHM config
 # --------------
 $config = Get-ShmFullConfig($shmId)
-# # For some reason, passing a JSON string as the -Parameter value for Invoke-AzVMRunCommand
-# # results in the double quotes in the JSON string being stripped in transit
-# # Escaping these with a single backslash retains the double quotes but the transferred
-# # string is truncated. Escaping these with backticks still results in the double quotes
-# # being stripped in transit, but we can then replace the backticks with double quotes
-# # at the other end to recover a valid JSON string.
-# $configJson = ($config | ConvertTo-Json -depth 10 -Compress).Replace("`"","```"")
+
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
@@ -52,26 +47,12 @@ Write-Output $result.Value;
 # -----------------------------------
 Write-Host "Configure Active Directory for: $($config.dc.vmName)"
 
-# Fetch ADSync user password (or create if not present)
-$adsyncPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.adsyncPassword).SecretValueText;
-if ($null -eq $adsyncPassword ) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $secretValue = New-Password;
-  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
-  Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.adsyncPassword -SecretValue $secretValue;
-  $adsyncPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.adsyncPassword ).SecretValueText
-}
+# Fetch ADSync user password
+$adsyncPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.adsyncPassword
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
-# Fetch DC admin username (or create if not present)
-$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
-if ($null -eq $dcAdminUsername) {
-  # Create secret locally but round trip via KeyVault to ensure it is successfully stored
-  $secretValue = "shm$($config.id)admin".ToLower()
-  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $secretValue;
-  $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminUsername ).SecretValueText;
-}
+# Fetch DC/NPS admin username
+$dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
 
 # Run configuration script remotely
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Active_Directory_Configuration.ps1"
@@ -82,7 +63,7 @@ $params = @{
   identitySubnetCidr = "`"$($config.network.subnets.identity.cidr)`""
   webSubnetCidr = "`"$($config.network.subnets.web.cidr)`""
   serverName = "`"$($config.dc.vmName)`""
-  serverAdminName = "`"$dcAdminUsername`""
+  serverAdminName = "`"$dcNpsAdminUsername`""
   adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
 }
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dc.rg -Name $config.dc.vmName `

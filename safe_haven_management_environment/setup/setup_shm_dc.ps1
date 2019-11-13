@@ -8,48 +8,40 @@ Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 
-# Get DSG config
+# Set VM Default Size
+$vmSize = "Standard_DS2_v2"
+
+# Get SHM config
+# --------------
 $config = Get-ShmFullConfig($shmId)
 
+
 # Temporarily switch to SHM subscription
+# --------------------------------------
 $prevContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
-# Set VM Default Size
-$vmSize = "Standard_DS2_v2"
-# Fetch DC admin username (or create if not present)
-$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
-if ($null -eq $dcAdminUsername) {
-  # Create secret locally but round trip via KeyVault to ensure it is successfully stored
-  $secretValue = "shm$($config.id)admin".ToLower()
-  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminUsername -SecretValue $secretValue;
-  $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminUsername ).SecretValueText;
-}
-# Fetch DC admin user password (or create if not present)
-$dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
-if ($null -eq $dcAdminPassword) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $secretValue = New-Password;
-  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcAdminPassword -SecretValue $secretValue;
-  $dcAdminPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcAdminPassword ).SecretValueText;
-}
-# Fetch DC safe mode password (or create if not present)
-$dcSafemodePassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcSafemodePassword).SecretValueText;
-if ($null -eq $dcSafemodePassword) {
-  # Create password locally but round trip via KeyVault to ensure it is successfully stored
-  $secretValue = New-Password;
-  $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
-  $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.dcSafemodePassword -SecretValue $secretValue;
-  $dcSafemodePassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.dcSafemodePassword ).SecretValueText
-}
 
+# Fetch usernames/passwords from the keyvault
+# -------------------------------------------
+# Fetch DC/NPS admin username
+$dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+
+# Fetch DC/NPS admin password
+$dcNpsAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcNpsAdminPassword
+
+# Fetch DC safe mode password
+$dcSafemodePassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcSafemodePassword
+
+
+# Generate or create certificates
+# -------------------------------
+# Attempt to fetch certificates
 $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
 $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
 $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
 
-# Define cert folder outside of conditional cert creation to ensure cleanup on nest run if code exits with error during cert creation
+# Define cert folder outside of conditional cert creation to ensure cleanup on next run if code exits with error during cert creation
 $certFolderPathName = "certs"
 $certFolderPath = "$PSScriptRoot/$certFolderPathName"
 
@@ -119,46 +111,42 @@ if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
 # Delete local copies of certificates and private keys
 Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
 
+
 # Setup storage account and upload artifacts
+# ------------------------------------------
 $storageAccountRg = $config.storage.artifacts.rg;
 $storageAccountName = $config.storage.artifacts.accountName;
 $storageAccountLocation = $config.location;
-$_ = New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force
+New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force
 $storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -ErrorVariable notExists -ErrorAction SilentlyContinue
-if($notExists) {
+if ($notExists) {
   Write-Host " - Creating storage account '$storageAccountName'"
   $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_LRS" -Kind "StorageV2"
 }
 # Create blob storage containers
-"dsc", "scripts", "dcconfiguration" | ForEach-Object {
-  $containerName = $_
+ForEach ($containerName in ("armdsc", "dcconfiguration", "rdssh-packages")) {
   if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
     Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
-    $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
+    New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
   }
 }
 # Create file storage shares
-"sqlserver" | ForEach-Object {
-  $shareName = $_
+ForEach ($shareName in ("sqlserver")) {
   if(-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })){
     Write-Host " - Creating share '$shareName' in storage account '$storageAccountName'"
-    $_ = New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
+    New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
   }
 }
 
-# Upload files
+# Upload scripts
 Write-Host " - Uploading DSC files to storage account '$storageAccountName'"
-Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc1/CreateADPDC.zip" -Force
-Set-AzStorageBlobContent -Container "dsc" -Context $storageAccount.Context -File "$PSScriptRoot/../dsc/shmdc2/CreateADBDC.zip" -Force
+Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
+Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
 
-# Scripts for configuring the DC
+# Artifacts for configuring the DC
 Write-Host " - Uploading DC configuration files to storage account '$storageAccountName'"
 Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/GPOs.zip" -Force
 Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/Run_ADSync.ps1" -Force
-
-# # TODOJR: call a script that uploads files individually
-# Write-Host " - Uploading NPS configuration files to storage account '$storageAccountName'"
-# Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
 
 Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
@@ -166,33 +154,35 @@ Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
 Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/4/E/54EC1AD8-042C-4CA3-85AB-BA307CF73710/SSMS-Setup-ENU.exe" -DestShareName "sqlserver" -DestFilePath "SSMS-Setup-ENU.exe" -DestContext $storageAccount.Context -Force
 
+# Deploy VNet from template
+# -------------------------
+$vnetCreateParams = @{
+  "Virtual_Network_Name" = $config.network.vnet.name
+  "P2S_VPN_Certificate" = $vpnCaCertificatePlain
+  "VNET_CIDR" = $config.network.vnet.cidr
+  "Subnet_Identity_Name" = $config.network.subnets.identity.name
+  "Subnet_Identity_CIDR" = $config.network.subnets.identity.cidr
+  "Subnet_Web_Name" = $config.network.subnets.web.name
+  "Subnet_Web_CIDR" = $config.network.subnets.web.cidr
+  "Subnet_Gateway_Name" = $config.network.subnets.gateway.name
+  "Subnet_Gateway_CIDR" = $config.network.subnets.gateway.cidr
+  "VNET_DNS1" = $config.dc.ip
+  "VNET_DNS2" = $config.dcb.ip
+}
+New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location -Force
+New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
+                              -templatefile "$PSScriptRoot/../arm_templates/shmvnet/shmvnet-template.json" `
+                              @vnetCreateParams -Verbose;
+
+
+# Deploy SHM-DC from template
+# ---------------------------
 # Get SAS token
 $artifactLocation = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net";
-
 $artifactSasToken = (New-AccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg `
   -accountName $config.storage.artifacts.accountName -service Blob,File -resourceType Service,Container,Object `
   -permission "rl" -validityHours 2);
-
-$vnetCreateParams = @{
- "Virtual_Network_Name" = $config.network.vnet.name
- "P2S_VPN_Certificate" = $vpnCaCertificatePlain
- "VNET_CIDR" = $config.network.vnet.cidr
- "Subnet_Identity_Name" = $config.network.subnets.identity.name
- "Subnet_Identity_CIDR" = $config.network.subnets.identity.cidr
- "Subnet_Web_Name" = $config.network.subnets.web.name
- "Subnet_Web_CIDR" = $config.network.subnets.web.cidr
- "Subnet_Gateway_Name" = $config.network.subnets.gateway.name
- "Subnet_Gateway_CIDR" = $config.network.subnets.gateway.cidr
- "VNET_DNS1" = $config.dc.ip
- "VNET_DNS2" = $config.dcb.ip
-}
-
-New-AzResourceGroup -Name $config.network.vnet.rg -Location $config.location -Force
-New-AzResourceGroupDeployment -resourcegroupname $config.network.vnet.rg `
-        -templatefile "$PSScriptRoot/../arm_templates/shmvnet/shmvnet-template.json" `
-        @vnetCreateParams -Verbose;
-
-# Deploy the shmdc-template
+# Check NetBios name
 $netbiosNameMaxLength = 15
 if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "Netbios name must be no more than 15 characters long. '$($config.domain.netbiosName)' is $($config.domain.netbiosName.length) characters long."
@@ -200,8 +190,8 @@ if($config.domain.netbiosName.length -gt $netbiosNameMaxLength) {
 New-AzResourceGroup -Name $config.dc.rg  -Location $config.location -Force
 New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -templatefile "$PSScriptRoot/../arm_templates/shmdc/shmdc-template.json"`
-        -Administrator_User $dcAdminUsername `
-        -Administrator_Password (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)`
+        -Administrator_User $dcNpsAdminUsername `
+        -Administrator_Password (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force)`
         -SafeMode_Password (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)`
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Artifacts_Location $artifactLocation `
@@ -211,6 +201,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -VM_Size $vmSize `
         -Virtual_Network_Name $config.network.vnet.name `
         -Virtual_Network_Subnet $config.network.subnets.identity.name `
+        -Shm_Id "$($config.id)".ToLower() `
         -DC1_VM_Name $config.dc.vmName `
         -DC2_VM_Name $config.dcb.vmName `
         -DC1_Host_Name $config.dc.hostname `
@@ -220,8 +211,6 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -Verbose;
 
 
-# TODOJR: call a script that uploads files individually
-# configure the DC and configure NPS
-
 # Switch back to original subscription
+# ------------------------------------
 Set-AzContext -Context $prevContext;

@@ -68,6 +68,9 @@
                 "Description": "Enter the correct NetBIOS name"
             }
         },
+        "Shm_Id":{
+            "type": "string"
+        },
         "DC1_VM_Name":{
             "type": "string"
         },
@@ -91,7 +94,7 @@
         "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
         "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
         "avsetname": "AVSET_SHM_VM_DC",
-        "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
+        "diagStorageAccountName": "[concat('bootdiag',parameters('Shm_Id'),uniqueString(resourceGroup().id))]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
@@ -204,7 +207,7 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts_Location'), '/dsc/CreateADPDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/armdsc/CreateADPDC.zip')]",
                             "script": "CreateADPDC.ps1",
                             "function": "CreateADPDC"
                             },
@@ -373,7 +376,7 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts_Location'), '/dsc/CreateADBDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/armdsc/CreateADBDC.zip')]",
                             "script": "CreateADBDC.ps1",
                             "function": "CreateADBDC"
                             },
