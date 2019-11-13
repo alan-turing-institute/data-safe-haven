@@ -32,7 +32,9 @@ Param(
   [Parameter(Position=12, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
   [string]$sasToken,
   [Parameter(Position=13, HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
-  [string]$pipeSeparatedBlobNames
+  [string]$pipeSeparatedBlobNames,
+  [Parameter(Position=14, HelpMessage = "DSG FQDN")]
+  [string]$dsgFqdn
 )
 # Deserialise blob names
 $blobNames = $pipeSeparatedBlobNames.Split("|")
@@ -78,7 +80,7 @@ Invoke-Expression -Command "$cmd -subnetIdentityCidr `"$subnetIdentityCidr`" -su
 Write-Output " - Configuring GPOs"
 $cmd = (Join-Path $remoteDir "Configure_GPOs.ps1")
 $gpoBackupPath = (Join-Path $remoteDir "GPOs")
-Invoke-Expression -Command "$cmd -gpoBackupPath `"$gpoBackupPath`" -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`""
+Invoke-Expression -Command "$cmd -gpoBackupPath `"$gpoBackupPath`" -dsgNetbiosName `"$dsgNetbiosName`" -dsgDn `"$dsgDn`" -dsgFqdn `"$dsgFqdn`""
 
 # Copy Server Start Menu configuration
 Write-Output " - Copying server start menu"

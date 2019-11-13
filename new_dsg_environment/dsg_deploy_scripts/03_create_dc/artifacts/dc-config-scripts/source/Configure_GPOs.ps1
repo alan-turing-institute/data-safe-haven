@@ -14,6 +14,9 @@ Param(
   [Parameter(HelpMessage="DSG DN")]
   [ValidateNotNullOrEmpty()]
   [string]$dsgDn
+  [Parameter(HelpMessage="DSG FQDN")]
+  [ValidateNotNullOrEmpty()]
+  [string]$dsgFqdn
 )
 
 # Import GPOs into Domain
@@ -43,3 +46,21 @@ $_ = Get-GPO -Name "All Servers – Windows Update" | New-GPLink -Target "OU=$ds
 $_ = Get-GPO -Name "Research Users – Mapped Drives" | New-GPLink -Target "OU=$dsgNetbiosName RDS Session Servers,$dsgDn" -LinkEnabled Yes
 
 $_ = Get-GPO -Name "Session Servers – Remote Desktop Control" | New-GPLink -Target "OU=$dsgNetbiosName RDS Session Servers,$dsgDn" -LinkEnabled Yes
+
+# Fix the GPO Settings for "Session Servers – Remote Desktop Control"
+$_ = Set-GPRegistryValue -Name "Session Servers – Remote Desktop Control" -Type "ExpandString" -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" -ValueName "StartLayoutFile" -Value "\\$dsgFqdn\SYSVOL\$dsgFqdn\scripts\ServerStartMenu\LayoutModifcation.xml"
+ 
+
+# Fix the GPO Settings for "All servers – Local Administrators" 
+
+$gpoGuid = ((Get-GPO -Name "All servers – Local Administrators").Id.Guid).ToUpper()
+$domainUsersGuid = (Get-ADGroup "Domain Admins").SID.Value
+$serverAdminGuid = (Get-ADGroup "SG $dsgNetbiosName Server Administrators").SID.Value
+$oldGUID1 =  "S-1-5-21-1813578418-120617354-939478454-512"
+$oldGUID2 = "S-1-5-21-1813578418-120617354-939478454-1108"
+$GPTemplate = "\\$dsgFqdn\sysvol\$dsgFqdn\Policies\{$gpoGuid}\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf"
+
+ 
+## Replace GP Template with the new GUIDS
+$_ = ((Get-Content -path $GPTemplate -Raw ) -Replace $oldGUID1, $domainUsersGuid) | Set-Content -Path $GPTemplate
+$_ = ((Get-Content -path $GPTemplate -Raw ) -Replace $oldGUID2, $serverAdminGuid) | Set-Content -Path $GPTemplate

@@ -76,6 +76,7 @@ $params = @{
   storageContainerName = "`"$containerName`""
   sasToken = "`"$sasToken`""
   pipeSeparatedBlobNames = "`"$pipeSeparatedBlobNames`""
+  dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
 };
 
 $vmResourceGroup = $config.dsg.dc.rg
