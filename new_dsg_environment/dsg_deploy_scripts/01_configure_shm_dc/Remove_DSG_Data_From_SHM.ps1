@@ -4,8 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -40,7 +40,7 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 function Remove-DsgSecret($secretName){
   if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
     Write-Host " - Deleting secret '$secretName'"
-    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force 
+    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force
   } else {
     Write-Host " - No secret '$secretName' exists"
   }

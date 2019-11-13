@@ -7,6 +7,10 @@ param(
   [string]$localDirectory = $null
 )
 
+Import-Module Az
+Import-Module $PSScriptRoot/../../../../../../common_powershell/Configuration.psm1 -Force
+
+
 if([String]::IsNullOrEmpty($localDirectory)) {
   $localDirectory = "~/Certificates"
 }
@@ -15,8 +19,6 @@ if([String]::IsNullOrEmpty($remoteDirectory)) {
 }
 
 
-Import-Module Az
-Import-Module (Join-Path $PSScriptRoot ".." ".." ".." ".." "DsgConfig.psm1") -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -45,11 +47,11 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name $vmNam
 
 $msg = $result.Value[0].Message
 # Extract CSR from result message
-$csr = ($msg -replace "(?sm).*(-----BEGIN NEW CERTIFICATE REQUEST-----)(.*)(-----END NEW CERTIFICATE REQUEST-----).*", '$1$2$3') 
+$csr = ($msg -replace "(?sm).*(-----BEGIN NEW CERTIFICATE REQUEST-----)(.*)(-----END NEW CERTIFICATE REQUEST-----).*", '$1$2$3')
 # Remove any leading spaces or tabs from CSR lines
 $csr = ($csr -replace '(?m)^[ \t]*', '')
 # Extract CSR filename from result message (to allow easy matching to remote VM for troubleshooting)
-$csrFilestem = ($msg -replace "(?sm).*-----BEGIN CSR FILESTEM-----(.*)-----END CSR FILESTEM-----.*", '$1') 
+$csrFilestem = ($msg -replace "(?sm).*-----BEGIN CSR FILESTEM-----(.*)-----END CSR FILESTEM-----.*", '$1')
 
 # Write the CSR to temporary storage
 $csrDir = New-Item -Path "$localDirectory" -Name "$csrFilestem" -ItemType "directory"

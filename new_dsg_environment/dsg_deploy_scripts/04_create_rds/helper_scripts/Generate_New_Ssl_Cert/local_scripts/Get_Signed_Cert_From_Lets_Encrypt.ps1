@@ -12,6 +12,10 @@ param(
 
 )
 
+Import-Module Az
+Import-Module $PSScriptRoot/../../../../../../common_powershell/Configuration.psm1 -Force
+
+
 if(-not (Test-Path -Path $csrPath)) {
   throw [System.IO.FileNotFoundException] "$csrPath not found."
 }
@@ -28,8 +32,6 @@ if($cleanTest) {
   $certbotDir = "$HOME/certbot"
 }
 
-Import-Module Az
-Import-Module (Join-Path $PSScriptRoot ".." ".." ".." ".." "DsgConfig.psm1") -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);

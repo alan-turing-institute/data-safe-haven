@@ -4,7 +4,7 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -21,12 +21,12 @@ $vnetCreateParams = @{
  "P2S VPN Certificate" = $cert
  "Virtual Network Address Space" = $config.dsg.network.vnet.cidr
  "Subnet-Identity Address Prefix" = $config.dsg.network.subnets.identity.cidr
- "Subnet-RDS Address Prefix" = $config.dsg.network.subnets.rds.cidr 
- "Subnet-Data Address Prefix" = $config.dsg.network.subnets.data.cidr 
+ "Subnet-RDS Address Prefix" = $config.dsg.network.subnets.rds.cidr
+ "Subnet-Data Address Prefix" = $config.dsg.network.subnets.data.cidr
  "GatewaySubnet Address Prefix" = $config.dsg.network.subnets.gateway.cidr
  "Subnet-Identity Name" = $config.dsg.network.subnets.identity.name
- "Subnet-RDS Name" = $config.dsg.network.subnets.rds.name 
- "Subnet-Data Name" = $config.dsg.network.subnets.data.name 
+ "Subnet-RDS Name" = $config.dsg.network.subnets.rds.name
+ "Subnet-Data Name" = $config.dsg.network.subnets.data.name
  "GatewaySubnet Name" = $config.dsg.network.subnets.gateway.name
  "DNS Server IP Address" =  $config.dsg.dc.ip
 }
@@ -41,13 +41,13 @@ New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
 
 # Fetch DSG Vnet
 $dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
-                                -ResourceGroupName $config.dsg.network.vnet.rg 
+                                -ResourceGroupName $config.dsg.network.vnet.rg
 
 # Temporarily switch to management subscription
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # Fetch SHM Vnet
 $shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name `
-                                -ResourceGroupName $config.shm.network.vnet.rg 
+                                -ResourceGroupName $config.shm.network.vnet.rg
 # Add Peering to SHM Vnet
 $shmPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name

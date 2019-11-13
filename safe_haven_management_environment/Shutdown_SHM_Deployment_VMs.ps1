@@ -4,7 +4,7 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
 
 # Get SHM config
 $config = Get-ShmFullConfig($shmId)

@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GeneratePassword.psm1 -Force
-Import-Module $PSScriptRoot/../../new_dsg_environment/dsg_deploy_scripts/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-ShmFullConfig($shmId)

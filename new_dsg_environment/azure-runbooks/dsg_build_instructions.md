@@ -178,7 +178,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Generate a new full configuration file for the new DSG using the following commands.
 
-  - `Import-Module ./DsgConfig.psm1 -Force`
+  - `Import-Module ../../common_powershell/Configuration.psm1 -Force`
 
   - `Add-DsgConfig -dsgId <dsg-id>`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`)
 
@@ -535,9 +535,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 - Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
 
 - If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://rds.<dsg-domain>`, it is likely that you missed the step of installing the RDS webclient.
-    
+
     - Go back to the previous section and run the webcleint installation step.
-    
+
     - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
 
         - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
@@ -545,9 +545,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
         - `Publish-RDWebClientPackage -Type Production -Latest`
 
 - If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
-    
+
     - Ensure that the SHM NPS server RADIUS Client configuration is using the **private** IP address of the RDS Gateway and **not** its public one.
-    
+
     - Ensure the same shared secret from the `dsg-<dsg-id>-nps-secret` in the DSG KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the DSG RDS Gateway RD CAP Store configuration (see previous sections for instructions).
 
 - If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been increased as described in a previous section. It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.

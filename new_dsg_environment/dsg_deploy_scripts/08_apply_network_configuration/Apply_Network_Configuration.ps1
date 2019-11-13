@@ -4,7 +4,7 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -83,7 +83,7 @@ $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEa
 Write-Host (" - Updating '" + $httpsInRuleName + "' rule on '" + $nsgGateway.name + "' NSG to '" `
             + $httpsInRuleBefore.Access  + "' access from '" + $allowedSources `
             + "' (was previously '" + $httpsInRuleBefore.SourceAddressPrefix + "')")
-             
+
 $nsgGatewayHttpsInRuleParams = @{
   Name = $httpsInRuleName
   NetworkSecurityGroup = $nsgGateway
@@ -129,7 +129,7 @@ $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEa
 Write-Host (" - Updating '" + $internetOutRuleName + "' rule on '" + $nsgLinux.name + "' NSG to '" `
             + $access  + "' access to '" + $internetOutRuleBefore.DestinationAddressPrefix `
             + "' (was previously '" + $internetOutRuleBefore.Access + "')")
-             
+
 $nsgLinuxInternetOutRuleParams = @{
   Name = $internetOutRuleName
   NetworkSecurityGroup = $nsgLinux
@@ -158,7 +158,7 @@ Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + 
 # === Ensure DSG is peered to correct mirror set ===
 # ==================================================
 # We do this as the Tier of the DSG may have changed and we want to ensure we are peered
-# to the correct mirror set fo its current Tier and not peered to the mirror set for 
+# to the correct mirror set fo its current Tier and not peered to the mirror set for
 # any other Tier
 $peeringDir = (Join-Path $PSScriptRoot ".." "09_mirror_peerings" -Resolve)
 $peeringScriptPath = (Join-Path $peeringDir "Configure_Mirror_Peering.ps1"  -Resolve)

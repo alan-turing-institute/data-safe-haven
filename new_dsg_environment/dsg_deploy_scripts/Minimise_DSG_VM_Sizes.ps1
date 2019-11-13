@@ -4,7 +4,7 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -18,7 +18,7 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Write-Host "Resizing all VMs in DSG $($config.dsg.id) to size '$vmSize'"
 
 Write-Host "===Resizing all compute VMs==="
-Get-AzVM -ResourceGroupName $config.dsg.dsvm.rg | ForEach-Object {$vm = $_; $vm.HardwareProfile.VmSize = $vmSize; Update-AzVM -VM $vm -ResourceGroupName $config.dsg.dsvm.rg -NoWait}  
+Get-AzVM -ResourceGroupName $config.dsg.dsvm.rg | ForEach-Object {$vm = $_; $vm.HardwareProfile.VmSize = $vmSize; Update-AzVM -VM $vm -ResourceGroupName $config.dsg.dsvm.rg -NoWait}
 Write-Host "===Resizing web app servers==="
 $vm = Get-AzVM -ResourceGroupName $config.dsg.linux.rg -Name $config.dsg.linux.gitlab.vmName
 $vm.HardwareProfile.VmSize = $vmSize

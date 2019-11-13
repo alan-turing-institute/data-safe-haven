@@ -4,9 +4,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/GenerateSasToken.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
@@ -91,7 +91,7 @@ $adminPassword = ConvertTo-SecureString $adminPassword -AsPlainText -Force;
 $netbiosNameMaxLength = 15
 if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "Netbios name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
-} 
+}
 $params = @{
  "DC Name" = $config.dsg.dc.vmName
  "VM Size" = $vmSize

@@ -4,8 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
-Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -24,7 +24,7 @@ New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.locatio
 
 # Create a keyvault
 New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
-    
+
 # Temporarily switch to management subscription
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
@@ -74,9 +74,9 @@ $params = @{
 Write-Host "Adding DSG users and groups to SHM"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
-    -Parameter $params   
+    -Parameter $params
 Write-Host $result.Value[0].Message
-Write-Host $result.Value[1].Message   
+Write-Host $result.Value[1].Message
 
 # === Add DSG DNS entries to SHM ====
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_New_DSG_To_DNS_Remote.ps1"
@@ -96,7 +96,7 @@ Write-Host $result.Value[1].Message
 
 Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.dsg.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
 Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
-    
+
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
 

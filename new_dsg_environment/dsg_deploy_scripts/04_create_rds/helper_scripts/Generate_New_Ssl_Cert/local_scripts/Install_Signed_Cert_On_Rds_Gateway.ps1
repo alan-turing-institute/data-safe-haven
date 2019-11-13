@@ -8,7 +8,7 @@ param(
 )
 
 Import-Module Az
-Import-Module (Join-Path $PSScriptRoot ".." ".." ".." ".." "DsgConfig.psm1") -Force
+Import-Module $PSScriptRoot/../../../../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
@@ -34,6 +34,6 @@ Write-Host " - Installing SSL certificate on VM '$vmName'"
 Invoke-AzVMRunCommand -ResourceGroupName $vmResourceGroup -Name $vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
-    
+
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
