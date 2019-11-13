@@ -26,7 +26,7 @@ Param(
 $blobNames = $pipeSeparatedBlobNames.Split("|")
 
 # Clear any previously downloaded artifacts
-Write-Host -ForegroundColor Cyan "Clearing all pre-existing files and folders from '$remoteDir'"
+Write-Host "Clearing all pre-existing files and folders from '$remoteDir'"
 if(Test-Path -Path $remoteDir){
   Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
 } else {
@@ -35,7 +35,7 @@ if(Test-Path -Path $remoteDir){
 
 # Download artifacts
 $numBlobs = $blobNames.Length
-Write-Host -ForegroundColor Cyan "Downloading $numBlobs files to '$remoteDir'..."
+Write-Host "Downloading $numBlobs files to '$remoteDir'..."
 foreach($blobName in $blobNames){
   $fileName = Split-Path -Leaf $blobName
   $fileDirRel = Split-Path -Parent $blobName
@@ -49,13 +49,23 @@ foreach($blobName in $blobNames){
 }
 
 # Download AzureADConnect
-Write-Host -ForegroundColor Cyan "Downloading AzureADConnect to '$remoteDir'..."
+Write-Host "Downloading AzureADConnect to '$remoteDir'..."
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi -OutFile $remoteDir\AzureADConnect.msi;
+if ($?) {
+  Write-Host " [o] Completed"
+} else {
+  Write-Host " [x] Failed to download AzureADConnect"
+}
 
 # Extract GPOs
-Write-Host -ForegroundColor Cyan "Extracting zip files..."
+Write-Host "Extracting zip files..."
 Expand-Archive $remoteDir\GPOs.zip -DestinationPath $remoteDir -Force
+if ($?) {
+  Write-Host " [o] Completed"
+} else {
+  Write-Host " [x] Failed to extract GPO zip files"
+}
 
 # List items
-Write-Host -ForegroundColor Cyan "Contents of '$remoteDir' are:"
+Write-Host "Contents of '$remoteDir' are:"
 Write-Host (Get-ChildItem -Path $remoteDir)

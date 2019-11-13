@@ -1,15 +1,15 @@
 ﻿Param(
-  [Parameter(Mandatory = $true, 
+  [Parameter(Mandatory = $true,
              HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg,
 
-  [Parameter(Mandatory = $true, 
+  [Parameter(Mandatory = $true,
              HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg,
 
-  [Parameter(Mandatory = $true, 
+  [Parameter(Mandatory = $true,
              HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg
@@ -24,9 +24,9 @@ New-ADGroup -Name "SG $dsg Research Users" -GroupScope Global -Description "SG $
 
 
 #Create Service Accounts for DSG
-write-host -ForegroundColor Green "Creating Service Accounts for $dsg"
+Write-host "Creating Service Accounts for $dsg"
 $dsghackmdaccountname = ($dsg+"hackmdldap")
-write-Host -ForegroundColor Cyan "Creating $dsghackmdaccountname account, enter password for this account when prompted"
+Write-Host "Creating $dsghackmdaccountname account, enter password for this account when prompted"
 New-ADUser  -Name "$dsg HackMD LDAP" `
             -UserPrincipalName "$dsghackmdaccountname@TURINGSAFEHAVEN.ac.uk" `
             -Path  $serviceoupath `
@@ -38,7 +38,7 @@ New-ADUser  -Name "$dsg HackMD LDAP" `
             -PasswordNeverExpires $true
 
 $dsgdsgpuaccountname = ($dsg+"dsgpuldap")
-write-Host -ForegroundColor Cyan "Creating $dsgdsgpuaccountname account, enter password for this account when prompted"
+Write-Host "Creating $dsgdsgpuaccountname account, enter password for this account when prompted"
 New-ADUser  -Name "$dsg Data Science LDAP" `
             -UserPrincipalName "$dsgdsgpuaccountname@TURINGSAFEHAVEN.ac.uk" `
             -Path  $serviceoupath `
@@ -50,7 +50,7 @@ New-ADUser  -Name "$dsg Data Science LDAP" `
             -PasswordNeverExpires $true
 
 $dsggitaccountname = ($dsg+"gitlabldap")
-write-Host -ForegroundColor Cyan "Creating $dsggitaccountname account, enter password for this account when prompted"
+Write-Host "Creating $dsggitaccountname account, enter password for this account when prompted"
 New-ADUser  -Name "$dsg GITLAB LDAP" `
             -UserPrincipalName "$dsggitaccountname@TURINGSAFEHAVEN.ac.uk" `
             -Path  $serviceoupath `
@@ -62,7 +62,7 @@ New-ADUser  -Name "$dsg GITLAB LDAP" `
             -PasswordNeverExpires $true
 
 $dsgtestaccountname = ($dsg+"testuser")
-write-Host -ForegroundColor Cyan "Creating $dsgtestaccountname account, enter password for this account when prompted"
+Write-Host "Creating $dsgtestaccountname account, enter password for this account when prompted"
 New-ADUser  -Name "$dsg Test User" `
             -UserPrincipalName "$dsgtestaccountname@TURINGSAFEHAVEN.ac.uk" `
             -Path  $usersoupath `
@@ -77,6 +77,6 @@ New-ADUser  -Name "$dsg Test User" `
 Add-ADGroupMember "SG Data Science LDAP Users" $dsgdsgpuaccountname
 
 #Add DSG test users to the relative Security Groups
-Add-ADGroupMember "SG $dsg Research Users" "$dsgtestaccountname" 
+Add-ADGroupMember "SG $dsg Research Users" "$dsgtestaccountname"
 
-write-Host -ForegroundColor Cyan "Users, Groups, OUs etc all created!"
+Write-Host "Users, Groups, OUs etc all created!"

@@ -35,66 +35,66 @@ Param(
 $adsyncAccountPasswordSecureString = ConvertTo-SecureString -String $adsyncAccountPasswordEncrypted -Key (1..16)
 
 # Enable AD Recycle Bin
-Write-Host -ForegroundColor Green "Configuring AD recycle bin..."
+Write-Host "Configuring AD recycle bin..."
 $featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $serverName).EnabledScopes | Select-String "$domainou"
 if ("$featureExists" -ne "") {
-  Write-Host -ForegroundColor Green " [o] already enabled"
+  Write-Host " [o] already enabled"
 } else {
   Enable-ADOptionalFeature -Identity "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target $domain -Server $serverName -confirm:$false
   if ($?) {
-    Write-Host -ForegroundColor Green " [o] Succeeded"
+    Write-Host " [o] Succeeded"
   } else {
-    Write-Host -ForegroundColor Red " [x] Failed!"
+    Write-Host " [x] Failed!"
   }
 }
 
 # Set admin user account password to never expire
-Write-Host -ForegroundColor Green "Setting admin account to never expire..."
+Write-Host "Setting admin account to never expire..."
 Set-ADUser -Identity $serverAdminName -PasswordNeverExpires $true
 if ($?) {
-  Write-Host -ForegroundColor Green " [o] Succeeded"
+  Write-Host " [o] Succeeded"
 } else {
-  Write-Host -ForegroundColor Red " [x] Failed!"
+  Write-Host " [x] Failed!"
 }
 
 # Set minumium password age to 0
-Write-Host -ForegroundColor Green "Changing minimum password age to 0..."
+Write-Host "Changing minimum password age to 0..."
 Set-ADDefaultDomainPasswordPolicy -Identity $domain -MinPasswordAge 0.0:0:0.0
 if ($?) {
-  Write-Host -ForegroundColor Green " [o] Succeeded"
+  Write-Host " [o] Succeeded"
 } else {
-  Write-Host -ForegroundColor Red " [x] Failed!"
+  Write-Host " [x] Failed!"
 }
 
 # Ensure that OUs exist
-Write-Host -ForegroundColor Green "Creating management OUs..."
+Write-Host "Creating management OUs..."
 "Safe Haven Research Users", "Safe Haven Security Groups", "Safe Haven Service Accounts", "Safe Haven Service Servers" | ForEach-Object {
   $ouName = $_
   $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
   if ("$ouExists" -ne "") {
-    Write-Host -ForegroundColor Green " [o] OU '$ouName' already exists"
+    Write-Host " [o] OU '$ouName' already exists"
   } else {
     New-ADOrganizationalUnit -Name "$ouName" -Description "$ouName"
     if ($?) {
-      Write-Host -ForegroundColor Green " [o] OU '$ouName' created successfully"
+      Write-Host " [o] OU '$ouName' created successfully"
     } else {
-      Write-Host -ForegroundColor Red " [x] OU '$ouName' creation failed!"
+      Write-Host " [x] OU '$ouName' creation failed!"
     }
   }
 }
 
 # Create security groups
-Write-Host -ForegroundColor Green "Creating security groups..."
+Write-Host "Creating security groups..."
 ForEach($groupName in ("SG Safe Haven Server Administrators", "SG Data Science LDAP Users")) {
   $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
   if ("$groupExists" -ne "") {
-    Write-Host -ForegroundColor Green " [o] Security group '$groupName' already exists"
+    Write-Host " [o] Security group '$groupName' already exists"
   } else {
     New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=Safe Haven Security Groups,$domainou"
     if ($?) {
-      Write-Host -ForegroundColor Green " [o] Security group '$groupName' created successfully"
+      Write-Host " [o] Security group '$groupName' created successfully"
     } else {
-      Write-Host -ForegroundColor Red " [x] Security group '$groupName' creation failed!"
+      Write-Host " [x] Security group '$groupName' creation failed!"
     }
   }
 }
@@ -106,7 +106,7 @@ $adsyncUserName = "Local AD Sync Administrator" # NB. name must be less than 20 
 $serviceOuPath = "OU=Safe Haven Service Accounts,$domainou"
 $userExists = $(Get-ADUser -Filter "Name -eq '$adsyncUserName'").Name
 if ("$userExists" -ne "") {
-  Write-Host -ForegroundColor Green " [o] Account '$adsyncUserName' already exists"
+  Write-Host " [o] Account '$adsyncUserName' already exists"
 } else {
   New-ADUser -Name "$adsyncUserName" `
              -UserPrincipalName "$adsyncAccountName@$domain" `
@@ -119,47 +119,47 @@ if ("$userExists" -ne "") {
              -Enabled $true `
              -PasswordNeverExpires $true
   if ($?) {
-    Write-Host -ForegroundColor Green " [o] AD Sync Service account '$adsyncUserName' created successfully"
+    Write-Host " [o] AD Sync Service account '$adsyncUserName' created successfully"
   } else {
-    Write-Host -ForegroundColor Red " [x] AD Sync Service account '$adsyncUserName' creation failed!"
+    Write-Host " [x] AD Sync Service account '$adsyncUserName' creation failed!"
   }
 }
 
 # Add users to security groups
-Write-Host -ForegroundColor Green "Adding users to security groups..."
+Write-Host "Adding users to security groups..."
 ForEach($groupUserPair in (("SG Safe Haven Server Administrators", "$serverAdminName"), ("Enterprise Admins", "$adsyncAccountName"))) {
   $adGroupName, $adUserName = $groupUserPair
   $membershipExists = $(Get-ADGroupMember -Identity "$adGroupName").Name | Select-String "$adUserName"
   Write-Host $(Get-ADGroupMember -Identity "$adGroupName")
   Write-Host "$adGroupName, $adUserName, $membershipExists"
   if ("$membershipExists" -eq "$adUserName") {
-    Write-Host -ForegroundColor Green " [o] Account '$adUserName' is already in '$adGroupName'"
+    Write-Host " [o] Account '$adUserName' is already in '$adGroupName'"
   } else {
     Add-ADGroupMember "$adGroupName" "$adUserName"
     if ($?) {
-      Write-Host -ForegroundColor Green " [o] Account '$adUserName' added to '$adGroupName' group"
+      Write-Host " [o] Account '$adUserName' added to '$adGroupName' group"
     } else {
-      Write-Host -ForegroundColor Red " [x] Account '$adUserName' could not be added to '$adGroupName' group!"
+      Write-Host " [x] Account '$adUserName' could not be added to '$adGroupName' group!"
     }
   }
 }
 
 # Import GPOs into Domain
-Write-Host -ForegroundColor Green "Importing GPOs..."
+Write-Host "Importing GPOs..."
 ForEach($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
                               ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"))) {
   $backup, $target = $backupTargetPair
   Import-GPO -BackupId "$backup" -TargetName "$target" -Path $oubackuppath -CreateIfNeeded
   if ($?) {
-    Write-Host -ForegroundColor Green " [o] Importing '$backup' to '$target' succeeded"
+    Write-Host " [o] Importing '$backup' to '$target' succeeded"
   } else {
-    Write-Host -ForegroundColor Red " [x] Importing '$backup' to '$target' failed!"
+    Write-Host " [x] Importing '$backup' to '$target' failed!"
   }
 }
 
 # Link GPO with OUs
-Write-Host -ForegroundColor Green "Linking GPOs to OUs..."
+Write-Host "Linking GPOs to OUs..."
 ForEach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
                            ("All Servers - Windows Services", "Domain Controllers"),
                            ("All Servers - Windows Services", "Safe Haven Service Servers"),
@@ -177,19 +177,19 @@ ForEach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
   }
   # Create a GP link if it doesn't already exist
   if ($hasGPLink) {
-    Write-Host -ForegroundColor Green " [o] GPO '$gpoName' already linked to '$ouName'"
+    Write-Host " [o] GPO '$gpoName' already linked to '$ouName'"
   } else {
     New-GPLink -Guid $gpo.ID -Target "OU=$ouName,$domainou" -LinkEnabled Yes
     if ($?) {
-      Write-Host -ForegroundColor Green " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
+      Write-Host " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
     } else {
-      Write-Host -ForegroundColor Red " [x] Linking GPO '$gpoName' to '$ouName' failed!"
+      Write-Host " [x] Linking GPO '$gpoName' to '$ouName' failed!"
     }
   }
 }
 
 # Create Reverse Lookup Zones for SHM
-Write-Host -ForegroundColor Green "Creating reverse lookup zones..."
+Write-Host "Creating reverse lookup zones..."
 # ForEach($cidr in ("10.251.0.0/24", "10.251.1.0/24")) {
 ForEach($cidr in ($identitySubnetCidr, $webSubnetCidr)) {
   $oct1, $oct2, $oct3, $oct4 = $cidr.split(".")
@@ -203,13 +203,13 @@ ForEach($cidr in ($identitySubnetCidr, $webSubnetCidr)) {
   }
   # Create reverse lookup zone if it does not already exist
   if ($zoneExists) {
-    Write-Host -ForegroundColor Green " [o] Reverse lookup zone for $cidr already exists"
+    Write-Host " [o] Reverse lookup zone for $cidr already exists"
   } else {
     Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "$cidr" -ReplicationScope Domain
     if ($?) {
-      Write-Host -ForegroundColor Green " [o] Reverse lookup zone for $cidr created successfully"
+      Write-Host " [o] Reverse lookup zone for $cidr created successfully"
     } else {
-      Write-Host -ForegroundColor Red " [x] Reverse lookup zone for $cidr could not be created!"
+      Write-Host " [x] Reverse lookup zone for $cidr could not be created!"
     }
   }
 }

@@ -31,7 +31,7 @@ Revision=1
 "@
 Set-Content -Path "F:\SYSVOL\domain\Policies\{$($gpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
 if ($?) {
-  Write-Host -ForegroundColor Green " [o] Successfully set group policies for 'Local Administrators'"
+  Write-Host " [o] Successfully set group policies for 'Local Administrators'"
 } else {
-  Write-Host -ForegroundColor Red " [x] Failed to set group policies for 'Local Administrators'"
+  Write-Host " [x] Failed to set group policies for 'Local Administrators'"
 }

@@ -21,7 +21,7 @@ $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
 # Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
 dsacls $computersContainer /G "$netbiosname\$($ldapUsersGroup):GRGWCCDC"
 if ($?) {
-  Write-Host -ForegroundColor Green " [o] Successfully delegated Active Directory permissions"
+  Write-Host " [o] Successfully delegated Active Directory permissions"
 } else {
-  Write-Host -ForegroundColor Red " [x] Failed to delegate Active Directory permissions"
+  Write-Host " [x] Failed to delegate Active Directory permissions"
 }

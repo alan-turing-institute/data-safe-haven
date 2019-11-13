@@ -115,19 +115,19 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
     - Click on "+New user" and enter the following details:
       - Name: "AAD Global Admin"
-      - Username:`admin@customdomain`
+      - Username:`admin@<custom domain>`
       - Select the directory role to "Global Administrator"
       - Click "Create"
     - Click on the username in the users list in the Azure Active Directory
     - Click the "Reset password" icon to generate a temporary password
-    - Use this password to log into https://portal.azure.com as the user `admin@customdomain`. You will either need to log out of your existing account or open an incognito/private browsing window.
+    - Use this password to log into https://portal.azure.com as the user `admin@<custom domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
       - Look in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
       - There should be a secret there called `shm-aad-admin-password`
       - Use this as the new password
-      - If Microsoft tries to get you to associate a phone number with the account, you can safely ignore this and close the browser window.
+      - If you are prompted to associate a phone number and email address with the account - do so.
     - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
-4. Navigate to `Users` and add new admin users, setting their names to `Admin - Firstname Lastname` and their usernames to `admin.firstname.lastname@customdomain`, using the custom domain you set up in the earlier step.
+4. Navigate to `Users` and add new admin users, setting their names to `Admin - Firstname Lastname` and their usernames to `admin.firstname.lastname@<custom domain>`, using the custom domain you set up in the earlier step.
 4. Let Azure set their passwords. They can reset these later.
 5. In the user list on the Azure Active Directory, for each of the new admin users:
    - Click on the username in the user list to view the user's details
@@ -136,7 +136,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Navigate back to the user list and select the next user.
 6. To enable MFA, purchase sufficient P1 licences and add them to all the new users.
    - You will also need P1 licences for standard users accessing the Safe Haven.
-   - You will need to be logged in as the "Local admin" user `admin@customdomain` to purchase a P1 subscription
+   - You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription
    - To buy P1 licences:
      - Click on `Azure Active Directory` in the left hand sidebar
      - Click on "Licences" under the "Manage" section of the left habd side bar
@@ -264,8 +264,8 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is in the `shm-dc-admin-username` secret.
-  - The password in the `shm-dc-admin-password` secret.
+  - The username is in the `shm-dcnps-admin-username` secret.
+  - The password in the `shm-dcnps-admin-password` secret.
 
 ### Install Azure Active Directory Connect
 1. Navigate to `C:\Installation`
@@ -275,10 +275,10 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Click "Install"
     - Select "Password Hash Synchronization" -> "Next"
     - Provide a global administrator details for the Azure Active Directory you are connected to
-      - you should have created `admin@customdomain` during the `Add additional administrators` step
+      - you should have created `admin@<custom domain>` during the `Add additional administrators` step
     - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
     - Select "Use and existing account" -> Enter the details of the "localadsync" user.
-      - Username: `localadsync@<full-domain-name>` (e.g. localadsync)
+      - Username: `localadsync@<custom domain>` (e.g. localadsync)
       - Password: Look in the `shm-adsync-password` secret in the management KeyVault. Click "OK" -> "Next"
       - If you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
         - In Server Manager click "Tools -> Active Directory Users and Computers"
@@ -378,8 +378,12 @@ The NPS server will now deploy.
 
 ### Configure the Network Policy Server
 
-1. Connect to NPS Server using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `dsgadmin@<full-domain>` rather than just `dsgadmin`).
+### Configure Active Directory on SHMDC1 and SHMDC2
+- Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM.
+
+
+<!-- 1. Connect to NPS Server using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `dsgadmin@<custom domain>` rather than just `dsgadmin`).
 
 2. On the Azure portal navigate to the `RG_DSG_ARTIFACTS` resource group and then the `dsg<shmid>artifacts` storage account. Click on `Files` and then the `scripts` fileshare.
 
@@ -394,32 +398,35 @@ The NPS server will now deploy.
      Expand-Archive C:/Scripts/nps/SHM_NPS.zip -DestinationPath C:\Scripts\ -Force
      cd c:\scripts
      ./Prepare_NPS_Server.ps1
-     ```
+     ``` -->
 
 ### Configure NPS server to log to text file
 
-1. On the NPS VM open the "Network Policy Server" desktop app
-2. Click on "Accounting"
-3. Select "Configure Accounting"
-4. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
-5. In the "Log file properties" section, click "Change log file properties"
-6. On the "Log file" tab, select "Daily" under "Create a new log file"
-7. Click "Ok"
+1. Connect to the NPS Server VM using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `dsgadmin@<custom domain>` rather than just `dsgadmin`).
+2. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
+3. Click on "Accounting"
+4. Select "Configure Accounting"
+5. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
+6. In the "Log file properties" section, click "Change log file properties"
+7. On the "Log file" tab, select "Daily" under "Create a new log file"
+8. Click "Ok"
 
 
 ### Add NPS policy to allow connections
 
-- In Server Manager select "Tools -> Network Policy Server"
-- Expand "NPS (Local)" and then "Policies" and select "Network policies"
-- Right click on "Network policies" and select "New"
+1. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
+2. Expand "NPS (Local)" and then "Policies" and select "Network policies"
+3. Right click on "Network policies" and select "New"
    - Set the policy name to "RDG_CAP" and click "Next"
    - Click "Add" to add a restriction
    - Select "Day and Time Restrictions" and click "Add"
    - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
    - On the next screen click "Next", leaving "Access granted checked"
-   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox then click "Next". Click "No" on the "Connection Request Policy" pop up.
+   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox then click "Next".
+   - Click "No" on the "Connection Request Policy" pop up.
    - On the "Configure constraints" screen click "Next"
-   - On the "Configure settings" screen, clcik "Next"
+   - On the "Configure settings" screen, click "Next"
    - On the "Completing network policy" screen click "Finish"
 
 **NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
@@ -430,33 +437,32 @@ This is because, without this policy, the NPS server will reject their authentic
   - Reason: An NPS extension dynamic link library (DLL) that is installed on the NPS server rejected the connection request.
 
 ### MFA Configuation
-
-- Download the "NPS Extension" from Microsoft [here](https://aka.ms/npsmfa).
-    - You will be promted to add webpages to exceptions. Do this.
-- Run the installer
-- Agree the license terms and click "Install"
-- Click "Close" once the install has completed
-- Run PowerShell as administrator and run:
+1. Navigate to `C:\Installation`
+2. Run the `NpsExtnForAzureMfaInstaller.exe` installer
+3. Agree the license terms and click "Install"
+4. Click "Close" once the install has completed
+5. Run PowerShell as administrator and run:
   ```pwsh
   cd "C:\Program Files\Microsoft\AzureMfa\Config"
   .\AzureMfaNpsExtnConfigSetup.ps1
   ```
-- Enter "Y" when prompted
-- Enter "A" when prompted
-- Sign in as the "Local Administrator" (`admin@customdomain`) user. Other administrators added as guests will not work for this step.
-  - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@customdomain` accountat this point.
-- Enter your Azure Active directory ID. To get this:
+  - Enter "Y" when prompted
+  - Enter "A" when prompted
+  - If you are prompted to add webpages to exceptions then accept them.
+6. Sign in as the "Local Administrator" (`admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
+  - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
+7. Enter your Azure Active directory ID. To get this:
   - In the Azure portal select "Azure Active Directory" in the left hand side bar
   - Select "Properties" in the left hand side bar
   - Copy the "Directory ID" field
-- If you do not get the "Service Principal" error, then enter "Y" when prompted
+8. At the message "Configuration complete. Press Enter to continue", press "Enter"
 
 #### Troubleshooting MFA configuration
 If you get a `New-msolserviceprincipalcredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
-  - Make sure you authenticate as the "Local Administrator" (`admin@customdomain`) user when prompted by the script. Other administrators added as guests will not work for this step.
+  - Make sure you authenticate as the "Local Administrator" (`admin@<custom domain>`) user when prompted by the script. Other administrators added as guests will not work for this step.
   - Make sure you are logged in as a **domain** user rather than a local user.
     -  The output of the `whoami` command in powershell should be `netBiosDomain\dsgadmin` rather than `SHMNPS\dsgadmin`
-    - If it is not, reconnect to the remote desktop with the username `dsgadmin@<full-domain>`, using the same password as before
+    - If it is not, reconnect to the remote desktop with the username `dsgadmin@<custom domain>`, using the same password as before
   - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
     - Go to the Azure Portal and click "Azure Active Directories" in the left hand side bar
     - Click "Licenses" in the left hand side bar

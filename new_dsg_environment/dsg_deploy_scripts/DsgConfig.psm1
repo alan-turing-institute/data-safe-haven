@@ -117,8 +117,8 @@ function Get-ShmFullConfig{
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword='shm-aad-admin-password'
-        dcAdminUsername='shm-dc-admin-username'
-        dcAdminPassword='shm-dc-admin-password'
+        dcAdminUsername='shm-dcnps-admin-username'
+        dcAdminPassword='shm-dcnps-admin-password'
         dcSafemodePassword='shm-dc-safemode-password'
         adsyncPassword='shm-adsync-password'
         vpnCaCertificate='shm-vpn-ca-cert'
