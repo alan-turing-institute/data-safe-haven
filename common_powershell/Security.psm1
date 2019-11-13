@@ -1,60 +1,83 @@
-# # Modified from the [System.Web.Security.Membership]::GeneratePassword() function
-# # Source : https://github.com/Microsoft/referencesource/blob/master/System.Web/Security/Membership.cs
-# # Needed because [System.Web.Security.Membership] is not in .NetCore so unavailable in Powershell 6
-# # Modifications:
-# # - Remove requirement for special characters (as these cause us problems when embedding in config files in our application)
-# # - Require at least one character from upper case, lower case and numeric character sets (using a "check and recurse" approach)
-# function New-Password {
-#     param(
-#         [int]$length = 20
-#     )
-#     [string] $password = "";
-#     [int] $index = 0;
+# Modified from the [System.Web.Security.Membership]::GeneratePassword() function
+# Source : https://github.com/Microsoft/referencesource/blob/master/System.Web/Security/Membership.cs
+# Needed because [System.Web.Security.Membership] is not in .NetCore so unavailable in Powershell 6
+# Modifications:
+# - Remove requirement for special characters (as these cause us problems when embedding in config files in our application)
+# - Require at least one character from upper case, lower case and numeric character sets (using a "check and recurse" approach)
+# ------------------------------------------------------------------------------------------------------------------------------
+function New-Password {
+    param(
+        [int]$length = 20
+    )
+    [string] $password = "";
+    [int] $index = 0;
 
-#     $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
-#     $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
+    $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
+    $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
 
-#     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create();
-#     $cryptoRng.GetBytes($buf);
+    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create();
+    $cryptoRng.GetBytes($buf);
 
-#     $numericEnd = 10
-#     $alphaUpperEnd = 36
-#     $numCharsInSet = 62
+    $numericEnd = 10
+    $alphaUpperEnd = 36
+    $numCharsInSet = 62
 
-#     # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
-#     for([int]$iter=0; $iter -lt $length; $iter++) {
-#         [int]$i = [int] ($buf[$iter] % $numCharsInSet);
-#         if ($i -lt $numericEnd) {
-#             $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'0')) + $i);
-#         }
-#         elseif ($i -lt $alphaUpperEnd ) {
-#             $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
-#         }
-#         else {
-#             $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
-#         }
-#     }
-#     $password = -join $cBuf;
+    # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
+    for([int]$iter=0; $iter -lt $length; $iter++) {
+        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
+        if ($i -lt $numericEnd) {
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'0')) + $i);
+        }
+        elseif ($i -lt $alphaUpperEnd ) {
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
+        }
+        else {
+            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
+        }
+    }
+    $password = -join $cBuf;
 
-#     # Require at least one of each character class
-#     $numNumeric = 0;
-#     $numAlphaUpper = 0;
-#     $numAlphaLower = 0;
-#     for([int]$iter=0; $iter -lt $length; $iter++) {
-#         [int]$i = [int] ($buf[$iter] % $numCharsInSet);
-#         if ($i -lt $numericEnd) {
-#             $numNumeric++;
-#         }
-#         elseif ($i -lt $alphaUpperEnd ) {
-#             $numAlphaUpper++;
-#         }
-#         else {
-#             $numAlphaLower++;
-#         }
-#     }
-#     if(($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
-#         $password = New-Password($length);
-#     }
-#     return $password;
-# }
-# Export-ModuleMember -Function New-Password
+    # Require at least one of each character class
+    $numNumeric = 0;
+    $numAlphaUpper = 0;
+    $numAlphaLower = 0;
+    for([int]$iter=0; $iter -lt $length; $iter++) {
+        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
+        if ($i -lt $numericEnd) {
+            $numNumeric++;
+        }
+        elseif ($i -lt $alphaUpperEnd ) {
+            $numAlphaUpper++;
+        }
+        else {
+            $numAlphaLower++;
+        }
+    }
+    if(($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
+        $password = New-Password($length);
+    }
+    return $password;
+}
+Export-ModuleMember -Function New-Password
+
+
+# Ensure that a password is in the keyvault
+# -----------------------------------------
+function EnsureKeyvaultSecret {
+    param(
+        [string]$keyvaultName = "",
+        [string]$secretName = "",
+        [string]$defaultValue = $(New-Password)
+    )
+    # Attempt to retrieve secret
+    $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;
+
+    # Store default value in keyvault, then retrieve it
+    if ($null -eq $secret) {
+        $secretValue = (ConvertTo-SecureString $defaultValue -AsPlainText -Force);
+        Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue;
+        $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;
+    }
+    return $secret
+}
+Export-ModuleMember -Function EnsureKeyvaultSecret
