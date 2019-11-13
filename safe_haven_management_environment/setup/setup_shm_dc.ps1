@@ -156,9 +156,9 @@ Write-Host " - Uploading DC configuration files to storage account '$storageAcco
 Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/GPOs.zip" -Force
 Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/Run_ADSync.ps1" -Force
 
-# TODOJR: call a script that uploads files individually
-Write-Host " - Uploading NPS configuration files to storage account '$storageAccountName'"
-Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
+# # TODOJR: call a script that uploads files individually
+# Write-Host " - Uploading NPS configuration files to storage account '$storageAccountName'"
+# Set-AzStorageBlobContent -Container "scripts" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/nps/SHM_NPS.zip" -Force
 
 Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
