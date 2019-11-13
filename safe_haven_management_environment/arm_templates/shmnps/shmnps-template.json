@@ -23,6 +23,9 @@
         "Domain_Name": {
             "type": "string"
         },
+        "Shm_Id":{
+            "type": "string"
+        },
         "NPS_VM_Name": {
             "type": "string"
         },
@@ -38,7 +41,7 @@
     },
     "variables": {
         "npsnic": "[concat(parameters('NPS_VM_Name'),'-','NIC')]",
-        "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
+        "diagStorageAccountName": "[substring(concat('bootdiag', parameters('Shm_Id'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
        },

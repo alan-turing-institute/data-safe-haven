@@ -211,7 +211,7 @@ A number of files are needed for the SRE deployment. They must be added to blob 
 
 ## 3. Configure Domain Controllers (DCs)
 ### Configure Active Directory on SHMDC1 and SHMDC2
-- Run `./configure_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
+- Run `./configure_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
 
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
@@ -228,7 +228,7 @@ A number of files are needed for the SRE deployment. They must be added to blob 
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-Please note:
+**NOTE:**
 - **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
@@ -254,43 +254,56 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 ### Install Azure Active Directory Connect
 1. Navigate to `C:\Installation`
 2. Run the `AzureADConnect.msi` installer
-    - Agree to the license terms -> "Continue"
-    - Select "Customize"
+  - On the `Welcome to Azure AD Connect` screen:
+    - Tick the `I agree to the license terms` box
+    - Click "Continue"
+  - On the `Express Settings` screen:
+    - Click "Customize"
+  - On the `Install required components` screen:
     - Click "Install"
-    - Select "Password Hash Synchronization" -> "Next"
+  - On the `User sign-in` screen:
+    - Ensure that "Password Hash Synchronization" is selected
+    - Click "Next"
+  - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
-      - you should have created `admin@<custom domain>` during the `Add additional administrators` step
+    - You should have created `admin@<custom domain>` during the `Add additional administrators` step
+    - Click "Next"
+  - On the `Connect to Azure AD` screen:
     - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
-    - Select "Use and existing account" -> Enter the details of the "localadsync" user.
-      - Username: `localadsync@<custom domain>` (e.g. localadsync)
-      - Password: Look in the `shm-adsync-password` secret in the management KeyVault. Click "OK" -> "Next"
-      - If you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
-        - In Server Manager click "Tools -> Active Directory Users and Computers"
-        - Expand the domain in theleft hand panel
-        - Expand the "Safe Haven Service Accounts" OU
-        - Right click on the "Local AD Sync Administrator" user and select "reset password"
-        - Set the password to the the secret value from the `sh-management-adsync` secret in the management KeyVault.
-        - Leave the other settings as is and click "Ok"
-    - On the `Azure AD sign-in configuration` screen:
-      - Verify that the `User Principal Name` is set to `userPrincipalName`
-      - Click "Next"
-    - On the `Domain and OU filtering` screen:
-      - Select "Sync Selected domains and OUs"
-      - Expand the domain and deselect all objects
-      - Select "Safe Haven Research Users"
-      - Click "Next"
-    - On the `Domain and OU filtering` screen:
-      - Click "Next"
-    - On the `Filter users and devices` screen:
-      - Select "Synchronize all users and devices"
-      - Click "Next"
-    - On the `Optional features` screen:
-      - Select "Password Writeback"
-      - Click "Next"
-    - On the `Ready to configure` screen:
-      - Click "Install"
-    - On the `Configuration complete` screen:
-      - Click "Exit"
+    - On the `AD forest account` pop-up:
+      - Select "Use existing AD account"
+      - Enter the details of the "localadsync" user.
+        - Username: `localadsync@<custom domain>` (e.g. localadsync)
+        - Password: Look in the `shm-adsync-password` secret in the management KeyVault.
+      - Click "OK"
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
+          - In Server Manager click "Tools -> Active Directory Users and Computers"
+          - Expand the domain in the left hand panel
+          - Expand the "Safe Haven Service Accounts" OU
+          - Right click on the "Local AD Sync Administrator" user and select "reset password"
+          - Set the password to the the secret value from the `shm-adsync-password` secret in the management KeyVault.
+          - Leave the other settings as is and click "Ok"
+    - Click "Next"
+  - On the `Azure AD sign-in configuration` screen:
+    - Verify that the `User Principal Name` is set to `userPrincipalName`
+    - Click "Next"
+  - On the `Domain and OU filtering` screen:
+    - Select "Sync Selected domains and OUs"
+    - Expand the domain and deselect all objects
+    - Select "Safe Haven Research Users"
+    - Click "Next"
+  - On the `Domain and OU filtering` screen:
+    - Click "Next"
+  - On the `Filter users and devices` screen:
+    - Select "Synchronize all users and devices"
+    - Click "Next"
+  - On the `Optional features` screen:
+    - Select "Password Writeback"
+    - Click "Next"
+  - On the `Ready to configure` screen:
+    - Click "Install"
+  - On the `Configuration complete` screen:
+    - Click "Exit"
 
 
 ### Additional AAD Connect Configuration

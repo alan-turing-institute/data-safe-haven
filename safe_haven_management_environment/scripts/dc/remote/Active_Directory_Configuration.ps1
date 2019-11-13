@@ -8,25 +8,25 @@ Param(
   [Parameter(Position=0, HelpMessage="Enter Path to GPO backup files")]
   [ValidateNotNullOrEmpty()]
   [String]$oubackuppath,
-  [Parameter(Position=1, HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
+  [Parameter(Position=1, HelpMessage="Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
   [ValidateNotNullOrEmpty()]
   [String]$domainou,
-  [Parameter(Position=2, HelpMessage = "Domain (eg. TURINGSAFEHAVEN.ac.uk)")]
+  [Parameter(Position=2, HelpMessage="Domain (eg. TURINGSAFEHAVEN.ac.uk)")]
   [ValidateNotNullOrEmpty()]
   [String]$domain,
-  [Parameter(Position=3, HelpMessage = "Identity subnet CIDR")]
+  [Parameter(Position=3, HelpMessage="Identity subnet CIDR")]
   [ValidateNotNullOrEmpty()]
   [String]$identitySubnetCidr,
-  [Parameter(Position=4, HelpMessage = "Web subnet CIDR")]
+  [Parameter(Position=4, HelpMessage="Web subnet CIDR")]
   [ValidateNotNullOrEmpty()]
   [String]$webSubnetCidr,
-  [Parameter(Position=5, HelpMessage = "Server name")]
+  [Parameter(Position=5, HelpMessage="Server name")]
   [ValidateNotNullOrEmpty()]
   [String]$serverName,
-  [Parameter(Position=6, HelpMessage = "Server admin name")]
+  [Parameter(Position=6, HelpMessage="Server admin name")]
   [ValidateNotNullOrEmpty()]
   [String]$serverAdminName,
-  [Parameter(Position=7, HelpMessage = "ADSync account password as an encrypted string")]
+  [Parameter(Position=7, HelpMessage="ADSync account password as an encrypted string")]
   [ValidateNotNullOrEmpty()]
   [String]$adsyncAccountPasswordEncrypted
 )
@@ -68,8 +68,7 @@ if ($?) {
 
 # Ensure that OUs exist
 Write-Host "Creating management OUs..."
-"Safe Haven Research Users", "Safe Haven Security Groups", "Safe Haven Service Accounts", "Safe Haven Service Servers" | ForEach-Object {
-  $ouName = $_
+ForEach($ouName in ("Safe Haven Research Users", "Safe Haven Security Groups", "Safe Haven Service Accounts", "Safe Haven Service Servers")) {
   $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
   if ("$ouExists" -ne "") {
     Write-Host " [o] OU '$ouName' already exists"
@@ -114,7 +113,6 @@ if ("$userExists" -ne "") {
              -SamAccountName $adsyncAccountName `
              -DisplayName "$adsyncUserName" `
              -Description "Azure AD Connect service account" `
-             # -AccountPassword (ConvertTo-SecureString $adsyncAccountPassword -AsPlainText -Force) `
              -AccountPassword $adsyncAccountPasswordSecureString `
              -Enabled $true `
              -PasswordNeverExpires $true
@@ -161,10 +159,10 @@ ForEach($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All serv
 # Link GPO with OUs
 Write-Host "Linking GPOs to OUs..."
 ForEach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
-                           ("All Servers - Windows Services", "Domain Controllers"),
-                           ("All Servers - Windows Services", "Safe Haven Service Servers"),
-                           ("All Servers - Windows Update", "Domain Controllers"),
-                           ("All Servers - Windows Update", "Safe Haven Service Servers"))) {
+                            ("All Servers - Windows Services", "Domain Controllers"),
+                            ("All Servers - Windows Services", "Safe Haven Service Servers"),
+                            ("All Servers - Windows Update", "Domain Controllers"),
+                            ("All Servers - Windows Update", "Safe Haven Service Servers"))) {
   $gpoName, $ouName = $gpoOuNamePair
   $gpo = Get-GPO -Name "$gpoName"
   # Check for a match in existing GPOs
