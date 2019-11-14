@@ -25,12 +25,12 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 # Deploy NPS from template
 # ------------------------
 New-AzResourceGroup -Name $config.nps.rg -Location $config.location
-$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminUsername).SecretValueText;
-$dcAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcAdminPassword).SecretValueText;
+$dcNpsAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcNpsAdminUsername).SecretValueText;
+$dcNpsAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcNpsAdminPassword).SecretValueText;
 New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
         -templatefile "$PSScriptRoot/../arm_templates/shmnps/shmnps-template.json"`
-        -Administrator_User $dcAdminUsername  `
-        -Administrator_Password (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force) `
+        -Administrator_User $dcNpsAdminUsername  `
+        -Administrator_Password (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force) `
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Domain_Name $config.domain.fqdn `
         -VM_Size $vmSize `

@@ -300,12 +300,16 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Click "Next"
   - On the `Ready to configure` screen:
     - Click "Install"
+    - This may take a few minutes to complete
   - On the `Configuration complete` screen:
     - Click "Exit"
 
 
 ### Additional AAD Connect Configuration
 1. Open the `Synchronization Rules Editor` from the start menu
+
+  ![synchronisation rules](images/synchronisation_rules.png)
+
 2. Change the "Direction" drop down to "Outbound"
 3. Select the `Out to AAD - User Join` rule.
   - Click "Disable".
@@ -332,15 +336,15 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ### Validation of AD sync
 1. Add a research user:
-  - Open `Active Directory Users and Computers`
+  - Open `Active Directory Users and Computers` (from `Server Manager -> Tools` or from the Start Menu)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
     - First name: Test
     - Lastname: Research User
-    - User login name: test-res
+    - User login name: `test-adsync`
     - Click "Next"
-  - Enter a default password (eg. `Default@Test1234!`)
+  - Enter a default password of your choice
     - Click "Next"
   - Click "Finish"
 2. Force a sync to the Azure Active Directory

@@ -5,5 +5,5 @@ param(
   $sync = "Initial"
 )
 
-Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
 Start-ADSyncSyncCycle -PolicyType $sync
