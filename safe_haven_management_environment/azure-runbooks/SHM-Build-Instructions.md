@@ -9,10 +9,12 @@
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - Azure CLI (bash)
   - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+- OpenSSL
+  - Install using your package manager of choice
 
 
 
-## 0. Setup Azure Active Directory (AAD) with P1 Licenses
+## 1. Setup Azure Active Directory (AAD) with P1 Licenses
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
@@ -61,7 +63,7 @@ Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / su
 
 
 
-## 1. Deploy VNET and Domain Controllers
+## 2. Deploy VNET and Domain Controllers
 ### Core SHM configuration properties
 The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying an SRE environment.
 The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shmId>` is a short ID to identify the environment (e.g. `testb`).
@@ -210,9 +212,8 @@ A number of files are needed for the SRE deployment. They must be added to blob 
 
 
 ## 3. Configure Domain Controllers (DCs)
-### Configure Active Directory on SHMDC1 and SHMDC2
-- Run `./configure_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs.
-
+<!-- ### Configure Active Directory on SHMDC1 and SHMDC2
+- Run `./configure_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs. -->
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
@@ -368,7 +369,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 
 
-## 4. Deploy Network Policy Server (NPS)
+## 4. Deploy and configure Network Policy Server (NPS)
 1. In the data-safe-haven repository, deploy the NPS server using the following commands:
    ```pwsh
    cd ./data-safe-haven/safe_haven_management_environment/setup
@@ -378,8 +379,8 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 The NPS server will now deploy.
 
 
-### Configure the Network Policy Server
-- Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM.
+<!-- ### Configure the Network Policy Server
+- Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM. -->
 
 
 ### Configure NPS server to log to text file

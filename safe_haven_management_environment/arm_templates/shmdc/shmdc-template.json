@@ -94,7 +94,7 @@
         "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
         "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
         "avsetname": "AVSET_SHM_VM_DC",
-        "diagStorageAccountName": "[substring(concat('bootdiag', parameters('Shm_Id'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
+        "diagStorageAccountName": "[substring(concat('dcbootdiag', parameters('Shm_Id'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
