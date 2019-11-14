@@ -14,7 +14,7 @@ $config = Get-DsgConfig($dsgId)
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 $storageAccountSubscription = $config.dsg.subscriptionName;
-$_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
+$_ = Set-AzContext -Subscription $storageAccountSubscription;
 
 # Set deployment parameters not directly set in config file
 $vmSize = "Standard_DS2_v2";
