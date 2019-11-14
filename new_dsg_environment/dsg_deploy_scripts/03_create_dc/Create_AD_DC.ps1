@@ -17,7 +17,7 @@ $storageAccountSubscription = $config.dsg.subscriptionName;
 $_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
 
 # Set deployment parameters not directly set in config file
-$vmSize = "Standard_B2ms";
+$vmSize = "Standard_DS2_v2";
 
 # Upload artifacts to storage account
 $storageAccountLocation = $config.dsg.location
