@@ -18,7 +18,7 @@ $adminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -nam
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 # VM sizes
-$rdsGatewayVmSize = "Standard_B2ms"
+$rdsGatewayVmSize = "Standard_DS2_v2"
 $rdsHostVmSize = "Standard_DS2_v2"
 
 $params = @{
