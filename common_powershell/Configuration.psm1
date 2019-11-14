@@ -189,14 +189,13 @@ function Add-DsgConfig {
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
-        rg = "RG_SHM_PKG_MIRRORS"
         vnet = [ordered]@{}
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if(@("2", "3").Contains($config.dsg.tier)){
-        $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
+        $config.dsg.mirrors.vnet.name = "VNET_SHM_" + $($config.shm.id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.dsg.tier
         $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
         $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
     } elseif(@("0", "1").Contains($config.dsg.tier)) {
@@ -239,47 +238,47 @@ function Add-DsgConfig {
             data = [ordered]@{}
         }
     }
-    $config.dsg.network.vnet.rg = "RG_DSG_VNET"
-    $config.dsg.network.vnet.name = "VNET_DSG" + $config.dsg.id
+    $config.dsg.network.vnet.rg = "RG_SRE_VNET"
+    $config.dsg.network.vnet.name = "VNET_SRE_" + $($config.dsg.id).ToUpper()
     $config.dsg.network.vnet.cidr = $dsgBasePrefix + "." + $dsgThirdOctet + ".0/21"
-    $config.dsg.network.subnets.identity.name = "Subnet-Identity"
+    $config.dsg.network.subnets.identity.name = "IdentitySubnet"
     $config.dsg.network.subnets.identity.prefix =  $dsgBasePrefix + "." + $dsgThirdOctet
     $config.dsg.network.subnets.identity.cidr = $config.dsg.network.subnets.identity.prefix + ".0/24"
-    $config.dsg.network.subnets.rds.name = "Subnet-RDS"
+    $config.dsg.network.subnets.rds.name = "RDSSubnet"
     $config.dsg.network.subnets.rds.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 1)
     $config.dsg.network.subnets.rds.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
-    $config.dsg.network.subnets.data.name = "Subnet-Data"
+    $config.dsg.network.subnets.data.name = "SharedDataSubnet"
     $config.dsg.network.subnets.data.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 2)
     $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
     $config.dsg.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
-    $config.dsg.network.nsg.data.rg = "RG_DSG_LINUX"
-    $config.dsg.network.nsg.data.name = "NSG_Linux_Servers"
+    $config.dsg.network.nsg.data.rg = "RG_SRE_SHARED_DATA"
+    $config.dsg.network.nsg.data.name = "NSG_SRE_SHARED_DATA"
 
     # --- Storage config --
     $config.dsg.storage = [ordered]@{
         artifacts = [ordered]@{}
     }
-    $config.dsg.storage.artifacts.rg = "RG_DSG_ARTIFACTS"
-    $config.dsg.storage.artifacts.accountName = "dsg$($config.dsg.id)artifacts"
+    $config.dsg.storage.artifacts.rg = "RG_SRE_ARTIFACTS"
+    $config.dsg.storage.artifacts.accountName = "sre$($config.dsg.id)artifacts"
 
     # --- Secrets ---
     $config.dsg.keyVault = [ordered]@{
-        name = "kv-" + $config.shm.id + "-dsg" + $config.dsg.id
-        rg = "RG_DSG_SECRETS"
+        name = "kv-" + $config.shm.id + "-sre-" + $($config.dsg.id).ToLower()
+        rg = "RG_SRE_SECRETS"
     }
 
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
-    $config.dsg.dc.rg = "RG_DSG_DC"
-    $config.dsg.dc.vmName = "DC-DSG" + $config.dsg.id
+    $config.dsg.dc.rg = "RG_SRE_DC"
+    $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
     $config.dsg.dc.admin = [ordered]@{
-        usernameSecretName = "dsg" + $config.dsg.id + "-dc-admin-username"
-        passwordSecretName = "dsg" + $config.dsg.id + "-dc-admin-password"
+        usernameSecretName = "sre-" + $config.dsg.id + "-dc-admin-username"
+        passwordSecretName = "sre-" + $config.dsg.id + "-dc-admin-password"
     }
 
     # --- Domain users ---
@@ -312,24 +311,24 @@ function Add-DsgConfig {
         sessionHost1 = [ordered]@{}
         sessionHost2 = [ordered]@{}
     }
-    $config.dsg.rds.rg = "RG_DSG_RDS"
+    $config.dsg.rds.rg = "RG_SRE_RDS"
     $config.dsg.rds.nsg = [ordered]@{
         gateway = [ordered]@{}
         sessionHosts = [ordered]@{}
     }
-    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
+    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_SERVER"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
-    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
-    $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id
+    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SESSION_HOSTS"
+    $config.dsg.rds.gateway.vmName = "RDS-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
-    $config.dsg.rds.gateway.npsSecretName = "dsg$($config.dsg.id)-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "RDSSH1-DSG" + $config.dsg.id
+    $config.dsg.rds.gateway.npsSecretName = "sre-" + $($config.dsg.id).ToLower() + "-nps-secret"
+    $config.dsg.rds.sessionHost1.vmName = "RDSSH1-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "RDSSH2-DSG" + $config.dsg.id
+    $config.dsg.rds.sessionHost2.vmName = "RDSSH2-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
@@ -338,8 +337,8 @@ function Add-DsgConfig {
 
     # Data server
     $config.dsg.dataserver = [ordered]@{}
-    $config.dsg.dataserver.rg = "RG_DSG_DATA"
-    $config.dsg.dataserver.vmName = "DATA-DSG" + $config.dsg.id
+    $config.dsg.dataserver.rg = "RG_SRE_DATA"
+    $config.dsg.dataserver.vmName = "DATA-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
@@ -349,28 +348,28 @@ function Add-DsgConfig {
         gitlab = [ordered]@{}
         hackmd = [ordered]@{}
     }
-    $config.dsg.linux.rg = "RG_DSG_LINUX"
-    $config.dsg.linux.nsg = "NSG_Linux_Servers"
-    $config.dsg.linux.gitlab.vmName = "GITLAB-DSG" + $config.dsg.id
+    $config.dsg.linux.rg = $config.dsg.network.nsg.data.rg
+    $config.dsg.linux.nsg = $config.dsg.network.nsg.data.name
+    $config.dsg.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
-    $config.dsg.linux.gitlab.rootPasswordSecretName = "dsg" + $config.dsg.id + "-gitlab-root-password"
-    $config.dsg.linux.hackmd.vmName = "HACKMD-DSG" + $config.dsg.id
+    $config.dsg.linux.gitlab.rootPasswordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-gitlab-root-password"
+    $config.dsg.linux.hackmd.vmName = "HACKMD-SRE-" + $($config.dsg.id).ToUpper()
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
 
     # Compute VMs
     $config.dsg.dsvm = [ordered]@{}
-    $config.dsg.dsvm.rg = "RG_DSG_COMPUTE"
+    $config.dsg.dsvm.rg = "RG_SRE_COMPUTE"
     $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
     $config.dsg.dsvm.admin = [ordered]@{
-        username = "dsgadmin"
-        passwordSecretName = "dsg" + $config.dsg.id + "-dsvm-admin-password"
+        username = "sreadmin"
+        passwordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-dsvm-admin-password"
     }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)

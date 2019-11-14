@@ -69,20 +69,19 @@
   - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG suubscription
 
 - Access to a public routable domain name for the DSG and its name servers
-
-  - This should be called `dsgroup<dsg-id>.co.uk` and Rob Clarke can buy a new one if required
-
-  - A DNS for this domain must exist in the Safe Haven Management subscription, in the `RG_SHM_DNS` resource group. To create a new DNS zone:
-
+  - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `testsandbox.dsgroupdev.co.uk`)
+  - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
+  - To create a new DNS zone:
     - From within the resource group click `"+" Add -> DNS Zone` and click "create"
-
     - Set the **Name** field to the DSG domain (i.e. `dsgroup<dsg-id>.co.uk`)
-
-    - Click "create and review"
-
-    - View the new Azure DNS zone and copy the 4 nameservers in the "NS" record.
-
-    - Send the nameservers to Rob Clarke to add the domain's DNS record at the domain registrar
+    - Click "Review + create"
+    - Once deployment is finished, click "Go to resource" to view the new Azure DNS zone
+    - Copy the 4 nameservers in the "NS" record to the domain's DNS record
+        - if this is a top-level domain, contact whoever registered the domain
+        - if this is a subdomain of an existing Azure domain (eg. `testsandbox.dsgroupdev.co.uk` then:
+            - go to the DNS zone for the top-level domain in Azure
+            - add a new NS record using the 4 nameservers you copied down above
+            ![Subdomain NS record](images/subdomain_ns_record.png)
 
 <!-- ### Install and configure PowerShell for Azure
 
@@ -215,11 +214,11 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   **=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
 
-- Clear any remaining DSG data from the SHM by running `./Remove_DSG_Data_From_SHM.ps1 `, entering the DSG ID when prompted.
+- Clear any remaining DSG data from the SHM by running `./Remove_DSG_Data_From_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config.
 
 ### Set up users and DNS
 
-- Prepare SHM by running `./Prepare_SHM.ps1`, entering the DSG ID when prompted
+- Prepare SHM by running `./Prepare_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config
 
 - This step also creates a DSG KeyVault in the DSG subscription in `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>-dsg<dsg-id>`. Additional deployment steps will add secrets to this KeyVault and you will need to access some of these for some of the manual configiration steps later.
 

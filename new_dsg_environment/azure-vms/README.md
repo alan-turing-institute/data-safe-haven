@@ -14,7 +14,7 @@ The build (based on Ubuntu 18.04) takes approximately 3 hours
 ```bash
 usage: ./images_build_azure_compute_vm.sh [-h] [-s subscription] [-r resource_group] [-z vm_size]
   -h                           display help
-  -s subscription              specify subscription for building the VM. (defaults to 'Safe Haven VM Images')
+  -s subscription              specify subscription for building the VM. (defaults to 'Turing Safe Haven VM Images')
   -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_BUILD_CANDIDATES')
   -z vm_size                   size of the VM to use for build (defaults to 'Standard_E16s_v3')
 ```
@@ -23,7 +23,7 @@ usage: ./images_build_azure_compute_vm.sh [-h] [-s subscription] [-r resource_gr
 Build an image based off Ubuntu 18.04 called `CandidateComputeVM-Ubuntu1804Base-<date>`
 
 ```bash
-./images_build_azure_compute_vm.sh -s "Safe Haven VM Images"
+./images_build_azure_compute_vm.sh -s "Turing Safe Haven VM Images"
 ```
 
 Build an image in the `TestBuild` resource group
@@ -41,7 +41,7 @@ Once you are happy with a particular candidate, you can convert it into an image
 usage: ./images_convert_azure_vm_to_image.sh [-h] -n machine_name [-s subscription] [-r resource_group_build] [-t resource_group_images]
   -h                           display help
   -n machine_name [required]   specify a machine name to turn into an image. Ensure that the build script has completely finished before running this [either this or source_image are required].
-  -s subscription              specify subscription for storing the VM images. (defaults to 'Safe Haven VM Images')
+  -s subscription              specify subscription for storing the VM images. (defaults to 'Turing Safe Haven VM Images')
   -r resource_group_build      specify resource group where the machine already exists (defaults to 'RG_SH_BUILD_CANDIDATES')
   -t resource_group_images     specify resource group where the image will be stored (defaults to 'RG_SH_IMAGE_STORAGE')
 ```

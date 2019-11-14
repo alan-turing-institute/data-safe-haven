@@ -38,11 +38,16 @@ if($dsgResources -or $dsgResourceGroups) {
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 # === Remove all DSG secrets from SHM KeyVault ===
 function Remove-DsgSecret($secretName){
-  if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
-    Write-Host " - Deleting secret '$secretName'"
-    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force
+  $vault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name
+  if ($vault -eq $null) {
+    Write-Host " - Keyvault '$($config.dsg.keyVault.name)' does not exist"
   } else {
-    Write-Host " - No secret '$secretName' exists"
+    if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
+      Write-Host " - Deleting secret '$secretName'"
+      Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force
+    } else {
+      Write-Host " - No secret '$secretName' exists"
+    }
   }
 }
 Write-Host "Removing DSG secrets from SHM KeyVault"
