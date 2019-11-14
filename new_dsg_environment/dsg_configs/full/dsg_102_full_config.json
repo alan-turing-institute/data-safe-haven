@@ -277,5 +277,6 @@
         "passwordSecretName": "dsg102-dsvm-admin-password"
       }
     }
-  }
+  },
+  "adminSecurityGroupName": "Safe Haven Production Admins"
 }

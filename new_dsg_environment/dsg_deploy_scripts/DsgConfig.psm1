@@ -173,6 +173,8 @@ function Add-DsgConfig {
     $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
     $config.dsg.tier = $dsgConfigBase.tier
+    $config.adminSecurityGroupName = $dsgConfigBase.adminSecurityGroupName
+
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
