@@ -94,6 +94,9 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $conf
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
+
+# Updating Keyvault Policy
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.dsg.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
 Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
     
