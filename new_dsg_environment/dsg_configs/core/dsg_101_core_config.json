@@ -1,5 +1,5 @@
 {
-    "subscriptionName": "Turing SRE – Turkcell",
+    "subscriptionName": "Turing SRE - 101 - Turkcell",
     "adminSecurityGroupName" : "Safe Haven Production Admins",
     "dsgId": "101",
     "shmId": "turing1",
