@@ -1,7 +1,7 @@
 {
     "subscriptionName": "Safe Haven Management Test A",
     "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "Safe Haven VM Images",
+    "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
     "domain": "dsgroupdev.co.uk",
     "netbiosName": "SAFEHAVENTESTA",
     "shmId": "testa",

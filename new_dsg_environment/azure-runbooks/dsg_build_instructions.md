@@ -1,7 +1,22 @@
 
 # Data Study Environment Build Instructions
 
+# Safe Haven Management Environment Build Instructions
+
 ## Prerequisites
+- An Azure subscription with sufficient credits to build the environment in
+- PowerShell for Azure
+  - Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
+  - Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
+- Microsoft Remote Desktop
+  - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
+- Azure CLI (bash)
+  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+- OpenSSL
+  - Install using your package manager of choice
+- CertBot
+  - Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
+
 
 ### Access to required Safe Haven Management resources
 
@@ -13,7 +28,7 @@
 
   - Administrative access to the relevant Safe Haven Management VMs
 
-- #### Download a client VPN certificate for the Safe Haven Management VNet
+### Download a client VPN certificate for the Safe Haven Management VNet
 
   - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>`.
 
@@ -69,25 +84,25 @@
 
     - Send the nameservers to Rob Clarke to add the domain's DNS record at the domain registrar
 
-### Install and configure PowerShell for Azure
+<!-- ### Install and configure PowerShell for Azure
 
 - [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 
   - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
 
-- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps) -->
 
-### Install and configure Azure CLI
+<!-- ### Install and configure Azure CLI
 
 - On Windows, this requires [installing the Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)(WSL) as a prerequisite.
 
 - [Install and configure the Azure CLI for Linux or OSX](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
 
-- **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine. In particular there may be issues with some functionality on the Windows Subsystem for Linux.
+- **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine. In particular there may be issues with some functionality on the Windows Subsystem for Linux. -->
 
-### Install and configure Certbot
+<!-- ### Install and configure Certbot
 
-- Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
+- Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux). -->
 
 ### Deploying multiple DSGs in parallel
 
@@ -153,11 +168,11 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
 
 ```json
 {
-    "subscriptionName": "Name of the Azure subscription the DSG environment is deployed in",
-    "dsgId": "A short ID to identify the management environment",
+    "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
+    "dsgId": "A short ID to identify the secure research environment",
     "shmId": "The short ID for the SHM segment to deploy against",
-    "tier": "The data classification tier for the DSG. This controls the outbound network restrictions on the DSG and which mirror set the DSG is peered with",
-    "domain": "The fully qualified domain name for the DSG environment",
+    "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the DSG and which mirror set the DSG is peered with",
+    "domain": "The fully qualified domain name for the SRE",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less. If the first part of the domain is less than 15 characters, use this for the netbiosName",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
     "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 DSGs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure)",
