@@ -97,10 +97,10 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
    ```
 2. From a clone of the data-safe-haven repository, setup the keyvault with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
-   cd ./safe_haven_management_environment/setup
+   cd safe_haven_management_environment/setup
    ./setup_shm_keyvault.ps1 -shmId <SHM ID>
    ```
-3. This will take a couple of minutes to run.
+3. This will take **a few minutes** to run.
 
 
 ### Add additional administrators
@@ -185,11 +185,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    ```
 2. From a clone of the data-safe-haven repository, setup the virtual network and domain controller with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
-   cd ./safe_haven_management_environment/setup
+   cd safe_haven_management_environment/setup
    ./setup_shm_dc.ps1 -shmId <SHM ID>
    ```
-3. This will take approximately **1 hour** to run. (started 1029... finished gateway at 1059)
-4. Once the script exits successfully you should see the following resource groups under the SHM-subscription:
+3. This will take **around one hour** to run.
+4. Once the script exits successfully you should see the following resource groups under the SHM subscription:
    ![Resource groups](images/resource_groups.png)
 
 
@@ -374,7 +374,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
    ```
 2. From a clone of the data-safe-haven repository, deploy the NPS server with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
-   cd ./safe_haven_management_environment/setup
+   cd safe_haven_management_environment/setup
    ./setup_shm_nps.ps1 -shmId <SHM ID>
    ```
 3. This will take approximately ...

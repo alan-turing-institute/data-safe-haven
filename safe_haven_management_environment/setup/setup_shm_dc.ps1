@@ -145,8 +145,8 @@ Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -F
 
 # Artifacts for configuring the DC
 Write-Host " - Uploading DC configuration files to storage account '$storageAccountName'"
-Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/GPOs.zip" -Force
-Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/dc/artifacts/Run_ADSync.ps1" -Force
+Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
+Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
 
 Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
 # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
@@ -223,7 +223,7 @@ $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storag
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -accountName $config.storage.artifacts.accountName;
 
 # Run import script remotely
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Import_Artifacts.ps1" -Resolve
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Import_Artifacts.ps1" -Resolve
 $params = @{
   remoteDir = "`"C:\Installation`""
   pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
@@ -248,7 +248,7 @@ $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlai
 # $dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
 
 # Run configuration script remotely
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Active_Directory_Configuration.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Configuration.ps1"
 $params = @{
   oubackuppath = "`"C:\Installation\GPOs`""
   domainou = "`"$($config.domain.dn)`""
@@ -266,7 +266,7 @@ Write-Output $result.Value;
 
 # Set the OS language to en-GB remotely
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Set_OS_Language.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Set_OS_Language.ps1"
 # Run on the primary DC
 Write-Host "Setting OS language for: $($config.dc.vmName)..."
 $result = Invoke-AzVMRunCommand -Name $config.dc.vmName -ResourceGroupName $config.dc.rg `
@@ -282,7 +282,7 @@ Write-Output $result.Value;
 # Configure group policies
 # ------------------------
 Write-Host "Configuring group policies for: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Configure_Group_Policies.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Configure_Group_Policies.ps1"
 $result = Invoke-AzVMRunCommand -Name $config.dc.vmName -ResourceGroupName $config.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
 Write-Output $result.Value;
@@ -291,7 +291,7 @@ Write-Output $result.Value;
 # Active directory delegation
 # ---------------------------
 Write-Host "Enabling Active Directory delegation: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "dc" "remote" "Active_Directory_Delegation.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Delegation.ps1"
 $params = @{
   netbiosName = "`"$($config.domain.netbiosName)`""
   ldapUsersGroup = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
