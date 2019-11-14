@@ -63,8 +63,8 @@ Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / su
 
 
 
-## 2. Deploy VNET and Domain Controllers
-### Core SHM configuration properties
+## 2. Setup Safe Haven administrators
+### Safe Haven Management configuration
 The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying an SRE environment.
 The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shmId>` is a short ID to identify the environment (e.g. `testb`).
 
@@ -102,7 +102,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
    ```pwsh
    cd ./safe_haven_management_environment/setup
    ```
-4. Run `./setup_keyvault.ps1.ps1` entering the `shmId`, as defined in the config file, when prompted
+4. Run `./setup_keyvault.ps1` entering the `shmId`, as defined in the config file, when prompted
 
 
 ### Add additional administrators
@@ -178,6 +178,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Click "Save"
 
 
+## 3. Deploy and configure VNET and Domain Controllers
 ### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into the Azure within PowerShell using the command:
    ```pwsh
@@ -211,7 +212,7 @@ A number of files are needed for the SRE deployment. They must be added to blob 
    ![rdssh-packages contents](images/rdssh-packages.png)
 
 
-## 3. Configure Domain Controllers (DCs)
+<!-- ## 3. Configure Domain Controllers (DCs) -->
 <!-- ### Configure Active Directory on SHMDC1 and SHMDC2
 - Run `./configure_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs. -->
 
