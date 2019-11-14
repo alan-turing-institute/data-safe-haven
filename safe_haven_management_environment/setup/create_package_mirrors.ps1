@@ -1,32 +1,33 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SAE ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+  [string]$shmId,
+  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+  [ValidateSet("2", "3")]
+  [string]$tier
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
-$config = Get-DsgConfig($dsgId)
+# Get SHM config
+# --------------
+$config = Get-ShmFullConfig($shmId)
 
 # Switch to appropriate management subscription
 $prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
-
-# Read additional parameters that will be passed to the bash script from the config file
-$subscription = $config.shm.subscriptionName
-$keyvaultName = $config.dsg.mirrors.keyvault.name
-$resourceGroupName = $config.dsg.mirrors.rg
-$tier = $config.dsg.tier
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Convert arguments into the format expected by mirror deployment scripts
-$arguments = "-s '$subscription' \
-              -k $keyvaultName \
-              -r $resourceGroupName \
-              -t $tier"
+$SHM_ID = "$($config.id)".ToUpper()
+$arguments = "-s '$($config.subscriptionName)' \
+              -i $SHM_ID \
+              -k $($config.keyVault.Name) \
+              -r $($config.mirrors.rg) \
+              -t $tier \
+              -v $($config.network.vnet.rg)"
 
 # Get path to bash scripts
-$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "new_dsg_environment" "azure-vms" -Resolve
 
 # Deploy external mirror servers
 Write-Host "Deploying external mirror servers"

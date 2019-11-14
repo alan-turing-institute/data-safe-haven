@@ -6,7 +6,6 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-# Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 
 
 # Get SHM config

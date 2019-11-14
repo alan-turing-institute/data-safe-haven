@@ -13,8 +13,8 @@ MIRROR_TYPE="" # must be provided
 TIER="3"
 
 # Other constants
-MACHINENAME_PREFIX_EXTERNAL="ExternalMirror"
-VALID_MIRROR_TYPES="'PyPI', 'CRAN'"
+MACHINENAME_PREFIX_EXTERNAL="MIRROR-EXTERNAL"
+VALID_MIRROR_TYPES="'PYPI', 'CRAN'"
 
 
 # Document usage for this script
@@ -67,7 +67,7 @@ az account set --subscription "$SUBSCRIPTION"
 
 # Check that a valid mirror type has been provided
 # ------------------------------------------
-if [ "$MIRROR_TYPE" != "PyPI" ] && [ "$MIRROR_TYPE" != "CRAN" ]; then
+if [ "$MIRROR_TYPE" != "PYPI" ] && [ "$MIRROR_TYPE" != "CRAN" ]; then
     echo -e "${RED}Mirror type ${BLUE}$MIRROR_TYPE${RED} was not recognised. Valid types are: $VALID_MIRROR_TYPES${END}"
     print_usage_and_exit
 fi
@@ -91,8 +91,8 @@ fi
 
 # Set machine names to remove
 # ---------------------------
-MACHINENAME_EXTERNAL="Tier${TIER}${MACHINENAME_PREFIX_EXTERNAL}${MIRROR_TYPE}"
-MACHINENAME_INTERNAL="$(echo $MACHINENAME_EXTERNAL | sed 's/External/Internal/')"
+MACHINENAME_EXTERNAL="${MIRROR_TYPE}-${MACHINENAME_PREFIX_EXTERNAL}-TIER-${TIER}"
+MACHINENAME_INTERNAL="$(echo $MACHINENAME_EXTERNAL | sed 's/EXTERNAL/INTERNAL/')"
 
 
 # Remove external and internal mirrors

@@ -137,6 +137,11 @@ function Get-ShmFullConfig{
         rg = "RG_SHM_DNS"
     }
 
+    # --- Package mirror config ---
+    $shm.mirrors = [ordered]@{
+        rg = "RG_SHM_PKG_MIRRORS"
+    }
+
     return $shm
 }
 Export-ModuleMember -Function Get-ShmFullConfig
@@ -185,12 +190,10 @@ function Add-DsgConfig {
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
-        keyVault = [ordered]@{}
         vnet = [ordered]@{}
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
-    $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if(@("2", "3").Contains($config.dsg.tier)){
         $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
@@ -384,7 +387,7 @@ function Get-DsgConfig {
         [string]$dsgId
     )
     # Read DSG config from file
-    $configRootDir = Join-Path $PSScriptRoot ".." "dsg_configs" "full" -Resolve;
+    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve;
     $configFilename =  "dsg_" + $dsgId + "_full_config.json";
     $configPath = Join-Path $configRootDir $configFilename -Resolve;
     $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;

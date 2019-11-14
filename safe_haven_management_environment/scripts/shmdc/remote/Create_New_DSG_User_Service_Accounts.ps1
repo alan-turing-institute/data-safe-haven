@@ -1,16 +1,11 @@
 ﻿Param(
-  [Parameter(Mandatory = $true,
-             HelpMessage="Data Study Group name i.e DSG1")]
+  [Parameter(Mandatory = $true, HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg,
-
-  [Parameter(Mandatory = $true,
-             HelpMessage="Data Study Group name i.e DSG1")]
+  [Parameter(Mandatory = $true, HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg,
-
-  [Parameter(Mandatory = $true,
-             HelpMessage="Data Study Group name i.e DSG1")]
+  [Parameter(Mandatory = $true, HelpMessage="Data Study Group name i.e DSG1")]
   [ValidateNotNullOrEmpty()]
   [string]$dsg
 )
