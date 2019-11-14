@@ -336,7 +336,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 ### Validation of AD sync
 1. Add a research user:
-  - Open `Active Directory Users and Computers` (from `Server Manager -> Tools` or from the Start Menu)
+  - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
@@ -361,11 +361,11 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - Select "Manage > Password reset" from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
-    ![enable_writeback](images/enable_writeback.png)
+    ![Enable writeback](images/enable_writeback.png)
   - If you changed this setting, click the "Save" icon
 - Select `Properties` from the left hand side bar
   - Make sure that `Self service password reset enabled` is set to `All`
-    ![enable_passwordreset](images/enable_passwordreset.png)
+    ![Enable password reset](images/enable_passwordreset.png)
   - If you changed this setting, click the "Save" icon
 
 
@@ -381,39 +381,41 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
    cd safe_haven_management_environment/setup
    ./setup_shm_nps.ps1 -shmId <SHM ID>
    ```
-3. This will take approximately ...
+3. This will take **a few minutes** to run.
 
 
 <!-- ### Configure the Network Policy Server
 - Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM. -->
 
 
-### Configure NPS server to log to text file
+### Configure NPS server
 1. Connect to the NPS Server VM using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `admin@<custom domain>` rather than just `admin`).
-2. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
-3. Click on "Accounting"
-4. Select "Configure Accounting"
-5. Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
-6. In the "Log file properties" section, click "Change log file properties"
-7. On the "Log file" tab, select "Daily" under "Create a new log file"
-8. Click "Ok"
-
-
-### Add NPS policy to allow connections
-1. In Server Manager select "Tools -> Network Policy Server" (or open the "Network Policy Server" desktop app directly)
-2. Expand "NPS (Local)" and then "Policies" and select "Network policies"
-3. Right click on "Network policies" and select "New"
-   - Set the policy name to "RDG_CAP" and click "Next"
-   - Click "Add" to add a restriction
-   - Select "Day and Time Restrictions" and click "Add"
-   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
-   - On the next screen click "Next", leaving "Access granted checked"
-   - On the "Configure authentication methods" screen, check the "Allow clients to connect without negotiating a connection method" checkbox then click "Next".
-   - Click "No" on the "Connection Request Policy" pop up.
-   - On the "Configure constraints" screen click "Next"
-   - On the "Configure settings" screen, click "Next"
-   - On the "Completing network policy" screen click "Finish"
+   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `<admin username>@<custom domain>` rather than just `<admin username>`).
+2. In Server Manager select `Tools -> Network Policy Server` (or open the `Network Policy Server` desktop app directly)
+3. Configure NPS server to log to text file:
+  - Click on "Accounting" under "NPS (Local)"
+    ![NPS accounting](images/nps_accounting.png)
+  - Select "Configure Accounting"
+  - Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
+  - In the "Log file properties" section, click "Change log file properties"
+  - On the "Log file" tab, select "Daily" under "Create a new log file"
+  - Click "Ok"
+4. Add NPS policy to allow connections
+  - Expand "NPS (Local)" and then "Policies" and select "Network policies"
+    ![NPS network policies](images/nps_network_policies.png)
+  - Right click on "Network policies" and select "New"
+  - Set the policy name to "RDG_CAP" and click "Next"
+  - Click "Add" to add a restriction
+  - Select "Day and Time Restrictions" and click "Add"
+  - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
+  - On the next screen click "Next", leaving "Access granted checked"
+  - On the "Configure authentication methods" screen
+    - Check the "Allow clients to connect without negotiating an authentication method" checkbox
+    - Click "Next".
+  - Click "No" on the "Connection Request Policy" pop up.
+  - On the "Configure constraints" screen click "Next"
+  - On the "Configure settings" screen, click "Next"
+  - On the "Completing network policy" screen click "Finish"
 
 **NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
 This is because, without this policy, the NPS server will reject their authentication with the following error:
@@ -436,7 +438,7 @@ This is because, without this policy, the NPS server will reject their authentic
   - Enter "Y" when prompted
   - Enter "A" when prompted
   - If you are prompted to add webpages to exceptions then accept them.
-6. Sign in as the "Local Administrator" (`admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
+6. Sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
   - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
 7. Enter your Azure Active directory ID. To get this:
   - In the Azure portal select "Azure Active Directory" in the left hand side bar
@@ -444,7 +446,7 @@ This is because, without this policy, the NPS server will reject their authentic
   - Copy the "Directory ID" field
 8. At the message "Configuration complete. Press Enter to continue", press "Enter"
 
-#### Troubleshooting MFA configuration
+**Troubleshooting MFA configuration:**
 If you get a `New-msolserviceprincipalcredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
   - Make sure you authenticate as the "Local Administrator" (`admin@<custom domain>`) user when prompted by the script. Other administrators added as guests will not work for this step.
   - Make sure you are logged in as a **domain** user rather than a local user.

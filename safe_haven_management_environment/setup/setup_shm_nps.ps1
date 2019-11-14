@@ -6,7 +6,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
+# Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 
 
 # Get SHM config
@@ -50,8 +50,8 @@ $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_
 $params = @{
   remoteDir = "`"C:\Installation`""
 }
-$result = Invoke-AzVMRunCommand -ResourceGroupName $config.nps.rg -Name $config.nps.vmName `
-          -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
+$result = Invoke-AzVMRunCommand -Name $config.nps.vmName -ResourceGroupName $config.nps.rg `
+                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 Write-Output $result.Value;
 
 
