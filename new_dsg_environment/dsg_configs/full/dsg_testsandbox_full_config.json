@@ -92,7 +92,8 @@
       }
     },
     "dns": {
-      "rg": "RG_SHM_DNS"
+      "subscriptionName": "Turing Safe Haven Domains",
+      "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS"
@@ -101,7 +102,7 @@
   "dsg": {
     "subscriptionName": "Data Study Group 9 (Test)",
     "id": "testsandbox",
-    "shortName": "dsgtestsandbox",
+    "shortName": "sre-testsandbox",
     "location": "uksouth",
     "tier": "2",
     "mirrors": {
@@ -190,25 +191,25 @@
       "ldap": {
         "gitlab": {
           "name": "TESTSANDBOX Gitlab LDAP",
-          "samAccountName": "dsgtestsandbox-gitlab-ldap",
-          "passwordSecretName": "dsgtestsandbox-gitlab-ldap-password"
+          "samAccountName": "sre-testsandbox-gitlab-ldap",
+          "passwordSecretName": "sre-testsandbox-gitlab-ldap-password"
         },
         "hackmd": {
           "name": "TESTSANDBOX HackMD LDAP",
-          "samAccountName": "dsgtestsandbox-hackmd-ldap",
-          "passwordSecretName": "dsgtestsandbox-hackmd-ldap-password"
+          "samAccountName": "sre-testsandbox-hackmd-ldap",
+          "passwordSecretName": "sre-testsandbox-hackmd-ldap-password"
         },
         "dsvm": {
           "name": "TESTSANDBOX DSVM LDAP",
-          "samAccountName": "dsgtestsandbox-dsvm-ldap",
-          "passwordSecretName": "dsgtestsandbox-dsvm-ldap-password"
+          "samAccountName": "sre-testsandbox-dsvm-ldap",
+          "passwordSecretName": "sre-testsandbox-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
           "name": "TESTSANDBOX Test Researcher",
-          "samAccountName": "dsgtestsandbox-test-res",
-          "passwordSecretName": "dsgtestsandbox-test-res-password"
+          "samAccountName": "sre-testsandbox-test-res",
+          "passwordSecretName": "sre-testsandbox-test-res-password"
         }
       }
     },

@@ -133,8 +133,15 @@ function Get-ShmFullConfig{
     }
 
     # --- DNS config ---
+    $rgSuffix = ""
+    if ($shm.adminSecurityGroupName -like "*Production*") {
+        $rgSuffix = "_PRODUCTION"
+    } elseif ($shm.adminSecurityGroupName -like "*Test*") {
+        $rgSuffix = "_TEST"
+    }
     $shm.dns = [ordered]@{
-        rg = "RG_SHM_DNS"
+        subscriptionName = $shmConfigBase.domainSubscriptionName
+        rg = "RG_SHM_DNS" + $rgSuffix
     }
 
     # --- Package mirror config ---
@@ -183,7 +190,7 @@ function Add-DsgConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
-    $config.dsg.shortName = "dsg" + $dsgConfigBase.dsgId.ToLower()
+    $config.dsg.shortName = "sre-" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
     $config.dsg.tier = $dsgConfigBase.tier
 

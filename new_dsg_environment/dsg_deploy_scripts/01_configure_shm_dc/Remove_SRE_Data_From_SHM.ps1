@@ -9,59 +9,62 @@ Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
+$originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" -Resolve
 
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
+# Switch to DSG subscription
+# --------------------------------------
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $dsgResourceGroups = @(Get-AzResourceGroup)
 $dsgResources = @(Get-AzResource)
 if($dsgResources -or $dsgResourceGroups) {
   Write-Host "********************************************************************************"
-  Write-Host "*** DSG $dsgId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
+  Write-Host "*** SRE $dsgId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
   Write-Host "********************************************************************************"
-  Write-Host "DSG data should not be deleted from the SHM unless all DSG resources have been deleted from the subscription."
+  Write-Host "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
   Write-Host ""
-  Write-Host "Resource Groups present in DSG subscription:"
+  Write-Host "Resource Groups present in SRE subscription:"
   Write-Host "--------------------------------------"
   $dsgResourceGroups
-  Write-Host "Resources present in DSG subscription:"
+  Write-Host "Resources present in SRE subscription:"
   Write-Host "--------------------------------------"
   $dsgResources
-  $_ = Set-AzContext -Context $prevContext;
+  $_ = Set-AzContext -Context $originalContext;
   Exit 1
 }
 
-# Temporarily switch to SHM subscription
+# Switch to SHM subscription
+# --------------------------
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+
 # === Remove all DSG secrets from SHM KeyVault ===
 function Remove-DsgSecret($secretName){
-  $vault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name
-  if ($vault -eq $null) {
-    Write-Host " - Keyvault '$($config.dsg.keyVault.name)' does not exist"
+  if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
+    Write-Host " - Deleting secret '$secretName'"
+    Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force
   } else {
-    if(Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName) {
-      Write-Host " - Deleting secret '$secretName'"
-      Remove-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $secretName -Force
-    } else {
-      Write-Host " - No secret '$secretName' exists"
-    }
+    Write-Host " - No secret '$secretName' exists"
   }
 }
-Write-Host "Removing DSG secrets from SHM KeyVault"
-Remove-DsgSecret $config.dsg.dc.admin.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.dsvm.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.gitlab.passwordSecretName
-Remove-DsgSecret $config.dsg.users.ldap.hackmd.passwordSecretName
-Remove-DsgSecret $config.dsg.users.researchers.test.passwordSecretName
-Remove-DsgSecret $config.dsg.rds.gateway.npsSecretName
-Remove-DsgSecret $config.dsg.linux.gitlab.rootPasswordSecretName
-Remove-DsgSecret $config.dsg.dsvm.admin.passwordSecretName
+Write-Host "Removing SRE secrets from key vault"
+$vault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name
+if ($vault -eq $null) {
+  Write-Host " - Keyvault '$($config.dsg.keyVault.name)' does not exist"
+} else {
+  Remove-DsgSecret $config.dsg.dc.admin.passwordSecretName
+  Remove-DsgSecret $config.dsg.users.ldap.dsvm.passwordSecretName
+  Remove-DsgSecret $config.dsg.users.ldap.gitlab.passwordSecretName
+  Remove-DsgSecret $config.dsg.users.ldap.hackmd.passwordSecretName
+  Remove-DsgSecret $config.dsg.users.researchers.test.passwordSecretName
+  Remove-DsgSecret $config.dsg.rds.gateway.npsSecretName
+  Remove-DsgSecret $config.dsg.linux.gitlab.rootPasswordSecretName
+  Remove-DsgSecret $config.dsg.dsvm.admin.passwordSecretName
+}
 
 # === Remove SHM side of peerings involving this DSG ===
-Write-Output ("Removing peerings for DSG VNet from SHM VNets")
+Write-Output ("Removing peerings for SRE VNet from SHM VNets")
 # --- Remove main DSG <-> SHM VNet peering ---
 $peeringName = "PEER_$($config.dsg.network.vnet.name)"
 Write-Output " - Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
@@ -69,23 +72,13 @@ $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $co
                                     -ResourceGroupName $config.shm.network.vnet.rg  -Force;
 # --- Remove any DSG <-> Mirror VNet peerings
 # Iterate over mirror VNets
-$mirrorVnets = Get-AzVirtualNetwork -Name "*" -ResourceGroupName $config.dsg.mirrors.rg
+$mirrorVnets = Get-AzVirtualNetwork -Name "*" -ResourceGroupName $config.shm.mirrors.rg
 foreach($mirrorVNet in $mirrorVnets){
   $peeringName = "PEER_$($config.dsg.network.vnet.name)"
   Write-Output (" - Removing peering '$peeringName' from $($mirrorVNet.Name)")
   $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name `
                                       -ResourceGroupName $config.dsg.mirrors.rg  -Force;
 }
-
-# === Remove RDS entries from DSG DNS Zone ===
-$dnsResourceGroup = $config.shm.dns.rg
-$dsgDomain = $config.dsg.domain.fqdn
-$rdsDdnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
-$rdsAcmeDnsRecordname =  ("_acme-challenge." + "$($config.dsg.rds.gateway.hostname)".ToLower())
-Write-Host " - Removing '$rdsDdnsRecordname' A record from DSG $dsgId DNS zone ($dsgDomain)"
-Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
-Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from DSG $dsgId DNS zone ($dsgDomain)"
-Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 
 # === Remove DSG users and groups from SHM DC ===
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
@@ -96,14 +89,14 @@ $params = @{
   hackmdLdapSamAccountName = "`"$($config.dsg.users.ldap.hackmd.samAccountName)`""
   dsgResearchUserSG = "`"$($config.dsg.domain.securityGroups.researchUsers.name)`""
 }
-Write-Host "Removing DSG users and groups from SHM DC"
+Write-Host "Removing SRE users and groups from SHM DC"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
-# === Remove DSG DNS records from SHM DC ===
+# === Remove SRE DNS records from SHM DC ===
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
 $params = @{
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
@@ -111,7 +104,7 @@ $params = @{
   rdsSubnetPrefix = "`"$($config.dsg.network.subnets.rds.prefix)`""
   dataSubnetPrefix = "`"$($config.dsg.network.subnets.data.prefix)`""
 }
-Write-Host "Removing DSG DNS records from SHM" DC
+Write-Host "Removing SRE DNS records from SHM" DC
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
@@ -124,7 +117,7 @@ $params = @{
   shmFqdn = "`"$($config.shm.domain.fqdn)`""
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
 }
-Write-Host "Removing DSG AD Trust from SHM DC"
+Write-Host "Removing SRE AD Trust from SHM DC"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
@@ -144,5 +137,20 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
+
+# === Remove RDS entries from DSG DNS Zone ===
+# Switch to the domain subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
+$dnsResourceGroup = $config.shm.dns.rg
+$dsgDomain = $config.dsg.domain.fqdn
+$rdsDdnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
+$rdsAcmeDnsRecordname =  ("_acme-challenge." + "$($config.dsg.rds.gateway.hostname)".ToLower())
+Write-Host " - Removing '$rdsDdnsRecordname' A record from SRE $dsgId DNS zone ($dsgDomain)"
+Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
+Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from SRE $dsgId DNS zone ($dsgDomain)"
+Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
+# Switch back to the DSG subscription
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Switch back to previous subscription
-$_ = Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $originalContext;

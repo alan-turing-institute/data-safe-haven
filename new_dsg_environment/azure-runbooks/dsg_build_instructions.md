@@ -214,7 +214,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   **=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
 
-- Clear any remaining DSG data from the SHM by running `./Remove_DSG_Data_From_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config.
+- Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config.
 
 ### Set up users and DNS
 
