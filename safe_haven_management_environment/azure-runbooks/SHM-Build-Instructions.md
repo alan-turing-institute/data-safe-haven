@@ -266,7 +266,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Provide a global administrator details for the Azure Active Directory you are connected to
     - You should have created `admin@<custom domain>` during the `Add additional administrators` step
     - Click "Next"
-  - On the `Connect to Azure AD` screen:
+  - On the `Connect your directories` screen:
     - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
       - Select "Use existing AD account"
@@ -290,7 +290,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Expand the domain and deselect all objects
     - Select "Safe Haven Research Users"
     - Click "Next"
-  - On the `Domain and OU filtering` screen:
+  - On the `Uniquely identifying your users` screen:
     - Click "Next"
   - On the `Filter users and devices` screen:
     - Select "Synchronize all users and devices"

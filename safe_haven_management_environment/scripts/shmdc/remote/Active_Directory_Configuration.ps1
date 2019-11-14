@@ -125,7 +125,9 @@ if ("$userExists" -ne "") {
 
 # Add users to security groups
 Write-Host "Adding users to security groups..."
-ForEach($groupUserPair in (("SG Safe Haven Server Administrators", "$serverAdminName"), ("Enterprise Admins", "$adsyncAccountName"))) {
+# ForEach($groupUserPair in (("SG Safe Haven Server Administrators", "$serverAdminName"), ("Enterprise Admins", "$adsyncAccountName"))) {
+# NB. As of build 1.4.###.# it is no longer supported to use an Enterprise Admin or a Domain Admin account as the AD DS Connector account.
+ForEach($groupUserPair in (("SG Safe Haven Server Administrators", "$serverAdminName"))) {
   $adGroupName, $adUserName = $groupUserPair
   $membershipExists = $(Get-ADGroupMember -Identity "$adGroupName").Name | Select-String "$adUserName"
   Write-Host $(Get-ADGroupMember -Identity "$adGroupName")
@@ -188,7 +190,6 @@ ForEach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
 
 # Create Reverse Lookup Zones for SHM
 Write-Host "Creating reverse lookup zones..."
-# ForEach($cidr in ("10.251.0.0/24", "10.251.1.0/24")) {
 ForEach($cidr in ($identitySubnetCidr, $webSubnetCidr)) {
   $oct1, $oct2, $oct3, $oct4 = $cidr.split(".")
   $zoneName = "$oct3.$oct2.$oct1.in-addr.arpa"
