@@ -46,7 +46,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
 
 # Run configuration script remotely
 # ---------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "nps" "remote" "Prepare_NPS_Server.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_NPS_Server.ps1"
 $params = @{
   remoteDir = "`"C:\Installation`""
 }

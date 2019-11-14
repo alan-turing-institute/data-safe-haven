@@ -48,23 +48,48 @@ Remove-AzKeyVaultAccessPolicy -VaultName $config.keyVault.name -UserPrincipalNam
 # :: AAD Global Administrator password
 $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
                           -secretName $config.keyVault.secretNames.aadAdminPassword
+if ($?) {
+  Write-Host " [o] Created AAD Global Administrator password"
+} else {
+  Write-Host " [x] Failed to create AAD Global Administrator password!"
+}
 
-# :: DC/NPS admin username
+# :: DC/NPS administrator username
 $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
                           -secretName $config.keyVault.secretNames.dcNpsAdminUsername `
                           -defaultValue "shm$($config.id)admin".ToLower()
+if ($?) {
+  Write-Host " [o] Created DC/NPS administrator username"
+} else {
+  Write-Host " [x] Failed to create DC/NPS administrator username!"
+}
 
-# :: DC/NPS admin password
+# :: DC/NPS administrator password
 $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
                           -secretName $config.keyVault.secretNames.dcNpsAdminPassword
+if ($?) {
+  Write-Host " [o] Created DC/NPS administrator password"
+} else {
+  Write-Host " [x] Failed to create DC/NPS administrator password!"
+}
 
 # :: DC safe mode password
 $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
                           -secretName $config.keyVault.secretNames.dcSafemodePassword
+if ($?) {
+  Write-Host " [o] Created DC safe mode password"
+} else {
+  Write-Host " [x] Failed to create DC safe mode password!"
+}
 
 # :: AD sync password
 $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name `
                           -secretName $config.keyVault.secretNames.adsyncPassword
+if ($?) {
+  Write-Host " [o] Created AD sync password"
+} else {
+  Write-Host " [x] Failed to create AD sync password!"
+}
 
 # Switch back to original subscription
 # ------------------------------------

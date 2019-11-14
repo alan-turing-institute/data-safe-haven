@@ -90,19 +90,17 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 ```
 
 ### Deploy KeyVault for SHM secrets
-1. Ensure you are logged into the Azure within PowerShell using the command:
+1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
-   ```
-2. Set the AzContext to the SHM Azure subscription id:
-   ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
+2. From a clone of the data-safe-haven repository, setup the keyvault with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
    cd ./safe_haven_management_environment/setup
+   ./setup_shm_keyvault.ps1 -shmId <SHM ID>
    ```
-4. Run `./setup_keyvault.ps1` entering the `shmId`, as defined in the config file, when prompted
+3. This will take a couple of minutes to run.
 
 
 ### Add additional administrators
@@ -180,20 +178,18 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 
 ## 3. Deploy and configure VNET and Domain Controllers
 ### Deploy the Virtual Network and Active Directory Domain Controller
-1. Ensure you are logged into the Azure within PowerShell using the command:
+1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
-   ```
-2. Set the AzContext to the SHM Azure subscription id:
-   ```pwsh
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-3. From a clone of the data-safe-haven repository, deploy the VNET and DCs with the following commands
+2. From a clone of the data-safe-haven repository, setup the virtual network and domain controller with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
    cd ./safe_haven_management_environment/setup
+   ./setup_shm_dc.ps1 -shmId <SHM ID>
    ```
-4. Run `./setup_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted
-5. Once the script exits successfully you should see the following resource groups under the SHM-subscription (NB. names may differ slightly):
+3. This will take approximately **1 hour** to run. (started 1029... finished gateway at 1059)
+4. Once the script exits successfully you should see the following resource groups under the SHM-subscription:
    ![Resource groups](images/resource_groups.png)
 
 
@@ -371,13 +367,17 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 
 ## 4. Deploy and configure Network Policy Server (NPS)
-1. In the data-safe-haven repository, deploy the NPS server using the following commands:
+1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
-   cd ./data-safe-haven/safe_haven_management_environment/setup
+   Connect-AzAccount
+   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-1. Run `./setup_nps.ps1` entering the `shmId`, defined in the config file, when prompted.
-
-The NPS server will now deploy.
+2. From a clone of the data-safe-haven repository, deploy the NPS server with the following commands (where `<SHM ID>` is the one defined in the config file)
+   ```pwsh
+   cd ./safe_haven_management_environment/setup
+   ./setup_shm_nps.ps1 -shmId <SHM ID>
+   ```
+3. This will take approximately ...
 
 
 <!-- ### Configure the Network Policy Server
