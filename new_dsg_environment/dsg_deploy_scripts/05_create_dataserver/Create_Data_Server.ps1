@@ -17,7 +17,7 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $adminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.usernameSecretName).SecretValueText;
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
 
-$vmSize = "Standard_B2ms"
+$vmSize = "Standard_DS2_v2"
 
 $params = @{
 "Data Server Name" = $config.dsg.dataserver.vmName
