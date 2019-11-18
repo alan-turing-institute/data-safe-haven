@@ -1,17 +1,18 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$sreId
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
-$config = Get-DsgConfig($dsgId)
+# Get SRE config
+$config = Get-DsgConfig($sreId);
+$originalContext = Get-AzContext
 
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+# Switch to SRE subscription
+# --------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Get P2S Root certificate for VNet Gateway
 $cert = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.vpnCaCertificatePlain -VaultName $config.shm.keyVault.name).SecretValue
@@ -31,24 +32,30 @@ $vnetCreateParams = @{
  "DNS Server IP Address" =  $config.dsg.dc.ip
 }
 
-Write-Output $vnetCreateParams
-
+# Create VNet from template
+# -------------------------
+Write-Host -ForegroundColor DarkCyan "Creating virtual network '$($config.dsg.network.vnet.name)' from template..."
 $templatePath = Join-Path $PSScriptRoot "vnet-master-template.json"
-
 New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location $config.dsg.location
-New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg `
-  -TemplateFile $templatePath @vnetCreateParams -Verbose
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg -TemplateFile $templatePath @vnetCreateParams -Verbose
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 # Fetch DSG Vnet
-$dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name `
-                                -ResourceGroupName $config.dsg.network.vnet.rg
+$dsgVnet = Get-AzVirtualNetwork -Name $config.dsg.network.vnet.name -ResourceGroupName $config.dsg.network.vnet.rg
 
 # Temporarily switch to management subscription
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
+
 # Fetch SHM Vnet
-$shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name `
-                                -ResourceGroupName $config.shm.network.vnet.rg
+$shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg
+
 # Add Peering to SHM Vnet
+# -----------------------
+Write-Host -ForegroundColor DarkCyan "Peering virtual network '$($config.dsg.network.vnet.name)' to $($config.shm.network.vnet.name)..."
 $shmPeeringParams = @{
   "Name" = "PEER_" + $config.dsg.network.vnet.name
   "VirtualNetwork" = $shmVnet
@@ -58,12 +65,18 @@ $shmPeeringParams = @{
   "AllowGatewayTransit" = $FALSE
   "UseRemoteGateways" = $FALSE
 }
-Write-Output $shmPeeringParams
 Add-AzVirtualNetworkPeering @shmPeeringParams
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 # Switch back to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+
 # Add Peering to DSG Vnet
+Write-Host -ForegroundColor DarkCyan "Peering virtual network '$($config.shm.network.vnet.name)' to $($config.dsg.network.vnet.name)..."
 $dsgPeeringParams = @{
   "Name" = "PEER_" + $config.shm.network.vnet.name
   "VirtualNetwork" = $dsgVnet
@@ -73,8 +86,13 @@ $dsgPeeringParams = @{
   "AllowGatewayTransit" = $FALSE
   "UseRemoteGateways" = $FALSE
 }
-Write-Output $dsgPeeringParams
 Add-AzVirtualNetworkPeering @dsgPeeringParams
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 # Switch back to original subscription
-$_ = Set-AzContext -Context $prevContext;
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext;

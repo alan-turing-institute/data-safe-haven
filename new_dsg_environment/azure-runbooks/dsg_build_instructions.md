@@ -232,7 +232,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Create_VNET.ps1` script, providing the DSG ID when prompted.
+- Run the `./Create_VNET.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
 
