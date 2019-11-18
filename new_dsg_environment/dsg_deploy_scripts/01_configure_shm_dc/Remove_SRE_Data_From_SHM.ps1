@@ -7,29 +7,29 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
+# Get SRE config
 $config = Get-DsgConfig($sreId);
 $originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Remove_DSG_Data_From_SHM" -Resolve
 
-# Switch to DSG subscription
-# --------------------------------------
+# Switch to SRE subscription
+# --------------------------
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $dsgResourceGroups = @(Get-AzResourceGroup)
 $dsgResources = @(Get-AzResource)
 if($dsgResources -or $dsgResourceGroups) {
-  Write-Host "********************************************************************************"
-  Write-Host "*** SRE $sreId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
-  Write-Host "********************************************************************************"
-  Write-Host "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
-  Write-Host ""
-  Write-Host "Resource Groups present in SRE subscription:"
-  Write-Host "--------------------------------------"
+  Write-Host -ForegroundColor DarkRed "********************************************************************************"
+  Write-Host -ForegroundColor DarkRed "*** SRE $sreId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
+  Write-Host -ForegroundColor DarkRed "********************************************************************************"
+  Write-Host -ForegroundColor DarkRed "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
+  Write-Host -ForegroundColor DarkRed ""
+  Write-Host -ForegroundColor DarkRed "Resource Groups present in SRE subscription:"
+  Write-Host -ForegroundColor DarkRed "--------------------------------------"
   $dsgResourceGroups
-  Write-Host "Resources present in SRE subscription:"
-  Write-Host "--------------------------------------"
+  Write-Host -ForegroundColor DarkRed "Resources present in SRE subscription:"
+  Write-Host -ForegroundColor DarkRed "--------------------------------------"
   $dsgResources
   $_ = Set-AzContext -Context $originalContext;
   Exit 1
@@ -48,7 +48,7 @@ function Remove-DsgSecret($secretName){
     Write-Host " - No secret '$secretName' exists"
   }
 }
-Write-Host "Removing SRE secrets from key vault"
+Write-Host -ForegroundColor DarkGreen "Removing SRE secrets from key vault..."
 $vault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name
 if ($vault -eq $null) {
   Write-Host " - Keyvault '$($config.dsg.keyVault.name)' does not exist"
@@ -64,10 +64,10 @@ if ($vault -eq $null) {
 }
 
 # === Remove SHM side of peerings involving this DSG ===
-Write-Output ("Removing peerings for SRE VNet from SHM VNets")
+Write-Host -ForegroundColor DarkGreen "Removing peerings for SRE VNet from SHM VNets..."
 # --- Remove main DSG <-> SHM VNet peering ---
 $peeringName = "PEER_$($config.dsg.network.vnet.name)"
-Write-Output " - Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
+Write-Host -ForegroundColor DarkGreen " - Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
 $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.name `
                                     -ResourceGroupName $config.shm.network.vnet.rg  -Force;
 # --- Remove any DSG <-> Mirror VNet peerings
@@ -75,7 +75,7 @@ $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $co
 $mirrorVnets = Get-AzVirtualNetwork -Name "*" -ResourceGroupName $config.shm.mirrors.rg
 foreach($mirrorVNet in $mirrorVnets){
   $peeringName = "PEER_$($config.dsg.network.vnet.name)"
-  Write-Output (" - Removing peering '$peeringName' from $($mirrorVNet.Name)")
+  Write-Host -ForegroundColor DarkGreen " - Removing peering '$peeringName' from $($mirrorVNet.Name)..."
   $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name `
                                       -ResourceGroupName $config.dsg.mirrors.rg  -Force;
 }
@@ -89,7 +89,7 @@ $params = @{
   hackmdLdapSamAccountName = "`"$($config.dsg.users.ldap.hackmd.samAccountName)`""
   dsgResearchUserSG = "`"$($config.dsg.domain.securityGroups.researchUsers.name)`""
 }
-Write-Host "Removing SRE users and groups from SHM DC"
+Write-Host -ForegroundColor DarkGreen "Removing SRE users and groups from SHM DC..."
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
@@ -104,7 +104,7 @@ $params = @{
   rdsSubnetPrefix = "`"$($config.dsg.network.subnets.rds.prefix)`""
   dataSubnetPrefix = "`"$($config.dsg.network.subnets.data.prefix)`""
 }
-Write-Host "Removing SRE DNS records from SHM" DC
+Write-Host -ForegroundColor DarkGreen "Removing SRE DNS records from SHM DC..."
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
@@ -117,7 +117,7 @@ $params = @{
   shmFqdn = "`"$($config.shm.domain.fqdn)`""
   dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
 }
-Write-Host "Removing SRE AD Trust from SHM DC"
+Write-Host -ForegroundColor DarkGreen "Removing SRE AD Trust from SHM DC..."
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
     -Parameter $params
@@ -129,7 +129,7 @@ $npsRadiusClientParams = @{
   rdsGatewayFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
 };
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
-Write-Host "Removing RDS Gateway RADIUS Client from SHM NPS"
+Write-Host -ForegroundColor DarkGreen "Removing RDS Gateway RADIUS Client from SHM NPS..."
 $result = Invoke-AzVMRunCommand -ResourceGroupName $($config.shm.nps.rg) `
   -Name "$($config.shm.nps.vmName)" `
   -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
@@ -149,8 +149,7 @@ Write-Host " - Removing '$rdsDdnsRecordname' A record from SRE $sreId DNS zone (
 Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($dsgDomain)"
 Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
-# Switch back to the DSG subscription
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
-# Switch back to previous subscription
+# Switch back to original subscription
+# ------------------------------------
 $_ = Set-AzContext -Context $originalContext;

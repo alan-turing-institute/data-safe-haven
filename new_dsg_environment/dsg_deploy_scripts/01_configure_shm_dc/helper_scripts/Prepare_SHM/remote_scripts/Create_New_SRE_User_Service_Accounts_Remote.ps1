@@ -5,25 +5,25 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  $dsgFqdn,
-  $researchUserSgName,
-  $researchUserSgDescription,
-  $ldapUserSgName,
-  $securityOuPath,
-  $serviceOuPath,
-  $researchUserOuPath,
-  $hackmdSamAccountName,
-  $hackmdName,
-  $hackmdPasswordEncrypted,
-  $gitlabSamAccountName,
-  $gitlabName,
-  $gitlabPasswordEncrypted,
-  $dsvmSamAccountName,
-  $dsvmName,
-  $dsvmPasswordEncrypted,
-  $testResearcherSamAccountName,
-  $testResearcherName,
-  $testResearcherPasswordEncrypted
+  [String]$dsgFqdn,
+  [String]$researchUserSgName,
+  [String]$researchUserSgDescription,
+  [String]$ldapUserSgName,
+  [String]$securityOuPath,
+  [String]$serviceOuPath,
+  [String]$researchUserOuPath,
+  [String]$hackmdSamAccountName,
+  [String]$hackmdName,
+  [String]$hackmdPasswordEncrypted,
+  [String]$gitlabSamAccountName,
+  [String]$gitlabName,
+  [String]$gitlabPasswordEncrypted,
+  [String]$dsvmSamAccountName,
+  [String]$dsvmName,
+  [String]$dsvmPasswordEncrypted,
+  [String]$testResearcherSamAccountName,
+  [String]$testResearcherName,
+  [String]$testResearcherPasswordEncrypted
 )
 
 function New-DsgGroup($name, $description, $path, $groupCategory, $groupScope) {
@@ -41,13 +41,6 @@ function New-DsgUser($samAccountName, $name, $path, $passwordSecureString) {
   } else {
     $principalName = $samAccountName + "@" + $dsgFqdn;
     Write-Output " - Creating user '$name' ($samAccountName)"
-    Write-Host "-Name: $name"
-    Write-Host "-UserPrincipalName: $principalName"
-    Write-Host "-Path: $path"
-    Write-Host "-SamAccountName: $samAccountName"
-    Write-Host "-DisplayName: $name"
-    Write-Host "-Description: $name"
-    Write-Host "-AccountPassword: $password"
     return (New-ADUser -Name "$name" `
                -UserPrincipalName $principalName `
                -Path $path `

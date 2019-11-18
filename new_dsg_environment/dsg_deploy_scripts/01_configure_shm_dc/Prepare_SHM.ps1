@@ -7,41 +7,48 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
+# Get SRE config
 $config = Get-DsgConfig($sreId);
-
+$originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resolve
 
-# Create DSG KeyVault if it does not exist
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
-Set-AzContext -Subscription $config.dsg.subscriptionName;
+# Switch to SRE subscription
+# --------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
-# Create Resource Groups
-New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.location -Force
-
+# Ensure the resource group exists
+# --------------------------------
+Write-Host -ForegroundColor DarkCyan "Ensuring resource group '$($config.dsg.keyVault.rg)' exists..."
+$_ = New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.location -Force
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 # Ensure the keyvault exists
 # --------------------------
+Write-Host -ForegroundColor DarkCyan "Ensuring key vault exists..."
 $keyVault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name -ResourceGroupName $config.dsg.keyVault.rg
 if ($keyVault -ne $null) {
-  Write-Host " [o] key vault $($config.dsg.keyVault.name) already exists"
+  Write-Host -ForegroundColor DarkGreen " [o] key vault $($config.dsg.keyVault.name) already exists"
 } else {
   New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
   if ($?) {
-    Write-Host " [o] Created key vault $($config.dsg.keyVault.name)"
+    Write-Host -ForegroundColor DarkGreen " [o] Created key vault $($config.dsg.keyVault.name)"
   } else {
-    Write-Host " [x] Failed to create key vault $($config.dsg.keyVault.name)!"
+    Write-Host -ForegroundColor DarkRed " [x] Failed to create key vault $($config.dsg.keyVault.name)!"
   }
 }
 
-# Temporarily switch to management subscription
+# Switch to SHM subscription
+# --------------------------
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
-# === Add DSG users and groups to SHM ====
-Write-Host "Creating or retrieving user passwords"
+# === Retrieve passwords from the keyvault ====
+Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
 $hackmdPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.users.ldap.hackmd.passwordSecretName
 $gitlabPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.users.ldap.gitlab.passwordSecretName
 $dsvmPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.users.ldap.dsvm.passwordSecretName
@@ -54,6 +61,8 @@ $dsvmPasswordEncrypted = ConvertTo-SecureString $dsvmPassword -AsPlainText -Forc
 $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 
+# === Add DSG users and groups to SHM ====
+Write-Host -ForegroundColor DarkCyan "Adding SRE users and groups to SHM..."
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
@@ -76,29 +85,50 @@ $params = @{
     testResearcherName = "`"$($config.dsg.users.researchers.test.name)`""
     testResearcherPasswordEncrypted = $testResearcherPasswordEncrypted
 }
-Write-Host "Adding SRE users and groups to SHM"
-Write-Host ($params | Out-String)
 $result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 Write-Output $result.Value
 
 # === Add DSG DNS entries to SHM ====
+Write-Host -ForegroundColor DarkCyan "Adding SRE DNS records to SHM..."
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
+    shmFqdn = "`"$($config.shm.domain.fqdn)`""
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
     dsgDcIp = "`"$($config.dsg.dc.ip)`""
+    dsgDcName = "`"$($config.dsg.dc.hostname)`""
     identitySubnetCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
     rdsSubnetCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
     dataSubnetCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
 }
-Write-Host "Adding SRE DNS records to SHM"
 $result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 Write-Output $result.Value
 
-Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.dsg.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
-Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
+# === Update SRE keyvault permissions ====
+# Switch to SRE subscription
+Set-AzContext -Subscription $config.dsg.subscriptionName;
 
-# Switch back to previous subscription
-$_ = Set-AzContext -Context $prevContext;
+Write-Host -ForegroundColor DarkCyan "Updating SRE keyvault permissions..."
+Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
+if ($?) {
+  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext;
 
