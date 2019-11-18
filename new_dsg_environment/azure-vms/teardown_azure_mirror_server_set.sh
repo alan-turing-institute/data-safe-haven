@@ -106,10 +106,10 @@ else
         echo -e "${BOLD}Working on ${BLUE}${MACHINENAME}${END}"
         echo -e "${BOLD}... virtual machine: ${BLUE}${MACHINENAME}${END}"
         az vm delete --yes --resource-group $RESOURCEGROUP --name $MACHINENAME
-        echo -e "${BOLD}... OS disk: ${BLUE}${MACHINENAME}_OSDISK${END}"
-        az disk delete --yes --resource-group $RESOURCEGROUP --name "${MACHINENAME}_OSDISK"
-        echo -e "${BOLD}... data disk: ${BLUE}${MACHINENAME}_DATADISK${END}"
-        az disk delete --yes --resource-group $RESOURCEGROUP --name "${MACHINENAME}_DATADISK"
+        echo -e "${BOLD}... OS disk: ${BLUE}${MACHINENAME}-OS-DISK${END}"
+        az disk delete --yes --resource-group $RESOURCEGROUP --name "${MACHINENAME}-OS-DISK"
+        echo -e "${BOLD}... data disk: ${BLUE}${MACHINENAME}-DATA-DISK${END}"
+        az disk delete --yes --resource-group $RESOURCEGROUP --name "${MACHINENAME}-DATA-DISK"
         echo -e "${BOLD}... network card: ${BLUE}${MACHINENAME}VMNic${END}"
         az network nic delete --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic"
     done

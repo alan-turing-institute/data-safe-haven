@@ -7,7 +7,7 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
 
 # # Get DSG config
 # $config = Get-DsgConfig($dsgId)
@@ -25,7 +25,7 @@ $arguments = "-s '$($config.subscriptionName)' \
               -t $tier"
 
 # Get path to bash scripts
-$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "new_dsg_environment" "azure-vms" -Resolve
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent "new_dsg_environment" "azure-vms" -Resolve
 
 # Teardown PyPI mirror servers
 Write-Host "Tearing down PyPI mirror servers"

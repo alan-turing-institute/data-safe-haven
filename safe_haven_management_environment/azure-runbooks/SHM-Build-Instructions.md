@@ -341,7 +341,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
     - First name: Test
-    - Lastname: Research User
+    - Lastname: AD Sync
     - User login name: `test-adsync`
     - Click "Next"
   - Enter a default password of your choice

@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Data Study Group 9 (Test)",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "dsgId": "sandboxa",
+    "shmId": "testa",
+    "tier": "2",
+    "domain": "sandboxa.dsgroupdev.co.uk",
+    "netbiosName": "DSGSANDBOXA",
+    "ipPrefix": "10.150.0",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}
