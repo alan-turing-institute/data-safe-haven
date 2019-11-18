@@ -11,8 +11,6 @@ Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 # Get SHM config
 # --------------
 $config = Get-ShmFullConfig($shmId)
-# Set VM Default Size
-$vmSize = "Standard_DS2_v2"
 
 
 # Temporarily switch to DSG subscription
@@ -32,7 +30,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.nps.rg`
         -Administrator_Password (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force) `
         -Virtual_Network_Resource_Group $config.network.vnet.rg `
         -Domain_Name $config.domain.fqdn `
-        -VM_Size $vmSize `
+        -VM_Size $config.nps.vmSize `
         -Virtual_Network_Name $config.network.vnet.name `
         -Virtual_Network_Subnet $config.network.subnets.identity.name `
         -Shm_Id "$($config.id)".ToLower() `

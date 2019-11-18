@@ -1,20 +1,21 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$sreId,
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (defaults to 'Standard_DS2_v2')")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (defaults to 'Standard_DS2_v2')"),
   [Parameter(Position=2, Mandatory = $true, HelpMessage = "Last octet of IP address")]
   [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address")
 )
-# Set default value if no argument is provided
-if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
-$config = Get-DsgConfig($dsgId)
+# Get SRE config
+$config = Get-DsgConfig($sreId)
+
+# Set default value if no argument is provided
+if (!$vmSize) { $vmSize = $config.dsg.dsvm.vmSizeDefault }
 
 # Fetch root user password (or create if not present)
 $computeVmRootPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dsvm.admin.passwordSecretName).SecretValueText;
@@ -105,5 +106,5 @@ $cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
 bash -c $cmd
 
 Write-Host "Configuring Postgres shared admin, write and read users"
-$_ = Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $dsgId -ipLastOctet $ipLastOctet"
+$_ = Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -dsgId $sreId -ipLastOctet $ipLastOctet"
 Write-Host "VM deployment done."

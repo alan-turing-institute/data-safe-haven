@@ -97,8 +97,8 @@
 
     },
     "variables": {
-        "gitlabnic": "[concat(parameters('GITLab Server Name'),'_','NIC1')]",
-        "hackmdnic": "[concat(parameters('HACKMD Server Name'),'_','NIC1')]",
+        "gitlabnic": "[concat(parameters('GITLab Server Name'),'-','NIC')]",
+        "hackmdnic": "[concat(parameters('HACKMD Server Name'),'-','NIC')]",
         "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
@@ -129,7 +129,7 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat(parameters('GITLab Server Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('GITLab Server Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -141,7 +141,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('GITLab Server Name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('GITLab Server Name'),'-DATA-DISK')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -205,7 +205,7 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat(parameters('HACKMD Server Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('HACKMD Server Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,

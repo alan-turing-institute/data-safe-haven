@@ -88,6 +88,7 @@ function Get-ShmFullConfig{
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
     $shm.dc.vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
+    $shm.dc.vmSize = "Standard_DS2_v2"
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
@@ -103,6 +104,7 @@ function Get-ShmFullConfig{
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
     $shm.nps.vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
+    $shm.nps.vmSize = "Standard_DS2_v2"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
@@ -154,7 +156,7 @@ function Get-ShmFullConfig{
 Export-ModuleMember -Function Get-ShmFullConfig
 
 
-function Trim-ToLength {
+function TrimToLength {
     param (
         [Parameter(Mandatory=$True,ValueFromPipeline=$True)]
         [string] $str,
@@ -163,6 +165,7 @@ function Trim-ToLength {
     )
     return $str[0..($length-1)] -join ""
 }
+Export-ModuleMember -Function TrimToLength
 
 # Add a new DSG configuration
 # ---------------------------
@@ -285,18 +288,39 @@ function Add-DsgConfig {
         name = "kv-" + $config.shm.id + "-sre-" + $($config.dsg.id).ToLower()
         rg = "RG_SRE_SECRETS"
     }
+    $config.dsg.keyVault.secretNames = [ordered]@{
+        dcAdminUsername = $config.dsg.shortName + '-dc-admin-username'
+        dcAdminPassword = $config.dsg.shortName + '-dc-admin-password'
+        gitlabLdapPassword = $config.dsg.shortName + "-gitlab-ldap-password"
+        hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
+        dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
+        testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
+
+        # aadAdminPassword='shm-aad-admin-password'
+        # dcNpsAdminUsername='shm-dcnps-admin-username'
+        # dcNpsAdminPassword='shm-dcnps-admin-password'
+        # dcSafemodePassword='shm-dc-safemode-password'
+        # adsyncPassword='shm-adsync-password'
+        # vpnCaCertificate='shm-vpn-ca-cert'
+        # vpnCaCertPassword='shm-vpn-ca-cert-password'
+        # vpnCaCertificatePlain='shm-vpn-ca-cert-plain'
+        # vpnClientCertificate='shm-vpn-client-cert'
+        # vpnClientCertPassword='shm-vpn-client-cert-password'
+    }
+
 
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_SRE_DC"
     $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.dc.vmSize = "Standard_B2ms"
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
-    $config.dsg.dc.admin = [ordered]@{
-        usernameSecretName = "sre-" + $config.dsg.id + "-dc-admin-username"
-        passwordSecretName = "sre-" + $config.dsg.id + "-dc-admin-password"
-    }
+    # $config.dsg.dc.admin = [ordered]@{
+    #     usernameSecretName = "sre-" + $config.dsg.id + "-dc-admin-username"
+    #     passwordSecretName = "sre-" + $config.dsg.id + "-dc-admin-password"
+    # }
 
     # --- Domain users ---
     $config.dsg.users = [ordered]@{
@@ -310,17 +334,17 @@ function Add-DsgConfig {
         }
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-    $config.dsg.users.ldap.gitlab.samAccountName = "gitlabldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
-    $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.shortName + "-gitlab-ldap-password"
+    $config.dsg.users.ldap.gitlab.samAccountName = "gitlabldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+    # $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.shortName + "-gitlab-ldap-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-    $config.dsg.users.ldap.hackmd.samAccountName = "hackmdldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
-    $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.shortName + "-hackmd-ldap-password"
+    $config.dsg.users.ldap.hackmd.samAccountName = "hackmdldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+    # $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.shortName + "-hackmd-ldap-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-    $config.dsg.users.ldap.dsvm.samAccountName = "dsvmldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
-    $config.dsg.users.ldap.dsvm.passwordSecretName = $config.dsg.shortName + "-dsvm-ldap-password"
+    $config.dsg.users.ldap.dsvm.samAccountName = "dsvmldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+    # $config.dsg.users.ldap.dsvm.passwordSecretName = $config.dsg.shortName + "-dsvm-ldap-password"
     $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName + " Test Researcher"
-    $config.dsg.users.researchers.test.samAccountName = "testresrch" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
-    $config.dsg.users.researchers.test.passwordSecretName = $config.dsg.shortName + "-test-researcher-password"
+    $config.dsg.users.researchers.test.samAccountName = "testresrch" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+    # $config.dsg.users.researchers.test.passwordSecretName = $config.dsg.shortName + "-test-researcher-password"
 
     # --- RDS Servers ---
     $config.dsg.rds = [ordered]@{
@@ -356,6 +380,7 @@ function Add-DsgConfig {
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_SRE_DATA"
     $config.dsg.dataserver.vmName = "DATA-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.dataserver.vmSize = "Standard_B2ms"
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
@@ -382,6 +407,7 @@ function Add-DsgConfig {
     $config.dsg.dsvm.rg = "RG_SRE_COMPUTE"
     $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
+    $config.dsg.dsvm.vmSizeDefault = "Standard_DS2_v2"
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
     $config.dsg.dsvm.admin = [ordered]@{

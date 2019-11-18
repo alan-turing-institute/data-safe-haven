@@ -12,8 +12,6 @@ Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 # Get SHM config
 # --------------
 $config = Get-ShmFullConfig($shmId)
-# Set VM Default Size
-$vmSize = "Standard_DS2_v2"
 
 
 # Temporarily switch to SHM subscription
@@ -199,7 +197,7 @@ New-AzResourceGroupDeployment -resourcegroupname $config.dc.rg `
         -Artifacts_Location_SAS_Token (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)`
         -Domain_Name $config.domain.fqdn `
         -Domain_Name_NetBIOS_Name $config.domain.netbiosName `
-        -VM_Size $vmSize `
+        -VM_Size $config.dc.vmSize `
         -Virtual_Network_Name $config.network.vnet.name `
         -Virtual_Network_Subnet $config.network.subnets.identity.name `
         -Shm_Id "$($config.id)".ToLower() `

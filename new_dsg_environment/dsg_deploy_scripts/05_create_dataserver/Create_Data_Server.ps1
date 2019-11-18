@@ -17,18 +17,16 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $adminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.dsg.dc.usernameSecretName).SecretValueText;
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
-$vmSize = "Standard_B2ms"
-
 $params = @{
-"Data Server Name" = $config.dsg.dataserver.vmName
-"Domain Name" = $config.dsg.domain.fqdn
-"VM Size" = $vmSize
-"IP Address" = $config.dsg.dataserver.ip
-"Administrator User" = $adminUsername
-"Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
-"Virtual Network Name" = $config.dsg.network.vnet.name
-"Virtual Network Resource Group" = $config.dsg.network.vnet.rg
-"Virtual Network Subnet" = $config.dsg.network.subnets.data.name
+  "Data Server Name" = $config.dsg.dataserver.vmName
+  "Domain Name" = $config.dsg.domain.fqdn
+  "VM Size" = $config.dsg.dataserver.vmSize
+  "IP Address" = $config.dsg.dataserver.ip
+  "Administrator User" = $adminUsername
+  "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
+  "Virtual Network Name" = $config.dsg.network.vnet.name
+  "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
+  "Virtual Network Subnet" = $config.dsg.network.subnets.data.name
 }
 
 Write-Output $params

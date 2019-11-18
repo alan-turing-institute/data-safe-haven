@@ -53,6 +53,7 @@
     "dc": {
       "rg": "RG_SHM_DC",
       "vmName": "DC1-SHM-TESTA",
+      "vmSize": "Standard_DS2_v2",
       "hostname": "DC1-SHM-TESTA",
       "fqdn": "DC1-SHM-TESTA.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
@@ -66,6 +67,7 @@
     "nps": {
       "rg": "RG_SHM_NPS",
       "vmName": "NPS-SHM-TESTA",
+      "vmSize": "Standard_DS2_v2",
       "hostname": "NPS-SHM-TESTA",
       "ip": "10.0.0.248"
     },
@@ -174,42 +176,43 @@
     },
     "keyVault": {
       "name": "kv-testa-sre-testsandbox",
-      "rg": "RG_SRE_SECRETS"
+      "rg": "RG_SRE_SECRETS",
+      "secretNames": {
+        "dcAdminUsername": "sre-testsandbox-dc-admin-username",
+        "dcAdminPassword": "sre-testsandbox-dc-admin-password",
+        "gitlabLdapPassword": "sre-testsandbox-gitlab-ldap-password",
+        "hackmdLdapPassword": "sre-testsandbox-hackmd-ldap-password",
+        "dsvmLdapPassword": "sre-testsandbox-dsvm-ldap-password",
+        "testResearcherPassword": "sre-testsandbox-test-researcher-password"
+      }
     },
     "dc": {
       "rg": "RG_SRE_DC",
       "vmName": "DC-SRE-TESTSANDBOX",
+      "vmSize": "Standard_B2ms",
       "hostname": "DC-SRE-TESTSANDBOX",
       "fqdn": "DC-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
-      "ip": "10.150.0.250",
-      "admin": {
-        "usernameSecretName": "sre-testsandbox-dc-admin-username",
-        "passwordSecretName": "sre-testsandbox-dc-admin-password"
-      }
+      "ip": "10.150.0.250"
     },
     "users": {
       "ldap": {
         "gitlab": {
           "name": "TESTSANDBOX Gitlab LDAP",
-          "samAccountName": "gitlabldaptestsandbo",
-          "passwordSecretName": "sre-testsandbox-gitlab-ldap-password"
+          "samAccountName": "gitlabldaptestsandbo"
         },
         "hackmd": {
           "name": "TESTSANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldaptestsandbo",
-          "passwordSecretName": "sre-testsandbox-hackmd-ldap-password"
+          "samAccountName": "hackmdldaptestsandbo"
         },
         "dsvm": {
           "name": "TESTSANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldaptestsandbox",
-          "passwordSecretName": "sre-testsandbox-dsvm-ldap-password"
+          "samAccountName": "dsvmldaptestsandbox"
         }
       },
       "researchers": {
         "test": {
           "name": "TESTSANDBOX Test Researcher",
-          "samAccountName": "testresrchtestsandbo",
-          "passwordSecretName": "sre-testsandbox-test-researcher-password"
+          "samAccountName": "testresrchtestsandbo"
         }
       }
     },
@@ -247,6 +250,7 @@
     "dataserver": {
       "rg": "RG_SRE_DATA",
       "vmName": "DATA-SRE-TESTSANDBOX",
+      "vmSize": "Standard_B2ms",
       "hostname": "DATA-SRE-TESTSANDBOX",
       "fqdn": "DATA-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
       "ip": "10.150.2.250"
@@ -271,6 +275,7 @@
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
       "vmImageSubscription": "Turing Safe Haven VM Images",
+      "vmSizeDefault": "Standard_DS2_v2",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019082900",
       "admin": {
