@@ -191,25 +191,25 @@
       "ldap": {
         "gitlab": {
           "name": "TESTSANDBOX Gitlab LDAP",
-          "samAccountName": "sre-testsandbox-gitlab-ldap",
+          "samAccountName": "gitlabldaptestsandbo",
           "passwordSecretName": "sre-testsandbox-gitlab-ldap-password"
         },
         "hackmd": {
           "name": "TESTSANDBOX HackMD LDAP",
-          "samAccountName": "sre-testsandbox-hackmd-ldap",
+          "samAccountName": "hackmdldaptestsandbo",
           "passwordSecretName": "sre-testsandbox-hackmd-ldap-password"
         },
         "dsvm": {
           "name": "TESTSANDBOX DSVM LDAP",
-          "samAccountName": "sre-testsandbox-dsvm-ldap",
+          "samAccountName": "dsvmldaptestsandbox",
           "passwordSecretName": "sre-testsandbox-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
           "name": "TESTSANDBOX Test Researcher",
-          "samAccountName": "sre-testsandbox-test-res",
-          "passwordSecretName": "sre-testsandbox-test-res-password"
+          "samAccountName": "testresrchtestsandbo",
+          "passwordSecretName": "sre-testsandbox-test-researcher-password"
         }
       }
     },

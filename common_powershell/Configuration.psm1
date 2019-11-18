@@ -154,6 +154,16 @@ function Get-ShmFullConfig{
 Export-ModuleMember -Function Get-ShmFullConfig
 
 
+function Trim-ToLength {
+    param (
+        [Parameter(Mandatory=$True,ValueFromPipeline=$True)]
+        [string] $str,
+        [Parameter(Mandatory=$True,Position=1)]
+        [int] $length
+    )
+    return $str[0..($length-1)] -join ""
+}
+
 # Add a new DSG configuration
 # ---------------------------
 function Add-DsgConfig {
@@ -300,17 +310,17 @@ function Add-DsgConfig {
         }
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-    $config.dsg.users.ldap.gitlab.samAccountName = $config.dsg.shortName + "-gitlab-ldap"
-    $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.users.ldap.gitlab.samAccountName + "-password"
+    $config.dsg.users.ldap.gitlab.samAccountName = "gitlabldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
+    $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.shortName + "-gitlab-ldap-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-    $config.dsg.users.ldap.hackmd.samAccountName = $config.dsg.shortName + "-hackmd-ldap"
-    $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.users.ldap.hackmd.samAccountName + "-password"
+    $config.dsg.users.ldap.hackmd.samAccountName = "hackmdldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
+    $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.shortName + "-hackmd-ldap-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-    $config.dsg.users.ldap.dsvm.samAccountName = $config.dsg.shortName + "-dsvm-ldap"
-    $config.dsg.users.ldap.dsvm.passwordSecretName =  $config.dsg.users.ldap.dsvm.samAccountName + "-password"
+    $config.dsg.users.ldap.dsvm.samAccountName = "dsvmldap" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
+    $config.dsg.users.ldap.dsvm.passwordSecretName = $config.dsg.shortName + "-dsvm-ldap-password"
     $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName + " Test Researcher"
-    $config.dsg.users.researchers.test.samAccountName = $config.dsg.shortName + "-test-res"
-    $config.dsg.users.researchers.test.passwordSecretName =  $config.dsg.users.researchers.test.samAccountName + "-password"
+    $config.dsg.users.researchers.test.samAccountName = "testresrch" + $dsgConfigBase.dsgId.ToLower() | Trim-ToLength 20
+    $config.dsg.users.researchers.test.passwordSecretName = $config.dsg.shortName + "-test-researcher-password"
 
     # --- RDS Servers ---
     $config.dsg.rds = [ordered]@{

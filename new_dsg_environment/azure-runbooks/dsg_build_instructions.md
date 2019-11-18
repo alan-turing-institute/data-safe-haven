@@ -214,11 +214,11 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   **=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
 
-- Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config.
+- Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
 ### Set up users and DNS
 
-- Prepare SHM by running `./Prepare_SHM.ps1 -dsgId <DSG ID>`, where the DSG ID is the one specified in the config
+- Prepare SHM by running `./Prepare_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 
 - This step also creates a DSG KeyVault in the DSG subscription in `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>-dsg<dsg-id>`. Additional deployment steps will add secrets to this KeyVault and you will need to access some of these for some of the manual configiration steps later.
 

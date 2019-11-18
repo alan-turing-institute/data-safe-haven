@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$sreId
 )
 
 Import-Module Az
@@ -8,7 +8,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
-$config = Get-DsgConfig($dsgId);
+$config = Get-DsgConfig($sreId);
 $originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts
@@ -21,7 +21,7 @@ $dsgResourceGroups = @(Get-AzResourceGroup)
 $dsgResources = @(Get-AzResource)
 if($dsgResources -or $dsgResourceGroups) {
   Write-Host "********************************************************************************"
-  Write-Host "*** SRE $dsgId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
+  Write-Host "*** SRE $sreId subscription '$($config.dsg.subscriptionName)' is not empty!! ***"
   Write-Host "********************************************************************************"
   Write-Host "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
   Write-Host ""
@@ -145,9 +145,9 @@ $dnsResourceGroup = $config.shm.dns.rg
 $dsgDomain = $config.dsg.domain.fqdn
 $rdsDdnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
 $rdsAcmeDnsRecordname =  ("_acme-challenge." + "$($config.dsg.rds.gateway.hostname)".ToLower())
-Write-Host " - Removing '$rdsDdnsRecordname' A record from SRE $dsgId DNS zone ($dsgDomain)"
+Write-Host " - Removing '$rdsDdnsRecordname' A record from SRE $sreId DNS zone ($dsgDomain)"
 Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
-Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from SRE $dsgId DNS zone ($dsgDomain)"
+Write-Host " - Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($dsgDomain)"
 Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 # Switch back to the DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
