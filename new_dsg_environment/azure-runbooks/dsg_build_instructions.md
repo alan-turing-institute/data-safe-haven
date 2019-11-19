@@ -1,5 +1,4 @@
-
-# Data Study Environment Build Instructions
+# Secure Research Environment Build Instructions
 
 # Safe Haven Management Environment Build Instructions
 
@@ -29,43 +28,28 @@
   - Administrative access to the relevant Safe Haven Management VMs
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-
-  - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>`.
-
+  - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`.
   - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-
-  - Click on the certificate named `DSG-P2S-<shm-id>-ClientCert`, click on the "current version" and click the "Download in PFX/PEM format" link.
-
+  - Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
   - To install, double click on the downloaded certificate, leaving the password field blank.
-
   - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
-
   -  This certificate will also allow you to connect via VPN to the DSG VNet once deployed.
 
 - #### Configure a VPN connection to the Safe Haven Management VNet
-
-  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_<shm-slug>_VNET -> <shm-slug>_VNET1_GW`, where `<shm-slug>` is `DSG` for test and `SHM` for production. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
   - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
-
   - On Windows you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
-
   - On Windows do not rename the vpn client as this will break it
-
   - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
     ![image1.png](images/media/image1.png)
 
-  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is `prod` for the production SHM environment and `test` for the test SHM environment (or "DSG `<dsg-id>` (`<shm-id>`)" for VPNs to DSG VNets).
+  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is defined in the config file.
 
-### Access to required DSG resources
-
+### Access to required SRE resources
 - Access to a new Azure subscription which the DSG will be deployed to
-
-  - If a subscription does not exist, create one with the name `Data Study Group <dsg-id> (<shm-id>)`, picking a DSG ID that is not yet in use and setting `<shm-id>` to `test` for test and `prod` for production.
-
+  - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-
   - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG suubscription
 
 - Access to a public routable domain name for the DSG and its name servers
@@ -83,57 +67,37 @@
             - add a new NS record using the 4 nameservers you copied down above
             ![Subdomain NS record](images/subdomain_ns_record.png)
 
-<!-- ### Install and configure PowerShell for Azure
+### Deploying multiple SREs in parallel
 
-- [Install PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
-
-  - **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core whenever Powershell is required later in this guide.
-
-- [Install the PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps) -->
-
-<!-- ### Install and configure Azure CLI
-
-- On Windows, this requires [installing the Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)(WSL) as a prerequisite.
-
-- [Install and configure the Azure CLI for Linux or OSX](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt)
-
-- **NOTE:** If you have problems installing the Azure CLI then deploy from an Ubuntu or OSX machine. In particular there may be issues with some functionality on the Windows Subsystem for Linux. -->
-
-<!-- ### Install and configure Certbot
-
-- Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux). -->
-
-### Deploying multiple DSGs in parallel
-
-**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 ## Build Process
 
-[0. Define DSG configuration](#0.-Define-DSG-configuration)
+[1. Define SRE configuration](#1.-Define-SRE-configuration)
 
-[1. Prepare Safe Haven Management Domain](#1.-Prepare-Safe-Haven-Management-Domain)
+[2. Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
 
-[2. Deploy Virtual Network](#2.-Deploy-Virtual-Network)
+[3. Deploy Virtual Network](#3.-Deploy-Virtual-Network)
 
-[3. Deploy DSG Domain Controller](#3.-Deploy-DSG-Domain-Controller)
+[4. Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
 
-[4. Deploy Remote Desktop Service Environment](#4.-Deploy-Remote-Desktop-Service-Environment)
+[5. Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
 
-[5. Deploy Data Server](#5.-Deploy-Data-Server)
+[6. Deploy Data Server](#6.-Deploy-Data-Server)
 
-[6. Deploy Web Application Servers (Gitlab and HackMD)](#6.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
+[7. Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
 
-[7. Deploy initial shared compute VM](#7.-Deploy-initial-shared-compute-VM)
+[8. Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
 
-[8. Apply network configuration](#8.-Apply-network-configuration)
+[9. Apply network configuration](#9.-Apply-network-configuration)
 
-[9. Peer DSG and package mirror networks](#9.-Peer-DSG-and-package-mirror-networks)
+[10. Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
 
-[10. Run smoke tests on shared compute VM](#10.-Run-smoke-tests-on-shared-compute-VM)
+[11. Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
 
-## 0. Define DSG configuration
+## 1. Define SRE configuration
 
-The full configuration details for a new DSG are generated by defining a few "core" properties for the new DSG and the management environment in which it will be deployed.
+The full configuration details for a new SRE are generated by defining a few "core" properties for the new SRE and the management environment in which it will be deployed.
 
 ### Core SHM configuration properties
 The core properties for the relevant pre-existing Safe Haven Management (SHM) environment must be present in the `dsg_configs/core` folder.
@@ -160,10 +124,10 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 }
 ```
 
-### Core DSG configuration properties
+### Core SRE configuration properties
 
-The core properties for the new DSG environment must be present in the `dsg_configs/core` folder.
-The following core DSG properties must be defined in a JSON file named `dsg_<dsg-id>_core_config.json`.
+The core properties for the new SRE environment must be present in the `dsg_configs/core` folder.
+The following core SRE properties must be defined in a JSON file named `dsg_<dsg-id>_core_config.json`.
 
 ```json
 {
@@ -180,11 +144,11 @@ The following core DSG properties must be defined in a JSON file named `dsg_<dsg
 }
 ```
 
-### DSG IP Address prefix
+### SRE IP Address prefix
 
-Each DSG must be assigned it's own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a DSG and capacity to add additional subnets should that be required in the future.
+Each SRE must be assigned it's own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
-### Generate full configuration for DSG
+### Generate full configuration for SRE
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -196,11 +160,11 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
   - `Add-DsgConfig -dsgId <dsg-id>`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`)
 
-- A full configuration file for the new DSG will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the DSG deployment.
+- A full configuration file for the new SRE will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 
 - Commit this new full configuration file to the Safe Haven repository
 
-## 1. Prepare Safe Haven Management Domain
+## 2. Prepare Safe Haven Management Domain
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
@@ -208,11 +172,9 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
-### Clear out any remaining DSG data from previous deployments
+### Clear out any remaining SRE data from previous deployments
 
-  **=== ONLY CARRY OUT THIS STEP IF THE DSG SUBSCRIPTION IS COMPLETELY EMPTY ===**
-
-  **=== IF THE DSG SUBSCRIPTION IS NOT EMPTY CONFIRM IT IS NO LONGER USED BEFORE DELETING ANY RESOURCES ===**
+**NOTE** Ensure that the SRE subscription is completely empty before running this script. If the subscription is not empty, confirm that it is not being used before deleting the resources
 
 - Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
@@ -260,7 +222,7 @@ Each DSG must be assigned it's own unique IP address space, and it is very impor
 
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Create_AD_DC.ps1` script, entering the DSG ID when prompted
+- Run the `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
