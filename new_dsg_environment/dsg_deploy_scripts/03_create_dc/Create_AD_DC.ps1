@@ -85,7 +85,7 @@ if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
   throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
 }
 $params = @{
-  "DC Name" = ($config.dsg.dc.vmName | TrimToLength 15)
+  "DC Name" = $config.dsg.dc.vmName
   "SRE ID" = $config.dsg.id
   "VM Size" = $config.dsg.dc.vmSize
   "IP Address" = $config.dsg.dc.ip

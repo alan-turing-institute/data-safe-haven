@@ -295,32 +295,16 @@ function Add-DsgConfig {
         hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
         dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
         testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
-
-        # aadAdminPassword='shm-aad-admin-password'
-        # dcNpsAdminUsername='shm-dcnps-admin-username'
-        # dcNpsAdminPassword='shm-dcnps-admin-password'
-        # dcSafemodePassword='shm-dc-safemode-password'
-        # adsyncPassword='shm-adsync-password'
-        # vpnCaCertificate='shm-vpn-ca-cert'
-        # vpnCaCertPassword='shm-vpn-ca-cert-password'
-        # vpnCaCertificatePlain='shm-vpn-ca-cert-plain'
-        # vpnClientCertificate='shm-vpn-client-cert'
-        # vpnClientCertPassword='shm-vpn-client-cert-password'
     }
-
 
     # --- Domain controller ---
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_SRE_DC"
-    $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.dc.vmSize = "Standard_B2ms"
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
-    # $config.dsg.dc.admin = [ordered]@{
-    #     usernameSecretName = "sre-" + $config.dsg.id + "-dc-admin-username"
-    #     passwordSecretName = "sre-" + $config.dsg.id + "-dc-admin-password"
-    # }
 
     # --- Domain users ---
     $config.dsg.users = [ordered]@{
@@ -335,16 +319,12 @@ function Add-DsgConfig {
     }
     $config.dsg.users.ldap.gitlab.name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
     $config.dsg.users.ldap.gitlab.samAccountName = "gitlabldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
-    # $config.dsg.users.ldap.gitlab.passwordSecretName = $config.dsg.shortName + "-gitlab-ldap-password"
     $config.dsg.users.ldap.hackmd.name = $config.dsg.domain.netbiosName + " HackMD LDAP"
     $config.dsg.users.ldap.hackmd.samAccountName = "hackmdldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
-    # $config.dsg.users.ldap.hackmd.passwordSecretName = $config.dsg.shortName + "-hackmd-ldap-password"
     $config.dsg.users.ldap.dsvm.name = $config.dsg.domain.netbiosName + " DSVM LDAP"
     $config.dsg.users.ldap.dsvm.samAccountName = "dsvmldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
-    # $config.dsg.users.ldap.dsvm.passwordSecretName = $config.dsg.shortName + "-dsvm-ldap-password"
     $config.dsg.users.researchers.test.name = $config.dsg.domain.netbiosName + " Test Researcher"
     $config.dsg.users.researchers.test.samAccountName = "testresrch" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
-    # $config.dsg.users.researchers.test.passwordSecretName = $config.dsg.shortName + "-test-researcher-password"
 
     # --- RDS Servers ---
     $config.dsg.rds = [ordered]@{

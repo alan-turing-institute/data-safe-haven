@@ -20,11 +20,8 @@
 ### Access to required Safe Haven Management resources
 
 - You need to be a member of the relevant "Safe Haven `<shm-id>` Admins" Security Group, where `<shm-id>` is `test` for test and `production` for production. This will give you the following access:
-
   - Administrative access to the relevant Safe Haven Management Azure subscription
-
   - Administrative access to the relevant Safe Haven Management Active Directory Domain
-
   - Administrative access to the relevant Safe Haven Management VMs
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
@@ -51,7 +48,6 @@
   - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
   - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG suubscription
-
 - Access to a public routable domain name for the DSG and its name servers
   - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `testsandbox.dsgroupdev.co.uk`)
   - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
@@ -72,27 +68,16 @@
 **NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 ## Build Process
-
 [1. Define SRE configuration](#1.-Define-SRE-configuration)
-
 [2. Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
-
 [3. Deploy Virtual Network](#3.-Deploy-Virtual-Network)
-
 [4. Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
-
 [5. Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
-
 [6. Deploy Data Server](#6.-Deploy-Data-Server)
-
 [7. Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
-
 [8. Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
-
 [9. Apply network configuration](#9.-Apply-network-configuration)
-
 [10. Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
-
 [11. Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
 
 ## 1. Define SRE configuration
@@ -149,95 +134,60 @@ The following core SRE properties must be defined in a JSON file named `dsg_<dsg
 Each SRE must be assigned it's own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21bit subnet mask. This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
 ### Generate full configuration for SRE
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
-
 - Generate a new full configuration file for the new DSG using the following commands.
-
   - `Import-Module ../../common_powershell/Configuration.psm1 -Force`
-
   - `Add-DsgConfig -dsgId <dsg-id>`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`)
-
 - A full configuration file for the new SRE will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
-
 - Commit this new full configuration file to the Safe Haven repository
 
 ## 2. Prepare Safe Haven Management Domain
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 ### Clear out any remaining SRE data from previous deployments
-
 **NOTE** Ensure that the SRE subscription is completely empty before running this script. If the subscription is not empty, confirm that it is not being used before deleting the resources
-
 - Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
 ### Set up users and DNS
-
 - Prepare SHM by running `./Prepare_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-
-- This step also creates a DSG KeyVault in the DSG subscription in `Resource Groups -> RG_DSG_SECRETS -> kv-shm-<shm-id>-dsg<dsg-id>`. Additional deployment steps will add secrets to this KeyVault and you will need to access some of these for some of the manual configiration steps later.
+- This step also creates a KeyVault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>`. Additional deployment steps will add secrets to this KeyVault and you will need to access some of these for some of the manual configiration steps later.
 
 ## 2. Deploy Virtual Network
 
 ### Create the virtual network
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./Create_VNET.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-
+- Run `./Create_VNET.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The deployment will take around 20 minutes. Most of this is deploying the virtual network gateway.
-
 - The VNet peerings may take a few minutes to provision after the script completes.
 
 ### Set up a VPN connection to the DSG
-
 - In the **DSG subscription** open `Resource Groups -> RG_DSG_VNET -> VNET_DSG<dsg-id>_GW`
-
   - Select "**Point to Site Configuration**" from the left-hand navigation
-
   - Download the VPN client from the "Point to Site configuration" menu
-
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML1dfd680.PNG](images/media/image4.png)
-
+    ![VPN client](images/media/image4.png)
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
 ## 3. Deploy DSG Domain Controller
 
 ### Deploy DC VM
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-
+- Run `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
 ### Configure DSG Active Directory Domain Controller
-
 #### Upload and run remote configuration scripts
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
-- Run the `./Configure_AD_DC.ps1` script, entering the DSG ID when prompted
-
+- Run `./Configure_AD_DC.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The remote scripts will take a few minutes to return
 
 #### Perform manual configuration steps

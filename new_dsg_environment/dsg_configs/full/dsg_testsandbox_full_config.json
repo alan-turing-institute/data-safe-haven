@@ -188,10 +188,10 @@
     },
     "dc": {
       "rg": "RG_SRE_DC",
-      "vmName": "DC-SRE-TESTSANDBOX",
+      "vmName": "DC-SRE-TESTSAND",
       "vmSize": "Standard_B2ms",
-      "hostname": "DC-SRE-TESTSANDBOX",
-      "fqdn": "DC-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
+      "hostname": "DC-SRE-TESTSAND",
+      "fqdn": "DC-SRE-TESTSAND.testsandbox.dsgroupdev.co.uk",
       "ip": "10.150.0.250"
     },
     "users": {

@@ -94,7 +94,9 @@ if ($?) {
 }
 Write-Output $result.Value
 
-# === Add DSG DNS entries to SHM ====
+
+# Add DSG DNS entries to SHM
+# --------------------------
 Write-Host -ForegroundColor DarkCyan "Adding SRE DNS records to SHM..."
 $scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
@@ -115,10 +117,10 @@ if ($?) {
 }
 Write-Output $result.Value
 
-# === Update SRE keyvault permissions ====
-# Switch to SRE subscription
-Set-AzContext -Subscription $config.dsg.subscriptionName;
 
+# Update SRE keyvault permissions
+# -------------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 Write-Host -ForegroundColor DarkCyan "Updating SRE keyvault permissions..."
 Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
 Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
@@ -127,6 +129,7 @@ if ($?) {
 } else {
   Write-Host -ForegroundColor DarkRed " [x] Failed!"
 }
+
 
 # Switch back to original subscription
 # ------------------------------------
