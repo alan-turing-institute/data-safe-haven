@@ -250,6 +250,35 @@ if ($?) {
 }
 
 
+
+# Create domain trust
+# -------------------
+Write-Host -ForegroundColor DarkCyan "Creating domain trust between: $($config.dsg.domain.fqdn) and $($config.shm.domain.fqdn)..."
+
+# Switch to SHM subscription
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+
+# Encrypt password
+$dcAdminPasswordEncrypted = ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+
+# Run domain configuration script remotely
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Domain_Trust.ps1"
+$params = @{
+  sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
+  sreDcAdminUsername = "`"$dcAdminUsername`""
+  sreFqdn = "`"$($config.dsg.domain.fqdn)`""
+}
+$result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
+                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
+$success = $?
+Write-Output $result.Value;
+if ($success) {
+  Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
+} else {
+  Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
+}
+
+
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext;

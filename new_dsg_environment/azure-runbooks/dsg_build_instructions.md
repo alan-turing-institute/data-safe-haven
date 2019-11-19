@@ -180,7 +180,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-- The deployment will take around XXXX minutes. Most of this is running the setup scripts after creating the VM.
+- The deployment will take around 30 minutes. Most of this is running the setup scripts after creating the VM.
 
 
 <!-- - Run `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
@@ -246,7 +246,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 - Restart the server -->
 
-### Create Domain Trust on SHM DC
+<!-- ### Create Domain Trust on SHM DC
 
 - To enable authentication to pass from the DSG to the management active directory we need to establish a trust relationship.
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
@@ -271,7 +271,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
     ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML71798f.PNG](images/media/image12.png)
 - Click "Finish" upon successful trust creation.
 - Click "OK" to the informational panel on SID Filtering.
-- Close the "Active Directory Domains and Trust" MMC
+- Close the "Active Directory Domains and Trust" MMC -->
 
 ## 4. Deploy Remote Desktop Service Environment
 ### Create RDS VMs and perform initial configuration
