@@ -17,7 +17,7 @@ function New-AccountSasToken {
     )
 
     if(-not $validityHours){
-        $validityHours = 1
+        $validityHours = 2
     }
     # Temporarily switch to storage account subscription
     $prevContext = Get-AzContext
@@ -35,7 +35,6 @@ function New-AccountSasToken {
 Export-ModuleMember -Function New-AccountSasToken
 
 function New-ReadOnlyAccountSasToken {
-
     param(
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter subscription name")]
         [string]$subscriptionName,
@@ -44,12 +43,11 @@ function New-ReadOnlyAccountSasToken {
         [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter storage account name")]
         [string]$accountName
     )
-
-        return New-AccountSasToken -subscriptionName "$subscriptionName" `
-                                   -resourceGroup "$resourceGroup" `
-                                   -accountName "$accountName" `
-                                   -service Blob,File `
-                                   -resourceType Service,Container,Object `
-                                   -permission "rl"
+    return New-AccountSasToken -subscriptionName "$subscriptionName" `
+                                -resourceGroup "$resourceGroup" `
+                                -accountName "$accountName" `
+                                -service Blob,File `
+                                -resourceType Service,Container,Object `
+                                -permission "rl"
 }
 Export-ModuleMember -Function New-ReadOnlyAccountSasToken

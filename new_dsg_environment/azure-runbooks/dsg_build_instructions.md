@@ -173,13 +173,17 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
     ![VPN client](images/media/image4.png)
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
-## 3. Deploy DSG Domain Controller
+## 3. Deploy SRE Domain Controller
 
 ### Deploy DC VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+- The deployment will take around XXXX minutes. Most of this is running the setup scripts after creating the VM.
+
+
+<!-- - Run `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
 
 ### Configure DSG Active Directory Domain Controller
@@ -240,311 +244,184 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 - Click "OK" when done and close all Group Policy windows.
 
-- Restart the server
+- Restart the server -->
 
 ### Create Domain Trust on SHM DC
 
-- To enable authentication to pass from the DSG to the management active directory we need to establish a trust.
-
+- To enable authentication to pass from the DSG to the management active directory we need to establish a trust relationship.
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-
 - Login with domain user `<shm-domain>\User` and the SHM DC admin password from the `shm-dc-admin-password` secret in the Safe Haven Management KeyVault
-
 - From the "Server Management" application, select `Tools -> Active Directory Domains and Trust`
-
 - Right click the management domain name and select `Properties`
-
 - Click on "Trusts" tab then click "New Trust"
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML5eb57b.PNG](images/media/image11.png)
-
 - Click "Next"
-
   | | |
   | -- | -- |
   | Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk |
   | Trust Type:                                           | External Trust |
   | Direction of trust:                                   | Two-way |
   | Sides of trust:                                       | Both this domain and the specified domain |
-  |   User name and password:                               | Domain admin user on the DSG domain. Format: <dsg-domain>\Username>. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. |
-  | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication  |
+  | User name and password:                               | Domain admin user on the DSG domain. Format: <dsg-domain\Username>. See DSG `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password` secrets in the SRE KeyVault for username and password. |
+  | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication |
   | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
-
 - Click `Next -> Next`
-
   - Select "Yes, confirm the outgoing trust" -\> "Next"
-
   - Select "Yes, confirm the incoming trust" -\> "Next"
-
     ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML71798f.PNG](images/media/image12.png)
-
 - Click "Finish" upon successful trust creation.
-
 - Click "OK" to the informational panel on SID Filtering.
-
 - Close the "Active Directory Domains and Trust" MMC
 
 ## 4. Deploy Remote Desktop Service Environment
-
 ### Create RDS VMs and perform initial configuration
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 #### Create the RDS VMs
-
 - Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
-
 - The deployment will take around 10 minutes to complete.
 
 #### Perform initial configuration and file transfer
-
 - Once VM deployment is complete, run the `./Initial_Config_And_File_Transfer.ps1` script, providing the DSG ID when prompted
-
 - This will take around 10 minutes to complete. Most of this is the transfer of files to the RDS session hosts.
 
 ### Install software on RDS Session Host 1 (Remote app server)
-
 - Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process.
-
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
-
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
-
 - Open `C:\Software` in Windows explorer
-
 - Install the packages present in the folder
-
 - **Once installed logout of the server**
 
 ### Install RDS Environment and webclient
-
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. (all DSG Windows servers use the same admin credentials)
-
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
 #### Install RDS environment
-
 - Run `C:\Scripts\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
-
-- This script will take about 12 minutes to run
+- This script will take about 10 minutes to run
 
 #### Install RDS webclient
-
 - Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version. Enter "Y" on any prompts.
-
 - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-
 - Run `C:\Scripts\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
-
 - Accept any requirements or license agreements.
 
 #### Move the session hosts under the control of the RDS gateway
-
 - Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
-
   ![Add RDS session servers to collection - Step 1](images/media/image14.png)
-
 - Enter "rdssh" into the "Name" box and click "Find Now"
-
 - Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
-
   ![Add RDS session servers to collection - Step 2](images/media/image15.png)
 
 #### Configure RDS to use SHM NPS server for client access policies
-
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22da022.PNG](images/media/image21.png)
-
 - Right click the RDS server object and select "Properties"
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22ed825.PNG](images/media/image22.png)
-
 - Select "RD CAP Store" tab
-
 - Select the "Central Server Running NPS"
-
 - Enter the IP address of the NPS within the management domain (`10.251.0.248`)
-
 - Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the DSG KeyVault.
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2302f1a.PNG](images/media/image23.png)
-
 - Click "OK" to close the dialogue box.
 
 #### Set the security groups for access to session hosts
-
 - Expand the RDS server object and select `Policies -> Resource Authorization Policies`
-
 - Right click on "RDG_AllDomainControllers" and select "Properties`
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2363efc.PNG](images/media/image24.png)
-
 - On the "User Groups" tab click "Add"
-
 - Click "Locations" and select the management domain
-
 - Enter the "SG" into the "Enter the object names to select" box and click on "Check Names" select the correct "Research Users" security group from the list i.e. SG DSGROUP`<dsg-id>` Research Users.
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML238cb34.PNG](images/media/image25.png)
-
 - Click "OK" and the group will be added to the "User Groups" screen
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML23aa4c7.PNG](images/media/image26.png)
-
 - Click "OK" to exit the dialogue box
-
 - Right click on "RDG_RDConnectionBrokers" policy and select "Properties"
-
   ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML23c2d0d.PNG](images/media/image27.png)
-
 - Repeat the process you did for the "RDG_AllDomainComputers" policy and add the correct Research Users security group.
 
 #### Increase the authorisation timeout to allow for MFA
-
 - In "Server Manager", select `Tools -> Network Policy Server`
-
 - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
-
   ![](images/media/rds_local_nps_remote_server_selection.png)
-
--	Highlight the server shown in the “RADIUS Server” column and click “Edit”
-
--	Change to the “Load Balancing” tab and change the parameters to match the screen below
-
+- Highlight the server shown in the “RADIUS Server” column and click “Edit”
+- Change to the “Load Balancing” tab and change the parameters to match the screen below
     ![](images/media/rds_local_nps_remote_server_timeouts.png)
-
--	Click “OK” twice and close “Network Policy Server” MMC
+- Click “OK” twice and close “Network Policy Server” MMC
 
 ### Configuration of SSL on RDS Gateway
-
 - Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted.
-
 - **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this should usually not be an issue. However, if you find yourself needing to re-run this step, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
-
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-
 - Login with **SHM** domain user `<shm-domain>\User` See **SHM** `dsg<dsg-id>-dc-admin-username` and `shm-dc-admin-password` secrets in the **SHM** KeyVault for username and password.
-
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
-
 - Open the `Safe Haven Security Groups` OU
-
 - Right click the `SG DSGROUP<dsg-id> Research Users` security group and select "Properties"
-
 - Click on the "Members" tab and click the "Add" button
-
 - Enter the start of your name and click "Check names"
-
 - Select your name and click "Ok"
-
 - Click "Ok" again to exit the add users dialogue
-
 - Launch a local web browser and go to `https://rds.<dsg-domain>/RDWeb/webclient/` and log in. If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain. Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix) or open a new private / incognito browser window and visit the page.
-
 - Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
-
 - If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://rds.<dsg-domain>`, it is likely that you missed the step of installing the RDS webclient.
-
     - Go back to the previous section and run the webcleint installation step.
-
     - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
-
         - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
-
         - `Publish-RDWebClientPackage -Type Production -Latest`
-
 - If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
-
     - Ensure that the SHM NPS server RADIUS Client configuration is using the **private** IP address of the RDS Gateway and **not** its public one.
-
     - Ensure the same shared secret from the `dsg-<dsg-id>-nps-secret` in the DSG KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the DSG RDS Gateway RD CAP Store configuration (see previous sections for instructions).
-
 - If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been increased as described in a previous section. It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
-
 - If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and DSG RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
-
 - **NOTE:** The other apps will not work until the other servers have been deployed.
 
 ### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
-
 - Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
-
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
-
 - Open `C:\Software` in Windows explorer
-
 - Install the packages present in the folder
-
 - **NOTE:** Installing TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
-
 - Once installed logout of the server
 
 ## 5. Deploy Data Server
-
 ### Create Dataserver VM
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
-
 - The deployment will take around 10 minutes to complete
 
 ### Configure Dataserver
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Configure_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 ## 6. Deploy Web Application Servers (Gitlab and HackMD)
-
 - Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
-
 - The deployment will take a few minutes to complete
 
 ### Configure GitLab Server
-
 - GitLab is fully configured by the `Create_Web_App_Servers.ps1` deployment script
-
 - There is a built-in `root` user, whose password is stored in the DSG KeyVault (see DSG config file for KeyVault and secret names).
-
 - You can test Gitlab independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
 ### Configure HackMD Server
-
 - HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
-
 - You can test HackMD independently of the RDS servers by connecting to `<dsg-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
 ## 7. Deploy initial shared compute VM
@@ -561,7 +438,6 @@ To deploy a compute VM you will need the following available on the machine you 
 - A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
 ### Deploy a compute VM
-
 - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
@@ -586,30 +462,20 @@ To deploy a compute VM you will need the following available on the machine you 
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## 8. Apply network configuration
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Change to the `new_dsg_environment/dsg_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
 
 ## 09. Unpeering DSG and package mirror networks
 The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network by running `new_dsg_environment/dsg_deploy_scripts/09_mirror_peerings/Configure_Mirror_Peering.ps1` as part of its execution.
 
 **==THESE SCRIPTS SHOULD NOT BE MANUALLY RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
-
 However, if you need to unpeer the mirror networks for some reason (e.g. while preparing a DSG subscription for re-use), you can run the unpeering script separately as described below.
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
 - Change to the `new_dsg_environment/dsg_deploy_scripts/09_mirror_peerings/internal/` directory of the Safe Haven repository
-
 - Open a PowerShell environment by typing `pwsh` on the Ubuntu bash command line
-
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-
 - Run the `./Unpeer_Dsg_And_Mirror_Networks.ps1` script, providing the DSG ID when prompted
 
 ## 10. Run smoke tests on shared compute VM
@@ -618,35 +484,21 @@ These tests should be run **after** the network lock down and peering the DSG an
 To run the smoke tests:
 
 - Ensure you have the appropriate version of the tests by changing to the `master` branch (or the branch you deployed the VMs from if different) and doing a `pull` from Git or your preferred Git app (e.g. SourceTree).
-
 - Connect to the **DSG Dataserver** via Remote Desktop client over the DSG VPN connection. Ensure that the Remote Desktop client configuration shares the Safe Haven repository folder on your local machine with the  Dataserver (or you have another way to transfer files between your local machine and the Dataserver VM).
-
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
-
 - Copy the `package_lists` and `tests` folders from your local `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to a `dsg_tests` folder on within the `F:\Data` folder on the DSG Dataserver.
-
     ![](images/media/transfer_test_files_to_dataserver.png)
-
 - Connect to the DSG environment via the RDS Webclient at `https://rds.dsgroup<dsg-id>.co.uk/RDWeb/webclient`, logging in as a normal Research User.
-
 - Open the WinSCP "File transfer" app and connect to the IP address of the Shared VM (`<data-subnet-prefix>.160`) with the same credentials.
-
 - Copy the `dsg_tests` folder from the Dataserver `R:\` drive to your home directory on the Shared VM.
-
   ![](images/media/copy_test_files_from_dataserver_to_shared_vm.png)
-
 - Connect to a **remote desktop** on the Shared VM using the "Shared VM (Desktop)" app
-
 - Open a terminal session
-
 - Change to the tests folder using `cd ~/dsg_tests/tests`
-
 - Follow the instructions in the `README.md` file the `tests` folder in your local copy of the `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder.
-
 - If all test results are expected you are done! Otherwise, contact REG for help diagnosing test failures.
 
 ## Server list
-
 - The following servers are created as a result of these instructions:
   - DSG`<dsg-id>`DC (domain controller)
   - DATASERVER
@@ -656,4 +508,3 @@ To run the smoke tests:
   - RDSSH1
   - RDSSH2
   - An initial shared compute VM (at IP address `<data-subnet-prefix>.160`)
-

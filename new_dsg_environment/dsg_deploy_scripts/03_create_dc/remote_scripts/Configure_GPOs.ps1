@@ -109,7 +109,6 @@ $oldLine = Select-String -Path $GptTmplPath -Pattern "__Members =" | % {$_.Line}
 $newLine = $($oldLine -Split '=')[0] + "= *$domainAdminsSID,*$serverAdminsSID"
 
 # Update GptTmpl file
-Write-Host "-Replace '$oldLine' -> '$newLine'"
 $_ = ((Get-Content -Path $GptTmplPath -Raw) -Replace [regex]::escape($oldLine), $newLine) | Set-Content -Path $GptTmplPath
 if ($?) {
   Write-Host " [o] Successfully configured group policies for 'Local Administrators'"
