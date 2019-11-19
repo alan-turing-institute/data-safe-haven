@@ -20,7 +20,7 @@ $_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
 
 # Remotely set the OS language for the DC
 # ---------------------------------------
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Language.ps1"
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Locale.ps1"
 Write-Host "Setting OS language for: $($config.dsg.dc.vmName)..."
 $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;

@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/GenerateSasToken.psm1 -Force
 
@@ -77,10 +78,11 @@ $dcAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name 
 $dcAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminPassword
 
 # Deploy template
-Write-Host -ForegroundColor DarkCyan " - deploying template..."
+$templateName = "dc-master-template"
+Write-Host -ForegroundColor DarkCyan " - deploying template $templateName..."
 $netbiosNameMaxLength = 15
 if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
-  throw "NetBios name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
+  throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
 }
 $params = @{
   "DC Name" = ($config.dsg.dc.vmName | TrimToLength 15)
@@ -97,13 +99,14 @@ $params = @{
   "Domain Name" = $config.dsg.domain.fqdn
   "NetBIOS Name" = $config.dsg.domain.netbiosName
 }
-$templatePath = Join-Path $PSScriptRoot "dc-master-template.json"
-$_ = New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location
-New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg -TemplateFile $templatePath @params -Verbose
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+$_ = New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location -Force
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
+$result = $?
+LogTemplateOutput -ResourceGroupName $config.dsg.dc.rg -DeploymentName $templateName
+if ($result) {
+  Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+  Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
 }
 
 # Switch back to original subscription
