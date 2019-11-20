@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "SRE ID": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter ID for SRE e.g. 'testsandbox'"
+            }
+        },
         "RDS Gateway Name": {
             "defaultValue": "RDS",
             "type": "string"
@@ -130,12 +136,12 @@
         }
 },
     "variables": {
-        "rdsnic": "[concat(parameters('RDS Gateway Name'),'_','NIC1')]",
-        "rdssh1nic": "[concat(parameters('RDS Session Host 1 Name'),'_','NIC1')]",
-        "rdssh2nic": "[concat(parameters('RDS Session Host 2 Name'),'_','NIC1')]",
-        "rdspip": "[concat(parameters('RDS Gateway Name'),'_','Public_IP')]",
-        "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
-        "rdsnsg": "[concat('NSG_',parameters('RDS Gateway Name'),'_Server')]",
+        "rdsnic": "[concat(parameters('RDS Gateway Name'),'-','NIC')]",
+        "rdssh1nic": "[concat(parameters('RDS Session Host 1 Name'),'-','NIC')]",
+        "rdssh2nic": "[concat(parameters('RDS Session Host 2 Name'),'-','NIC')]",
+        "rdspip": "[concat(parameters('RDS Gateway Name'),'-','PIP')]",
+        "diagStorageAccountName": "[substring(concat('rdsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
+        "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SERVER')]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
     },
@@ -159,7 +165,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('RDS Gateway Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('RDS Gateway Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -171,7 +177,7 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat(parameters('RDS Gateway Name'),'_Data_Disk1')]",
+                            "name": "[concat(parameters('RDS Gateway Name'),'-DATA-DISK-1')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -182,7 +188,7 @@
                         },
                         {
                             "lun": 1,
-                            "name": "[concat(parameters('RDS Gateway Name'),'_Data_Disk2')]",
+                            "name": "[concat(parameters('RDS Gateway Name'),'-DATA-DISK-2')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
@@ -798,7 +804,7 @@
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "NSG_SessionHosts",
+            "name": "NSG-RDS-SESSION-HOSTS",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,

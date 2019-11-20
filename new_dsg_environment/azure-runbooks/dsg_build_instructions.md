@@ -174,8 +174,6 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
 ## 3. Deploy SRE Domain Controller
-
-### Deploy DC VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -280,7 +278,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
 #### Create the RDS VMs
-- Run the `./Create_RDS_Servers.ps1` script, providing the DSG ID when prompted
+- Prepare SHM by running `./Create_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The deployment will take around 10 minutes to complete.
 
 #### Perform initial configuration and file transfer

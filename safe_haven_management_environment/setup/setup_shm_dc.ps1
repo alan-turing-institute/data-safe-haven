@@ -122,7 +122,7 @@ if ($notExists) {
   $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_LRS" -Kind "StorageV2"
 }
 # Create blob storage containers
-ForEach ($containerName in ("armdsc", "dcconfiguration", "rdssh-packages")) {
+ForEach ($containerName in ("armdsc", "dcconfiguration", "rds-sh-packages", "rds-gateway-scripts")) {
   if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
     Write-Host " - Creating container '$containerName' in storage account '$storageAccountName'"
     New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;

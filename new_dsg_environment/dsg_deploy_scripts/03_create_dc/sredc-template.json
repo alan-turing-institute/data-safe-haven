@@ -2,16 +2,16 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "DC Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for DC VM e.g. DC-SRE-SANDBOX"
-            }
-        },
         "SRE ID": {
             "type": "string",
             "metadata": {
                 "description": "Enter ID for SRE e.g. 'testsandbox'"
+            }
+        },
+        "DC Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC VM e.g. DC-SRE-SANDBOX"
             }
         },
         "VM Size": {

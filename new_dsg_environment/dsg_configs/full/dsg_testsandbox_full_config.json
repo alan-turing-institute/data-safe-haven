@@ -218,22 +218,25 @@
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS-SRE-TESTSANDBOX",
-        "hostname": "RDS-SRE-TESTSANDBOX",
-        "fqdn": "RDS-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
+        "vmName": "RDS-SRE-TESTSAN",
+        "vmSize": "Standard_B2ms",
+        "hostname": "RDS-SRE-TESTSAN",
+        "fqdn": "RDS-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.250",
         "npsSecretName": "sre-testsandbox-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1-SRE-TESTSANDBOX",
-        "hostname": "RDSSH1-SRE-TESTSANDBOX",
-        "fqdn": "RDSSH1-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
+        "vmName": "SH1-SRE-TESTSAN",
+        "vmSize": "Standard_DS2_v2",
+        "hostname": "SH1-SRE-TESTSAN",
+        "fqdn": "SH1-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2-SRE-TESTSANDBOX",
-        "hostname": "RDSSH2-SRE-TESTSANDBOX",
-        "fqdn": "RDSSH2-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
+        "vmName": "SH2-SRE-TESTSAN",
+        "vmSize": "Standard_DS2_v2",
+        "hostname": "SH2-SRE-TESTSAN",
+        "fqdn": "SH2-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.248"
       },
       "rg": "RG_SRE_RDS",
@@ -249,10 +252,10 @@
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
-      "vmName": "DATA-SRE-TESTSANDBOX",
+      "vmName": "DATA-SRE-TESTSA",
       "vmSize": "Standard_B2ms",
-      "hostname": "DATA-SRE-TESTSANDBOX",
-      "fqdn": "DATA-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
+      "hostname": "DATA-SRE-TESTSA",
+      "fqdn": "DATA-SRE-TESTSA.testsandbox.dsgroupdev.co.uk",
       "ip": "10.150.2.250"
     },
     "linux": {

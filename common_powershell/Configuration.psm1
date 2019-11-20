@@ -169,15 +169,15 @@ Export-ModuleMember -Function TrimToLength
 
 # Add a new DSG configuration
 # ---------------------------
-function Add-DsgConfig {
+function Add-SreConfig {
     param(
-        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g '9' for DSG9)")]
-        $dsgId
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g '9' for DSG9)")]
+        $sreId
     )
     $configRootDir = Get-ConfigRootDir
-    $dsgCoreConfigFilename = "dsg_" + $dsgId + "_core_config.json"
+    $dsgCoreConfigFilename = "dsg_" + $sreId + "_core_config.json"
     $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
-    $dsgFullConfigFilename = "dsg_" + $dsgId + "_full_config.json"
+    $dsgFullConfigFilename = "dsg_" + $sreId + "_full_config.json"
     $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -340,16 +340,19 @@ function Add-DsgConfig {
     $config.dsg.rds.nsg.gateway.name = "NSG_RDS_SERVER"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SESSION_HOSTS"
-    $config.dsg.rds.gateway.vmName = "RDS-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.rds.gateway.vmName = "RDS-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.rds.gateway.vmSize = "Standard_B2ms"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.gateway.npsSecretName = "sre-" + $($config.dsg.id).ToLower() + "-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "RDSSH1-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.rds.sessionHost1.vmName = "SH1-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.rds.sessionHost1.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "RDSSH2-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.rds.sessionHost2.vmName = "SH2-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.rds.sessionHost2.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
@@ -359,7 +362,7 @@ function Add-DsgConfig {
     # Data server
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_SRE_DATA"
-    $config.dsg.dataserver.vmName = "DATA-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.dataserver.vmName = "DATA-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.dataserver.vmSize = "Standard_B2ms"
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
@@ -399,7 +402,7 @@ function Add-DsgConfig {
     Write-Host $jsonOut
     Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
-Export-ModuleMember -Function Add-DsgConfig
+Export-ModuleMember -Function Add-SreConfig
 
 
 # Get a DSG configuration

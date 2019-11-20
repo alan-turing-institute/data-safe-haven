@@ -1,6 +1,6 @@
 # Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
 # and remote execution will stall waiting for the non-present user to enter the missing parameter on the
-# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in 
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
 # C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
@@ -23,7 +23,7 @@ param(
 $remoteFilePaths = $pipeSeparatedremoteFilePaths.Split("|")
 
 # Clear any previously downloaded artifacts
-Write-Output "   - Clearing all pre-existing files and folders from '$downloadDir'"
+Write-Output "Clearing all pre-existing files and folders from '$downloadDir'"
 if(Test-Path -Path $downloadDir){
   Get-ChildItem $downloadDir -Recurse | Remove-Item -Recurse -Force
 } else {
@@ -31,7 +31,7 @@ if(Test-Path -Path $downloadDir){
 }
 
 # Download artifacts
-Write-Output "   - Downloading $numFiles files to '$downloadDir'"
+Write-Output "Downloading $numFiles files to '$downloadDir'"
 foreach($remoteFilePath in $remoteFilePaths){
   $fileName = Split-Path -Leaf $remoteFilePath
   $fileDirRel = Split-Path -Parent $remoteFilePath
@@ -39,8 +39,13 @@ foreach($remoteFilePath in $remoteFilePaths){
   if(-not (Test-Path -Path $fileDirFull )){
     $_ = New-Item -ItemType directory -Path $fileDirFull
   }
-  $filePath = Join-Path $fileDirFull $fileName 
+  $filePath = Join-Path $fileDirFull $fileName
   $remoteUrl = "https://$storageAccountName.$storageService.core.windows.net/$shareOrContainerName/$remoteFilePath";
-  Write-Output "     - Fetching $remoteUrl"
+  Write-Output " [ ] fetching $remoteUrl..."
   $_ = Invoke-WebRequest -Uri "$remoteUrl$sasToken" -OutFile $filePath;
+  if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+  } else {
+    Write-Host -ForegroundColor DarkRed " [x] Failed!"
+  }
 }

@@ -106,8 +106,8 @@ if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
   throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
 }
 $params = @{
-  "DC Name" = $config.dsg.dc.vmName
   "SRE ID" = $config.dsg.id
+  "DC Name" = $config.dsg.dc.vmName
   "VM Size" = $config.dsg.dc.vmSize
   "IP Address" = $config.dsg.dc.ip
   "Administrator User" = $dcAdminUsername
@@ -248,7 +248,6 @@ if ($?) {
 } else {
   Write-Host -ForegroundColor DarkRed " [x] Restarting DC failed!"
 }
-
 
 
 # Create domain trust
