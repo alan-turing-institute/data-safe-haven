@@ -14,6 +14,10 @@ Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 # Get SRE config
 $config = Get-DsgConfig($sreId)
 
+# Switch to SRE subscription
+# --------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = $config.dsg.dsvm.vmSizeDefault }
 
