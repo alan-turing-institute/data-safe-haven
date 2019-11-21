@@ -23,8 +23,8 @@ DSG_VNET="DSG_DSGROUPTEST_VNet1"
 DSG_SUBNET="Subnet-Data"
 VM_SIZE="Standard_DS2_v2"
 CLOUD_INIT_YAML="" # must be provided
-PYPI_MIRROR_IP=""
-CRAN_MIRROR_IP=""
+PYPI_MIRROR_URL=""
+CRAN_MIRROR_URL=""
 
 # Other constants
 RESOURCEGROUP_IMAGES="RG_SH_IMAGE_GALLERY"
@@ -39,7 +39,7 @@ DATA_DISK_TYPE="Standard_LRS"
 
 # Document usage for this script
 print_usage_and_exit() {
-    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range -y yaml_cloud_init [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-k pypi_mirror_ip] [-o cran_mirror_ip]"
+    echo "usage: $0 [-h] -s subscription_source -t subscription_target -m management_vault_name -l ldap_secret_name -j ldap_user -p password_secret_name -d domain -a ad_dc_name -q ip_address -e mgmnt_subnet_ip_range -y yaml_cloud_init [-g nsg_name] [-i source_image] [-x source_image_version] [-n machine_name] [-r resource_group] [-u user_name] [-v vnet_name] [-w subnet_name] [-z vm_size] [-b ldap_base_dn] [-c ldap_bind_dn] [-f ldap_filter] [-k pypi_mirror_url] [-o cran_mirror_url]"
     echo "  -h                                    display help"
     echo "  -s subscription_source [required]     specify source subscription that images are taken from. (Test using '${IMAGES_SUBSCRIPTION}')"
     echo "  -t subscription_target [required]     specify target subscription for deploying the VM image. (Test using 'Data Study Group Testing')"
@@ -64,8 +64,8 @@ print_usage_and_exit() {
     echo "  -b ldap_base_dn                       specify LDAP base DN"
     echo "  -c ldap_bind_dn                       specify LDAP bind DN"
     echo "  -f ldap_filter                        specify LDAP filter"
-    echo "  -k pypi_mirror_ip                     specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_IP}')"
-    echo "  -o cran_mirror_ip                     specify the IP address of the CRAN mirror (defaults to '${CRAN_MIRROR_IP}')"
+    echo "  -k pypi_mirror_url                    specify the IP address of the PyPI mirror (defaults to '${PYPI_MIRROR_URL}')"
+    echo "  -o cran_mirror_url                    specify the IP address of the CRAN mirror (defaults to '${CRAN_MIRROR_URL}')"
     exit 1
 }
 
@@ -145,10 +145,10 @@ while getopts "a:b:c:d:e:f:g:hi:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z:" opt; do
             CLOUD_INIT_YAML=$OPTARG
             ;;
         k)
-            PYPI_MIRROR_IP=$OPTARG
+            PYPI_MIRROR_URL=$OPTARG
             ;;
         o)
-            CRAN_MIRROR_IP=$OPTARG
+            CRAN_MIRROR_URL=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -231,6 +231,13 @@ else
     echo -e "${RED}Could not interpret ${BLUE}${SOURCEIMAGE}${END} ${RED}as an image type${END}"
     print_usage_and_exit
 fi
+
+# We want to extract the hostname from PyPI URLs in either of the following forms
+# 1. http://10.20.2.20:3128 => 10.20.2.20
+# 2. https://pypi.org       => pypi.org
+REGEX="https*:\/\/([^:]*)[:0-9]*"
+[[ $PYPI_MIRROR_URL =~ $REGEX ]]
+PYPI_MIRROR_HOST=${BASH_REMATCH[1]}
 
 # Prompt user to select version if not already supplied
 if [ "$VERSION" = "" ]; then
@@ -407,11 +414,12 @@ LDAP_FILTER_ESCAPED=${LDAP_FILTER/"&"/"\&"}
 LDAP_FILTER_REGEX="s/LDAP_FILTER/${LDAP_FILTER_ESCAPED}/g"
 AD_DC_NAME_UPPER_REGEX="s/AD_DC_NAME_UPPER/${AD_DC_NAME_UPPER}/g"
 AD_DC_NAME_LOWER_REGEX="s/AD_DC_NAME_LOWER/${AD_DC_NAME_LOWER}/g"
-PYPI_MIRROR_IP_REGEX="s|PYPI_MIRROR_IP|${PYPI_MIRROR_IP}|g"
-CRAN_MIRROR_IP_REGEX="s|CRAN_MIRROR_IP|${CRAN_MIRROR_IP}|g"
+PYPI_MIRROR_URL_REGEX="s|PYPI_MIRROR_URL|${PYPI_MIRROR_URL}|g"
+PYPI_MIRROR_HOST_REGEX="s|PYPI_MIRROR_HOST|${PYPI_MIRROR_HOST}|g"
+CRAN_MIRROR_URL_REGEX="s|CRAN_MIRROR_URL|${CRAN_MIRROR_URL}|g"
 
 # Substitute regexes
-sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_IP_REGEX}" -e "${CRAN_MIRROR_IP_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
+sed -e "${USERNAME_REGEX}" -e "${LDAP_SECRET_REGEX}" -e "${MACHINE_NAME_REGEX}" -e "${LDAP_USER_REGEX}" -e "${DOMAIN_LOWER_REGEX}" -e "${DOMAIN_UPPER_REGEX}" -e "${LDAP_CN_REGEX}" -e "${LDAP_BASE_DN_REGEX}" -e "${LDAP_FILTER_REGEX}" -e "${LDAP_BIND_DN_REGEX}" -e  "${AD_DC_NAME_UPPER_REGEX}" -e "${AD_DC_NAME_LOWER_REGEX}" -e "${PYPI_MIRROR_URL_REGEX}" -e "${PYPI_MIRROR_HOST_REGEX}" -e "${CRAN_MIRROR_URL_REGEX}" $CLOUD_INIT_YAML > $TMP_CLOUD_CONFIG_YAML
 
 # Create the data disk
 echo -e "${BOLD}Creating ${BLUE}${DATA_DISK_SIZE_GB} GB${END}${BOLD} datadisk...${END}"

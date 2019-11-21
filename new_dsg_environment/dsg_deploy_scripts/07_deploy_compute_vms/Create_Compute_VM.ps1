@@ -42,14 +42,14 @@ $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" 
 $cloudInitDir = Join-Path $PSScriptRoot ".." ".." "dsg_configs" "cloud_init" -Resolve
 
 if($config.dsg.mirrors.cran.ip) {
-  $mirrorIpCran = "http://$($config.dsg.mirrors.cran.ip)"
+  $mirrorUrlCran = "http://$($config.dsg.mirrors.cran.ip)"
 } else {
-  $mirrorIpCran = "https://cran.r-project.org"
+  $mirrorUrlCran = "https://cran.r-project.org"
 }
 if($config.dsg.mirrors.pypi.ip) {
-  $mirrorIpPypi = "http://$($config.dsg.mirrors.pypi.ip):3128"
+  $mirrorUrlPypi = "http://$($config.dsg.mirrors.pypi.ip):3128"
 } else {
-  $mirrorIpPypi = "https://pypi.org"
+  $mirrorUrlPypi = "https://pypi.org"
 }
 # Read additional parameters that will be passed to the bash script from the config file
 $adDcName = $config.shm.dc.hostname
@@ -103,8 +103,8 @@ $arguments = "-s '$subscriptionSource' \
 
 # Add additional arguments if needed
 if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
-if ($mirrorIpCran) { $arguments = $arguments + " -o $mirrorIpCran" }
-if ($mirrorIpPypi) { $arguments = $arguments + " -k $mirrorIpPypi" }
+if ($mirrorUrlCran) { $arguments = $arguments + " -o $mirrorUrlCran" }
+if ($mirrorUrlPypi) { $arguments = $arguments + " -k $mirrorUrlPypi" }
 
 $cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
 bash -c $cmd
