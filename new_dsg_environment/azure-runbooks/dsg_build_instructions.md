@@ -68,17 +68,17 @@
 **NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 ## Build Process
-[1. Define SRE configuration](#1.-Define-SRE-configuration)
-[2. Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
-[3. Deploy Virtual Network](#3.-Deploy-Virtual-Network)
-[4. Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
-[5. Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
-[6. Deploy Data Server](#6.-Deploy-Data-Server)
-[7. Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
-[8. Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
-[9. Apply network configuration](#9.-Apply-network-configuration)
-[10. Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
-[11. Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
+1. [Define SRE configuration](#1.-Define-SRE-configuration)
+2. [Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
+3. [Deploy Virtual Network](#3.-Deploy-Virtual-Network)
+4. [Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
+5. [Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
+6. [Deploy Data Server](#6.-Deploy-Data-Server)
+7. [Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
+8. [Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
+9. [Apply network configuration](#9.-Apply-network-configuration)
+10. [Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
+11. [Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
 
 ## 1. Define SRE configuration
 
@@ -276,40 +276,47 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- The deployment will take around 20 minutes to complete.
 
-#### Provision the RDS VMs
-- Prepare SHM by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-- The deployment will take around 10 minutes to complete.
+<!-- ### Install software on RDS Session Hosts
+Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment.
+We install software on both the app server session host and the remote desktop session host. -->
 
-<!-- #### Perform initial configuration and file transfer
-- Once VM deployment is complete, run the `./Initial_Config_And_File_Transfer.ps1` script, providing the DSG ID when prompted
-- This will take around 10 minutes to complete. Most of this is the transfer of files to the RDS session hosts. -->
+<!-- - Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process. -->
 
-### Install software on RDS Session Host 1 (Remote app server)
-- Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process.
-- Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
+<!-- #### Install software on RDS Session Host 1 (Remote app server)
+- Connect to the **RDS Session Host 1 (SH1-SRE-<SRE-ID>)** via Remote Desktop client over the DSG VPN connection
 - Login as the admin user (eg. `sretestsandboxadmin`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
 - Open `C:\Installation` in Windows explorer
 - Install the packages present in the folder
-- **Once installed logout of the server**
+- **Once installed logout of the server** -->
+
+<!-- #### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
+- Connect to the **RDS Session Host 2 (SH2-SRE-<SRE-ID>)** via Remote Desktop client over the DSG VPN connection
+- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
+- Open `C:\Software` in Windows explorer
+- Install the packages present in the folder
+- **NOTE:** Installing TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
+- Once installed logout of the server -->
 
 ### Install RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-- Login as the admin user (eg. `sretestsandboxadmin`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
-<!-- - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. (all DSG Windows servers use the same admin credentials) -->
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
-<!-- - Navigate to `C:\Installation` in Powershell -->
 
 #### Install RDS environment
-- Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
+- Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 10 minutes to run
 
+<!-- - TODOJR: check whether automation is working here -->
 #### Install RDS webclient
-- Run `Install-Module -Name PowerShellGet -Force` to update `Powershell Get` to the latest version. Enter "Y" on any prompts.
+- Run `Install-Module -Name PowerShellGet -Force` to update `PowerShellGet` to the latest version. Enter "Y" on any prompts.
 - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-- Run `C:\Scripts\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
+- Run `C:\Installation\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - Accept any requirements or license agreements.
 
+<!-- - TODOJR: check whether automation is working here -->
 #### Move the session hosts under the control of the RDS gateway
 - Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
   ![Add RDS session servers to collection - Step 1](images/media/image14.png)
@@ -385,13 +392,13 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and DSG RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
 - **NOTE:** The other apps will not work until the other servers have been deployed.
 
-### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
-- Connect to the **RDS Session Server 2 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
+<!-- ### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
+- Connect to the **RDS Session Host 1 (SH1-SRE-<SRE-ID>)** via Remote Desktop client over the DSG VPN connection
 - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
 - Open `C:\Software` in Windows explorer
 - Install the packages present in the folder
 - **NOTE:** Installing TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
-- Once installed logout of the server
+- Once installed logout of the server -->
 
 ## 5. Deploy Data Server
 ### Create Dataserver VM

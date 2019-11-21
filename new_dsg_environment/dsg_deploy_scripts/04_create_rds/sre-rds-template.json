@@ -141,8 +141,7 @@
         "rdssh2nic": "[concat(parameters('RDS Session Host 2 Name'),'-','NIC')]",
         "rdspip": "[concat(parameters('RDS Gateway Name'),'-','PIP')]",
         "diagStorageAccountName": "[substring(concat('rdsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
-        // "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SERVER')]",
-        "rdsnsg": "[concat('NSG_',replace(parameters('RDS Gateway Name'), '-', '_'),'_SERVER')]",
+        "rdsnsg": "[concat('NSG_', replace(parameters('RDS Gateway Name'), '-', '_'), '_SERVER')]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
     },
@@ -805,8 +804,7 @@
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            // "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SESSION-HOSTS')]",
-            "rdsnsg": "[concat('NSG_',replace(parameters('RDS Gateway Name'), '-', '_'),'_SESSION_HOSTS')]",
+            "name": "[concat('NSG_', replace(parameters('RDS Gateway Name'), '-', '_'), '_SESSION_HOSTS')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,

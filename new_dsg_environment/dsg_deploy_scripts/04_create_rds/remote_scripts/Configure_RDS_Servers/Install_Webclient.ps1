@@ -1,5 +1,5 @@
 # Install module
-Write-Host -ForegroundColor Cyan "Installing RDWebClientManagement module..."
+Write-Host -ForegroundColor Cyan "Installing modules..."
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name RDWebClientManagement -Force -AllowClobber -AcceptLicense
 
