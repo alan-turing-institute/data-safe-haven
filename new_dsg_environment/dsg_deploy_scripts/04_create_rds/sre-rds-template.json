@@ -141,7 +141,8 @@
         "rdssh2nic": "[concat(parameters('RDS Session Host 2 Name'),'-','NIC')]",
         "rdspip": "[concat(parameters('RDS Gateway Name'),'-','PIP')]",
         "diagStorageAccountName": "[substring(concat('rdsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
-        "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SERVER')]",
+        // "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SERVER')]",
+        "rdsnsg": "[concat('NSG_',replace(parameters('RDS Gateway Name'), '-', '_'),'_SERVER')]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
     },
@@ -251,7 +252,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('RDS Session Host 1 Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('RDS Session Host 1 Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -314,7 +315,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('RDS Session Host 2 Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('RDS Session Host 2 Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -804,7 +805,8 @@
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "NSG-RDS-SESSION-HOSTS",
+            // "rdsnsg": "[concat('NSG-',parameters('RDS Gateway Name'),'-SESSION-HOSTS')]",
+            "rdsnsg": "[concat('NSG_',replace(parameters('RDS Gateway Name'), '-', '_'),'_SESSION_HOSTS')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
