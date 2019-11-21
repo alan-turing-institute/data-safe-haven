@@ -196,7 +196,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 ### Download software and upload to blob storage
 A number of files are needed for the SRE deployment. They must be added to blob storage:
 
-1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `rdssh-packages`:
+1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
    ![Blob storage](images/blobstorage.png)
 2. On your local machine download the following files, appending version numbers manually if needed:
     - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
@@ -204,8 +204,8 @@ A number of files are needed for the SRE deployment. They must be added to blob 
     - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
     - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
-3. Use the Azure portal to upload all of these files to the `rdssh-packages` folder. The container will now look like this:
-   ![rdssh-packages contents](images/rdssh-packages.png)
+3. Use the Azure portal to upload all of these files to the `sre-rds-sh-packages` folder. The container will now look like this:
+   ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png)
 
 
 <!-- ## 3. Configure Domain Controllers (DCs) -->

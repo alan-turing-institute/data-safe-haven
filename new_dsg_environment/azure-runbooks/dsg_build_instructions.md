@@ -277,29 +277,31 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
-#### Create the RDS VMs
-- Prepare SHM by running `./Create_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+#### Provision the RDS VMs
+- Prepare SHM by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The deployment will take around 10 minutes to complete.
 
-#### Perform initial configuration and file transfer
+<!-- #### Perform initial configuration and file transfer
 - Once VM deployment is complete, run the `./Initial_Config_And_File_Transfer.ps1` script, providing the DSG ID when prompted
-- This will take around 10 minutes to complete. Most of this is the transfer of files to the RDS session hosts.
+- This will take around 10 minutes to complete. Most of this is the transfer of files to the RDS session hosts. -->
 
 ### Install software on RDS Session Host 1 (Remote app server)
 - Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process.
 - Connect to the **RDS Session Server 1 (RDSSH1)** via Remote Desktop client over the DSG VPN connection
-- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
-- Open `C:\Software` in Windows explorer
+- Login as the admin user (eg. `sretestsandboxadmin`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
+- Open `C:\Installation` in Windows explorer
 - Install the packages present in the folder
 - **Once installed logout of the server**
 
 ### Install RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. (all DSG Windows servers use the same admin credentials)
+- Login as the admin user (eg. `sretestsandboxadmin`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
+<!-- - Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password. (all DSG Windows servers use the same admin credentials) -->
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
+<!-- - Navigate to `C:\Installation` in Powershell -->
 
 #### Install RDS environment
-- Run `C:\Scripts\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
+- Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:Scripts` directory)
 - This script will take about 10 minutes to run
 
 #### Install RDS webclient
