@@ -307,7 +307,7 @@ We install software on both the app server session host and the remote desktop s
 
 #### Install RDS environment
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-- This script will take about 10 minutes to run
+- This script will take about 30 minutes to run
 
 <!-- - TODOJR: check whether automation is working here -->
 #### Install RDS webclient

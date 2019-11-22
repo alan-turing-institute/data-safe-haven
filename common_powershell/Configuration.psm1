@@ -341,7 +341,7 @@ function Add-SreConfig {
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SESSION_HOSTS"
     $config.dsg.rds.gateway.vmName = "RDS-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.gateway.vmSize = "Standard_B2ms"
+    $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"

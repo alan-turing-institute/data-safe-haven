@@ -79,4 +79,4 @@ New-RDRemoteApp -Alias "putty (2)" -DisplayName "Additional VMs (SSH)" -FilePath
 Write-Host -ForegroundColor Cyan "Updating server configuration..."
 `$targetDirectory = "C:\Users\`$(`$dcAdminUsername).`$(`$sreNetbiosName)\AppData\Roaming\Microsoft\Windows\ServerManager"
 `$_ = New-Item -ItemType Directory -Force -Path `$targetDirectory
-Copy-Item -Path "C:\Installation\ServerList.xml" -Destination "`$targetDirectory\ServerList.xml" –Force
+Copy-Item -Path "`$(`$remoteUploadDir)\ServerList.xml" -Destination "`$targetDirectory\ServerList.xml" –Force
