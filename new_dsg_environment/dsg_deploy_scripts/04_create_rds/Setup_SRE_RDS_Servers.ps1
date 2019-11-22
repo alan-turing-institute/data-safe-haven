@@ -43,20 +43,20 @@ $dcAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name 
 $npsSecret = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.rds.gateway.npsSecretName
 
 
-# # Get SHM storage account
-# # -----------------------
-# $_ = Set-AzContext -Subscription $config.shm.subscriptionName;
-# $shmStorageAccountRg = $config.shm.storage.artifacts.rg
-# $shmStorageAccountName = $config.shm.storage.artifacts.accountName
-# $shmStorageAccount = Get-AzStorageAccount -Name $shmStorageAccountName -ResourceGroupName $shmStorageAccountRg
+# Get SHM storage account
+# -----------------------
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName;
+$shmStorageAccountRg = $config.shm.storage.artifacts.rg
+$shmStorageAccountName = $config.shm.storage.artifacts.accountName
+$shmStorageAccount = Get-AzStorageAccount -Name $shmStorageAccountName -ResourceGroupName $shmStorageAccountRg
 
 
-# # Get SRE storage account
-# # -----------------------
-# $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
-# $sreStorageAccountRg = $config.dsg.storage.artifacts.rg
-# $sreStorageAccountName = $config.dsg.storage.artifacts.accountName
-# $sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -ResourceGroupName $sreStorageAccountRg
+# Get SRE storage account
+# -----------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+$sreStorageAccountRg = $config.dsg.storage.artifacts.rg
+$sreStorageAccountName = $config.dsg.storage.artifacts.accountName
+$sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -ResourceGroupName $sreStorageAccountRg
 
 
 # # Deploying DC from template
@@ -126,45 +126,45 @@ $npsSecret = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secre
 # }
 
 
-# # Upload RDS deployment scripts and installers to SRE storage
-# # -----------------------------------------------------------
-# Write-Host -ForegroundColor DarkCyan "Upload RDS deployment scripts to storage..."
+# Upload RDS deployment scripts and installers to SRE storage
+# -----------------------------------------------------------
+Write-Host -ForegroundColor DarkCyan "Upload RDS deployment scripts to storage..."
 
-# # Expand deploy script
-# $deployScriptLocalFilePath = (New-TemporaryFile).FullName
-# $template = Get-Content (Join-Path $PSScriptRoot "templates" "rds_configuration.template.ps1") -Raw
-# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
+# Expand deploy script
+$deployScriptLocalFilePath = (New-TemporaryFile).FullName
+$template = Get-Content (Join-Path $PSScriptRoot "templates" "rds_configuration.template.ps1") -Raw
+$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
 
-# # Expand server list XML
-# $serverListLocalFilePath = (New-TemporaryFile).FullName
-# $template = Get-Content (Join-Path $PSScriptRoot "templates" "ServerList.template.xml") -Raw
-# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
+# Expand server list XML
+$serverListLocalFilePath = (New-TemporaryFile).FullName
+$template = Get-Content (Join-Path $PSScriptRoot "templates" "ServerList.template.xml") -Raw
+$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
 
-# # Expand web client script
-# $webclientScriptLocalFilePath = (New-TemporaryFile).FullName
-# $template = Get-Content (Join-Path $PSScriptRoot "templates" "webclient.template.ps1") -Raw
-# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $webclientScriptLocalFilePath
+# Expand web client script
+$webclientScriptLocalFilePath = (New-TemporaryFile).FullName
+$template = Get-Content (Join-Path $PSScriptRoot "templates" "webclient.template.ps1") -Raw
+$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $webclientScriptLocalFilePath
 
-# # Copy existing files
-# Write-Host -ForegroundColor DarkCyan " [ ] Copying RDS installers to storage account '$sreStorageAccountName'"
-# $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
-# $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
-# if ($?) {
-#     Write-Host -ForegroundColor DarkGreen " [o] File copying succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] File copying failed!"
-# }
+# Copy existing files
+Write-Host -ForegroundColor DarkCyan " [ ] Copying RDS installers to storage account '$sreStorageAccountName'"
+$blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
+$blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
+if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] File copying succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] File copying failed!"
+}
 
-# # Upload scripts
-# Write-Host -ForegroundColor DarkCyan " [ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
-# Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
-# Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
-# Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $webclientScriptLocalFilePath -Blob "Install_Webclient.ps1" -Force
-# if ($?) {
-#     Write-Host -ForegroundColor DarkGreen " [o] File uploading succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] File uploading failed!"
-# }
+# Upload scripts
+Write-Host -ForegroundColor DarkCyan " [ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
+Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
+Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
+Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $webclientScriptLocalFilePath -Blob "Install_Webclient.ps1" -Force
+if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] File uploading succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] File uploading failed!"
+}
 
 
 # # Add DNS record for RDS Gateway
@@ -293,39 +293,39 @@ $npsSecret = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secre
 # }
 
 
-# # Import files to RDS VMs
-# # -----------------------
-# Write-Host -ForegroundColor DarkCyan "Importing files from storage to RDS VMs..."
+# Import files to RDS VMs
+# -----------------------
+Write-Host -ForegroundColor DarkCyan "Importing files from storage to RDS VMs..."
 
-# # Switch to SHM subscription
-# $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+# Switch to SHM subscription
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
-# # Get list of packages for each session host
-# Write-Host -ForegroundColor DarkCyan " [ ] Getting list of packages for each VM"
-# $filePathsSh1 = New-Object System.Collections.ArrayList($null)
-# $filePathsSh2 = New-Object System.Collections.ArrayList($null)
-# ForEach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-#     if (($blob.Name -like "GoogleChromeStandaloneEnterprise64*") -or ($blob.Name -like "putty-64bit*") -or ($blob.Name -like "WinSCP-*")) {
-#         $_ = $filePathsSh1.Add($blob.Name)
-#         $_ = $filePathsSh2.Add($blob.Name)
-#     # } elseif (($blob.Name -like "install-tl-windows*") -or ($blob.Name -like "LibreOffice_*")) {
-#     } elseif ($blob.Name -like "LibreOffice_*") {
-#         $_ = $filePathsSh2.Add($blob.Name)
-#     }
-# }
-# # ... and for the gateway
-# $filePathsGateway = New-Object System.Collections.ArrayList($null)
-# ForEach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-#     $_ = $filePathsGateway.Add($blob.Name)
-# }
-# Write-Host -ForegroundColor DarkGreen " [o] Found $($filePathsSh1.Count + $filePathsSh2.Count) packages in total"
+# Get list of packages for each session host
+Write-Host -ForegroundColor DarkCyan " [ ] Getting list of packages for each VM"
+$filePathsSh1 = New-Object System.Collections.ArrayList($null)
+$filePathsSh2 = New-Object System.Collections.ArrayList($null)
+ForEach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
+    if (($blob.Name -like "GoogleChromeStandaloneEnterprise64*") -or ($blob.Name -like "putty-64bit*") -or ($blob.Name -like "WinSCP-*")) {
+        $_ = $filePathsSh1.Add($blob.Name)
+        $_ = $filePathsSh2.Add($blob.Name)
+    # } elseif (($blob.Name -like "install-tl-windows*") -or ($blob.Name -like "LibreOffice_*")) {
+    } elseif ($blob.Name -like "LibreOffice_*") {
+        $_ = $filePathsSh2.Add($blob.Name)
+    }
+}
+# ... and for the gateway
+$filePathsGateway = New-Object System.Collections.ArrayList($null)
+ForEach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
+    $_ = $filePathsGateway.Add($blob.Name)
+}
+Write-Host -ForegroundColor DarkGreen " [o] Found $($filePathsSh1.Count + $filePathsSh2.Count) packages in total"
 
-# # Switch to SRE subscription
-# $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
+# Switch to SRE subscription
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 
-# # Get SAS token to download files from storage account
-# $sasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.dsg.subscriptionName -resourceGroup $sreStorageAccountRg -accountName $sreStorageAccountName
-# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Import_Artifacts.ps1"
+# Get SAS token to download files from storage account
+$sasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.dsg.subscriptionName -resourceGroup $sreStorageAccountRg -accountName $sreStorageAccountName
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Import_Artifacts.ps1"
 
 # # Copy software and/or scripts to RDS SH1 (App server)
 # Write-Host -ForegroundColor DarkCyan " [ ] Copying $($filePathsSh1.Count) files to RDS Session Host 1 (App server)"
@@ -367,25 +367,25 @@ $npsSecret = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secre
 #     Write-Host -ForegroundColor DarkRed " [x] Failed!"
 # }
 
-# # Copy software and/or scripts to RDS Gateway
-# Write-Host -ForegroundColor DarkCyan " [ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
-# $params = @{
-#     storageAccountName = "`"$sreStorageAccountName`""
-#     storageService = "blob"
-#     shareOrContainerName = "`"$containerNameGateway`""
-#     sasToken = "`"$sasToken`""
-#     pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
-#     downloadDir = "$remoteUploadDir"
-# }
-# $result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.gateway.vmName)" -ResourceGroupName $rdsResourceGroup `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value;
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
-# }
+# Copy software and/or scripts to RDS Gateway
+Write-Host -ForegroundColor DarkCyan " [ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
+$params = @{
+    storageAccountName = "`"$sreStorageAccountName`""
+    storageService = "blob"
+    shareOrContainerName = "`"$containerNameGateway`""
+    sasToken = "`"$sasToken`""
+    pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
+    downloadDir = "$remoteUploadDir"
+}
+$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.gateway.vmName)" -ResourceGroupName $rdsResourceGroup `
+                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+$success = $?
+Write-Output $result.Value;
+if ($success) {
+    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 
 # # Install packages on RDS VMs
@@ -420,36 +420,36 @@ $npsSecret = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secre
 # }
 
 
-# Install webclient on RDS Gateway
-# --------------------------------
-Write-Host -ForegroundColor DarkCyan "Installing webclient on RDS Gateway..."
-$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
-# Install PowerShellGet
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Webclient_Prerequisites.ps1"
-$params = @{
-    dcAdminUsername = "`"$dcAdminUsername`""
-    sreNetbiosName = "`"$sreNetbiosName`""
-}
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
-# Install Webclient
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Webclient.ps1"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
+# # Install required Powershell modules on RDS Gateway
+# # --------------------------------------------------
+# Write-Host -ForegroundColor DarkCyan "Installing required Powershell modules on RDS Gateway..."
+# $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
+# # Install PowerShellGet
+# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Powershell_Modules_01.ps1"
+# $params = @{
+#     dcAdminUsername = "`"$dcAdminUsername`""
+#     sreNetbiosName = "`"$sreNetbiosName`""
+# }
+# $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
+# $success = $?
+# Write-Output $result.Value;
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
+# }
+# # Install Webclient
+# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Powershell_Modules_02.ps1"
+# $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
+# $success = $?
+# Write-Output $result.Value;
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
+# }
 
 
 # Switch back to original subscription

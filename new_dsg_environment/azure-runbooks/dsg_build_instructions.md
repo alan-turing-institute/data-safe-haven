@@ -302,27 +302,27 @@ We install software on both the app server session host and the remote desktop s
 
 ### Install RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
 #### Install RDS environment
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-- This script will take about 30 minutes to run
+- This script will take about 30 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 
-<!-- - TODOJR: check whether automation is working here -->
+<!-- - TODOJR: check whether automation is working here
 #### Install RDS webclient
 - Run `Install-Module -Name PowerShellGet -Force` to update `PowerShellGet` to the latest version. Enter "Y" on any prompts.
 - Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
 - Run `C:\Installation\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-- Accept any requirements or license agreements.
+- Accept any requirements or license agreements. -->
 
-<!-- - TODOJR: check whether automation is working here -->
+<!-- - TODOJR: check whether automation is working here
 #### Move the session hosts under the control of the RDS gateway
 - Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
   ![Add RDS session servers to collection - Step 1](images/media/image14.png)
 - Enter "rdssh" into the "Name" box and click "Find Now"
 - Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
-  ![Add RDS session servers to collection - Step 2](images/media/image15.png)
+  ![Add RDS session servers to collection - Step 2](images/media/image15.png) -->
 
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`

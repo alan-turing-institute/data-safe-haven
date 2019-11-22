@@ -219,7 +219,7 @@
     "rds": {
       "gateway": {
         "vmName": "RDS-SRE-TESTSAN",
-        "vmSize": "Standard_DS2_v2",
+        "vmSize": "Standard_DS3_v2",
         "hostname": "RDS-SRE-TESTSAN",
         "fqdn": "RDS-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.250",

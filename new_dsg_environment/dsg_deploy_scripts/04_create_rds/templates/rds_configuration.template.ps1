@@ -1,3 +1,6 @@
+Import-Module RemoteDesktop
+
+
 # Initialise the data drives
 # --------------------------
 Write-Host -ForegroundColor Cyan "Initialising data drives..."
@@ -25,11 +28,11 @@ ForEach (`$sharePath in ("F:\AppFileShares", "G:\RDPFileShares")) {
 
 # Remove any old RDS settings
 # ---------------------------
-ForEach (`$collection in `$(Get-RDSessionCollection)) {
+ForEach (`$collection in `$(Get-RDSessionCollection -ErrorAction SilentlyContinue)) {
     Write-Host -ForegroundColor Cyan "Removing existing RDSessionCollection: '`$collection.CollectionName' (and associated apps)"
     Remove-RDSessionCollection -CollectionName `$collection.CollectionName -Force -ErrorAction SilentlyContinue
 }
-ForEach (`$server in `$(Get-RDServer)) {
+ForEach (`$server in `$(Get-RDServer -ErrorAction SilentlyContinue)) {
     Write-Host -ForegroundColor Cyan "Removing existing RDServer: '`$(`$server.Server)'"
     ForEach (`$role in `$server.Roles) {
         Remove-RDServer -Server `$server.Server -Role `$role -Force -ErrorAction SilentlyContinue
@@ -77,6 +80,27 @@ New-RDRemoteApp -Alias "putty (2)" -DisplayName "Additional VMs (SSH)" -FilePath
 # Update server configuration
 # ---------------------------
 Write-Host -ForegroundColor Cyan "Updating server configuration..."
-`$targetDirectory = "C:\Users\`$(`$dcAdminUsername).`$(`$sreNetbiosName)\AppData\Roaming\Microsoft\Windows\ServerManager"
-`$_ = New-Item -ItemType Directory -Force -Path `$targetDirectory
-Copy-Item -Path "`$(`$remoteUploadDir)\ServerList.xml" -Destination "`$targetDirectory\ServerList.xml" –Force
+`$targetDirectoryLocal = "C:\Users\$dcAdminUsername\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$targetDirectoryDomain = "C:\Users\$dcAdminUsername.$sreNetbiosName\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryLocal
+`$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryDomain
+Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
+Copy-Item -Path "$remoteUploadDir\ServerList.xml" -Destination "`$targetDirectoryLocal\ServerList.xml" -Force
+Copy-Item -Path "$remoteUploadDir\ServerList.xml" -Destination "`$targetDirectoryDomain\ServerList.xml" -Force
+Start-Process -FilePath $env:SystemRoot\System32\ServerManager.exe -WindowStyle Maximized
+if ($?) {
+    Write-Host " [o] Server configuration update succeeded"
+} else {
+    Write-Host " [x] Server configuration update failed!"
+}
+
+
+# Install RDS webclient
+# ---------------------
+Write-Host "Installing RDS webclient..."
+Install-RDWebClientPackage
+if ($?) {
+    Write-Host " [o] RDS webclient installation succeeded"
+} else {
+    Write-Host " [x] RDS webclient installation failed!"
+}
