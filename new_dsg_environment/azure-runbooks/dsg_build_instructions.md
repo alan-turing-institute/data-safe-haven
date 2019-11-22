@@ -326,38 +326,38 @@ We install software on both the app server session host and the remote desktop s
 
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22da022.PNG](images/media/image21.png)
+  ![Remote Desktop Gateway Manager](images/rd_gateway_manager_01.png)
 - Right click the RDS server object and select "Properties"
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22ed825.PNG](images/media/image22.png)
+  ![RDS server properties](images/rd_gateway_manager_02.png)
 - Select "RD CAP Store" tab
 - Select the "Central Server Running NPS"
-- Enter the IP address of the NPS within the management domain (`10.251.0.248`)
-- Set the "Shared Secret" to the value of the `dsg-<dsg-id>-nps-secret` in the DSG KeyVault.
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2302f1a.PNG](images/media/image23.png)
+- Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal)
+- Set the "Shared Secret" to the value of the `sre-<sre-id>-nps-secret` in the SRE KeyVault.
+  ![RD CAP store](images/rd_gateway_manager_03.png)
 - Click "OK" to close the dialogue box.
 
 #### Set the security groups for access to session hosts
 - Expand the RDS server object and select `Policies -> Resource Authorization Policies`
 - Right click on "RDG_AllDomainControllers" and select "Properties`
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2363efc.PNG](images/media/image24.png)
+  ![Session host security groups](images/rd_gateway_session_hosts_01.png)
 - On the "User Groups" tab click "Add"
 - Click "Locations" and select the management domain
-- Enter the "SG" into the "Enter the object names to select" box and click on "Check Names" select the correct "Research Users" security group from the list i.e. SG DSGROUP`<dsg-id>` Research Users.
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML238cb34.PNG](images/media/image25.png)
+- Enter the "SG" into the "Enter the object names to select" box and click on "Check Names" select the `SG <SRE-ID> Research Users`security group from the list.
+  ![Session host security groups](images/rd_gateway_session_hosts_02.png)
 - Click "OK" and the group will be added to the "User Groups" screen
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML23aa4c7.PNG](images/media/image26.png)
+  ![Session host security groups](images/rd_gateway_session_hosts_03.png)
 - Click "OK" to exit the dialogue box
 - Right click on "RDG_RDConnectionBrokers" policy and select "Properties"
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML23c2d0d.PNG](images/media/image27.png)
-- Repeat the process you did for the "RDG_AllDomainComputers" policy and add the correct Research Users security group.
+  ![Session host security groups](images/rd_gateway_session_hosts_04.png)
+- Repeat the process you did for the "RDG_AllDomainComputers" policy, again adding the `SG <SRE-ID> Research Users`security group from the list.
 
 #### Increase the authorisation timeout to allow for MFA
 - In "Server Manager", select `Tools -> Network Policy Server`
 - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
-  ![](images/media/rds_local_nps_remote_server_selection.png)
+  ![Remote RADIUS server](images/media/rds_local_nps_remote_server_selection.png)
 - Highlight the server shown in the “RADIUS Server” column and click “Edit”
 - Change to the “Load Balancing” tab and change the parameters to match the screen below
-    ![](images/media/rds_local_nps_remote_server_timeouts.png)
+  ![Load balancing](images/media/rds_local_nps_remote_server_timeouts.png)
 - Click “OK” twice and close “Network Policy Server” MMC
 
 ### Configuration of SSL on RDS Gateway
