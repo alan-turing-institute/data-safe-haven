@@ -1,6 +1,6 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [string]$sreId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Path to CSR file generated on DSG RDS Gateway VM")]
   [string]$csrPath,
   [Parameter(Position=2, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server that doesn't download a certificate")]
@@ -34,7 +34,7 @@ if($cleanTest) {
 
 
 # Get DSG config
-$config = Get-DsgConfig($dsgId);
+$config = Get-DsgConfig($sreId);
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
@@ -65,7 +65,7 @@ $certbotCmd += " --work-dir '$certbotWorkingDir' --cert-path '$certPath' --fullc
 
 # Set certbot authentication options
 $certBotAuthScript = (Join-Path $PSScriptRoot "LetsEncrypt_Csr_Dns_Authentication.ps1")
-$certBotAuthCmd = "pwsh `"$certBotAuthScript`" -dsgId $dsgId"
+$certBotAuthCmd = "pwsh `"$certBotAuthScript`" -sreId $sreId"
 $certbotCmd += " --preferred-challenges 'dns' --manual --manual-auth-hook '$certBotAuthCmd' --manual-public-ip-logging-ok"
 
 # Force interactive mode to ensure that user is prompted for email address and TOS acceptance

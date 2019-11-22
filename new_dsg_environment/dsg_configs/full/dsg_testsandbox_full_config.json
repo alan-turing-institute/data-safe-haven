@@ -183,7 +183,8 @@
         "gitlabLdapPassword": "sre-testsandbox-gitlab-ldap-password",
         "hackmdLdapPassword": "sre-testsandbox-hackmd-ldap-password",
         "dsvmLdapPassword": "sre-testsandbox-dsvm-ldap-password",
-        "testResearcherPassword": "sre-testsandbox-test-researcher-password"
+        "testResearcherPassword": "sre-testsandbox-test-researcher-password",
+        "letsEncryptCertificate": "sre-testsandbox-lets-encrypt-certificate"
       }
     },
     "dc": {

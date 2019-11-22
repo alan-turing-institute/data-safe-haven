@@ -1,9 +1,9 @@
 # Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
 # and remote execution will stall waiting for the non-present user to enter the missing parameter on the
-# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in 
+# command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
 # C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
 # job, but this does not seem to have an immediate effect
-# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
+# For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
   [Parameter(Position=0, HelpMessage = "Full chain for SSL certificate, including CA intermediate signing certificate, in ASCII *.pem format")]
   [string]$certFullChain,
@@ -22,7 +22,7 @@ $certFullChainPem = ($certFullChain.Split('|') -join [Environment]::NewLine)
 $certDir = New-Item -ItemType Directory -Path $remoteDirectory -Force
 $certPath = (Join-Path $certDir $certFilename)
 if(Test-Path $certPath) {
-  Remove-Item -Path $certPath -Force 
+  Remove-Item -Path $certPath -Force
 }
 $certFullChainPem | Out-File -FilePath $certPath -Force
 Write-Output "Certificate chain written to $certPath"
@@ -34,8 +34,8 @@ $cert = Import-Certificate -FilePath "$certPath" -CertStoreLocation $certStore
 Write-Output "Certificate chain installed to '$certStore' certificate store"
 Write-Output "Certificate thumbprint: $cert.Thumbprint"
 # Export full certificate
-add-type -AssemblyName System.Web
-$pfxPassword = ConvertTo-SecureString -String ([System.Web.Security.Membership]::GeneratePassword(20,0)) -AsPlainText -Force 
+Add-Type -AssemblyName System.Web
+$pfxPassword = ConvertTo-SecureString -String ([System.Web.Security.Membership]::GeneratePassword(20,0)) -AsPlainText -Force
 $certExt = (Split-Path -Leaf -Path "$certPath").Split(".")[-1]
 if($certExt) {
   # Take all of filename before extension
@@ -48,10 +48,11 @@ $pfxPath = (Join-Path $certDir "$certStem.pfx")
 $_ = Get-ChildItem -Path "$certStore\$($cert.Thumbprint)" | Export-PfxCertificate -FilePath $pfxPath -Password $pfxPassword;
 Write-Output "PFX public private key pair exported to '$pfxPath', encrypted with strong one-time password"
 
+
 # Update RDS roles to use new certificate
-# Note: If we update VM to Windows Server 2019, we can set this certificate by 
+# Note: If we update VM to Windows Server 2019, we can set this certificate by
 # using the new -Thumbprint parameter to reference a certificate in the certificate
-# store without needing to export it 
+# store without needing to export it
 #
 # The Powershell documentation says available in Server 2016
 # Source: https://docs.microsoft.com/en-us/powershell/module/remotedesktop/set-rdcertificate?view=win10-ps
@@ -71,4 +72,3 @@ Write-Output "Certificate installed on all RDS roles"
 Import-RDWebClientBrokerCert "$certPath"
 Publish-RDWebClientPackage -Type Production -Latest
 Write-Output "Certificate installed on RDS Web Client"
-

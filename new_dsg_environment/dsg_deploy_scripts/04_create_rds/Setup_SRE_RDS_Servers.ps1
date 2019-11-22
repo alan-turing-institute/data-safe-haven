@@ -23,8 +23,9 @@ $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 
+
 # Set variables used in template expansion
-# =---------------------------------------
+# ----------------------------------------
 $sreFqdn = $config.dsg.domain.fqdn
 $sreNetbiosName = $config.dsg.domain.netbiosName
 $shmNetbiosName = $config.shm.domain.netbiosName

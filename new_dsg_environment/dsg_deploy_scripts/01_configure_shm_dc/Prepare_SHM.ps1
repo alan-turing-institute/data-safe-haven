@@ -35,7 +35,7 @@ $keyVault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name -ResourceGroupNa
 if ($keyVault -ne $null) {
   Write-Host -ForegroundColor DarkGreen " [o] key vault $($config.dsg.keyVault.name) already exists"
 } else {
-  New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
+  New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location -EnabledForDeployment
   if ($?) {
     Write-Host -ForegroundColor DarkGreen " [o] Created key vault $($config.dsg.keyVault.name)"
   } else {

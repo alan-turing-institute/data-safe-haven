@@ -1,6 +1,6 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [string]$sreId,
   [Parameter(Position=1, Mandatory = $false, HelpMessage = "Remote folder to write SSL certificate to")]
   [string]$remoteDirectory,
   [Parameter(Position=2, Mandatory = $false, HelpMessage = "Working directory (defaults to '~/Certificates')")]
@@ -21,7 +21,7 @@ if([String]::IsNullOrEmpty($remoteDirectory)) {
 
 
 # Get DSG config
-$config = Get-DsgConfig($dsgId);
+$config = Get-DsgConfig($sreId);
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext

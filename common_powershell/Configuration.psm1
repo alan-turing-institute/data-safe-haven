@@ -295,6 +295,7 @@ function Add-SreConfig {
         hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
         dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
         testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
+        letsEncryptCertificate = $config.dsg.shortName + "-lets-encrypt-certificate"
     }
 
     # --- Domain controller ---

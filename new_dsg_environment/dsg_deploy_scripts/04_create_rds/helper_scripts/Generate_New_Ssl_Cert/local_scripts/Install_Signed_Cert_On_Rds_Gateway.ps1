@@ -1,6 +1,6 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [string]$sreId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Path to SSL certificate signed by Certificate Authority (in .pem ASCII format, inclding CA cert chain)")]
   [string]$certFullChainPath,
   [Parameter(Position=2, Mandatory = $true, HelpMessage = "Remote folder to write SSL certificate to")]
@@ -11,7 +11,7 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../../../../../common_powershell/Configuration.psm1 -Force
 
 # Get DSG config
-$config = Get-DsgConfig($dsgId);
+$config = Get-DsgConfig($sreId);
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext

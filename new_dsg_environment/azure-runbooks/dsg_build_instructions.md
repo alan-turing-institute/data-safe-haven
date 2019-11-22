@@ -15,6 +15,7 @@
   - Install using your package manager of choice
 - CertBot
   - Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
+    - NB. for OSX you can install `Certbot` using `brew install letsencrypt`
 
 
 ### Access to required Safe Haven Management resources
