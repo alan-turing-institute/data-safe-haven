@@ -366,20 +366,20 @@ We install software on both the app server session host and the remote desktop s
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Install_Signed_Ssl_Certificate.ps1` script, providing the DSG ID when prompted.
+- Run the `./Install_Signed_Ssl_Certificate.ps1 -sreId <SRE ID> -emailAddress <email>`, where the SRE ID is the one specified in the config and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login with **SHM** domain user `<shm-domain>\User` See **SHM** `dsg<dsg-id>-dc-admin-username` and `shm-dc-admin-password` secrets in the **SHM** KeyVault for username and password.
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
-- Right click the `SG DSGROUP<dsg-id> Research Users` security group and select "Properties"
+- Right click the `SG <sre-id> Research Users` security group and select "Properties"
 - Click on the "Members" tab and click the "Add" button
 - Enter the start of your name and click "Check names"
 - Select your name and click "Ok"
 - Click "Ok" again to exit the add users dialogue
-- Launch a local web browser and go to `https://rds.<dsg-domain>/RDWeb/webclient/` and log in. If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain. Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix) or open a new private / incognito browser window and visit the page.
+- Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rds-sre-testsan.testsandbox.dsgroupdev.co.uk/`) and log in. If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain. Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix) or open a new private / incognito browser window and visit the page.
 - Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
 - If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://rds.<dsg-domain>`, it is likely that you missed the step of installing the RDS webclient.
     - Go back to the previous section and run the webcleint installation step.
