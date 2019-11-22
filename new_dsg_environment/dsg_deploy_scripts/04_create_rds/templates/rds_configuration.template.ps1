@@ -87,8 +87,8 @@ Write-Host -ForegroundColor Cyan "Updating server configuration..."
 Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
 Copy-Item -Path "$remoteUploadDir\ServerList.xml" -Destination "`$targetDirectoryLocal\ServerList.xml" -Force
 Copy-Item -Path "$remoteUploadDir\ServerList.xml" -Destination "`$targetDirectoryDomain\ServerList.xml" -Force
-Start-Process -FilePath $env:SystemRoot\System32\ServerManager.exe -WindowStyle Maximized
-if ($?) {
+Start-Process -FilePath `$env:SystemRoot\System32\ServerManager.exe -WindowStyle Maximized
+if (`$?) {
     Write-Host " [o] Server configuration update succeeded"
 } else {
     Write-Host " [x] Server configuration update failed!"
@@ -99,7 +99,7 @@ if ($?) {
 # ---------------------
 Write-Host "Installing RDS webclient..."
 Install-RDWebClientPackage
-if ($?) {
+if (`$?) {
     Write-Host " [o] RDS webclient installation succeeded"
 } else {
     Write-Host " [x] RDS webclient installation failed!"

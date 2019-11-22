@@ -308,7 +308,7 @@ We install software on both the app server session host and the remote desktop s
 
 #### Install RDS environment
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-- This script will take about 30 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
+- This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 
 <!-- - TODOJR: check whether automation is working here
 #### Install RDS webclient
@@ -366,8 +366,8 @@ We install software on both the app server session host and the remote desktop s
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Generate_New_Ssl_Cert.ps1` script, providing the DSG ID when prompted.
-- **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this should usually not be an issue. However, if you find yourself needing to re-run this step, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+- Run the `./Install_Signed_Ssl_Certificate.ps1` script, providing the DSG ID when prompted.
+- **NOTE:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds.dsgroupX.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Generate_New_Ssl_Cert.ps1 -testCert $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
