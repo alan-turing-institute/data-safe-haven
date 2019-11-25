@@ -381,15 +381,15 @@ We install software on both the app server session host and the remote desktop s
 - Select your name and click "Ok"
 - Click "Ok" again to exit the add users dialogue
 - Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rds-sre-testsan.testsandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in.
-    - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
-        - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
-     - OR open a new private / incognito browser window and visit the page.
-- Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
-    - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://rds.<dsg-domain>`, it is likely that you missed the step of installing the RDS webclient.
+    - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://<rds-name>.<sre-id>.<safe haven domain>/`, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
         - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
             - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
             - `Publish-RDWebClientPackage -Type Production -Latest`
+    - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
+        - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
+        - OR open a new private / incognito browser window and visit the page.
+- Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
     - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
         - Ensure that the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
         - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) and the [SRE RDS Gateway RD CAP Store configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
