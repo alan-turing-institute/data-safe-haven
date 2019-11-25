@@ -13,9 +13,9 @@
   - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 - OpenSSL
   - Install using your package manager of choice
-- CertBot
+<!-- - CertBot
   - Install [Certbot](https://certbot.eff.org/). This requires using a Mac or Linux computer (or the Windows Subsystem for Linux).
-    - NB. for OSX you can install `Certbot` using `brew install letsencrypt`
+    - NB. for OSX you can install `Certbot` using `brew install letsencrypt` -->
 
 
 ### Access to required Safe Haven Management resources
@@ -182,96 +182,6 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - The deployment will take around 30 minutes. Most of this is running the setup scripts after creating the VM.
 
 
-<!-- - Run `./Create_AD_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-- The deployment will take around 20 minutes. Most of this is running the setup scripts after creating the VM.
-
-### Configure DSG Active Directory Domain Controller
-#### Upload and run remote configuration scripts
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Configure_AD_DC.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-- The remote scripts will take a few minutes to return
-
-#### Perform manual configuration steps
-
-- Connect to the new Domain controller via Remote Desktop client over the DSG VPN connection at the IP address `<dsg-identity-subnet-prefix>.250` (e.g. 10.250.x.250)
-
-- Login with local admin user and password for the DSG DC, which were created and stored in the `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in the DSG KeyVault by the DC deployment script
-
-- From the "Server Management" application, select `Tools -> Group Policy Management`
-
-- Expand the tree until you open the "Group Policy Objects" branch
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML223b755.PNG](images/media/image6.png)
-
-- Right click on "All Servers - Local Administrators" and select "Edit"
-
-- Expand `Computer Configuration -> Policies -> Windows Settings -> Security Settings` and click on "Restricted Groups"
-
-- Double click on "Administrators" shown under "Group Name" on the right side of the screen
-
-- Select both of the entries in the "Members of this group" and click "Remove"
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML2275d0c.PNG](images/media/image7.png)
-
-- Click `Add -> Browse` and enter:
-
-    - SG DSGROUP`<dsg-id>` Server Administrators
-
-    - Domain Admins
-
-- Click the "Check Names" button to resolve the names
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22a31c7.PNG](images/media/image8.png)
-
-- Click `OK -> OK`. The "Administrators Properties" box will now look like this
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML22adcec.PNG](images/media/image9.png)
-
-- Click "OK" and close the policy window
-
-- Right click on `Session Servers -> Remote Desktop Control` and click "Edit"
-
-- Expand `User Configuration -> Policies -> Administrative Templates` and click "Start Menu & Taskbar"
-
-- Double click "Start Layout" located in the right window
-
-- Update the path shown to reflect the correct FQDN (needs changing in **two** places in the path)
-
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML233aaa5.PNG](images/media/image10.png)
-
-- Click "OK" when done and close all Group Policy windows.
-
-- Restart the server -->
-
-<!-- ### Create Domain Trust on SHM DC
-
-- To enable authentication to pass from the DSG to the management active directory we need to establish a trust relationship.
-- Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login with domain user `<shm-domain>\User` and the SHM DC admin password from the `shm-dc-admin-password` secret in the Safe Haven Management KeyVault
-- From the "Server Management" application, select `Tools -> Active Directory Domains and Trust`
-- Right click the management domain name and select `Properties`
-- Click on "Trusts" tab then click "New Trust"
-  ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML5eb57b.PNG](images/media/image11.png)
-- Click "Next"
-  | | |
-  | -- | -- |
-  | Trust Name:                                           | FQDN of the DSG i.e. dsgroup10.co.uk |
-  | Trust Type:                                           | External Trust |
-  | Direction of trust:                                   | Two-way |
-  | Sides of trust:                                       | Both this domain and the specified domain |
-  | User name and password:                               | Domain admin user on the DSG domain. Format: <dsg-domain\Username>. See DSG `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password` secrets in the SRE KeyVault for username and password. |
-  | Outgoing Trust Authentication Level-Local Domain:     | Domain-wide authentication |
-  | Outgoing Trust Authentication Level-Specified Domain: | Domain-wide authentication |
-- Click `Next -> Next`
-  - Select "Yes, confirm the outgoing trust" -\> "Next"
-  - Select "Yes, confirm the incoming trust" -\> "Next"
-    ![C:\\Users\\ROB\~1.CLA\\AppData\\Local\\Temp\\SNAGHTML71798f.PNG](images/media/image12.png)
-- Click "Finish" upon successful trust creation.
-- Click "OK" to the informational panel on SID Filtering.
-- Close the "Active Directory Domains and Trust" MMC -->
-
 ## 4. Deploy Remote Desktop Service Environment
 ### Create RDS VMs and perform initial configuration
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -280,50 +190,14 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Deploy and configure the RDS VMs by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The deployment will take around 20 minutes to complete.
 
-<!-- ### Install software on RDS Session Hosts
-Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment.
-We install software on both the app server session host and the remote desktop session host. -->
-
-<!-- - Installing the software that will be exposed as "apps" via the remote desktop gateway is required prior to installing the RDS environment, so we install these apps on the app server session host. Installing the software required for the remote desktop server takes a long time, so we defer this to the end of the RDS set up process. -->
-
-<!-- #### Install software on RDS Session Host 1 (Remote app server)
-- Connect to the **RDS Session Host 1 (SH1-SRE-<SRE-ID>)** via Remote Desktop client over the DSG VPN connection
-- Login as the admin user (eg. `sretestsandboxadmin`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)
-- Open `C:\Installation` in Windows explorer
-- Install the packages present in the folder
-- **Once installed logout of the server** -->
-
-<!-- #### Install software on RDS Session Host 2 (Presentation server / Remote desktop server)
-- Connect to the **RDS Session Host 2 (SH2-SRE-<SRE-ID>)** via Remote Desktop client over the DSG VPN connection
-- Login with domain user `<dsg-domain>\Username`. See DSG `dsg<dsg-id>-dc-admin-username` and `dsg<dsg-id>-dc-admin-password` secrets in DSG KeyVault for username and password (all DSG Windows servers use the same admin credentials)
-- Open `C:\Software` in Windows explorer
-- Install the packages present in the folder
-- **NOTE:** Installing TexLive (`install-tl-windows-xxx`) will take about an hour to install (including downloading lots of files from the internet), so it is recommended to leave this until last and then continue with the remaining sections of this runbook while the TexLive installation completes.
-- Once installed logout of the server -->
-
-### Install RDS Environment and webclient
+### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
 - Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
-#### Install RDS environment
+#### Install RDS environment and webclient
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
-
-<!-- - TODOJR: check whether automation is working here
-#### Install RDS webclient
-- Run `Install-Module -Name PowerShellGet -Force` to update `PowerShellGet` to the latest version. Enter "Y" on any prompts.
-- Exit the PowerShell window and re-open a new one (with elevated permissions, making sure it is still the correct PowerShell app)
-- Run `C:\Installation\Install_Webclient.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
-- Accept any requirements or license agreements. -->
-
-<!-- - TODOJR: check whether automation is working here
-#### Move the session hosts under the control of the RDS gateway
-- Once the webclient is installed, open Server Manager, right click on "All Servers" and select "Add Servers"
-  ![Add RDS session servers to collection - Step 1](images/media/image14.png)
-- Enter "rdssh" into the "Name" box and click "Find Now"
-- Select the two session servers (RDSSH1, RDSSH2) and click the arrow to add them to the selected box, click "OK" to finish
-  ![Add RDS session servers to collection - Step 2](images/media/image15.png) -->
 
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
@@ -362,7 +236,7 @@ We install software on both the app server session host and the remote desktop s
 - Click “OK” twice and close “Network Policy Server” MMC
 
 ### Configuration of SSL on RDS Gateway
-- Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer.
+<!-- - Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer. -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -394,7 +268,7 @@ We install software on both the app server session host and the remote desktop s
         - Ensure that the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
         - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) and the [SRE RDS Gateway RD CAP Store configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
     - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been increased as described in a previous section. It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
-    - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and DSG RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
+    - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
 - **NOTE:** The other apps will not work until the other servers have been deployed.
 
 

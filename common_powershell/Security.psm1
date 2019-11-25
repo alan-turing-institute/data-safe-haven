@@ -67,13 +67,20 @@ function EnsureKeyvaultSecret {
     param(
         [string]$keyvaultName = "",
         [string]$secretName = "",
-        [string]$defaultValue = $(New-Password)
+        [string]$defaultValue = "", #$(New-Password)
+        [string]$length = 20
     )
     # Attempt to retrieve secret
     $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;
 
     # Store default value in keyvault, then retrieve it
-    if ($null -eq $secret) {
+    if ($secret -eq $null) {
+        # Generate a new password if there is no default
+        if ($defaultValue -eq "") {
+            $defaultValue = $(New-Password -length $length)
+            Write-Host $defaultValue
+        }
+        # Store the password in the keyvault
         $secretValue = (ConvertTo-SecureString $defaultValue -AsPlainText -Force);
         Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue;
         $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;

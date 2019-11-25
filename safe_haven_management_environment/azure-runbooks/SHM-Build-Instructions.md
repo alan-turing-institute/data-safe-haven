@@ -156,11 +156,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
     ![Set user location](images/set_user_location.png)
 7. Configuring MFA on Azure Active Directory
-   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
-   - Click on "MFA" in the "Security" section of the left hand side bar
+   - Sign in to the Azure portal as a user administrator or global administrator.
+   - Go to "Azure Active Directory" then to "Security > "MFA" from the left hand side bar
    - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
    - Configure MFA as follows:
-     - In "App passwords" section select "Do not allow users to creat eapp passwords to sign in to non browser apps"
+     - In "App passwords" section select "Do not allow users to createapp passwords to sign in to non browser apps"
      - In "Verification options" section.
        - **check** "Call to phone" and "Notification through mobile app"
        - **uncheck** "Text message to phone" and "Verification code from mobile app or hardware token"
@@ -169,11 +169,18 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
      - Click "Save" and close window
        ![AAD MFA settings](images/aad_mfa_settings.png)
 8. Require MFA for all admins
-   - Go to the Azure Portal and select "Azure Active Directory" from the left hand side bar
-   - Click on "Conditional access" in the "Security" section of the left hand side bar
+   - Sign in to the Azure portal as a user administrator or global administrator.
+   - Go to "Azure Active Directory" then to "Security > "Conditional access" from the left hand side bar
    - Click "Baseline policy: Require MFA for admins"
    - Select "Use policy immediately" in the left hand side bar
    - Click "Save"
+
+
+<!-- # Enable combined password and MFA registration
+- Sign in to the Azure portal as a user administrator or global administrator.
+- Go to Azure Active Directory > User settings > Manage user feature preview settings
+- Under "Users can use preview features for registering and managing security info - enhanced", choose to enable for All users.
+- Click "Save" -->
 
 
 ## 3. Deploy and configure VNET and Domain Controllers
@@ -207,10 +214,6 @@ A number of files are needed for the SRE deployment. They must be added to blob 
 3. Use the Azure portal to upload all of these files to the `sre-rds-sh-packages` folder. The container will now look like this:
    ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png)
 
-
-<!-- ## 3. Configure Domain Controllers (DCs) -->
-<!-- ### Configure Active Directory on SHMDC1 and SHMDC2
-- Run `./configure_shm_dc.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the DC VMs. -->
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
@@ -304,6 +307,23 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - On the `Configuration complete` screen:
     - Click "Exit"
 
+### Set AAD sync permissions
+The `localadsync@<custom domain>` needs to be given permissions to change passwords or self-service password reset will not work.
+- In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
+- Click on the "View" menu item and make sure that "Advanced Features" is enabled
+- Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select "Properties"
+  ![AAD permissions properties](images/aad_permissions_properties.png)
+- In the pop-up window, go to the "Security" tab and click on the "Advanced" button
+  ![AAD permissions security](images/aad_permissions_security.png)
+- In the pop-up window, click on the "Add" button
+- Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
+- In the "Applies to" section, select "Descendant User objects"
+- Under permission and properties, assign following permissions (NB. there are a lot of properties, so this might take some scrolling!)
+  - `Reset password`
+  - `Change password`
+  - `Write lockoutTime`
+  - `Write pwdLastSet`
+
 
 ### Additional AAD Connect Configuration
 1. Open the `Synchronization Rules Editor` from the start menu
@@ -383,9 +403,6 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
    ```
 3. This will take **a few minutes** to run.
 
-
-<!-- ### Configure the Network Policy Server
-- Run `./configure_nps.ps1` entering the `shmId`, defined in the config file, when prompted. This will run remote scripts on the NPS VM. -->
 
 
 ### Configure NPS server
@@ -509,11 +526,3 @@ If you ever need to tear down the package mirrors, use the following procedure.
    ./Teardown_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
    ```
 4. This will take **a few minutes** to run.
-
-
-<!-- - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
-- Open a Powershell terminal with `pwsh` and navigate to the `new_dsg_environment/shm_deploy_scripts/00_deploy_package_mirrors/` directory within the Safe Haven repository.
-- Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-- Ensure the active subscription is set to that you are using for the new SAE using the command: `Set-AzContext -SubscriptionId "<sre-subscription-name>"`
-- Run the `./Teardown_Package_Mirrors.ps1` script, providing the SRE ID when prompted. This will remove all the mirrors for the tier corresponding to that SRE. **NB. This will remove the mirrors from all SREs of the same tier.** -->
