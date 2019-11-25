@@ -8,7 +8,7 @@
 
 ## Sharing the user guides
 
-There are several ways to make shareable PDF files from the documents above. You can do so either by copying to a word document and exporting to PDF, or using the Pandoc tool, as below:
+There are several ways to make shareable PDF files from the documents above. You can do so either by selecting the contents of the markdown document as displayed on Github and copying and pasting into a word document and then exporting to PDF, or by using the Pandoc tool, as below:
 - Install [Pandoc](https://pandoc.org/installing.html)
 - Install [XeLaTex](http://xetex.sourceforge.net/), generally by installing a full LaTeX environment such as [Tex Live](http://www.tug.org/texlive/) (Windows / Linux) or [MacTex](http://www.tug.org/mactex/) (MacOS).
 - Create PDF using the following, replacing FILENAME with the correct file name: `pandoc FILENAME.md --pdf-engine=xelatex -o FILENAME.pdf -V geometry:margin=1.2in`
