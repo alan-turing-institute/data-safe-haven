@@ -29,7 +29,7 @@ $originalContext = Get-AzContext
 
 # Set common variables
 # --------------------
-$keyvaultName = $config.dsg.keyVault.name
+$keyvaultName = $config.shm.keyVault.name
 $secretName = $config.dsg.keyVault.secretNames.letsEncryptCertificate
 
 
@@ -151,14 +151,22 @@ if ($secret -ne $null) {
             Write-Host -ForegroundColor DarkRed " [x] Certificate creation failed!"
             throw "Unable to create a certificate for $($config.dsg.rds.gateway.fqdn)!"
         }
+        $certificate = Get-PACertificate -MainDomain $config.dsg.rds.gateway.fqdn
     } else {
+        $certificate | fl
+        Write-Host $certificate
+        Write-Host $certificate.RenewAfter
         Write-Host -ForegroundColor DarkGreen " [o] Found certificate which is valid until $($certificate.NotAfter)"
+        Submit-Renewal  # this will attempt renewal only if we are after the earliest renewal date
+        $certificate = Get-PACertificate -MainDomain $config.dsg.rds.gateway.fqdn
     }
     # Write secret to KeyVault
     Write-Host -ForegroundColor DarkCyan "Storing the signed certificate in the KeyVault for future use..."
     $fullChainString = $(@(Get-Content -Path $certificate.FullChainFile) -join '|')
     $secretValue = (ConvertTo-SecureString $fullChainString -AsPlainText -Force)
-    Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue;
+    $expiryDate = [DateTime]::ParseExact($certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
+    Write-Host -ForegroundColor DarkGreen " [o] setting expiry date to  $expiryDate"
+    Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue -Expires $expiryDate
 }
 
 
