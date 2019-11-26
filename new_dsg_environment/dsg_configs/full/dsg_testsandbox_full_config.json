@@ -253,10 +253,10 @@
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
-      "vmName": "DATA-SRE-TESTSA",
+      "vmName": "DS-SRE-TESTSAND",
       "vmSize": "Standard_B2ms",
-      "hostname": "DATA-SRE-TESTSA",
-      "fqdn": "DATA-SRE-TESTSA.testsandbox.dsgroupdev.co.uk",
+      "hostname": "DS-SRE-TESTSAND",
+      "fqdn": "DS-SRE-TESTSAND.testsandbox.dsgroupdev.co.uk",
       "ip": "10.150.2.250"
     },
     "linux": {

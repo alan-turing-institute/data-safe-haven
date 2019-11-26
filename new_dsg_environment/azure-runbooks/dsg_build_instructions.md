@@ -236,7 +236,6 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Click “OK” twice and close “Network Policy Server” MMC
 
 ### Configuration of SSL on RDS Gateway
-<!-- - Ensure you have [Certbot](https://certbot.eff.org/) installed. This requires using a Mac or Linux computer. -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`

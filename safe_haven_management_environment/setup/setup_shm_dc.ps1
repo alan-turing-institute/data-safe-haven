@@ -242,9 +242,6 @@ Write-Host "Configuring Active Directory for: $($config.dc.vmName)..."
 $adsyncPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.adsyncPassword
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
-# # Fetch DC/NPS admin username
-# $dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
-
 # Run configuration script remotely
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Configuration.ps1"
 $params = @{

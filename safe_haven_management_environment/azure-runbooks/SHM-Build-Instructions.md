@@ -323,6 +323,11 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
   - `Change password`
   - `Write lockoutTime`
   - `Write pwdLastSet`
+- Click "OK"
+- Now go through the same procedure, this time selecting "This object and descendant objects" in the "Applies to" section
+- Enable the following permissions:
+  - `Replicate Directory Changes`
+  - `Replicate Directory Changes All`
 
 
 ### Additional AAD Connect Configuration

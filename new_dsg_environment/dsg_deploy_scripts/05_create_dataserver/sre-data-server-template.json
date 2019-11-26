@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "SRE ID": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter ID for SRE e.g. 'testsandbox'"
+            }
+        },
         "Data Server Name": {
             "defaultValue": "DATASERVER",
             "type": "string",
@@ -70,11 +76,11 @@
         }
     },
     "variables": {
-        "nic": "[concat(parameters('Data Server Name'),'_','NIC1')]",
-        "diagStorageAccountName": "[concat('diags',uniqueString(resourceGroup().id))]",
+        "nic": "[concat(parameters('Data Server Name'), '-', 'NIC')]",
+        "diagStorageAccountName": "[substring(concat('dsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
-        "datadisk": "[concat(parameters('Data Server Name'),'_Data_Disk1')]"
+        "datadisk": "[concat(parameters('Data Server Name'), '-DATA-DISK')]"
     },
     "resources": [
         {
@@ -96,7 +102,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('Data Server Name'),'_OS_DISK')]",
+                        "name": "[concat(parameters('Data Server Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,

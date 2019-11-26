@@ -89,8 +89,8 @@ ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName
 }
 
 
-# Deploying DC from template
-# --------------------------
+# Deploy DC from template
+# -----------------------
 Write-Host -ForegroundColor DarkCyan "Deploying DC from template..."
 
 # Get SAS token

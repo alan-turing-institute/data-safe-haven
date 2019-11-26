@@ -114,7 +114,6 @@ ForEach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) 
         Write-Host -ForegroundColor DarkCyan " [ ] deleting $numBlobs blobs aready in container '$containerName'..."
         $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force}
         while($numBlobs -gt 0){
-            # Write-Host -ForegroundColor DarkCyan " [ ] waiting for deletion of $numBlobs remaining blobs..."
             Start-Sleep -Seconds 5
             $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
         }
