@@ -338,21 +338,21 @@ function Add-SreConfig {
         gateway = [ordered]@{}
         sessionHosts = [ordered]@{}
     }
-    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_SERVER"
+    # $config.dsg.rds.nsg.gateway.name = "NSG_RDS_GATEWAY"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
-    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SESSION_HOSTS"
-    $config.dsg.rds.gateway.vmName = "RDS-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    # $config.dsg.rds.nsg.sessionHosts.name = "NSG_RDS_SESSION_HOSTS"
+    $config.dsg.rds.gateway.vmName = "RDG-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
     $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.gateway.npsSecretName = "sre-" + $($config.dsg.id).ToLower() + "-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "SH1-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.rds.sessionHost1.vmName = "APP-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.sessionHost1.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "SH2-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.sessionHost2.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
@@ -363,7 +363,7 @@ function Add-SreConfig {
     # Data server
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_SRE_DATA"
-    $config.dsg.dataserver.vmName = "DS-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
+    $config.dsg.dataserver.vmName = "DSV-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.dataserver.vmSize = "Standard_B2ms"
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn

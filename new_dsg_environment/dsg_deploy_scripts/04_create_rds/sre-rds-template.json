@@ -140,8 +140,8 @@
         "rdssh1nic": "[concat(parameters('RDS Session Host 1 Name'),'-','NIC')]",
         "rdssh2nic": "[concat(parameters('RDS Session Host 2 Name'),'-','NIC')]",
         "rdspip": "[concat(parameters('RDS Gateway Name'),'-','PIP')]",
-        "diagStorageAccountName": "[substring(concat('rdsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
-        "rdsnsg": "[concat('NSG_', replace(parameters('RDS Gateway Name'), '-', '_'), '_SERVER')]",
+        "diagStorageAccountName": "[substring(concat('rdsbootdiag', parameters('SRE ID'), uniqueString(subscription().subscriptionId), uniqueString(resourceGroup().id)), 0, 24)]",
+        "rdsnsg": "[concat('NSG_', replace(parameters('RDS Gateway Name'), '-', '_'), '_GATEWAY')]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
     },

@@ -18,7 +18,6 @@ $originalContext = Get-AzContext
 
 # Set constants used in this script
 # ---------------------------------
-$rdsResourceGroup = $config.dsg.rds.rg
 $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
@@ -31,8 +30,6 @@ $sreNetbiosName = $config.dsg.domain.netbiosName
 $shmNetbiosName = $config.shm.domain.netbiosName
 $dataSubnetIpPrefix = $config.dsg.network.subnets.data.prefix
 $rdsGatewayVmName = $config.dsg.rds.gateway.vmName
-$rdsSh1VmName = $config.dsg.rds.sessionHost1.vmName
-$rdsSh2VmName = $config.dsg.rds.sessionHost2.vmName
 
 
 # Retrieve passwords from the keyvault
@@ -60,8 +57,8 @@ $sreStorageAccountName = $config.dsg.storage.artifacts.accountName
 $sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -ResourceGroupName $sreStorageAccountRg
 
 
-# Deploying DC from template
-# --------------------------
+# Deploy RDS from template
+# ------------------------
 $templateName = "sre-rds-template"
 Write-Host -ForegroundColor DarkCyan "Deploying RDS from template $templateName..."
 $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
@@ -83,10 +80,10 @@ $params = @{
     "Virtual Network Subnet" = $config.dsg.network.subnets.rds.name
     "Domain Name" = $config.dsg.domain.fqdn
 }
-$_ = New-AzResourceGroup -Name $rdsResourceGroup -Location $config.dsg.location -Force
-New-AzResourceGroupDeployment -ResourceGroupName $rdsResourceGroup -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
+$_ = New-AzResourceGroup -Name  $config.dsg.rds.rg -Location $config.dsg.location -Force
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.rds.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
 $result = $?
-LogTemplateOutput -ResourceGroupName $rdsResourceGroup -DeploymentName $templateName
+LogTemplateOutput -ResourceGroupName $config.dsg.rds.rg -DeploymentName $templateName
 if ($result) {
     Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
 } else {
@@ -140,11 +137,6 @@ $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Get-Content (Join-Path $PSScriptRoot "templates" "ServerList.template.xml") -Raw
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
 
-# # Expand web client script
-# $webclientScriptLocalFilePath = (New-TemporaryFile).FullName
-# $template = Get-Content (Join-Path $PSScriptRoot "templates" "webclient.template.ps1") -Raw
-# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $webclientScriptLocalFilePath
-
 # Copy existing files
 Write-Host -ForegroundColor DarkCyan " [ ] Copying RDS installers to storage account '$sreStorageAccountName'"
 $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
@@ -159,7 +151,6 @@ if ($?) {
 Write-Host -ForegroundColor DarkCyan " [ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
-# Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $webclientScriptLocalFilePath -Blob "Install_Webclient.ps1" -Force
 if ($?) {
     Write-Host -ForegroundColor DarkGreen " [o] File uploading succeeded"
 } else {
@@ -173,9 +164,9 @@ Write-Host -ForegroundColor DarkCyan "Adding DNS record for RDS Gateway"
 $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Get public IP address of RDS gateway
-$rdsGatewayVM = Get-AzVM -ResourceGroupName $rdsResourceGroup -Name $config.dsg.rds.gateway.vmName
+$rdsGatewayVM = Get-AzVM -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
-$rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $rdsResourceGroup)
+$rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.dsg.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object {$_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*"}).IpAddress
 
 # Switch to DNS subscription
@@ -203,7 +194,7 @@ if ($success) {
 # -------------------------------------------
 Write-Host -ForegroundColor DarkCyan "Adding RDS Gateway as RADIUS client on SHM NPS"
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-
+# Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 $params = @{
     rdsGatewayIp = "`"$($config.dsg.rds.gateway.ip)`""
@@ -226,7 +217,7 @@ if ($success) {
 # --------------------------
 Write-Host -ForegroundColor DarkCyan "Adding RDS VMs to correct OUs"
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
-
+# Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Move_RDS_VMs_Into_OUs.ps1"
 $params = @{
     dsgDn = "`"$($config.dsg.domain.dn)`""
@@ -234,7 +225,7 @@ $params = @{
     gatewayHostname = "`"$($config.dsg.rds.gateway.hostname)`""
     sh1Hostname = "`"$($config.dsg.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.dsg.rds.sessionHost2.hostname)`""
-};
+}
 $result = Invoke-AzVMRunCommand -Name "$($config.dsg.dc.vmName)" -ResourceGroupName "$($config.dsg.dc.rg)" `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
 $success = $?
@@ -258,7 +249,7 @@ $params = @{
 
 # RDS gateway
 Write-Host -ForegroundColor DarkCyan " [ ] Setting OS locale and DNS on RDS Gateway ($($config.dsg.rds.gateway.vmName))"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
@@ -270,7 +261,7 @@ if ($success) {
 
 # RDS session host 1
 Write-Host -ForegroundColor DarkCyan " [ ] Setting OS locale and DNS on RDS Session Host 1 (App server)"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost1.vmName -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost1.vmName -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
@@ -282,7 +273,7 @@ if ($success) {
 
 # RDS session host 2
 Write-Host -ForegroundColor DarkCyan " [ ] Setting OS locale and DNS on RDS Session Host 2 (Remote desktop server)"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost2.vmName -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost2.vmName -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
@@ -337,7 +328,7 @@ $params = @{
     pipeSeparatedremoteFilePaths = "`"$($filePathsSh1 -join "|")`""
     downloadDir = "$remoteUploadDir"
 }
-$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.sessionHost1.vmName)" -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.sessionHost1.vmName)" -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
 $success = $?
 Write-Output $result.Value;
@@ -357,7 +348,7 @@ $params = @{
     pipeSeparatedremoteFilePaths = "`"$($filePathsSh2 -join "|")`""
     downloadDir = "$remoteUploadDir"
 }
-$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.sessionHost2.vmName)" -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.sessionHost2.vmName)" -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
 $success = $?
 Write-Output $result.Value;
@@ -377,7 +368,7 @@ $params = @{
     pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
     downloadDir = "$remoteUploadDir"
 }
-$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.gateway.vmName)" -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name "$($config.dsg.rds.gateway.vmName)" -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
 $success = $?
 Write-Output $result.Value;
@@ -396,7 +387,7 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName
 # Install software packages on RDS SH1 (App server)
 Write-Host -ForegroundColor DarkCyan " [ ] Installing packages on RDS Session Host 1 (App server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Packages.ps1"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost1.vmName -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost1.vmName -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
 $success = $?
 Write-Output $result.Value;
@@ -409,7 +400,7 @@ if ($success) {
 # Install software packages on RDS SH2 (Remote desktop server)
 Write-Host -ForegroundColor DarkCyan " [ ] Installing packages on RDS Session Host 2 (Remote desktop server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Packages.ps1"
-$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost2.vmName -ResourceGroupName $rdsResourceGroup `
+$result = Invoke-AzVMRunCommand -Name $config.dsg.rds.sessionHost2.vmName -ResourceGroupName $config.dsg.rds.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
 $success = $?
 Write-Output $result.Value;
@@ -433,10 +424,10 @@ ForEach ($scriptNameParamsPair in (("Install_Powershell_Modules_01.ps1", $params
     $scriptName, $params = $scriptNameParamsPair
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" $scriptName
     if ($params -eq $null) {
-        $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
+        $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg `
                                         -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
     } else {
-        $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup `
+        $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg `
                                         -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
     }
     $success = $?
@@ -452,7 +443,10 @@ ForEach ($scriptNameParamsPair in (("Install_Powershell_Modules_01.ps1", $params
 # Reboot the gateway VM
 # ---------------------
 Write-Host -ForegroundColor DarkCyan "Rebooting the RDS Gateway..."
-Restart-AzVM -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $rdsResourceGroup
+Restart-AzVM -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg
+# The following syntax is preferred in future, but does not yet work
+# $vmID = (Get-AzVM -ResourceGroupName $config.dsg.rds.gateway.vmName -Name $config.dsg.rds.rg).Id
+# Restart-AzVM -Id$vmID
 if ($?) {
     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
 } else {

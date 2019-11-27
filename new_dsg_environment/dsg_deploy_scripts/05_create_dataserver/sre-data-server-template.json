@@ -77,7 +77,7 @@
     },
     "variables": {
         "nic": "[concat(parameters('Data Server Name'), '-', 'NIC')]",
-        "diagStorageAccountName": "[substring(concat('dsbootdiag', parameters('SRE ID'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
+        "diagStorageAccountName": "[substring(concat('dsvbootdiag', parameters('SRE ID'), uniqueString(subscription().subscriptionId), uniqueString(resourceGroup().id)), 0, 24)]",
         "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
         "datadisk": "[concat(parameters('Data Server Name'), '-DATA-DISK')]"

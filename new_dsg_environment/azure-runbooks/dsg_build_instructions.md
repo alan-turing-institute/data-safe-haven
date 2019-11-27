@@ -241,7 +241,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1 -sreId <SRE ID> -emailAddress <email>`, where the SRE ID is the one specified in the config and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
-- **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rds-sre-testsan.testsandbox.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./CreateUpdate_Signed_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+- **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-testsan.testsandbox.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./CreateUpdate_Signed_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
@@ -253,7 +253,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Enter the start of your name and click "Check names"
 - Select your name and click "Ok"
 - Click "Ok" again to exit the add users dialogue
-- Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rds-sre-testsan.testsandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in.
+- Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rdg-sre-testsan.testsandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://<rds-name>.<sre-id>.<safe haven domain>/`, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
         - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
@@ -265,7 +265,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app. Once you have approved the sign in, you should see a remote Windows desktop.
     - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
         - Ensure that the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
-        - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the [SHM NPS server RADIUS Client configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) and the [SRE RDS Gateway RD CAP Store configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
+        - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the [SRE RDS Gateway RD CAP Store configuration](dsg_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
     - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been [increased as described in a previous section](dsg_build_instructions.md#increase-the-authorisation-timeout-to-allow-for-mfa). It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
     - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
 - **NOTE:** The other apps will not work until the other servers have been deployed.
@@ -274,16 +274,10 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 ## 5. Deploy Data Server
 ### Create Dataserver VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Create_Data_Server.ps1` script, providing the DSG ID when prompted.
+- Run the `./Setup_Data_Server.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take around 10 minutes to complete
-
-### Configure Dataserver
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/05_create_dataserver/` directory in the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Configure_Data_Server.ps1` script, providing the DSG ID when prompted.
 
 ## 6. Deploy Web Application Servers (Gitlab and HackMD)
 - Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
