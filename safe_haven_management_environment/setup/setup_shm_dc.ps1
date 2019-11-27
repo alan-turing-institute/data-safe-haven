@@ -55,7 +55,7 @@ if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
     $secretValue = New-Password;
     $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
     $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnClientCertPassword -SecretValue $secretValue;
-    $vpnClientCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertPassword ).SecretValueText
+    $vpnClientCertPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertPassword ).SecretValueText
   }
   # Fetch VPN CA certificate password (or create if not present)
   $vpnCaCertPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertPassword).SecretValueText;
@@ -64,7 +64,7 @@ if($vpnClientCertificate -And $vpnCaCertificate -And $vpnCaCertificatePlain){
     $secretValue = New-Password;
     $secretValue = (ConvertTo-SecureString $secretValue -AsPlainText -Force);
     $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.name -Name  $config.keyVault.secretNames.vpnCaCertPassword -SecretValue $secretValue;
-    $vpnCaCertPassword  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertPassword ).SecretValueText
+    $vpnCaCertPassword = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertPassword ).SecretValueText
   }
 
   # Generate keys and certificates

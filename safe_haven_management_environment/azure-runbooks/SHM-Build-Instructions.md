@@ -312,9 +312,9 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
 - Click on the "View" menu item and make sure that "Advanced Features" is enabled
 - Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select "Properties"
-  ![AAD permissions properties](images/aad_permissions_properties.png)
+  ![AD permissions properties](images/aad_permissions_properties.png)
 - In the pop-up window, go to the "Security" tab and click on the "Advanced" button
-  ![AAD permissions security](images/aad_permissions_security.png)
+  ![AD permissions security](images/aad_permissions_security.png)
 - In the pop-up window, click on the "Add" button
 - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
 - In the "Applies to" section, select "Descendant User objects"
@@ -328,6 +328,7 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 - Enable the following permissions:
   - `Replicate Directory Changes`
   - `Replicate Directory Changes All`
+ <!-- Look at https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-configure-ad-ds-connector-account for automation-->
 
 
 ### Additional AAD Connect Configuration
