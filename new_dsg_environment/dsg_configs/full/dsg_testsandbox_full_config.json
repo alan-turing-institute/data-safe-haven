@@ -102,7 +102,7 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Data Study Group 9 (Test)",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "id": "testsandbox",
     "shortName": "sre-testsandbox",
     "location": "uksouth",
