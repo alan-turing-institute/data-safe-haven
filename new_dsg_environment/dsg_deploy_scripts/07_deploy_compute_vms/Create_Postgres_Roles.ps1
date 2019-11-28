@@ -1,6 +1,6 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [string]$sreId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
   [string]$ipLastOctet
 )
@@ -9,8 +9,9 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
-$config = Get-DsgConfig($dsgId);
+# Get SRE config
+# --------------
+$config = Get-SreConfig($sreId);
 
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext

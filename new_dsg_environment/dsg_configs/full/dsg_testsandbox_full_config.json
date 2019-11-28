@@ -163,8 +163,8 @@
       },
       "nsg": {
         "data": {
-          "rg": "RG_SRE_SHARED_DATA",
-          "name": "NSG_SRE_SHARED_DATA"
+          "rg": "RG_SRE_WEBAPPS",
+          "name": "NSG_SRE_WEBAPPS"
         }
       }
     },
@@ -181,8 +181,13 @@
         "dcAdminUsername": "sre-testsandbox-dc-admin-username",
         "dcAdminPassword": "sre-testsandbox-dc-admin-password",
         "gitlabLdapPassword": "sre-testsandbox-gitlab-ldap-password",
+        "gitlabRootPassword": "sre-testsandbox-gitlab-root-password",
+        "gitlabUserPassword": "sre-testsandbox-gitlab-user-password",
         "hackmdLdapPassword": "sre-testsandbox-hackmd-ldap-password",
+        "hackmdUserPassword": "sre-testsandbox-hackmd-user-password",
         "dsvmLdapPassword": "sre-testsandbox-dsvm-ldap-password",
+        "dsvmAdminUsername": "sre-testsandbox-dsvm-admin-username",
+        "dsvmAdminPassword": "sre-testsandbox-dsvm-admin-password",
         "testResearcherPassword": "sre-testsandbox-test-researcher-password",
         "letsEncryptCertificate": "sre-testsandbox-lets-encrypt-certificate"
       }
@@ -243,12 +248,9 @@
       "rg": "RG_SRE_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS_SERVER",
           "allowedSources": "Internet"
         },
-        "sessionHosts": {
-          "name": "NSG_SESSION_HOSTS"
-        }
+        "sessionHosts": {}
       }
     },
     "dataserver": {
@@ -262,30 +264,27 @@
     "linux": {
       "gitlab": {
         "vmName": "GITLAB-SRE-TESTSANDBOX",
+        "vmSize": "Standard_B2ms",
         "hostname": "GITLAB-SRE-TESTSANDBOX",
         "fqdn": "GITLAB-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
-        "ip": "10.150.2.151",
-        "rootPasswordSecretName": "sre-testsandbox-gitlab-root-password"
+        "ip": "10.150.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-TESTSANDBOX",
+        "vmSize": "Standard_B2ms",
         "hostname": "HACKMD-SRE-TESTSANDBOX",
         "fqdn": "HACKMD-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.2.152"
       },
-      "rg": "RG_SRE_SHARED_DATA",
-      "nsg": "NSG_SRE_SHARED_DATA"
+      "rg": "RG_SRE_WEBAPPS",
+      "nsg": "NSG_SRE_WEBAPPS"
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
       "vmImageSubscription": "Turing Safe Haven VM Images",
-      "vmSizeDefault": "Standard_DS2_v2",
+      "vmSizeDefault": "Standard_B2ms",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019082900",
-      "admin": {
-        "username": "sreadmin",
-        "passwordSecretName": "sre-testsandbox-dsvm-admin-password"
-      }
+      "vmImageVersion": "0.1.2019082900"
     }
   }
 }

@@ -273,8 +273,8 @@ function Add-SreConfig {
     $config.dsg.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $config.dsg.network.subnets.gateway.prefix =  $dsgBasePrefix + "." + ([int] $dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
-    $config.dsg.network.nsg.data.rg = "RG_SRE_SHARED_DATA"
-    $config.dsg.network.nsg.data.name = "NSG_SRE_SHARED_DATA"
+    $config.dsg.network.nsg.data.rg = "RG_SRE_WEBAPPS"
+    $config.dsg.network.nsg.data.name = "NSG_SRE_WEBAPPS"
 
     # --- Storage config --
     $config.dsg.storage = [ordered]@{
@@ -292,8 +292,13 @@ function Add-SreConfig {
         dcAdminUsername = $config.dsg.shortName + '-dc-admin-username'
         dcAdminPassword = $config.dsg.shortName + '-dc-admin-password'
         gitlabLdapPassword = $config.dsg.shortName + "-gitlab-ldap-password"
+        gitlabRootPassword = $config.dsg.shortName + "-gitlab-root-password"
+        gitlabUserPassword = $config.dsg.shortName + "-gitlab-user-password"
         hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
+        hackmdUserPassword = $config.dsg.shortName + "-hackmd-user-password"
         dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
+        dsvmAdminUsername = $config.dsg.shortName + "-dsvm-admin-username"
+        dsvmAdminPassword = $config.dsg.shortName + "-dsvm-admin-password"
         testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
         letsEncryptCertificate = $config.dsg.shortName + "-lets-encrypt-certificate"
     }
@@ -348,12 +353,12 @@ function Add-SreConfig {
     $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
     $config.dsg.rds.gateway.npsSecretName = "sre-" + $($config.dsg.id).ToLower() + "-nps-secret"
     $config.dsg.rds.sessionHost1.vmName = "APP-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.sessionHost1.vmSize = "Standard_DS2_v2"
+    $config.dsg.rds.sessionHost1.vmSize = "Standard_D4s_v3"
     $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
     $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
     $config.dsg.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.sessionHost2.vmSize = "Standard_DS2_v2"
+    $config.dsg.rds.sessionHost2.vmSize = "Standard_D4s_v3"
     $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
     $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
@@ -377,11 +382,12 @@ function Add-SreConfig {
     $config.dsg.linux.rg = $config.dsg.network.nsg.data.rg
     $config.dsg.linux.nsg = $config.dsg.network.nsg.data.name
     $config.dsg.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.linux.gitlab.vmSize = "Standard_D2s_v3"
     $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
     $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
-    $config.dsg.linux.gitlab.rootPasswordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-gitlab-root-password"
     $config.dsg.linux.hackmd.vmName = "HACKMD-SRE-" + $($config.dsg.id).ToUpper()
+    $config.dsg.linux.hackmd.vmSize = "Standard_D2s_v3"
     $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
     $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
@@ -389,15 +395,15 @@ function Add-SreConfig {
     # Compute VMs
     $config.dsg.dsvm = [ordered]@{}
     $config.dsg.dsvm.rg = "RG_SRE_COMPUTE"
-    $config.dsg.dsvm.vmImageSubscription =  $config.shm.computeVmImageSubscriptionName
+    $config.dsg.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
-    $config.dsg.dsvm.vmSizeDefault = "Standard_DS2_v2"
+    $config.dsg.dsvm.vmSizeDefault = "Standard_B2ms"
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
-    $config.dsg.dsvm.admin = [ordered]@{
-        username = "sreadmin"
-        passwordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-dsvm-admin-password"
-    }
+    # $config.dsg.dsvm.admin = [ordered]@{
+    #     username = "sreadmin"
+    #     passwordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-dsvm-admin-password"
+    # }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
     Write-Host $jsonOut
@@ -406,17 +412,25 @@ function Add-SreConfig {
 Export-ModuleMember -Function Add-SreConfig
 
 
-# Get a DSG configuration
+# Get a SRE configuration
 # -----------------------
+function Get-SreConfig {
+    param(
+        [string]$sreId
+    )
+    # Read DSG config from file
+    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve;
+    $configFilename =  "dsg_" + $sreId + "_full_config.json";
+    $configPath = Join-Path $configRootDir $configFilename -Resolve;
+    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
+    return $config
+}
+Export-ModuleMember -Function Get-SreConfig
+
 function Get-DsgConfig {
     param(
         [string]$dsgId
     )
-    # Read DSG config from file
-    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve;
-    $configFilename =  "dsg_" + $dsgId + "_full_config.json";
-    $configPath = Join-Path $configRootDir $configFilename -Resolve;
-    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
-    return $config
+    return Get-SreConfig -dsgId $dsgId
 }
 Export-ModuleMember -Function Get-DsgConfig

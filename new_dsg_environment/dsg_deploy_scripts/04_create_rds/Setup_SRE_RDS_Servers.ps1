@@ -174,13 +174,14 @@ $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
 
 # Add DNS record to DSG DNS Zone
 $dnsRecordname = "$($config.dsg.rds.gateway.hostname)".ToLower()
+# $dnsRecordname = "sre"
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
 $dsgDomain = $config.dsg.domain.fqdn
 Write-Host -ForegroundColor DarkCyan " [ ] Setting 'A' record for 'rds' host to '$rdsGatewayPublicIp' in SRE $sreId DNS zone ($dsgDomain)"
 Remove-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup
 $result = New-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $dsgDomain -ResourceGroupName $dnsResourceGroup `
-                        -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
+                             -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
 $success = $?
 Write-Output $result.Value;
 if ($success) {
