@@ -13,7 +13,7 @@ Param(
   [string]$dsgNetbiosName,
   [Parameter(HelpMessage="DSG DN")]
   [ValidateNotNullOrEmpty()]
-  [string]$dsgDn
+  [string]$dsgDn,
   [Parameter(HelpMessage="DSG FQDN")]
   [ValidateNotNullOrEmpty()]
   [string]$dsgFqdn
