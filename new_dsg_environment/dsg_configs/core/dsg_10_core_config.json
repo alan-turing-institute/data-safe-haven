@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing DSG - 10 - DST1LBField",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "dsgId": "10",
+    "shmId": "turing1",
+    "tier": "3",
+    "domain": "dsgroup10.co.uk",
+    "netbiosName": "DSGROUP10",
+    "ipPrefix": "10.100.72",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}
