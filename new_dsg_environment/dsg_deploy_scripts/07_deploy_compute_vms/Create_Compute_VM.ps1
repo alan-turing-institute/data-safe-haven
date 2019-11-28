@@ -6,16 +6,23 @@ param(
   [Parameter(Position=2, Mandatory = $true, HelpMessage = "Last octet of IP address")]
   [string]$ipLastOctet = (Read-Host -prompt "Last octet of IP address")
 )
-# Set default value if no argument is provided
-if (!$vmSize) { $vmSize = "Standard_DS2_v2" }
+
+
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
+
+# Switch to SRE subscription
+# --------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
 
+# Set default value if no argument is provided
+if (!$vmSize) { $vmSize = $config.dsg.dsvm.vmSizeDefault }
 # Fetch root user password (or create if not present)
 $computeVmRootPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dsvm.admin.passwordSecretName).SecretValueText;
 if ($null -eq $computeVmRootPassword) {
