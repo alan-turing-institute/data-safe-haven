@@ -15,7 +15,11 @@
 
 ## Introduction: The Turing Safe Haven
 
-To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in the data safe haven hosted by the Turing Institute. 
+Welcome to the Turing Safe Haven tool. Secure environments for analysis of sensitive datasets are essential for research, giving data providers confidence that their datasets will be kept secure over the course of a project. Here at the Turing, we've developed a tool that allows you to set up secure research environments for your projects at scale, to allow you to work on sensitive / confidential datasets. To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in data safe havens, hosted by the Turing Institute. 
+
+Before you get started in using a safe haven, you'll need to have classified the data you're using to understand its sensitivity, and how it should be handled. The classification should be done for each work package (the combination of all linked data you'll be handling over the project) at ingress and egress from your safe haven environment. There are 5 tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4. You can find out more about classifying project data, and how to do it, in our policy paper, available here: https://arxiv.org/abs/1908.08737 
+
+While working in a data safe haven secure environment, you won’t be able to use the internet. All the tools you’ll need for carrying out data science research, as well as the data you’ll be working on, will be ingressed into the safe haven upon its creation.
 
 ### Data governance and challenge overview
 
@@ -35,7 +39,6 @@ For full details on the technical setup of the Safe Haven, see **Appendix D**.
 ### 1.1  Wi-Fi Access
 
 You need to be connected to the Turing’s internal Wi-fi network to access any of the challenges:
-
 
 > Wi-Fi Name: Turing Guest
 >
@@ -221,10 +224,12 @@ Follow the steps below to access the Azure safe haven environment:
 
 3. Replace `X` by one of the following numbers, depending on challenge
 
-   * X = 22 : Telenor
-   * X = 23 : Turkcell
-   * X = 24 : Telus
-   * X = 25 : STC
+   * X = 6 : Adatum
+   * X = 7 : Narchives
+   * X = 8 : Sensat
+   * X = 9 : WWF
+   * X = 10 : DST1LBField
+   * X = 11 : DSTL2Anthrax
 
 **NOTE:** Important reminder: due to the security tier, there is **no internet access from inside any of the above virtual machines**.
    However, there are local copies of the `PyPI` and `CRAN` package repositories available inside of the Azure virtual machine.
@@ -246,13 +251,13 @@ Follow the steps below to access the Azure safe haven environment:
 
 6. You will now **receive a call or mobile app notification** for the MFA to confirm. For the call, you may have to move to an area with good reception and/or press the hash (#) key multiple times in-call.
 
-   After success, you’ll see the following screen:
+   If successful, you’ll see the following screen - welcome to the Data Safe Haven!
 
    ![](images/RDS_app_selection_options.png)
 
 7. *(First time only)* Follow the steps in Section 3.3 if this is the first time you are logging in.
 
-   Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
+   You can use this secure environment to carry out secure data science research on data that's been imported in. Following first time use, you can select whatever app that you wish to work with – each is explained in the following sections.
 
    **NOTE:** Remember that once you go into one of these apps, you’re now going to a local server / UK Remote Desktop / VM.
    That means **some of your key mappings may not be the same** as you’re used to.
@@ -262,7 +267,7 @@ Follow the steps below to access the Azure safe haven environment:
 
 ### 3.3: First-time set-up
 
-In order to set up your user account on the virtual machine, you need to follow the below steps **once**.
+The first time you use the safe haven, you’ll have to set up your user account on the virtual machine. In order to set up your user account on the virtual machine, you need to follow the below steps **once**.
 
 1. Run the "Shared VM (SSH)" app.
    You will need to first authenticate using MFA.
@@ -313,7 +318,7 @@ In order to set up your user account on the virtual machine, you need to follow 
 
 ### 4.1: Using the data analytics virtual machine
 
-The analytics environment can be accessed through the `Shared VM` (desktop) app.
+The Safe Haven contains a Linux VM for data analysis, with different packages installed on to it. The VM allows you to carry out data science research, completely isolated from the internet. You can access different applications from the terminal, including RStudio, Atom, jupyter notebook and Spider Integrated Development Environment. You can also access HackMD and Gitlab, through the browser in the VM. The analytics environment can be accessed through the `Shared VM` (desktop) app.
 Please log in with username `firstname.lastname` and password `password`.
 
 ![](images/VM_arrived.png)
@@ -344,7 +349,7 @@ This VM can also be used to directly access `GitLab` and `HackMD`, via the brosw
 
 ### 4.2: Installing packages
 
-Packages can be installed from a local mirror (inside the environment) of `CRAN` and `PyPI`, for challenges in Tier 2 environment or below.
+There are local copies of the PyPI and CRAN package repositories available from the Linux VM.
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
 Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For `CRAN`, you will be prompted to make a user package direcory when you install your first package. For `PyPI`, you will need to run `pip install` with the `--user` flag.
@@ -390,7 +395,8 @@ Requests for additional packages may be submitted via the facilitator for Tier 3
 In the latter case, please first try to find an alternative in `PyPI` or `CRAN` which can be used to the same/similar effect.
 If a package request is not critical to the success of the project, the Research Computing teams reserve the right to decline the request; the time needed to successfully process the request and test will be taken into consideration.
 
-For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
+For each iteration of package updates, a new data science VM will be deployed into the Azure environment and you will need to access via the `Custom VM` app - please also see [Appendix A: Migrating to a new data science VM post package update](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update).
+If you'd like to ingress additional code or data, such as for a new tool, you'll need to go through the classification process again, making sure that the data provider and principal investigator agree with how it is to be used.
 
 
 ### 4.3: Accessing GitLab and storing code
@@ -539,6 +545,8 @@ Based on an initial document written March/April 2018 by Kirstie Whitaker.
 Updated in December 2018 by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
 
 Updated again in March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
+
+Updated again again in November 2019 by Ben Walden, James Robinson and Daisy Parry.
 
 ## Appendix A: Migrating to a new data science VM post package update
 
