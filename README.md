@@ -14,8 +14,6 @@ Secure environments for analysis of sensitive datasets are essential for researc
 
 [Implementation on Azure](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
 
-[Data Ingress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
-
 
 ## Setting up a Data Safe Haven
 
@@ -31,6 +29,7 @@ You can set up a data safe haven yourself.
 
 [Create New Users](https://github.com/alan-turing-institute/data-safe-haven/blob/9213c9b949be04a2a8ea5c075ee698f23115ef9f/new_dsg_environment/create-users/README.md) - Create and add new users to Data Safe Haven environments.
 
+[Data Ingress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
 Before you go ahead to set up a Data Safe Haven, you'll need to have the following pre-requisites:
 - `Powershell`
