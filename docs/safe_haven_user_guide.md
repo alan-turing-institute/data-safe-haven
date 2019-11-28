@@ -15,9 +15,9 @@
 
 ## Introduction: The Turing Safe Haven
 
-Welcome to the Turing Safe Haven tool. Secure environments for analysis of sensitive datasets are essential for research, giving data providers confidence that their datasets will be kept secure over the course of a project. Here at the Turing, we've developed a tool that allows you to set up secure research environments for your projects at scale, to allow you to work on sensitive / confidential datasets. To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in data safe havens, hosted by the Turing Institute. 
+Welcome to the Turing Safe Haven tool. Secure environments for analysis of sensitive datasets are essential for research, giving data providers confidence that their datasets will be kept secure over the course of a project. Here at the Turing, we've developed a tool that allows you to set up secure research environments for your projects at scale, to allow you to work on sensitive / confidential datasets. To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within in data safe havens, hosted by the Turing Institute.
 
-Before you get started in using a safe haven, you'll need to have classified the data you're using to understand its sensitivity, and how it should be handled. The classification should be done for each work package (the combination of all linked data you'll be handling over the project) at ingress and egress from your safe haven environment. There are 5 tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4. You can find out more about classifying project data, and how to do it, in our policy paper, available here: https://arxiv.org/abs/1908.08737 
+Before you get started in using a safe haven, you'll need to have classified the data you're using to understand its sensitivity, and how it should be handled. The classification should be done for each work package (the combination of all linked data you'll be handling over the project) at ingress and egress from your safe haven environment. There are 5 tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4. You can find out more about classifying project data, and how to do it, in our policy paper, available here: https://arxiv.org/abs/1908.08737
 
 While working in a data safe haven secure environment, you won’t be able to use the internet. All the tools you’ll need for carrying out data science research, as well as the data you’ll be working on, will be ingressed into the safe haven upon its creation.
 
@@ -27,7 +27,7 @@ The challenges in this DSG are all categorised as Tier 2: "Official" or Tier 3: 
 
 While you are having an initial problem discussion and brainstorming session, the DSG team will take a participant register and grant you access to the Turing safe haven and to the relevant challenge data. When this is ready, your facilitator will guide you through logging in and using  the Safe Haven following the instructions in this document.
 
-The environments do not allow connection to the internet. However, there are local copies of the PyPI and CRAN package repositories available inside of the Azure virtual machine. You can install packages you need from these copies in the usual way, for example pip install --user and packages.install for Python and R respectively. 
+The environments do not allow connection to the internet. However, there are local copies of the PyPI and CRAN package repositories available inside of the Azure virtual machine. You can install packages you need from these copies in the usual way, for example pip install --user and packages.install for Python and R respectively.
 
 Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory. For CRAN, you will be prompted to make a user package directory when you install your first package. For PyPI, you will need to run pip install with the --user flag. See Section 4.2: Installing packages for further details.
 Turing Safe Haven setup
@@ -76,16 +76,16 @@ For security reasons, you must (re-)set your password before you can log in:
 
 1.	Open a private/incognito browser session on your laptop (this will avoid picking up any existing Azure / Microsoft accounts you have).
 
-2.	Copy and paste the following URL into the private browser address bar: 
+2.	Copy and paste the following URL into the private browser address bar:
         https://aka.ms/ssprsetup
-        
-3.	At the login prompt enter 	username@turingsafehaven.ac.uk 	and confirm/proceed. 
+
+3.	At the login prompt enter 	username@turingsafehaven.ac.uk 	and confirm/proceed.
 (Remember that your username will be in the format `firstname.lastname`.)
 
 4.	There will then be a password prompt. The first time you log in you need to click **“Forgotten my password”**
 
    ![](images/resetpassword_1.png)
-   
+
    **NOTE:** If you do reset your password during the week, wait 5-10 mins before logging in again, to allow the user management to sync up with the new password.
 
 5. Complete the requested information (a captcha and the phone number you provided on registration).
@@ -98,13 +98,13 @@ Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers
 
     **NOTE:** Do **not** use special characters or symbols in your password.
     If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
-    
+
   Choose an alphanumeric password with minimum length of 12 characters, with at least one of each:
 
  - uppercase character
  - lowercase character
  - number
- 
+
 If you feel you may struggle to remember your password, make a note of it on a separate password protected device.
 
 7. Enter your password into the ‘new password’ and ‘confirm new password’ fields.
@@ -216,13 +216,13 @@ From the user registration process (Section 2), you should have the following re
 
 Follow the steps below to access the Azure safe haven environment:
 
-1. Open a private/incognito browser session 
+1. Open a private/incognito browser session
 
-2. Copy and paste the below URL but **don't** hit enter: https://rds.dsgroupX.co.uk/RDWeb/webclient/
+2. Copy and paste the below URL but **don't** hit enter: https://rds-dsgX.dsgroupX.co.uk/RDWeb/webclient/
 
  **NOTE:** Don’t forget the `https://` - it won’t work without that prefix.
 
-3. Replace `X` by one of the following numbers, depending on challenge
+3. Replace both `X` with one of the following numbers, depending on challenge
 
    * X = 6 : Adatum
    * X = 7 : Narchives
@@ -812,9 +812,7 @@ The Azure environment also contains a Unix data science VM, which can only be ac
    → Turing Guest Wi-Fi
         → Windows remote desktop (multi-factor authentication required)
             → Unix Azure environment
-            
+
 The data science VM has a standard suite of data science software, including Python 2/3 via Conda, Spyder, Jupyter and RStudio, with a large selection of pre-installed packages.
 
 You also have access to HackMD for collaborative writing and GitLab for version control and to share your code.
-
-
