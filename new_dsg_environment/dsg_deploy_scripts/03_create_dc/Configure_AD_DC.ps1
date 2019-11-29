@@ -59,13 +59,15 @@ $sasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscri
                 -resourceGroup $storageAccountRg -accountName $storageAccountName
 # Configure AD DC
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_AD_DC_Remote.ps1"
+# Get Admin USername
+$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.usernameSecretName).SecretValueText
 
 $pipeSeparatedBlobNames = $blobNames -join "|"
 $params = @{
   dsgNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
   dsgDn = "`"$($config.dsg.domain.dn)`""
   dsgServerAdminSgName = "`"$($config.dsg.domain.securityGroups.serverAdmins.name)`""
-  dsgDcAdminUsername =  "`"$($config.dsg.dc.admin.username)`""
+  dsgDcAdminUsername =  "`"$dcAdminUsername`""
   subnetIdentityCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
   subnetRdsCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
   subnetDataCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
