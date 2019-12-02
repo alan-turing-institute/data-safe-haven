@@ -62,6 +62,8 @@ This section should help you log in to the Safe Haven for the first time. Please
 
 You should have provided a phone number when you registered for the DSG. If you did not provide your number, your account may not have been set up - please let your facilitator know and they will set you up with an account.
 
+If you've already logged in to this account for the WebApp, you won't have to do it again - carry on to section 3.
+
 ### 2.1 Username
 
 Your **username** will be in the format `firstname.lastname`
