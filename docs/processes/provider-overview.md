@@ -151,6 +151,12 @@ Tier 0 Environments are used to handle publicly available, open information, whe
 
 Tier 0 applies where none of the information processed, combined or generated includes personal data, commercially sensitive data, or data which will have legal, political or reputational consequences in the event of unauthorised disclosure.
 
+Tier 0 environments may be used for anonymised or synthetic information generated from personal data, where one has **absolute** confidence in the quality of anonymisation or the privacy preserving nature of the data synthesis. This makes the information no longer personal data. This does **not** include pseudonymised data which can be re-identified in combination with a key or other dataset. This is still considered personal data.
+
+Note that in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous, especially when considering the risk of the anonymised data being linked with other datasets that currently exist or may exist in the future, and the potential development of more sophisticated re-identification attacks.
+
+If there is not **absolute** confidence in the anonymous or synthetic data no longer being personal data, then the minimum tier environment this data can be processed in is Tier 2.
+
 Tier 0 data should be considered ready for publication. Although this data is open, there are still advantages to handling it through a managed data analysis infrastructure.
 
 Management of Tier 0 data in a visible, well ordered infrastructure provides confidence to stakeholders as to the handling of more sensitive datasets.
@@ -167,9 +173,10 @@ Information is kept private in order to give the research team a competitive adv
 
 Both the datasets and the proposed processing must otherwise meet the criteria for Tier 0.
 
-It may be used for pseudonymised or synthetic information generated from personal data, where one has absolute confidence in the quality of pseudonymisation. This makes the information no longer personal data. This does not include pseudonymised data which can be re-identified in combination with a key or other dataset.
+In particular, Tier 1 is not suitable for any data derived from personal data that is not otherwise suitable for processing in Tier 0. If this is not the case, then the minimum tier environment such data can be processed in is Tier 2.
 
 It may also be used for commercial data where commercial consequences of disclosure would be no impact or very low impact, with the agreement of all parties.
+
 
 ### Tier 2
 
@@ -187,9 +194,9 @@ At Tier 2, the most significant risks are "workaround breach" and the risk of mi
 
 #### Relationships to other classification schemes
 
-Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification.
+Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
 
-All [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are absolutely confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
+All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are absolutely confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
 
 
 ### Tier 3
@@ -206,9 +213,11 @@ At Tier 3, the risk of hostile actors attempting to break into the Environment b
 
 #### Relationships to other classification schemes
 
-All data at the UK government OFFICIAL-SENSTIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
+All data at the UK government OFFICIAL-SENSITIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
 
-All [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
+All pseudonymised [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
+
+All non-pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, whether or not it is [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 3.
 
 ### Tier 4
 
