@@ -14,12 +14,14 @@ Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 
 
-# Switch to SRE subscription
-# --------------------------
-$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+
 
 # Get DSG config
 $config = Get-DsgConfig($dsgId)
+
+# Switch to SRE subscription
+# --------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Set default value if no argument is provided
 if (!$vmSize) { $vmSize = $config.dsg.dsvm.vmSizeDefault }
