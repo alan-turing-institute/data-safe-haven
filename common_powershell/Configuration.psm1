@@ -1,7 +1,7 @@
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-ConfigRootDir{
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "new_dsg_environment" "dsg_configs" -Resolve
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent "environment_configs" -Resolve
     return $configRootDir
 }
 

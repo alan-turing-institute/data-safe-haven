@@ -1,6 +1,19 @@
 # Secure Research Environment Build Instructions
+The following instructions will walk you through deploying a Secure Research Environment.
 
-# Safe Haven Management Environment Build Instructions
+## Contents
+0. [Prerequisites](#Prerequisites)
+1. [Define SRE configuration](#1.-Define-SRE-configuration)
+2. [Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
+3. [Deploy Virtual Network](#3.-Deploy-Virtual-Network)
+4. [Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
+5. [Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
+6. [Deploy Data Server](#6.-Deploy-Data-Server)
+7. [Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
+8. [Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
+9. [Apply network configuration](#9.-Apply-network-configuration)
+10. [Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
+11. [Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
 
 ## Prerequisites
 - An Azure subscription with sufficient credits to build the environment in
@@ -68,18 +81,6 @@
 
 **NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
-## Build Process
-1. [Define SRE configuration](#1.-Define-SRE-configuration)
-2. [Prepare Safe Haven Management Domain](#2.-Prepare-Safe-Haven-Management-Domain)
-3. [Deploy Virtual Network](#3.-Deploy-Virtual-Network)
-4. [Deploy SRE Domain Controller](#4.-Deploy-SRE-Domain-Controller)
-5. [Deploy Remote Desktop Service Environment](#5.-Deploy-Remote-Desktop-Service-Environment)
-6. [Deploy Data Server](#6.-Deploy-Data-Server)
-7. [Deploy Web Application Servers (Gitlab and HackMD)](#7.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
-8. [Deploy initial shared compute VM](#8.-Deploy-initial-shared-compute-VM)
-9. [Apply network configuration](#9.-Apply-network-configuration)
-10. [Peer SRE and package mirror networks](#10.-Peer-SRE-and-package-mirror-networks)
-11. [Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
 
 ## 1. Define SRE configuration
 
@@ -136,10 +137,10 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Generate full configuration for SRE
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/` folder within the Safe Haven repository.
+- Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new DSG using the following commands.
-  - `Import-Module ../../common_powershell/Configuration.psm1 -Force`
-  - `Add-DsgConfig -dsgId <dsg-id>`, `<dsg-id>` is usually a number, e.g. `9` for `DSG9`)
+  - `Import-Module .common_powershell/Configuration.psm1 -Force`
+  - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is usually a number, e.g. `9` for `DSG9`)
 - A full configuration file for the new SRE will be created at `new_dsg_environment/dsg_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
 
