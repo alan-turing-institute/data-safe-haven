@@ -233,14 +233,14 @@
       },
       "sessionHost1": {
         "vmName": "APP-SRE-TESTSAN",
-        "vmSize": "Standard_DS2_v2",
+        "vmSize": "Standard_D4s_v3",
         "hostname": "APP-SRE-TESTSAN",
         "fqdn": "APP-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.249"
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-TESTSAN",
-        "vmSize": "Standard_DS2_v2",
+        "vmSize": "Standard_D4s_v3",
         "hostname": "DKP-SRE-TESTSAN",
         "fqdn": "DKP-SRE-TESTSAN.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.248"
@@ -264,14 +264,14 @@
     "linux": {
       "gitlab": {
         "vmName": "GITLAB-SRE-TESTSANDBOX",
-        "vmSize": "Standard_B2ms",
+        "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-TESTSANDBOX",
         "fqdn": "GITLAB-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-TESTSANDBOX",
-        "vmSize": "Standard_B2ms",
+        "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-TESTSANDBOX",
         "fqdn": "HACKMD-SRE-TESTSANDBOX.testsandbox.dsgroupdev.co.uk",
         "ip": "10.150.2.152"
@@ -284,7 +284,19 @@
       "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmSizeDefault": "Standard_B2ms",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019082900"
+      "vmImageVersion": "0.1.2019082900",
+      "osdisk": {
+        "type": "Standard_LRS",
+        "size_gb": "60"
+      },
+      "datadisk": {
+        "type": "Standard_LRS",
+        "size_gb": "512"
+      },
+      "homedisk": {
+        "type": "Standard_LRS",
+        "size_gb": "128"
+      }
     }
   }
 }

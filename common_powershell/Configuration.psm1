@@ -400,10 +400,18 @@ function Add-SreConfig {
     $config.dsg.dsvm.vmSizeDefault = "Standard_B2ms"
     $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
     $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
-    # $config.dsg.dsvm.admin = [ordered]@{
-    #     username = "sreadmin"
-    #     passwordSecretName = "sre-" + $($config.dsg.id).ToLower() + "-dsvm-admin-password"
-    # }
+    $config.dsg.dsvm.osdisk = [ordered]@{
+        type = "Standard_LRS"
+        size_gb = "60"
+    }
+    $config.dsg.dsvm.datadisk = [ordered]@{
+        type = "Standard_LRS"
+        size_gb = "512"
+    }
+    $config.dsg.dsvm.homedisk = [ordered]@{
+        type = "Standard_LRS"
+        size_gb = "128"
+    }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
     Write-Host $jsonOut
