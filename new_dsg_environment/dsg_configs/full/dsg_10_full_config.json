@@ -107,7 +107,7 @@
         "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
+        "name": "VNET_SHM_TURING1_PKG_MIRRORS_TIER3"
       },
       "cran": {
         "ip": "10.20.3.21"
