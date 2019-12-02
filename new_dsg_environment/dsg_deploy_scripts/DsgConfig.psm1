@@ -187,7 +187,7 @@ function Add-DsgConfig {
     $config.dsg.mirrors.keyVault.name = "kv-shm-pkg-mirrors-" + $config.shm.id
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if(@("2", "3").Contains($config.dsg.tier)){
-        $config.dsg.mirrors.vnet.name = "VNET_SHM_PKG_MIRRORS_TIER" + $config.dsg.tier
+        $config.dsg.mirrors.vnet.name = "VNET_SHM_" + ($config.shm.id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.dsg.tier
         $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
         $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
     } elseif(@("0", "1").Contains($config.dsg.tier)) {
@@ -308,7 +308,7 @@ function Add-DsgConfig {
         gateway = [ordered]@{}
         sessionHosts = [ordered]@{}
     }
-    $config.dsg.rds.nsg.gateway.name = "NSG_RDS_Server"
+    $config.dsg.rds.nsg.gateway.name = "NSG_RDS-DSG" + $config.dsg.id + "_Server"
     $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id

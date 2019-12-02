@@ -237,7 +237,7 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS-DSG11_Server",
-          "allowedSources": "Internet"
+          "allowedSources": "193.60.220.240"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
