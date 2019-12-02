@@ -36,12 +36,12 @@ You can read more details [on wikipedia](https://en.wikipedia.org/wiki/Agile_sof
 
 > We are uncovering better ways of developing software by doing it and helping others do it.
 > Through this work we have come to value:
-> 
+>
 > * **Individuals and interactions** over processes and tools
 > * **Working software** over comprehensive documentation
 > * **Customer collaboration** over contract negotiation
 > * **Responding to change** over following a plan
-> 
+>
 > That is, while there is value in the items on the right, we value the items on the left more.
 
 Specifically, we're following a [Scrum framework](https://en.wikipedia.org/wiki/Scrum_(software_development)) (a specific *type* of agile development).
@@ -58,7 +58,7 @@ You can read more details about a [Scrum workflow](https://en.wikipedia.org/wiki
 ### Project meetings
 
 The goal of the project meetings is to **reflect** on how the previous sprint went and to **plan** the next section of work.
-These are two separate parts of the Scrum methodology: the [sprint retrospective](https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint_retrospective) and [sprint planning](https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint_planning) and shouldn't be confused (even though we'll do them in the same meeting!) 
+These are two separate parts of the Scrum methodology: the [sprint retrospective](https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint_retrospective) and [sprint planning](https://en.wikipedia.org/wiki/Scrum_(software_development)#Sprint_planning) and shouldn't be confused (even though we'll do them in the same meeting!)
 
 During the project meetings we'll start by working through the [issues list][safehaven-issues] and discussing all the issues that have been tagged as work to be conducted in the finishing week's sprint.
 
@@ -137,7 +137,7 @@ For example, `@KirstieJane` will send a notification to Kirstie Whitaker so she 
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
-![](images/example-conversation-in-issue.jpg)
+![](docs/images/example-conversation-in-issue.jpg)
 
 ### Capturing knowledge in the GitHub wiki
 
