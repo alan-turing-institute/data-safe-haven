@@ -15,7 +15,8 @@ apt:
   sources:
     atom.list:
       source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
-      keyid: B75442BBDE9E3B09
+#      keyid: B75442BBDE9E3B09
+      keyid: 4C6E74D6C0A35108
 
     chronitis-jupyter.list:
       source: "ppa:chronitis/jupyter"
