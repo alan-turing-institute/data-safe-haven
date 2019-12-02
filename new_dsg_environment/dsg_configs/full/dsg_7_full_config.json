@@ -236,7 +236,7 @@
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS_Server",
+          "name": "NSG_RDS-DSG7_Server",
           "allowedSources": "Internet"
         },
         "sessionHosts": {
