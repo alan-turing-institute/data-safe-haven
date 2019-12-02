@@ -17,7 +17,7 @@ BUILD_IP_RANGE="10.48.0.0/16" # ensure that this avoids clashes with other deplo
 # Image naming constants
 IMAGES_GALLERY="SAFE_HAVEN_COMPUTE_IMAGES" # must be unique within this subscription
 IMAGES_LOCATION="westeurope" # have to build in West Europe in order to use Shared Image Gallery
-IMAGES_SUBSCRIPTION="Safe Haven VM Images"
+IMAGES_SUBSCRIPTION="Turing Safe Haven VM Images"
 
 # Ensure required features for shared image galleries are enabled for this subscription
 ensure_image_galleries_enabled() {
