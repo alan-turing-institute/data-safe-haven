@@ -26,7 +26,11 @@ $vm = Get-AzVm -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { $_.Id -eq
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Write-Host "Checking LDAP secret in KeyVault: $($config.dsg.keyVault.name)"
 $kvLdapPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.dsvm.passwordSecretName).SecretValueText;
-Write-Host "LDAP secret in the KeyVault: '$kvLdapPassword'"
+if ($kvLdapPassword -ne $null) {
+    Write-Host "Found LDAP secret in the KeyVault"
+} else {
+    throw "Could not load LDAP secret from KeyVault '$($config.dsg.keyVault.name)'"
+}
 
 
 # Set LDAP secret in local Active Directory on the SHM DC
@@ -41,12 +45,16 @@ Write-Host "Setting LDAP secret in local AD on: $($config.shm.dc.vmName)"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
                                 -Parameter $params
-Write-Host $result.Value
+$success = $?
+Write-Output $result.Value
+if ($success) {
+    Write-Host "Setting LDAP secret on SHM DC was successful"
+}
 
 
 # Set LDAP secret on the VM
 # -------------------------
-Write-Host "Setting LDAP secret on VM: $($vm.Name)"
+Write-Host "Setting LDAP secret on compute VM: $($vm.Name)"
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "reset_ldap_password.sh"
 $params = @{
@@ -54,7 +62,8 @@ $params = @{
 }
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name $vm.Name `
                                 -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
-$vmLdapPasswordOld = $result.Value.Message -Split "`n" | Select-String 'Previous LDAP password' | %{ ($_ -Split "'" )[1] }
-Write-Host "Previous LDAP secret on the VM: '$vmLdapPasswordOld'"
-$vmLdapPasswordNew = $result.Value.Message -Split "`n" | Select-String 'New LDAP password' | %{ ($_ -Split "'" )[1] }
-Write-Host "New LDAP secret on the VM: '$vmLdapPasswordNew'"
+$success = $?
+Write-Output $result.Value
+if ($success) {
+    Write-Host "Setting LDAP secret on compute VM was successful"
+}
