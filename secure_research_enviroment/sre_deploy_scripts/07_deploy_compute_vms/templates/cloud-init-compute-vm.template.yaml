@@ -2,14 +2,18 @@
 package_upgrade: false
 
 write_files:
-  - path: "/startwm.sh"
+  - path: "/etc/xrdp/startwm.sh"
     content: |
       #!/bin/sh
       echo "LANG=en_GB.UTF-8" > /etc/default/locale
       . /etc/default/locale
       # Start xfce4
       startxfce4
-  - path: "/ldap.conf"
+  - path: "/etc/ldap.secret"
+    permissions: "0600"
+    content: |
+      $LDAP_SECRET_PLAINTEXT
+  - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
       base $LDAP_BASE_DN
@@ -33,7 +37,7 @@ write_files:
       # the directory server will do it, if
       # necessary. This is the default.
       pam_password md5
-  - path: "/krb5.conf"
+  - path: "/etc/krb5.conf"
     content: |
       [libdefaults]
         default_realm = $DOMAIN_UPPER
@@ -78,38 +82,44 @@ write_files:
       #!/bin/sh
       # Set up Active Directory
       # -----------------------
-      echo "Setting up Active Directory..."
+      echo ">=== Setting up Active Directory... ===<"
       # Ensure that sssd is running
       echo "Ensuring that sssd is running"
       systemctl status sssd.service
       # Add information to hosts file
       echo "Setting hostname"
       echo "$MACHINE_NAME" > /etc/hostname
+      echo ">=== /etc/hostname ===<"
       cat /etc/hostname
+      echo ">=== end of /etc/hostname ===<"
       echo "Adding $MACHINE_NAME [`$(hostname -I)] to /etc/hosts"
       HOST_INFORMATION="`$(hostname -I) $MACHINE_NAME $MACHINE_NAME.$DOMAIN_LOWER"
       sed -i "/127.0.0.1/ a `$HOST_INFORMATION" /etc/hosts
+      echo ">=== /etc/hosts ===<"
       cat /etc/hosts
+      echo ">=== end of /etc/hosts ===<"
       # Set timezone
       echo "Setting timezone"
       timedatectl set-timezone Europe/London
       # Create a default sssd.conf file
       echo "Creating sssd config"
       cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+      echo ">=== /etc/sssd/sssd.conf ===<"
       cat /etc/sssd/sssd.conf
+      echo ">=== end of /etc/sssd/sssd.conf ===<"
       chmod 0600 /etc/sssd/sssd.conf
       # Edit LDAP config
-      echo "Creating LDAP config"
-      mv /ldap.conf /etc/ldap.conf
+      echo "Checking LDAP config"
+      # mv /ldap.conf /etc/ldap.conf
+      echo ">=== /etc/ldap.conf ===<"
       cat /etc/ldap.conf
-      # Store LDAP secret
-      echo "Storing LDAP secret"
-      echo "$LDAP_SECRET_PLAINTEXT" > /etc/ldap.secret
-      chmod 0600 /etc/ldap.secret
+      echo ">=== end of /etc/ldap.conf ===<"
       # Edit Kerberos config
-      echo "Updating Kerberos config"
-      mv /krb5.conf /etc/krb5.conf
+      echo "Checking Kerberos config"
+      # mv /krb5.conf /etc/krb5.conf
+      echo ">=== /etc/krb5.conf ===<"
       cat /etc/krb5.conf
+      echo ">=== end of /etc/krb5.conf ===<"
   - path: "/active_directory_step02_realm_join"
     content: |
       # Join the VM to the domain
@@ -122,7 +132,9 @@ write_files:
       sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
       sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
       sed -i -E 's/(access_provider = ).*/\1simple/' /etc/sssd/sssd.conf
+      echo ">=== /etc/sssd/sssd.conf ===<"
       cat /etc/sssd/sssd.conf
+      echo ">=== end of /etc/sssd/sssd.conf ===<"
       # Restart the sssd daemon
       echo "Restarting sssd"
       systemctl restart sssd
@@ -133,7 +145,9 @@ write_files:
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a `$PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
       mv common-session /etc/pam.d/common-session
+      echo ">=== /etc/pam.d/common-session ===<"
       cat /etc/pam.d/common-session
+      echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/etc/pip.conf"
     content: |
       # Add the PyPI mirror to our global settings
@@ -143,12 +157,7 @@ write_files:
       trusted-host = $PYPI_MIRROR_HOST
   - path: "/Rprofile.site"
     content: |
-      ## Emacs please make this -*- R -*-
-      ## empty Rprofile.site for R on Debian
-      ##
-      ## Copyright (C) 2008 - 2018  Dirk Eddelbuettel and GPL'ed
-      ##
-      ## see help(Startup) for documentation on ~/.Rprofile and Rprofile.site
+      ## Set Rprofile.site to the appropriate CRAN mirror
       local({
           r <- getOption("repos")
           r["CRAN"] <- "$CRAN_MIRROR_URL"
@@ -157,69 +166,93 @@ write_files:
 
 runcmd:
   # ==========================================
-  # *** BEGINNING OF DSG-SPECIFIC COMMANDS ***
-  # *** END OF DSG-SPECIFIC COMMANDS ***
+  # *** BEGINNING OF SRE-SPECIFIC COMMANDS ***
+  # *** END OF SRE-SPECIFIC COMMANDS ***
   # ==========================================
+  - echo ">=== Beginning DSVM configuration... ===<"
   # Copy CRAN mirror config to appropriate locations
+  - echo ">=== Updating CRAN mirror config... ===<"
   - cp /Rprofile.site /etc/R/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
   - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
   # Make sure that sssd is running
-  - echo "Restart sssd service"
+  - echo ">=== Restarting sssd service... ===<"
   - service sssd restart
-  # Set py36 as default environment when launching a new shell
-  - echo "Add py36 conda environment setup to global bashrc"
-  - echo "conda activate py36" >> /etc/bash.bashrc
   # Disable light-locker which can cause irritating error messages
-  - echo "Disable screen lock"
+  - echo ">=== Disabling screen lock... ===<"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
   # Set default session to xfce4
-  - echo "Set default session to xfce4"
-  - mv /startwm.sh /etc/xrdp/startwm.sh
+  - echo ">=== Setting default session to xfce4... ===<"
+  # - mv /startwm.sh /etc/xrdp/startwm.sh
   - chmod 0755 /etc/xrdp/startwm.sh
   - echo xfce4-session > ~$ADMIN_USERNAME/.xsession
   # Set default terminal for xfce
-  - echo "Set default xfce terminal"
+  - echo ">=== Setting default xfce terminal... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
-  # Ensure that user owns their home directory
-  - echo "Ensure that user owns their home directory"
+  # Ensure that the admin user owns their home directory
+  - echo ">=== Ensuring that user owns their home directory... ===<"
   - chown -R $ADMIN_USERNAME ~$ADMIN_USERNAME
   # Restart xrdp to reflect changes made above
-  - echo "Restart xrdp"
+  - echo ">=== Restart xrdp... ===<"
   - service xrdp restart
-  # Create shared data folder and grant all users access
-  - echo "Creating shared data folder using data disk"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /data
-  - mount /dev/sdc1 /data
-  - chmod go+rw /data
-  - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=`$UUID\t/data\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
-  - mv fstab.tmp /etc/fstab
   # Add execute permission to the Active Directory set up scripts
+  - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
   - chmod +x /active_directory_step02_realm_join
   - chmod +x /active_directory_step03_update_sssd
   - chmod +x /active_directory_step04_update_pam
   # Run the Active Directory set up scripts
+  - echo ">=== Run Active Directory setup scripts... ===<"
   - /active_directory_step01_pre
   - /active_directory_step02_realm_join
   - /active_directory_step03_update_sssd
   - /active_directory_step04_update_pam
   # Remove the Active Directory set up scripts (as these contain secrets and are world readable
+  - echo ">=== Delete Active Directory setup scripts... ===<"
   - rm /active_directory_step01_pre
   - rm /active_directory_step02_realm_join
   - rm /active_directory_step03_update_sssd
   - rm /active_directory_step04_update_pam
   # Update resolv.conf to point to the correct location
+  - echo ">=== Update resolv.conf to point to the correct file... ===<"
   - rm /etc/resolv.conf
   - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-  # Shutdown so that we can tell when the job has finished by polling the VM state
-  - shutdown -P now
+  # Create home folder and grant appropriate access
+  - echo ">=== Create shared data folder using data disk... ===<"
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /tmp/home
+  - mount /dev/sdc1 /tmp/home
+  - chmod 755 /tmp/home
+  # - cp -R /home/* /tmp/home
+  - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - umount /tmp/home
+  # Create shared data folder and grant all users access
+  - echo ">=== Create shared data folder using data disk... ===<"
+  - parted /dev/sdd mklabel gpt
+  - parted /dev/sdd mkpart primary ext4 0% 100%
+  - parted /dev/sdd print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdd1
+  - mkdir -p /data
+  - mount /dev/sdd1 /data
+  - chmod go+rw /data
+  - UUID=`$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
+  - echo "UUID=`${UUID}\t/data\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - echo ">=== /etc/fstab ===<"
+  - cat /etc/fstab
+  - echo ">=== end of /etc/fstab ===<"
 
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

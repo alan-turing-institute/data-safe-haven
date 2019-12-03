@@ -17,6 +17,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 $config = Get-SreConfig($sreId);
 $originalContext = Get-AzContext
 
+
 # Set common variables
 # --------------------
 $imagesResourceGroup = "RG_SH_IMAGE_GALLERY"
@@ -26,11 +27,10 @@ $secureNsgName = $config.dsg.network.nsg.data.name
 $vnetName = $config.dsg.network.vnet.name
 $subnetName = $config.dsg.network.subnets.data.name
 
-# Switch to SRE subscription
-$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
 # Register shared image gallery
 # -----------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 $galleryFeatureName = "GalleryPreview"
 $galleryResourceName = "galleries/images/versions"
 Write-Host -ForegroundColor DarkCyan "Ensuring that this subscription has the $galleryFeatureName feature and $galleryResourceName resource enabled (this may take some time)"
@@ -48,79 +48,13 @@ while (($registrationState -ne "Registered") -or ($resourceProviderState -ne "Re
 }
 Write-Host -ForegroundColor DarkGreen " [o] Feature registration succeeded"
 
+
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving secrets from '$($config.dsg.keyVault.name)' KeyVault..."
 $dsvmLdapPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmLdapPassword
 $dsvmAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmAdminPassword
 $dsvmAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmAdminUsername -defaultValue "sre$($config.dsg.id)admin".ToLower()
-
-
-$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "azure-vms" -Resolve
-$cloudInitDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.Parent "environment_configs" "cloud_init" -Resolve
-
-
-# Read additional parameters that will be passed to the bash script from the config file
-$adDcName = $config.shm.dc.hostname
-$cloudInitYaml = "$cloudInitDir/cloud-init-compute-vm-DSG-" + $config.dsg.id + ".yaml"
-$domainName = $config.shm.domain.fqdn
-$ldapBaseDn = $config.shm.domain.userOuPath
-$ldapBindDn = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
-$ldapFilter = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-# $ldapSecretName = $config.dsg.users.ldap.dsvm.passwordSecretName
-$ldapUserName = $config.dsg.users.ldap.dsvm.samAccountName
-$managementKeyvault = $config.dsg.keyVault.name
-$managementSubnetIpRange = $config.shm.network.subnets.identity.cidr
-$sourceImage = $config.dsg.dsvm.vmImageType
-$sourceImageVersion = $config.dsg.dsvm.vmImageVersion
-$subscriptionSource = $config.dsg.dsvm.vmImageSubscription
-$subscriptionTarget = $config.dsg.subscriptionName
-$targetNsgName = $config.dsg.network.nsg.data.name
-$targetRg = $config.dsg.dsvm.rg
-$targetSubnet = $config.dsg.network.subnets.data.name
-$targetVnet = $config.dsg.network.vnet.name
-
-# # If there is no custom cloud-init YAML file then use the default
-# if (-Not (Test-Path -Path $cloudInitYaml)) {
-#   $cloudInitYaml = Join-Path $cloudInitDir "cloud-init-compute-vm-DEFAULT.yaml" -Resolve
-# }
-# Write-Host -ForegroundColor DarkCyan "Using cloud-init from '$cloudInitYaml'"
-
-# # Convert arguments into the format expected by deploy_azure_dsg_vm.sh
-# $arguments = "-s '$subscriptionSource' \
-#               -t '$subscriptionTarget' \
-#               -i $sourceImage \
-#               -x $sourceImageVersion \
-#               -g $targetNsgName \
-#               -r $targetRg \
-#               -v $targetVnet \
-#               -w $targetSubnet \
-#               -b '$ldapBaseDn' \
-#               -c '$ldapBindDn' \
-#               -f '$ldapFilter' \
-#               -j $ldapUserName \
-#               -l $($config.dsg.keyVault.secretNames.dsvmLdapPassword) \
-#               -m $managementKeyvault \
-#               -e $managementSubnetIpRange \
-#               -d $domainName \
-#               -a $adDcName \
-#               -p $($config.dsg.keyVault.secretNames.dsvmAdminPassword) \
-#               -n $vmName \
-#               -y $cloudInitYaml \
-#               -z $vmSize"
-
-# Add additional arguments if needed
-if ($vmIpAddress) { $arguments = $arguments + " -q $vmIpAddress" }
-if ($CRAN_MIRROR_URL) { $arguments = $arguments + " -o $CRAN_MIRROR_URL" }
-if ($PYPI_MIRROR_URL) { $arguments = $arguments + " -k $PYPI_MIRROR_URL" }
-
-# Write-Host $arguments
-# $cmd =  "$deployScriptDir/deploy_azure_compute_vm.sh $arguments"
-# bash -c $cmd
-
-# Write-Host "Configuring Postgres shared admin, write and read users"
-# $_ = Invoke-Expression -Command "$PSScriptRoot\Create_Postgres_Roles.ps1 -sreId $sreId -ipLastOctet $ipLastOctet"
-# Write-Host "VM deployment done."
 
 
 # Get list of image versions
@@ -160,7 +94,6 @@ try {
 }
 $imageVersion = $image.Name
 Write-Host -ForegroundColor DarkGreen " [o] Found image $imageDefinition version $imageVersion in gallery"
-# '$($image.Id)'
 
 
 # Setup resource group if it does not already exist
@@ -281,53 +214,43 @@ if($config.dsg.mirrors.pypi.ip) {
 $PYPI_MIRROR_HOST = ""
 if ($PYPI_MIRROR_URL -match "https*:\/\/([^:]*)[:0-9]*") { $PYPI_MIRROR_HOST = $Matches[1] }
 Write-Host -ForegroundColor DarkGreen " [o] CRAN: '$CRAN_MIRROR_URL'"
-Write-Host -ForegroundColor DarkGreen " [o] PyPI full: '$PYPI_MIRROR_URL'"
+Write-Host -ForegroundColor DarkGreen " [o] PyPI server: '$PYPI_MIRROR_URL'"
 Write-Host -ForegroundColor DarkGreen " [o] PyPI host: '$PYPI_MIRROR_HOST'"
 
 
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Write-Host -ForegroundColor DarkCyan "Constructing cloud-init from template..."
-$cloudInitPath = (New-TemporaryFile).FullName + ".yaml"
 $cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot "templates" "cloud-init-compute-vm.template.yaml") -Raw
 $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
 $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
 $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
 $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
 $AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
-$ADMIN_USERNAME = "atiadmin"
+$ADMIN_USERNAME = $dsvmAdminUsername
 $MACHINE_NAME = $vmName
 $LDAP_USER = $config.dsg.users.ldap.dsvm.samAccountName
 $LDAP_BASE_DN = $config.shm.domain.userOuPath
 $LDAP_BIND_DN = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
 $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-$ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate) | Out-File $cloudInitPath
-$cloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($cloudInitPath))
-# Get-Content $cloudInitPath -Raw
-Write-Host $cloudInitPath
-# Remove temporary init file if it exists
-Remove-Item –Path $cloudInitPath
+$cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
+
 
 
 # Get some default VM names
 # -------------------------
 # Set default VM size if no argument is provided
 if (!$vmSize) { $vmSize = $config.dsg.dsvm.vmSizeDefault }
-# Set IP address if we have a fixed IP
-$vmIpAddress = $null
-if ($ipLastOctet) { $vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $ipLastOctet }
-# Set machine name
-# $vmName = "DSVM-SRE-" + (Get-Date -UFormat "%Y%m%d%H%M")
-$vmName = "DSVM-" + ($imageVersion).Replace(".", "-").ToUpper() + "-SRE-" + ($config.dsg.id).ToUpper()
-if ($ipLastOctet) { $vmName = $vmName + "-" + $ipLastOctet }
+# Set IP address using last IP octet
+$vmIpAddress = $config.dsg.network.subnets.data.prefix + "." + $ipLastOctet
+# Set machine name using last IP octet
+$vmName = "DSVM-" + ($imageVersion).Replace(".", "-").ToUpper() + "-SRE-" + ($config.dsg.id).ToUpper() + "-" + $ipLastOctet
 
 
-# Create the VM disks
-# -------------------
-Write-Host -ForegroundColor DarkCyan "Ensuring that VM disks exist..."
-# ForEach($diskParams in (("DATA", $config.dsg.dsvm.datadisk.size_gb, $config.dsg.dsvm.datadisk.type),
-#                         ("HOME", $config.dsg.dsvm.homedisk.size_gb, $config.dsg.dsvm.homedisk.type),
-#                         ("OS", $config.dsg.dsvm.osdisk.size_gb, $config.dsg.dsvm.osdisk.type))) {
+
+# Create the VM data disks
+# ------------------------
+Write-Host -ForegroundColor DarkCyan "Ensuring that VM data disks exist..."
 ForEach($diskParams in (("DATA", $config.dsg.dsvm.datadisk.size_gb, $config.dsg.dsvm.datadisk.type),
                         ("HOME", $config.dsg.dsvm.homedisk.size_gb, $config.dsg.dsvm.homedisk.type))) {
     $diskId, $diskSize, $diskType = $diskParams
@@ -352,7 +275,8 @@ ForEach($diskParams in (("DATA", $config.dsg.dsvm.datadisk.size_gb, $config.dsg.
 # Create the VM NIC
 # -----------------
 Write-Host -ForegroundColor DarkCyan "Creating VM network card..."
-$vmNic = New-AzNetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.dsg.dsvm.rg -Location $config.dsg.location -SubnetId $subnet.Id -IpConfigurationName "ipconfig-$vmName" -Force #-DnsServer "8.8.8.8", "8.8.4.4"
+$vmIpConfig = New-AzNetworkInterfaceIpConfig -Name "ipconfig-$vmName" -Subnet $subnet -PrivateIpAddress $vmIpAddress -Primary
+$vmNic = New-AzNetworkInterface -Name "$vmName-NIC" -ResourceGroupName $config.dsg.dsvm.rg -Location $config.dsg.location -IpConfiguration $vmIpConfig -Force
 if ($?) {
     Write-Host -ForegroundColor DarkGreen " [o] Network card creation succeeded"
 } else {
@@ -360,16 +284,25 @@ if ($?) {
     throw "Network card creation failed"
 }
 
-# # Create the public IPs needed for the deployment
-# $vmPip = New-AzPublicIpAddress -Name "$vmName-PIP" `
-#                                -ResourceGroupName $config.dsg.dsvm.rg `
-#                                -Location $config.dsg.location `
-#                                -AllocationMethod Static `
-#                                -IpAddressVersion IPv4 `
-#                                -Sku Standard -Force
 
-
-
+# Setup storage account for boot diagnostics
+# ------------------------------------------
+$randomSuffix = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($config.dsg.subscriptionName + $config.dsg.dsvm.rg)).ToLower() | % {$_ -replace "[^a-z]", "" }
+$storageAccountName = "dsvmbootdiag" + ($config.dsg.id).ToLower() + $randomSuffix | TrimToLength 24
+try {
+    $_ = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $config.dsg.dsvm.rg -ErrorAction Stop
+    Write-Host -ForegroundColor DarkGreen " [o] Storage account '$storageAccountName' already exists"
+} catch [Microsoft.Rest.Azure.CloudException] {
+    # Write-Host $_.Exception
+    Write-Host -ForegroundColor DarkCyan " [] Creating storage account '$storageAccountName'"
+    $_ = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $config.dsg.dsvm.rg -Location $config.dsg.location -SkuName "Standard_LRS" -Kind "StorageV2"
+    if ($?) {
+        Write-Host -ForegroundColor DarkGreen " [o] Storage account creation succeeded"
+    } else {
+        Write-Host -ForegroundColor DarkRed " [x] Storage account creation failed!"
+        throw "Storage account creation failed"
+    }
+}
 
 
 # Deploy the VM
@@ -379,12 +312,16 @@ $adminCredentials = New-Object -TypeName System.Management.Automation.PSCredenti
 # Build VM configuration
 $dsvmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize
 $dsvmConfig = Set-AzVMSourceImage -VM $dsvmConfig -Id $image.Id
-$dsvmConfig = Set-AzVMOperatingSystem -VM $dsvmConfig -Linux -ComputerName $vmName -Credential $adminCredentials -CustomData $cloudInitEncoded
+$dsvmConfig = Set-AzVMOperatingSystem -VM $dsvmConfig -Linux -ComputerName $vmName -Credential $adminCredentials -CustomData $cloudInitYaml
 $dsvmConfig = Add-AzVMNetworkInterface -VM $dsvmConfig -Id $vmNic.Id -Primary
 $dsvmConfig = Add-AzVMDataDisk -VM $dsvmConfig -ManagedDiskId (Get-AzDisk -ResourceGroupName $config.dsg.dsvm.rg -DiskName "$vmName-HOME-DISK").Id -CreateOption Attach -Lun 1
 $dsvmConfig = Add-AzVMDataDisk -VM $dsvmConfig -ManagedDiskId (Get-AzDisk -ResourceGroupName $config.dsg.dsvm.rg -DiskName "$vmName-DATA-DISK").Id -CreateOption Attach -Lun 2
 $dsvmConfig = Set-AzVMOSDisk -VM $dsvmConfig -StorageAccountType $config.dsg.dsvm.osdisk.type -Name "$vmName-OS-DISK" -CreateOption FromImage
+$dsvmConfig = Set-AzVMBootDiagnostic -VM $dsvmConfig -Enable -ResourceGroupName $config.dsg.dsvm.rg -StorageAccountName $storageAccountName
+
+
 # Deploy virtual machine
+# ----------------------
 New-AzVM -ResourceGroupName $config.dsg.dsvm.rg -Location $config.dsg.location -VM $dsvmConfig
 if ($?) {
     Write-Host -ForegroundColor DarkGreen " [o] VM creation succeeded"
@@ -392,38 +329,38 @@ if ($?) {
     Write-Host -ForegroundColor DarkRed " [x] VM creation failed!"
     throw "VM creation failed"
 }
-Write-Host -ForegroundColor DarkCyan "VM creation finished at $(Get-Date)"
-Write-Host -ForegroundColor DarkCyan "Running cloud-init for deployment..."
+Write-Host -ForegroundColor DarkCyan "VM creation finished at $(Get-Date -UFormat '%d-%b-%Y %R')"
 
 
-# Get-AzVM
-# PS /Users/jrobinson/Projects/datasafehaven/data-safe-haven/secure_research_enviroment/sre_deploy_scripts/07_deploy_compute_vms> $x = Get-AzVM -ResourceGroupName RG_SRE_COMPUTE -Name DSVM-0-1-2019082900-SRE-TESTSANDBOX-161
+# Poll VM to see whether it has finished running
+# ----------------------------------------------
+Write-Host -ForegroundColor DarkCyan "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
+$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg -Status).Statuses.Code
+$progress = 0
+while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
+    $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg -Status).Statuses.Code
+    $progress += 1
+    Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
+    Start-Sleep 10
+}
 
-# # Remove temporary init file if it exists
-# rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
-# echo -e "${BOLD}VM creation finished at $(date)${END}"
-# echo -e "${BOLD}Running cloud-init for deployment...${END}"
 
-# # allow some time for the system to finish initialising
-# sleep 30
+# VM must be off for us to switch NSG, but we can restart after the switch
+# ------------------------------------------------------------------------
+Write-Host -ForegroundColor DarkCyan "Switching to secure NSG '$($secureNsg.Name)' at $(Get-Date -UFormat '%d-%b-%Y %R')..."
+$vmNic.NetworkSecurityGroup = $secureNsg
+$_ = ($vmNic | Set-AzNetworkInterface)
+if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] NSG switching succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] NSG switching failed!"
+    throw "NSG switching failed"
+}
+$_ = Start-AzVM -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg
 
-# # Poll VM to see whether it has finished running
-# echo -e "${BOLD}Waiting for VM setup to finish (this will take 5+ minutes)...${END}"
-# # Check that VM is down by requiring "PowerState/stopped" and "ProvisioningState/succeeded"
-# az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/stopped') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`"
 
-# # VM must be off for us to switch NSG. Once done we restart
-# echo -e "${BOLD}Switching to secure NSG ${BLUE}${DSG_NSG}${END} ${BOLD}at $(date)${END}"
-# az network nic update --resource-group $RESOURCEGROUP --name "${MACHINENAME}VMNic" --network-security-group $DSG_NSG_ID --output none
-# echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END} ${BOLD}at $(date)${END}"
-# az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME
-
-# # Poll VM to see whether it has finished restarting
-# echo -e "${BOLD}Waiting for VM to restart...${END}"
-# # Check that VM is up by requiring "PowerState/running" and "ProvisioningState/succeeded"
-# az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "length((instanceView.statuses[].code)[?(contains(@, 'PowerState/running') || contains(@, 'ProvisioningState/succeeded'))]) == \`2\`"
-
-# # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
-# PRIVATEIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP --name $MACHINENAME --query "[0].virtualMachine.network.privateIpAddresses[0]" -o tsv)
-# echo -e "${BOLD}Deployment complete at $(date)${END}"
-# echo -e "${BOLD}This new VM can be accessed with SSH or remote desktop at ${BLUE}${PRIVATEIP}${END}"
+# Get private IP address for this machine
+# ---------------------------------------
+$privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg).Id } | % { $_.IpConfigurations.PrivateIpAddress }
+Write-Host -ForegroundColor DarkCyan "Deployment complete at $(Get-Date -UFormat '%d-%b-%Y %R')"
+Write-Host -ForegroundColor DarkCyan "This new VM can be accessed with SSH or remote desktop at $privateIpAddress"
