@@ -19,6 +19,11 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Write-Host "Finding VM with last IP octet: $ipLastOctet"
 $vmId = Get-AzNetworkInterface -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | % { $_.VirtualMachine.Id }
 $vm = Get-AzVm -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { $_.Id -eq $vmId }
+if ($?) {
+    Write-Host "Found VM: $($vm.Name)"
+} else {
+    throw "Could not find VM with last IP octet '$ipLastOctet'"
+}
 
 
 # Get LDAP secret from the KeyVault
