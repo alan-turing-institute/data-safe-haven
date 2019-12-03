@@ -136,6 +136,7 @@ write_files:
 packages:
   - adcli
   - apt-transport-https
+  - aspell
   - atom
   - attr
   - azure-cli
