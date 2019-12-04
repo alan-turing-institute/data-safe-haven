@@ -147,7 +147,7 @@ In the below, "personal data" follows the GDPR definition: information from whic
 
 ### Tier 0
 
-Tier 0 Environments are used to handle publicly available, open information, where all generated and combined information is also suitable for open handling.
+Tier 0 Environments are used to handle open information, which is legally available to the general public with no restrictions, where all generated and combined information is also suitable for open handling.
 
 Tier 0 applies where none of the information processed, combined or generated includes personal data, commercially sensitive data, or data which will have legal, political or reputational consequences in the event of unauthorised disclosure.
 
@@ -167,38 +167,46 @@ Information is kept private in order to give the research team a competitive adv
 
 Both the datasets and the proposed processing must otherwise meet the criteria for Tier 0.
 
-It may be used for pseudonymised or synthetic information generated from personal data, where one has absolute confidence in the quality of pseudonymisation. This makes the information no longer personal data. This does not include pseudonymised data which can be re-identified in combination with a key or other dataset.
+It may be used for pseudonymised or synthetic information generated from personal data, where one has **absolute** confidence in the quality of deidentification.
 
 It may also be used for commercial data where commercial consequences of disclosure would be no impact or very low impact, with the agreement of all parties.
 
+#### Relationships to other classification schemes
+Pseudonymised data is considered [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
+
+
 ### Tier 2
 
-Tier 2 Environments are used to handle, combine or generate information which is not linked to personal data.
+Tier 2 Environments are used to handle, combine or generate information which is not linked to identifiable personal data.
 
-It may be used for pseudonymised or synthetic information generated from personal data, where we have strong, but not absolute, confidence in the quality of pseudonymisation. The risk of processing it so that individuals are capable of being re-identified must be considered as part of the classification process.
+It may be used for pseudonymised, synthetic or anonymised information generated from personal data, where we have strong, but not absolute, confidence in the quality of deidentification. The risk of processing such data so that individuals are capable of being re-identified must be considered as part of the classification process.
 
-The pseudonymisation or anonymisation process itself, if carried out in the Turing, should take place in a Tier 3 Environment.
+The pseudonymisation, synthesis or anonymisation process itself, if carried out in the Turing, should take place in a Tier 3 Environment.
+A typical model for a project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised, synthetic or anonymised data generated in the Tier 3 Environment and then transferred to the Tier 2 Environment.
 
-A typical model for a project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised or synthetic data generated in the Tier 3 Environment and then transferred to the Tier 2 Environment.
+Tier 2 Environments are also used to handle, combine or generate information which is confidential but not, in commercial or national security terms, sensitive.
+This includes commercial-in-confidence datasets or intellectual property where the legal, commercial, political and reputational consequences from disclosure are low.
+Where such consequences are not low, Tier 3 should be used.
 
-Tier 2 Environments are also used to handle, combine or generate information which is confidential, but not, in commercial or national security terms, sensitive. This includes commercial-in-confidence datasets or intellectual property where the legal, commercial, political and reputational consequences from disclosure are low. Where such consequences are not low, Tier 3 should be used.
-
-At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised, when in fact re-identification might be possible.
+At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised or anonymised, when in fact re-identification might be possible.
 
 #### Relationships to other classification schemes
 
-Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification.
+Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
 
-All [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR, that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are absolutely confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
+[Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR may be Tier 2 if (i) it is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/), and (ii) it is pseudonymised and there is high confidence that the risk of re-identification is low.
 
 
 ### Tier 3
 
 Tier 3 Environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be Tier 4).
 
-This also includes pseudonymised or synthetic information generated from personal data, where we have only weak confidence in the quality of pseudonymisation.
+This also includes pseudonymised, synthetic or anonymised information generated from personal data, where we have only weak confidence in the quality of deidentification.
 
-Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms. This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources. This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups. The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
+Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms.
+This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources.
+This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups.
+The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
 
 The difference between Tier 2 and Tier 3 Environments is the most significant in this model, both for researcher productivity and organisational risk.
 
@@ -206,9 +214,9 @@ At Tier 3, the risk of hostile actors attempting to break into the Environment b
 
 #### Relationships to other classification schemes
 
-All data at the UK government OFFICIAL-SENSTIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSTIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
+All data at the UK government OFFICIAL-SENSITIVE [PERSONAL] classification will be Tier 3, as well as some data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification, where the consequence of disclosure are particularly high.
 
-All [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
+All  [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) under the GDPR is Tier 3.
 
 ### Tier 4
 
