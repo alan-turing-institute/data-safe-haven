@@ -334,7 +334,6 @@ packages:
   - r-cran-pomp
   - r-cran-pscl
   - r-cran-purrr
-  - r-cran-purrrlyr
   - r-cran-pvclust
   - r-cran-quanteda
   - r-cran-quantmod

@@ -169,8 +169,6 @@ az vm create \
 # Remove temporary init file if it exists
 rm $TMP_CLOUD_CONFIG_YAML 2> /dev/null
 
-# add send tests folder to the server
-
 # Get public IP address for this machine. Piping to echo removes the quotemarks around the address
 PUBLICIP=$(az vm list-ip-addresses --resource-group $RESOURCEGROUP_BUILD --name $BASENAME --query "[0].virtualMachine.network.publicIpAddresses[0].ipAddress" | xargs echo)
 echo -e "${BOLD}This process will take several hours to complete.${END}"
