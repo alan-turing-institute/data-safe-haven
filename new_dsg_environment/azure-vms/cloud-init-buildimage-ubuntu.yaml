@@ -181,6 +181,7 @@ packages:
   - libssl-dev
   - libudunits2-dev
   - libxss1
+  - lyx
   - mono-complete
   - mono-devel
   - octave
