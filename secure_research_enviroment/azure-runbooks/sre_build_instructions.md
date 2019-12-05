@@ -285,7 +285,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Create_Web_App_Servers.ps1` script, providing the DSG ID when prompted
+- Run the `./Create_Web_App_Servers.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take a few minutes to complete
 
 ### Configure GitLab Server
@@ -298,7 +298,6 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
 
 ## 7. Deploy initial shared compute VM
-
 ### [OPTIONAL] Create a custom cloud init file for the DSG if required
   - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
   - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<dsg-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
@@ -318,19 +317,20 @@ To deploy a compute VM you will need the following available on the machine you 
 - Open a Powershell terminal with `pwsh`
 - Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-- Deploy a new VM into a DSG environment using the `./Create_Compute_VM.ps1` script, entering the DSG ID, VM size (optional) and last octet of the desired IP address.
+- Deploy a new VM into an SRE environment using `./Create_Compute_VM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- You will also be prompted for the VM size (optional) and the desired last octet of the IP address (the first machine deployed should use `160` here)
   - The initial shared VM should be deployed with the last octet `160`
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
-- After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
+- After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
 
 ### Troubleshooting Compute VM deployments
-- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
+- Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of its IP address at the end of its name.
 - Scroll to the bottom of the VM menu on the left hand side of the VM information panel
 - Activate boot diagnostics on the VM and click save. You need to stay on that screen until the activation is complete.
 - Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
 - If you are not prompted with `login:`, hit enter until the prompt appears
-- Enter the username from the `dsg<dsg-id>-dsvm-admin-password` secret in the DSG KeyVault.
-- Enter the password from the `dsg<dsg-id>-dsvm-admin-password` secret in the DSG KeyVault.
+- Enter the username from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
+- Enter the password from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
@@ -338,12 +338,12 @@ To deploy a compute VM you will need the following available on the machine you 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Change to the `secure_research_environment/sre_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./Apply_Network_Configuration.ps1` script, providing the DSG ID when prompted
+- Run the `./Apply_Network_Configuration.ps1` script, providing the SRE ID when prompted
 
-## 09. Unpeering DSG and package mirror networks
-The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the DSG is peered to the correct mirror network by running `secure_research_environment/sre_deploy_scripts/09_mirror_peerings/Configure_Mirror_Peering.ps1` as part of its execution.
+## 09. Unpeering SRE and package mirror networks
+The `Apply_Network_Configuration.ps1` script in section 8 now ensures that the SRE is peered to the correct mirror network by running `secure_research_environment/sre_deploy_scripts/09_mirror_peerings/Configure_Mirror_Peering.ps1` as part of its execution.
 
-**==THESE SCRIPTS SHOULD NOT BE MANUALLY RUN WHEN DEPLOYING A DSG OR UPDATING ITS CONFIGURATION==**
+**==THESE SCRIPTS SHOULD NOT BE MANUALLY RUN WHEN DEPLOYING A SRE OR UPDATING ITS CONFIGURATION==**
 However, if you need to unpeer the mirror networks for some reason (e.g. while preparing a DSG subscription for re-use), you can run the unpeering script separately as described below.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Change to the `secure_research_environment/sre_deploy_scripts/09_mirror_peerings/internal/` directory of the Safe Haven repository

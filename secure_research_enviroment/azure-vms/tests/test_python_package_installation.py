@@ -94,23 +94,23 @@ def get_package_lists():
 
 
 def check_tensorflow():
-    print("Testing tensorflow...")
+    # print("Testing tensorflow...")
     try:
         warnings.simplefilter("ignore")
         from tensorflow.python.client import device_lib
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
         device_names = [d.name for d in device_lib.list_local_devices()]
-        print("Tensorflow can see the following devices:\n{}".format(device_names))
+        # print("Tensorflow can see the following devices:\n{}".format(device_names))
+        print("Tensorflow can see the following devices %s" % device_names)
         return True
     except ImportError:
         return False
 
 
-def get_missing_packages():
+def get_missing_packages(packages):
     """Gets the packages required and optional for this version that are
     not installed.
     """
-    packages = get_package_lists()
     warning, missing = [], []
 
     for p in packages:
@@ -139,30 +139,61 @@ def get_missing_packages():
     return (warning, missing)
 
 
-class Tests(unittest.TestCase):
-    """Run tests for installation of Python."""
+# class Tests(unittest.TestCase):
+#     """Run tests for installation of Python."""
 
-    def test_python_version(self):
-        py_version = get_version()
-        expected_py_versions = PY_VERSIONS_DSG if is_linux() else PY_VERSIONS_LOCAL
-        self.assertTrue(py_version in expected_py_versions)
+#     def test_python_version(self):
+#         py_version = get_version()
+#         expected_py_versions = PY_VERSIONS_DSG if is_linux() else PY_VERSIONS_LOCAL
+#         self.assertTrue(py_version in expected_py_versions)
 
-    def test_packages(self):
-        warning, missing = get_missing_packages()
-        fail = False
-        if warning:
-            print("\n** The following packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
-            print("\n".join(warning))
-            print("** The above packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
-        if missing:
-            print("\n** The following packages are missing: **")
-            print("\n".join(missing))
-            print("** The above packages are missing! **\n")
-            fail = True
-        if fail:
-            self.fail("Required and/or optional packages are missing")
+#     def test_packages(self):
+#         packages = get_package_lists()
+#         print("Testing", len(packages), "python", get_version(), "packages")
+#         warning, missing = get_missing_packages(packages)
+#         fail = False
+#         if warning:
+#             print("\n** The following packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
+#             print("\n".join(warning))
+#             print("** The above packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
+#         if missing:
+#             print("\n** The following packages are missing: **")
+#             print("\n".join(missing))
+#             print("** The above packages are missing! **\n")
+#             fail = True
+#         if fail:
+#             self.fail("Required and/or optional packages are missing")
+
+def test_python_version():
+    py_version = get_version()
+    expected_py_versions = PY_VERSIONS_DSG if is_linux() else PY_VERSIONS_LOCAL
+    if py_version not in expected_py_versions:
+        print("Python version %s could not be interpreted" % py_version)
+    else:
+        print("Python version %s found" % py_version)
+
+def test_packages():
+    packages = get_package_lists()
+    print("Testing %i python packages" % len(packages))
+    warning, missing = get_missing_packages(packages)
+    success = True
+    if warning:
+        print("\n** The following packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
+        print("\n".join(warning))
+        print("** The above packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages): **")
+    if missing:
+        print("\n** The following packages are missing: **")
+        print("\n".join(missing))
+        print("** The above packages are missing! **\n")
+        success = False
+
+    if success:
+        print("All packages were found")
+    else:
+        print("%i packages are missing" % len(missing))
 
 
-if '__main__' == __name__:
-    import unittest
-    unittest.main()
+if __name__ == "__main__":
+    #unittest.main()
+    test_python_version()
+    test_packages()

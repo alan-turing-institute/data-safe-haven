@@ -3,12 +3,16 @@
 # Test R packages
 R_packages () {
     conda deactivate
-    OUTPUT=$(Rscript test_package_installation.R 2>&1)
-    echo "$OUTPUT"
-    PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -A1 "The following packages gave a warning" | grep -v "gave a warning" | cut -d']' -f2)
+    OUTPUT=$(Rscript test_R_package_installation.R 2>&1)
+    echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
+    KNOWN_ISSUES=("clusterProfiler" "GOSemSim" "graphite" "rgl" "tmap")
+    PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
     OUTCOME=0
     for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
-        if [[ "$PROBLEMATIC_PACKAGE" != *"clusterProfiler"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"GOSemSim"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"graphite"* ]] && [[ "$PROBLEMATIC_PACKAGE" != *"tmap"* ]]; then
+        if [ "$PROBLEMATIC_PACKAGE" == "" ]; then
+            continue
+        fi
+        if [[ ! " ${KNOWN_ISSUES[@]} " =~ " ${PROBLEMATIC_PACKAGE} " ]]; then
             echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
             OUTCOME=1
         fi
@@ -20,7 +24,7 @@ R_packages () {
 # Test R clustering
 R_clustering () {
     OUTPUT=$(Rscript test_clustering.R)
-    echo "$OUTPUT"
+    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
     TEST_RESULT=$(echo $OUTPUT | grep "Clustering ran OK")
     if [ "$TEST_RESULT" == "" ]; then
         return 1
@@ -32,7 +36,7 @@ R_clustering () {
 # Test R logistic regression
 R_logistic_regression () {
     OUTPUT=$(Rscript test_logistic_regression.R)
-    echo "$OUTPUT"
+    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
     TEST_RESULT=$(echo $OUTPUT | grep "Logistic regression ran OK")
     if [ "$TEST_RESULT" == "" ]; then
         return 1
@@ -44,7 +48,7 @@ R_logistic_regression () {
 # Test CRAN access
 R_cran () {
     OUTPUT=$(bash test_cran.sh)
-    echo "$OUTPUT"
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "CRAN working OK")
     if [ "$TEST_RESULT" == "" ]; then
         return 1
@@ -56,14 +60,13 @@ R_cran () {
 # Test python packages
 _python_packages () {
     conda activate $1
-    OUTPUT=$(python tests.py 2>&1)
-    echo "$OUTPUT"
+    OUTPUT=$(python test_python_package_installation.py 2>&1)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "packages are missing")
+    conda deactivate
     if [ "$TEST_RESULT" != "" ]; then
-        conda deactivate
         return 1
     fi
-    conda deactivate
     return 0
 }
 python_27_packages() { _python_packages py27; }
@@ -75,13 +78,12 @@ python_37_packages() { _python_packages py37; }
 _python_logistic_regression () {
     conda activate $1
     OUTPUT=$(python test_logistic_regression.py 2>&1)
-    echo "$OUTPUT"
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "Logistic model ran OK")
-    if [ "$TEST_RESULT" == "" ]; then
         conda deactivate
+    if [ "$TEST_RESULT" == "" ]; then
         return 1
     fi
-    conda deactivate
     return 0
 }
 python_27_logistic_regression() { _python_logistic_regression py27; }
@@ -93,13 +95,12 @@ python_37_logistic_regression() { _python_logistic_regression py37; }
 _python_pypi () {
     conda activate $1
     OUTPUT=$(bash test_pypi.sh 2>&1)
-    echo "$OUTPUT"
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "PyPI working OK")
+    conda deactivate
     if [ "$TEST_RESULT" == "" ]; then
-        conda deactivate
         return 1
     fi
-    conda deactivate
     return 0
 }
 python_27_pypi() { _python_pypi py27; }

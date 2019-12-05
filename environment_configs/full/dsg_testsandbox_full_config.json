@@ -180,6 +180,9 @@
       "secretNames": {
         "dcAdminUsername": "sre-testsandbox-dc-admin-username",
         "dcAdminPassword": "sre-testsandbox-dc-admin-password",
+        "dsvmDbAdminPassword": "sre-testsandbox-dsvm-pgdb-admin-password",
+        "dsvmDbReaderPassword": "sre-testsandbox-dsvm-pgdb-reader-password",
+        "dsvmDbWriterPassword": "sre-testsandbox-dsvm-pgdb-reader-password",
         "gitlabLdapPassword": "sre-testsandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-testsandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-testsandbox-gitlab-user-password",

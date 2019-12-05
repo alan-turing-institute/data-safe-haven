@@ -167,6 +167,7 @@ write_files:
 runcmd:
   # ==========================================
   # *** BEGINNING OF SRE-SPECIFIC COMMANDS ***
+  - sudo apt install unicode
   # *** END OF SRE-SPECIFIC COMMANDS ***
   # ==========================================
   - echo ">=== Beginning DSVM configuration... ===<"

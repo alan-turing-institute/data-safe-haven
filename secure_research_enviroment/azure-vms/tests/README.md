@@ -36,15 +36,21 @@ There are a few known packages that will cause warnings and errors during this t
 - `clusterProfiler`: Error is `multiple methods tables found for ‘toTable’`. Not yet understood
 - `GOSemSim`: False positive - no warning on package load
 - `graphite`: False positive - no warning on package load
+- `rgl`: Error is because the X11 server could not be loaded
 - `tmap`: False positive - no warning on package load
 
 The expected output for a successful test is:
 
 ```
-Read <num-r-packages> items
-Read <num-bioconductor-packages> items
+[1] "Testing <num-cran-packages> CRAN packages"
+[1] "Testing <num-bioconductor-packages> Bioconductor packages"
+[1] "Package installation status"
 [1] "The following packages gave a warning:"
-[1] "rgl"             "clusterProfiler" "GOSemSim"        "graphite"
+rgl
+tmap
+clusterProfiler
+GOSemSim
+graphite
 [1] "All the packages above gave a warning!"
 ```
 

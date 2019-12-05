@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
-  [string]$dsgId,
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [string]$sreId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
   [string]$ipLastOctet
 )
@@ -8,11 +8,11 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
-# Get DSG config
-$config = Get-DsgConfig($dsgId);
+# Get SRE config
+# --------------
+$config = Get-SreConfig($sreId);
+$originalContext = Get-AzContext
 
-# Temporarily switch to DSG subscription
-$prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 
@@ -53,4 +53,4 @@ foreach ($diagnostic_script in $diagnostic_scripts) {
 }
 
 # Switch back to previous subscription
-$_ = Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $originalContext;

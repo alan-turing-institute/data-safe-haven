@@ -289,18 +289,21 @@ function Add-SreConfig {
         rg = "RG_SRE_SECRETS"
     }
     $config.dsg.keyVault.secretNames = [ordered]@{
-        dcAdminUsername = $config.dsg.shortName + '-dc-admin-username'
         dcAdminPassword = $config.dsg.shortName + '-dc-admin-password'
+        dcAdminUsername = $config.dsg.shortName + '-dc-admin-username'
+        dsvmAdminPassword = $config.dsg.shortName + "-dsvm-admin-password"
+        dsvmAdminUsername = $config.dsg.shortName + "-dsvm-admin-username"
+        dsvmDbAdminPassword = $config.dsg.shortName + "-dsvm-pgdb-admin-password"
+        dsvmDbReaderPassword = $config.dsg.shortName + "-dsvm-pgdb-reader-password"
+        dsvmDbWriterPassword = $config.dsg.shortName + "-dsvm-pgdb-writer-password"
+        dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
         gitlabLdapPassword = $config.dsg.shortName + "-gitlab-ldap-password"
         gitlabRootPassword = $config.dsg.shortName + "-gitlab-root-password"
         gitlabUserPassword = $config.dsg.shortName + "-gitlab-user-password"
         hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
         hackmdUserPassword = $config.dsg.shortName + "-hackmd-user-password"
-        dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
-        dsvmAdminUsername = $config.dsg.shortName + "-dsvm-admin-username"
-        dsvmAdminPassword = $config.dsg.shortName + "-dsvm-admin-password"
-        testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
         letsEncryptCertificate = $config.dsg.shortName + "-lets-encrypt-certificate"
+        testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
     }
 
     # --- Domain controller ---

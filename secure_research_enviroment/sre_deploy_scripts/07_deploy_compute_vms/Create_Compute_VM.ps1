@@ -55,6 +55,9 @@ Write-Host -ForegroundColor DarkCyan "Creating/retrieving secrets from '$($confi
 $dsvmLdapPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmLdapPassword
 $dsvmAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmAdminPassword
 $dsvmAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmAdminUsername -defaultValue "sre$($config.dsg.id)admin".ToLower()
+$dsvmDbAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmDbAdminPassword
+$dsvmDbReaderPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmDbReaderPassword
+$dsvmDbWriterPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmDbWriterPassword
 
 
 # Get list of image versions
@@ -293,7 +296,6 @@ try {
     $_ = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $config.dsg.dsvm.rg -ErrorAction Stop
     Write-Host -ForegroundColor DarkGreen " [o] Storage account '$storageAccountName' already exists"
 } catch [Microsoft.Rest.Azure.CloudException] {
-    # Write-Host $_.Exception
     Write-Host -ForegroundColor DarkCyan " [] Creating storage account '$storageAccountName'"
     $_ = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $config.dsg.dsvm.rg -Location $config.dsg.location -SkuName "Standard_LRS" -Kind "StorageV2"
     if ($?) {
@@ -357,6 +359,78 @@ if ($?) {
     throw "NSG switching failed"
 }
 $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg
+
+
+# Create Postgres roles
+# ---------------------
+Write-Host -ForegroundColor DarkCyan "Creating Postgres roles on $vmName..."
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "create_postgres_roles.sh"
+$params = @{
+    DBADMINROLE = "admin"
+    DBADMINUSER = "dbadmin"
+    DBADMINPWD = $dsvmDbAdminPassword
+    DBWRITERROLE = "writer"
+    DBWRITERUSER = "dbwriter"
+    DBWRITERPWD = $dsvmDbWriterPassword
+    DBREADERROLE = "reader"
+    DBREADERUSER = "dbreader"
+    DBREADERPWD = $dsvmDbReaderPassword
+};
+Write-Host -ForegroundColor DarkCyan " [ ] Ensuring Postgres DB roles and initial shared users exist on VM $vmName"
+$result = Invoke-AzVMRunCommand -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg `
+                                -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
+$success = $?
+Write-Output $result.Value;
+if ($success) {
+    Write-Host -ForegroundColor DarkGreen " [o] Postgres role creation succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Postgres role creation failed!"
+    throw "Postgres role creation has failed"
+}
+
+
+# Create local zip file
+# ---------------------
+$zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
+Write-Host -ForegroundColor DarkCyan "Creating zip file of smoke tests at $zipFilePath..."
+$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
+Copy-Item $PSScriptRoot/../../azure-vms/package_lists -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
+Copy-Item $PSScriptRoot/../../azure-vms/tests -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+if (Test-path $zipFilePath) { Remove-item $zipFilePath }
+Write-Host -ForegroundColor DarkCyan " [ ] Creating zip file at $zipFilePath..."
+Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
+if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] Zip file creation succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Zip file creation failed!"
+    throw "Smoke test zip file creation has failed"
+}
+Remove-Item –Path $tempDir -Recurse -Force
+
+
+# Upload the zip file to the compute VM
+# -------------------------------------
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+Write-Host -ForegroundColor DarkCyan "Uploading smoke tests to the compute VM..."
+$zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
+Remove-Item –Path $zipFilePath
+# Run remote script
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "upload_smoke_tests.sh"
+$params = @{
+    PAYLOAD = $zipFileEncoded
+    ADMIN_USERNAME = $dsvmAdminUsername
+};
+Write-Host -ForegroundColor DarkCyan " [ ] Uploading and extracting smoke tests on $vmName"
+$result = Invoke-AzVMRunCommand -Name $vmName -ResourceGroupName $config.dsg.dsvm.rg `
+                                -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
+$success = $?
+Write-Output $result.Value;
+if ($success) {
+    Write-Host -ForegroundColor DarkGreen " [o] Smoke test upload succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Smoke test upload failed!"
+    throw "Smoke test upload failed"
+}
 
 
 # Get private IP address for this machine

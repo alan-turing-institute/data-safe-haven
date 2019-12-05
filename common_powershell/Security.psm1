@@ -67,7 +67,7 @@ function EnsureKeyvaultSecret {
     param(
         [string]$keyvaultName = "",
         [string]$secretName = "",
-        [string]$defaultValue = "", #$(New-Password)
+        [string]$defaultValue = "",
         [string]$length = 20
     )
     # Attempt to retrieve secret
@@ -78,7 +78,6 @@ function EnsureKeyvaultSecret {
         # Generate a new password if there is no default
         if ($defaultValue -eq "") {
             $defaultValue = $(New-Password -length $length)
-            Write-Host $defaultValue
         }
         # Store the password in the keyvault
         $secretValue = (ConvertTo-SecureString $defaultValue -AsPlainText -Force);
