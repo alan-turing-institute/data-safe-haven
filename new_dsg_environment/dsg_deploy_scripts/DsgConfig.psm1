@@ -310,10 +310,8 @@ function Add-DsgConfig {
     }
     $config.dsg.rds.nsg.gateway.name = "NSG_RDS-DSG" + $config.dsg.id + "_Server"
 
-    # Set which IPs can access the Safe Haven
-    # If 'default' is given then apply sensible defaults
+    # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if($dsgConfigBase.rdsAllowedSources -eq "default") {
-        Write-Host "using defaults"
         if(@("3", "4").Contains($config.dsg.tier)) {
             $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
         } elseif($config.dsg.tier -eq "2") {
@@ -324,7 +322,16 @@ function Add-DsgConfig {
     } else {
         $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
     }
-
+    # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
+    if($dsgConfigBase.rdsInternetAccess -eq "default") {
+        if(@("2", "3", "4").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.outboundInternet = "Deny"
+        } elseif(@("0", "1").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.outboundInternet = "Allow"
+        }
+    } else {
+        $config.dsg.rds.nsg.gateway.outboundInternet = $dsgConfigBase.rdsInternetAccess
+    }
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName

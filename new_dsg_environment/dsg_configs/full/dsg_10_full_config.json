@@ -237,7 +237,8 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS-DSG10_Server",
-          "allowedSources": "193.60.220.240"
+          "allowedSources": "193.60.220.240",
+          "outboundInternet": "Deny"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"

@@ -8,6 +8,7 @@
     "netbiosName": "DSGROUP10",
     "ipPrefix": "10.100.72",
     "rdsAllowedSources": "default",
+    "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"
 }
