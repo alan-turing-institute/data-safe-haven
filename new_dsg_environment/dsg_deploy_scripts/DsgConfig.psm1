@@ -309,7 +309,22 @@ function Add-DsgConfig {
         sessionHosts = [ordered]@{}
     }
     $config.dsg.rds.nsg.gateway.name = "NSG_RDS-DSG" + $config.dsg.id + "_Server"
-    $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+
+    # Set which IPs can access the Safe Haven
+    # If 'default' is given then apply sensible defaults
+    if($dsgConfigBase.rdsAllowedSources -eq "default") {
+        Write-Host "using defaults"
+        if(@("3", "4").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
+        } elseif($config.dsg.tier -eq "2") {
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253,193.60.220.240"
+        } elseif(@("0", "1").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.allowedSources = "Internet"
+        }
+    } else {
+        $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+    }
+
     $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDS-DSG" + $config.dsg.id
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
@@ -365,7 +380,7 @@ function Add-DsgConfig {
     }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
-    Write-Host $jsonOut
+    # Write-Host $jsonOut
     Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-DsgConfig

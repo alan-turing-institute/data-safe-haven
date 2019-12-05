@@ -7,7 +7,7 @@
     "domain": "dsgroup8.co.uk",
     "netbiosName": "DSGROUP8",
     "ipPrefix": "10.100.56",
-    "rdsAllowedSources": "193.60.220.240",
+    "rdsAllowedSources": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"
 }
