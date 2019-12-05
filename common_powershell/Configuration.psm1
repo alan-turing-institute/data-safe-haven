@@ -346,9 +346,22 @@ function Add-SreConfig {
         gateway = [ordered]@{}
         sessionHosts = [ordered]@{}
     }
-    # $config.dsg.rds.nsg.gateway.name = "NSG_RDS_GATEWAY"
-    $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
-    # $config.dsg.rds.nsg.sessionHosts.name = "NSG_RDS_SESSION_HOSTS"
+
+    # Set which IPs can access the Safe Haven
+    # If 'default' is given then apply sensible defaults
+    if($dsgConfigBase.rdsAllowedSources -eq "default") {
+        Write-Host "using defaults"
+        if(@("3", "4").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
+        } elseif($config.dsg.tier -eq "2") {
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253,193.60.220.240"
+        } elseif(@("0", "1").Contains($config.dsg.tier)) {
+            $config.dsg.rds.nsg.gateway.allowedSources = "Internet"
+        }
+    } else {
+        $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+    }
+
     $config.dsg.rds.gateway.vmName = "RDG-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
