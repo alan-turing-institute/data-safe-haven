@@ -317,7 +317,7 @@ function Add-DsgConfig {
         if(@("3", "4").Contains($config.dsg.tier)) {
             $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
         } elseif($config.dsg.tier -eq "2") {
-            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253,193.60.220.240"
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253"
         } elseif(@("0", "1").Contains($config.dsg.tier)) {
             $config.dsg.rds.nsg.gateway.allowedSources = "Internet"
         }
