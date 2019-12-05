@@ -251,9 +251,9 @@
       "rg": "RG_SRE_RDS",
       "nsg": {
         "gateway": {
-          "allowedSources": "Internet"
-        },
-        "sessionHosts": {}
+          "allowedSources": "Internet",
+          "outboundInternet": "Deny"
+        }
       }
     },
     "dataserver": {

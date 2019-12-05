@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
 # Get SRE config
 # --------------
-$config = Get-DsgConfig($sreId);
+$config = Get-SreConfig($sreId);
 $originalContext = Get-AzContext
 
 

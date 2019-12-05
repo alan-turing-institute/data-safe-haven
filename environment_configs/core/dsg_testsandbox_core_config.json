@@ -8,6 +8,7 @@
     "netbiosName": "TESTSANDBOX",
     "ipPrefix": "10.150.0",
     "rdsAllowedSources": "Internet",
+    "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"
 }
