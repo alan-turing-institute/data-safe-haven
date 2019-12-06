@@ -99,7 +99,7 @@
     "id": "10",
     "shortName": "dsg10",
     "location": "uksouth",
-    "tier": "3",
+    "tier": "1",
     "adminSecurityGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
@@ -107,13 +107,13 @@
         "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_TURING1_PKG_MIRRORS_TIER3"
+        "name": null
       },
       "cran": {
-        "ip": "10.20.3.21"
+        "ip": null
       },
       "pypi": {
-        "ip": "10.20.3.20"
+        "ip": null
       }
     },
     "domain": {
@@ -237,8 +237,8 @@
       "nsg": {
         "gateway": {
           "name": "NSG_RDS-DSG10_Server",
-          "allowedSources": "193.60.220.240",
-          "outboundInternet": "Deny"
+          "allowedSources": "Internet",
+          "outboundInternet": "Allow"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
