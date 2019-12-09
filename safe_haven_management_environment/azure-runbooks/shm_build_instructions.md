@@ -18,7 +18,7 @@
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
-3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test B"
+3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
 4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
 5. Set the "Country or Region" to "United Kingdom"
 6. Click Create AAD
@@ -41,19 +41,18 @@ Whatever new domain or subdomain you choose, you must create a new Azure DNS Zon
 - If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
 - Click `Create a resource` in the far left menu, search for "DNS Zone" and click "Create", using the resource group and subscription specified above.
 - For the `Name` field enter the fully qualified domain / subdomain. Examples are:
+  - `testa.dsgroupdev.co.uk` for the first test SHM deployed as part of the Turing `test` environment
   - `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment
   - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
 
 Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to its parent record in the DNS system.
 - Navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone". The NS record will list 4 Azure name servers.
-- If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testb.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testb`).
+- If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
 - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
 
 ### Create and add the custom domain to the new AAD
 1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
-
-2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testb.dsgroupdev.co.uk`)
-
+2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
 3. Note the DNS record details displayed
   ![AAD DNS record details](images/aad_dns_record_details.png)
 4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
@@ -65,14 +64,16 @@ Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / su
 
 ## 2. Setup Safe Haven administrators
 ### Safe Haven Management configuration
-The core properties for the Safe Haven Management (SHM) environment must be present in the `new_dsg_environment/dsg_configs/core` folder. These are also used when deploying an SRE environment.
-The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testb_core_config.json` provides an example. `artifactStorageAccount` and `vaultname` must be globally unique in Azure. `<shmId>` is a short ID to identify the environment (e.g. `testb`).
+The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
+The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. `<shmId>` is a short ID to identify the environment (e.g. `testa`). The `shm_testa_core_config.json` provides an example.
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
 
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
+    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
     "domain": "The fully qualified domain name for the management environment",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
