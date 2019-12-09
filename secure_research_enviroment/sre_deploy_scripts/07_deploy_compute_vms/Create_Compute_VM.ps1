@@ -8,9 +8,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-
+Import-Module $PSScriptRoot/../../../common_powershell/Mirrors.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
 # Get SRE config
 # --------------
@@ -201,25 +201,10 @@ Write-Host -ForegroundColor DarkGreen " [o] Found subnet '$($subnet.Name)' in $(
 # Set mirror URLs
 # ---------------
 Write-Host -ForegroundColor DarkCyan "Determining correct URLs for package mirrors..."
-if($config.dsg.mirrors.cran.ip) {
-    $CRAN_MIRROR_URL = "http://$($config.dsg.mirrors.cran.ip)"
-} else {
-    $CRAN_MIRROR_URL = "https://cran.r-project.org"
-}
-if($config.dsg.mirrors.pypi.ip) {
-    $PYPI_MIRROR_URL = "http://$($config.dsg.mirrors.pypi.ip):3128"
-} else {
-    $PYPI_MIRROR_URL = "https://pypi.org"
-}
-# We want to extract the hostname from PyPI URLs in either of the following forms
-# 1. http://10.20.2.20:3128 => 10.20.2.20
-# 2. https://pypi.org       => pypi.org
-$PYPI_MIRROR_HOST = ""
-if ($PYPI_MIRROR_URL -match "https*:\/\/([^:]*)[:0-9]*") { $PYPI_MIRROR_HOST = $Matches[1] }
-Write-Host -ForegroundColor DarkGreen " [o] CRAN: '$CRAN_MIRROR_URL'"
-Write-Host -ForegroundColor DarkGreen " [o] PyPI server: '$PYPI_MIRROR_URL'"
-Write-Host -ForegroundColor DarkGreen " [o] PyPI host: '$PYPI_MIRROR_HOST'"
-
+$addresses = Get-MirrorAddresses -cranIp $config.dsg.mirrors.cran.ip -pypiIp $config.dsg.mirrors.pypi.ip
+Write-Host -ForegroundColor DarkGreen " [o] CRAN: '$($addresses.cran.url)'"
+Write-Host -ForegroundColor DarkGreen " [o] PyPI server: '$($addresses.pypi.url)'"
+Write-Host -ForegroundColor DarkGreen " [o] PyPI host: '$($addresses.pypi.host)'"
 
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
@@ -236,6 +221,9 @@ $LDAP_USER = $config.dsg.users.ldap.dsvm.samAccountName
 $LDAP_BASE_DN = $config.shm.domain.userOuPath
 $LDAP_BIND_DN = "CN=" + $config.dsg.users.ldap.dsvm.name + "," + $config.shm.domain.serviceOuPath
 $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.dsg.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
+$CRAN_MIRROR_URL = $addresses.cran.url
+$PYPI_MIRROR_URL = $addresses.pypi.url
+$PYPI_MIRROR_HOST = $addresses.pypi.host
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
 
 

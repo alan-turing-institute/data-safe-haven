@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Mirrors.psm1 -Force
 
 
 # Get SRE config
@@ -231,6 +232,37 @@ If(!$config.dsg.mirrors.vnet.name){
         Write-Host -ForegroundColor DarkGreen " [o] Peering addition succeeded"
     } else {
         Write-Host -ForegroundColor DarkRed " [x] Peering addition failed!"
+    }
+}
+
+
+# Update SRE mirror lookup
+# ------------------------
+Write-Host -ForegroundColor DarkCyan "Determining correct URLs for package mirrors..."
+$addresses = Get-MirrorAddresses -cranIp $config.dsg.mirrors.cran.ip -pypiIp $config.dsg.mirrors.pypi.ip
+Write-Host -ForegroundColor DarkGreen " [o] CRAN: '$($addresses.cran.url)'"
+Write-Host -ForegroundColor DarkGreen " [o] PyPI server: '$($addresses.pypi.url)'"
+Write-Host -ForegroundColor DarkGreen " [o] PyPI host: '$($addresses.pypi.host)'"
+
+# Set PyPI and CRAN locations on the compute VM
+$_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
+$computeVMs = Get-AzVM -ResourceGroupName $config.dsg.dsvm.rg | % {$_.Name }
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "update_mirror_settings.sh"
+foreach ($vmName in $computeVMs) {
+    Write-Host -ForegroundColor DarkCyan "Setting PyPI and CRAN locations on compute VM: $($vmName)"
+    $params = @{
+      CRAN_MIRROR_IP = "`"$($addresses.cran.url)`""
+      PYPI_MIRROR_IP = "`"$($addresses.pypi.url)`""
+      PYPI_MIRROR_HOST = "`"$($addresses.pypi.host)`""
+    }
+    $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name $vmName `
+                                    -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
+    $success = $?
+    Write-Output $result.Value
+    if ($success) {
+        Write-Host -ForegroundColor DarkGreen " [o] Setting PyPI and CRAN locations on compute VM was successful"
+    } else {
+        Write-Host -ForegroundColor DarkRed " [x] Setting PyPI and CRAN locations on compute VM failed!"
     }
 }
 
