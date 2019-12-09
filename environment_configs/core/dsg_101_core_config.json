@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing SRE - 101 - Turkcell",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "dsgId": "101",
+    "shmId": "turing1",
+    "tier": "2",
+    "domain": "dsgroup101.co.uk",
+    "netbiosName": "DSGROUP101",
+    "ipPrefix": "10.158.0",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

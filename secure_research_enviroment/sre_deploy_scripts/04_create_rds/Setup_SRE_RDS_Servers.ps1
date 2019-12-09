@@ -30,6 +30,9 @@ $sreNetbiosName = $config.dsg.domain.netbiosName
 $shmNetbiosName = $config.shm.domain.netbiosName
 $dataSubnetIpPrefix = $config.dsg.network.subnets.data.prefix
 $rdsGatewayVmName = $config.dsg.rds.gateway.vmName
+$rdsGatewayVmFqdn = $config.dsg.rds.gateway.fqdn
+$rdsSh1VmFqdn = $config.dsg.rds.sessionHost1.fqdn
+$rdsSh2VmFqdn = $config.dsg.rds.sessionHost2.fqdn
 
 
 # Retrieve passwords from the keyvault

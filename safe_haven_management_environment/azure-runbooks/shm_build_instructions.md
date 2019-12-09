@@ -121,7 +121,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
     - Click the "Reset password" icon to generate a temporary password
     - Use this password to log into https://portal.azure.com as the user `admin@<custom domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
-      - Look in the KeyVault under the `RG_DSG_SECRETS` resource group in the management subscription.
+      - Look in the KeyVault under the `RG_SHM_SECRETS` resource group in the management subscription.
       - There should be a secret there called `shm-aad-admin-password`
       - Use this as the new password
       - If you are prompted to associate a phone number and email address with the account - do so.
@@ -204,7 +204,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 ### Download software and upload to blob storage
 A number of files are needed for the SRE deployment. They must be added to blob storage:
 
-1. On the portal navigate to `RG_DSG_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
+1. On the portal navigate to `RG_SHM_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
    ![Blob storage](images/blobstorage.png)
 2. On your local machine download the following files, appending version numbers manually if needed:
     - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
@@ -248,7 +248,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 3. Navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
-  - To obtain the username and password on Azure navigate to the `RG_DSG_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
+  - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
   - The username is in the `shm-dcnps-admin-username` secret.
   - The password in the `shm-dcnps-admin-password` secret.
 

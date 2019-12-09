@@ -105,7 +105,7 @@ $serverAdminsSID = (Get-ADGroup "SG $sreNetbiosName Server Administrators").SID.
 $GptTmplPath = "F:"; "SYSVOL", "domain", "Policies", "{$($gpo.ID)}", "Machine", "Microsoft", "Windows NT", "SecEdit", "GptTmpl.inf" | ForEach-Object -Process { $GptTmplPath = Join-Path $GptTmplPath $_ }
 
 # Get the old and new lines in the GptTmpl file
-$oldLine = Select-String -Path $GptTmplPath -Pattern "__Members =" | % {$_.Line} #| % {$_ -Replace "\*", "\*"}
+$oldLine = Select-String -Path $GptTmplPath -Pattern "__Members =" | % {$_.Line}
 $newLine = $($oldLine -Split '=')[0] + "= *$domainAdminsSID,*$serverAdminsSID"
 
 # Update GptTmpl file

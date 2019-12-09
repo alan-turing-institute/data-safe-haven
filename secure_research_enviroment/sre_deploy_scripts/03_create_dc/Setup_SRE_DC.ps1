@@ -46,8 +46,8 @@ Write-Host -ForegroundColor DarkCyan "Ensuring that storage account '$storageAcc
 $_ = New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force;
 $storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if($notExists) {
-  Write-Host -ForegroundColor DarkCyan " - creating storage account '$storageAccountName'..."
-  $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_GRS" -Kind "StorageV2"
+    Write-Host -ForegroundColor DarkCyan " - creating storage account '$storageAccountName'..."
+    $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_GRS" -Kind "StorageV2"
 }
 
 
@@ -55,21 +55,21 @@ if($notExists) {
 # ------------------------------
 Write-Host -ForegroundColor DarkCyan "Creating blob storage containers in storage account '$storageAccountName'..."
 ForEach ($containerName in ($artifactsFolderNameConfig, $artifactsFolderNameCreate)) {
-  if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
-    Write-Host -ForegroundColor DarkCyan " - creating container '$containerName'..."
-    $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
-  }
-  $blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
-  $numBlobs = $blobs.Length
-  if($numBlobs -gt 0){
-    Write-Host -ForegroundColor DarkCyan " - deleting $numBlobs blobs aready in container '$containerName'..."
-    $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $storageAccount.Context -Force}
-    while($numBlobs -gt 0){
-      Write-Host -ForegroundColor DarkCyan " - waiting for deletion of $numBlobs remaining blobs..."
-      Start-Sleep -Seconds 10
-      $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context).Length
+    if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
+        Write-Host -ForegroundColor DarkCyan " - creating container '$containerName'..."
+        $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
     }
-  }
+    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
+    $numBlobs = $blobs.Length
+    if($numBlobs -gt 0){
+        Write-Host -ForegroundColor DarkCyan " - deleting $numBlobs blobs aready in container '$containerName'..."
+        $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $storageAccount.Context -Force}
+        while($numBlobs -gt 0){
+            Write-Host -ForegroundColor DarkCyan " - waiting for deletion of $numBlobs remaining blobs..."
+            Start-Sleep -Seconds 10
+            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context).Length
+        }
+    }
 }
 
 
@@ -79,13 +79,13 @@ Write-Host -ForegroundColor DarkCyan "Uploading DC configuration files to storag
 ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName),
                              ($artifactsFolderNameConfig, "GPOs.zip"),
                              ($artifactsFolderNameConfig, "StartMenuLayoutModification.xml"))) {
-  $artifactsFolderName, $artifactsFileName = $folderFilePair
-  Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File "$PSScriptRoot/artifacts/$artifactsFolderName/$artifactsFileName" -Force
-  if ($?) {
-    Write-Host -ForegroundColor DarkGreen " [o] Uploaded '$artifactsFileName' to '$artifactsFolderName'"
-  } else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed to upload '$artifactsFileName'!"
-  }
+    $artifactsFolderName, $artifactsFileName = $folderFilePair
+    Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File "$PSScriptRoot/artifacts/$artifactsFolderName/$artifactsFileName" -Force
+    if ($?) {
+        Write-Host -ForegroundColor DarkGreen " [o] Uploaded '$artifactsFileName' to '$artifactsFolderName'"
+    } else {
+        Write-Host -ForegroundColor DarkRed " [x] Failed to upload '$artifactsFileName'!"
+    }
 }
 
 
@@ -103,22 +103,22 @@ $templateName = "sredc-template"
 Write-Host -ForegroundColor DarkCyan " - deploying template $templateName..."
 $netbiosNameMaxLength = 15
 if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
-  throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
+    throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
 }
 $params = @{
-  "SRE ID" = $config.dsg.id
-  "DC Name" = $config.dsg.dc.vmName
-  "VM Size" = $config.dsg.dc.vmSize
-  "IP Address" = $config.dsg.dc.ip
-  "Administrator User" = $dcAdminUsername
-  "Administrator Password" = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-  "Virtual Network Name" = $config.dsg.network.vnet.name
-  "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
-  "Virtual Network Subnet" = $config.dsg.network.subnets.identity.name
-  "Artifacts Location" = $artifactLocation
-  "Artifacts Location SAS Token" = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-  "Domain Name" = $config.dsg.domain.fqdn
-  "NetBIOS Name" = $config.dsg.domain.netbiosName
+    "SRE ID" = $config.dsg.id
+    "DC Name" = $config.dsg.dc.vmName
+    "VM Size" = $config.dsg.dc.vmSize
+    "IP Address" = $config.dsg.dc.ip
+    "Administrator User" = $dcAdminUsername
+    "Administrator Password" = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
+    "Virtual Network Name" = $config.dsg.network.vnet.name
+    "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
+    "Virtual Network Subnet" = $config.dsg.network.subnets.identity.name
+    "Artifacts Location" = $artifactLocation
+    "Artifacts Location SAS Token" = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    "Domain Name" = $config.dsg.domain.fqdn
+    "NetBIOS Name" = $config.dsg.domain.netbiosName
 }
 $_ = New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location -Force
 New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
@@ -143,20 +143,20 @@ $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.dsg.su
 # Run import script remotely
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Import_Artifacts.ps1"
 $params = @{
-  remoteDir = "`"$remoteUploadDir`""
-  pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-  storageAccountName = "`"$storageAccountName`""
-  storageContainerName = "`"$artifactsFolderNameConfig`""
-  sasToken = "`"$artifactSasToken`""
+    remoteDir = "`"$remoteUploadDir`""
+    pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
+    storageAccountName = "`"$storageAccountName`""
+    storageContainerName = "`"$artifactsFolderNameConfig`""
+    sasToken = "`"$artifactSasToken`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Importing artifacts succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Importing artifacts succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Importing artifacts failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Importing artifacts failed!"
 }
 
 
@@ -169,9 +169,9 @@ $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Setting OS language succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Setting OS language succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Setting OS language failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Setting OS language failed!"
 }
 
 
@@ -180,19 +180,19 @@ if ($success) {
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_Users_Groups_OUs.ps1"
 Write-Host -ForegroundColor DarkCyan "Creating users, groups and OUs for: $($config.dsg.dc.vmName)..."
 $params = @{
-  sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
-  sreDn = "`"$($config.dsg.domain.dn)`""
-  sreServerAdminSgName = "`"$($config.dsg.domain.securityGroups.serverAdmins.name)`""
-  sreDcAdminUsername = "`"$($dcAdminUsername)`""
+    sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
+    sreDn = "`"$($config.dsg.domain.dn)`""
+    sreServerAdminSgName = "`"$($config.dsg.domain.securityGroups.serverAdmins.name)`""
+    sreDcAdminUsername = "`"$($dcAdminUsername)`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Creating users, groups and OUs succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Creating users, groups and OUs succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Creating users, groups and OUs failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Creating users, groups and OUs failed!"
 }
 
 
@@ -201,20 +201,20 @@ if ($success) {
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DNS.ps1"
 Write-Host -ForegroundColor DarkCyan "Configuring DNS..."
 $params = @{
-  identitySubnetCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
-  rdsSubnetCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
-  dataSubnetCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
-  shmFqdn = "`"$($config.shm.domain.fqdn)`""
-  shmDcIp = "`"$($config.shm.dc.ip)`""
+    identitySubnetCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
+    rdsSubnetCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
+    dataSubnetCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
+    shmFqdn = "`"$($config.shm.domain.fqdn)`""
+    shmDcIp = "`"$($config.shm.dc.ip)`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Configuring DNS succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Configuring DNS succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Configuring DNS failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Configuring DNS failed!"
 }
 
 
@@ -223,19 +223,19 @@ if ($success) {
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_GPOs.ps1"
 Write-Host -ForegroundColor DarkCyan "Configuring GPOs..."
 $params = @{
-  oubackuppath = "`"$remoteUploadDir\GPOs`""
-  sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
-  sreFqdn = "`"$($config.dsg.domain.fqdn)`""
-  sreDomainOu = "`"$($config.dsg.domain.dn)`""
+    oubackuppath = "`"$remoteUploadDir\GPOs`""
+    sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
+    sreFqdn = "`"$($config.dsg.domain.fqdn)`""
+    sreDomainOu = "`"$($config.dsg.domain.dn)`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Configuring GPOs succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Configuring GPOs succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Configuring GPOs failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Configuring GPOs failed!"
 }
 
 
@@ -244,9 +244,9 @@ if ($success) {
 Write-Host "Restarting $($config.dsg.dc.vmName)..."
 Restart-AzVM -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg
 if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Restarting DC succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Restarting DC succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Restarting DC failed!"
+    Write-Host -ForegroundColor DarkRed " [x] Restarting DC failed!"
 }
 
 
@@ -263,18 +263,18 @@ $dcAdminPasswordEncrypted = ConvertTo-SecureString $dcAdminPassword -AsPlainText
 # Run domain configuration script remotely
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Domain_Trust.ps1"
 $params = @{
-  sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
-  sreDcAdminUsername = "`"$dcAdminUsername`""
-  sreFqdn = "`"$($config.dsg.domain.fqdn)`""
+    sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
+    sreDcAdminUsername = "`"$dcAdminUsername`""
+    sreFqdn = "`"$($config.dsg.domain.fqdn)`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
 $success = $?
 Write-Output $result.Value;
 if ($success) {
-  Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
+    Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
+    Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
 }
 
 

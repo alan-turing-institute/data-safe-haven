@@ -43,38 +43,38 @@ ForEach (`$server in `$(Get-RDServer -ErrorAction SilentlyContinue)) {
 # Create RDS Environment
 # ----------------------
 Write-Host -ForegroundColor Cyan "Creating RDS Environment..."
-New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmName.$sreFqdn" -WebAccessServer "$rdsGatewayVmName.$sreFqdn" -SessionHost @("$rdsSh1VmName.$sreFqdn","$rdsSh2VmName.$sreFqdn")
-Add-RDServer -Server $rdsGatewayVmName.$sreFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmName.$sreFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmName.$sreFqdn -Force
+New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "$rdsGatewayVmFqdn" -SessionHost @("$rdsSh1VmFqdn","$rdsSh2VmFqdn")
+Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmFqdn -Force
 Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature
-Add-RDServer -Server $rdsGatewayVmName.$sreFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmName.$sreFqdn -GatewayExternalFqdn $rdsGatewayVmName.$sreFqdn
+Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $rdsGatewayVmFqdn
 
 
 # Create collections
 # ------------------
 `$collectionName = "Remote Applications"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
-New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh1VmName.$sreFqdn -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\AppFileShares -ConnectionBroker $rdsGatewayVmName.$sreFqdn
+New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh1VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\AppFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 `$collectionName = "Presentation Server"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
-New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmName.$sreFqdn -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmName.$sreFqdn
+New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 
 # Create applications
 # -------------------
 Write-Host -ForegroundColor Cyan "Creating applications..."
-New-RDRemoteApp -Alias WinSCP -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "chrome (1)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.151" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "chrome (2)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.152:3000" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "Main VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "putty (1)" -DisplayName "Main VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "Other VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
-New-RDRemoteApp -Alias "putty (2)" -DisplayName "Other VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmName.$sreFqdn
+New-RDRemoteApp -Alias WinSCP -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "chrome (1)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.151" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "chrome (2)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.152:3000" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "Main VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "putty (1)" -DisplayName "Main VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "Other VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "putty (2)" -DisplayName "Other VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 
 
 # Update server configuration

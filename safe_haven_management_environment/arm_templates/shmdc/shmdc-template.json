@@ -68,9 +68,12 @@
                 "Description": "Enter the correct NetBIOS name"
             }
         },
+<<<<<<< HEAD
         "Shm_Id":{
             "type": "string"
         },
+=======
+>>>>>>> master
         "DC1_VM_Name":{
             "type": "string"
         },

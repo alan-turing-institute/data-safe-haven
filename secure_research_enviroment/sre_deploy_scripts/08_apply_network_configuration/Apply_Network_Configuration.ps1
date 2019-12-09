@@ -76,17 +76,17 @@ $ruleName = "HTTPS_In"
 $ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgGateway;
 Write-Host -ForegroundColor DarkCyan " [ ] Updating '$($ruleName)' rule on '$($nsgGateway.name)' NSG to '$($ruleBefore.Access)' access from '$allowedSources' (was previously '$($ruleBefore.SourceAddressPrefix)')"
 $params = @{
-  Name = $ruleName
-  NetworkSecurityGroup = $nsgGateway
-  Description = "Allow HTTPS inbound to RDS server"
-  Access = "Allow"
-  Direction = "Inbound"
-  SourceAddressPrefix = $allowedSources
-  Protocol = "TCP"
-  SourcePortRange = "*"
-  DestinationPortRange = "443"
-  DestinationAddressPrefix = "*"
-  Priority = "101"
+    Name = $ruleName
+    NetworkSecurityGroup = $nsgGateway
+    Description = "Allow HTTPS inbound to RDS server"
+    Access = "Allow"
+    Direction = "Inbound"
+    SourceAddressPrefix = $allowedSources
+    Protocol = "TCP"
+    SourcePortRange = "*"
+    DestinationPortRange = "443"
+    DestinationAddressPrefix = "*"
+    Priority = "101"
 }
 # Update rule and NSG (both are required)
 $_ = Set-AzNetworkSecurityRuleConfig @params;

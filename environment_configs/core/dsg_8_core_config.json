@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Turing DSG - 8 - Sensat",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "dsgId": "8",
+    "shmId": "turing1",
+    "tier": "1",
+    "domain": "dsgroup8.co.uk",
+    "netbiosName": "DSGROUP8",
+    "ipPrefix": "10.100.56",
+    "rdsAllowedSources": "default",
+    "rdsInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

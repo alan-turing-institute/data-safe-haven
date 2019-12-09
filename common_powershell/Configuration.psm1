@@ -206,6 +206,8 @@ function Add-SreConfig {
     $config.dsg.shortName = "sre-" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
     $config.dsg.tier = $dsgConfigBase.tier
+    $config.dsg.adminSecurityGroupName = $dsgConfigBase.adminSecurityGroupName
+
 
     # --- Package mirror config ---
     $config.dsg.mirrors = [ordered]@{
@@ -310,7 +312,7 @@ function Add-SreConfig {
     $config.dsg.dc = [ordered]@{}
     $config.dsg.dc.rg = "RG_SRE_DC"
     $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
-    $config.dsg.dc.vmSize = "Standard_B2ms"
+    $config.dsg.dc.vmSize = "Standard_DS2_v2"
     $config.dsg.dc.hostname = $config.dsg.dc.vmName
     $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
@@ -345,14 +347,14 @@ function Add-SreConfig {
     $config.dsg.rds.nsg = [ordered]@{
         gateway = [ordered]@{}
     }
+    $config.dsg.rds.nsg.gateway.name = "NSG_RDS-DSG" + $config.dsg.id + "_Server"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if($dsgConfigBase.rdsAllowedSources -eq "default") {
-        Write-Host "using defaults"
         if(@("3", "4").Contains($config.dsg.tier)) {
             $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
         } elseif($config.dsg.tier -eq "2") {
-            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253,193.60.220.240"
+            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253"
         } elseif(@("0", "1").Contains($config.dsg.tier)) {
             $config.dsg.rds.nsg.gateway.allowedSources = "Internet"
         }
@@ -369,6 +371,7 @@ function Add-SreConfig {
     } else {
         $config.dsg.rds.nsg.gateway.outboundInternet = $dsgConfigBase.rdsInternetAccess
     }
+    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDG-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
@@ -392,7 +395,7 @@ function Add-SreConfig {
     $config.dsg.dataserver = [ordered]@{}
     $config.dsg.dataserver.rg = "RG_SRE_DATA"
     $config.dsg.dataserver.vmName = "DSV-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
-    $config.dsg.dataserver.vmSize = "Standard_B2ms"
+    $config.dsg.dataserver.vmSize = "Standard_DS2_v2"
     $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
     $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
     $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
@@ -437,7 +440,7 @@ function Add-SreConfig {
     }
 
     $jsonOut = ($config | ConvertTo-Json -depth 10)
-    Write-Host $jsonOut
+    # Write-Host $jsonOut
     Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig

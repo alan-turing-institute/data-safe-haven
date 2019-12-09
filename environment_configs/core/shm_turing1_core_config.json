@@ -1,6 +1,5 @@
 {
     "subscriptionName": "Turing Safe Haven Management",
-    "domainSubscriptionName": "Turing Safe Haven Domains",
     "adminSecurityGroupName" : "Safe Haven Production Admins",
     "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",

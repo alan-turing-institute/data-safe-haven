@@ -18,6 +18,7 @@ $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resol
 # --------------------------
 $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
+
 # Ensure the resource group exists
 # --------------------------------
 Write-Host -ForegroundColor DarkCyan "Ensuring resource group '$($config.dsg.keyVault.rg)' exists..."
@@ -27,6 +28,7 @@ if ($?) {
 } else {
   Write-Host -ForegroundColor DarkRed " [x] Failed!"
 }
+
 
 # Ensure the keyvault exists
 # --------------------------
@@ -47,7 +49,7 @@ if ($keyVault -ne $null) {
 # --------------------------
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
-# === Retrieve passwords from the keyvault ====
+# Retrieve passwords from the keyvault
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
 $hackmdPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.hackmdLdapPassword
 $gitlabPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.gitlabLdapPassword
@@ -122,12 +124,12 @@ Write-Output $result.Value
 # -------------------------------
 $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 Write-Host -ForegroundColor DarkCyan "Updating SRE keyvault permissions..."
-Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
-Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+try {
+    Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+    Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
+    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} catch {
+    Write-Host -ForegroundColor DarkRed " [x] Failed! Please check the permissions for '$($config.dsg.keyVault.name)' manually."
 }
 
 

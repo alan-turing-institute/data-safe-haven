@@ -34,18 +34,18 @@
       },
       "subnets": {
         "identity": {
-          "prefix": "10.0.0",
           "name": "IdentitySubnet",
+          "prefix": "10.0.0",
           "cidr": "10.0.0.0/24"
         },
         "web": {
-          "prefix": "10.0.1",
           "name": "WebSubnet",
+          "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
-          "prefix": "10.0.7",
           "name": "GatewaySubnet",
+          "prefix": "10.0.7",
           "cidr": "10.0.7.0/24"
         }
       }
@@ -95,67 +95,68 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Turing SRE – Sandbox",
-    "id": "100",
-    "shortName": "dsg100",
+    "subscriptionName": "Turing DSG - 10 - DST1LBField",
+    "id": "10",
+    "shortName": "dsg10",
     "location": "uksouth",
-    "tier": "2",
+    "tier": "1",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
         "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+        "name": null
       },
       "cran": {
-        "ip": "10.20.2.21"
+        "ip": null
       },
       "pypi": {
-        "ip": "10.20.2.20"
+        "ip": null
       }
     },
     "domain": {
-      "fqdn": "dsgroup100.co.uk",
-      "netbiosName": "DSGROUP100",
-      "dn": "DC=dsgroup100,DC=co,DC=uk",
+      "fqdn": "dsgroup10.co.uk",
+      "netbiosName": "DSGROUP10",
+      "dn": "DC=dsgroup10,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "name": "SG DSGROUP100 Server Administrators",
-          "description": "SG DSGROUP100 Server Administrators"
+          "name": "SG DSGROUP10 Server Administrators",
+          "description": "SG DSGROUP10 Server Administrators"
         },
         "researchUsers": {
-          "name": "SG DSGROUP100 Research Users",
-          "description": "SG DSGROUP100 Research Users"
+          "name": "SG DSGROUP10 Research Users",
+          "description": "SG DSGROUP10 Research Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "VNET_DSG100",
-        "cidr": "10.150.0.0/21"
+        "name": "VNET_DSG10",
+        "cidr": "10.100.72.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.150.0",
-          "cidr": "10.150.0.0/24"
+          "prefix": "10.100.72",
+          "cidr": "10.100.72.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.150.1",
-          "cidr": "10.150.1.0/24"
+          "prefix": "10.100.73",
+          "cidr": "10.100.73.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.150.2",
-          "cidr": "10.150.2.0/24"
+          "prefix": "10.100.74",
+          "cidr": "10.100.74.0/24"
         },
         "gateway": {
           "name": "GatewaySubnet",
-          "prefix": "10.150.7",
-          "cidr": "10.150.7.0/27"
+          "prefix": "10.100.79",
+          "cidr": "10.100.79.0/27"
         }
       },
       "nsg": {
@@ -168,75 +169,76 @@
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsg100artifacts"
+        "accountName": "dsg10artifacts"
       }
     },
     "keyVault": {
-      "name": "kv-turing1-dsg100",
+      "name": "kv-turing1-dsg10",
       "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC-DSG100",
-      "hostname": "DC-DSG100",
-      "fqdn": "DC-DSG100.dsgroup100.co.uk",
-      "ip": "10.150.0.250",
+      "vmName": "DC-DSG10",
+      "hostname": "DC-DSG10",
+      "fqdn": "DC-DSG10.dsgroup10.co.uk",
+      "ip": "10.100.72.250",
       "admin": {
-        "usernameSecretName": "dsg100-dc-admin-username",
-        "passwordSecretName": "dsg100-dc-admin-password"
+        "usernameSecretName": "dsg10-dc-admin-username",
+        "passwordSecretName": "dsg10-dc-admin-password"
       }
     },
     "users": {
       "ldap": {
         "gitlab": {
-          "name": "DSGROUP100 Gitlab LDAP",
-          "samAccountName": "dsg100-gitlab-ldap",
-          "passwordSecretName": "dsg100-gitlab-ldap-password"
+          "name": "DSGROUP10 Gitlab LDAP",
+          "samAccountName": "dsg10-gitlab-ldap",
+          "passwordSecretName": "dsg10-gitlab-ldap-password"
         },
         "hackmd": {
-          "name": "DSGROUP100 HackMD LDAP",
-          "samAccountName": "dsg100-hackmd-ldap",
-          "passwordSecretName": "dsg100-hackmd-ldap-password"
+          "name": "DSGROUP10 HackMD LDAP",
+          "samAccountName": "dsg10-hackmd-ldap",
+          "passwordSecretName": "dsg10-hackmd-ldap-password"
         },
         "dsvm": {
-          "name": "DSGROUP100 DSVM LDAP",
-          "samAccountName": "dsg100-dsvm-ldap",
-          "passwordSecretName": "dsg100-dsvm-ldap-password"
+          "name": "DSGROUP10 DSVM LDAP",
+          "samAccountName": "dsg10-dsvm-ldap",
+          "passwordSecretName": "dsg10-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "DSGROUP100 Test Researcher",
-          "samAccountName": "dsg100-test-res",
-          "passwordSecretName": "dsg100-test-res-password"
+          "name": "DSGROUP10 Test Researcher",
+          "samAccountName": "dsg10-test-res",
+          "passwordSecretName": "dsg10-test-res-password"
         }
       }
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS-DSG100",
-        "hostname": "RDS-DSG100",
-        "fqdn": "RDS-DSG100.dsgroup100.co.uk",
-        "ip": "10.150.1.250",
-        "npsSecretName": "dsg100-nps-secret"
+        "vmName": "RDS-DSG10",
+        "hostname": "RDS-DSG10",
+        "fqdn": "RDS-DSG10.dsgroup10.co.uk",
+        "ip": "10.100.73.250",
+        "npsSecretName": "dsg10-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1-DSG100",
-        "hostname": "RDSSH1-DSG100",
-        "fqdn": "RDSSH1-DSG100.dsgroup100.co.uk",
-        "ip": "10.150.1.249"
+        "vmName": "RDSSH1-DSG10",
+        "hostname": "RDSSH1-DSG10",
+        "fqdn": "RDSSH1-DSG10.dsgroup10.co.uk",
+        "ip": "10.100.73.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2-DSG100",
-        "hostname": "RDSSH2-DSG100",
-        "fqdn": "RDSSH2-DSG100.dsgroup100.co.uk",
-        "ip": "10.150.1.248"
+        "vmName": "RDSSH2-DSG10",
+        "hostname": "RDSSH2-DSG10",
+        "fqdn": "RDSSH2-DSG10.dsgroup10.co.uk",
+        "ip": "10.100.73.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS_Server",
-          "allowedSources": "Internet"
+          "name": "NSG_RDS-DSG10_Server",
+          "allowedSources": "Internet",
+          "outboundInternet": "Allow"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -245,24 +247,24 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATA-DSG100",
-      "hostname": "DATA-DSG100",
-      "fqdn": "DATA-DSG100.dsgroup100.co.uk",
-      "ip": "10.150.2.250"
+      "vmName": "DATA-DSG10",
+      "hostname": "DATA-DSG10",
+      "fqdn": "DATA-DSG10.dsgroup10.co.uk",
+      "ip": "10.100.74.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB-DSG100",
-        "hostname": "GITLAB-DSG100",
-        "fqdn": "GITLAB-DSG100.dsgroup100.co.uk",
-        "ip": "10.150.2.151",
-        "rootPasswordSecretName": "dsg100-gitlab-root-password"
+        "vmName": "GITLAB-DSG10",
+        "hostname": "GITLAB-DSG10",
+        "fqdn": "GITLAB-DSG10.dsgroup10.co.uk",
+        "ip": "10.100.74.151",
+        "rootPasswordSecretName": "dsg10-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD-DSG100",
-        "hostname": "HACKMD-DSG100",
-        "fqdn": "HACKMD-DSG100.dsgroup100.co.uk",
-        "ip": "10.150.2.152"
+        "vmName": "HACKMD-DSG10",
+        "hostname": "HACKMD-DSG10",
+        "fqdn": "HACKMD-DSG10.dsgroup10.co.uk",
+        "ip": "10.100.74.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
@@ -274,7 +276,7 @@
       "vmImageVersion": "0.1.2019082900",
       "admin": {
         "username": "dsgadmin",
-        "passwordSecretName": "dsg100-dsvm-admin-password"
+        "passwordSecretName": "dsg10-dsvm-admin-password"
       }
     }
   }

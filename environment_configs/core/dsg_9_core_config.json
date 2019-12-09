@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Turing DSG - 9 - WWF",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "dsgId": "9",
+    "shmId": "turing1",
+    "tier": "2",
+    "domain": "dsgroup9.co.uk",
+    "netbiosName": "DSGROUP9",
+    "ipPrefix": "10.100.64",
+    "rdsAllowedSources": "default",
+    "rdsInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}
