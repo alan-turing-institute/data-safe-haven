@@ -203,6 +203,9 @@ function Add-SreConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.id = $dsgConfigBase.dsgId
+    if($config.dsg.id -gt 7) {
+        Write-Host "dsgId should be 7 characters or less if possible. $($config.dsg.id) is $($config.dsg.id.length) characters long."
+    }
     $config.dsg.shortName = "sre-" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
     $config.dsg.tier = $dsgConfigBase.tier
@@ -371,7 +374,6 @@ function Add-SreConfig {
     } else {
         $config.dsg.rds.nsg.gateway.outboundInternet = $dsgConfigBase.rdsInternetAccess
     }
-    $config.dsg.rds.nsg.sessionHosts.name = "NSG_SessionHosts"
     $config.dsg.rds.gateway.vmName = "RDG-SRE-" + $($config.dsg.id).ToUpper() | TrimToLength 15
     $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName

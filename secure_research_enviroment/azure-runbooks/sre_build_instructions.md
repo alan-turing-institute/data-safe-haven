@@ -114,7 +114,7 @@ The following core SRE properties must be defined in a JSON file named `dsg_<dsg
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
-    "dsgId": "A short ID to identify the secure research environment",
+    "dsgId": "A short ID to identify the secure research environment. Ideally this should be 7 characters or less; if not it will be truncated in some places, but will otherwise not cause problems.",
     "shmId": "The short ID for the SHM segment to deploy against",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the DSG and which mirror set the DSG is peered with",
     "domain": "The fully qualified domain name for the SRE",
@@ -135,7 +135,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
-  - `Import-Module .common_powershell/Configuration.psm1 -Force`
+  - `Import-Module ./common_powershell/Configuration.psm1 -Force`
   - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is usually a number, e.g. `9` for `DSG9`)
 - A full configuration file for the new SRE will be created at `environment_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
