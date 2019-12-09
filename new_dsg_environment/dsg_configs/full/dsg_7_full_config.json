@@ -1,8 +1,8 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Managment",
-    "id": "prod",
-    "name": "Safe Haven",
+    "subscriptionName": "Turing Safe Haven Management",
+    "id": "turing1",
+    "name": "Turng Safe Haven",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -10,10 +10,12 @@
       "countryCode": "GB"
     },
     "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
       "fqdn": "turingsafehaven.ac.uk",
       "netbiosName": "TURINGSAFEHAVEN",
       "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk",
       "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
       "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
       "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
@@ -27,49 +29,65 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_VNET",
-        "name": "SHM_VNET1",
-        "cidr": "10.251.0.0/21"
+        "name": "VNET_SHM_TURING1",
+        "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.251.0",
-          "cidr": "10.251.0.0/24"
+          "name": "IdentitySubnet",
+          "prefix": "10.0.0",
+          "cidr": "10.0.0.0/24"
+        },
+        "web": {
+          "name": "WebSubnet",
+          "prefix": "10.0.1",
+          "cidr": "10.0.1.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.0.7",
+          "cidr": "10.0.7.0/24"
         }
       }
     },
     "dc": {
-      "rg": "RG_SHM_VM_DC",
-      "vmName": "SHMDC1",
-      "hostname": "SHMDC1",
-      "fqdn": "SHMDC1.turingsafehaven.ac.uk",
-      "ip": "10.251.0.250"
+      "rg": "RG_SHM_DC",
+      "vmName": "DC1-SHM-TURING1",
+      "hostname": "DC1-SHM-TURING1",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "SHMDC2",
-      "hostname": "SHMDC2",
-      "fqdn": "SHMDC2.turingsafehaven.ac.uk",
-      "ip": "10.251.0.249"
+      "vmName": "DC2-SHM-TURING1",
+      "hostname": "DC2-SHM-TURING1",
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "SHMNPS",
-      "ip": "10.251.0.248"
+      "vmName": "NPS-SHM-TURING1",
+      "hostname": "NPS-SHM-TURING1",
+      "ip": "10.0.0.248"
     },
     "storage": {
       "artifacts": {
-        "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgartifactsprod"
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmturing1artifacts"
       }
     },
     "keyVault": {
-      "rg": "RG_DSG_SECRETS",
-      "name": "dsg-management-prod",
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-turing1",
       "secretNames": {
-        "p2sRootCert": "sh-management-p2s-root-cert",
-        "dc": "sh-managment-dcadmin",
-        "safemode": "sh-managment-dcsafemode",
-        "adsync": "sh-managment-adsync",
-        "vpncertificate": "sh-managment-cert"
+        "dcAdminUsername": "shm-dc-admin-username",
+        "dcAdminPassword": "shm-dc-admin-password",
+        "dcSafemodePassword": "shm-dc-safemode-password",
+        "adsyncPassword": "shm-adsync-password",
+        "vpnCaCertificate": "shm-vpn-ca-cert",
+        "vpnCaCertPassword": "shm-vpn-ca-cert-password",
+        "vpnCaCertificatePlain": "shm-vpn-ca-cert-plain",
+        "vpnClientCertificate": "shm-vpn-client-cert",
+        "vpnClientCertPassword": "shm-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -77,24 +95,25 @@
     }
   },
   "dsg": {
-    "subscriptionName": "Data Study Group 7 (Prod)",
+    "subscriptionName": "Turing DSG - 7 - Narchives",
     "id": "7",
     "shortName": "dsg7",
     "location": "uksouth",
-    "tier": "2",
+    "tier": "1",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
-        "name": "kv-shm-pkg-mirrors-prod"
+        "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+        "name": null
       },
       "cran": {
-        "ip": "10.20.2.21"
+        "ip": null
       },
       "pypi": {
-        "ip": "10.20.2.20"
+        "ip": null
       }
     },
     "domain": {
@@ -115,28 +134,29 @@
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUP7_VNET1",
-        "cidr": "10.250.48.0/21"
+        "name": "VNET_DSG7",
+        "cidr": "10.100.48.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.250.48",
-          "cidr": "10.250.48.0/24"
+          "prefix": "10.100.48",
+          "cidr": "10.100.48.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.250.49",
-          "cidr": "10.250.49.0/24"
+          "prefix": "10.100.49",
+          "cidr": "10.100.49.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.250.50",
-          "cidr": "10.250.50.0/24"
+          "prefix": "10.100.50",
+          "cidr": "10.100.50.0/24"
         },
         "gateway": {
-          "prefix": "10.250.55",
-          "cidr": "10.250.55.0/27"
+          "name": "GatewaySubnet",
+          "prefix": "10.100.55",
+          "cidr": "10.100.55.0/27"
         }
       },
       "nsg": {
@@ -153,16 +173,17 @@
       }
     },
     "keyVault": {
-      "name": "dsg-management-prod"
+      "name": "kv-turing1-dsg7",
+      "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DSG7DC",
-      "hostname": "DSG7DC",
-      "fqdn": "DSG7DC.dsgroup7.co.uk",
-      "ip": "10.250.48.250",
+      "vmName": "DC-DSG7",
+      "hostname": "DC-DSG7",
+      "fqdn": "DC-DSG7.dsgroup7.co.uk",
+      "ip": "10.100.48.250",
       "admin": {
-        "username": "atiadmin",
+        "usernameSecretName": "dsg7-dc-admin-username",
         "passwordSecretName": "dsg7-dc-admin-password"
       }
     },
@@ -194,29 +215,30 @@
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS",
-        "hostname": "RDS",
-        "fqdn": "RDS.dsgroup7.co.uk",
-        "ip": "10.250.49.250",
+        "vmName": "RDS-DSG7",
+        "hostname": "RDS-DSG7",
+        "fqdn": "RDS-DSG7.dsgroup7.co.uk",
+        "ip": "10.100.49.250",
         "npsSecretName": "dsg7-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1",
-        "hostname": "RDSSH1",
-        "fqdn": "RDSSH1.dsgroup7.co.uk",
-        "ip": "10.250.49.249"
+        "vmName": "RDSSH1-DSG7",
+        "hostname": "RDSSH1-DSG7",
+        "fqdn": "RDSSH1-DSG7.dsgroup7.co.uk",
+        "ip": "10.100.49.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2",
-        "hostname": "RDSSH2",
-        "fqdn": "RDSSH2.dsgroup7.co.uk",
-        "ip": "10.250.49.248"
+        "vmName": "RDSSH2-DSG7",
+        "hostname": "RDSSH2-DSG7",
+        "fqdn": "RDSSH2-DSG7.dsgroup7.co.uk",
+        "ip": "10.100.49.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS_Server",
-          "allowedSources": "193.60.220.253,193.60.220.240"
+          "name": "NSG_RDS-DSG7_Server",
+          "allowedSources": "Internet",
+          "outboundInternet": "Allow"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -225,36 +247,36 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATASERVER",
-      "hostname": "DATASERVER",
-      "fqdn": "DATASERVER.dsgroup7.co.uk",
-      "ip": "10.250.50.250"
+      "vmName": "DATA-DSG7",
+      "hostname": "DATA-DSG7",
+      "fqdn": "DATA-DSG7.dsgroup7.co.uk",
+      "ip": "10.100.50.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB",
-        "hostname": "GITLAB",
-        "fqdn": "GITLAB.dsgroup7.co.uk",
-        "ip": "10.250.50.151",
+        "vmName": "GITLAB-DSG7",
+        "hostname": "GITLAB-DSG7",
+        "fqdn": "GITLAB-DSG7.dsgroup7.co.uk",
+        "ip": "10.100.50.151",
         "rootPasswordSecretName": "dsg7-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD",
-        "hostname": "HACKMD",
-        "fqdn": "HACKMD.dsgroup7.co.uk",
-        "ip": "10.250.50.152"
+        "vmName": "HACKMD-DSG7",
+        "hostname": "HACKMD-DSG7",
+        "fqdn": "HACKMD-DSG7.dsgroup7.co.uk",
+        "ip": "10.100.50.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven VM Images",
+      "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019082900",
       "admin": {
-        "username": "atiadmin",
-        "passwordSecretName": "dsgroup7-dsvm-admin-password"
+        "username": "dsgadmin",
+        "passwordSecretName": "dsg7-dsvm-admin-password"
       }
     }
   }

@@ -1,0 +1,12 @@
+{
+    "subscriptionName": "Development SRE1",
+    "dsgId": "dev1",
+    "shmId": "dev1",
+    "tier": "2",
+    "domain": "dsgroupdev1.co.uk",
+    "netbiosName": "DSGROUPDEV1",
+    "ipPrefix": "10.100.0",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

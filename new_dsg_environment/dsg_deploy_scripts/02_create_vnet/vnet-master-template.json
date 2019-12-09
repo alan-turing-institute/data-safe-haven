@@ -3,62 +3,46 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Virtual Network Name": {
-            "defaultValue": "DSG_DSGROUPX_VNET1",
-            "type": "string",
-            "metadata": {
-                "Description": "Enter name of virtual network i.e. DSG_DSGROUP2_VNET1"
-            }
+            "type": "string"
         },
         "P2S VPN Certificate": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Paste certificate into dialogue box"
-            }
+            "type": "securestring"
         },
         "Virtual Network Address Space": {
-            "type": "string",
-            "defaultValue": "10.250.x.x",
-            "metadata": {
-                "description": "Enter IP address space for the virtual network i.e. 10.250.10.0/21"
-            }
+            "type": "string"
         },
         "Subnet-Identity Address Prefix": {
-            "type": "string",
-            "defaultValue": "10.250.x.x",
-            "metadata": {
-                "description": "Enter IP subnet prefix i.e. 10.250.10.0/24"
-            }
+            "type": "string"
         },
         "Subnet-RDS Address Prefix": {
-            "type": "string",
-            "defaultValue": "10.250.x.x",
-            "metadata": {
-                "description": "Enter IP subnet prefix i.e. 10.250.11./24"
-            }
+            "type": "string"
          },
         "Subnet-Data Address Prefix": {
-            "type": "string",
-            "defaultValue": "10.250.x.x",
-            "metadata": {
-                "description": "Enter IP subnet prefix i.e. 10.250.12.0/24"
-            }
+            "type": "string"
         },
-         "Subnet-Gateway Address Prefix": {
-            "type": "string",
-            "defaultValue": "10.250.x.x",
-            "metadata": {
-                "description": "Enter IP subnet prefix for the gateway i.e. 10.250.13.0/27"
-            }
+         "GatewaySubnet Address Prefix": {
+            "type": "string"
+         },
+        "Subnet-Identity Name": {
+            "type": "string"
+        },
+        "Subnet-RDS Name": {
+            "type": "string"
+         },
+        "Subnet-Data Name": {
+            "type": "string"
+        },
+         "GatewaySubnet Name": {
+            "type": "string"
          },
          "DNS Server IP Address": {
-            "type": "string",
-            "defaultValue": "10.250.x.250",
-            "metadata": {
-                "description": "Enter IP of the DNS server (this is the DC within the DSG i.e. 10.250.x.250"
-            }
+            "type": "string"
          }
         },
-    "variables": {},
+    "variables": {
+        "Gateway_Name": "[concat(parameters('Virtual Network Name'),'_GW')]",
+        "Gateway_IP_Name": "[concat(parameters('Virtual Network Name'),'_GW_PIP')]"
+    },
     "resources": [
         {
             "type": "Microsoft.Network/publicIPAddresses",
@@ -66,7 +50,7 @@
                 "name": "Basic",
                 "tier": "Regional"
             },
-            "name": "DSG_VNET1_GW_PIP",
+            "name": "[variables('Gateway_IP_Name')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -79,7 +63,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
-            "name": "DSG_VNET1_GW",
+            "name": "[variables('Gateway_Name')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -90,10 +74,10 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
                             }
                         }
                     }
@@ -130,8 +114,8 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'DSG_VNET1_GW_PIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), 'GatewaySubnet')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
             ]
         },
         {
@@ -154,7 +138,7 @@
                 },
                 "subnets": [
                     {
-                        "name": "Subnet-Identity",
+                        "name": "[parameters('Subnet-Identity Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",
                             "serviceEndpoints": [],
@@ -162,7 +146,7 @@
                         }
                     },
                     {
-                        "name": "Subnet-RDS",
+                        "name": "[parameters('Subnet-RDS Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-RDS Address Prefix')]",
                             "serviceEndpoints": [],
@@ -170,7 +154,7 @@
                         }
                     },
                     {
-                        "name": "Subnet-Data",
+                        "name": "[parameters('Subnet-Data Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
                             "serviceEndpoints": [],
@@ -178,9 +162,9 @@
                         }
                     },
                     {
-                        "name": "GatewaySubnet",
+                        "name": "[parameters('GatewaySubnet Name')]",
                         "properties": {
-                            "addressPrefix": "[parameters('Subnet-Gateway Address Prefix')]",
+                            "addressPrefix": "[parameters('GatewaySubnet Address Prefix')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
@@ -193,7 +177,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-Identity')]",
+            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-Identity Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
@@ -207,7 +191,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-RDS')]",
+            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-RDS Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
@@ -221,7 +205,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', 'Subnet-Data')]",
+            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-Data Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
@@ -235,11 +219,11 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', 'GatewaySubnet')]",
+            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('GatewaySubnet Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[parameters('Subnet-Gateway Address Prefix')]",
+                "addressPrefix": "[parameters('GatewaySubnet Address Prefix')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },

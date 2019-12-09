@@ -18,8 +18,8 @@ $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
 
 # Admin user credentials (must be same as for DSG DC for now)
-$adminUser = $config.dsg.dc.admin.username
-$adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
+$adminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.usernameSecretName).SecretValueText;
+$adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
 
 # VM sizes
 $hackMdVmSize = "Standard_B2ms"
@@ -89,7 +89,7 @@ $params = @{
 "HACKMD Server Name" = $config.dsg.linux.hackmd.vmName
 "HACKMD VM Size" = $hackmdVMSize
 "HACKMD IP Address" = $config.dsg.linux.hackmd.ip
-"Administrator User" = $adminUser
+"Administrator User" = $adminUsername
 "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
 "Virtual Network Name" = $config.dsg.network.vnet.name
 "Virtual Network Resource Group" = $config.dsg.network.vnet.rg

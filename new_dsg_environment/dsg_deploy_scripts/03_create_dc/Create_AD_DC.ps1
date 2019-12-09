@@ -14,10 +14,10 @@ $config = Get-DsgConfig($dsgId)
 # Temporarily switch to DSG subscription
 $prevContext = Get-AzContext
 $storageAccountSubscription = $config.dsg.subscriptionName;
-$_ = Set-AzContext -SubscriptionId $storageAccountSubscription;
+$_ = Set-AzContext -Subscription $storageAccountSubscription;
 
 # Set deployment parameters not directly set in config file
-$vmSize = "Standard_B2ms";
+$vmSize = "Standard_DS2_v2";
 
 # Upload artifacts to storage account
 $storageAccountLocation = $config.dsg.location
@@ -68,6 +68,15 @@ $artifactSasToken = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Forc
 # Temporarily switch to DSG subscription
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
+# Fetch DC admin username (or create if not present)
+$dcAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.usernameSecretName).SecretValueText;
+if ($null -eq $dcAdminPassword) {
+  # Create password locally but round trip via KeyVault to ensure it is successfully stored
+  $newPassword = New-Password;
+  $newPassword = (ConvertTo-SecureString $newPassword -AsPlainText -Force);
+  $_ = Set-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name  $config.dsg.dc.admin.usernameSecretName -SecretValue $newPassword;
+  $dcAdminUsername = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.name -Name $config.dsg.dc.admin.usernameSecretName ).SecretValueText;
+}
 # Fetch admin password (or create if not present)
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText;
 if ($null -eq $adminPassword) {
@@ -87,7 +96,7 @@ $params = @{
  "DC Name" = $config.dsg.dc.vmName
  "VM Size" = $vmSize
  "IP Address" = $config.dsg.dc.ip
- "Administrator User" = $config.dsg.dc.admin.username
+ "Administrator User" = $dcAdminUsername
  "Administrator Password" = $adminPassword
  "Virtual Network Name" = $config.dsg.network.vnet.name
  "Virtual Network Resource Group" = $config.dsg.network.vnet.rg

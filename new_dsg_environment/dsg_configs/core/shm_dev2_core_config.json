@@ -1,0 +1,17 @@
+{
+    "subscriptionName": "SHM Test B",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
+    "domain": "dev1.dsgroupdev.co.uk",
+    "netbiosName": "SAFEHAVENDEV2",
+    "shmId": "dev2",
+    "name": "Turing Development Safe Haven 2",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "ipPrefix": "10.0.0"
+}

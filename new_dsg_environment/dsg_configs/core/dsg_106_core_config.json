@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing SRE - 106 - Homeslink",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "dsgId": "106",
+    "shmId": "turing1",
+    "tier": "2",
+    "domain": "dsgroup106.co.uk",
+    "netbiosName": "DSGROUP106",
+    "ipPrefix": "10.196.0",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

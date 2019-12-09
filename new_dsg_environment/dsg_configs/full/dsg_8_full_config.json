@@ -1,8 +1,8 @@
 {
   "shm": {
-    "subscriptionName": "SHM Test B",
-    "id": "testc",
-    "name": "Test Safe Haven",
+    "subscriptionName": "Turing Safe Haven Management",
+    "id": "turing1",
+    "name": "Turng Safe Haven",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -10,13 +10,15 @@
       "countryCode": "GB"
     },
     "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
-      "fqdn": "testc.dsgroupdev.co.uk",
-      "netbiosName": "TESTC",
-      "dn": "DC=testc,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -26,50 +28,66 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_DSG_VNET",
-        "name": "SHM_VNET1",
-        "cidr": "10.251.0.0/21"
+        "rg": "RG_SHM_VNET",
+        "name": "VNET_SHM_TURING1",
+        "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
-          "prefix": "10.251.0",
-          "cidr": "10.251.0.0/24"
+          "name": "IdentitySubnet",
+          "prefix": "10.0.0",
+          "cidr": "10.0.0.0/24"
+        },
+        "web": {
+          "name": "WebSubnet",
+          "prefix": "10.0.1",
+          "cidr": "10.0.1.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.0.7",
+          "cidr": "10.0.7.0/24"
         }
       }
     },
     "dc": {
-      "rg": "RG_DSG_DC",
-      "vmName": "SHMDC1",
-      "hostname": "SHMDC1",
-      "fqdn": "SHMDC1.testc.dsgroupdev.co.uk",
-      "ip": "10.251.0.250"
+      "rg": "RG_SHM_DC",
+      "vmName": "DC1-SHM-TURING1",
+      "hostname": "DC1-SHM-TURING1",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.250"
     },
     "dcb": {
-      "vmName": "SHMDC2",
-      "hostname": "SHMDC2",
-      "fqdn": "SHMDC2.testc.dsgroupdev.co.uk",
-      "ip": "10.251.0.249"
+      "vmName": "DC2-SHM-TURING1",
+      "hostname": "DC2-SHM-TURING1",
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.249"
     },
     "nps": {
-      "rg": "RG_DSG_NPS",
-      "vmName": "SHMNPS",
-      "ip": "10.251.0.248"
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-TURING1",
+      "hostname": "NPS-SHM-TURING1",
+      "ip": "10.0.0.248"
     },
     "storage": {
       "artifacts": {
-        "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsgtestcartifacts"
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmturing1artifacts"
       }
     },
     "keyVault": {
-      "rg": "RG_DSG_SECRETS",
-      "name": "dsg-management-testc",
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-turing1",
       "secretNames": {
-        "p2sRootCert": "sh-management-p2s-root-cert",
-        "dc": "sh-managment-dcadmin",
-        "safemode": "sh-managment-dcsafemode",
-        "adsync": "sh-managment-adsync",
-        "vpncertificate": "sh-managment-cert"
+        "dcAdminUsername": "shm-dc-admin-username",
+        "dcAdminPassword": "shm-dc-admin-password",
+        "dcSafemodePassword": "shm-dc-safemode-password",
+        "adsyncPassword": "shm-adsync-password",
+        "vpnCaCertificate": "shm-vpn-ca-cert",
+        "vpnCaCertPassword": "shm-vpn-ca-cert-password",
+        "vpnCaCertificatePlain": "shm-vpn-ca-cert-plain",
+        "vpnClientCertificate": "shm-vpn-client-cert",
+        "vpnClientCertPassword": "shm-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -77,24 +95,25 @@
     }
   },
   "dsg": {
-    "subscriptionName": "DSG 8 Test",
+    "subscriptionName": "Turing DSG - 8 - Sensat",
     "id": "8",
     "shortName": "dsg8",
     "location": "uksouth",
-    "tier": "3",
+    "tier": "1",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
       "keyVault": {
-        "name": "kv-shm-pkg-mirrors-testc"
+        "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
+        "name": null
       },
       "cran": {
-        "ip": "10.20.3.21"
+        "ip": null
       },
       "pypi": {
-        "ip": "10.20.3.20"
+        "ip": null
       }
     },
     "domain": {
@@ -115,28 +134,29 @@
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "DSG_DSGROUP8_VNET1",
-        "cidr": "10.250.56.0/21"
+        "name": "VNET_DSG8",
+        "cidr": "10.100.56.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.250.56",
-          "cidr": "10.250.56.0/24"
+          "prefix": "10.100.56",
+          "cidr": "10.100.56.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.250.57",
-          "cidr": "10.250.57.0/24"
+          "prefix": "10.100.57",
+          "cidr": "10.100.57.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.250.58",
-          "cidr": "10.250.58.0/24"
+          "prefix": "10.100.58",
+          "cidr": "10.100.58.0/24"
         },
         "gateway": {
-          "prefix": "10.250.63",
-          "cidr": "10.250.63.0/27"
+          "name": "GatewaySubnet",
+          "prefix": "10.100.63",
+          "cidr": "10.100.63.0/27"
         }
       },
       "nsg": {
@@ -153,16 +173,17 @@
       }
     },
     "keyVault": {
-      "name": "dsg-management-testc"
+      "name": "kv-turing1-dsg8",
+      "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DSG8DC",
-      "hostname": "DSG8DC",
-      "fqdn": "DSG8DC.dsgroup8.co.uk",
-      "ip": "10.250.56.250",
+      "vmName": "DC-DSG8",
+      "hostname": "DC-DSG8",
+      "fqdn": "DC-DSG8.dsgroup8.co.uk",
+      "ip": "10.100.56.250",
       "admin": {
-        "username": "atiadmin",
+        "usernameSecretName": "dsg8-dc-admin-username",
         "passwordSecretName": "dsg8-dc-admin-password"
       }
     },
@@ -194,29 +215,30 @@
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS",
-        "hostname": "RDS",
-        "fqdn": "RDS.dsgroup8.co.uk",
-        "ip": "10.250.57.250",
+        "vmName": "RDS-DSG8",
+        "hostname": "RDS-DSG8",
+        "fqdn": "RDS-DSG8.dsgroup8.co.uk",
+        "ip": "10.100.57.250",
         "npsSecretName": "dsg8-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1",
-        "hostname": "RDSSH1",
-        "fqdn": "RDSSH1.dsgroup8.co.uk",
-        "ip": "10.250.57.249"
+        "vmName": "RDSSH1-DSG8",
+        "hostname": "RDSSH1-DSG8",
+        "fqdn": "RDSSH1-DSG8.dsgroup8.co.uk",
+        "ip": "10.100.57.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2",
-        "hostname": "RDSSH2",
-        "fqdn": "RDSSH2.dsgroup8.co.uk",
-        "ip": "10.250.57.248"
+        "vmName": "RDSSH2-DSG8",
+        "hostname": "RDSSH2-DSG8",
+        "fqdn": "RDSSH2-DSG8.dsgroup8.co.uk",
+        "ip": "10.100.57.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS_Server",
-          "allowedSources": "Internet"
+          "name": "NSG_RDS-DSG8_Server",
+          "allowedSources": "Internet",
+          "outboundInternet": "Allow"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -225,36 +247,36 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATASERVER",
-      "hostname": "DATASERVER",
-      "fqdn": "DATASERVER.dsgroup8.co.uk",
-      "ip": "10.250.58.250"
+      "vmName": "DATA-DSG8",
+      "hostname": "DATA-DSG8",
+      "fqdn": "DATA-DSG8.dsgroup8.co.uk",
+      "ip": "10.100.58.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB",
-        "hostname": "GITLAB",
-        "fqdn": "GITLAB.dsgroup8.co.uk",
-        "ip": "10.250.58.151",
+        "vmName": "GITLAB-DSG8",
+        "hostname": "GITLAB-DSG8",
+        "fqdn": "GITLAB-DSG8.dsgroup8.co.uk",
+        "ip": "10.100.58.151",
         "rootPasswordSecretName": "dsg8-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD",
-        "hostname": "HACKMD",
-        "fqdn": "HACKMD.dsgroup8.co.uk",
-        "ip": "10.250.58.152"
+        "vmName": "HACKMD-DSG8",
+        "hostname": "HACKMD-DSG8",
+        "fqdn": "HACKMD-DSG8.dsgroup8.co.uk",
+        "ip": "10.100.58.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
     },
     "dsvm": {
       "rg": "RG_DSG_COMPUTE",
-      "vmImageSubscription": "Safe Haven VM Images",
+      "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019082900",
       "admin": {
-        "username": "atiadmin",
-        "passwordSecretName": "dsgroup8-dsvm-admin-password"
+        "username": "dsgadmin",
+        "passwordSecretName": "dsg8-dsvm-admin-password"
       }
     }
   }

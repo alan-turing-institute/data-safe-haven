@@ -3,23 +3,41 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "Virtual_Network_Name": {
-            "defaultValue": "SHM_VNET1",
             "type": "string"
         },
-        "P2S_VPN_Certifciate": {
-            "type": "string",
-            "metadata": {
-                "description": "Paste certificate into dialogue box"
-            }
+        "P2S_VPN_Certificate": {
+            "type": "string"
+        },
+        "VNET_CIDR": {
+            "type": "string"
+        },
+        "Subnet_Identity_Name": {
+            "type": "string"
+        },
+        "Subnet_Identity_CIDR": {
+            "type": "string"
+        },
+        "Subnet_Web_Name": {
+            "type": "string"
+        },
+        "Subnet_Web_CIDR": {
+            "type": "string"
+        },
+        "Subnet_Gateway_Name": {
+            "type": "string"
+        },
+        "Subnet_Gateway_CIDR": {
+            "type": "string"
+        },
+        "VNET_DNS1": {
+            "type": "string"
+        },
+        "VNET_DNS2": {
+            "type": "string"
         }
+
     },
     "variables": {
-        "vnetaddressspace": "10.251.0.0/21",
-        "vnetdns1": "10.251.0.250",
-        "vnetdns2": "10.251.0.249",
-        "subnetidentity": "10.251.0.0/24",
-        "subnetweb": "10.251.1.0/24",
-        "subnetgateway": "10.251.7.0/24"
     },
     "resources": [
         {
@@ -476,7 +494,7 @@
                 "name": "Basic",
                 "tier": "Regional"
             },
-            "name": "SHM_VNET1_GW_PIP",
+            "name": "[concat(parameters('Virtual_Network_Name'),'_GW_PIP')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -490,7 +508,7 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworkGateways",
-            "name": "SHM_VNET1_GW",
+            "name": "[concat(parameters('Virtual_Network_Name'),'_GW')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -501,10 +519,10 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'SHM_VNET1_GW_PIP')]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('Virtual_Network_Name'),'_GW_PIP'))]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), 'GatewaySubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), parameters('Subnet_Gateway_Name'))]"
                             }
                         }
                     }
@@ -532,7 +550,7 @@
                         {
                             "name": "SafeHavenManagementP2SRootCert",
                             "properties": {
-                                "publicCertData": "[parameters('P2S_VPN_Certifciate')]"
+                                "publicCertData": "[parameters('P2S_VPN_Certificate')]"
                             }
                         }
                     ],
@@ -543,8 +561,8 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'SHM_VNET1_GW_PIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), 'GatewaySubnet')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('Virtual_Network_Name'),'_GW_PIP'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), parameters('Subnet_Gateway_Name'))]"
             ]
         },
         {
@@ -556,37 +574,37 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('vnetaddressspace')]"
+                        "[parameters('VNET_CIDR')]"
                     ]
                 },
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[variables('vnetdns1')]",
-                        "[variables('vnetdns2')]",
+                        "[parameters('VNET_DNS1')]",
+                        "[parameters('VNET_DNS2')]",
                         "8.8.8.8"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "Subnet-Web",
+                        "name": "[parameters('Subnet_Web_Name')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnetweb')]",
+                            "addressPrefix": "[parameters('Subnet_Web_CIDR')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
                     },
                     {
-                        "name": "GatewaySubnet",
+                        "name": "[parameters('Subnet_Gateway_Name')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnetgateway')]",
+                            "addressPrefix": "[parameters('Subnet_Gateway_CIDR')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
                     },
                     {
-                        "name": "Subnet-Identity",
+                        "name": "[parameters('Subnet_Identity_Name')]",
                         "properties": {
-                            "addressPrefix": "[variables('subnetidentity')]",
+                            "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
                             },
@@ -604,11 +622,11 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat('SHM_VNET1', '/', 'Subnet-Web')]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Web_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[variables('subnetweb')]",
+                "addressPrefix": "[parameters('Subnet_Web_CIDR')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
@@ -618,11 +636,11 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat('SHM_VNET1', '/', 'GatewaySubnet')]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Gateway_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[variables('subnetgateway')]",
+                "addressPrefix": "[parameters('Subnet_Gateway_CIDR')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
@@ -632,11 +650,11 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat('SHM_VNET1', '/', 'Subnet-Identity')]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Identity_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[variables('subnetidentity')]",
+                "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
                 },

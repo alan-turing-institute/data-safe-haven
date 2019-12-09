@@ -10,12 +10,23 @@ Import-Module $PSScriptRoot/../GeneratePassword.psm1 -Force
 # Get DSG config
 $config = Get-DsgConfig($dsgId);
 
-# Temporarily switch to management subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
 
 # Directory for local and remote helper scripts
 $helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resolve
+
+# Create DSG KeyVault if it does not exist
+# Temporarily switch to DSG subscription
+$prevContext = Get-AzContext
+Set-AzContext -Subscription $config.dsg.subscriptionName;
+
+# Create Resource Groups
+New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.location
+
+# Create a keyvault
+New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location
+    
+# Temporarily switch to management subscription
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
 # === Add DSG users and groups to SHM ====
 Write-Host "Creating or retrieving user passwords"
@@ -83,6 +94,12 @@ $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $conf
 Write-Host $result.Value[0].Message
 Write-Host $result.Value[1].Message
 
+
+# Updating Keyvault Policy
+$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.dsg.adminSecurityGroupName )[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
+Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
+    
 # Switch back to previous subscription
 $_ = Set-AzContext -Context $prevContext;
 

@@ -24,11 +24,13 @@ Write-Host ("Applying network configuration for DSG" + $config.dsg.id `
 # Set names of Network Security Group (NSG) and Network Interface Cards (NICs)
 $sh1NicName = $config.dsg.rds.sessionHost1.vmName + "_NIC1";
 $sh2NicName = $config.dsg.rds.sessionHost2.vmName + "_NIC1";
+$dataServerNicName = $config.dsg.dataserver.vmName + "_NIC1";
 
 # Set Azure Network Security Group (NSG) and Network Interface Cards (NICs) objects
 $nsgSessionHosts = Get-AzNetworkSecurityGroup -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.nsg.sessionHosts.name;
 $sh1Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh1NicName;
 $sh2Nic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.rds.rg -Name $sh2NicName;
+$dataServerNic = Get-AzNetworkInterface -ResourceGroupName $config.dsg.dataserver.rg -Name $dataServerNicName;
 
 # Assign RDS Session Host NICs to Session Hosts NSG
 Write-Host (" - Associating RDS Session Hosts with '" + $nsgSessionHosts.Name + "' NSG")
@@ -36,6 +38,8 @@ $sh1Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh1Nic | Set-AzNetworkInterface);
 $sh2Nic.NetworkSecurityGroup = $nsgSessionHosts;
 $_ = ($sh2Nic | Set-AzNetworkInterface);
+$dataServerNic.NetworkSecurityGroup = $nsgSessionHosts;
+$_ = ($dataServerNic | Set-AzNetworkInterface);
 
 # Wait a short while for NIC association to complete
 Start-Sleep -Seconds 5
@@ -83,7 +87,7 @@ $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEa
 Write-Host (" - Updating '" + $httpsInRuleName + "' rule on '" + $nsgGateway.name + "' NSG to '" `
             + $httpsInRuleBefore.Access  + "' access from '" + $allowedSources `
             + "' (was previously '" + $httpsInRuleBefore.SourceAddressPrefix + "')")
-             
+
 $nsgGatewayHttpsInRuleParams = @{
   Name = $httpsInRuleName
   NetworkSecurityGroup = $nsgGateway
@@ -118,18 +122,13 @@ $internetOutRuleName = "Internet_Out"
 $internetOutRuleBefore = Get-AzNetworkSecurityRuleConfig -Name $internetOutRuleName -NetworkSecurityGroup $nsgLinux;
 
 # Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
-If ($config.dsg.tier -in "0","1"){
-  $access = "Allow"
-}
-Else {
-  $access = "Deny"
-}
+$access = $config.dsg.rds.nsg.gateway.outboundInternet
 $allowedSources = ($config.dsg.rds.nsg.gateway.allowedSources.Split(',') | ForEach-Object{$_.Trim()})
 
 Write-Host (" - Updating '" + $internetOutRuleName + "' rule on '" + $nsgLinux.name + "' NSG to '" `
             + $access  + "' access to '" + $internetOutRuleBefore.DestinationAddressPrefix `
             + "' (was previously '" + $internetOutRuleBefore.Access + "')")
-             
+
 $nsgLinuxInternetOutRuleParams = @{
   Name = $internetOutRuleName
   NetworkSecurityGroup = $nsgLinux
@@ -158,7 +157,7 @@ Write-Host ("   - Done: '" + $internetOutRuleName + "' on '" + $nsgLinux.name + 
 # === Ensure DSG is peered to correct mirror set ===
 # ==================================================
 # We do this as the Tier of the DSG may have changed and we want to ensure we are peered
-# to the correct mirror set fo its current Tier and not peered to the mirror set for 
+# to the correct mirror set fo its current Tier and not peered to the mirror set for
 # any other Tier
 $peeringDir = (Join-Path $PSScriptRoot ".." "09_mirror_peerings" -Resolve)
 $peeringScriptPath = (Join-Path $peeringDir "Configure_Mirror_Peering.ps1"  -Resolve)

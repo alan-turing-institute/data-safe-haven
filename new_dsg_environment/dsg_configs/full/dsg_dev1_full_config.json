@@ -1,0 +1,281 @@
+{
+  "shm": {
+    "subscriptionName": "Turing Development SHM1",
+    "id": "dev1",
+    "name": "Turing Development Safe Haven 1",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "domain": {
+      "fqdn": "dev1.dsgroupdev.co.uk",
+      "netbiosName": "SAFEHAVENDEV1",
+      "dn": "DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=dev1,DC=dsgroupdev,DC=co,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_VNET",
+        "name": "VNET_SHM_DEV1",
+        "cidr": "10.0.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "prefix": "10.0.0",
+          "name": "IdentitySubnet",
+          "cidr": "10.0.0.0/24"
+        },
+        "web": {
+          "prefix": "10.0.1",
+          "name": "WebSubnet",
+          "cidr": "10.0.1.0/24"
+        },
+        "gateway": {
+          "prefix": "10.0.7",
+          "name": "GatewaySubnet",
+          "cidr": "10.0.7.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_DC",
+      "vmName": "DC1-SHM-DEV1",
+      "hostname": "DC1-SHM-DEV1",
+      "fqdn": "DC1-SHM-DEV1.dev1.dsgroupdev.co.uk",
+      "ip": "10.0.0.250"
+    },
+    "dcb": {
+      "vmName": "DC2-SHM-DEV1",
+      "hostname": "DC2-SHM-DEV1",
+      "fqdn": "DC2-SHM-DEV1.dev1.dsgroupdev.co.uk",
+      "ip": "10.0.0.249"
+    },
+    "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-DEV1",
+      "hostname": "NPS-SHM-DEV1",
+      "ip": "10.0.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmdev1artifacts"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-dev1",
+      "secretNames": {
+        "dcAdminUsername": "shm-dc-admin-username",
+        "dcAdminPassword": "shm-dc-admin-password",
+        "dcSafemodePassword": "shm-dc-safemode-password",
+        "adsyncPassword": "shm-adsync-password",
+        "vpnCaCertificate": "shm-vpn-ca-cert",
+        "vpnCaCertPassword": "shm-vpn-ca-cert-password",
+        "vpnCaCertificatePlain": "shm-vpn-ca-cert-plain",
+        "vpnClientCertificate": "shm-vpn-client-cert",
+        "vpnClientCertPassword": "shm-vpn-client-cert-password"
+      }
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS"
+    }
+  },
+  "dsg": {
+    "subscriptionName": "Development SRE1",
+    "id": "dev1",
+    "shortName": "dsgdev1",
+    "location": "uksouth",
+    "tier": "2",
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "keyVault": {
+        "name": "kv-shm-pkg-mirrors-dev1"
+      },
+      "vnet": {
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    },
+    "domain": {
+      "fqdn": "dsgroupdev1.co.uk",
+      "netbiosName": "DSGROUPDEV1",
+      "dn": "DC=dsgroupdev1,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG DSGROUPDEV1 Server Administrators",
+          "description": "SG DSGROUPDEV1 Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG DSGROUPDEV1 Research Users",
+          "description": "SG DSGROUPDEV1 Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_DSG_VNET",
+        "name": "VNET_DSGdev1",
+        "cidr": "10.100.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "Subnet-Identity",
+          "prefix": "10.100.0",
+          "cidr": "10.100.0.0/24"
+        },
+        "rds": {
+          "name": "Subnet-RDS",
+          "prefix": "10.100.1",
+          "cidr": "10.100.1.0/24"
+        },
+        "data": {
+          "name": "Subnet-Data",
+          "prefix": "10.100.2",
+          "cidr": "10.100.2.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.100.7",
+          "cidr": "10.100.7.0/27"
+        }
+      },
+      "nsg": {
+        "data": {
+          "rg": "RG_DSG_LINUX",
+          "name": "NSG_Linux_Servers"
+        }
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_DSG_ARTIFACTS",
+        "accountName": "dsgdev1artifacts"
+      }
+    },
+    "keyVault": {
+      "name": "kv-dev1-dsgdev1",
+      "rg": "RG_DSG_SECRETS"
+    },
+    "dc": {
+      "rg": "RG_DSG_DC",
+      "vmName": "DC-DSGdev1",
+      "hostname": "DC-DSGdev1",
+      "fqdn": "DC-DSGdev1.dsgroupdev1.co.uk",
+      "ip": "10.100.0.250",
+      "admin": {
+        "usernameSecretName": "dsgdev1-dc-admin-username",
+        "passwordSecretName": "dsgdev1-dc-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "DSGROUPDEV1 Gitlab LDAP",
+          "samAccountName": "dsgdev1-gitlab-ldap",
+          "passwordSecretName": "dsgdev1-gitlab-ldap-password"
+        },
+        "hackmd": {
+          "name": "DSGROUPDEV1 HackMD LDAP",
+          "samAccountName": "dsgdev1-hackmd-ldap",
+          "passwordSecretName": "dsgdev1-hackmd-ldap-password"
+        },
+        "dsvm": {
+          "name": "DSGROUPDEV1 DSVM LDAP",
+          "samAccountName": "dsgdev1-dsvm-ldap",
+          "passwordSecretName": "dsgdev1-dsvm-ldap-password"
+        }
+      },
+      "researchers": {
+        "test": {
+          "name": "DSGROUPDEV1 Test Researcher",
+          "samAccountName": "dsgdev1-test-res",
+          "passwordSecretName": "dsgdev1-test-res-password"
+        }
+      }
+    },
+    "rds": {
+      "gateway": {
+        "vmName": "RDS-DSGdev1",
+        "hostname": "RDS-DSGdev1",
+        "fqdn": "RDS-DSGdev1.dsgroupdev1.co.uk",
+        "ip": "10.100.1.250",
+        "npsSecretName": "dsgdev1-nps-secret"
+      },
+      "sessionHost1": {
+        "vmName": "RDSSH1-DSGdev1",
+        "hostname": "RDSSH1-DSGdev1",
+        "fqdn": "RDSSH1-DSGdev1.dsgroupdev1.co.uk",
+        "ip": "10.100.1.249"
+      },
+      "sessionHost2": {
+        "vmName": "RDSSH2-DSGdev1",
+        "hostname": "RDSSH2-DSGdev1",
+        "fqdn": "RDSSH2-DSGdev1.dsgroupdev1.co.uk",
+        "ip": "10.100.1.248"
+      },
+      "rg": "RG_DSG_RDS",
+      "nsg": {
+        "gateway": {
+          "name": "NSG_RDS_Server",
+          "allowedSources": "Internet"
+        },
+        "sessionHosts": {
+          "name": "NSG_SessionHosts"
+        }
+      }
+    },
+    "dataserver": {
+      "rg": "RG_DSG_DATA",
+      "vmName": "DATA-DSGdev1",
+      "hostname": "DATA-DSGdev1",
+      "fqdn": "DATA-DSGdev1.dsgroupdev1.co.uk",
+      "ip": "10.100.2.250"
+    },
+    "linux": {
+      "gitlab": {
+        "vmName": "GITLAB-DSGdev1",
+        "hostname": "GITLAB-DSGdev1",
+        "fqdn": "GITLAB-DSGdev1.dsgroupdev1.co.uk",
+        "ip": "10.100.2.151",
+        "rootPasswordSecretName": "dsgdev1-gitlab-root-password"
+      },
+      "hackmd": {
+        "vmName": "HACKMD-DSGdev1",
+        "hostname": "HACKMD-DSGdev1",
+        "fqdn": "HACKMD-DSGdev1.dsgroupdev1.co.uk",
+        "ip": "10.100.2.152"
+      },
+      "rg": "RG_DSG_LINUX",
+      "nsg": "NSG_Linux_Servers"
+    },
+    "dsvm": {
+      "rg": "RG_DSG_COMPUTE",
+      "vmImageSubscription": "Turing Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2019082900",
+      "admin": {
+        "username": "dsgadmin",
+        "passwordSecretName": "dsgdev1-dsvm-admin-password"
+      }
+    }
+  }
+}

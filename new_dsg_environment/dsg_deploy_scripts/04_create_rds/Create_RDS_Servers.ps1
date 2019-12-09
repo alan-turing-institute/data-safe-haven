@@ -14,11 +14,11 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 
 # Admin user credentials (must be same as for DSG DC for now)
-$adminUser = $config.dsg.dc.admin.username
+$adminUsername = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.usernameSecretName).SecretValueText;
 $adminPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.dc.admin.passwordSecretName).SecretValueText
 
 # VM sizes
-$rdsGatewayVmSize = "Standard_B2ms"
+$rdsGatewayVmSize = "Standard_DS2_v2"
 $rdsHostVmSize = "Standard_DS2_v2"
 
 $params = @{
@@ -31,7 +31,7 @@ $params = @{
  "RDS Session Host 2 Name" = $config.dsg.rds.sessionHost2.vmName
  "RDS Session Host 2 VM Size" = $rdsHostVmSize
  "RDS Session Host 2 IP Address" = $config.dsg.rds.sessionHost2.ip
- "Administrator User" = $adminUser
+ "Administrator User" = $adminUsername
  "Administrator Password" = (ConvertTo-SecureString $adminPassword -AsPlainText -Force)
  "Virtual Network Name" = $config.dsg.network.vnet.name
  "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
