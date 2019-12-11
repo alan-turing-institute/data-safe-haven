@@ -16,7 +16,7 @@ Export-ModuleMember -Function LogTemplateOutput
 
 
 function LogMessage {
-    Param (
+    param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Message,
@@ -26,22 +26,23 @@ function LogMessage {
     )
     # Format date for logging
     $FormattedDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
     # Write message to error, warning, or info
     switch ($Level) {
         "Error" {
-            Write-Host -ForegroundColor DarkRed "$FormattedDate   ERROR: $Message"
+            Write-Host -ForegroundColor DarkRed "$FormattedDate [  ERROR]: $Message"
         }
         "Warning" {
-            Write-Host -ForegroundColor DarkYellow "$FormattedDate WARNING: $Message"
+            Write-Host -ForegroundColor DarkYellow "$FormattedDate [WARNING]: $Message"
         }
         "Info" {
-            Write-Host -ForegroundColor DarkCyan "$FormattedDate    INFO: $Message"
+            Write-Host -ForegroundColor DarkCyan "$FormattedDate [   INFO]: $Message"
         }
         "Success" {
-            Write-Host -ForegroundColor DarkGreen "$FormattedDate SUCCESS: [o] $Message"
+            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [✓] $Message"
         }
         "Failure" {
-            Write-Host -ForegroundColor DarkRed "$FormattedDate FAILURE: [x] $Message"
+            Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
         }
     }
 }

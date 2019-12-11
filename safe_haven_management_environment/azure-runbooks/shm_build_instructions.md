@@ -18,11 +18,12 @@
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
-3. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
-4. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-5. Set the "Country or Region" to "United Kingdom"
-6. Click Create AAD
    ![AAD](images/AAD.png)
+3. Click `Create`
+4. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
+5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
+6. Set the "Country or Region" to "United Kingdom"
+7. Click `Create`
 
 
 ### Create a Custom Domain Name
@@ -39,11 +40,12 @@ Create a new DNS zone according to the following rules:
 
 Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
 - If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
-- Click `Create a resource` in the far left menu, search for "DNS Zone" and click "Create", using the resource group and subscription specified above.
+- Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the resource group and subscription specified above.
 - For the `Name` field enter the fully qualified domain / subdomain. Examples are:
   - `testa.dsgroupdev.co.uk` for the first test SHM deployed as part of the Turing `test` environment
   - `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment
   - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
+- Click through the various validation screens
 
 Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to its parent record in the DNS system.
 - Navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone". The NS record will list 4 Azure name servers.
@@ -58,7 +60,7 @@ Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / su
 4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
 5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
-6. Navigate back to the custom domain creation screen in the new AAD and click "Verify"
+6. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
 
 
 
