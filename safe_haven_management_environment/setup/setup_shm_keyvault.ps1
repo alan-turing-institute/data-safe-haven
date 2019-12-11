@@ -15,8 +15,8 @@ $config = Get-ShmFullConfig($shmId)
 
 # Temporarily switch to SHM subscription
 # --------------------------------------
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.subscriptionName;
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 
 # Create Resource Groups
@@ -93,4 +93,4 @@ if ($?) {
 
 # Switch back to original subscription
 # ------------------------------------
-Set-AzContext -Context $prevContext;
+Set-AzContext -Context $originalContext;

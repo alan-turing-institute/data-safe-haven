@@ -16,8 +16,8 @@ $config = Get-ShmFullConfig($shmId)
 
 # Temporarily switch to SHM subscription
 # --------------------------------------
-$prevContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.subscriptionName;
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 
 # Fetch usernames/passwords from the keyvault
@@ -298,4 +298,4 @@ Write-Output $result.Value;
 
 # Switch back to original subscription
 # ------------------------------------
-Set-AzContext -Context $prevContext;
+Set-AzContext -Context $originalContext;

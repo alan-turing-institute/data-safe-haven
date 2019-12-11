@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 $config = Get-ShmFullConfig($shmId)
 
 # Switch to appropriate management subscription
-$prevContext = Get-AzContext
+$originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Convert arguments into the format expected by mirror deployment scripts
@@ -40,4 +40,4 @@ $cmd = "$deployScriptDir/deploy_azure_internal_mirror_servers.sh $arguments"
 bash -c $cmd
 
 # Switch back to original subscription
-$_ = Set-AzContext -Context $prevContext;
+$_ = Set-AzContext -Context $originalContext;

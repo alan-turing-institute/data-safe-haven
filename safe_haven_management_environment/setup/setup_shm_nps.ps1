@@ -16,7 +16,7 @@ $config = Get-ShmFullConfig($shmId)
 
 # Temporarily switch to DSG subscription
 # ---------------------------------
-$prevContext = Get-AzContext
+$originalContext = Get-AzContext
 Set-AzContext -SubscriptionId $config.subscriptionName;
 
 
@@ -74,4 +74,4 @@ Write-Output $result.Value;
 
 
 # Switch back to original subscription
-Set-AzContext -Context $prevContext;
+Set-AzContext -Context $originalContext;
