@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 
 # Get SRE config
 $config = Get-DsgConfig($sreId);
@@ -18,7 +19,7 @@ $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 # Create VNet from template
 # -------------------------
 Write-Host -ForegroundColor DarkCyan "Creating virtual network '$($config.dsg.network.vnet.name)' from template..."
-$templatePath = Join-Path $PSScriptRoot "vnet-master-template.json"
+$templateName = "vnet-master-template"
 New-AzResourceGroup -Name $config.dsg.network.vnet.rg -Location $config.dsg.location
 $params = @{
     "Virtual Network Name" = $config.dsg.network.vnet.name
@@ -34,11 +35,14 @@ $params = @{
     "GatewaySubnet Name" = $config.dsg.network.subnets.gateway.name
     "DNS Server IP Address" =  $config.dsg.dc.ip
 }
-New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg -TemplateFile $templatePath @params -Verbose
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.network.vnet.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose
+$result = $?
+LogTemplateOutput -ResourceGroupName $config.dsg.network.vnet.rg -DeploymentName $templateName
+if ($result) {
+  Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
+  Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
+  throw "Template deployment has failed. Please check the error message above before re-running this script."
 }
 
 # Fetch VNet information

@@ -94,13 +94,18 @@ ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName
 Write-Host -ForegroundColor DarkCyan "Deploying DC from template..."
 
 # Get SAS token
-Write-Host -ForegroundColor DarkCyan " - obtaining SAS token..."
+Write-Host -ForegroundColor DarkCyan " [ ] Obtaining SAS token..."
 $artifactLocation = "https://$storageAccountName.blob.core.windows.net/$artifactsFolderNameCreate/$dcCreationZipFileName";
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription -resourceGroup $storageAccountRg -accountName $storageAccountName
+if ($?) {
+    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Failed!"
+}
 
 # Deploy template
 $templateName = "sredc-template"
-Write-Host -ForegroundColor DarkCyan " - deploying template $templateName..."
+Write-Host -ForegroundColor DarkCyan " [ ] Deploying template $templateName..."
 $netbiosNameMaxLength = 15
 if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
