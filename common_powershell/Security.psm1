@@ -9,8 +9,8 @@ function New-Password {
     param(
         [int]$length = 20
     )
-    [string] $password = "";
-    [int] $index = 0;
+    [string]$password = "";
+    [int]$index = 0;
 
     $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
     $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
@@ -23,16 +23,16 @@ function New-Password {
     $numCharsInSet = 62
 
     # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
-    for([int]$iter=0; $iter -lt $length; $iter++) {
-        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
+    for ([int]$iter = 0; $iter -lt $length; $iter++) {
+        [int]$i = [int]($buf[$iter] % $numCharsInSet);
         if ($i -lt $numericEnd) {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'0')) + $i);
+            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'0')) + $i);
         }
-        elseif ($i -lt $alphaUpperEnd ) {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
+        elseif ($i -lt $alphaUpperEnd) {
+            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
         }
         else {
-            $cBuf[$iter] = [char] (([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
+            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
         }
     }
     $password = -join $cBuf;
@@ -41,20 +41,20 @@ function New-Password {
     $numNumeric = 0;
     $numAlphaUpper = 0;
     $numAlphaLower = 0;
-    for([int]$iter=0; $iter -lt $length; $iter++) {
-        [int]$i = [int] ($buf[$iter] % $numCharsInSet);
+    for ([int]$iter = 0; $iter -lt $length; $iter++) {
+        [int]$i = [int]($buf[$iter] % $numCharsInSet);
         if ($i -lt $numericEnd) {
             $numNumeric++;
         }
-        elseif ($i -lt $alphaUpperEnd ) {
+        elseif ($i -lt $alphaUpperEnd) {
             $numAlphaUpper++;
         }
         else {
             $numAlphaLower++;
         }
     }
-    if(($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
-        $password = New-Password($length);
+    if (($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
+        $password = New-Password ($length);
     }
     return $password;
 }
@@ -71,7 +71,7 @@ function EnsureKeyvaultSecret {
         [string]$length = 20
     )
     # Attempt to retrieve secret
-    $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;
+    $secret = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName).SecretValueText;
 
     # Store default value in keyvault, then retrieve it
     if ($secret -eq $null) {
@@ -82,7 +82,7 @@ function EnsureKeyvaultSecret {
         # Store the password in the keyvault
         $secretValue = (ConvertTo-SecureString $defaultValue -AsPlainText -Force);
         Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue;
-        $secret = (Get-AzKeyVaultSecret -vaultName $keyvaultName -name $secretName).SecretValueText;
+        $secret = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName).SecretValueText;
     }
     return $secret
 }

@@ -1,12 +1,12 @@
-function LogTemplateOutput($ResourceGroupName, $DeploymentName) {
+function LogTemplateOutput ($ResourceGroupName,$DeploymentName) {
     $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
-    foreach($operation in $operations) {
+    foreach ($operation in $operations) {
         $response = $operation.Properties.Response
-        foreach ($status in $response.content.properties.instanceView.statuses) {
+        foreach ($status in $response.content.Properties.instanceView.statuses) {
             Write-Host -ForegroundColor DarkCyan " [-] $($response.content.name): $($status.code)"
             Write-Host $status.message
         }
-        foreach ($substatus in $response.content.properties.instanceView.substatuses) {
+        foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
             Write-Host -ForegroundColor DarkCyan " [-] $($response.content.name): $($substatus.code)"
             Write-Host $substatus.message
         }
@@ -16,13 +16,13 @@ Export-ModuleMember -Function LogTemplateOutput
 
 
 function LogMessage {
-    param (
-        [Parameter(Mandatory=$true)]
+    param(
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Message,
-        [Parameter(Mandatory=$false)]
-        [ValidateSet("Error", "Warning", "Info", "Success", "Failure")]
-        [string]$Level="Info"
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Error","Warning","Info","Success","Failure")]
+        [string]$Level = "Info"
     )
     # Format date for logging
     $FormattedDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
