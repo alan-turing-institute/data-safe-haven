@@ -178,7 +178,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
    - Click `Manage > MFA` in the left hand side bar
    - Click on the `Additional cloud-based MFA settings` link in the `Configure` section of the main panel
    - Configure MFA as follows:
-     - In "App passwords" section select "Do not allow users to createapp passwords to sign in to non browser apps"
+     - In "App passwords" section select "Do not allow users to create app passwords to sign in to non-browser apps"
      - In "Verification options" section.
        - **check** "Call to phone" and "Notification through mobile app"
        - **uncheck** "Text message to phone" and "Verification code from mobile app or hardware token"
@@ -188,7 +188,8 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
        ![AAD MFA settings](images/aad_mfa_settings.png)
 8. Require MFA for all admins
    - Sign in to the Azure portal as a user administrator or global administrator.
-   - Go to "Azure Active Directory" then to "Security > "Conditional access" from the left hand side bar
+   - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
+  - Click on `Protect > Conditional access` in the left hand sidebar
    - Click "Baseline policy: Require MFA for admins"
    - Select "Use policy immediately" in the left hand side bar
    - Click "Save"

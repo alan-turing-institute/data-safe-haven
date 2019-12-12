@@ -10,14 +10,10 @@ Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 
 
-# Get SHM config and original context
-# -----------------------------------
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
 $config = Get-ShmFullConfig ($shmId)
 $originalContext = Get-AzContext
-
-
-# Switch to SHM subscription
-# --------------------------
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
 

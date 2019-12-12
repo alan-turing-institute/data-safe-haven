@@ -90,7 +90,6 @@ if ($requestCertificate) {
     $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName;
     $token = ($azureContext.TokenCache.ReadItems() | ?{ ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select -First 1).AccessToken
     $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
-    # $_ = Set-AzContext -Subscription "813e99a0-5c7c-4c43-afd3-2a9566880854"
 
     # Test DNS record creation
     # ------------------------
