@@ -106,8 +106,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 3. This will take **a few minutes** to run.
 
 
-### Add additional administrators
-The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory). Additional users require this role to prevent this person being a single point of failure.
+### Add global administrator
+The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory).
 
 For some steps, a dedicated **internal** Global Administrator is required (e.g. to add P1 licences), so at least this additional administrator will need to be created.
 
@@ -115,10 +115,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
     - Click on "+New user" and enter the following details:
-      - Name: "AAD Global Admin"
-      - Username:`admin@<custom domain>`
-      - Select the directory role to "Global Administrator"
-      - Click "Create"
+      - Name: `AAD Global Admin`
+      - Username: `admin@<custom domain>`
+      - Under `Groups and roles > Roles` change the role to `Global Administrator`
+      - Under `Settings > Usage location` change the location to `United Kingdom`
+      - Click `Create`
     - Click on the username in the users list in the Azure Active Directory
     - Click the "Reset password" icon to generate a temporary password
     - Use this password to log into https://portal.azure.com as the user `admin@<custom domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
@@ -128,40 +129,54 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
       - Use this as the new password
       - If you are prompted to associate a phone number and email address with the account - do so.
     - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
-4. Navigate to `Users` and add new admin users, setting their names to `Admin - Firstname Lastname` and their usernames to `admin.firstname.lastname@<custom domain>`, using the custom domain you set up in the earlier step.
-4. Let Azure set their passwords. They can reset these later.
-5. In the user list on the Azure Active Directory, for each of the new admin users:
-   - Click on the username in the user list to view the user's details
-   - Click on `Directory role` in the left sidebar click `Add assignment` and search for "Global Administrator"
-   - Select this role and click `Add`
-   - Navigate back to the user list and select the next user.
-6. To enable MFA, purchase sufficient P1 licences and add them to all the new users.
-   - You will also need P1 licences for standard users accessing the Safe Haven.
-   - You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription
-   - To buy P1 licences:
-     - Click on `Azure Active Directory` in the left hand sidebar
-     - Click on "Licences" under the "Manage" section of the left habd side bar
-     - Click on "All products" in the left hand sidebar
-     - Click on the "+Try/Buy" text above the empty product list
-     - Click the "Purchase services" link in the infomation panel above the trial options.
+
+### Add additional administrators (optional)
+Giving additional users the GA role, prevents the user you set up earlier from being a single point of failure.
+
+1. Navigate to `Users` and add new admin users as above:
+    - Click on "+New user" and enter the following details:
+      - Name: `Admin - Firstname Lastname`
+      - Username: `admin.firstname.lastname@<custom domain>`
+      - Under `Groups and roles > Roles` change the role to `Global Administrator`
+      - Under `Settings > Usage location` change the location to `United Kingdom`
+      - Click `Create`
+2. Let Azure set their passwords. They can reset these later.
+
+### Enable MFA
+To enable MFA, purchase sufficient P1 licences and add them to all the new users.
+- You will also need P1 licences for standard users accessing the Safe Haven.
+- You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription
+
+1. To buy P1 licences:
+  - Click on `Azure Active Directory` in the left hand sidebar
+  - Click on `Manage > Licences` in the left hand sidebar
+  - Click on `All products` in the left hand sidebar
+  - Click on the `+Try/Buy` text above the empty product list
+  - Click the `Purchase services` link in the infomation panel above the trial options.
      - In the "Microsoft 365 Admin Centre" portal that opens:
-       - Expand the "Billing" section of the left hand side bar
-       - Click on "Purchase services"
-       - Scroll down the list of products and select "Azure Active Directory Premium P1" and click "Buy"
-       - Select "Pay monthly"
+       - Expand the `Billing` section of the left hand side bar
+       - Click on `Purchase services`
+       - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
+       - Select `Pay monthly`
        - Enter the number of licences required.
-       - Leave "automatically assign all of your users with no licences" checked
-       - Click "Check out now"
+       - Leave `automatically assign all of your users with no licences` checked
+       - Click `Check out now`
        - Enter the address of the organisation running the Safe Haven on the next screen
        - Click next and enter payment details when requested
-   - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
-   - To add licenses to a user click `licenses` in the left panel, click `assign`, select users and then assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication`
-      - If the above fails go `Users` and make sure each User has `usage location` set under "Settings" (see image below):
+  - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+2. Adding licenses to a user:
+   - Click on `Users` in the left hand sidebar
+   - For each user you want to add a licence to, click on their username
+     - Ensure that the user has `usage location` set under "Settings" (see image below):
     ![Set user location](images/set_user_location.png)
-7. Configuring MFA on Azure Active Directory
+     - Click on `Licences` in the left hand sidebar
+     - Click on `+ Assignments` in the top bar
+     - Assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication` then click `Save`
+3. Configuring MFA on Azure Active Directory
    - Sign in to the Azure portal as a user administrator or global administrator.
-   - Go to "Azure Active Directory" then to "Security > "MFA" from the left hand side bar
-   - Click on the "Additional cloud-based MFA settings" link in the "Configure" section on the main panel
+   - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
+   - Click `Manage > MFA` in the left hand side bar
+   - Click on the `Additional cloud-based MFA settings` link in the `Configure` section of the main panel
    - Configure MFA as follows:
      - In "App passwords" section select "Do not allow users to createapp passwords to sign in to non browser apps"
      - In "Verification options" section.
@@ -177,13 +192,6 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
    - Click "Baseline policy: Require MFA for admins"
    - Select "Use policy immediately" in the left hand side bar
    - Click "Save"
-
-
-<!-- # Enable combined password and MFA registration
-- Sign in to the Azure portal as a user administrator or global administrator.
-- Go to Azure Active Directory > User settings > Manage user feature preview settings
-- Under "Users can use preview features for registering and managing security info - enhanced", choose to enable for All users.
-- Click "Save" -->
 
 
 ## 3. Deploy and configure VNET and Domain Controllers
