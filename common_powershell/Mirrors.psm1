@@ -33,9 +33,6 @@ function Get-MirrorAddresses {
             host = $pypiHost
         }
     }
-    Write-Host "cranUrl: $cranUrl"
-    Write-Host "pypiUrl: $pypiUrl"
-    Write-Host "pypiHost: $pypiHost"
     return $addresses
 }
 Export-ModuleMember -Function Get-MirrorAddresses

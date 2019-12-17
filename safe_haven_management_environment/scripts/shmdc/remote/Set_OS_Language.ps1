@@ -7,7 +7,7 @@ Set-WinSystemLocale en-GB
 Set-Culture en-GB
 Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
 if ($?) {
-  Write-Host " [o] Completed"
+    Write-Host " [o] Completed"
 } else {
-  Write-Host " [x] Failed"
+    Write-Host " [x] Failed"
 }

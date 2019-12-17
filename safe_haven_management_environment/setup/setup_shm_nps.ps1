@@ -22,8 +22,7 @@ Set-AzContext -SubscriptionId $config.subscriptionName;
 
 # Create resource group if it does not exist
 # ------------------------------------------
-Write-Host -ForegroundColor DarkCyan "Ensuring that resource group '$($config.nps.rg)' exists..."
-New-AzResourceGroup -Name $config.nps.rg -Location $config.location -Force
+Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
 # Retrieve passwords from the keyvault

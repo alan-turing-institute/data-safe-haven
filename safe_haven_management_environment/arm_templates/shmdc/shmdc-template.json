@@ -2,10 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "VM_Size": {
-        "type": "string",
-        "metadata": {
-            "description": "Select size of VM"
+        "Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter VM Administrator_Password"
             }
         },
         "Administrator_User": {
@@ -14,10 +14,46 @@
                 "description": "Enter name for VM Administrator"
             }
         },
-        "Administrator_Password": {
+        "Artifacts_Location": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the URL of the blob storage where the artifacts are held"
+            }
+        },
+        "Artifacts_Location_SAS_Token": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter VM Administrator_Password"
+                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
+            }
+        },
+        "DC1_Host_Name":{
+            "type": "string"
+        },
+        "DC1_IP_Address":{
+            "type": "string"
+        },
+        "DC1_VM_Name":{
+            "type": "string"
+        },
+        "DC2_Host_Name":{
+            "type": "string"
+        },
+        "DC2_IP_Address":{
+            "type": "string"
+        },
+        "DC2_VM_Name":{
+            "type": "string"
+        },
+        "Domain_Name":{
+            "type": "string",
+            "metadata": {
+                "Description": "Enter the correct public domain name"
+            }
+        },
+        "Domain_Name_NetBIOS_Name":{
+            "type": "string",
+            "metadata": {
+                "Description": "Enter the correct NetBIOS name"
             }
         },
         "SafeMode_Password": {
@@ -25,6 +61,9 @@
             "metadata": {
                 "description": "Enter SafeMode_Password"
             }
+        },
+        "Shm_Id":{
+            "type": "string"
         },
         "Virtual_Network_Name": {
             "type": "string",
@@ -44,50 +83,11 @@
                 "description": "Enter name of subnet where you want to provision this VM"
             }
         },
-        "Artifacts_Location": {
+        "VM_Size": {
             "type": "string",
             "metadata": {
-                "description": "Enter the URL of the blob storage where the artifacts are held"
-            }
-        },
-        "Artifacts_Location_SAS_Token": {
-            "type": "securestring",
-            "metadata": {
-                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
-            }
-        },
-        "Domain_Name":{
-            "type": "string",
-            "metadata": {
-                "Description": "Enter the correct public domain name"
-            }
-        },
-        "Domain_Name_NetBIOS_Name":{
-            "type": "string",
-            "metadata": {
-                "Description": "Enter the correct NetBIOS name"
-            }
-        },
-        "Shm_Id":{
-            "type": "string"
-        },
-        "DC1_VM_Name":{
-            "type": "string"
-        },
-        "DC2_VM_Name":{
-            "type": "string"
-        },
-        "DC1_Host_Name":{
-            "type": "string"
-        },
-        "DC2_Host_Name":{
-            "type": "string"
-        },
-        "DC1_IP_Address":{
-            "type": "string"
-        },
-        "DC2_IP_Address":{
-            "type": "string"
+                "description": "Select size of VM"
+                }
         }
     },
     "variables": {

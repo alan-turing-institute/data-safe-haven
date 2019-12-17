@@ -12,9 +12,9 @@ $groupSID = ""
 $gpo = Get-GPO -Name "All servers - Local Administrators"
 [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.ID -ReportType xml
 foreach ($group in $gpoReportXML.GPO.Computer.ExtensionData.Extension.RestrictedGroups) {
-  if ($group.GroupName.Name.'#text' -eq "BUILTIN\Administrators") {
-    $groupSID = $group.GroupName.SID.'#text'
-  }
+    if ($group.GroupName.Name.'#text' -eq "BUILTIN\Administrators") {
+        $groupSID = $group.GroupName.SID.'#text'
+    }
 }
 Write-Host "Found the 'Local Administrators' group: $groupSID"
 
@@ -31,7 +31,7 @@ Revision=1
 "@
 Set-Content -Path "F:\SYSVOL\domain\Policies\{$($gpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
 if ($?) {
-  Write-Host " [o] Successfully set group policies for 'Local Administrators'"
+    Write-Host " [o] Successfully set group policies for 'Local Administrators'"
 } else {
-  Write-Host " [x] Failed to set group policies for 'Local Administrators'"
+    Write-Host " [x] Failed to set group policies for 'Local Administrators'"
 }

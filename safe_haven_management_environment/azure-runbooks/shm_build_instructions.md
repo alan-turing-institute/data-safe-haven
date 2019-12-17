@@ -223,6 +223,7 @@ A number of files are needed for the SRE deployment. They must be added to blob 
     - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
     - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
+    <!-- https://get.adobe.com/uk/reader/download/?installer=Reader_DC_2019.021.20058_English_UK_for_Windows&stype=7779&standalone=1 -->
 3. Use the Azure portal to upload all of these files to the `sre-rds-sh-packages` folder. The container will now look like this:
    ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png)
 

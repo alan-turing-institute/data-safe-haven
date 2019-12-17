@@ -1,21 +1,6 @@
-function LogTemplateOutput ($ResourceGroupName,$DeploymentName) {
-    $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
-    foreach ($operation in $operations) {
-        $response = $operation.Properties.Response
-        foreach ($status in $response.content.Properties.instanceView.statuses) {
-            Write-Host -ForegroundColor DarkCyan " [-] $($response.content.name): $($status.code)"
-            Write-Host $status.message
-        }
-        foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
-            Write-Host -ForegroundColor DarkCyan " [-] $($response.content.name): $($substatus.code)"
-            Write-Host $substatus.message
-        }
-    }
-}
-Export-ModuleMember -Function LogTemplateOutput
-
-
-function LogMessage {
+# Add a message to the log
+# ------------------------
+function Add-LogMessage {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -39,11 +24,36 @@ function LogMessage {
             Write-Host -ForegroundColor DarkCyan "$FormattedDate [   INFO]: $Message"
         }
         "Success" {
-            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [✓] $Message"
+            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [o] $Message"
         }
         "Failure" {
             Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
         }
     }
 }
-Export-ModuleMember -Function LogMessage
+Export-ModuleMember -Function Add-LogMessage
+
+
+# Add a message to the log
+# ------------------------
+function Add-DeploymentLogMessages {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of deployment to track")]
+        $DeploymentName
+    )
+    $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
+    foreach ($operation in $operations) {
+        $response = $operation.Properties.Response
+        foreach ($status in $response.content.Properties.instanceView.statuses) {
+            Add-LogMessage -Level Info "$($response.content.name): $($status.code)"
+            Write-Host $status.message
+        }
+        foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
+            Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
+            Write-Host $substatus.message
+        }
+    }
+}
+Export-ModuleMember -Function Add-DeploymentLogMessages
