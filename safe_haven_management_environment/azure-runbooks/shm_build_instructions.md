@@ -256,7 +256,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 ### Access the first Domain Controller (DC1) via Remote Desktop
 1. Open Microsoft Remote Desktop
 2. Click `Add Desktop`
-3. Navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
+3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
@@ -338,8 +338,8 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 - Click "OK"
 - Now go through the same procedure, this time selecting "This object and descendant objects" in the "Applies to" section
 - Enable the following permissions:
-  - `Replicate Directory Changes`
-  - `Replicate Directory Changes All`
+  - `Replicating Directory Changes`
+  - `Replicating Directory Changes All`
  <!-- Look at https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-configure-ad-ds-connector-account for automation-->
 
 
@@ -352,19 +352,19 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 3. Select the `Out to AAD - User Join` rule.
   - Click "Disable".
   - Click "Edit".
-  - In the "Edit Reserved Rule Confirmation" dialog box click "Yes"
+  - In the "Edit Reserved Rule Confirmation" dialog box click "OK"
 4. In the editing view set `precedence` to 1.
   - Select "Transformations" from the sidebar and locate the rule with its "Target Attribute" set to "usageLocation"
     - Change the "FlowType" column from "Expression" to "Direct"
     - On the "Source" column click drop-down and choose "c" attribute
-    - Click "Save" (in the "Warning" dialog box click "Yes")
+    - Click "Save" (in the "Warning" dialog box click "OK")
 5. You will now see a cloned version of the `Out to AAD - User Join`.
   - Delete the original.
-  - In the "Warning" dialog box click "Yes"
+  - In the "Warning" dialog box click "OK"
 6. Edit the cloned version.
   - Change `Precedence to 115`
   - Edit the name to `Out to AAD - User Join`.
-  - Click "Save" (in the "Warning" dialog box click "Yes").
+  - Click "Save" (in the "Warning" dialog box click "OK").
 7. Click `Enable` on the `Out to AAD - User Join` rule that you have just edited
 8. Click the `X` to close the Synchronization Rules Editor window
 9. Open Powershell as an administrator

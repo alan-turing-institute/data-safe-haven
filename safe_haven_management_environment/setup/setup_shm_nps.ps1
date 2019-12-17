@@ -53,7 +53,7 @@ $params = @{
 }
 New-AzResourceGroupDeployment -ResourceGroupName $config.nps.rg -TemplateFile $(Join-Path $PSScriptRoot ".." "arm_templates" "shmnps" "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
 $result = $?
-LogTemplateOutput -ResourceGroupName $config.dsg.dc.rg -DeploymentName $templateName
+LogTemplateOutput -ResourceGroupName $config.nps.rg -DeploymentName $templateName
 if ($result) {
   Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
 } else {
