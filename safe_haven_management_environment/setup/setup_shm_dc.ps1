@@ -173,13 +173,15 @@ if ($?) {
 }
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
+# Setup boot diagnostics resource group and storage account
+# ---------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.bootdiagnostics.rg -Location $config.location
+$_ = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
+
+
+# Setup artifacts resource group and storage account
+# --------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-
-
-# Setup storage account and upload artifacts
-# ------------------------------------------
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
 
@@ -200,6 +202,7 @@ foreach ($containerName in ("armdsc", "dcconfiguration", "sre-rds-sh-packages"))
         }
     }
 }
+# NB. we would like the NPS VM to log to a database, but this is not yet working
 # # Create file storage shares
 # foreach ($shareName in ("sqlserver")) {
 #     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
@@ -233,6 +236,7 @@ if ($?) {
 } else {
     Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
 }
+# NB. we would like the NPS VM to log to a database, but this is not yet working
 # Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
@@ -278,6 +282,7 @@ $params = @{
     Administrator_User = $dcNpsAdminUsername
     Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    BootDiagnostics_Account_Name = $config.bootdiagnostics.accountName
     DC1_Host_Name = $config.dc.hostname
     DC1_IP_Address = $config.dc.ip
     DC1_VM_Name = $config.dc.vmName
@@ -293,7 +298,7 @@ $params = @{
     Virtual_Network_Subnet = $config.network.subnets.identity.Name
     VM_Size = $config.dc.vmSize
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shmdc-template.json" -Params $params -ResourceGroupName $config.dc.rg
+Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shm-dc-template.json" -Params $params -ResourceGroupName $config.dc.rg
 
 
 # Import artifacts from blob storage

@@ -54,10 +54,10 @@ New-AzResourceGroupDeployment -ResourceGroupName $config.nps.rg -TemplateFile $(
 $result = $?
 LogTemplateOutput -ResourceGroupName $config.nps.rg -DeploymentName $templateName
 if ($result) {
-  Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
+    Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
 } else {
-  Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
-  throw "Template deployment has failed. Please check the error message above before re-running this script."
+    Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
+    throw "Template deployment has failed. Please check the error message above before re-running this script."
 }
 
 
@@ -65,7 +65,7 @@ if ($result) {
 # ---------------------------------
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_NPS_Server.ps1"
 $params = @{
-  remoteDir = "`"C:\Installation`""
+    remoteDir = "`"C:\Installation`""
 }
 $result = Invoke-AzVMRunCommand -Name $config.nps.vmName -ResourceGroupName $config.nps.rg `
                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;

@@ -361,7 +361,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
-            "name": "NetworkingDeployment",
+            "name": "NestedNetworkingDeployment",
             "resourceGroup": "[parameters('Virtual Network Resource Group')]",
             "properties": {
                 "mode": "Incremental",

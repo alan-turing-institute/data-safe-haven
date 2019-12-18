@@ -1,8 +1,8 @@
 {
   "shm": {
     "subscriptionName": "Safe Haven Management Test A",
-    "id": "testa",
-    "name": "Turing Development Safe Haven A",
+    "Id": "testa",
+    "Name": "Turing Development Safe Haven A",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -21,30 +21,30 @@
       "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
-          "name": "SG Data Science LDAP Users",
-          "description": "SG Data Science LDAP Users"
+          "Name": "SG Data Science LDAP Users",
+          "description": null
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_SHM_VNET",
-        "name": "VNET_SHM_TESTA",
+        "Name": "VNET_SHM_TESTA",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
-          "name": "IdentitySubnet",
+          "Name": "IdentitySubnet",
           "prefix": "10.0.0",
           "cidr": "10.0.0.0/24"
         },
         "web": {
-          "name": "WebSubnet",
+          "Name": "WebSubnet",
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
-          "name": "GatewaySubnet",
+          "Name": "GatewaySubnet",
           "prefix": "10.0.7",
           "cidr": "10.0.7.0/24"
         }
@@ -79,7 +79,7 @@
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-testa",
+      "Name": "kv-shm-testa",
       "secretNames": {
         "aadAdminPassword": "shm-aad-admin-password",
         "dcNpsAdminUsername": "shm-dcnps-admin-username",
@@ -99,18 +99,22 @@
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS"
+    },
+    "bootdiagnostics": {
+      "rg": "RG_SHM_ARTIFACTS",
+      "accountName": "shmtestabootdiagsdeulxrq"
     }
   },
   "dsg": {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
-    "id": "sandbox",
+    "Id": "sandbox",
     "shortName": "sre-sandbox",
     "location": "uksouth",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "mirrors": {
       "vnet": {
-        "name": "VNET_SHM_TESTA_PKG_MIRRORS_TIER2"
+        "Name": "VNET_SHM_TESTA_PKG_MIRRORS_TIER2"
       },
       "cran": {
         "ip": "10.20.2.21"
@@ -125,39 +129,39 @@
       "dn": "DC=sandbox,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
+          "Name": "SG SANDBOX Server Administrators",
+          "description": null
         },
         "researchUsers": {
-          "name": "SG SANDBOX Research Users",
-          "description": "SG SANDBOX Research Users"
+          "Name": "SG SANDBOX Research Users",
+          "description": null
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_SRE_VNET",
-        "name": "VNET_SRE_SANDBOX",
+        "Name": "VNET_SRE_SANDBOX",
         "cidr": "10.150.0.0/21"
       },
       "subnets": {
         "identity": {
-          "name": "IdentitySubnet",
+          "Name": "IdentitySubnet",
           "prefix": "10.150.0",
           "cidr": "10.150.0.0/24"
         },
         "rds": {
-          "name": "RDSSubnet",
+          "Name": "RDSSubnet",
           "prefix": "10.150.1",
           "cidr": "10.150.1.0/24"
         },
         "data": {
-          "name": "SharedDataSubnet",
+          "Name": "SharedDataSubnet",
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
         "gateway": {
-          "name": "GatewaySubnet",
+          "Name": "GatewaySubnet",
           "prefix": "10.150.7",
           "cidr": "10.150.7.0/27"
         }
@@ -165,7 +169,7 @@
       "nsg": {
         "data": {
           "rg": "RG_SRE_WEBAPPS",
-          "name": "NSG_SRE_WEBAPPS"
+          "Name": "NSG_SRE_WEBAPPS"
         }
       }
     },
@@ -176,7 +180,7 @@
       }
     },
     "keyVault": {
-      "name": "kv-testa-sre-sandbox",
+      "Name": "kv-testa-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "dcAdminPassword": "sre-sandbox-dc-admin-password",
@@ -207,21 +211,21 @@
     "users": {
       "ldap": {
         "gitlab": {
-          "name": "SANDBOX Gitlab LDAP",
+          "Name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox"
         },
         "hackmd": {
-          "name": "SANDBOX HackMD LDAP",
+          "Name": "SANDBOX HackMD LDAP",
           "samAccountName": "hackmdldapsandbox"
         },
         "dsvm": {
-          "name": "SANDBOX DSVM LDAP",
+          "Name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
         }
       },
       "researchers": {
         "test": {
-          "name": "SANDBOX Test Researcher",
+          "Name": "SANDBOX Test Researcher",
           "samAccountName": "testresrchsandbox"
         }
       }
@@ -252,7 +256,7 @@
       "rg": "RG_SRE_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS-DSGsandbox_Server",
+          "Name": "NSG_RDS-DSGsandbox_Server",
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         }
@@ -302,6 +306,10 @@
         "type": "Standard_LRS",
         "size_gb": "128"
       }
+    },
+    "bootdiagnostics": {
+      "rg": "RG_SRE_ARTIFACTS",
+      "accountName": "sresandboxbootdiagqevtcb"
     }
   }
 }

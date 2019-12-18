@@ -1,3 +1,5 @@
+Import-Module $PSScriptRoot/Security.psm1 -Force
+
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-ConfigRootDir {
@@ -149,6 +151,12 @@ function Get-ShmFullConfig {
     # --- Package mirror config ---
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
+    }
+
+    # --- Boot diagnostics config ---
+    $shm.bootdiagnostics = [ordered]@{
+        rg = $shm.storage.artifacts.rg
+        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiag" + (New-RandomLetters -Length 13) | TrimToLength 24
     }
 
     return $shm
@@ -447,6 +455,12 @@ function Add-SreConfig {
     $config.dsg.dsvm.homedisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "128"
+    }
+
+    # --- Boot diagnostics config ---
+    $config.dsg.bootdiagnostics = [ordered]@{
+        rg = $config.dsg.storage.artifacts.rg
+        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiag" + (New-RandomLetters -Length 13) | TrimToLength 24
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)

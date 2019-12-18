@@ -61,6 +61,15 @@ function New-Password {
 Export-ModuleMember -Function New-Password
 
 
+function New-RandomLetters {
+    param(
+        [int]$length = 20
+    )
+    return (-join ((97..122) | Get-Random -Count $length | % {[char]$_}))
+}
+Export-ModuleMember -Function New-RandomLetters
+
+
 # Ensure that a password is in the keyvault
 # -----------------------------------------
 function EnsureKeyvaultSecret {

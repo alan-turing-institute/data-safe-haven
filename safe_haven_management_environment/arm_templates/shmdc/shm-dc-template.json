@@ -26,6 +26,12 @@
                 "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
             }
         },
+        "BootDiagnostics_Account_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of storage account used for boot diagnostics"
+            }
+        },
         "DC1_Host_Name":{
             "type": "string"
         },
@@ -74,7 +80,7 @@
         "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of resource group that is assoicated with the virtual network above"
+                "description": "Enter name of resource group that is associated with the virtual network above"
             }
         },
         "Virtual_Network_Subnet": {
@@ -94,7 +100,7 @@
         "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
         "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
         "avsetname": "AVSET_SHM_VM_DC",
-        "diagStorageAccountName": "[substring(concat('dcbootdiag', parameters('Shm_Id'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
+        // "diagStorageAccountName": "[substring(concat('dcbootdiag', parameters('Shm_Id'), uniqueString(resourceGroup().id), uniqueString(subscription().subscriptionId)), 0, 24)]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
@@ -181,14 +187,14 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                        // "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
                     }
                 }
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('dc1nic'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('dc1nic'))]"
             ],
             "resources": [
                 {
@@ -349,14 +355,14 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                        // "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
                     }
                 }
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/availabilitySets', variables('avsetname'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('dc2nic'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('dc2nic'))]"
             ],
             "resources": [
                 {
@@ -450,39 +456,39 @@
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC2_VM_Name'))]"
             ]
         },
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "Storage",
-            "name": "[variables('diagStorageAccountName')]",
-            "apiVersion": "2018-07-01",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "scale": null,
-            "properties": {
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": false,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "enabled": true
-                        },
-                        "blob": {
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                }
-            },
-            "dependsOn": []
-        }
+        // {
+        //     "type": "Microsoft.Storage/storageAccounts",
+        //     "sku": {
+        //         "name": "Standard_LRS",
+        //         "tier": "Standard"
+        //     },
+        //     "kind": "Storage",
+        //     "name": "[variables('diagStorageAccountName')]",
+        //     "apiVersion": "2018-07-01",
+        //     "location": "[resourceGroup().location]",
+        //     "tags": {},
+        //     "scale": null,
+        //     "properties": {
+        //         "networkAcls": {
+        //             "bypass": "AzureServices",
+        //             "virtualNetworkRules": [],
+        //             "ipRules": [],
+        //             "defaultAction": "Allow"
+        //         },
+        //         "supportsHttpsTrafficOnly": false,
+        //         "encryption": {
+        //             "services": {
+        //                 "file": {
+        //                     "enabled": true
+        //                 },
+        //                 "blob": {
+        //                     "enabled": true
+        //                 }
+        //             },
+        //             "keySource": "Microsoft.Storage"
+        //         }
+        //     },
+        //     "dependsOn": []
+        // }
     ]
 }

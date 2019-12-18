@@ -98,7 +98,9 @@ function Invoke-LoggedRemotePowershell {
         $success = $?
     }
     Write-Output $result.Value
-    if ($success) {
+    $stdoutCode = ($result.Value[0].Code -split "/")[-1]
+    $stderrCode = ($result.Value[1].Code -split "/")[-1]
+    if ($success -and ($stdoutCode -eq "succeeded") -and ($stderrCode -eq "succeeded")) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
         Add-LogMessage -Level Failure "Remote script execution failed!"
