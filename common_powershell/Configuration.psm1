@@ -63,7 +63,7 @@ function Get-ShmFullConfig {
     # --- Network config ---
     $shm.network = [ordered]@{
         vnet = [ordered]@{
-            rg = "RG_SHM_VNET"
+            rg = "RG_SHM_NETWORKING"
             Name = "VNET_SHM_" + "$($shm.id)".ToUpper()
             cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
         }
@@ -114,7 +114,7 @@ function Get-ShmFullConfig {
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = "RG_SHM_ARTIFACTS"
-            accountName = "shm" + "$($shm.id)".ToLower() + "artifacts"
+            accountName = "shm" + "$($shm.id)".ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $shm.subscriptionName ) | TrimToLength 24
         }
     }
 
@@ -154,9 +154,9 @@ function Get-ShmFullConfig {
     }
 
     # --- Boot diagnostics config ---
-    $shm.bootdiagnostics = [ordered]@{
+    $shm.bootdiagnostics = [ordered] @{
         rg = $shm.storage.artifacts.rg
-        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiag" + (New-RandomLetters -Length 13) | TrimToLength 24
+        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiag" + (New-RandomLetters -SeedPhrase $shm.subscriptionName) | TrimToLength 24
     }
 
     return $shm
@@ -212,8 +212,8 @@ function Add-SreConfig {
     # --- Top-level config ---
     $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
     $config.dsg.Id = $dsgConfigBase.dsgId
-    if ($config.dsg.Id -gt 7) {
-        Write-Host "dsgId should be 7 characters or less if possible. $($config.dsg.id) is $($config.dsg.id.length) characters long."
+    if ($config.dsg.id.length -gt 7) {
+        Write-Host "dsgId should be 7 characters or fewer if possible. '$($config.dsg.id)' is $($config.dsg.id.length) characters long."
     }
     $config.dsg.shortName = "sre-" + $dsgConfigBase.dsgId.ToLower()
     $config.dsg.location = $config.shm.location
@@ -274,7 +274,7 @@ function Add-SreConfig {
             data = [ordered]@{}
         }
     }
-    $config.dsg.network.vnet.rg = "RG_SRE_VNET"
+    $config.dsg.network.vnet.rg = "RG_SRE_NETWORKING"
     $config.dsg.network.vnet.Name = "VNET_SRE_" + $($config.dsg.Id).ToUpper()
     $config.dsg.network.vnet.cidr = $dsgBasePrefix + "." + $dsgThirdOctet + ".0/21"
     $config.dsg.network.subnets.identity.Name = "IdentitySubnet"
@@ -286,7 +286,8 @@ function Add-SreConfig {
     $config.dsg.network.subnets.data.Name = "SharedDataSubnet"
     $config.dsg.network.subnets.data.prefix = $dsgBasePrefix + "." + ([int]$dsgThirdOctet + 2)
     $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
-    $config.dsg.network.subnets.gateway.Name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    $config.dsg.network.subnets.gateway.Name = "GatewaySubnet"
     $config.dsg.network.subnets.gateway.prefix = $dsgBasePrefix + "." + ([int]$dsgThirdOctet + 7)
     $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
     $config.dsg.network.nsg.data.rg = "RG_SRE_WEBAPPS"
@@ -296,7 +297,7 @@ function Add-SreConfig {
     $config.dsg.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = "RG_SRE_ARTIFACTS"
-            accountName = "sre$($config.dsg.id)artifacts"
+            accountName = "sre" + $($config.dsg.id).ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
         }
     }
 
@@ -460,7 +461,7 @@ function Add-SreConfig {
     # --- Boot diagnostics config ---
     $config.dsg.bootdiagnostics = [ordered]@{
         rg = $config.dsg.storage.artifacts.rg
-        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiag" + (New-RandomLetters -Length 13) | TrimToLength 24
+        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiag" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
@@ -484,11 +485,3 @@ function Get-SreConfig {
     return $config
 }
 Export-ModuleMember -Function Get-SreConfig
-
-# function Get-DsgConfig {
-#     param(
-#         [string]$dsgId
-#     )
-#     return Get-SreConfig -dsgId $dsgId
-# }
-# Export-ModuleMember -Function Get-DsgConfig

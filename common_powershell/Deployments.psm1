@@ -27,7 +27,7 @@ Export-ModuleMember -Function Deploy-ResourceGroup
 # ------------------------------------------
 function Deploy-StorageAccount {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of storage to deploy")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of storage account to deploy")]
         $Name,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
@@ -43,6 +43,7 @@ function Deploy-StorageAccount {
             Add-LogMessage -Level Success "Created storage account"
         } else {
             Add-LogMessage -Level Failure "Failed to create storage account!"
+            throw "Failed to create storage account '$Name'!"
         }
     } else {
         Add-LogMessage -Level Success "Storage account '$Name' already exists"
@@ -52,8 +53,36 @@ function Deploy-StorageAccount {
 Export-ModuleMember -Function Deploy-StorageAccount
 
 
-# Create storage account if it does not exist
+# Create storage container if it does not exist
 # ------------------------------------------
+function Deploy-StorageContainer {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        $StorageAccount
+    )
+    Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
+    $storageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+        $storageContainer = New-AzStorageContainer -Name $Name -Context $StorageAccount.Context
+        if ($?) {
+            Add-LogMessage -Level Success "Created storage container"
+        } else {
+            Add-LogMessage -Level Failure "Failed to create storage container!"
+            throw "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+        }
+    } else {
+        Add-LogMessage -Level Success "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+    return $storageContainer
+}
+Export-ModuleMember -Function Deploy-StorageContainer
+
+
+# Deploy an ARM template and log the output
+# -----------------------------------------
 function Deploy-ArmTemplate {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to template file")]

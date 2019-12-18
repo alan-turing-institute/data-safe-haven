@@ -28,7 +28,7 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_SHM_VNET",
+        "rg": "RG_SHM_NETWORKING",
         "Name": "VNET_SHM_TESTA",
         "cidr": "10.0.0.0/21"
       },
@@ -74,7 +74,7 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmtestaartifacts"
+        "accountName": "shmtestaartifactsvkdrslu"
       }
     },
     "keyVault": {
@@ -102,7 +102,7 @@
     },
     "bootdiagnostics": {
       "rg": "RG_SHM_ARTIFACTS",
-      "accountName": "shmtestabootdiagsdeulxrq"
+      "accountName": "shmtestabootdiagvkdrsluo"
     }
   },
   "dsg": {
@@ -140,7 +140,7 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_SRE_VNET",
+        "rg": "RG_SRE_NETWORKING",
         "Name": "VNET_SRE_SANDBOX",
         "cidr": "10.150.0.0/21"
       },
@@ -176,7 +176,7 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sresandboxartifacts"
+        "accountName": "sresandboxartifactszvmwt"
       }
     },
     "keyVault": {
@@ -309,7 +309,7 @@
     },
     "bootdiagnostics": {
       "rg": "RG_SRE_ARTIFACTS",
-      "accountName": "sresandboxbootdiagqevtcb"
+      "accountName": "sresandboxbootdiagzvmwtq"
     }
   }
 }

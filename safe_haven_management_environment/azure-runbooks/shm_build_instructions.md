@@ -196,6 +196,24 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
 
 
 ## 3. Deploy and configure VNET and Domain Controllers
+<!--
+
+### Ensure that installer versions are up-to-date
+A number of files are needed for the SRE deployment. They must be added to blob storage; their details are specified in `installers.json` in the `environment_configs` folder.
+Please check that the version numbers set here are up-to-date by checking the following pages:
+
+1. `Google Chrome`:
+  - Go [here](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en), scrolling down the page to the `Update Chrome Browser` section.
+1. `LibreOffice`:
+  - Go [here](https://www.libreoffice.org/download/download/?type=win-x86_64&lang=en-GB) and look for the newest advertised version `X.Y.Z`
+3. `PuTTY`:
+  - Go [here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html), and look for the version the `MSI ('Windows Installer') 64-bit` option
+4. `WinSCP`:
+  - Go [here](https://winscp.net/eng/download.php).
+
+In each case, get the URL of the downlo -->
+
+
 ### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
@@ -212,7 +230,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
    ![Resource groups](images/resource_groups.png)
 
 
-### Download software and upload to blob storage
+<!-- ### Download software and upload to blob storage
 A number of files are needed for the SRE deployment. They must be added to blob storage:
 
 1. On the portal navigate to `RG_SHM_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
@@ -225,7 +243,7 @@ A number of files are needed for the SRE deployment. They must be added to blob 
     - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
     <!-- https://get.adobe.com/uk/reader/download/?installer=Reader_DC_2019.021.20058_English_UK_for_Windows&stype=7779&standalone=1 -->
 3. Use the Azure portal to upload all of these files to the `sre-rds-sh-packages` folder. The container will now look like this:
-   ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png)
+   ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png) -->
 
 
 ### Download a client VPN certificate for the Safe Haven Management VNet

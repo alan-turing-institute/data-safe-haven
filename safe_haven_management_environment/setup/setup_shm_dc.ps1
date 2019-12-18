@@ -188,25 +188,28 @@ $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountN
 # Create blob storage containers
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-foreach ($containerName in ("armdsc", "dcconfiguration", "sre-rds-sh-packages")) {
-    $exists = Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" }
-    if ($exists) {
-        Add-LogMessage -Level Success "Storage container '$containerName' already exists in storage account '$storageAccountName'"
-    } else {
-        Add-LogMessage -Level Info "[ ] Creating storage container '$containerName' in storage account '$storageAccountName'"
-        $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context
-        if ($?) {
-            Add-LogMessage -Level Success "Created storage container"
-        } else {
-            Add-LogMessage -Level Failure "Failed to create storage container!"
-        }
-    }
+foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
+    # $exists = Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" }
+    # if ($exists) {
+    #     Add-LogMessage -Level Success "Storage container '$containerName' already exists in storage account '$($config.storage.artifacts.accountName)'"
+    # } else {
+    #     Add-LogMessage -Level Info "[ ] Creating storage container '$containerName' in storage account '$($config.storage.artifacts.accountName)'"
+    #     $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context
+    #     if ($?) {
+    #         Add-LogMessage -Level Success "Created storage container"
+    #     } else {
+    #         Add-LogMessage -Level Failure "Failed to create storage container!"
+    #     }
+    # }
+    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
+
+
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # # Create file storage shares
 # foreach ($shareName in ("sqlserver")) {
 #     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
-#         Write-Host " - Creating share '$shareName' in storage account '$storageAccountName'"
+#         Write-Host " - Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
 #         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
 #     }
 # }
@@ -215,10 +218,10 @@ foreach ($containerName in ("armdsc", "dcconfiguration", "sre-rds-sh-packages"))
 # ----------------
 Add-LogMessage -Level Info "Uploading artifacts to blob storage..."
 # Upload DSC scripts
-Add-LogMessage -Level Info "[ ] Uploading DSC files to storage account '$storageAccountName'"
-$_ = Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
+Add-LogMessage -Level Info "[ ] Uploading DSC files to storage account '$($config.storage.artifacts.accountName)'"
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
 $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded DSC files"
@@ -226,18 +229,50 @@ if ($?) {
     Add-LogMessage -Level Failure "Failed to upload DSC files!"
 }
 # Upload artifacts for configuring the DC
-Add-LogMessage -Level Info "[ ] Uploading DC configuration files to storage account '$storageAccountName'"
-$_ = Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
+Add-LogMessage -Level Info "[ ] Uploading DC configuration files to storage account '$($config.storage.artifacts.accountName)'"
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
 $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded DC configuration files"
 } else {
     Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
 }
+# Upload Windows package installers
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($config.storage.artifacts.accountName)'"
+$success = $true
+# Chrome
+$filename = "GoogleChromeStandaloneEnterprise64.msi"
+Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# LibreOffice
+$baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
+$httpContent = Invoke-WebRequest -URI $baseUri
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | % { $_.href }
+Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# PuTTY
+$baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+$httpContent = Invoke-WebRequest -URI $baseUri
+$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | % { $_.href }
+$version = ($filename -split "-")[2]
+Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# WinSCP
+$httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
+$filename = $httpContent.Links  | Where-Object { $_.href -like "*Setup.exe" } | % { ($_.href -split "/")[-1] }
+$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*$filename" } | % { $_.href }
+Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+if ($success) {
+    Add-LogMessage -Level Success "Uploaded DC configuration files"
+} else {
+    Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
+}
+
 # NB. we would like the NPS VM to log to a database, but this is not yet working
-# Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
+# Write-Host " - Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
@@ -305,7 +340,7 @@ Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shm-dc-te
 # ----------------------------------
 Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.dc.vmName)..."
 # Get list of blobs in the storage account
-$storageContainerName = "dcconfiguration"
+$storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script

@@ -213,7 +213,7 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts_Location'), '/armdsc/CreateADPDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/shm-dsc-dc/CreateADPDC.zip')]",
                             "script": "CreateADPDC.ps1",
                             "function": "CreateADPDC"
                             },
@@ -382,7 +382,7 @@
                         "settings": {
                             "WMFVersion": "latest",
                             "configuration": {
-                            "url": "[concat(parameters('Artifacts_Location'), '/armdsc/CreateADBDC.zip')]",
+                            "url": "[concat(parameters('Artifacts_Location'), '/shm-dsc-dc/CreateADBDC.zip')]",
                             "script": "CreateADBDC.ps1",
                             "function": "CreateADBDC"
                             },

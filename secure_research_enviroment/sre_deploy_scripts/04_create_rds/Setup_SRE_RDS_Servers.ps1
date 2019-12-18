@@ -300,11 +300,13 @@ Write-Host -ForegroundColor DarkCyan " [ ] Getting list of packages for each VM"
 $filePathsSh1 = New-Object System.Collections.ArrayList($null)
 $filePathsSh2 = New-Object System.Collections.ArrayList($null)
 ForEach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "GoogleChromeStandaloneEnterprise64*") -or ($blob.Name -like "putty-64bit*") -or ($blob.Name -like "WinSCP-*")) {
+    # if (($blob.Name -like "GoogleChromeStandaloneEnterprise64*") -or ($blob.Name -like "putty-64bit*") -or ($blob.Name -like "WinSCP-*")) {
+    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
         $_ = $filePathsSh1.Add($blob.Name)
         $_ = $filePathsSh2.Add($blob.Name)
     # } elseif (($blob.Name -like "install-tl-windows*") -or ($blob.Name -like "LibreOffice_*")) {
-    } elseif ($blob.Name -like "LibreOffice_*") {
+    # } elseif ($blob.Name -like "LibreOffice*") {
+    } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
         $_ = $filePathsSh2.Add($blob.Name)
     }
 }

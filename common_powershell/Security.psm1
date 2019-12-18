@@ -63,9 +63,15 @@ Export-ModuleMember -Function New-Password
 
 function New-RandomLetters {
     param(
-        [int]$length = 20
+        [int]$Length = 20,
+        [int]$Seed = 0,
+        [string]$SeedPhrase = $null
     )
-    return (-join ((97..122) | Get-Random -Count $length | % {[char]$_}))
+    if ($SeedPhrase -ne $null) {
+        $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
+    }
+    return (-join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % {[char]$_}))
+
 }
 Export-ModuleMember -Function New-RandomLetters
 
