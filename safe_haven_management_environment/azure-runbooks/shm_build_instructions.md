@@ -27,8 +27,8 @@
 
 
 ### Create a Custom Domain Name
-#### Create a DNS zone for the custom domain
-Create a new DNS zone according to the following rules:
+#### Choose your custom domain
+Choose your domain according to the following rules:
   - Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_PRODUCTION` resource group
@@ -36,7 +36,8 @@ Create a new DNS zone according to the following rules:
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_TEST` resource group
   - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
-**NB.** For Turing Safe Havens, we use the `UK South` region wherever possible.
+
+#### Create a DNS zone for the custom domain
 
 Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
 - If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
@@ -47,15 +48,19 @@ Whatever new domain or subdomain you choose, you must create a new Azure DNS Zon
   - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
 - Click through the various validation screens
 
-Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to its parent record in the DNS system.
-- Navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone". The NS record will list 4 Azure name servers.
-- If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
-- If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+#### Add DNS records to the parent DNS system
+
+Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
+- To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
+- Duplicate these records to the parent DNS system as follows:
+  - If using a subdomain of an existing Azure DNS Zone, create an NS record set in the parent Azure DNS Zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
+  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
 
 ### Create and add the custom domain to the new AAD
 1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
 2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
-3. Note the DNS record details displayed
+3. If DNS record details are displayed similar to the image below, you need to verify the domain. Note these details and complete the following steps.
+   * If no DNS details are displayed and instead the custom domain is showing `Status Verified`, you can skip to the next section.
   ![AAD DNS record details](images/aad_dns_record_details.png)
 4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
 5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
@@ -215,7 +220,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
 ### Download software and upload to blob storage
 A number of files are needed for the SRE deployment. They must be added to blob storage:
 
-1. On the portal navigate to `RG_SHM_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
+1. On the portal navigate to the `RG_SHM_ARTIFACTS` resource group and go to the storage account. Under `Blob service` click `Containers` and check that there is a container called `sre-rds-sh-packages`:
    ![Blob storage](images/blobstorage.png)
 2. On your local machine download the following files, appending version numbers manually if needed:
     - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
@@ -240,16 +245,17 @@ A number of files are needed for the SRE deployment. They must be added to blob 
 ### Configure a VPN connection to the Safe Haven Management VNet
 1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
+  ![certificate details](images/certificate_details.png)
+4. Read through the following notes, then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-**NOTE:**
+**NOTES:**
 - **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+- Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
+- Name the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
 - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
-  ![certificate details](images/certificate_details.png)
-
-4. Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
