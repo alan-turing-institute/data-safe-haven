@@ -37,7 +37,7 @@ if ($status -eq "completed") {
     Add-LogMessage -Level Info "[ ] Retrieving existing CA certificate..."
 } else {
     Add-LogMessage -Level Info "[ ] Generating self-signed CA certificate..."
-    $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-P2S-$($config.id)-CA" -SecretContentType "application/x-pkcs12" `
+    $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper()))-P2S-CA" -SecretContentType "application/x-pkcs12" `
                                                 -ValidityInMonths $caValidityMonths -IssuerName "Self" -KeySize 2048 -KeyType "RSA"
     $caPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
@@ -69,7 +69,7 @@ if ($status -eq "completed") {
     $csrPath = Join-Path $certFolderPath "client.csr"
     Add-LogMessage -Level Info "[ ] Generating a certificate signing request at '$csrPath' to be signed by the CA certificate..."
     if ($status -ne "inProgress") {
-        $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-P2S-$($config.id)-Client" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
+        $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper()))-P2S-CLIENT" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
         $_ = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
     }
     $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate

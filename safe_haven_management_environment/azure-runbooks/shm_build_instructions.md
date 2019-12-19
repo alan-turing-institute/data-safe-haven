@@ -228,7 +228,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
 
 
 ### Configure a VPN connection to the Safe Haven Management VNet
-1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
   ![certificate details](images/certificate_details.png)
