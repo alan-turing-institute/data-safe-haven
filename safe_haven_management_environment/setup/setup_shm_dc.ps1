@@ -189,22 +189,8 @@ $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountN
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
 foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
-    # $exists = Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" }
-    # if ($exists) {
-    #     Add-LogMessage -Level Success "Storage container '$containerName' already exists in storage account '$($config.storage.artifacts.accountName)'"
-    # } else {
-    #     Add-LogMessage -Level Info "[ ] Creating storage container '$containerName' in storage account '$($config.storage.artifacts.accountName)'"
-    #     $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context
-    #     if ($?) {
-    #         Add-LogMessage -Level Success "Created storage container"
-    #     } else {
-    #         Add-LogMessage -Level Failure "Failed to create storage container!"
-    #     }
-    # }
     $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
-
-
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # # Create file storage shares
 # foreach ($shareName in ("sqlserver")) {
@@ -213,6 +199,7 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 #         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
 #     }
 # }
+
 
 # Upload artifacts
 # ----------------
@@ -270,7 +257,6 @@ if ($success) {
 } else {
     Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
 }
-
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # Write-Host " - Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
