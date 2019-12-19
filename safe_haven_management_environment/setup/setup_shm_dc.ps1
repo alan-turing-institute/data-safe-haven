@@ -105,18 +105,18 @@ if ($status -eq "completed") {
     # Write CA key to a file
     $caKeyPath = Join-Path $certFolderPath "ca.key"
     $caKeyPassword = New-Password
-    openssl pkcs12 -In $caPfxPath -passin pass: -passout pass:$caKeyPassword -nocerts -out "$($caKeyPath).encrypted" 2>&1 | Out-Null
-    openssl rsa -In "$($caKeyPath).encrypted" -passin pass:$caKeyPassword -outform PEM -out $caKeyPath 2>&1 | Out-Null
-    $keyMD5 = openssl rsa -noout -modulus -In $caKeyPath | openssl md5
+    openssl pkcs12 -in $caPfxPath -passin pass: -passout pass:$caKeyPassword -nocerts -out "$($caKeyPath).encrypted" 2>&1 | Out-Null
+    openssl rsa -in "$($caKeyPath).encrypted" -passin pass:$caKeyPassword -outform PEM -out $caKeyPath 2>&1 | Out-Null
+    $keyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
     # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
     $caCrtPath = Join-Path $certFolderPath "ca.crt"
-    $caCrtFull = openssl pkcs12 -In $caPfxPath -passin pass: -passout pass: -clcerts -nokeys 2> Out-Null
+    $caCrtFull = openssl pkcs12 -in $caPfxPath -passin pass: -passout pass: -clcerts -nokeys 2> Out-Null
     $pattern = "-----BEGIN CERTIFICATE-----(.*)-----END CERTIFICATE-----"
     $vpnCaCertificatePlain = [regex]::match($caCrtFull,$pattern).Groups[1].Value -replace " ",""
     "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
     $vpnCaCertificatePlain -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
     "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
-    $certMD5 = openssl x509 -noout -modulus -In $caCrtPath | openssl md5
+    $certMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
     if ($keyMD5 -eq $certMD5) {
         Add-LogMessage -Level Success "Splitting CA certificate succeeded"
     } else {
@@ -128,7 +128,7 @@ if ($status -eq "completed") {
     # ---------------------------
     Add-LogMessage -Level Info "[ ] Signing the client certificate..."
     $clientCrtPath = Join-Path $certFolderPath "client.crt"
-    openssl x509 -req -In $csrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -Days 360 -sha256 2> Out-Null
+    openssl x509 -req -in $csrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days 360 -sha256 2> Out-Null
     if ((Get-Content $clientCrtPath) -ne $null) {
         Add-LogMessage -Level Success "Signing the client certificate succeeded"
     } else {
