@@ -34,7 +34,7 @@ $dcNpsAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -na
 
 # Deploy NPS from template
 # ------------------------
-$templateName = "shmnps-template"
+$templateName = "shm-nps-template"
 Write-Host -ForegroundColor DarkCyan "Deploying template $templateName..."
 $params = @{
     Administrator_User = $dcNpsAdminUsername

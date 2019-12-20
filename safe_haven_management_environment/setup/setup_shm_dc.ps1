@@ -36,8 +36,10 @@ $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -
 if ($status -eq "completed") {
     Add-LogMessage -Level Info "[ ] Retrieving existing CA certificate..."
 } else {
+    # Generate a self-signed CA certificate
+    # -------------------------------------
     Add-LogMessage -Level Info "[ ] Generating self-signed CA certificate..."
-    $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper()))-P2S-CA" -SecretContentType "application/x-pkcs12" `
+    $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper())-P2S-CA" -SecretContentType "application/x-pkcs12" `
                                                 -ValidityInMonths $caValidityMonths -IssuerName "Self" -KeySize 2048 -KeyType "RSA"
     $caPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
@@ -47,8 +49,24 @@ if ($status -eq "completed") {
         Write-Progress -Activity "Certificate creation:" -Status $status -PercentComplete $progress
         Start-Sleep 1
     }
+
+    # Store plain CA certificate as a KeyVault secret
+    # -----------------------------------------------
+    Add-LogMessage -Level Info "[ ] Storing the plain client certificate (without private key) in the '$($config.keyVault.name)' KeyVault..."
+    $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+    # Extract the public certificate and encode it as a Base64 string
+    $vpnCaCertificatePlain = [System.Convert]::ToBase64String($vpnCaCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString $vpnCaCertificatePlain -AsPlainText -Force)
+    if ($?) {
+        Add-LogMessage -Level Success "Storing the plain client certificate succeeded"
+    } else {
+        Add-LogMessage -Level Failure "Storing the plain client certificate failed!"
+        throw "Unable to store the plain client certificate!"
+    }
+
 }
-$vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+# $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+$_ = Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate
 if ($?) {
     Add-LogMessage -Level Success "Retrieved CA certificate"
 } else {
@@ -69,7 +87,7 @@ if ($status -eq "completed") {
     $csrPath = Join-Path $certFolderPath "client.csr"
     Add-LogMessage -Level Info "[ ] Generating a certificate signing request at '$csrPath' to be signed by the CA certificate..."
     if ($status -ne "inProgress") {
-        $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper()))-P2S-CLIENT" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
+        $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper())-P2S-CLIENT" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
         $_ = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
     }
     $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
@@ -89,9 +107,8 @@ if ($status -eq "completed") {
     # ----------------------------------------------------------
     Add-LogMessage -Level Info "[ ] Loading CA full certificate (with private key) into local PFX file..."
     $caPfxPath = Join-Path $certFolderPath "ca.pfx"
-    $caPfxSecret = Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate
-    $caPfxUnprotectedBytes = [Convert]::FromBase64String($caPfxSecret.SecretValueText)
-    [IO.File]::WriteAllBytes($caPfxPath,$caPfxUnprotectedBytes)
+    $caPfxBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
+    [IO.File]::WriteAllBytes($caPfxPath, [Convert]::FromBase64String($caPfxBase64))
     if ($?) {
         Add-LogMessage -Level Success "Loading CA certificate succeeded"
     } else {
@@ -107,17 +124,15 @@ if ($status -eq "completed") {
     $caKeyPassword = New-Password
     openssl pkcs12 -in $caPfxPath -passin pass: -passout pass:$caKeyPassword -nocerts -out "$($caKeyPath).encrypted" 2>&1 | Out-Null
     openssl rsa -in "$($caKeyPath).encrypted" -passin pass:$caKeyPassword -outform PEM -out $caKeyPath 2>&1 | Out-Null
-    $keyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
+    $caKeyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
     # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
     $caCrtPath = Join-Path $certFolderPath "ca.crt"
-    $caCrtFull = openssl pkcs12 -in $caPfxPath -passin pass: -passout pass: -clcerts -nokeys 2> Out-Null
-    $pattern = "-----BEGIN CERTIFICATE-----(.*)-----END CERTIFICATE-----"
-    $vpnCaCertificatePlain = [regex]::match($caCrtFull,$pattern).Groups[1].Value -replace " ",""
+    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
     $vpnCaCertificatePlain -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
     "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
-    $certMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
-    if ($keyMD5 -eq $certMD5) {
+    $caCrtMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
+    if ($caKeyMD5 -eq $caCrtMD5) {
         Add-LogMessage -Level Success "Splitting CA certificate succeeded"
     } else {
         Add-LogMessage -Level Failure "Splitting CA certificate failed!"
@@ -128,7 +143,7 @@ if ($status -eq "completed") {
     # ---------------------------
     Add-LogMessage -Level Info "[ ] Signing the client certificate..."
     $clientCrtPath = Join-Path $certFolderPath "client.crt"
-    openssl x509 -req -in $csrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days 360 -sha256 2> Out-Null
+    openssl x509 -req -in $csrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days 360 -sha256 2>&1 | Out-Null
     if ((Get-Content $clientCrtPath) -ne $null) {
         Add-LogMessage -Level Success "Signing the client certificate succeeded"
     } else {
@@ -150,22 +165,12 @@ if ($status -eq "completed") {
         throw "Unable to import the signed client certificate!"
     }
 
-    # Store plain CA certificate as a KeyVault secret
-    # -----------------------------------------------
-    Add-LogMessage -Level Info "[ ] Storing the plain client certificate (without private key) in the '$($config.keyVault.name)' KeyVault..."
-    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString $vpnCaCertificatePlain -AsPlainText -Force);
-    if ($?) {
-        Add-LogMessage -Level Success "Storing the plain client certificate succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Storing the plain client certificate failed!"
-        throw "Unable to store the plain client certificate!"
-    }
-
     # Clean up local files
     # --------------------
     Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
 }
-$vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
+# $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
+$_ = Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
 if ($?) {
     Add-LogMessage -Level Success "Retrieved client certificate"
 } else {
@@ -253,9 +258,9 @@ $absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
-    Add-LogMessage -Level Success "Uploaded DC configuration files"
+    Add-LogMessage -Level Success "Uploaded Windows package installers"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
+    Add-LogMessage -Level Failure "Failed to upload Windows package installers!"
 }
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # Write-Host " - Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
@@ -286,7 +291,7 @@ $params = @{
     VNET_DNS1 = $config.dc.ip
     VNET_DNS2 = $config.dcb.ip
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmvnet/shmvnet-template.json" -Params $params -ResourceGroupName $config.network.vnet.rg
+Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmvnet/shm-vnet-template.json" -Params $params -ResourceGroupName $config.network.vnet.rg
 
 
 # Create SHM DC resource group if it does not exist
