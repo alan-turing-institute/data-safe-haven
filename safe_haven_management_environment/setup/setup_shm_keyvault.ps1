@@ -17,15 +17,9 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
-Add-LogMessage -Level Info "Ensuring that resource group '$($config.keyVault.rg)' exists..."
-$_ = New-AzResourceGroup -Name $config.keyVault.rg -Location $config.location -Force
-if ($?) {
-    Add-LogMessage -Level Success "Created resource group '$($config.keyVault.rg)'"
-} else {
-    Add-LogMessage -Level Failure "Failed to create resource group '$($config.keyVault.rg)'!"
-}
+# Create secrets resource group if it does not exist
+# -----------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
 # Ensure the keyvault exists
@@ -39,7 +33,7 @@ if ($null -ne $keyVault) {
     if ($?) {
         Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
     } else {
-        Add-LogMessage -Level Failure "Failed to create resource group $($config.keyVault.rg)!"
+        Add-LogMessage -Level Fatal "Failed to create resource group $($config.keyVault.rg)!"
     }
 }
 
@@ -57,7 +51,7 @@ $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Set correct access policies"
 } else {
-    Add-LogMessage -Level Failure "Failed to set correct access policies!"
+    Add-LogMessage -Level Fatal "Failed to set correct access policies!"
 }
 
 # Ensure that secrets exist in the keyvault
@@ -68,7 +62,7 @@ $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $confi
 if ($?) {
     Add-LogMessage -Level Success "Created AAD Global Administrator password"
 } else {
-    Add-LogMessage -Level Failure "Failed to create AAD Global Administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create AAD Global Administrator password!"
 }
 
 # :: DC/NPS administrator username
@@ -76,7 +70,7 @@ $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $confi
 if ($?) {
     Add-LogMessage -Level Success "Created DC/NPS administrator username"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC/NPS administrator username!"
+    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator username!"
 }
 
 # :: DC/NPS administrator password
@@ -84,7 +78,7 @@ $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $confi
 if ($?) {
     Add-LogMessage -Level Success "Created DC/NPS administrator password"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC/NPS administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator password!"
 }
 
 # :: DC safe mode password
@@ -92,7 +86,7 @@ $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $confi
 if ($?) {
     Add-LogMessage -Level Success "Created DC safe mode password"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC safe mode password!"
+    Add-LogMessage -Level Fatal "Failed to create DC safe mode password!"
 }
 
 # :: AD sync password
@@ -100,7 +94,7 @@ $_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $confi
 if ($?) {
     Add-LogMessage -Level Success "Created AD sync password"
 } else {
-    Add-LogMessage -Level Failure "Failed to create AD sync password!"
+    Add-LogMessage -Level Fatal "Failed to create AD sync password!"
 }
 
 

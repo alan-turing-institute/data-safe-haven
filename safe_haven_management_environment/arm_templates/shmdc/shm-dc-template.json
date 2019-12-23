@@ -99,7 +99,7 @@
     "variables": {
         "dc1nic": "[concat(parameters('DC1_VM_Name'),'-','NIC')]",
         "dc2nic": "[concat(parameters('DC2_VM_Name'),'-','NIC')]",
-        "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('Shm_Id')), '-VM-DC']",
+        "avsetname": "[concat('AVSET-SHM-', toUpper(parameters('Shm_Id')), '-VM-DC')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'), '/subnets/', parameters('Virtual_Network_Subnet'))]"
     },

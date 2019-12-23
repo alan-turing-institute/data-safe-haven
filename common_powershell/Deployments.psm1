@@ -15,8 +15,7 @@ function Deploy-ResourceGroup {
     if ($?) {
         Add-LogMessage -Level Success "Created resource group '$Name'"
     } else {
-        Add-LogMessage -Level Failure "Failed to create resource group '$Name'!"
-        throw "Failed to create resource group '$Name'!"
+        Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
     }
     return $resourceGroup
 }
@@ -42,8 +41,7 @@ function Deploy-StorageAccount {
         if ($?) {
             Add-LogMessage -Level Success "Created storage account"
         } else {
-            Add-LogMessage -Level Failure "Failed to create storage account!"
-            throw "Failed to create storage account '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create storage account!"
         }
     } else {
         Add-LogMessage -Level Success "Storage account '$Name' already exists"

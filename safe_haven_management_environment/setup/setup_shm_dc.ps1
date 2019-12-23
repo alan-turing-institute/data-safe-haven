@@ -17,9 +17,10 @@ $config = Get-ShmFullConfig ($shmId)
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
-$caValidityMonths = 60 # 5 years
-$clientValidityMonths = 24 # 2 years
-
+# $caValidityMonths = 60 # 5 years
+# $clientValidityMonths = 24 # 2 years
+$caValidityDays = 2196 # 5 years
+$clientValidityDays = 732 # 2 years
 
 # Retrieve usernames/passwords from the keyvault
 # ------------------------------------
@@ -33,6 +34,7 @@ $dcSafemodePassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -
 # -------------------------------------
 Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
 $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
+# $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
 if ($status -eq "completed") {
     Add-LogMessage -Level Info "[ ] Retrieving existing CA certificate..."
 } else {
@@ -40,7 +42,7 @@ if ($status -eq "completed") {
     # -------------------------------------
     Add-LogMessage -Level Info "[ ] Generating self-signed CA certificate..."
     $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-$($($config.id).ToUpper())-P2S-CA" -SecretContentType "application/x-pkcs12" `
-                                                -ValidityInMonths $caValidityMonths -IssuerName "Self" -KeySize 2048 -KeyType "RSA"
+                                                -ValidityInMonths $caValidityMonths -IssuerName "Self" -KeySize 2048 -KeyType "RSA" -KeyUsage "KeyCertSign"
     $caPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
     while ($status -ne "completed") {
@@ -49,6 +51,7 @@ if ($status -eq "completed") {
         Write-Progress -Activity "Certificate creation:" -Status $status -PercentComplete $progress
         Start-Sleep 1
     }
+    # openssl req -subj "CN=SHM-$($($config.id).ToUpper())-P2S-CA" -new -newkey rsa:2048 -sha256 -days $caValidityDays -nodes -x509 -keyout $certFolderPath/$caStem.key -out $certFolderPath/$caStem.crt
 
     # Store plain CA certificate as a KeyVault secret
     # -----------------------------------------------
@@ -60,17 +63,14 @@ if ($status -eq "completed") {
     if ($?) {
         Add-LogMessage -Level Success "Storing the plain client certificate succeeded"
     } else {
-        Add-LogMessage -Level Failure "Storing the plain client certificate failed!"
-        throw "Unable to store the plain client certificate!"
+        Add-LogMessage -Level Fatal "Storing the plain client certificate failed!"
     }
-
 }
-# $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
 $_ = Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate
 if ($?) {
     Add-LogMessage -Level Success "Retrieved CA certificate"
 } else {
-    Add-LogMessage -Level Failure "Failed to retrieve CA certificate!"
+    Add-LogMessage -Level Fatal "Failed to retrieve CA certificate!"
 }
 
 
@@ -99,8 +99,7 @@ if ($status -eq "completed") {
     if ($success) {
         Add-LogMessage -Level Success "CSR creation succeeded"
     } else {
-        Add-LogMessage -Level Failure "CSR creation failed!"
-        throw "Unable to create a certificate signing request for the gateway client!"
+        Add-LogMessage -Level Fatal "CSR creation failed!"
     }
 
     # Load CA certificate (with private key) into local PFX file
@@ -112,8 +111,7 @@ if ($status -eq "completed") {
     if ($?) {
         Add-LogMessage -Level Success "Loading CA certificate succeeded"
     } else {
-        Add-LogMessage -Level Failure "Loading CA certificate failed!"
-        throw "Unable to load the CA certificate!"
+        Add-LogMessage -Level Fatal "Loading CA certificate failed!"
     }
 
     # Split CA certificate into key and certificate
@@ -121,9 +119,8 @@ if ($status -eq "completed") {
     Add-LogMessage -Level Info "[ ] Splitting CA full certificate into key and certificate components..."
     # Write CA key to a file
     $caKeyPath = Join-Path $certFolderPath "ca.key"
-    $caKeyPassword = New-Password
-    openssl pkcs12 -in $caPfxPath -passin pass: -passout pass:$caKeyPassword -nocerts -out "$($caKeyPath).encrypted" 2>&1 | Out-Null
-    openssl rsa -in "$($caKeyPath).encrypted" -passin pass:$caKeyPassword -outform PEM -out $caKeyPath 2>&1 | Out-Null
+    $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
+    $caKeyData.Where({ $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
     $caKeyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
     # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
     $caCrtPath = Join-Path $certFolderPath "ca.crt"
@@ -133,10 +130,10 @@ if ($status -eq "completed") {
     "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
     $caCrtMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
     if ($caKeyMD5 -eq $caCrtMD5) {
-        Add-LogMessage -Level Success "Splitting CA certificate succeeded"
+        Add-LogMessage -Level Success "Validated CA certificate splitting using MD5"
     } else {
-        Add-LogMessage -Level Failure "Splitting CA certificate failed!"
-        throw "Unable to split the CA certificate!"
+        Add-LogMessage -Level Failure "Failed to validate CA certificate splitting using MD5!"
+        throw "Failed to validate CA certificate splitting using MD5!"
     }
 
     # Sign the client certificate
@@ -147,34 +144,31 @@ if ($status -eq "completed") {
     if ((Get-Content $clientCrtPath) -ne $null) {
         Add-LogMessage -Level Success "Signing the client certificate succeeded"
     } else {
-        Add-LogMessage -Level Failure "Signing the client certificate failed!"
-        throw "Unable to sign the client certificate!"
+        Add-LogMessage -Level Fatal "Signing the client certificate failed!"
     }
 
     # Create PKCS#7 file from full certificate chain and merge it with the private key
     # --------------------------------------------------------------------------------
     Add-LogMessage -Level Info "[ ] Signing the client certificate and merging into the '$($config.keyVault.name)' KeyVault..."
     $clientPkcs7Path = Join-Path $certFolderPath "client.p7b"
-    openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2> Out-Null
-    $vpnClientCertPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.vpnClientCertPassword
+    openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2>&1 | Out-Null
+    $vpnClientCertPassword = [string](EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.vpnClientCertPassword)
     $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString $vpnClientCertPassword -AsPlainText -Force)
     if ($?) {
         Add-LogMessage -Level Success "Importing the signed client certificate succeeded"
     } else {
-        Add-LogMessage -Level Failure "Importing the signed client certificate failed!"
-        throw "Unable to import the signed client certificate!"
+        Add-LogMessage -Level Fatal "Importing the signed client certificate failed!"
     }
 
     # Clean up local files
     # --------------------
     Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
 }
-# $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
 $_ = Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
 if ($?) {
     Add-LogMessage -Level Success "Retrieved client certificate"
 } else {
-    Add-LogMessage -Level Failure "Failed to retrieve client certificate!"
+    Add-LogMessage -Level Fatal "Failed to retrieve client certificate!"
 }
 
 
@@ -218,7 +212,7 @@ $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded DSC files"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload DSC files!"
+    Add-LogMessage -Level Fatal "Failed to upload DSC files!"
 }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading DC configuration files to storage account '$($config.storage.artifacts.accountName)'"
@@ -229,7 +223,7 @@ $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded DC configuration files"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
+    Add-LogMessage -Level Fatal "Failed to upload DC configuration files!"
 }
 # Upload Windows package installers
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($config.storage.artifacts.accountName)'"
@@ -260,7 +254,7 @@ $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload Windows package installers!"
+    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
 }
 # NB. we would like the NPS VM to log to a database, but this is not yet working
 # Write-Host " - Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"

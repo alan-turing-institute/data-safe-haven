@@ -156,7 +156,7 @@ function Get-ShmFullConfig {
     # --- Boot diagnostics config ---
     $shm.bootdiagnostics = [ordered] @{
         rg = $shm.storage.artifacts.rg
-        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiag" + (New-RandomLetters -SeedPhrase $shm.subscriptionName) | TrimToLength 24
+        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $shm.subscriptionName) | TrimToLength 24
     }
 
     return $shm
@@ -461,7 +461,7 @@ function Add-SreConfig {
     # --- Boot diagnostics config ---
     $config.dsg.bootdiagnostics = [ordered]@{
         rg = $config.dsg.storage.artifacts.rg
-        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiag" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
+        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)

@@ -102,7 +102,7 @@
     },
     "bootdiagnostics": {
       "rg": "RG_SHM_ARTIFACTS",
-      "accountName": "shmtestabootdiagvkdrsluo"
+      "accountName": "shmtestabootdiagsvkdrslu"
     }
   },
   "dsg": {
@@ -309,7 +309,7 @@
     },
     "bootdiagnostics": {
       "rg": "RG_SRE_ARTIFACTS",
-      "accountName": "sresandboxbootdiagzvmwtq"
+      "accountName": "sresandboxbootdiagszvmwt"
     }
   }
 }
