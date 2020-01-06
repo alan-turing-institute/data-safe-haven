@@ -22,11 +22,11 @@ $_ = Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving secrets from '$($config.dsg.keyVault.name)' KeyVault..."
-$dcAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminUsername -defaultValue "sre$($config.dsg.id)admin".ToLower()
-$dcAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminPassword
-$gitlabRootPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.gitlabRootPassword
-$gitlabUserPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.gitlabUserPassword
-$hackmdUserPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.hackmdUserPassword
+$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.dsg.id)admin".ToLower()
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminPassword
+$gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.gitlabRootPassword
+$gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.gitlabUserPassword
+$hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.hackmdUserPassword
 
 
 # Patch GitLab cloud init

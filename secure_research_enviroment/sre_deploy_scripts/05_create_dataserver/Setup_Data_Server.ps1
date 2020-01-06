@@ -17,8 +17,8 @@ $originalContext = Get-AzContext
 # ------------------------------------
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving secrets from '$($config.dsg.keyVault.name)' KeyVault..."
 $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
-$dcAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminUsername -defaultValue "sre$($config.dsg.id)admin".ToLower()
-$dcAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminPassword
+$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.dsg.id)admin".ToLower()
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminPassword
 
 
 # Deploy data server from template

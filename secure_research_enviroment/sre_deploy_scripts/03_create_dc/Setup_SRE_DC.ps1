@@ -36,8 +36,8 @@ $_ = Set-AzContext -Subscription $storageAccountSubscription;
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
-$dcAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminUsername -defaultValue "sre$($config.dsg.id)admin".ToLower()
-$dcAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dcAdminPassword
+$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.dsg.id)admin".ToLower()
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminPassword
 
 
 # Create storage account if it doesn't exist

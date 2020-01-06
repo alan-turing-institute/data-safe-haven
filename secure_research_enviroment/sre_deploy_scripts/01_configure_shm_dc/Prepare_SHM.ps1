@@ -51,10 +51,10 @@ $_ = Set-AzContext -Subscription $config.shm.subscriptionName;
 
 # Retrieve passwords from the keyvault
 Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
-$hackmdPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.hackmdLdapPassword
-$gitlabPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.gitlabLdapPassword
-$dsvmPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.dsvmLdapPassword
-$testResearcherPassword = EnsureKeyvaultSecret -keyvaultName $config.dsg.keyVault.name -secretName $config.dsg.keyVault.secretNames.testResearcherPassword
+$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.hackmdLdapPassword
+$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.gitlabLdapPassword
+$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dsvmLdapPassword
+$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.testResearcherPassword
 
 # Encrypt passwords for passing to script
 $hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)

@@ -56,9 +56,9 @@ if ($success) {
 
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring secrets exist in the key vault..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 # :: AAD Global Administrator password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.aadAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
 if ($?) {
     Add-LogMessage -Level Success "Created AAD Global Administrator password"
 } else {
@@ -66,7 +66,7 @@ if ($?) {
 }
 
 # :: DC/NPS administrator username
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
 if ($?) {
     Add-LogMessage -Level Success "Created DC/NPS administrator username"
 } else {
@@ -74,7 +74,7 @@ if ($?) {
 }
 
 # :: DC/NPS administrator password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
 if ($?) {
     Add-LogMessage -Level Success "Created DC/NPS administrator password"
 } else {
@@ -82,7 +82,7 @@ if ($?) {
 }
 
 # :: DC safe mode password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcSafemodePassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
 if ($?) {
     Add-LogMessage -Level Success "Created DC safe mode password"
 } else {
@@ -90,7 +90,7 @@ if ($?) {
 }
 
 # :: AD sync password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.adsyncPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.adsyncPassword
 if ($?) {
     Add-LogMessage -Level Success "Created AD sync password"
 } else {
