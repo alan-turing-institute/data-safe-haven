@@ -24,7 +24,7 @@ function Add-LogMessage {
             Write-Host -ForegroundColor DarkCyan "$FormattedDate [   INFO]: $Message"
         }
         "Success" {
-            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [o] $Message"
+            Write-Host -ForegroundColor DarkGreen "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
         }
         "Failure" {
             Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
