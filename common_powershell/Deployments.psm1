@@ -11,11 +11,17 @@ function Deploy-ResourceGroup {
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
-    $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Created resource group '$Name'"
+    $resourceGroup = Get-AzResourceGroup -Name $Name -Location $Location -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating resource group '$Name'"
+        $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created resource group '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
+        }
     } else {
-        Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
+        Add-LogMessage -Level Success "Resource group '$Name' already exists"
     }
     return $resourceGroup
 }
@@ -39,9 +45,9 @@ function Deploy-StorageAccount {
         Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
         $storageAccount = New-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -SkuName "Standard_LRS" -Kind "StorageV2"
         if ($?) {
-            Add-LogMessage -Level Success "Created storage account"
+            Add-LogMessage -Level Success "Created storage account '$Name'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create storage account!"
+            Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!"
         }
     } else {
         Add-LogMessage -Level Success "Storage account '$Name' already exists"

@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
@@ -60,7 +61,7 @@ Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.
 # :: AAD Global Administrator password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created AAD Global Administrator password"
+    Add-LogMessage -Level Success "AAD Global Administrator password exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create AAD Global Administrator password!"
 }
@@ -68,7 +69,7 @@ if ($?) {
 # :: DC/NPS administrator username
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
 if ($?) {
-    Add-LogMessage -Level Success "Created DC/NPS administrator username"
+    Add-LogMessage -Level Success "DC/NPS administrator username exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator username!"
 }
@@ -76,7 +77,7 @@ if ($?) {
 # :: DC/NPS administrator password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created DC/NPS administrator password"
+    Add-LogMessage -Level Success "DC/NPS administrator password exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator password!"
 }
@@ -84,7 +85,7 @@ if ($?) {
 # :: DC safe mode password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
 if ($?) {
-    Add-LogMessage -Level Success "Created DC safe mode password"
+    Add-LogMessage -Level Success "DC safe mode password exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create DC safe mode password!"
 }
@@ -92,7 +93,7 @@ if ($?) {
 # :: AD sync password
 $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.adsyncPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created AD sync password"
+    Add-LogMessage -Level Success "AD sync password exists"
 } else {
     Add-LogMessage -Level Fatal "Failed to create AD sync password!"
 }
