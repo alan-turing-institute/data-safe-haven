@@ -22,7 +22,7 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 # $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnCaCertPassword
 
 $caValidityDays = 825 # The CAB standard now limits certificates to this maximum lifetime
-$caValidityMonths = 27 # The CAB standard limits certificates to 825 days
+$caValidityMonths = 28 # The CAB standard limits certificates to 825 days
 $clientValidityDays = 732 # 2 years
 
 
@@ -70,8 +70,6 @@ if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
     } else {
         Add-LogMessage -Level Fatal "Generating self-signed certificate failed!"
     }
-    Write-Host "CA key`n$(Get-Content $caKeyPath -Raw)"
-    Write-Host "CA cert`n$(Get-Content $caCrtPath -Raw)"
 
     # Upload the CA key + cert bundle to the KeyVault
     # -----------------------------------------------
@@ -83,11 +81,12 @@ if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
         Add-LogMessage -Level Fatal "Uploading the full CA certificate failed!"
     }
 
+    # # NB. this is not working at present - OSX reports that the CA certificate "is not standards compliant"
     # # Generate a self-signed CA certificate in the KeyVault
     # # -----------------------------------------------------
     # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' KeyVault"
-    # $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=$caStem" -KeySize 2048 -KeyType "RSA" -KeyUsage "KeyCertSign" `
-    #                                             -SecretContentType "application/x-pkcs12" -ValidityInMonths $caValidityMonths -IssuerName "Self"
+    # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeySize 2048 `
+    #                                             -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
     # $caPolicy.Exportable = $true
     # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
     # while ($status -ne "completed") {
@@ -142,7 +141,6 @@ if ($vpnClientCertificate) {
     } else {
         Add-LogMessage -Level Fatal "Loading CA private key failed!"
     }
-    Write-Host "CA key`n$(Get-Content $caKeyPath -Raw)"
 
     # Split CA certificate into key and certificate
     # ---------------------------------------------
@@ -158,40 +156,6 @@ if ($vpnClientCertificate) {
     } else {
         Add-LogMessage -Level Fatal "Failed to validate CA certificate retrieval using MD5!"
     }
-    Write-Host "CA cert`n$(Get-Content $caCrtPath -Raw)"
-
-    # # Create client key and CSR
-    # # -------------------------
-    # Add-LogMessage -Level Info "[ ] Creating client certificate signing request (CSR)..."
-    # openssl genrsa -out $clientKeyPath 2048
-    # openssl req -new -sha256 -key $clientKeyPath -subj "/CN=$clientStem" -out $clientCsrPath
-    # if ($?) {
-    #     Add-LogMessage -Level Success "CSR creation succeeded"
-    # } else {
-    #     Add-LogMessage -Level Fatal "CSR creation failed!"
-    # }
-
-    # # Sign client certificate and add to bundle together with the private key
-    # # -----------------------------------------------------------------------
-    # Add-LogMessage -Level Info "[ ] Signing client certificate and creating bundle..."
-    # $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnClientCertPassword
-    # openssl x509 -req -in $clientCsrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days $clientValidityDays -sha256
-    # openssl pkcs12 -in $clientCrtPath -inkey $clientKeyPath -certfile $caCrtPath -export -out $clientPfxPath -password "pass:$vpnClientCertPassword"
-    # if ($?) {
-    #     Add-LogMessage -Level Success "Certificate signing succeeded"
-    # } else {
-    #     Add-LogMessage -Level Fatal "Certificate signing failed!"
-    # }
-
-    # # Store client key + cert bundle in KeyVault
-    # # ------------------------------------------
-    # Add-LogMessage -Level Info "Uploading client private key + certificate bundle as certificate $($config.keyVault.secretNames.vpnClientCertificate) (includes private key)"
-    # $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnClientCertificate -FilePath $clientPfxPath -Password (ConvertTo-SecureString "$vpnClientCertPassword" -AsPlainText -Force);
-    # if ($?) {
-    #     Add-LogMessage -Level Success "Certificate upload succeeded"
-    # } else {
-    #     Add-LogMessage -Level Fatal "Certificate upload failed!"
-    # }
 
     # Generate a CSR in the KeyVault
     # ------------------------------
@@ -227,12 +191,6 @@ if ($vpnClientCertificate) {
 }
 # Delete local copies of certificates and private keys
 Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
-
-# exit 1
-
-# $CertBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-# Add-AzVpnClientRootCertificate -VpnClientRootCertificateName "Test1" -VirtualNetworkGatewayname "VNET_SHM_TESTB_GW" -ResourceGroupName "RG_SHM_NETWORKING" -PublicCertData $CertBase64
-# exit 1
 
 
 # Setup boot diagnostics resource group and storage account

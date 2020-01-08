@@ -124,16 +124,16 @@ function Get-ShmFullConfig {
         Name = "kv-shm-" + "$($shm.id)".ToLower()
     }
     $shm.keyVault.secretNames = [ordered]@{
-        aadAdminPassword = 'shm-aad-admin-password'
-        dcNpsAdminUsername = 'shm-dcnps-admin-username'
-        dcNpsAdminPassword = 'shm-dcnps-admin-password'
-        dcSafemodePassword = 'shm-dc-safemode-password'
-        adsyncPassword = 'shm-adsync-password'
-        vpnCaCertificate = 'shm-vpn-ca-cert'
-        vpnCaCertPassword = 'shm-vpn-ca-cert-password'
-        vpnCaCertificatePlain = 'shm-vpn-ca-cert-plain'
-        vpnClientCertificate = 'shm-vpn-client-cert'
-        vpnClientCertPassword = 'shm-vpn-client-cert-password'
+        aadAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-aad-admin-password"
+        dcNpsAdminUsername = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-username"
+        dcNpsAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-password"
+        dcSafemodePassword = "shm-" + "$($shm.id)".ToLower() + "-dc-safemode-password"
+        adsyncPassword = "shm-" + "$($shm.id)".ToLower() + "-adsync-password"
+        vpnCaCertificate = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert"
+        vpnCaCertPassword = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert-password"
+        vpnCaCertificatePlain = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert-plain"
+        vpnClientCertificate = "shm-" + "$($shm.id)".ToLower() + "-vpn-client-cert"
+        vpnClientCertPassword = "shm-" + "$($shm.id)".ToLower() + "-vpn-client-cert-password"
     }
 
     # --- DNS config ---
