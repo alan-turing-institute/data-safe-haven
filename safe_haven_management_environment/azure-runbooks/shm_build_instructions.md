@@ -130,7 +130,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
     - Use this password to log into https://portal.azure.com as the user `admin@<custom domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
       - Look in the KeyVault under the `RG_SHM_SECRETS` resource group in the management subscription.
-      - There should be a secret there called `shm-aad-admin-password`
+      - There should be a secret there called `shm-<shmId>-aad-admin-password`
       - Use this as the new password
       - If you are prompted to associate a phone number and email address with the account - do so.
     - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
@@ -221,7 +221,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-3. Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+3. Click on the certificate named `shm-<shmId>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
 **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
@@ -252,8 +252,8 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is in the `shm-dcnps-admin-username` secret.
-  - The password in the `shm-dcnps-admin-password` secret.
+  - The username is in the `shm-<shm-id>-dcnps-admin-username` secret.
+  - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
 
 
 ### Install Azure Active Directory Connect
@@ -267,7 +267,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - On the `Install required components` screen:
     - Click "Install"
   - On the `User sign-in` screen:
-    - Ensure that "Password Hash Synchronization" is selected
+    - Ensure that `Password Hash Synchronization` is selected
     - Click "Next"
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
