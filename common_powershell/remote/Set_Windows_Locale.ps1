@@ -5,10 +5,8 @@ Set-WinHomeLocation -GeoId 0xf2
 Set-TimeZone -Name "GMT Standard Time"
 Set-WinSystemLocale en-GB
 Set-Culture en-GB
-
+Set-WinUserLanguageList -LanguageList en-GB -Force
 Get-WinUserLanguageList
-
-Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
 if ($?) {
     Write-Host " [o] Completed"
 } else {

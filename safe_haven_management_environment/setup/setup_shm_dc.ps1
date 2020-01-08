@@ -388,7 +388,7 @@ Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.dc.vmName 
 
 # Set the OS language to en-GB remotely
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Set_OS_Language.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Add-LogMessage -Level Info "Setting OS language for: $vmName..."
     Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
