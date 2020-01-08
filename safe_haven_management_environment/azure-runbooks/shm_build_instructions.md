@@ -32,13 +32,13 @@ Choose your domain according to the following rules:
   - Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_PRODUCTION` resource group
-  - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain [in the `Safe Haven Domains` subscription]
+  - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_TEST` resource group
-  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
+  - Other safe havens: follow your organisation's guidance.
+    - this may require purchasing a dedicated domain
 
 #### Create a DNS zone for the custom domain
-
 Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
 - If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
 - Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the resource group and subscription specified above.
@@ -49,7 +49,6 @@ Whatever new domain or subdomain you choose, you must create a new Azure DNS Zon
 - Click through the various validation screens
 
 #### Add DNS records to the parent DNS system
-
 Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
 - To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
 - Duplicate these records to the parent DNS system as follows:
@@ -254,6 +253,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
   - The username is in the `shm-<shm-id>-dcnps-admin-username` secret.
   - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
+6. Log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
 
 
 ### Install Azure Active Directory Connect
@@ -274,19 +274,19 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - You should have created `admin@<custom domain>` during the `Add additional administrators` step
     - Click "Next"
   - On the `Connect your directories` screen:
-    - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
+    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
       - Select "Use existing AD account"
       - Enter the details of the "localadsync" user.
         - Username: `localadsync@<custom domain>` (e.g. localadsync)
-        - Password: Look in the `shm-adsync-password` secret in the management KeyVault.
+        - Password: Look in the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
       - Click "OK"
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
           - In Server Manager click "Tools -> Active Directory Users and Computers"
           - Expand the domain in the left hand panel
           - Expand the "Safe Haven Service Accounts" OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-adsync-password` secret in the management KeyVault.
+          - Set the password to the the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
           - Leave the other settings as is and click "Ok"
     - Click "Next"
   - On the `Azure AD sign-in configuration` screen:
@@ -312,7 +312,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Click "Exit"
 
 ### Set AAD sync permissions
-The `localadsync@<custom domain>` needs to be given permissions to change passwords or self-service password reset will not work.
+The `localadsync@<custom domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
 - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
 - Click on the "View" menu item and make sure that "Advanced Features" is enabled
 - Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select "Properties"
@@ -320,23 +320,25 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 - In the pop-up window, go to the "Security" tab and click on the "Advanced" button
   ![AD permissions security](images/aad_permissions_security.png)
 - In the pop-up window, click on the "Add" button
-- Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
-- In the "Applies to" section, select "Descendant User objects"
-- Under permission and properties, assign following permissions (NB. there are a lot of properties, so this might take some scrolling!)
-  - `Reset password`
-  - `Change password`
-  - `Write lockoutTime`
-  - `Write pwdLastSet`
-- Click "OK"
+  - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
+  - In the "Applies to" section, select "Descendant User objects"
+  - Under `Permissions`, ensure that the following options are checked:
+    - `Reset password`
+    - `Change password`
+  - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling!):
+    - `Write lockoutTime`
+    - `Write pwdLastSet`
+  - Click "OK"
 - Now go through the same procedure, this time selecting "This object and descendant objects" in the "Applies to" section
-- Enable the following permissions:
-  - `Replicating Directory Changes`
-  - `Replicating Directory Changes All`
+  - Enable the following permissions:
+    - `Replicating Directory Changes`
+    - `Replicating Directory Changes All`
+  - Click "OK" on all open dialog boxes
  <!-- Look at https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-configure-ad-ds-connector-account for automation-->
 
 
 ### Additional AAD Connect Configuration
-1. Open the `Synchronization Rules Editor` from the start menu
+1. Open `Azure Ad Connect > Synchronization Rules Editor` from the start menu
 
   ![synchronisation rules](images/synchronisation_rules.png)
 
@@ -344,11 +346,11 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 3. Select the `Out to AAD - User Join` rule.
   - Click "Disable".
   - Click "Edit".
-  - In the "Edit Reserved Rule Confirmation" dialog box click "OK"
+  - In the "Edit Reserved Rule Confirmation" dialog box click `Yes`
 4. In the editing view set `precedence` to 1.
   - Select "Transformations" from the sidebar and locate the rule with its "Target Attribute" set to "usageLocation"
     - Change the "FlowType" column from "Expression" to "Direct"
-    - On the "Source" column click drop-down and choose "c" attribute
+    - On the "Source" column click the drop-down menu and select `c`
     - Click "Save" (in the "Warning" dialog box click "OK")
 5. You will now see a cloned version of the `Out to AAD - User Join`.
   - Delete the original.
@@ -372,7 +374,7 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
   - Create a new user:
     - First name: Test
     - Lastname: AD Sync
-    - User login name: `test-adsync`
+    - User login name: `testadsync`
     - Click "Next"
   - Enter a default password of your choice
     - Click "Next"
@@ -388,7 +390,7 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`
-  - Select "Manage > Password reset" from the left hand menu
+  - Select `Manage > Password reset` from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
     ![Enable writeback](images/enable_writeback.png)
@@ -416,41 +418,48 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 
 
 ### Configure NPS server
-1. Connect to the NPS Server VM using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `<admin username>@<custom domain>` rather than just `<admin username>`).
+1. Log in to the NPS Server VM using Microsoft Remote Desktop
+  - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
+  - the Username and Password are the same as for SHMDC1 and SHMDC2
+  - ensure you log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
 2. In Server Manager select `Tools -> Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to text file:
-  - Click on "Accounting" under "NPS (Local)"
+  - Select `NPS (Local) > Accounting` on the left-hand sidebar
     ![NPS accounting](images/nps_accounting.png)
-  - Select "Configure Accounting"
-  - Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
-  - In the "Log file properties" section, click "Change log file properties"
-  - On the "Log file" tab, select "Daily" under "Create a new log file"
+  - Click on `Accounting > Configure Accounting`
+    - Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
+  - Click on `Log file properties > Change log file properties`
+    - On the "Log file" tab, select "Daily" under "Create a new log file"
   - Click "Ok"
 4. Add NPS policy to allow connections
-  - Expand "NPS (Local)" and then "Policies" and select "Network policies"
+  - Select `NPS (Local) > Policies > Network policies` on the left-hand sidebar
     ![NPS network policies](images/nps_network_policies.png)
   - Right click on "Network policies" and select "New"
   - Set the policy name to "RDG_CAP" and click "Next"
   - Click "Add" to add a restriction
   - Select "Day and Time Restrictions" and click "Add"
   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
-  - On the next screen click "Next", leaving "Access granted checked"
-  - On the "Configure authentication methods" screen
+  - On the `Specify Access Permission` screen:
+    - Click "Next", leaving `Access granted` checked
+  - On the `Configure authentication methods` screen:
     - Check the "Allow clients to connect without negotiating an authentication method" checkbox
     - Click "Next".
-  - Click "No" on the "Connection Request Policy" pop up.
-  - On the "Configure constraints" screen click "Next"
-  - On the "Configure settings" screen, click "Next"
-  - On the "Completing network policy" screen click "Finish"
+  - Click "No" on the `Connection Request Policy` pop up.
+  - On the `Configure constraints` screen:
+    - Click "Next"
+  - On the `Configure settings` screen:
+    - Click "Next"
+  - On the `Completing network policy` screen:
+    - Click "Finish"
 
 **NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
 This is because, without this policy, the NPS server will reject their authentication with the following error:
+```
   - Event ID: 6273
   - First line of even message: Network Policy Server discarded the request for a user.
   - Reason Code: 21
   - Reason: An NPS extension dynamic link library (DLL) that is installed on the NPS server rejected the connection request.
-
+```
 
 ### MFA Configuation
 1. Navigate to `C:\Installation`
@@ -465,7 +474,8 @@ This is because, without this policy, the NPS server will reject their authentic
   - Enter "Y" when prompted
   - Enter "A" when prompted
   - If you are prompted to add webpages to exceptions then accept them.
-6. Sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
+  - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
+6. On the webpage pop-up, sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
   - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
 7. Enter your Azure Active directory ID. To get this:
   - In the Azure portal select "Azure Active Directory" in the left hand side bar

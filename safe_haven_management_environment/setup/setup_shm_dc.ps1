@@ -41,7 +41,6 @@ try {
     $clientPfxPath = Join-Path $certFolderPath "$clientStem.pfx"
     $clientPkcs7Path = Join-Path $certFolderPath "$clientStem.p7b"
 
-
     # Generate or retrieve CA certificate
     # -----------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
@@ -212,7 +211,7 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 # # Create file storage shares
 # foreach ($shareName in ("sqlserver")) {
 #     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
-#         Write-Host " - Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
+#         Add-LogMessage -Level Info "Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
 #         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
 #     }
 # }
@@ -275,7 +274,7 @@ if ($success) {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
 }
 # NB. we would like the NPS VM to log to a database, but this is not yet working
-# Write-Host " - Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
+# Add-LogMessage -Level Info "Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
@@ -313,7 +312,7 @@ $_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 
 # Retrieve usernames/passwords from the keyvault
 # ------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
 $dcNpsAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
 $dcNpsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
 $dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword

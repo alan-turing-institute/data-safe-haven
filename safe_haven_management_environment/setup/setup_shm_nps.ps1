@@ -4,41 +4,38 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 
 
-# Get SHM config
-# --------------
-$config = Get-ShmFullConfig($shmId)
-
-
-# Temporarily switch to DSG subscription
-# ---------------------------------
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-ShmFullConfig ($shmId)
 $originalContext = Get-AzContext
-Set-AzContext -SubscriptionId $config.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Create resource group if it does not exist
 # ------------------------------------------
-Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
+$_ = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
 # Retrieve passwords from the keyvault
 # ------------------------------------
-Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
-$dcNpsAdminUsername = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcNpsAdminUsername).SecretValueText;
-$dcNpsAdminPassword = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.dcNpsAdminPassword).SecretValueText;
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+$dcNpsAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername
+$dcNpsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
 
 
 # Deploy NPS from template
 # ------------------------
-$templateName = "shm-nps-template"
-Write-Host -ForegroundColor DarkCyan "Deploying template $templateName..."
+Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
+$templatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shmnps" "shm-nps-template.json"
 $params = @{
     Administrator_User = $dcNpsAdminUsername
     Administrator_Password = (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force)
+    BootDiagnostics_Account_Name = $config.bootdiagnostics.accountName
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Domain_Name = $config.domain.fqdn
     VM_Size = $config.nps.vmSize
@@ -50,27 +47,19 @@ $params = @{
     NPS_IP_Address = $config.nps.ip
     OU_Path = $config.domain.serviceServerOuPath
 }
-New-AzResourceGroupDeployment -ResourceGroupName $config.nps.rg -TemplateFile $(Join-Path $PSScriptRoot ".." "arm_templates" "shmnps" "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
-$result = $?
-LogTemplateOutput -ResourceGroupName $config.nps.rg -DeploymentName $templateName
-if ($result) {
-    Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
-    throw "Template deployment has failed. Please check the error message above before re-running this script."
-}
+Deploy-ArmTemplate -TemplatePath "$templatePath" -Params $params -ResourceGroupName $config.nps.rg
 
 
 # Run configuration script remotely
 # ---------------------------------
+Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_NPS_Server.ps1"
 $params = @{
     remoteDir = "`"C:\Installation`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.nps.vmName -ResourceGroupName $config.nps.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-Write-Output $result.Value;
+Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 
 
 # Switch back to original subscription
-Set-AzContext -Context $originalContext;
+# ------------------------------------
+Set-AzContext -Context $originalContext
