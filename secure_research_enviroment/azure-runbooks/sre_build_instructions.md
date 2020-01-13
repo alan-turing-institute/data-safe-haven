@@ -1,5 +1,5 @@
 # Secure Research Environment Build Instructions
-The following instructions will walk you through deploying a Secure Research Environment.
+The following instructions will walk you through deploying a Secure Research Environment. This assumes the Safe Haven Management (SHM) environment has already been set up.
 
 ## Contents
 1. [Prerequisites](#1.-Prerequisites)
@@ -56,7 +56,7 @@ The following instructions will walk you through deploying a Secure Research Env
 - Access to a new Azure subscription which the DSG will be deployed to
   - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG suubscription
+  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG subscription
 - Access to a public routable domain name for the DSG and its name servers
   - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `testsandbox.dsgroupdev.co.uk`)
   - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
