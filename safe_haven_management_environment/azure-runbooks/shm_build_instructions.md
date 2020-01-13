@@ -320,7 +320,7 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 - In the pop-up window, go to the "Security" tab and click on the "Advanced" button
   ![AD permissions security](images/aad_permissions_security.png)
 - In the pop-up window, click on the "Add" button
-  - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
+  - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names". When the `localadsync@<custom domain>` principal is selected, click "OK" to return to the "Permissions Entry for <custom domain>" window.
   - In the "Applies to" section, select "Descendant User objects"
   - Under `Permissions`, ensure that the following options are checked:
     - `Reset password`
