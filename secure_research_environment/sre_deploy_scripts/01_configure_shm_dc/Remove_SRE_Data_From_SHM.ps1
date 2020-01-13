@@ -8,7 +8,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get SRE config
-$config = Get-DsgConfig($sreId);
+$config = Get-SreConfig($sreId);
 $originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts

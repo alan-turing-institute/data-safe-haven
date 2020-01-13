@@ -7,7 +7,7 @@
 # Import-Module $PSScriptRoot/../../../../common_powershell/Configuration.psm1 -Force
 
 # # Get DSG config and store original subscription
-# $config = Get-DsgConfig($dsgId);
+# $config = Get-SreConfig($dsgId);
 # $originalSubscription = Get-AzContext;
 
 # # Switch to DSG subscription

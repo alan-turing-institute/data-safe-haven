@@ -8,7 +8,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 
 # Get SRE config
-$config = Get-DsgConfig($sreId);
+$config = Get-SreConfig($sreId);
 $originalContext = Get-AzContext
 
 # Switch to SRE subscription

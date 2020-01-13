@@ -7,7 +7,7 @@
 # Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # # Get DSG config
-# $config = Get-DsgConfig($dsgId);
+# $config = Get-SreConfig($dsgId);
 
 # # Unpeer any existing networks before (re-)establishing correct peering for DSG
 # $unpeeringScriptPath = (Join-Path $PSScriptRoot "Unpeer_Dsg_And_Mirror_Networks.ps1"  -Resolve)
