@@ -66,7 +66,7 @@ if ($?) {
 }
 
 # :: DC/NPS administrator username
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 if ($?) {
     Add-LogMessage -Level Success "DC/NPS administrator username exists"
 } else {

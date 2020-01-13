@@ -128,6 +128,7 @@ function Get-ShmFullConfig {
         dcNpsAdminUsername = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-username"
         dcNpsAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-password"
         dcSafemodePassword = "shm-" + "$($shm.id)".ToLower() + "-dc-safemode-password"
+        mirrorAdminUsername = "shm-" + "$($shm.id)".ToLower() + "-package-mirror-admin-username"
         adsyncPassword = "shm-" + "$($shm.id)".ToLower() + "-adsync-password"
         vpnCaCertificate = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert"
         vpnCaCertPassword = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert-password"
