@@ -329,22 +329,31 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
-# Run remote Powershell script
-# ----------------------------
+# Run remote shell script
+# -----------------------
 function Invoke-LoggedRemoteScript {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to local script that will be run locally")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run locally")]
         $ScriptPath,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of VM to run on")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Name of VM to run on")]
+        $Script,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
         $VMName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
         $ResourceGroupName,
-        [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Type of script to run")]
+        [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
         [ValidateSet("PowerShell", "UnixShell")]
         $Shell = "PowerShell",
-        [Parameter(Position = 4, Mandatory = $false, HelpMessage = "(Optional) script parameters")]
+        [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
         $Parameter = $null
     )
+    # If we're given a script then create a file from it
+    if ($Script) {
+        $scriptFile = New-TemporaryFile
+        $Script | Out-File -FilePath $scriptFile.FullName
+        $ScriptPath = $scriptFile.FullName
+    }
+
     # Setup the remote command
     if ($Shell -eq "PowerShell") {
         $commandId = "RunPowerShellScript"
@@ -360,12 +369,6 @@ function Invoke-LoggedRemoteScript {
         $success = $?
     }
     Write-Output $result.Value
-    # $stdoutCode = ($result.Value[0].Code -split "/")[-1]
-    # $stderrCode = ($result.Value[1].Code -split "/")[-1]
-    # Write-Host "success: $success"
-    # Write-Host "stdoutCode: $stdoutCode"
-    # Write-Host "stderrCode: $stderrCode"
-    # if ($success -and ($stdoutCode -eq "succeeded") -and ($stderrCode -eq "succeeded")) {
     foreach ($statuscode in $result.Value) {
         $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
     }
@@ -375,6 +378,8 @@ function Invoke-LoggedRemoteScript {
         Add-LogMessage -Level Failure "Remote script execution failed!"
         throw "Remote script execution has failed. Please check the error message above before re-running this script."
     }
+    # Clean up any temporary scripts
+    if ($Script) { Remove-Item $scriptFile }
     return $result
 }
 Export-ModuleMember -Function Invoke-LoggedRemoteScript

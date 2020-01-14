@@ -96,32 +96,6 @@ if ($?) {
 }
 
 
-# # Get public key for internal server
-# $scriptFile = New-TemporaryFile
-# "#! /bin/bash
-# cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
-# " > $scriptFile
-# $vmNameExternal = "PYPI-MIRROR-EXTERNAL-TIER-2" #"$($($MirrorType).ToUpper())-MIRROR-EXTERNAL-TIER-$tier"
-# $result = Invoke-AzVMRunCommand -Name $vmNameExternal -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
-# $externalPublicKey = $result.Value[0].Message
-# $externalPublicKey
-# Remove-Item $scriptFile
-
-
-$scriptFile = New-TemporaryFile
-"#! /bin/bash
-cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
-" > $scriptFile
-$vmNameExternal = "PYPI-MIRROR-EXTERNAL-TIER-2"
-$result = Invoke-LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -ScriptPath $scriptFile.FullName
-Remove-Item $scriptFile
-
-Write-Host "119 result"
-$result
-Write-Host "121 result"
-exit 1
-
-
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
 $nsgInternalName = "NSG_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_INTERNAL_TIER$tier"
@@ -190,14 +164,13 @@ function Resolve-CloudInit {
 
     # Add public SSH key from the external mirror as an allowed key on the internal
     if ($MirrorDirection -eq "Internal") {
-        $scriptFile = New-TemporaryFile
-        "#! /bin/bash
-        cat /home/mirrordaemon/.ssh/id_rsa.pub
-        " > $scriptFile
+        $script = "
+        #! /bin/bash
+        cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
+        "
         $vmNameExternal = "$($($MirrorType).ToUpper())-MIRROR-EXTERNAL-TIER-$tier"
-        $result = Invoke-AzVMRunCommand -Name $vmNameExternal -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+        $result = Invoke-LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
-        # $externalPublicSshKey
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
         Remove-Item $scriptFile
     }
@@ -227,15 +200,6 @@ function Resolve-CloudInit {
 
     return $cloudInitYaml
 }
-
-# $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-internal-pypi.yaml"
-# $whitelistPath = Join-Path $PSScriptRoot ".." ".." "secure_research_environment" "azure-vms" "package_lists" "tier2_pypi_whitelist.list"
-# $cloudInitYaml = Resolve-CloudInit -MirrorType "PyPI" -MirrorDirection "Internal" -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
-# Write-Host "218: cloud init yaml"
-# $cloudInitYaml
-# Write-Host "220: cloud init yaml"
-# exit 1
-
 
 
 # Set up a single package mirror
@@ -342,21 +306,46 @@ function Deploy-PackageMirror {
         # --------------------------------------------------------------------------------
         if ($MirrorDirection -eq "Internal") {
             # Get public key for internal server
-            $scriptFile = New-TemporaryFile
+            # $scriptFile = New-TemporaryFile
+            # "#! /bin/bash
+            # ssh-keyscan 127.0.0.1 2> /dev/null
+            # " > $scriptFile
+            # $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+            $script =
             "#! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
-            " > $scriptFile
-            $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+            "
+            $result = Invoke-LoggedRemoteScript -Name $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
             Remove-Item $scriptFile
 
             # Inform external server about the new internal server
-            $scriptFile = New-TemporaryFile
-            "#! /bin/bash
+            # $scriptFile = New-TemporaryFile
+            # "#! /bin/bash
+            # echo 'Update known hosts on the external server to allow connections to the internal server...'
+            # mkdir -p ~mirrordaemon/.ssh
+            # echo '$internalFingerprint' >> ~mirrordaemon/.ssh/known_hosts
+            # ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1
+            # chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts
+            # rm ~mirrordaemon/.ssh/known_hosts.old 2> /dev/null
+            # cat ~mirrordaemon/.ssh/known_hosts
+            # ls -alh ~mirrordaemon/.ssh/
+            # echo 'Update known IP addresses on the external server to schedule pushing to the internal server...'
+            # echo $privateIpAddress >> ~mirrordaemon/internal_mirror_ip_addresses.txt
+            # cp ~mirrordaemon/internal_mirror_ip_addresses.txt ~mirrordaemon/internal_mirror_ip_addresses.bak
+            # cat ~mirrordaemon/internal_mirror_ip_addresses.bak | sort | uniq > ~mirrordaemon/internal_mirror_ip_addresses.txt
+            # rm -f ~mirrordaemon/internal_mirror_ip_addresses.bak
+            # cat ~mirrordaemon/internal_mirror_ip_addresses.txt
+            # ls -alh ~mirrordaemon
+            # " > $scriptFile
+            # $_ = Invoke-LoggedRemoteScript -Shell "UnixShell" -ScriptPath $scriptFile.FullName -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg
+            # Remove-Item $scriptFile
+            $script = "
+            #! /bin/bash
             echo 'Update known hosts on the external server to allow connections to the internal server...'
             mkdir -p ~mirrordaemon/.ssh
             echo '$internalFingerprint' >> ~mirrordaemon/.ssh/known_hosts
-            ssh-keygen -Hf ~mirrordaemon/.ssh/known_hosts 2>&1
+            ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1
             chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts
             rm ~mirrordaemon/.ssh/known_hosts.old 2> /dev/null
             cat ~mirrordaemon/.ssh/known_hosts
@@ -368,8 +357,8 @@ function Deploy-PackageMirror {
             rm -f ~mirrordaemon/internal_mirror_ip_addresses.bak
             cat ~mirrordaemon/internal_mirror_ip_addresses.txt
             ls -alh ~mirrordaemon
-            " > $scriptFile
-            $_ = Invoke-LoggedRemoteScript -Shell "UnixShell" -ScriptPath $scriptFile.FullName -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg
+            "
+            $_ = Invoke-LoggedRemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             Remove-Item $scriptFile
         }
     } else {
@@ -390,4 +379,3 @@ foreach ($mirrorType in ("PyPI", "CRAN")) {
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext
-
