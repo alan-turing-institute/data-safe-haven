@@ -150,8 +150,25 @@ function Get-ShmFullConfig {
     }
 
     # --- Package mirror config ---
+    # Please note that each mirror type must have a distinct ipOffset in the range 4-15
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
+        vmSize = "Standard_F4"
+        diskType = "Standard_LRS"
+        pypi = [ordered]@{
+            ipOffset = 4
+            diskSize = [ordered]@{
+                tier2 = 16384
+                tier3 = 512
+            }
+        }
+        cran = [ordered]@{
+            ipOffset = 5
+            diskSize = [ordered]@{
+                tier2 = 512
+                tier3 = 256
+            }
+        }
     }
 
     # --- Boot diagnostics config ---

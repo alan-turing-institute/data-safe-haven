@@ -72,10 +72,10 @@ function Deploy-Subnet {
     )
     Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
     Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
-    $subnet = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $subnetConfig = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        $subnet = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $subnetConfig = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
         $VirtualNetwork | Set-AzVirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
@@ -85,6 +85,7 @@ function Deploy-Subnet {
     } else {
         Add-LogMessage -Level Success "Subnet '$Name' already exists"
     }
+    $subnet = ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
     return $subnet
 }
 Export-ModuleMember -Function Deploy-Subnet
@@ -189,7 +190,7 @@ Export-ModuleMember -Function Deploy-NetworkSecurityGroup
 
 # Create network security group rule if it does not exist
 # -------------------------------------------------------
-function Deploy-NetworkSecurityGroupRule {
+function Add-NetworkSecurityGroupRule {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
         $Name,
@@ -212,36 +213,38 @@ function Deploy-NetworkSecurityGroupRule {
         [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $DestinationAddressPrefix,
         [Parameter(Position = 10, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $DestinationPortRange
+        $DestinationPortRange,
+        [Parameter(Position = 11, Mandatory = $false, HelpMessage = "Print verbose logging messages")]
+        [switch]$VerboseLogging = $false
     )
-    Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists..."
+    if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
     $_ = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'"
+        if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
         $_ = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
                                              -Name "$Name" `
                                              -Description "$Description" `
                                              -Priority $Priority `
-                                             -Direction $Direction -Access $Access -Protocol "$Protocol" `
-                                             -SourceAddressPrefix "$SourceAddressPrefix" -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix "$DestinationAddressPrefix" -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
         if ($?) {
-            Add-LogMessage -Level Success "Created NSG rule '$Name'"
+            if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
         } else {
-            Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!"
+            if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
         }
     } else {
-        Add-LogMessage -Level Success "Updating NSG rule '$Name'"
+        if ($VerboseLogging) { Add-LogMessage -Level Success "Updating NSG rule '$Name'" }
         $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
                                              -Name "$Name" `
                                              -Description "$Description" `
                                              -Priority $Priority `
-                                             -Direction $Direction -Access $Access -Protocol "$Protocol" `
-                                             -SourceAddressPrefix "$SourceAddressPrefix" -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix "$DestinationAddressPrefix" -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
     }
 }
-Export-ModuleMember -Function Deploy-NetworkSecurityGroupRule
+Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
 
 # Create storage account if it does not exist
@@ -328,35 +331,53 @@ Export-ModuleMember -Function Deploy-ArmTemplate
 
 # Run remote Powershell script
 # ----------------------------
-function Invoke-LoggedRemotePowershell {
+function Invoke-LoggedRemoteScript {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to remote script")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to local script that will be run locally")]
         $ScriptPath,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of VM to run on")]
         $VMName,
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
         $ResourceGroupName,
-        [Parameter(Position = 3, Mandatory = $false, HelpMessage = "(Optional) script parameters")]
+        [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Type of script to run")]
+        [ValidateSet("PowerShell", "UnixShell")]
+        $Shell = "PowerShell",
+        [Parameter(Position = 4, Mandatory = $false, HelpMessage = "(Optional) script parameters")]
         $Parameter = $null
     )
+    # Setup the remote command
+    if ($Shell -eq "PowerShell") {
+        $commandId = "RunPowerShellScript"
+    } else {
+        $commandId = "RunShellScript"
+    }
+    # Run the remote command
     if ($Parameter -eq $null) {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId 'RunPowerShellScript' -ScriptPath $ScriptPath
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
         $success = $?
     } else {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId 'RunPowerShellScript' -ScriptPath $ScriptPath -Parameter $Parameter
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
         $success = $?
     }
     Write-Output $result.Value
-    $stdoutCode = ($result.Value[0].Code -split "/")[-1]
-    $stderrCode = ($result.Value[1].Code -split "/")[-1]
-    if ($success -and ($stdoutCode -eq "succeeded") -and ($stderrCode -eq "succeeded")) {
+    # $stdoutCode = ($result.Value[0].Code -split "/")[-1]
+    # $stderrCode = ($result.Value[1].Code -split "/")[-1]
+    # Write-Host "success: $success"
+    # Write-Host "stdoutCode: $stdoutCode"
+    # Write-Host "stderrCode: $stderrCode"
+    # if ($success -and ($stdoutCode -eq "succeeded") -and ($stderrCode -eq "succeeded")) {
+    foreach ($statuscode in $result.Value) {
+        $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
+    }
+    if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
         Add-LogMessage -Level Failure "Remote script execution failed!"
         throw "Remote script execution has failed. Please check the error message above before re-running this script."
     }
+    return $result
 }
-Export-ModuleMember -Function Invoke-LoggedRemotePowershell
+Export-ModuleMember -Function Invoke-LoggedRemoteScript
 
 
 # Create Linux virtual machine if it does not exist
@@ -391,18 +412,6 @@ function Deploy-UbuntuVirtualMachine {
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
     $vm = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Write-Host "Name: $Name"
-        Write-Host "Size: $Size"
-        Write-Host "OsDiskType: $OsDiskType"
-        Write-Host "ImageId: $ImageId"
-        Write-Host "CloudInitYaml: $CloudInitYaml"
-        Write-Host "NicId: $NicId"
-        Write-Host "ResourceGroupName: $ResourceGroupName"
-        Write-Host "BootDiagnosticsAccount: $BootDiagnosticsAccount"
-        Write-Host "AdminUsername: $AdminUsername"
-        Write-Host "AdminPassword: $AdminPassword"
-        Write-Host "Location: $Location"
-        Write-Host "DataDiskIds: $DataDiskIds"
         $adminCredentials = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $AdminUsername, (ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force)
         # Build VM configuration
         $vmConfig = New-AzVMConfig -VMName $Name -VMSize $Size

@@ -3,57 +3,23 @@ param(
   [string]$shmId,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
   [ValidateSet("2", "3")]
-  [string]$tier
+  [string]$tier,
+  [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed, use this string to distinguish them")]
+  [string]$internalMirrorName = "Internal"
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
+
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
-
-# Load cloud-init
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-external-pypi.yaml") -Raw
-$tier3whitelist = Get-Content (Join-Path $PSScriptRoot ".." ".." "secure_research_enviroment" "azure-vms" "package_lists" "tier3_pypi_whitelist.list") -Raw
-
-foreach ($package in $tier3whitelist) {
-  Write-Host $package
-}
-# ; IF_WHITELIST_ENABLED packages =
-
-
-exit 1
-
-
-# # Set tier-dependent variables
-# # ----------------------------
-# MACHINENAME_PREFIX="${MACHINENAME_BASE}-EXTERNAL-TIER-${TIER}"
-# NSG_EXTERNAL="NSG_SHM_${SHMID}_PKG_MIRRORS_EXTERNAL_TIER${TIER}"
-# SUBNET_EXTERNAL="${SUBNET_PREFIX}_EXTERNAL_TIER${TIER}"
-# VNETNAME="VNET_SHM_${SHMID}_PKG_MIRRORS_TIER${TIER}"
-# VNET_IPTRIPLET="10.20.${TIER}"
-
-
-# # Set datadisk size
-# # -----------------
-# if [ "$TIER" == "2" ]; then
-#     PYPIDATADISKSIZE=$DATADISK_LARGE
-#     PYPIDATADISKSIZEGB=$DATADISK_LARGE_NGB
-#     CRANDATADISKSIZE=$DATADISK_MEDIUM
-#     CRANDATADISKSIZEGB=$DATADISK_MEDIUM_NGB
-# elif [ "$TIER" == "3" ]; then
-#     PYPIDATADISKSIZE=$DATADISK_MEDIUM
-#     PYPIDATADISKSIZEGB=$DATADISK_MEDIUM_NGB
-#     CRANDATADISKSIZE=$DATADISK_SMALL
-#     CRANDATADISKSIZEGB=$DATADISK_SMALL_NGB
-# else
-#     print_usage_and_exit
-# fi
 
 
 # Ensure that package mirror and networking resource groups exist
@@ -72,335 +38,356 @@ $vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $conf
 
 # Set up the internal and external package mirror subnets
 # -------------------------------------------------------
-$subnetExternalName = "ExternalPackageMirrorsTier$($tier)Subnet"
-$subnetInternalName = "InternalPackageMirrorsTier$($tier)Subnet"
 # External subnet
-$subnetExternalIpRange = "$vnetIpTriplet.0/28"
-$externalSubnet = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternalIpRange
+$subnetExternalName = "ExternalPackageMirrorsTier$($tier)Subnet"
+$subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
 # Internal subnet
+$subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | % { $_.AddressPrefix }
-$subnetInternalIpRange = (0..240).Where({$_ % 16 -eq 0}) | % { "$vnetIpTriplet.$_/28" } | Where { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
-$_ = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternalIpRange
+$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | % { "$vnetIpTriplet.$_/28" } | Where { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
+$subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
 
 
 # Set up the NSG for external package mirrors
 # -------------------------------------------
 $nsgExternalName = "NSG_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_EXTERNAL_TIER$tier"
-$externalNsg = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $externalNsg `
-                                -Name "IgnoreInboundRulesBelowHere" `
-                                -Description "Deny all other inbound" `
-                                -Priority 3000 `
-                                -Direction Inbound -Access Deny -Protocol * `
-                                -SourceAddressPrefix * -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange *
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $externalNsg `
-                                -Name "UpdateOutbound" `
-                                -Description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" `
-                                -Priority 300 `
-                                -Direction Outbound -Access Allow -Protocol TCP `
-                                -SourceAddressPrefix $subnetExternalIpRange -SourcePortRange *  `
-                                -DestinationAddressPrefix Internet -DestinationPortRange 443,873
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $externalNsg `
-                                -Name "IgnoreOutboundRulesBelowHere" `
-                                -Description "Deny all other outbound" `
-                                -Priority 3000 `
-                                -Direction Outbound -Access Deny -Protocol * `
-                                -SourceAddressPrefix * -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange *
+$nsgExternal = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
+                             -Name "IgnoreInboundRulesBelowHere" `
+                             -Description "Deny all other inbound" `
+                             -Priority 3000 `
+                             -Direction Inbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
+                             -Name "UpdateFromInternet" `
+                             -Description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" `
+                             -Priority 300 `
+                             -Direction Outbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange 443,873
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
+                             -Name "IgnoreOutboundRulesBelowHere" `
+                             -Description "Deny all other outbound" `
+                             -Priority 3000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
+# Create or update external mirror rule
+Add-LogMessage -Level Info "Ensuring that the external mirrors can contact the '$($subnetInternal.AddressPrefix)' IP range"
+$destinationAddressPrefix = @($subnetInternal.AddressPrefix)
+$rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
+if ($rule) {
+    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Unique #| % { [string]$_ }
+}
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
+                             -Name "RsyncToInternal" `
+                             -Description "Allow ports 22 and 873 for rsync" `
+                             -Priority 400 `
+                             -Direction Outbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
+                             -DestinationAddressPrefix $destinationAddressPrefix -DestinationPortRange 22,873
+$_ = Set-AzVirtualNetworkSubnetConfig -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternal.AddressPrefix -NetworkSecurityGroup $nsgExternal
+$_ = $vnetPkgMirrors | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Configuring NSG '$nsgExternalName' failed!"
+}
+
+
+# # Get public key for internal server
+# $scriptFile = New-TemporaryFile
+# "#! /bin/bash
+# cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
+# " > $scriptFile
+# $vmNameExternal = "PYPI-MIRROR-EXTERNAL-TIER-2" #"$($($MirrorType).ToUpper())-MIRROR-EXTERNAL-TIER-$tier"
+# $result = Invoke-AzVMRunCommand -Name $vmNameExternal -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+# $externalPublicKey = $result.Value[0].Message
+# $externalPublicKey
+# Remove-Item $scriptFile
+
+
+$scriptFile = New-TemporaryFile
+"#! /bin/bash
+cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
+" > $scriptFile
+$vmNameExternal = "PYPI-MIRROR-EXTERNAL-TIER-2"
+$result = Invoke-LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -ScriptPath $scriptFile.FullName
+Remove-Item $scriptFile
+
+Write-Host "119 result"
+$result
+Write-Host "121 result"
+exit 1
 
 
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
 $nsgInternalName = "NSG_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_INTERNAL_TIER$tier"
-$internalNsg = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $internalNsg `
-                                -Name "RsyncInbound" `
-                                -Description "Allow ports 22 and 873 for rsync" `
-                                -Priority 200 `
-                                -Direction Inbound -Access Allow -Protocol TCP `
-                                -SourceAddressPrefix $subnetExternalIpRange -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange 22,873
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $internalNsg `
-                                -Name "MirrorRequestsInbound" `
-                                -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" `
-                                -Priority 300 `
-                                -Direction Inbound -Access Allow -Protocol TCP `
-                                -SourceAddressPrefix VirtualNetwork -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange 80,443,3128
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $internalNsg `
-                                -Name "IgnoreInboundRulesBelowHere" `
-                                -Description "Deny all other inbound" `
-                                -Priority 3000 `
-                                -Direction Inbound -Access Deny -Protocol TCP `
-                                -SourceAddressPrefix * -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange *
-Deploy-NetworkSecurityGroupRule -NetworkSecurityGroup $internalNsg `
-                                -Name "IgnoreOutboundRulesBelowHere" `
-                                -Description "Deny all other outbound" `
-                                -Priority 3000 `
-                                -Direction Outbound -Access Deny -Protocol * `
-                                -SourceAddressPrefix * -SourcePortRange *  `
-                                -DestinationAddressPrefix * -DestinationPortRange *
-
+$nsgInternal = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
+                             -Name "RsyncFromExternal" `
+                             -Description "Allow ports 22 and 873 for rsync" `
+                             -Priority 200 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange 22,873
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
+                             -Name "MirrorRequestsFromVMs" `
+                             -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" `
+                             -Priority 300 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange 80,443,3128
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
+                             -Name "IgnoreInboundRulesBelowHere" `
+                             -Description "Deny all other inbound" `
+                             -Priority 3000 `
+                             -Direction Inbound -Access Deny -Protocol TCP `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
+                             -Name "IgnoreOutboundRulesBelowHere" `
+                             -Description "Deny all other outbound" `
+                             -Priority 3000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
+$_ = Set-AzVirtualNetworkSubnetConfig -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternal.AddressPrefix -NetworkSecurityGroup $nsgInternal
+$_ = $vnetPkgMirrors | Set-AzVirtualNetwork
+if ($?) {
+    Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Configuring NSG '$nsgInternalName' failed!"
+}
 
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
 $adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "mirroradmin"
 
-# Set up PyPI external mirror
-# ---------------------------
-$vmName = "PYPI-MIRROR-EXTERNAL-TIER-$tier"
-# Deploy NIC and data disks
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $externalSubnet -PrivateIpAddress "$vnetIpTriplet.4" -Location $config.location
-$dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB 8192 -Type "Standard_LRS" -ResourceGroupName $config.mirrors.rg -Location $config.location
-$secondDisk = Deploy-ManagedDisk -Name "$vmName-somethingelse-DISK" -SizeGB 1024 -Type "Standard_LRS" -ResourceGroupName $config.mirrors.rg -Location $config.location
+
+# Resolve the cloud init file, applying a whitelist if needed
+# -----------------------------------------------------------
+function Resolve-CloudInit {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Type of mirror to set up")]
+        $MirrorType,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [ValidateSet("Internal", "External")]
+        $MirrorDirection,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Path to cloud init file")]
+        $CloudInitPath,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Path to package whitelist (if any)")]
+        $WhitelistPath
+    )
+
+    $cloudInitYaml = Get-Content $CloudInitPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if($notExists) {
+        Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!"
+    }
+
+    # Add public SSH key from the external mirror as an allowed key on the internal
+    if ($MirrorDirection -eq "Internal") {
+        $scriptFile = New-TemporaryFile
+        "#! /bin/bash
+        cat /home/mirrordaemon/.ssh/id_rsa.pub
+        " > $scriptFile
+        $vmNameExternal = "$($($MirrorType).ToUpper())-MIRROR-EXTERNAL-TIER-$tier"
+        $result = Invoke-AzVMRunCommand -Name $vmNameExternal -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+        $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
+        # $externalPublicSshKey
+        $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
+        Remove-Item $scriptFile
+    }
 
 
-#     # Apply whitelist if this is a Tier-3 mirror
-#     if [ "$TIER" == "3" ]; then
-#         # Indent whitelist by twelve spaces to match surrounding text
-#         TMP_WHITELIST="$(mktemp).list"
-#         cp $TIER3WHITELIST $TMP_WHITELIST
-#         sed -i -e 's/^/            /' $TMP_WHITELIST
+    # PyPI
+    if ($MirrorType.ToLower() -eq "pypi") {
+        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if (-not $notExists) {
+            $packagesBefore = "; IF_WHITELIST_ENABLED packages ="
+            $packagesAfter  = $packagesBefore
+            foreach ($package in $whitelist -split "`n") {
+                $packagesAfter += "`n            $package"
+            }
+            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("; IF_WHITELIST_ENABLED ", "")
+        }
+    }
 
-#         # Build cloud-config file
-#         sed -i -e "/; IF_WHITELIST_ENABLED packages =/ r ${TMP_WHITELIST}" $TMP_CLOUDINITYAML
-#         sed -i -e 's/; IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
-#         rm $TMP_WHITELIST
-#     fi
+    # CRAN
+    if ($MirrorType.ToLower() -eq "cran") {
+        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if (-not $notExists) {
+            $packages = $whitelist.Replace("`n", " ")
+            $cloudInitYaml = $cloudInitYaml.Replace("WHITELISTED_PACKAGES=", "WHITELISTED_PACKAGES=$packages").Replace("# IF_WHITELIST_ENABLED ", "")
+        }
+    }
 
-
-
-
-# CloudInitYaml = #$ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
-$params = @{
-    Name = "PYPI-MIRROR-EXTERNAL-TIER-$tier"
-    Size = "Standard_F4"
-    OsDiskType = "Standard_LRS"
-    AdminUsername = $adminUsername
-    AdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName ("shm-" + "$($config.shm.id)".ToLower() + "-pypi-mirror-external-tier-$tier-admin-password")
-    CloudInitYaml = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-external-pypi.yaml") -Raw
-    NicId = $vmNic.Id
-    ResourceGroupName = $config.mirrors.rg
-    BootDiagnosticsAccount = $bootDiagnosticsAccount
-    Location = $config.location
-    DataDiskIds = @($dataDisk.Id, $secondDisk.Id)
+    return $cloudInitYaml
 }
-Write-Host $params
-Deploy-UbuntuVirtualMachine @params
 
-exit 1
-
-
-# # Set up PyPI external mirror
-# # ---------------------------
-# MACHINENAME="PYPI-${MACHINENAME_PREFIX}"
-# if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
-#     echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
-# else
-#     CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-pypi.yaml"
-#     TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_pypi_whitelist.list"
-#     ADMIN_PASSWORD_SECRET_NAME="shm-pypi-mirror-external-tier-${TIER}-admin-password"
-
-#     # Make a temporary cloud-init file that we may alter
-#     TMP_CLOUDINITYAML="$(mktemp).yaml"
-#     cp $CLOUDINITYAML $TMP_CLOUDINITYAML
-
-#     # Apply whitelist if this is a Tier-3 mirror
-#     if [ "$TIER" == "3" ]; then
-#         # Indent whitelist by twelve spaces to match surrounding text
-#         TMP_WHITELIST="$(mktemp).list"
-#         cp $TIER3WHITELIST $TMP_WHITELIST
-#         sed -i -e 's/^/            /' $TMP_WHITELIST
-
-#         # Build cloud-config file
-#         sed -i -e "/; IF_WHITELIST_ENABLED packages =/ r ${TMP_WHITELIST}" $TMP_CLOUDINITYAML
-#         sed -i -e 's/; IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
-#         rm $TMP_WHITELIST
-#     fi
-
-#     # Ensure that admin password is available
-#     if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-#         echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME${END}"
-#         az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32) --output none
-#     fi
-#     # Retrieve admin password from keyvault
-#     ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
-
-#     # Create the VM based off the selected source image
-#     echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END}${BOLD} in ${BLUE}$RESOURCEGROUP${END}"
-#     echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
-
-#     # Create the data disk
-#     echo -e "${BOLD}Creating ${PYPIDATADISKSIZE} datadisk...${END}"
-#     DISKNAME=${MACHINENAME}-DATA-DISK
-#     az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${PYPIDATADISKSIZEGB} --output none
-
-#     # Temporarily allow outbound internet connections through the NSG from this IP address only
-#     PRIVATEIPADDRESS=${VNET_IPTRIPLET}.4
-#     echo -e "${BOLD}Temporarily allowing outbound internet access on ports 80, 443 and 3128 from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for installing software during deployment *only*)${END}"
-#     az network nsg rule create --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
-#     az network nsg rule create --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 150 --output none
-
-#     # Create the VM
-#     echo -e "${BOLD}Creating VM...${END}"
-
-#     OSDISKNAME=${MACHINENAME}-OS-DISK
-#     az vm create \
-#         --admin-password $ADMIN_PASSWORD \
-#         --admin-username $ADMIN_USERNAME \
-#         --attach-data-disks $DISKNAME \
-#         --authentication-type password \
-#         --custom-data $TMP_CLOUDINITYAML \
-#         --image $SOURCEIMAGE \
-#         --name $MACHINENAME \
-#         --nsg "" \
-#         --os-disk-name $OSDISKNAME \
-#         --public-ip-address "" \
-#         --private-ip-address $PRIVATEIPADDRESS \
-#         --resource-group $RESOURCEGROUP \
-#         --size $MIRROR_VM_SIZE \
-#         --storage-sku $MIRROR_DISK_TYPE \
-#         --subnet $SUBNET_EXTERNAL_ID \
-#         --output none
-#     echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME${END}${BOLD} server${END}"
-#     rm $TMP_CLOUDINITYAML
-
-#     # Poll VM to see whether it has finished running
-#     echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-#     az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/stopped'].displayStatus" --output none
-
-#     # Delete the configuration NSG rule and restart the VM
-#     echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
-#     az network nsg rule delete --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary --output none
-#     az network nsg rule delete --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary --output none
-#     az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME --output none
-# fi
-
-
-# # Set up CRAN external mirror
-# # ---------------------------
-# if [ "$TIER" == "2" ]; then  # we do not support Tier-3 CRAN mirrors at present
-#     MACHINENAME="CRAN-${MACHINENAME_PREFIX}"
-#     if [ "$(az vm show --resource-group $RESOURCEGROUP --name $MACHINENAME 2> /dev/null)" != "" ]; then
-#         echo -e "${BOLD}VM ${BLUE}$MACHINENAME${END}${BOLD} already exists in ${BLUE}$RESOURCEGROUP${END}"
-#     else
-#         CLOUDINITYAML="${BASH_SOURCE%/*}/cloud-init-mirror-external-cran.yaml"
-#         TIER3WHITELIST="${BASH_SOURCE%/*}/package_lists/tier3_cran_whitelist.list"
-#         ADMIN_PASSWORD_SECRET_NAME="shm-cran-mirror-external-tier-${TIER}-admin-password"
-
-#         # Make a temporary cloud-init file that we may alter
-#         TMP_CLOUDINITYAML="$(mktemp).yaml"
-#         cp $CLOUDINITYAML $TMP_CLOUDINITYAML
-
-#         # Apply whitelist if this is a Tier-3 mirror
-#         if [ "$TIER" == "3" ]; then
-#             # Build cloud-config file
-#             WHITELISTED_PACKAGES=$(cat $TIER3WHITELIST | tr '\n', ' ')
-#             sed -i -e "s/WHITELISTED_PACKAGES=/WHITELISTED_PACKAGES=\"${WHITELISTED_PACKAGES}\"/" $TMP_CLOUDINITYAML
-#             sed -i -e 's/# IF_WHITELIST_ENABLED //' $TMP_CLOUDINITYAML
-#         fi
-
-#         # Ensure that admin password is available
-#         if [ "$(az keyvault secret list --vault-name $KEYVAULT_NAME | grep $ADMIN_PASSWORD_SECRET_NAME)" = "" ]; then
-#             echo -e "${BOLD}Creating admin password for ${BLUE}$MACHINENAME${END}"
-#             az keyvault secret set --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --value $(head /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 32) --output none
-#         fi
-#         # Retrieve admin password from keyvault
-#         ADMIN_PASSWORD=$(az keyvault secret show --vault-name $KEYVAULT_NAME --name $ADMIN_PASSWORD_SECRET_NAME --query "value" | xargs)
-
-#         # Create the VM based off the selected source image
-#         echo -e "${BOLD}Creating VM ${BLUE}$MACHINENAME${END}${BOLD} in ${BLUE}$RESOURCEGROUP${END}"
-#         echo -e "${BOLD}This will be based off the ${BLUE}$SOURCEIMAGE${END}${BOLD} image${END}"
-
-#         # Create the data disk
-#         echo -e "${BOLD}Creating ${CRANDATADISKSIZE} datadisk...${END}"
-#         DISKNAME=${MACHINENAME}-DATA-DISK
-#         az disk create --resource-group $RESOURCEGROUP --name $DISKNAME --location $LOCATION --sku "Standard_LRS" --size-gb ${CRANDATADISKSIZEGB} --output none
-
-#         # Temporarily allow outbound internet connections through the NSG from this IP address only
-#         PRIVATEIPADDRESS=${VNET_IPTRIPLET}.5
-#         echo -e "${BOLD}Temporarily allowing outbound internet access on ports 80, 443 and 3128 from ${BLUE}$PRIVATEIPADDRESS${END}${BOLD} in NSG ${BLUE}$NSG_EXTERNAL${END}${BOLD} (for installing software during deployment *only*)${END}"
-#         az network nsg rule create --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name configurationOutboundTemporary --description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" --access "Allow" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges 80 443 3128 --protocol TCP --destination-address-prefixes Internet --priority 100 --output none
-#         az network nsg rule create --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --direction Outbound --name vnetOutboundTemporary --description "Block connections to the VNet" --access "Deny" --source-address-prefixes $PRIVATEIPADDRESS --destination-port-ranges "*" --protocol "*" --destination-address-prefixes VirtualNetwork --priority 200 --output none
-
-#         # Create the VM
-#         echo -e "${BOLD}Creating VM...${END}"
-#         OSDISKNAME=${MACHINENAME}-OS-DISK
-#         az vm create \
-#             --admin-password $ADMIN_PASSWORD \
-#             --admin-username $ADMIN_USERNAME \
-#             --attach-data-disks $DISKNAME \
-#             --authentication-type password \
-#             --custom-data $TMP_CLOUDINITYAML \
-#             --image $SOURCEIMAGE \
-#             --name $MACHINENAME \
-#             --nsg "" \
-#             --os-disk-name $OSDISKNAME \
-#             --public-ip-address "" \
-#             --private-ip-address $PRIVATEIPADDRESS \
-#             --resource-group $RESOURCEGROUP \
-#             --size $MIRROR_VM_SIZE \
-#             --storage-sku $MIRROR_DISK_TYPE \
-#             --subnet $SUBNET_EXTERNAL_ID \
-#             --output none
-#         echo -e "${BOLD}Deployed new ${BLUE}$MACHINENAME${END}${BOLD} server${END}"
-
-#         # Poll VM to see whether it has finished running
-#         echo -e "${BOLD}Waiting for VM setup to finish (this may take several minutes)...${END}"
-#         az vm wait --name $MACHINENAME --resource-group $RESOURCEGROUP --custom "instanceView.statuses[?code == 'PowerState/stopped'].displayStatus" --output none
-
-#         # Delete the configuration NSG rule and restart the VM
-#         echo -e "${BOLD}Restarting VM: ${BLUE}${MACHINENAME}${END}"
-#         az network nsg rule delete --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --name configurationOutboundTemporary --output none
-#         az network nsg rule delete --resource-group $VNETRESOURCEGROUP --nsg-name $NSG_EXTERNAL --name vnetOutboundTemporary --output none
-#         az vm start --resource-group $RESOURCEGROUP --name $MACHINENAME --output none
-#     fi
-# fi
+# $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-internal-pypi.yaml"
+# $whitelistPath = Join-Path $PSScriptRoot ".." ".." "secure_research_environment" "azure-vms" "package_lists" "tier2_pypi_whitelist.list"
+# $cloudInitYaml = Resolve-CloudInit -MirrorType "PyPI" -MirrorDirection "Internal" -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
+# Write-Host "218: cloud init yaml"
+# $cloudInitYaml
+# Write-Host "220: cloud init yaml"
+# exit 1
 
 
 
+# Set up a single package mirror
+# ------------------------------
+function Deploy-PackageMirror {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
+        $MirrorType,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Whether this is an internal or external mirror")]
+        [ValidateSet("Internal", "External")]
+        $MirrorDirection
+    )
+    # Load cloud-init file
+    # --------------------
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($mirrorType).ToLower()).yaml"
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "secure_research_environment" "azure-vms" "package_lists" "tier$($tier)_$($($mirrorType).ToLower())_whitelist.list"
+    $cloudInitYaml = Resolve-CloudInit -MirrorType $mirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
-# # Switch back to original subscription
-# # ------------------------------------
-# Set-AzContext -Context $originalContext
+    # Construct IP address for this mirror
+    # ------------------------------------
+    if ($MirrorDirection -eq "Internal") {
+        $subnet = $subnetInternal
+    } else {
+        $subnet = $subnetExternal
+    }
+    $ipOctets = $subnet.AddressPrefix.Split("/")[0].Split(".")
+    $ipOctets[3] = [int]$ipOctets[3] + [int]$config.mirrors[$($mirrorType).ToLower()].ipOffset
+    $privateIpAddress = $ipOctets -join "."
+
+    # Check whether the VM already exists
+    # -----------------------------------
+    $vmName = "$($($MirrorType).ToUpper())-MIRROR-$($($MirrorDirection).ToUpper())-TIER-$tier"
+    $adminPasswordSecretName = ("shm-" + "$($config.id)".ToLower() + "-" + "$MirrorType".ToLower() + "-mirror-" + "$MirrorDirection".ToLower() + "-tier-$tier-admin-password")
+    $_ = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        # Deploy NIC and data disks
+        # -------------------------
+        $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.location
+        $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.mirrors.pypi.diskSize["tier$tier"] -Type $config.mirrors.diskType -ResourceGroupName $config.mirrors.rg -Location $config.location
+
+        # Deploy the VM with access to the internet for configuration
+        # -----------------------------------------------------------
+        try {
+            # Set temporary NSG rules
+            Add-LogMessage -Level Info "Temporarily allowing outbound internet access from $privateIpAddress on ports 80, 443 and 3128"
+            $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $subnet.NetworkSecurityGroup.Id }
+            Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                                        -Name "ConfigurationOutboundTemporary" `
+                                        -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" `
+                                        -Priority 100 `
+                                        -Direction Outbound -Access Allow -Protocol TCP `
+                                        -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
+                                        -DestinationAddressPrefix Internet -DestinationPortRange 80,443,3128
+            Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                                        -Name "VnetOutboundTemporary" `
+                                        -Description "Block connections to the VNet" `
+                                        -Priority 150 `
+                                        -Direction Outbound -Access Deny -Protocol * `
+                                        -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
+                                        -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+
+            # Deploy the VM
+            $params = @{
+                Name = $vmName
+                Size = $config.mirrors.vmSize
+                OsDiskType = $config.mirrors.diskType
+                AdminUsername = $adminUsername
+                AdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $adminPasswordSecretName
+                CloudInitYaml = $cloudInitYaml
+                NicId = $vmNic.Id
+                ResourceGroupName = $config.mirrors.rg
+                BootDiagnosticsAccount = $bootDiagnosticsAccount
+                Location = $config.location
+                DataDiskIds = @($dataDisk.Id)
+            }
+            $_ = Deploy-UbuntuVirtualMachine @params
+
+            # Poll VM to see whether it has finished running
+            Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
+            $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
+            $progress = 0
+            while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
+                $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
+                $progress += 1
+                Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
+                Start-Sleep 10
+            }
+        } finally {
+            # Remove temporary NSG rules
+            Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."
+            $_ = Remove-AzNetworkSecurityRuleConfig -Name "ConfigurationOutboundTemporary" -NetworkSecurityGroup $nsg
+            $_ = Remove-AzNetworkSecurityRuleConfig -Name "VnetOutboundTemporary" -NetworkSecurityGroup $nsg
+            $_ = $nsg | Set-AzNetworkSecurityGroup
+            if ($?) {
+                Add-LogMessage -Level Success "Configuring VM '$vmName' succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Configuring VM '$vmName' failed!"
+            }
+        }
+        # Restart the VM
+        $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+
+        # If we have deployed an internal mirror we need to let the external connect to it
+        # --------------------------------------------------------------------------------
+        if ($MirrorDirection -eq "Internal") {
+            # Get public key for internal server
+            $scriptFile = New-TemporaryFile
+            "#! /bin/bash
+            ssh-keyscan 127.0.0.1 2> /dev/null
+            " > $scriptFile
+            $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
+            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
+            Remove-Item $scriptFile
+
+            # Inform external server about the new internal server
+            $scriptFile = New-TemporaryFile
+            "#! /bin/bash
+            echo 'Update known hosts on the external server to allow connections to the internal server...'
+            mkdir -p ~mirrordaemon/.ssh
+            echo '$internalFingerprint' >> ~mirrordaemon/.ssh/known_hosts
+            ssh-keygen -Hf ~mirrordaemon/.ssh/known_hosts 2>&1
+            chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts
+            rm ~mirrordaemon/.ssh/known_hosts.old 2> /dev/null
+            cat ~mirrordaemon/.ssh/known_hosts
+            ls -alh ~mirrordaemon/.ssh/
+            echo 'Update known IP addresses on the external server to schedule pushing to the internal server...'
+            echo $privateIpAddress >> ~mirrordaemon/internal_mirror_ip_addresses.txt
+            cp ~mirrordaemon/internal_mirror_ip_addresses.txt ~mirrordaemon/internal_mirror_ip_addresses.bak
+            cat ~mirrordaemon/internal_mirror_ip_addresses.bak | sort | uniq > ~mirrordaemon/internal_mirror_ip_addresses.txt
+            rm -f ~mirrordaemon/internal_mirror_ip_addresses.bak
+            cat ~mirrordaemon/internal_mirror_ip_addresses.txt
+            ls -alh ~mirrordaemon
+            " > $scriptFile
+            $_ = Invoke-LoggedRemoteScript -Shell "UnixShell" -ScriptPath $scriptFile.FullName -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg
+            Remove-Item $scriptFile
+        }
+    } else {
+        Add-LogMessage -Level Success "Virtual machine '$vmName' already exists"
+    }
+}
 
 
+# Set up package mirror
+# ---------------------
+foreach ($mirrorType in ("PyPI", "CRAN")) {
+    foreach ($mirrorDirection in ("External", "Internal")) {
+        Deploy-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
+    }
+}
 
 
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext
 
-
-# # # Get SHM config
-# # # --------------
-# # $config = Get-ShmFullConfig($shmId)
-
-# # # Switch to appropriate management subscription
-# # $originalContext = Get-AzContext
-# # $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
-
-# # # Convert arguments into the format expected by mirror deployment scripts
-# # $SHM_ID = "$($config.id)".ToUpper()
-# # $arguments = "-s '$($config.subscriptionName)' \
-# #               -i $SHM_ID \
-# #               -k $($config.keyVault.Name) \
-# #               -r $($config.mirrors.rg) \
-# #               -t $tier \
-# #               -v $($config.network.vnet.rg)"
-
-# # # Get path to bash scripts
-# # $deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "new_dsg_environment" "azure-vms" -Resolve
-
-# # # Deploy external mirror servers
-# # Write-Host "Deploying external mirror servers"
-# # $cmd = "$deployScriptDir/deploy_azure_external_mirror_servers.sh $arguments"
-# # bash -c $cmd
-
-# # # Deploy internal mirror servers
-# # Write-Host "Deploying internal mirror servers"
-# # $cmd = "$deployScriptDir/deploy_azure_internal_mirror_servers.sh $arguments"
-# # bash -c $cmd
-
-# # # Switch back to original subscription
-# # $_ = Set-AzContext -Context $originalContext;
