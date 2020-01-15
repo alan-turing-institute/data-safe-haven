@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId
+    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId
 )
 
 Import-Module Az
@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig($sreId)
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
@@ -24,8 +24,8 @@ $_ = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.lo
 
 # Ensure the keyvault exists
 # --------------------------
-$keyVault = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
-Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.adminSecurityGroupName
+$keyVault = Deploy-KeyVault -Name $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+Set-KeyVaultPermissions -Name $config.sre.keyVault.Name -GroupName $config.shm.adminSecurityGroupName
 
 
 # # Switch to SHM subscription
@@ -35,10 +35,10 @@ Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.a
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
-$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
-$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
-$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
+$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
+$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
+$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
 # Encrypt passwords for passing to script
 $hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $gitlabPasswordEncrypted = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)

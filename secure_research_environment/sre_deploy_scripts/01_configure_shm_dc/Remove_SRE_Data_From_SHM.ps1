@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId
+    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId
 )
 
 Import-Module Az
@@ -11,7 +11,7 @@ Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig($sreId)
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
@@ -36,7 +36,7 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "--------------------------------------"
     $sreResources
 
-# ... otherwise continuing removing artifacts in the SHM subscription
+    # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
     # Switch to SHM subscription
     # --------------------------
@@ -73,7 +73,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove main SRE <-> SHM VNet peering
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
     Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
-    $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
+    $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
     if ($?) {
         Add-LogMessage -Level Success "Peering removal succeeded"
     } else {
@@ -156,7 +156,7 @@ if ($sreResources -or $sreResourceGroups) {
     Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $?
     # RDS ACME record
-    $rdsAcmeDnsRecordname =  ("_acme-challenge." + "$($config.sre.rds.gateway.hostname)".ToLower())
+    $rdsAcmeDnsRecordname = ("_acme-challenge." + "$($config.sre.rds.gateway.hostname)".ToLower())
     Add-LogMessage -Level Info " [ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($sreDomain)"
     Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $success -and $?
