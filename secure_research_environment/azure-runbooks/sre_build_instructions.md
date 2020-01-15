@@ -53,28 +53,28 @@ The following instructions will walk you through deploying a Secure Research Env
   - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is defined in the config file.
 
 ### Access to required SRE resources
-- Access to a new Azure subscription which the DSG will be deployed to
+- Access to a new Azure subscription which the SRE will be deployed to
   - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new DSG subscription
-- Access to a public routable domain name for the DSG and its name servers
-  - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `testsandbox.dsgroupdev.co.uk`)
+  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new SRE subscription
+- Access to a public routable domain name for the SRE and its name servers
+  - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `sandbox.dsgroupdev.co.uk` or `sandbox.testb.dsgroupdev.co.uk`)
   - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
   - To create a new DNS zone:
     - From within the resource group click `"+" Add -> DNS Zone` and click "create"
-    - Set the **Name** field to the DSG domain (i.e. `dsgroup<dsg-id>.co.uk`)
+    - Set the **Name** field to the SRE domain (eg. `sandbox.dsgroupdev.co.uk`)
     - Click "Review + create"
     - Once deployment is finished, click "Go to resource" to view the new Azure DNS zone
     - Copy the 4 nameservers in the "NS" record to the domain's DNS record
         - if this is a top-level domain, contact whoever registered the domain
-        - if this is a subdomain of an existing Azure domain (eg. `testsandbox.dsgroupdev.co.uk` then:
+        - if this is a subdomain of an existing Azure domain (eg. `sandbox.dsgroupdev.co.uk` then:
             - go to the DNS zone for the top-level domain in Azure
             - add a new NS record using the 4 nameservers you copied down above
             ![Subdomain NS record](images/subdomain_ns_record.png)
 
 ### Deploying multiple SREs in parallel
 
-**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
+**NOTE:** You can only deploy to **one SRE at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 
 ## 2. Define SRE configuration
@@ -109,18 +109,18 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 ### Core SRE configuration properties
 
 The core properties for the new SRE environment must be present in the `environment_configs/core` folder.
-The following core SRE properties must be defined in a JSON file named `dsg_<dsg-id>_core_config.json`.
+The following core SRE properties must be defined in a JSON file named `sre_<sre-id>_core_config.json`.
 
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
-    "dsgId": "A short ID to identify the secure research environment. Ideally this should be 7 characters or less; if not it will be truncated in some places, but will otherwise not cause problems.",
+    "sreId": "A short ID to identify the secure research environment. Ideally this should be 7 characters or less; if not it will be truncated in some places, but will otherwise not cause problems.",
     "shmId": "The short ID for the SHM segment to deploy against",
-    "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the DSG and which mirror set the DSG is peered with",
+    "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "domain": "The fully qualified domain name for the SRE",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less. If the first part of the domain is less than 15 characters, use this for the netbiosName",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
-    "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 DSGs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
+    "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
     "rdsInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either 'Allow', 'Deny' or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
     "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)"
@@ -136,8 +136,8 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
   - `Import-Module ./common_powershell/Configuration.psm1 -Force`
-  - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is usually a number, e.g. `9` for `DSG9`)
-- A full configuration file for the new SRE will be created at `environment_configs/full/dsg_<dsg-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
+  - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
+- A full configuration file for the new SRE will be created at `environment_configs/full/sre_<sre-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
 
 ## 3. Prepare Safe Haven Management deployment
@@ -164,7 +164,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - The VNet peerings may take a few minutes to provision after the script completes.
 
 ### Set up a VPN connection to the SRE
-- In the **SRE subscription** open `Resource Groups -> RG_SRE_VNET -> VNET_SRE_<dsg-id>_GW`
+- In the **SRE subscription** open `Resource Groups -> RG_SRE_VNET -> VNET_SRE_<sre-id>_GW`
   - Select "**Point to Site Configuration**" from the left-hand navigation
   - Download the VPN client from the "Point to Site configuration" menu
     ![VPN client](images/media/image4.png)
@@ -188,7 +188,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the DSG VPN connection
-- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
 #### Install RDS environment and webclient
@@ -237,11 +237,11 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1 -sreId <SRE ID> -emailAddress <email>`, where the SRE ID is the one specified in the config and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
-- **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-testsan.testsandbox.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./CreateUpdate_Signed_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
+- **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-testsan.sandbox.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./CreateUpdate_Signed_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login as the **domain** admin user (eg. `sretestsandboxadmin@testsandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
 - Right click the `SG <sre-id> Research Users` security group and select "Properties"
@@ -249,7 +249,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Enter the start of your name and click "Check names"
 - Select your name and click "Ok"
 - Click "Ok" again to exit the add users dialogue
-- Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rdg-sre-testsan.testsandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in.
+- Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rdg-sre-testsan.sandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, but get an IIS landing page when accessing `https://<rds-name>.<sre-id>.<safe haven domain>/`, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
         - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
@@ -290,12 +290,12 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Configure HackMD Server
 - HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
-- You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<dsg-id> Research Users` security group.
+- You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
 
 ## 9. Deploy initial shared compute VM
 ### [OPTIONAL] Create a custom cloud init file for the DSG if required
   - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
-  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<dsg-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
+  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<sre-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
 
 ### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
@@ -326,7 +326,7 @@ To deploy a compute VM you will need the following available on the machine you 
 - If you are not prompted with `login:`, hit enter until the prompt appears
 - Enter the username from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
 - Enter the password from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
-- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-DSG-<sre-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## 10. Apply network configuration

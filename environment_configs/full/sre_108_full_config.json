@@ -94,10 +94,10 @@
       "rg": "RG_SHM_DNS"
     }
   },
-  "dsg": {
-    "subscriptionName": "Turing DSG - 9 - WWF",
-    "id": "9",
-    "shortName": "dsg9",
+  "sre": {
+    "subscriptionName": "Turing SRE - 108 - WMCA",
+    "id": "108",
+    "shortName": "dsg108",
     "location": "uksouth",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Production Admins",
@@ -107,7 +107,7 @@
         "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_TURING1_PKG_MIRRORS_TIER2"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER2"
       },
       "cran": {
         "ip": "10.20.2.21"
@@ -117,46 +117,46 @@
       }
     },
     "domain": {
-      "fqdn": "dsgroup9.co.uk",
-      "netbiosName": "DSGROUP9",
-      "dn": "DC=dsgroup9,DC=co,DC=uk",
+      "fqdn": "dsgroup108.co.uk",
+      "netbiosName": "DSGROUP108",
+      "dn": "DC=dsgroup108,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "name": "SG DSGROUP9 Server Administrators",
-          "description": "SG DSGROUP9 Server Administrators"
+          "name": "SG DSGROUP108 Server Administrators",
+          "description": "SG DSGROUP108 Server Administrators"
         },
         "researchUsers": {
-          "name": "SG DSGROUP9 Research Users",
-          "description": "SG DSGROUP9 Research Users"
+          "name": "SG DSGROUP108 Research Users",
+          "description": "SG DSGROUP108 Research Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "VNET_DSG9",
-        "cidr": "10.100.64.0/21"
+        "name": "VNET_DSG108",
+        "cidr": "10.212.0.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.100.64",
-          "cidr": "10.100.64.0/24"
+          "prefix": "10.212.0",
+          "cidr": "10.212.0.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.100.65",
-          "cidr": "10.100.65.0/24"
+          "prefix": "10.212.1",
+          "cidr": "10.212.1.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.100.66",
-          "cidr": "10.100.66.0/24"
+          "prefix": "10.212.2",
+          "cidr": "10.212.2.0/24"
         },
         "gateway": {
           "name": "GatewaySubnet",
-          "prefix": "10.100.71",
-          "cidr": "10.100.71.0/27"
+          "prefix": "10.212.7",
+          "cidr": "10.212.7.0/27"
         }
       },
       "nsg": {
@@ -169,76 +169,75 @@
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsg9artifacts"
+        "accountName": "dsg108artifacts"
       }
     },
     "keyVault": {
-      "name": "kv-turing1-dsg9",
+      "name": "kv-turing1-dsg108",
       "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC-DSG9",
-      "hostname": "DC-DSG9",
-      "fqdn": "DC-DSG9.dsgroup9.co.uk",
-      "ip": "10.100.64.250",
+      "vmName": "DC-DSG108",
+      "hostname": "DC-DSG108",
+      "fqdn": "DC-DSG108.dsgroup108.co.uk",
+      "ip": "10.212.0.250",
       "admin": {
-        "usernameSecretName": "dsg9-dc-admin-username",
-        "passwordSecretName": "dsg9-dc-admin-password"
+        "usernameSecretName": "dsg108-dc-admin-username",
+        "passwordSecretName": "dsg108-dc-admin-password"
       }
     },
     "users": {
       "ldap": {
         "gitlab": {
-          "name": "DSGROUP9 Gitlab LDAP",
-          "samAccountName": "dsg9-gitlab-ldap",
-          "passwordSecretName": "dsg9-gitlab-ldap-password"
+          "name": "DSGROUP108 Gitlab LDAP",
+          "samAccountName": "dsg108-gitlab-ldap",
+          "passwordSecretName": "dsg108-gitlab-ldap-password"
         },
         "hackmd": {
-          "name": "DSGROUP9 HackMD LDAP",
-          "samAccountName": "dsg9-hackmd-ldap",
-          "passwordSecretName": "dsg9-hackmd-ldap-password"
+          "name": "DSGROUP108 HackMD LDAP",
+          "samAccountName": "dsg108-hackmd-ldap",
+          "passwordSecretName": "dsg108-hackmd-ldap-password"
         },
         "dsvm": {
-          "name": "DSGROUP9 DSVM LDAP",
-          "samAccountName": "dsg9-dsvm-ldap",
-          "passwordSecretName": "dsg9-dsvm-ldap-password"
+          "name": "DSGROUP108 DSVM LDAP",
+          "samAccountName": "dsg108-dsvm-ldap",
+          "passwordSecretName": "dsg108-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "DSGROUP9 Test Researcher",
-          "samAccountName": "dsg9-test-res",
-          "passwordSecretName": "dsg9-test-res-password"
+          "name": "DSGROUP108 Test Researcher",
+          "samAccountName": "dsg108-test-res",
+          "passwordSecretName": "dsg108-test-res-password"
         }
       }
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS-DSG9",
-        "hostname": "RDS-DSG9",
-        "fqdn": "RDS-DSG9.dsgroup9.co.uk",
-        "ip": "10.100.65.250",
-        "npsSecretName": "dsg9-nps-secret"
+        "vmName": "RDS-DSG108",
+        "hostname": "RDS-DSG108",
+        "fqdn": "RDS-DSG108.dsgroup108.co.uk",
+        "ip": "10.212.1.250",
+        "npsSecretName": "dsg108-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1-DSG9",
-        "hostname": "RDSSH1-DSG9",
-        "fqdn": "RDSSH1-DSG9.dsgroup9.co.uk",
-        "ip": "10.100.65.249"
+        "vmName": "RDSSH1-DSG108",
+        "hostname": "RDSSH1-DSG108",
+        "fqdn": "RDSSH1-DSG108.dsgroup108.co.uk",
+        "ip": "10.212.1.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2-DSG9",
-        "hostname": "RDSSH2-DSG9",
-        "fqdn": "RDSSH2-DSG9.dsgroup9.co.uk",
-        "ip": "10.100.65.248"
+        "vmName": "RDSSH2-DSG108",
+        "hostname": "RDSSH2-DSG108",
+        "fqdn": "RDSSH2-DSG108.dsgroup108.co.uk",
+        "ip": "10.212.1.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS-DSG9_Server",
-          "allowedSources": "193.60.220.253",
-          "outboundInternet": "Deny"
+          "name": "NSG_RDS_Server",
+          "allowedSources": "Internet"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -247,24 +246,24 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATA-DSG9",
-      "hostname": "DATA-DSG9",
-      "fqdn": "DATA-DSG9.dsgroup9.co.uk",
-      "ip": "10.100.66.250"
+      "vmName": "DATA-DSG108",
+      "hostname": "DATA-DSG108",
+      "fqdn": "DATA-DSG108.dsgroup108.co.uk",
+      "ip": "10.212.2.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB-DSG9",
-        "hostname": "GITLAB-DSG9",
-        "fqdn": "GITLAB-DSG9.dsgroup9.co.uk",
-        "ip": "10.100.66.151",
-        "rootPasswordSecretName": "dsg9-gitlab-root-password"
+        "vmName": "GITLAB-DSG108",
+        "hostname": "GITLAB-DSG108",
+        "fqdn": "GITLAB-DSG108.dsgroup108.co.uk",
+        "ip": "10.212.2.151",
+        "rootPasswordSecretName": "dsg108-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD-DSG9",
-        "hostname": "HACKMD-DSG9",
-        "fqdn": "HACKMD-DSG9.dsgroup9.co.uk",
-        "ip": "10.100.66.152"
+        "vmName": "HACKMD-DSG108",
+        "hostname": "HACKMD-DSG108",
+        "fqdn": "HACKMD-DSG108.dsgroup108.co.uk",
+        "ip": "10.212.2.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
@@ -276,7 +275,7 @@
       "vmImageVersion": "0.1.2019082900",
       "admin": {
         "username": "dsgadmin",
-        "passwordSecretName": "dsg9-dsvm-admin-password"
+        "passwordSecretName": "dsg108-dsvm-admin-password"
       }
     }
   }

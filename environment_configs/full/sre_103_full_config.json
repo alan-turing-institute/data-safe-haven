@@ -94,12 +94,12 @@
       "rg": "RG_SHM_DNS"
     }
   },
-  "dsg": {
-    "subscriptionName": "Turing DSG - 6 - Adatum",
-    "id": "6",
-    "shortName": "dsg6",
+  "sre": {
+    "subscriptionName": "Turing SRE - 103 - STC",
+    "id": "103",
+    "shortName": "dsg103",
     "location": "uksouth",
-    "tier": "2",
+    "tier": "3",
     "adminSecurityGroupName": "Safe Haven Production Admins",
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
@@ -107,56 +107,56 @@
         "name": "kv-shm-pkg-mirrors-turing1"
       },
       "vnet": {
-        "name": "VNET_SHM_TURING1_PKG_MIRRORS_TIER2"
+        "name": "VNET_SHM_PKG_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": "10.20.2.21"
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": "10.20.2.20"
+        "ip": "10.20.3.20"
       }
     },
     "domain": {
-      "fqdn": "dsgroup6.co.uk",
-      "netbiosName": "DSGROUP6",
-      "dn": "DC=dsgroup6,DC=co,DC=uk",
+      "fqdn": "dsgroup103.co.uk",
+      "netbiosName": "DSGROUP103",
+      "dn": "DC=dsgroup103,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "name": "SG DSGROUP6 Server Administrators",
-          "description": "SG DSGROUP6 Server Administrators"
+          "name": "SG DSGROUP103 Server Administrators",
+          "description": "SG DSGROUP103 Server Administrators"
         },
         "researchUsers": {
-          "name": "SG DSGROUP6 Research Users",
-          "description": "SG DSGROUP6 Research Users"
+          "name": "SG DSGROUP103 Research Users",
+          "description": "SG DSGROUP103 Research Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_DSG_VNET",
-        "name": "VNET_DSG6",
-        "cidr": "10.100.40.0/21"
+        "name": "VNET_DSG103",
+        "cidr": "10.172.0.0/21"
       },
       "subnets": {
         "identity": {
           "name": "Subnet-Identity",
-          "prefix": "10.100.40",
-          "cidr": "10.100.40.0/24"
+          "prefix": "10.172.0",
+          "cidr": "10.172.0.0/24"
         },
         "rds": {
           "name": "Subnet-RDS",
-          "prefix": "10.100.41",
-          "cidr": "10.100.41.0/24"
+          "prefix": "10.172.1",
+          "cidr": "10.172.1.0/24"
         },
         "data": {
           "name": "Subnet-Data",
-          "prefix": "10.100.42",
-          "cidr": "10.100.42.0/24"
+          "prefix": "10.172.2",
+          "cidr": "10.172.2.0/24"
         },
         "gateway": {
           "name": "GatewaySubnet",
-          "prefix": "10.100.47",
-          "cidr": "10.100.47.0/27"
+          "prefix": "10.172.7",
+          "cidr": "10.172.7.0/27"
         }
       },
       "nsg": {
@@ -169,76 +169,75 @@
     "storage": {
       "artifacts": {
         "rg": "RG_DSG_ARTIFACTS",
-        "accountName": "dsg6artifacts"
+        "accountName": "dsg103artifacts"
       }
     },
     "keyVault": {
-      "name": "kv-turing1-dsg6",
+      "name": "kv-turing1-dsg103",
       "rg": "RG_DSG_SECRETS"
     },
     "dc": {
       "rg": "RG_DSG_DC",
-      "vmName": "DC-DSG6",
-      "hostname": "DC-DSG6",
-      "fqdn": "DC-DSG6.dsgroup6.co.uk",
-      "ip": "10.100.40.250",
+      "vmName": "DC-DSG103",
+      "hostname": "DC-DSG103",
+      "fqdn": "DC-DSG103.dsgroup103.co.uk",
+      "ip": "10.172.0.250",
       "admin": {
-        "usernameSecretName": "dsg6-dc-admin-username",
-        "passwordSecretName": "dsg6-dc-admin-password"
+        "usernameSecretName": "dsg103-dc-admin-username",
+        "passwordSecretName": "dsg103-dc-admin-password"
       }
     },
     "users": {
       "ldap": {
         "gitlab": {
-          "name": "DSGROUP6 Gitlab LDAP",
-          "samAccountName": "dsg6-gitlab-ldap",
-          "passwordSecretName": "dsg6-gitlab-ldap-password"
+          "name": "DSGROUP103 Gitlab LDAP",
+          "samAccountName": "dsg103-gitlab-ldap",
+          "passwordSecretName": "dsg103-gitlab-ldap-password"
         },
         "hackmd": {
-          "name": "DSGROUP6 HackMD LDAP",
-          "samAccountName": "dsg6-hackmd-ldap",
-          "passwordSecretName": "dsg6-hackmd-ldap-password"
+          "name": "DSGROUP103 HackMD LDAP",
+          "samAccountName": "dsg103-hackmd-ldap",
+          "passwordSecretName": "dsg103-hackmd-ldap-password"
         },
         "dsvm": {
-          "name": "DSGROUP6 DSVM LDAP",
-          "samAccountName": "dsg6-dsvm-ldap",
-          "passwordSecretName": "dsg6-dsvm-ldap-password"
+          "name": "DSGROUP103 DSVM LDAP",
+          "samAccountName": "dsg103-dsvm-ldap",
+          "passwordSecretName": "dsg103-dsvm-ldap-password"
         }
       },
       "researchers": {
         "test": {
-          "name": "DSGROUP6 Test Researcher",
-          "samAccountName": "dsg6-test-res",
-          "passwordSecretName": "dsg6-test-res-password"
+          "name": "DSGROUP103 Test Researcher",
+          "samAccountName": "dsg103-test-res",
+          "passwordSecretName": "dsg103-test-res-password"
         }
       }
     },
     "rds": {
       "gateway": {
-        "vmName": "RDS-DSG6",
-        "hostname": "RDS-DSG6",
-        "fqdn": "RDS-DSG6.dsgroup6.co.uk",
-        "ip": "10.100.41.250",
-        "npsSecretName": "dsg6-nps-secret"
+        "vmName": "RDS-DSG103",
+        "hostname": "RDS-DSG103",
+        "fqdn": "RDS-DSG103.dsgroup103.co.uk",
+        "ip": "10.172.1.250",
+        "npsSecretName": "dsg103-nps-secret"
       },
       "sessionHost1": {
-        "vmName": "RDSSH1-DSG6",
-        "hostname": "RDSSH1-DSG6",
-        "fqdn": "RDSSH1-DSG6.dsgroup6.co.uk",
-        "ip": "10.100.41.249"
+        "vmName": "RDSSH1-DSG103",
+        "hostname": "RDSSH1-DSG103",
+        "fqdn": "RDSSH1-DSG103.dsgroup103.co.uk",
+        "ip": "10.172.1.249"
       },
       "sessionHost2": {
-        "vmName": "RDSSH2-DSG6",
-        "hostname": "RDSSH2-DSG6",
-        "fqdn": "RDSSH2-DSG6.dsgroup6.co.uk",
-        "ip": "10.100.41.248"
+        "vmName": "RDSSH2-DSG103",
+        "hostname": "RDSSH2-DSG103",
+        "fqdn": "RDSSH2-DSG103.dsgroup103.co.uk",
+        "ip": "10.172.1.248"
       },
       "rg": "RG_DSG_RDS",
       "nsg": {
         "gateway": {
-          "name": "NSG_RDS-DSG6_Server",
-          "allowedSources": "193.60.220.253",
-          "outboundInternet": "Deny"
+          "name": "NSG_RDS_Server",
+          "allowedSources": "Internet"
         },
         "sessionHosts": {
           "name": "NSG_SessionHosts"
@@ -247,24 +246,24 @@
     },
     "dataserver": {
       "rg": "RG_DSG_DATA",
-      "vmName": "DATA-DSG6",
-      "hostname": "DATA-DSG6",
-      "fqdn": "DATA-DSG6.dsgroup6.co.uk",
-      "ip": "10.100.42.250"
+      "vmName": "DATA-DSG103",
+      "hostname": "DATA-DSG103",
+      "fqdn": "DATA-DSG103.dsgroup103.co.uk",
+      "ip": "10.172.2.250"
     },
     "linux": {
       "gitlab": {
-        "vmName": "GITLAB-DSG6",
-        "hostname": "GITLAB-DSG6",
-        "fqdn": "GITLAB-DSG6.dsgroup6.co.uk",
-        "ip": "10.100.42.151",
-        "rootPasswordSecretName": "dsg6-gitlab-root-password"
+        "vmName": "GITLAB-DSG103",
+        "hostname": "GITLAB-DSG103",
+        "fqdn": "GITLAB-DSG103.dsgroup103.co.uk",
+        "ip": "10.172.2.151",
+        "rootPasswordSecretName": "dsg103-gitlab-root-password"
       },
       "hackmd": {
-        "vmName": "HACKMD-DSG6",
-        "hostname": "HACKMD-DSG6",
-        "fqdn": "HACKMD-DSG6.dsgroup6.co.uk",
-        "ip": "10.100.42.152"
+        "vmName": "HACKMD-DSG103",
+        "hostname": "HACKMD-DSG103",
+        "fqdn": "HACKMD-DSG103.dsgroup103.co.uk",
+        "ip": "10.172.2.152"
       },
       "rg": "RG_DSG_LINUX",
       "nsg": "NSG_Linux_Servers"
@@ -276,7 +275,7 @@
       "vmImageVersion": "0.1.2019082900",
       "admin": {
         "username": "dsgadmin",
-        "passwordSecretName": "dsg6-dsvm-admin-password"
+        "passwordSecretName": "dsg103-dsvm-admin-password"
       }
     }
   }
