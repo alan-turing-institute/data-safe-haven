@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
   [string]$sreId
 )
 
@@ -7,6 +7,7 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
@@ -104,8 +105,8 @@ if ($sreResources -or $sreResourceGroups) {
         hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
         dsgResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     }
-    $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    Write-Output $result.Value
 
     # Remove SRE DNS records from SHM DC
     # ----------------------------------
@@ -117,7 +118,8 @@ if ($sreResources -or $sreResourceGroups) {
         rdsSubnetPrefix = "`"$($config.sre.network.subnets.rds.prefix)`""
         dataSubnetPrefix = "`"$($config.sre.network.subnets.data.prefix)`""
     }
-    $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    Write-Output $result.Value
 
 
     # Remove DSG AD Trust from SHM DC
@@ -128,7 +130,8 @@ if ($sreResources -or $sreResourceGroups) {
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
         dsgFqdn = "`"$($config.sre.domain.fqdn)`""
     }
-    $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+    Write-Output $result.Value
 
 
     # Remove RDS Gateway RADIUS Client from SHM NPS
@@ -138,7 +141,8 @@ if ($sreResources -or $sreResourceGroups) {
     $params = @{
         rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
     }
-    $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
+    Write-Output $result.Value
 
 
     # Remove RDS entries from SRE DNS Zone

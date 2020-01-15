@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
   [string]$sreId,
   [Parameter(Position=1, Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
   [string]$emailAddress = "dsgbuild@turing.ac.uk",

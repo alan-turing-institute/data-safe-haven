@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
   [string]$sreId,
   [Parameter(Position=1, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
   [string]$vmSize = (Read-Host -prompt "Enter VM size to use (or leave empty to use default)"),

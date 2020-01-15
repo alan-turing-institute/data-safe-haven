@@ -1,3 +1,4 @@
+Import-Module Az
 Import-Module $PSScriptRoot/Logging.psm1 -Force
 
 
@@ -85,8 +86,37 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
-# Create a managed disk
-# ---------------------
+# Create a key vault if it does not exist
+# ---------------------------------------
+function Deploy-KeyVault {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of disk to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
+    $keyVault = Get-AzKeyVault -VaultName $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($null -eq $keyVault) {
+        Add-LogMessage -Level Info "[ ] Creating key vault '$Name'"
+        $keyVault = New-AzKeyVault -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location
+        if ($?) {
+            Add-LogMessage -Level Success "Created key vault '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create key vault '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Key vault '$Name' already exists"
+    }
+    return $keyVault
+}
+Export-ModuleMember -Function Deploy-KeyVault
+
+
+# Create a managed disk if it does not exist
+# ------------------------------------------
 function Deploy-ManagedDisk {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of disk to deploy")]
@@ -117,6 +147,35 @@ function Deploy-ManagedDisk {
     return $disk
 }
 Export-ModuleMember -Function Deploy-ManagedDisk
+
+
+# Create network security group if it does not exist
+# --------------------------------------------------
+function Deploy-NetworkSecurityGroup {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that network security group '$Name' exists..."
+    $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating network security group '$Name'"
+        $nsg = New-AzNetworkSecurityGroup  -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created network security group '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create network security group '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Network security group '$Name' already exists"
+    }
+    return $nsg
+}
+Export-ModuleMember -Function Deploy-NetworkSecurityGroup
 
 
 # Create resource group if it does not exist
@@ -175,116 +234,6 @@ function Deploy-Subnet {
     return Get-AzSubnet -Name $Name -VirtualNetwork $VirtualNetwork
 }
 Export-ModuleMember -Function Deploy-Subnet
-
-
-# Create a virtual machine NIC
-# ----------------------------
-function Deploy-VirtualMachineNIC {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
-        $Subnet,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Private IP address for this NIC")]
-        $PrivateIpAddress,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
-    $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
-        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created VM network card '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create VM network card '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "VM network card '$Name' already exists"
-    }
-    return $vmNic
-}
-Export-ModuleMember -Function Deploy-VirtualMachineNIC
-
-
-# Create virtual network if it does not exist
-# ------------------------------------------
-function Deploy-VirtualNetwork {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
-        $AddressPrefix,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
-    $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
-        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created virtual network '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Virtual network '$Name' already exists"
-    }
-    return $vnet
-}
-Export-ModuleMember -Function Deploy-VirtualNetwork
-
-
-# Create subnet if it does not exist
-# ----------------------------------
-function Get-AzSubnet {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
-        $VirtualNetwork
-    )
-    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
-}
-Export-ModuleMember -Function Get-AzSubnet
-
-
-
-
-
-# Create network security group if it does not exist
-# --------------------------------------------------
-function Deploy-NetworkSecurityGroup {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that network security group '$Name' exists..."
-    $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating network security group '$Name'"
-        $nsg = New-AzNetworkSecurityGroup  -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created network security group '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create network security group '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "Network security group '$Name' already exists"
-    }
-    return $nsg
-}
-Export-ModuleMember -Function Deploy-NetworkSecurityGroup
 
 
 # Create storage account if it does not exist
@@ -410,9 +359,87 @@ function Deploy-UbuntuVirtualMachine {
 Export-ModuleMember -Function Deploy-UbuntuVirtualMachine
 
 
+# Create a virtual machine NIC
+# ----------------------------
+function Deploy-VirtualMachineNIC {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
+        $Subnet,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Private IP address for this NIC")]
+        $PrivateIpAddress,
+        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
+    $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
+        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created VM network card '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create VM network card '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "VM network card '$Name' already exists"
+    }
+    return $vmNic
+}
+Export-ModuleMember -Function Deploy-VirtualMachineNIC
+
+
+# Create virtual network if it does not exist
+# ------------------------------------------
+function Deploy-VirtualNetwork {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        $AddressPrefix,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
+    $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
+        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created virtual network '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Virtual network '$Name' already exists"
+    }
+    return $vnet
+}
+Export-ModuleMember -Function Deploy-VirtualNetwork
+
+
+# Create subnet if it does not exist
+# ----------------------------------
+function Get-AzSubnet {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
+        $VirtualNetwork
+    )
+    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+}
+Export-ModuleMember -Function Get-AzSubnet
+
+
 # Run remote shell script
 # -----------------------
-function Invoke-LoggedRemoteScript {
+function Invoke-RemoteScript {
     param(
         [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run locally")]
         $ScriptPath,
@@ -449,7 +476,6 @@ function Invoke-LoggedRemoteScript {
         $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
         $success = $?
     }
-    Write-Output $result.Value
     foreach ($statuscode in $result.Value) {
         $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
     }
@@ -463,4 +489,33 @@ function Invoke-LoggedRemoteScript {
     if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
     return $result
 }
-Export-ModuleMember -Function Invoke-LoggedRemoteScript
+Export-ModuleMember -Function Invoke-RemoteScript
+
+
+# Set key vault permissions to the group and remove the user who deployed it
+# --------------------------------------------------------------------------
+function Set-KeyVaultPermissions {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
+        $GroupName
+    )
+    Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
+    Set-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId (Get-AzADGroup -SearchString $GroupName)[0].Id `
+                               -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
+                               -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
+                               -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
+    $success = $?
+    Remove-AzKeyVaultAccessPolicy -VaultName $Name -UserPrincipalName (Get-AzContext).Account.Id
+    $success = $success -and $?
+    if ($success) {
+        Add-LogMessage -Level Success "Set correct access policies"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+    }
+}
+Export-ModuleMember -Function Set-KeyVaultPermissions
+
+
+

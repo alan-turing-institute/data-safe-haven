@@ -54,7 +54,8 @@ Deploy-ArmTemplate -TemplatePath "$templatePath" -Params $params -ResourceGroupN
 # -------------------------------------
 Add-LogMessage -Level Info "Setting OS language for: '$($config.nps.vmName)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
+Write-Output $result.Value
 
 
 # Run configuration script remotely
@@ -64,7 +65,8 @@ $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_
 $params = @{
     remoteDir = "`"C:\Installation`""
 }
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Switch back to original subscription

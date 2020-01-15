@@ -363,7 +363,8 @@ $params = @{
     storageContainerName = "`"$storageContainerName`""
     sasToken = "`"$artifactSasToken`""
 }
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Configure Active Directory remotely
@@ -384,7 +385,8 @@ $params = @{
     serverAdminName = "`"$dcNpsAdminUsername`""
     adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
 }
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Set the OS language to en-GB remotely
@@ -392,7 +394,8 @@ $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNa
 $scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Add-LogMessage -Level Info "Setting OS language for: $vmName..."
-    $_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    Write-Output $result.Value
 }
 
 
@@ -400,7 +403,8 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 # ------------------------
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Configure_Group_Policies.ps1"
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
+Write-Output $result.Value
 
 
 # Active directory delegation
@@ -411,7 +415,8 @@ $params = @{
     netbiosName = "`"$($config.domain.netbiosName)`""
     ldapUsersGroup = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
 }
-$_ = Invoke-LoggedRemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Switch back to original subscription

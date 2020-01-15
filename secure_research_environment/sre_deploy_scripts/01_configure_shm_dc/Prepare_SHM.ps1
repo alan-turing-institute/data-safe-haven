@@ -1,74 +1,44 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
   [string]$sreId
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
-# Get SRE config
-$config = Get-SreConfig($sreId);
+
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig($sreId)
 $originalContext = Get-AzContext
-
-# Directory for local and remote helper scripts
-$helperScriptDir = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" -Resolve
-
-# Switch to SRE subscription
-# --------------------------
-$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Ensure the resource group exists
-# --------------------------------
-Write-Host -ForegroundColor DarkCyan "Ensuring resource group '$($config.dsg.keyVault.rg)' exists..."
-$_ = New-AzResourceGroup -Name $config.dsg.keyVault.rg  -Location $config.dsg.location -Force
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
+# Create secrets resource group if it does not exist
+# --------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.location
 
 
 # Ensure the keyvault exists
 # --------------------------
-Write-Host -ForegroundColor DarkCyan "Ensuring key vault exists..."
-$keyVault = Get-AzKeyVault -VaultName $config.dsg.keyVault.name -ResourceGroupName $config.dsg.keyVault.rg
-if ($keyVault -ne $null) {
-  Write-Host -ForegroundColor DarkGreen " [o] key vault $($config.dsg.keyVault.name) already exists"
-} else {
-  New-AzKeyVault -Name $config.dsg.keyVault.name  -ResourceGroupName $config.dsg.keyVault.rg -Location $config.dsg.location -EnabledForDeployment
-  if ($?) {
-    Write-Host -ForegroundColor DarkGreen " [o] Created key vault $($config.dsg.keyVault.name)"
-  } else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed to create key vault $($config.dsg.keyVault.name)!"
-  }
-}
-
-# Update SRE keyvault permissions
-# -------------------------------
-$_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
-Write-Host -ForegroundColor DarkCyan "Updating SRE keyvault permissions..."
-try {
-    Set-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -ObjectId (Get-AzADGroup -SearchString $config.shm.adminSecurityGroupName)[0].Id -PermissionsToKeys Get, List, Update, Create, Import, Delete, Backup, Restore, Recover -PermissionsToSecrets Get, List, Set, Delete, Recover, Backup, Restore -PermissionsToCertificates Get, List, Delete, Create, Import, Update, Managecontacts, Getissuers, Listissuers, Setissuers, Deleteissuers, Manageissuers, Recover, Backup, Restore
-    Remove-AzKeyVaultAccessPolicy -VaultName $config.dsg.keyVault.name -UserPrincipalName (Get-AzContext).Account.Id
-    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} catch {
-    Write-Host -ForegroundColor DarkRed " [x] Failed! Please check the permissions for '$($config.dsg.keyVault.name)' manually."
-}
+$keyVault = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.adminSecurityGroupName
 
 
-# Switch to SHM subscription
-# --------------------------
-$_ = Set-AzContext -Subscription $config.shm.subscriptionName;
+# # Switch to SHM subscription
+# # --------------------------
+#
 
 # Retrieve passwords from the keyvault
-Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
-$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.hackmdLdapPassword
-$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.gitlabLdapPassword
-$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dsvmLdapPassword
-$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.testResearcherPassword
-
+# ------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
+$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
+$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
 # Encrypt passwords for passing to script
 $hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $gitlabPasswordEncrypted = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
@@ -76,63 +46,53 @@ $dsvmPasswordEncrypted = ConvertTo-SecureString $dsvmPassword -AsPlainText -Forc
 $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 
-# === Add DSG users and groups to SHM ====
-Write-Host -ForegroundColor DarkCyan "Adding SRE users and groups to SHM..."
-$scriptPath = Join-Path $helperScriptDir "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+# Add SRE users and groups to SHM
+# -------------------------------
+Add-LogMessage -Level Info " [ ] Adding SRE users and groups to SHM..."
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
-    dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
-    researchUserSgName = "`"$($config.dsg.domain.securityGroups.researchUsers.name)`""
-    researchUserSgDescription = "`"$($config.dsg.domain.securityGroups.researchUsers.description)`""
+    dsgFqdn = "`"$($config.sre.domain.fqdn)`""
+    researchUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+    researchUserSgDescription = "`"$($config.sre.domain.securityGroups.researchUsers.description)`""
     ldapUserSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
     securityOuPath = "`"$($config.shm.domain.securityOuPath)`""
     serviceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
     researchUserOuPath = "`"$($config.shm.domain.userOuPath)`""
-    hackmdSamAccountName = "`"$($config.dsg.users.ldap.hackmd.samAccountName)`""
-    hackmdName = "`"$($config.dsg.users.ldap.hackmd.name)`""
+    hackmdSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
+    hackmdName = "`"$($config.sre.users.ldap.hackmd.name)`""
     hackmdPasswordEncrypted = $hackmdPasswordEncrypted
-    gitlabSamAccountName = "`"$($config.dsg.users.ldap.gitlab.samAccountName)`""
-    gitlabName = "`"$($config.dsg.users.ldap.gitlab.name)`""
+    gitlabSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
+    gitlabName = "`"$($config.sre.users.ldap.gitlab.name)`""
     gitlabPasswordEncrypted = $gitlabPasswordEncrypted
-    dsvmSamAccountName = "`"$($config.dsg.users.ldap.dsvm.samAccountName)`""
-    dsvmName = "`"$($config.dsg.users.ldap.dsvm.name)`""
+    dsvmSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
+    dsvmName = "`"$($config.sre.users.ldap.dsvm.name)`""
     dsvmPasswordEncrypted = $dsvmPasswordEncrypted
-    testResearcherSamAccountName = "`"$($config.dsg.users.researchers.test.samAccountName)`""
-    testResearcherName = "`"$($config.dsg.users.researchers.test.name)`""
+    testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
+    testResearcherName = "`"$($config.sre.users.researchers.test.name)`""
     testResearcherPasswordEncrypted = $testResearcherPasswordEncrypted
 }
-$result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
 
 
-# Add DSG DNS entries to SHM
+# Add SRE DNS entries to SHM
 # --------------------------
-Write-Host -ForegroundColor DarkCyan "Adding SRE DNS records to SHM..."
-$scriptPath = Join-Path $helperScriptDir "Add_New_SRE_To_DNS_Remote.ps1"
+Add-LogMessage -Level Info " [ ] Adding SRE DNS records to SHM..."
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
-    dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
-    dsgDcIp = "`"$($config.dsg.dc.ip)`""
-    dsgDcName = "`"$($config.dsg.dc.hostname)`""
-    identitySubnetCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
-    rdsSubnetCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
-    dataSubnetCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
+    sreFqdn = "`"$($config.sre.domain.fqdn)`""
+    sreDcIp = "`"$($config.sre.dc.ip)`""
+    sreDcName = "`"$($config.sre.dc.hostname)`""
+    identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
+    rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
+    dataSubnetCidr = "`"$($config.sre.network.subnets.data.cidr)`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-if ($?) {
-  Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-  Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
+
 
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext;
-

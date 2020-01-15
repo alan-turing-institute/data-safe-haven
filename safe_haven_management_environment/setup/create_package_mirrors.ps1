@@ -167,7 +167,8 @@ function Resolve-CloudInit {
         cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
         "
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
-        $result = Invoke-LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+        $result = LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+        Write-Output $result.Value
         $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
     }
@@ -307,7 +308,8 @@ function Deploy-PackageMirror {
             #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $result = Invoke-LoggedRemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $result = Invoke-RemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            Write-Output $result.Value
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
@@ -329,7 +331,8 @@ function Deploy-PackageMirror {
             cat ~mirrordaemon/internal_mirror_ip_addresses.txt
             ls -alh ~mirrordaemon
             "
-            $_ = Invoke-LoggedRemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $result = Invoke-RemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            Write-Output $result.Value
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$vmName' already exists"

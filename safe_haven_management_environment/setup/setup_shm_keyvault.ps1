@@ -18,24 +18,28 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Create secrets resource group if it does not exist
-# -----------------------------------------------
+# --------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
-# Ensure the keyvault exists
-# --------------------------
-Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
-$keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
-if ($null -ne $keyVault) {
-    Add-LogMessage -Level InfoSuccess "Key vault $($config.keyVault.name) already exists"
-} else {
-    $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
-    if ($?) {
-        Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to create resource group $($config.keyVault.rg)!"
-    }
-}
+# Ensure the keyvault exists and set its access policies
+# ------------------------------------------------------
+$keyVault = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
+Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
+
+
+# Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
+# $keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
+# if ($null -ne $keyVault) {
+#     Add-LogMessage -Level InfoSuccess "Key vault $($config.keyVault.name) already exists"
+# } else {
+#     $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
+#     if ($?) {
+#         Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
+#     } else {
+#         Add-LogMessage -Level Fatal "Failed to create resource group $($config.keyVault.rg)!"
+#     }
+# }
 
 
 # Set correct access policies for key vault

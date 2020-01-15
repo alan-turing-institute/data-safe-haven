@@ -6,9 +6,9 @@
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
   $shmFqdn,
-  $dsgFqdn,
-  $dsgDcIp,
-  $dsgDcName,
+  $sreFqdn,
+  $sreDcIp,
+  $sreDcName,
   $identitySubnetCidr,
   $rdsSubnetCidr,
   $dataSubnetCidr
@@ -70,13 +70,13 @@ if (DNSZoneExists $dataSubnetCidr) {
 # Create conditional forwarder / zone delegation
 # ----------------------------------------------
 # Check whether the SRE fqdn ends with the SHM fqdn
-if ($dsgFqdn -match "$($shmFqdn)$") {
-  $childzone = $dsgFqdn -replace ".$($shmFqdn)$"
-  Write-Host " - Adding zone delegation record for SRE subdomain (domain: $dsgFqdn; SRE DC IP: $dsgDcIp)"
-  Add-DnsServerZoneDelegation -Name $shmFqdn -ChildZoneName $childzone -NameServer $dsgDcName -IPAddress $dsgDcIp
+if ($sreFqdn -match "$($shmFqdn)$") {
+  $childzone = $sreFqdn -replace ".$($shmFqdn)$"
+  Write-Host " - Adding zone delegation record for SRE subdomain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+  Add-DnsServerZoneDelegation -Name $shmFqdn -ChildZoneName $childzone -NameServer $sreDcName -IPAddress $sreDcIp
 } else {
-  Write-Host " - Adding conditional forwarder record for SRE domain (domain: $dsgFqdn; SRE DC IP: $dsgDcIp)"
-  Add-DnsServerConditionalForwarderZone -name $dsgFqdn -MasterServers $dsgDcIp -ReplicationScope "Forest"
+  Write-Host " - Adding conditional forwarder record for SRE domain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+  Add-DnsServerConditionalForwarderZone -name $sreFqdn -MasterServers $sreDcIp -ReplicationScope "Forest"
 }
 if ($?) {
   Write-Host " [o] Successfully created/updated record for SRE domain"
