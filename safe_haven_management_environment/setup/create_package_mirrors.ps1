@@ -4,7 +4,7 @@ param(
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
   [ValidateSet("2", "3")]
   [string]$tier,
-  [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed, use this string to distinguish them")]
+  [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
   [string]$internalMirrorName = "Internal"
 )
 
@@ -28,21 +28,22 @@ $_ = Deploy-ResourceGroup -Name $config.mirrors.rg -Location $config.location
 $_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
-# Set up the VNet for internal and external package mirrors
-# ---------------------------------------------------------
-$vnetName = "VNET_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_TIER$tier"
+# Common variable names
+# ---------------------
+$vnetName = "VNET_SHM_$($config.id.ToUpper())_PACKAGE_MIRRORS_TIER${tier}"
+$nsgInternalName = "NSG_SHM_$($config.id.ToUpper())_INTERNAL_PACKAGE_MIRRORS_TIER${tier}"
+$nsgExternalName = "NSG_SHM_$($config.id.ToUpper())_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}"
+$subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
+$subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $vnetIpTriplet = "10.20.$tier"
-$vnetIpRange = "$vnetIpTriplet.0/24"
-$vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $config.network.vnet.rg -AddressPrefix $vnetIpRange -Location $config.location
 
 
-# Set up the internal and external package mirror subnets
-# -------------------------------------------------------
+# Set up the VNet with subnets for internal and external package mirrors
+# ----------------------------------------------------------------------
+$vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $config.network.vnet.rg -AddressPrefix "$vnetIpTriplet.0/24" -Location $config.location
 # External subnet
-$subnetExternalName = "ExternalPackageMirrorsTier$($tier)Subnet"
 $subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
 # Internal subnet
-$subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | % { $_.AddressPrefix }
 $nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | % { "$vnetIpTriplet.$_/28" } | Where { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
 $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
@@ -50,7 +51,6 @@ $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetP
 
 # Set up the NSG for external package mirrors
 # -------------------------------------------
-$nsgExternalName = "NSG_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_EXTERNAL_TIER$tier"
 $nsgExternal = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreInboundRulesBelowHere" `
@@ -74,21 +74,20 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -SourceAddressPrefix * -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange *
 # Create or update external mirror rule
-Add-LogMessage -Level Info "Ensuring that the external mirrors can contact the '$($subnetInternal.AddressPrefix)' IP range"
 $destinationAddressPrefix = @($subnetInternal.AddressPrefix)
 $rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
 if ($rule) {
     $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Unique #| % { [string]$_ }
 }
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging `
                              -Name "RsyncToInternal" `
                              -Description "Allow ports 22 and 873 for rsync" `
                              -Priority 400 `
                              -Direction Outbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
                              -DestinationAddressPrefix $destinationAddressPrefix -DestinationPortRange 22,873
-$_ = Set-AzVirtualNetworkSubnetConfig -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternal.AddressPrefix -NetworkSecurityGroup $nsgExternal
-$_ = $vnetPkgMirrors | Set-AzVirtualNetwork
+$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternal.AddressPrefix -NetworkSecurityGroup $nsgExternal | Set-AzVirtualNetwork
+$subnetExternal = Get-AzSubnet -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
 } else {
@@ -98,7 +97,6 @@ if ($?) {
 
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
-$nsgInternalName = "NSG_SHM_" + $($config.id).ToUpper() + "_PKG_MIRRORS_INTERNAL_TIER$tier"
 $nsgInternal = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "RsyncFromExternal" `
@@ -128,8 +126,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix * -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange *
-$_ = Set-AzVirtualNetworkSubnetConfig -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternal.AddressPrefix -NetworkSecurityGroup $nsgInternal
-$_ = $vnetPkgMirrors | Set-AzVirtualNetwork
+$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternal.AddressPrefix -NetworkSecurityGroup $nsgInternal | Set-AzVirtualNetwork
+$subnetInternal = Get-AzSubnet -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
 } else {
@@ -139,7 +137,7 @@ if ($?) {
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
-$adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "mirroradmin"
+$adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername
 
 
 # Resolve the cloud init file, applying a whitelist if needed
@@ -168,11 +166,10 @@ function Resolve-CloudInit {
         #! /bin/bash
         cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
         "
-        $vmNameExternal = "$($($MirrorType).ToUpper())-MIRROR-EXTERNAL-TIER-$tier"
+        $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
         $result = Invoke-LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
-        Remove-Item $scriptFile
     }
 
 
@@ -231,21 +228,21 @@ function Deploy-PackageMirror {
 
     # Check whether the VM already exists
     # -----------------------------------
-    $vmName = "$($($MirrorType).ToUpper())-MIRROR-$($($MirrorDirection).ToUpper())-TIER-$tier"
-    $adminPasswordSecretName = ("shm-" + "$($config.id)".ToLower() + "-" + "$MirrorType".ToLower() + "-mirror-" + "$MirrorDirection".ToLower() + "-tier-$tier-admin-password")
+    $vmName = "$($MirrorType.ToUpper())-$($MirrorDirection.ToUpper())-MIRROR-TIER-$tier"
+    $adminPasswordSecretName = ("shm-" + "$($config.id)".ToLower() + "-package-mirror-" + "$MirrorType".ToLower() + "-" + "$MirrorDirection".ToLower() + "-tier-$tier-admin-password")
     $_ = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         # Deploy NIC and data disks
         # -------------------------
         $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.location
         $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.mirrors.pypi.diskSize["tier$tier"] -Type $config.mirrors.diskType -ResourceGroupName $config.mirrors.rg -Location $config.location
+        $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $subnet.NetworkSecurityGroup.Id }
 
         # Deploy the VM with access to the internet for configuration
         # -----------------------------------------------------------
         try {
             # Set temporary NSG rules
             Add-LogMessage -Level Info "Temporarily allowing outbound internet access from $privateIpAddress on ports 80, 443 and 3128"
-            $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $subnet.NetworkSecurityGroup.Id }
             Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                         -Name "ConfigurationOutboundTemporary" `
                                         -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" `
@@ -306,40 +303,14 @@ function Deploy-PackageMirror {
         # --------------------------------------------------------------------------------
         if ($MirrorDirection -eq "Internal") {
             # Get public key for internal server
-            # $scriptFile = New-TemporaryFile
-            # "#! /bin/bash
-            # ssh-keyscan 127.0.0.1 2> /dev/null
-            # " > $scriptFile
-            # $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $config.mirrors.rg -CommandId "RunShellScript" -ScriptPath $scriptFile.FullName
-            $script =
-            "#! /bin/bash
+            $script = "
+            #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $result = Invoke-LoggedRemoteScript -Name $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $result = Invoke-LoggedRemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
-            Remove-Item $scriptFile
 
             # Inform external server about the new internal server
-            # $scriptFile = New-TemporaryFile
-            # "#! /bin/bash
-            # echo 'Update known hosts on the external server to allow connections to the internal server...'
-            # mkdir -p ~mirrordaemon/.ssh
-            # echo '$internalFingerprint' >> ~mirrordaemon/.ssh/known_hosts
-            # ssh-keygen -H -f ~mirrordaemon/.ssh/known_hosts 2>&1
-            # chown mirrordaemon:mirrordaemon ~mirrordaemon/.ssh/known_hosts
-            # rm ~mirrordaemon/.ssh/known_hosts.old 2> /dev/null
-            # cat ~mirrordaemon/.ssh/known_hosts
-            # ls -alh ~mirrordaemon/.ssh/
-            # echo 'Update known IP addresses on the external server to schedule pushing to the internal server...'
-            # echo $privateIpAddress >> ~mirrordaemon/internal_mirror_ip_addresses.txt
-            # cp ~mirrordaemon/internal_mirror_ip_addresses.txt ~mirrordaemon/internal_mirror_ip_addresses.bak
-            # cat ~mirrordaemon/internal_mirror_ip_addresses.bak | sort | uniq > ~mirrordaemon/internal_mirror_ip_addresses.txt
-            # rm -f ~mirrordaemon/internal_mirror_ip_addresses.bak
-            # cat ~mirrordaemon/internal_mirror_ip_addresses.txt
-            # ls -alh ~mirrordaemon
-            # " > $scriptFile
-            # $_ = Invoke-LoggedRemoteScript -Shell "UnixShell" -ScriptPath $scriptFile.FullName -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg
-            # Remove-Item $scriptFile
             $script = "
             #! /bin/bash
             echo 'Update known hosts on the external server to allow connections to the internal server...'
@@ -359,7 +330,6 @@ function Deploy-PackageMirror {
             ls -alh ~mirrordaemon
             "
             $_ = Invoke-LoggedRemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-            Remove-Item $scriptFile
         }
     } else {
         Add-LogMessage -Level Success "Virtual machine '$vmName' already exists"

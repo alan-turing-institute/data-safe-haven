@@ -2,13 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Virtual_Network_Name": {
-            "type": "string"
-        },
         "P2S_VPN_Certificate": {
             "type": "string"
         },
-        "VNET_CIDR": {
+        "Shm_Id":{
             "type": "string"
         },
         "Subnet_Identity_Name": {
@@ -29,6 +26,12 @@
         "Subnet_Gateway_CIDR": {
             "type": "string"
         },
+        "Virtual_Network_Name": {
+            "type": "string"
+        },
+        "VNET_CIDR": {
+            "type": "string"
+        },
         "VNET_DNS1": {
             "type": "string"
         },
@@ -38,11 +41,12 @@
 
     },
     "variables": {
+        "nsgName": "[concat('NSG_SHM_', toUpper(parameters('Shm_Id')), '_SUBNET_IDENTITY')]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "NSG_SHM_SUBNET_IDENTITY",
+            "name": "[variables('nsgName')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -606,7 +610,7 @@
                         "properties": {
                             "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
                             },
                             "serviceEndpoints": [],
                             "delegations": []
@@ -617,7 +621,7 @@
                 "enableVmProtection": false
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
             ]
         },
         {
@@ -656,14 +660,14 @@
             "properties": {
                 "addressPrefix": "[parameters('Subnet_Identity_CIDR')]",
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
                 },
                 "serviceEndpoints": [],
                 "delegations": []
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'NSG_SHM_SUBNET_IDENTITY')]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
             ]
         }
     ]

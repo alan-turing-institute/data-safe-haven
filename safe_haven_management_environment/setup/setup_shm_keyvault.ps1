@@ -97,6 +97,14 @@ if ($?) {
     Add-LogMessage -Level Fatal "Failed to create AD sync password!"
 }
 
+# :: Package mirror administrator username
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+if ($?) {
+    Add-LogMessage -Level Success "Package mirror administrator username exists"
+} else {
+    Add-LogMessage -Level Fatal "Failed to create package mirror administrator username!"
+}
+
 
 # Switch back to original subscription
 # ------------------------------------

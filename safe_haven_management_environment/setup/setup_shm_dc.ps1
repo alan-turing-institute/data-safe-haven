@@ -290,15 +290,16 @@ $_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.locati
 # ---------------------------------
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    Virtual_Network_Name = $config.network.vnet.Name
     P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-    VNET_CIDR = $config.network.vnet.cidr
-    Subnet_Identity_Name = $config.network.subnets.identity.Name
-    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
-    Subnet_Web_Name = $config.network.subnets.web.Name
-    Subnet_Web_CIDR = $config.network.subnets.web.cidr
-    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
+    Shm_Id = "$($config.id)".ToLower()
     Subnet_Gateway_CIDR = $config.network.subnets.gateway.cidr
+    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
+    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
+    Subnet_Identity_Name = $config.network.subnets.identity.Name
+    Subnet_Web_CIDR = $config.network.subnets.web.cidr
+    Subnet_Web_Name = $config.network.subnets.web.Name
+    Virtual_Network_Name = $config.network.vnet.Name
+    VNET_CIDR = $config.network.vnet.cidr
     VNET_DNS1 = $config.dc.ip
     VNET_DNS2 = $config.dcb.ip
 }

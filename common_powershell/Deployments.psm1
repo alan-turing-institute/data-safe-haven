@@ -1,128 +1,88 @@
 Import-Module $PSScriptRoot/Logging.psm1 -Force
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
-function Deploy-ResourceGroup {
+# Create network security group rule if it does not exist
+# -------------------------------------------------------
+function Add-NetworkSecurityGroupRule {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
-    $resourceGroup = Get-AzResourceGroup -Name $Name -Location $Location -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating resource group '$Name'"
-        $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created resource group '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level Success "Resource group '$Name' already exists"
-    }
-    return $resourceGroup
-}
-Export-ModuleMember -Function Deploy-ResourceGroup
-
-
-# Create virtual network if it does not exist
-# ------------------------------------------
-function Deploy-VirtualNetwork {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
-        $AddressPrefix,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
+        $NetworkSecurityGroup,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "A description of the network security rule")]
+        $Description,
         [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        $Priority,
+        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Whether to apply to incoming or outgoing traffic")]
+        $Direction,
+        [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Whether network traffic is allowed or denied")]
+        $Access,
+        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Protocol,
+        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        $SourceAddressPrefix,
+        [Parameter(Position = 8, Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
+        $SourcePortRange,
+        [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        $DestinationAddressPrefix,
+        [Parameter(Position = 10, Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
+        $DestinationPortRange,
+        [Parameter(Position = 11, Mandatory = $false, HelpMessage = "Print verbose logging messages")]
+        [switch]$VerboseLogging = $false
     )
-    Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
-    $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
+    $_ = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
-        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" -Force
+        if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
+        $_ = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
+                                             -Name "$Name" `
+                                             -Description "$Description" `
+                                             -Priority $Priority `
+                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
         if ($?) {
-            Add-LogMessage -Level Success "Created virtual network '$Name'"
+            if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
         } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
+            if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
         }
     } else {
-        Add-LogMessage -Level Success "Virtual network '$Name' already exists"
+        if ($VerboseLogging) { Add-LogMessage -Level Success "Updating NSG rule '$Name'" }
+        $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
+                                             -Name "$Name" `
+                                             -Description "$Description" `
+                                             -Priority $Priority `
+                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
     }
-    return $vnet
 }
-Export-ModuleMember -Function Deploy-VirtualNetwork
+Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
 
-# Create subnet if it does not exist
-# ----------------------------------
-function Deploy-Subnet {
+# Deploy an ARM template and log the output
+# -----------------------------------------
+function Deploy-ArmTemplate {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
-        $VirtualNetwork,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
-        $AddressPrefix
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to template file")]
+        $TemplatePath,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Template parameters")]
+        $Params,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
     )
-    Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
-    Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
-    $subnetConfig = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        $subnetConfig = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
-        $VirtualNetwork | Set-AzVirtualNetwork
-        if ($?) {
-            Add-LogMessage -Level Success "Created subnet '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create subnet '$Name'!"
-        }
+    $templateName = Split-Path -Path "$TemplatePath" -LeafBase
+    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @params -Verbose -DeploymentDebugLogLevel ResponseContent
+    $result = $?
+    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
+    if ($result) {
+        Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
-        Add-LogMessage -Level Success "Subnet '$Name' already exists"
+        Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
+        throw "Template deployment has failed for '$templateName'. Please check the error message above before re-running this script."
     }
-    $subnet = ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
-    return $subnet
 }
-Export-ModuleMember -Function Deploy-Subnet
-
-
-# Create a virtual machine NIC
-# ----------------------------
-function Deploy-VirtualMachineNIC {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
-        $Subnet,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Private IP address for this NIC")]
-        $PrivateIpAddress,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
-    )
-    Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
-    $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
-        $vmIpConfig = New-AzNetworkInterfaceIpConfig -Name "ipconfig-$Name" -Subnet $subnet -PrivateIpAddress $PrivateIpAddress -Primary
-        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -IpConfiguration $vmIpConfig -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Created VM network card '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create VM network card '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level Success "VM network card '$Name' already exists"
-    }
-    return $vmNic
-}
-Export-ModuleMember -Function Deploy-VirtualMachineNIC
+Export-ModuleMember -Function Deploy-ArmTemplate
 
 
 # Create a managed disk
@@ -159,6 +119,145 @@ function Deploy-ManagedDisk {
 Export-ModuleMember -Function Deploy-ManagedDisk
 
 
+# Create resource group if it does not exist
+# ------------------------------------------
+function Deploy-ResourceGroup {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
+    $resourceGroup = Get-AzResourceGroup -Name $Name -Location $Location -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating resource group '$Name'"
+        $resourceGroup = New-AzResourceGroup -Name $Name -Location $Location -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created resource group '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level Success "Resource group '$Name' already exists"
+    }
+    return $resourceGroup
+}
+Export-ModuleMember -Function Deploy-ResourceGroup
+
+
+# Create subnet if it does not exist
+# ----------------------------------
+function Deploy-Subnet {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "A VirtualNetwork object to deploy into")]
+        $VirtualNetwork,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        $AddressPrefix
+    )
+    Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+    Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
+    $subnetConfig = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
+        $subnetConfig = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+        if ($?) {
+            Add-LogMessage -Level Success "Created subnet '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create subnet '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level Success "Subnet '$Name' already exists"
+    }
+    return Get-AzSubnet -Name $Name -VirtualNetwork $VirtualNetwork
+}
+Export-ModuleMember -Function Deploy-Subnet
+
+
+# Create a virtual machine NIC
+# ----------------------------
+function Deploy-VirtualMachineNIC {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
+        $Subnet,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Private IP address for this NIC")]
+        $PrivateIpAddress,
+        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
+    $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
+        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created VM network card '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create VM network card '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level Success "VM network card '$Name' already exists"
+    }
+    return $vmNic
+}
+Export-ModuleMember -Function Deploy-VirtualMachineNIC
+
+
+# Create virtual network if it does not exist
+# ------------------------------------------
+function Deploy-VirtualNetwork {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        $AddressPrefix,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
+    $vnet = Get-AzVirtualNetwork -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating virtual network '$Name'"
+        $vnet = New-AzVirtualNetwork -Name $Name -Location $Location -ResourceGroupName $ResourceGroupName -AddressPrefix "$AddressPrefix" -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Created virtual network '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level Success "Virtual network '$Name' already exists"
+    }
+    return $vnet
+}
+Export-ModuleMember -Function Deploy-VirtualNetwork
+
+
+# Create subnet if it does not exist
+# ----------------------------------
+function Get-AzSubnet {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
+        $VirtualNetwork
+    )
+    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+}
+Export-ModuleMember -Function Get-AzSubnet
+
+
+
+
+
 # Create network security group if it does not exist
 # --------------------------------------------------
 function Deploy-NetworkSecurityGroup {
@@ -186,65 +285,6 @@ function Deploy-NetworkSecurityGroup {
     return $nsg
 }
 Export-ModuleMember -Function Deploy-NetworkSecurityGroup
-
-
-# Create network security group rule if it does not exist
-# -------------------------------------------------------
-function Add-NetworkSecurityGroupRule {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of network security group to deploy into")]
-        $NetworkSecurityGroup,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Description,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Priority,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Direction,
-        [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Access,
-        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Protocol,
-        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $SourceAddressPrefix,
-        [Parameter(Position = 8, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $SourcePortRange,
-        [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $DestinationAddressPrefix,
-        [Parameter(Position = 10, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $DestinationPortRange,
-        [Parameter(Position = 11, Mandatory = $false, HelpMessage = "Print verbose logging messages")]
-        [switch]$VerboseLogging = $false
-    )
-    if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
-    $_ = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        if ($VerboseLogging) { Add-LogMessage -Level Info "[ ] Creating NSG rule '$Name'" }
-        $_ = Add-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority $Priority `
-                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
-        if ($?) {
-            if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
-        } else {
-            if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
-        }
-    } else {
-        if ($VerboseLogging) { Add-LogMessage -Level Success "Updating NSG rule '$Name'" }
-        $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
-                                             -Name "$Name" `
-                                             -Description "$Description" `
-                                             -Priority $Priority `
-                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
-    }
-}
-Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
 
 # Create storage account if it does not exist
@@ -302,87 +342,6 @@ function Deploy-StorageContainer {
     return $storageContainer
 }
 Export-ModuleMember -Function Deploy-StorageContainer
-
-
-# Deploy an ARM template and log the output
-# -----------------------------------------
-function Deploy-ArmTemplate {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to template file")]
-        $TemplatePath,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Template parameters")]
-        $Params,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
-    )
-    $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @params -Verbose -DeploymentDebugLogLevel ResponseContent
-    $result = $?
-    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
-    if ($result) {
-        Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
-        throw "Template deployment has failed for '$templateName'. Please check the error message above before re-running this script."
-    }
-}
-Export-ModuleMember -Function Deploy-ArmTemplate
-
-
-# Run remote shell script
-# -----------------------
-function Invoke-LoggedRemoteScript {
-    param(
-        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run locally")]
-        $ScriptPath,
-        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Name of VM to run on")]
-        $Script,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
-        $VMName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
-        [ValidateSet("PowerShell", "UnixShell")]
-        $Shell = "PowerShell",
-        [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
-        $Parameter = $null
-    )
-    # If we're given a script then create a file from it
-    if ($Script) {
-        $scriptFile = New-TemporaryFile
-        $Script | Out-File -FilePath $scriptFile.FullName
-        $ScriptPath = $scriptFile.FullName
-    }
-
-    # Setup the remote command
-    if ($Shell -eq "PowerShell") {
-        $commandId = "RunPowerShellScript"
-    } else {
-        $commandId = "RunShellScript"
-    }
-    # Run the remote command
-    if ($Parameter -eq $null) {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
-        $success = $?
-    } else {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
-        $success = $?
-    }
-    Write-Output $result.Value
-    foreach ($statuscode in $result.Value) {
-        $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
-    }
-    if ($success) {
-        Add-LogMessage -Level Success "Remote script execution succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Remote script execution failed!"
-        throw "Remote script execution has failed. Please check the error message above before re-running this script."
-    }
-    # Clean up any temporary scripts
-    if ($Script) { Remove-Item $scriptFile }
-    return $result
-}
-Export-ModuleMember -Function Invoke-LoggedRemoteScript
 
 
 # Create Linux virtual machine if it does not exist
@@ -449,3 +408,59 @@ function Deploy-UbuntuVirtualMachine {
     return $vm
 }
 Export-ModuleMember -Function Deploy-UbuntuVirtualMachine
+
+
+# Run remote shell script
+# -----------------------
+function Invoke-LoggedRemoteScript {
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run locally")]
+        $ScriptPath,
+        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Name of VM to run on")]
+        $Script,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
+        $VMName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Type of script to run")]
+        [ValidateSet("PowerShell", "UnixShell")]
+        $Shell = "PowerShell",
+        [Parameter(Mandatory = $false, HelpMessage = "(Optional) script parameters")]
+        $Parameter = $null
+    )
+    # If we're given a script then create a file from it
+    $tmpScriptFile = $null
+    if ($Script) {
+        $tmpScriptFile = New-TemporaryFile
+        $Script | Out-File -FilePath $tmpScriptFile.FullName
+        $ScriptPath = $tmpScriptFile.FullName
+    }
+    # Setup the remote command
+    if ($Shell -eq "PowerShell") {
+        $commandId = "RunPowerShellScript"
+    } else {
+        $commandId = "RunShellScript"
+    }
+    # Run the remote command
+    if ($Parameter -eq $null) {
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
+        $success = $?
+    } else {
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
+        $success = $?
+    }
+    Write-Output $result.Value
+    foreach ($statuscode in $result.Value) {
+        $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
+    }
+    if ($success) {
+        Add-LogMessage -Level Success "Remote script execution succeeded"
+    } else {
+        Add-LogMessage -Level Failure "Remote script execution failed!"
+        throw "Remote script execution has failed. Please check the error message above before re-running this script."
+    }
+    # Clean up any temporary scripts
+    if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
+    return $result
+}
+Export-ModuleMember -Function Invoke-LoggedRemoteScript
