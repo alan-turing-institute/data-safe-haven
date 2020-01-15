@@ -12,7 +12,7 @@ $config = Get-SreConfig($sreId);
 $originalContext = Get-AzContext
 
 # Directory for local and remote helper scripts
-$helperScriptDir = Join-Path $PSScriptRoot "helper_scripts" "Prepare_SHM" -Resolve
+$helperScriptDir = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" -Resolve
 
 # Switch to SRE subscription
 # --------------------------
@@ -78,7 +78,7 @@ $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPasswor
 
 # === Add DSG users and groups to SHM ====
 Write-Host -ForegroundColor DarkCyan "Adding SRE users and groups to SHM..."
-$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+$scriptPath = Join-Path $helperScriptDir "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
     researchUserSgName = "`"$($config.dsg.domain.securityGroups.researchUsers.name)`""
@@ -113,7 +113,7 @@ Write-Output $result.Value
 # Add DSG DNS entries to SHM
 # --------------------------
 Write-Host -ForegroundColor DarkCyan "Adding SRE DNS records to SHM..."
-$scriptPath = Join-Path $helperScriptDir "remote_scripts" "Add_New_SRE_To_DNS_Remote.ps1"
+$scriptPath = Join-Path $helperScriptDir "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
     dsgFqdn = "`"$($config.dsg.domain.fqdn)`""
