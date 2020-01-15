@@ -7,10 +7,11 @@
   - Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
 - Microsoft Remote Desktop
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
-- Azure CLI (bash)
-  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 - OpenSSL
   - Install using your package manager of choice
+
+<!-- - Azure CLI (bash)
+  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
 
 
 
@@ -503,28 +504,28 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first SRE.
 
 
-### Prerequisites
+<!-- ### Prerequisites
 Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script makes use of the `--output none` option, which is only available in version `2.0.55` and above.
   - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
-  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
 
 ### Deploying package mirrors
-1. Ensure you are logged into the Azure CLI (bash) with the commands:
+<!-- 1. Ensure you are logged into the Azure CLI (bash) with the commands:
    ```bash
    az login
    az account list
-   ```
-2. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
+   ``` -->
+1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-3. From a clone of the data-safe-haven repository, deploy package mirrors (depending on which tiers of SRE you want to support) using the following commands (where `<SHM ID>` is the one defined in the config file):
+2. From a clone of the data-safe-haven repository, deploy package mirrors (depending on which tiers of SRE you want to support) using the following commands (where `<SHM ID>` is the one defined in the config file):
    ```pwsh
    cd safe_haven_management_environment/setup
    ./create_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
    ```
-4. This will take **a few minutes** to run.
+3. This will take **around 20 minutes** to run.
 
 
 ## 6. Tear down package mirrors

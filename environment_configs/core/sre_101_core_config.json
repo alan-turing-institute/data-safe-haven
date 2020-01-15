@@ -1,12 +1,12 @@
 {
-    "subscriptionName": "Turing SRE – Sandbox",
+    "subscriptionName": "Turing SRE - 101 - Turkcell",
     "adminSecurityGroupName" : "Safe Haven Production Admins",
-    "dsgId": "100",
+    "sreId": "101",
     "shmId": "turing1",
     "tier": "2",
-    "domain": "dsgroup100.co.uk",
-    "netbiosName": "DSGROUP100",
-    "ipPrefix": "10.150.0",
+    "domain": "dsgroup101.co.uk",
+    "netbiosName": "DSGROUP101",
+    "ipPrefix": "10.158.0",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"

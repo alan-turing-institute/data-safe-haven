@@ -1,7 +1,7 @@
 {
     "subscriptionName": "Turing SRE - 109 - Cochrane",
     "adminSecurityGroupName": "Safe Haven Production Admins",
-    "dsgId": "109",
+    "sreId": "109",
     "shmId": "turing1",
     "tier": "2",
     "domain": "dsgroup109.co.uk",

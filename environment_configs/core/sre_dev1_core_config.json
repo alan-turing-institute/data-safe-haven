@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Development SRE1",
-    "dsgId": "dev1",
+    "sreId": "dev1",
     "shmId": "dev1",
     "tier": "2",
     "domain": "dsgroupdev1.co.uk",

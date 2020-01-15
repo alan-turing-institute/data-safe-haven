@@ -1,12 +1,12 @@
 {
-    "subscriptionName": "Turing SRE - 107 - Ofstead",
+    "subscriptionName": "Turing SRE - 102 - Telus",
     "adminSecurityGroupName": "Safe Haven Production Admins",
-    "dsgId": "107",
+    "sreId": "102",
     "shmId": "turing1",
     "tier": "2",
-    "domain": "dsgroup107.co.uk",
-    "netbiosName": "DSGROUP107",
-    "ipPrefix": "10.204.0",
+    "domain": "dsgroup102.co.uk",
+    "netbiosName": "DSGROUP102",
+    "ipPrefix": "10.166.0",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"

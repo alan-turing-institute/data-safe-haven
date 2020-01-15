@@ -194,93 +194,93 @@ function TrimToLength {
 Export-ModuleMember -Function TrimToLength
 
 
-# Add a new DSG configuration
+# Add a new SRE configuration
 # ---------------------------
 function Add-SreConfig {
     param(
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (usually a number e.g '9' for DSG9)")]
+        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (usually a short string e.g '9' for SRE 9)")]
         $sreId
     )
     $configRootDir = Get-ConfigRootDir
-    $dsgCoreConfigFilename = "dsg_" + $sreId + "_core_config.json"
-    $dsgCoreConfigPath = Join-Path $configRootDir "core" $dsgCoreConfigFilename -Resolve
-    $dsgFullConfigFilename = "dsg_" + $sreId + "_full_config.json"
-    $dsgFullConfigPath = Join-Path $configRootDir "full" $dsgFullConfigFilename
+    $sreCoreConfigFilename = "sre_" + $sreId + "_core_config.json"
+    $sreCoreConfigPath = Join-Path $configRootDir "core" $sreCoreConfigFilename -Resolve
+    $sreFullConfigFilename = "sre_" + $sreId + "_full_config.json"
+    $sreFullConfigPath = Join-Path $configRootDir "full" $sreFullConfigFilename
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
+    $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
 
     # Use hash table for config
     $config = [ordered]@{
-        shm = Get-ShmFullConfig ($dsgConfigBase.shmId)
-        dsg = [ordered]@{}
+        shm = Get-ShmFullConfig ($sreConfigBase.shmId)
+        sre = [ordered]@{}
     }
 
-    # === DSG configuration parameters ===
-    $dsg = [ordered]@{}
-    # Import minimal DSG config parameters from JSON config file - we can derive the rest from these
-    $dsgConfigBase = Get-Content -Path $dsgCoreConfigPath -Raw | ConvertFrom-Json
-    $dsgPrefix = $dsgConfigBase.ipPrefix
+    # === SRE configuration parameters ===
+    $sre = [ordered]@{}
+    # Import minimal SRE config parameters from JSON config file - we can derive the rest from these
+    $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
+    $srePrefix = $sreConfigBase.ipPrefix
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
-    $dsgPrefixOctets = $dsgPrefix.Split('.')
-    $dsgBasePrefix = $dsgPrefixOctets[0] + "." + $dsgPrefixOctets[1]
-    $dsgThirdOctet = $dsgPrefixOctets[2]
+    $srePrefixOctets = $srePrefix.Split('.')
+    $sreBasePrefix = $srePrefixOctets[0] + "." + $srePrefixOctets[1]
+    $sreThirdOctet = $srePrefixOctets[2]
 
     # --- Top-level config ---
-    $config.dsg.subscriptionName = $dsgConfigBase.subscriptionName
-    $config.dsg.Id = $dsgConfigBase.dsgId
-    if ($config.dsg.id.length -gt 7) {
-        Write-Host "dsgId should be 7 characters or fewer if possible. '$($config.dsg.id)' is $($config.dsg.id.length) characters long."
+    $config.sre.subscriptionName = $sreConfigBase.subscriptionName
+    $config.sre.Id = $sreConfigBase.sreId
+    if ($config.sre.id.length -gt 7) {
+        Write-Host "sreId should be 7 characters or fewer if possible. '$($config.sre.id)' is $($config.sre.id.length) characters long."
     }
-    $config.dsg.shortName = "sre-" + $dsgConfigBase.dsgId.ToLower()
-    $config.dsg.location = $config.shm.location
-    $config.dsg.tier = $dsgConfigBase.tier
-    $config.dsg.adminSecurityGroupName = $dsgConfigBase.adminSecurityGroupName
+    $config.sre.shortName = "sre-" + $sreConfigBase.sreId.ToLower()
+    $config.sre.location = $config.shm.location
+    $config.sre.tier = $sreConfigBase.tier
+    $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
 
 
     # --- Package mirror config ---
-    $config.dsg.mirrors = [ordered]@{
+    $config.sre.mirrors = [ordered]@{
         vnet = [ordered]@{}
         cran = [ordered]@{}
         pypi = [ordered]@{}
     }
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if (@("2","3").Contains($config.dsg.tier)) {
-        $config.dsg.mirrors.vnet.Name = "VNET_SHM_" + $($config.shm.Id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.dsg.tier
-        $config.dsg.mirrors.pypi.ip = "10.20." + $config.dsg.tier + ".20"
-        $config.dsg.mirrors.cran.ip = "10.20." + $config.dsg.tier + ".21"
-    } elseif (@("0","1").Contains($config.dsg.tier)) {
-        $config.dsg.mirrors.vnet.Name = $null
-        $config.dsg.mirrors.pypi.ip = $null
-        $config.dsg.mirrors.cran.ip = $null
+    if (@("2","3").Contains($config.sre.tier)) {
+        $config.sre.mirrors.vnet.Name = "VNET_SHM_" + $($config.shm.Id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.sre.tier
+        $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
+        $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
+    } elseif (@("0","1").Contains($config.sre.tier)) {
+        $config.sre.mirrors.vnet.Name = $null
+        $config.sre.mirrors.pypi.ip = $null
+        $config.sre.mirrors.cran.ip = $null
     } else {
-        Write-Error ("Tier '" + $config.dsg.tier + "' not supported (NOTE: Tier must be provided as a string in the core DSG config.)")
+        Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
         return
     }
 
     # -- Domain config ---
     $netbiosNameMaxLength = 15
-    if ($dsgConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
-        throw "Netbios name must be no more than 15 characters long. '$($dsgConfigBase.netbiosName)' is $($dsgConfigBase.netbiosName.length) characters long."
+    if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
+        throw "Netbios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
     }
-    $config.dsg.domain = [ordered]@{}
-    $config.dsg.domain.fqdn = $dsgConfigBase.domain
-    $config.dsg.domain.netbiosName = $dsgConfigBase.netbiosName
-    $config.dsg.domain.dn = "DC=" + ($config.dsg.domain.fqdn.Replace('.',',DC='))
-    $config.dsg.domain.securityGroups = [ordered]@{
+    $config.sre.domain = [ordered]@{}
+    $config.sre.domain.fqdn = $sreConfigBase.domain
+    $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
+    $config.sre.domain.dn = "DC=" + ($config.sre.domain.fqdn.Replace('.',',DC='))
+    $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
-            Name = ("SG " + $config.dsg.domain.netbiosName + " Server Administrators")
-            description = $config.dsg.domain.securityGroups.serverAdmins.Name
+            Name = ("SG " + $config.sre.domain.netbiosName + " Server Administrators")
+            description = $config.sre.domain.securityGroups.serverAdmins.Name
         }
         researchUsers = [ordered]@{
-            Name = "SG " + $config.dsg.domain.netbiosName + " Research Users"
-            description = $config.dsg.domain.securityGroups.researchUsers.Name
+            Name = "SG " + $config.sre.domain.netbiosName + " Research Users"
+            description = $config.sre.domain.securityGroups.researchUsers.Name
         }
     }
 
     # --- Network config ---
-    $config.dsg.network = [ordered]@{
+    $config.sre.network = [ordered]@{
         vnet = [ordered]@{}
         subnets = [ordered]@{
             identity = [ordered]@{}
@@ -292,199 +292,199 @@ function Add-SreConfig {
             data = [ordered]@{}
         }
     }
-    $config.dsg.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.dsg.network.vnet.Name = "VNET_SRE_" + $($config.dsg.Id).ToUpper()
-    $config.dsg.network.vnet.cidr = $dsgBasePrefix + "." + $dsgThirdOctet + ".0/21"
-    $config.dsg.network.subnets.identity.Name = "IdentitySubnet"
-    $config.dsg.network.subnets.identity.prefix = $dsgBasePrefix + "." + $dsgThirdOctet
-    $config.dsg.network.subnets.identity.cidr = $config.dsg.network.subnets.identity.prefix + ".0/24"
-    $config.dsg.network.subnets.rds.Name = "RDSSubnet"
-    $config.dsg.network.subnets.rds.prefix = $dsgBasePrefix + "." + ([int]$dsgThirdOctet + 1)
-    $config.dsg.network.subnets.rds.cidr = $config.dsg.network.subnets.rds.prefix + ".0/24"
-    $config.dsg.network.subnets.data.Name = "SharedDataSubnet"
-    $config.dsg.network.subnets.data.prefix = $dsgBasePrefix + "." + ([int]$dsgThirdOctet + 2)
-    $config.dsg.network.subnets.data.cidr = $config.dsg.network.subnets.data.prefix + ".0/24"
+    $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
+    $config.sre.network.vnet.Name = "VNET_SRE_" + $($config.sre.Id).ToUpper()
+    $config.sre.network.vnet.cidr = $sreBasePrefix + "." + $sreThirdOctet + ".0/21"
+    $config.sre.network.subnets.identity.Name = "IdentitySubnet"
+    $config.sre.network.subnets.identity.prefix = $sreBasePrefix + "." + $sreThirdOctet
+    $config.sre.network.subnets.identity.cidr = $config.sre.network.subnets.identity.prefix + ".0/24"
+    $config.sre.network.subnets.rds.Name = "RDSSubnet"
+    $config.sre.network.subnets.rds.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 1)
+    $config.sre.network.subnets.rds.cidr = $config.sre.network.subnets.rds.prefix + ".0/24"
+    $config.sre.network.subnets.data.Name = "SharedDataSubnet"
+    $config.sre.network.subnets.data.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 2)
+    $config.sre.network.subnets.data.cidr = $config.sre.network.subnets.data.prefix + ".0/24"
     # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
-    $config.dsg.network.subnets.gateway.Name = "GatewaySubnet"
-    $config.dsg.network.subnets.gateway.prefix = $dsgBasePrefix + "." + ([int]$dsgThirdOctet + 7)
-    $config.dsg.network.subnets.gateway.cidr = $config.dsg.network.subnets.gateway.prefix + ".0/27"
-    $config.dsg.network.nsg.data.rg = "RG_SRE_WEBAPPS"
-    $config.dsg.network.nsg.data.Name = "NSG_SRE_WEBAPPS"
+    $config.sre.network.subnets.gateway.Name = "GatewaySubnet"
+    $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
+    $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
+    $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
+    $config.sre.network.nsg.data.Name = "NSG_SRE_WEBAPPS"
 
     # --- Storage config --
-    $config.dsg.storage = [ordered]@{
+    $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = "RG_SRE_ARTIFACTS"
-            accountName = "sre" + $($config.dsg.id).ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
+            accountName = "sre" + $($config.sre.id).ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $config.sre.subscriptionName) | TrimToLength 24
         }
     }
 
     # --- Secrets ---
-    $config.dsg.keyVault = [ordered]@{
-        Name = "kv-" + $config.shm.Id + "-sre-" + $($config.dsg.Id).ToLower()
+    $config.sre.keyVault = [ordered]@{
+        Name = "kv-" + $config.shm.Id + "-sre-" + $($config.sre.Id).ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
-            dcAdminPassword = $config.dsg.shortName + '-dc-admin-password'
-            dcAdminUsername = $config.dsg.shortName + '-dc-admin-username'
-            dsvmAdminPassword = $config.dsg.shortName + "-dsvm-admin-password"
-            dsvmAdminUsername = $config.dsg.shortName + "-dsvm-admin-username"
-            dsvmDbAdminPassword = $config.dsg.shortName + "-dsvm-pgdb-admin-password"
-            dsvmDbReaderPassword = $config.dsg.shortName + "-dsvm-pgdb-reader-password"
-            dsvmDbWriterPassword = $config.dsg.shortName + "-dsvm-pgdb-writer-password"
-            dsvmLdapPassword = $config.dsg.shortName + "-dsvm-ldap-password"
-            gitlabLdapPassword = $config.dsg.shortName + "-gitlab-ldap-password"
-            gitlabRootPassword = $config.dsg.shortName + "-gitlab-root-password"
-            gitlabUserPassword = $config.dsg.shortName + "-gitlab-user-password"
-            hackmdLdapPassword = $config.dsg.shortName + "-hackmd-ldap-password"
-            hackmdUserPassword = $config.dsg.shortName + "-hackmd-user-password"
-            letsEncryptCertificate = $config.dsg.shortName + "-lets-encrypt-certificate"
-            testResearcherPassword = $config.dsg.shortName + "-test-researcher-password"
+            dcAdminPassword = $config.sre.shortName + '-dc-admin-password'
+            dcAdminUsername = $config.sre.shortName + '-dc-admin-username'
+            dsvmAdminPassword = $config.sre.shortName + "-dsvm-admin-password"
+            dsvmAdminUsername = $config.sre.shortName + "-dsvm-admin-username"
+            dsvmDbAdminPassword = $config.sre.shortName + "-dsvm-pgdb-admin-password"
+            dsvmDbReaderPassword = $config.sre.shortName + "-dsvm-pgdb-reader-password"
+            dsvmDbWriterPassword = $config.sre.shortName + "-dsvm-pgdb-writer-password"
+            dsvmLdapPassword = $config.sre.shortName + "-dsvm-ldap-password"
+            gitlabLdapPassword = $config.sre.shortName + "-gitlab-ldap-password"
+            gitlabRootPassword = $config.sre.shortName + "-gitlab-root-password"
+            gitlabUserPassword = $config.sre.shortName + "-gitlab-user-password"
+            hackmdLdapPassword = $config.sre.shortName + "-hackmd-ldap-password"
+            hackmdUserPassword = $config.sre.shortName + "-hackmd-user-password"
+            letsEncryptCertificate = $config.sre.shortName + "-lets-encrypt-certificate"
+            testResearcherPassword = $config.sre.shortName + "-test-researcher-password"
         }
     }
 
     # --- Domain controller ---
-    $config.dsg.dc = [ordered]@{}
-    $config.dsg.dc.rg = "RG_SRE_DC"
-    $config.dsg.dc.vmName = "DC-SRE-" + $($config.dsg.Id).ToUpper() | TrimToLength 15
-    $config.dsg.dc.vmSize = "Standard_DS2_v2"
-    $config.dsg.dc.hostname = $config.dsg.dc.vmName
-    $config.dsg.dc.fqdn = $config.dsg.dc.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.dc.ip = $config.dsg.network.subnets.identity.prefix + ".250"
+    $config.sre.dc = [ordered]@{}
+    $config.sre.dc.rg = "RG_SRE_DC"
+    $config.sre.dc.vmName = "DC-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.dc.vmSize = "Standard_DS2_v2"
+    $config.sre.dc.hostname = $config.sre.dc.vmName
+    $config.sre.dc.fqdn = $config.sre.dc.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.dc.ip = $config.sre.network.subnets.identity.prefix + ".250"
 
     # --- Domain users ---
-    $config.dsg.users = [ordered]@{
+    $config.sre.users = [ordered]@{
         ldap = [ordered]@{
             gitlab = [ordered]@{
-                Name = $config.dsg.domain.netbiosName + " Gitlab LDAP"
-                samAccountName = "gitlabldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+                Name = $config.sre.domain.netbiosName + " Gitlab LDAP"
+                samAccountName = "gitlabldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
             hackmd = [ordered]@{
-                Name = $config.dsg.domain.netbiosName + " HackMD LDAP"
-                samAccountName = "hackmdldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+                Name = $config.sre.domain.netbiosName + " HackMD LDAP"
+                samAccountName = "hackmdldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
             dsvm = [ordered]@{
-                Name = $config.dsg.domain.netbiosName + " DSVM LDAP"
-                samAccountName = "dsvmldap" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+                Name = $config.sre.domain.netbiosName + " DSVM LDAP"
+                samAccountName = "dsvmldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
         }
         researchers = [ordered]@{
             test = [ordered]@{
-                Name = $config.dsg.domain.netbiosName + " Test Researcher"
-                samAccountName = "testresrch" + $dsgConfigBase.dsgId.ToLower() | TrimToLength 20
+                Name = $config.sre.domain.netbiosName + " Test Researcher"
+                samAccountName = "testresrch" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
         }
     }
 
     # --- RDS Servers ---
-    $config.dsg.rds = [ordered]@{
+    $config.sre.rds = [ordered]@{
         gateway = [ordered]@{}
         sessionHost1 = [ordered]@{}
         sessionHost2 = [ordered]@{}
     }
-    $config.dsg.rds.rg = "RG_SRE_RDS"
-    $config.dsg.rds.nsg = [ordered]@{
+    $config.sre.rds.rg = "RG_SRE_RDS"
+    $config.sre.rds.nsg = [ordered]@{
         gateway = [ordered]@{}
     }
-    $config.dsg.rds.nsg.gateway.Name = "NSG_RDS-DSG" + $config.dsg.Id + "_Server"
+    $config.sre.rds.nsg.gateway.Name = "NSG_RDS_SRE" + ($config.sre.Id).ToUpper + "_SERVER"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
-    if ($dsgConfigBase.rdsAllowedSources -eq "default") {
-        if (@("3","4").Contains($config.dsg.tier)) {
-            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.240"
-        } elseif ($config.dsg.tier -eq "2") {
-            $config.dsg.rds.nsg.gateway.allowedSources = "193.60.220.253"
-        } elseif (@("0","1").Contains($config.dsg.tier)) {
-            $config.dsg.rds.nsg.gateway.allowedSources = "Internet"
+    if ($sreConfigBase.rdsAllowedSources -eq "default") {
+        if (@("3","4").Contains($config.sre.tier)) {
+            $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.240"
+        } elseif ($config.sre.tier -eq "2") {
+            $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.253"
+        } elseif (@("0","1").Contains($config.sre.tier)) {
+            $config.sre.rds.nsg.gateway.allowedSources = "Internet"
         }
     } else {
-        $config.dsg.rds.nsg.gateway.allowedSources = $dsgConfigBase.rdsAllowedSources
+        $config.sre.rds.nsg.gateway.allowedSources = $sreConfigBase.rdsAllowedSources
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
-    if ($dsgConfigBase.rdsInternetAccess -eq "default") {
-        if (@("2","3","4").Contains($config.dsg.tier)) {
-            $config.dsg.rds.nsg.gateway.outboundInternet = "Deny"
-        } elseif (@("0","1").Contains($config.dsg.tier)) {
-            $config.dsg.rds.nsg.gateway.outboundInternet = "Allow"
+    if ($sreConfigBase.rdsInternetAccess -eq "default") {
+        if (@("2","3","4").Contains($config.sre.tier)) {
+            $config.sre.rds.nsg.gateway.outboundInternet = "Deny"
+        } elseif (@("0","1").Contains($config.sre.tier)) {
+            $config.sre.rds.nsg.gateway.outboundInternet = "Allow"
         }
     } else {
-        $config.dsg.rds.nsg.gateway.outboundInternet = $dsgConfigBase.rdsInternetAccess
+        $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
-    $config.dsg.rds.gateway.vmName = "RDG-SRE-" + $($config.dsg.Id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.gateway.vmSize = "Standard_DS2_v2"
-    $config.dsg.rds.gateway.hostname = $config.dsg.rds.gateway.vmName
-    $config.dsg.rds.gateway.fqdn = $config.dsg.rds.gateway.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.rds.gateway.ip = $config.dsg.network.subnets.rds.prefix + ".250"
-    $config.dsg.rds.gateway.npsSecretName = "sre-" + $($config.dsg.Id).ToLower() + "-nps-secret"
-    $config.dsg.rds.sessionHost1.vmName = "APP-SRE-" + $($config.dsg.Id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.sessionHost1.vmSize = "Standard_D4s_v3"
-    $config.dsg.rds.sessionHost1.hostname = $config.dsg.rds.sessionHost1.vmName
-    $config.dsg.rds.sessionHost1.fqdn = $config.dsg.rds.sessionHost1.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.rds.sessionHost1.ip = $config.dsg.network.subnets.rds.prefix + ".249"
-    $config.dsg.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.dsg.Id).ToUpper() | TrimToLength 15
-    $config.dsg.rds.sessionHost2.vmSize = "Standard_D4s_v3"
-    $config.dsg.rds.sessionHost2.hostname = $config.dsg.rds.sessionHost2.vmName
-    $config.dsg.rds.sessionHost2.fqdn = $config.dsg.rds.sessionHost2.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.rds.sessionHost2.ip = $config.dsg.network.subnets.rds.prefix + ".248"
+    $config.sre.rds.gateway.vmName = "RDG-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.gateway.vmSize = "Standard_DS2_v2"
+    $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
+    $config.sre.rds.gateway.fqdn = $config.sre.rds.gateway.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
+    $config.sre.rds.gateway.npsSecretName = "sre-" + $($config.sre.Id).ToLower() + "-nps-secret"
+    $config.sre.rds.sessionHost1.vmName = "APP-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.sessionHost1.vmSize = "Standard_D4s_v3"
+    $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
+    $config.sre.rds.sessionHost1.fqdn = $config.sre.rds.sessionHost1.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
+    $config.sre.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.sessionHost2.vmSize = "Standard_D4s_v3"
+    $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
+    $config.sre.rds.sessionHost2.fqdn = $config.sre.rds.sessionHost2.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.sessionHost2.ip = $config.sre.network.subnets.rds.prefix + ".248"
 
     # --- Secure servers ---
 
     # Data server
-    $config.dsg.dataserver = [ordered]@{}
-    $config.dsg.dataserver.rg = "RG_SRE_DATA"
-    $config.dsg.dataserver.vmName = "DSV-SRE-" + $($config.dsg.Id).ToUpper() | TrimToLength 15
-    $config.dsg.dataserver.vmSize = "Standard_DS2_v2"
-    $config.dsg.dataserver.hostname = $config.dsg.dataserver.vmName
-    $config.dsg.dataserver.fqdn = $config.dsg.dataserver.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.dataserver.ip = $config.dsg.network.subnets.data.prefix + ".250"
+    $config.sre.dataserver = [ordered]@{}
+    $config.sre.dataserver.rg = "RG_SRE_DATA"
+    $config.sre.dataserver.vmName = "DSV-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.dataserver.vmSize = "Standard_DS2_v2"
+    $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
+    $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
-    $config.dsg.linux = [ordered]@{
+    $config.sre.linux = [ordered]@{
         gitlab = [ordered]@{}
         hackmd = [ordered]@{}
     }
-    $config.dsg.linux.rg = $config.dsg.network.nsg.data.rg
-    $config.dsg.linux.nsg = $config.dsg.network.nsg.data.Name
-    $config.dsg.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.dsg.Id).ToUpper()
-    $config.dsg.linux.gitlab.vmSize = "Standard_D2s_v3"
-    $config.dsg.linux.gitlab.hostname = $config.dsg.linux.gitlab.vmName
-    $config.dsg.linux.gitlab.fqdn = $config.dsg.linux.gitlab.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.linux.gitlab.ip = $config.dsg.network.subnets.data.prefix + ".151"
-    $config.dsg.linux.hackmd.vmName = "HACKMD-SRE-" + $($config.dsg.Id).ToUpper()
-    $config.dsg.linux.hackmd.vmSize = "Standard_D2s_v3"
-    $config.dsg.linux.hackmd.hostname = $config.dsg.linux.hackmd.vmName
-    $config.dsg.linux.hackmd.fqdn = $config.dsg.linux.hackmd.hostname + "." + $config.dsg.domain.fqdn
-    $config.dsg.linux.hackmd.ip = $config.dsg.network.subnets.data.prefix + ".152"
+    $config.sre.linux.rg = $config.sre.network.nsg.data.rg
+    $config.sre.linux.nsg = $config.sre.network.nsg.data.Name
+    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.sre.Id).ToUpper()
+    $config.sre.linux.gitlab.vmSize = "Standard_D2s_v3"
+    $config.sre.linux.gitlab.hostname = $config.sre.linux.gitlab.vmName
+    $config.sre.linux.gitlab.fqdn = $config.sre.linux.gitlab.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.linux.gitlab.ip = $config.sre.network.subnets.data.prefix + ".151"
+    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-" + $($config.sre.Id).ToUpper()
+    $config.sre.linux.hackmd.vmSize = "Standard_D2s_v3"
+    $config.sre.linux.hackmd.hostname = $config.sre.linux.hackmd.vmName
+    $config.sre.linux.hackmd.fqdn = $config.sre.linux.hackmd.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.linux.hackmd.ip = $config.sre.network.subnets.data.prefix + ".152"
 
     # Compute VMs
-    $config.dsg.dsvm = [ordered]@{}
-    $config.dsg.dsvm.rg = "RG_SRE_COMPUTE"
-    $config.dsg.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
+    $config.sre.dsvm = [ordered]@{}
+    $config.sre.dsvm.rg = "RG_SRE_COMPUTE"
+    $config.sre.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
-    $config.dsg.dsvm.vmSizeDefault = "Standard_B2ms"
-    $config.dsg.dsvm.vmImageType = $dsgConfigBase.computeVmImageType
-    $config.dsg.dsvm.vmImageVersion = $dsgConfigBase.computeVmImageVersion
-    $config.dsg.dsvm.osdisk = [ordered]@{
+    $config.sre.dsvm.vmSizeDefault = "Standard_B2ms"
+    $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
+    $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
+    $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "60"
     }
-    $config.dsg.dsvm.datadisk = [ordered]@{
+    $config.sre.dsvm.datadisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "512"
     }
-    $config.dsg.dsvm.homedisk = [ordered]@{
+    $config.sre.dsvm.homedisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "128"
     }
 
     # --- Boot diagnostics config ---
-    $config.dsg.bootdiagnostics = [ordered]@{
-        rg = $config.dsg.storage.artifacts.rg
-        accountName = "sre" + "$($config.dsg.Id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $config.dsg.subscriptionName) | TrimToLength 24
+    $config.sre.bootdiagnostics = [ordered]@{
+        rg = $config.sre.storage.artifacts.rg
+        accountName = "sre" + "$($config.sre.Id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $config.sre.subscriptionName) | TrimToLength 24
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     Write-Host $jsonOut
-    Out-File -FilePath $dsgFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
+    Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig
 
@@ -495,9 +495,9 @@ function Get-SreConfig {
     param(
         [string]$sreId
     )
-    # Read DSG config from file
+    # Read SRE config from file
     $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve;
-    $configFilename = "dsg_" + $sreId + "_full_config.json";
+    $configFilename = "sre_" + $sreId + "_full_config.json";
     $configPath = Join-Path $configRootDir $configFilename -Resolve;
     $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
     return $config

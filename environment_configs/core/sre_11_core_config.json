@@ -1,7 +1,7 @@
 {
     "subscriptionName": "Turing DSG - 11 - DTSL2Anthrax",
     "adminSecurityGroupName": "Safe Haven Production Admins",
-    "dsgId": "11",
+    "sreId": "11",
     "shmId": "turing1",
     "tier": "2",
     "domain": "dsgroup11.co.uk",

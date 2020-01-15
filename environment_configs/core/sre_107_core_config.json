@@ -1,12 +1,12 @@
 {
-    "subscriptionName": "Turing SRE -105 - Roche",
+    "subscriptionName": "Turing SRE - 107 - Ofstead",
     "adminSecurityGroupName": "Safe Haven Production Admins",
-    "dsgId": "105",
+    "sreId": "107",
     "shmId": "turing1",
     "tier": "2",
-    "domain": "dsgroup105.co.uk",
-    "netbiosName": "DSGROUP105",
-    "ipPrefix": "10.188.0",
+    "domain": "dsgroup107.co.uk",
+    "netbiosName": "DSGROUP107",
+    "ipPrefix": "10.204.0",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019082900"

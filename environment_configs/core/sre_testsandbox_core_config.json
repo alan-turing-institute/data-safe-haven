@@ -1,7 +1,7 @@
 {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "dsgId": "sandbox",
+    "sreId": "sandbox",
     "shmId": "testa",
     "tier": "2",
     "domain": "sandbox.dsgroupdev.co.uk",
