@@ -47,7 +47,7 @@ try {
     $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
     $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
-        Add-LogMessage -Level Success "Found existing CA certificate"
+        Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
         # Remove any previous certificate with the same name
         # --------------------------------------------------
@@ -116,7 +116,7 @@ try {
     Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
     $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
     if ($vpnClientCertificate) {
-        Add-LogMessage -Level Success "Found existing client certificate"
+        Add-LogMessage -Level InfoSuccess "Found existing client certificate"
     } else {
         # Remove any previous certificate with the same name
         # --------------------------------------------------

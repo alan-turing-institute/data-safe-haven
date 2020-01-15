@@ -47,7 +47,7 @@ function Add-NetworkSecurityGroupRule {
             if ($VerboseLogging) { Add-LogMessage -Level Fatal "Failed to create NSG rule '$Name'!" }
         }
     } else {
-        if ($VerboseLogging) { Add-LogMessage -Level Success "Updating NSG rule '$Name'" }
+        if ($VerboseLogging) { Add-LogMessage -Level InfoSuccess "Updating NSG rule '$Name'" }
         $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
                                              -Name "$Name" `
                                              -Description "$Description" `
@@ -112,7 +112,7 @@ function Deploy-ManagedDisk {
             Add-LogMessage -Level Fatal "Failed to create managed disk '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Managed disk '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Managed disk '$Name' already exists"
     }
     return $disk
 }
@@ -139,7 +139,7 @@ function Deploy-ResourceGroup {
             Add-LogMessage -Level Fatal "Failed to create resource group '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Resource group '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Resource group '$Name' already exists"
     }
     return $resourceGroup
 }
@@ -170,7 +170,7 @@ function Deploy-Subnet {
             Add-LogMessage -Level Fatal "Failed to create subnet '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Subnet '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Subnet '$Name' already exists"
     }
     return Get-AzSubnet -Name $Name -VirtualNetwork $VirtualNetwork
 }
@@ -203,7 +203,7 @@ function Deploy-VirtualMachineNIC {
             Add-LogMessage -Level Fatal "Failed to create VM network card '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "VM network card '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "VM network card '$Name' already exists"
     }
     return $vmNic
 }
@@ -234,7 +234,7 @@ function Deploy-VirtualNetwork {
             Add-LogMessage -Level Fatal "Failed to create virtual network '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Virtual network '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Virtual network '$Name' already exists"
     }
     return $vnet
 }
@@ -280,7 +280,7 @@ function Deploy-NetworkSecurityGroup {
             Add-LogMessage -Level Fatal "Failed to create network security group '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Network security group '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Network security group '$Name' already exists"
     }
     return $nsg
 }
@@ -309,7 +309,7 @@ function Deploy-StorageAccount {
             Add-LogMessage -Level Fatal "Failed to create storage account '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Storage account '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Storage account '$Name' already exists"
     }
     return $storageAccount
 }
@@ -337,7 +337,7 @@ function Deploy-StorageContainer {
             throw "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
     } else {
-        Add-LogMessage -Level Success "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
+        Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
     }
     return $storageContainer
 }
@@ -403,7 +403,7 @@ function Deploy-UbuntuVirtualMachine {
             Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'!"
         }
     } else {
-        Add-LogMessage -Level Success "Virtual machine '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
     }
     return $vm
 }

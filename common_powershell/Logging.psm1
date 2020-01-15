@@ -6,7 +6,7 @@ function Add-LogMessage {
         [ValidateNotNullOrEmpty()]
         [string]$Message,
         [Parameter(Mandatory = $false)]
-        [ValidateSet("Error", "Warning", "Info", "Success", "Failure", "Fatal")]
+        [ValidateSet("Error", "Warning", "Info", "Success", "Failure", "InfoSuccess", "Fatal")]
         [string]$Level = "Info"
     )
     # Format date for logging
@@ -28,6 +28,9 @@ function Add-LogMessage {
         }
         "Failure" {
             Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"
+        }
+        "InfoSuccess" {
+            Write-Host -ForegroundColor DarkCyan "$FormattedDate [SUCCESS]: [`u{2714}] $Message"
         }
         "Fatal" {
             Write-Host -ForegroundColor DarkRed "$FormattedDate [FAILURE]: [x] $Message"

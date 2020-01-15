@@ -332,7 +332,7 @@ function Deploy-PackageMirror {
             $_ = Invoke-LoggedRemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
         }
     } else {
-        Add-LogMessage -Level Success "Virtual machine '$vmName' already exists"
+        Add-LogMessage -Level InfoSuccess "Virtual machine '$vmName' already exists"
     }
 }
 

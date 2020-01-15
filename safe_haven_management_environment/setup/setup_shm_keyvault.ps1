@@ -27,7 +27,7 @@ $_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
 $keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
 if ($null -ne $keyVault) {
-    Add-LogMessage -Level Success "Key vault $($config.keyVault.name) already exists"
+    Add-LogMessage -Level InfoSuccess "Key vault $($config.keyVault.name) already exists"
 } else {
     $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
     if ($?) {
