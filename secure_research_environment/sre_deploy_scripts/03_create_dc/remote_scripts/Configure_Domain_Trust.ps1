@@ -11,7 +11,7 @@ Param(
     [parameter(HelpMessage="Enter username of an admin")]
     [ValidateNotNullOrEmpty()]
     [String]$sreDcAdminUsername,
-    [parameter(HelpMessage="Enter password of an admin")]
+    [parameter(HelpMessage="Enter encrypted password of an admin")]
     [ValidateNotNullOrEmpty()]
     [String]$sreDcAdminPasswordEncrypted
 )
@@ -22,7 +22,7 @@ $sreDcAdminPassword = [System.Runtime.InteropServices.marshal]::PtrToStringAuto(
 
 # Connect to remote domain
 Write-Host "Connecting to remote domain..."
-$remoteConnection = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
+$remoteDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
 if ($?) {
     Write-Host " [o] Succeeded"
 } else {
@@ -30,8 +30,8 @@ if ($?) {
 }
 
 # Access remote domain
-Write-Host "Accessing remote domain..."
-$remoteDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteConnection)
+Write-Host "Accessing remote domain '$sreFqdn'..."
+$remoteDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteDirectoryContext)
 if ($?) {
     Write-Host " [o] Succeeded"
 } else {
@@ -40,17 +40,17 @@ if ($?) {
 
 # Access local domain
 Write-Host "Accessing local domain..."
-$localDomain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+$localDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
 if ($?) {
     Write-Host " [o] Succeeded"
 } else {
     Write-Host " [x] Failed!"
 }
 
-# Ensure that trust relationship exists
+# Checking whether that trust relationship exists
 Write-Host "Ensuring that trust relationship exists..."
 $relationshipExists = $false
-foreach($relationship in $localDomain.GetAllTrustRelationships()) {
+foreach($relationship in $localDomainConnection.GetAllTrustRelationships()) {
     if (($relationship.TargetName -eq $sreFqdn) -and ($relationship.TrustDirection -eq "Bidirectional")){
       $relationshipExists = $true
     }
@@ -60,7 +60,7 @@ if($relationshipExists) {
     Write-Host " [o] Bidirectional trust relationship already exists"
 } else {
     Write-Host "Creating new trust relationship..."
-    $localDomain.CreateTrustRelationship($remoteDomainConnection, "Bidirectional")
+    $localDomainConnection.CreateTrustRelationship($remoteDomainConnection, "Bidirectional")
     if ($?) {
         Write-Host " [o] Succeeded"
     } else {

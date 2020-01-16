@@ -2,19 +2,49 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "SRE ID": {
-            "type": "string",
+        "Administrator_Password": {
+            "type": "securestring",
             "metadata": {
-                "description": "Enter ID for SRE e.g. 'testsandbox'"
+                "description": "Enter name for VM Administrator Password"
             }
         },
-        "DC Name": {
+        "Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for VM Administrator"
+            }
+        },
+        "Artifacts_Location": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the URL of the blob storage where the artifacts are held"
+            }
+        },
+        "Artifacts_Location_SAS_Token": {
+            "type": "securestring",
+            "metadata": {
+                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
+            }
+        },
+        "BootDiagnostics_Account_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of storage account used for boot diagnostics"
+            }
+        },
+        "DC_IP_Address": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter IP address for VM, must end in 250 e.g. 10.250.x.250"
+            }
+        },
+        "DC_VM_Name": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC VM e.g. DC-SRE-SANDBOX"
             }
         },
-        "VM Size": {
+        "DC_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_DS2_v2",
             "allowedValues": [
@@ -26,90 +56,59 @@
                 "description": "Select size of VM"
             }
         },
-        "IP Address": {
-            "type": "string",
-            "defaultValue": "10.250.x.250",
-            "metadata": {
-                "description": "Enter IP address for VM, must end in 250"
-            }
-        },
-        "Administrator User": {
+        "Domain_Name":{
             "type": "string",
             "metadata": {
-                "description": "Enter name for VM Administrator"
+                "Description": "Enter the correct public domain name"
             }
         },
-        "Administrator Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for VM Administrator Password"
-            }
-        },
-        "Virtual Network Name": {
+        "Domain_NetBios_Name": {
             "type": "string",
-            "defaultValue": "DSG_DSGROUPX_VNET1",
+            "metadata": {
+                "Description": "Enter the correct NetBIOS Name"
+            }
+        },
+        "SRE_ID": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter ID for SRE e.g. 'sandbox'"
+            }
+        },
+        "Virtual_Network_Name": {
+            "type": "string",
             "metadata": {
                 "description": "Enter name of virtual network to provision this VM"
             }
         },
-        "Virtual Network Resource Group": {
+        "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
                 "description": "Enter name of resource group that is assoicated with the virtual network above"
             }
         },
-        "Virtual Network Subnet": {
+        "Virtual_Network_Subnet": {
             "type": "string",
-            "defaultValue": "Subnet-Identity",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }
-        },
-        "Artifacts Location": {
-            "type": "string",
-            "defaultValue": "https://dsgxartifacts.blob.core.windows.net",
-            "metadata": {
-                "description": "Enter the URL of the blob storage where the artifacts are held"
-            }
-        },
-        "Artifacts Location SAS Token": {
-            "type": "securestring",
-            "metadata": {
-                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
-            }
-        },
-        "Domain Name":{
-            "type": "string",
-            "defaultValue": "DSGROUPx.CO.UK",
-            "metadata": {
-                "Description": "Enter the correct public domain name"
-            }
-        },
-        "NetBIOS Name":{
-            "type": "string",
-            "defaultValue": "DSGROUPx",
-            "metadata": {
-                "Description": "Enter the correct NetBIOS name"
             }
         }
     },
     "variables": {
-        "nic": "[concat(parameters('DC Name'), '-', 'NIC')]",
-        "diagStorageAccountName": "[substring(concat('dcbootdiag', parameters('SRE ID'), uniqueString(subscription().subscriptionId), uniqueString(resourceGroup().id)), 0, 24)]",
-        "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]",
-        "datadisk": "[concat(parameters('DC Name'),'-DATA-DISK')]"
+        "nic": "[concat(parameters('DC_VM_Name'), '-', 'NIC')]",
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
+        "datadisk": "[concat(parameters('DC_VM_Name'),'-DATA-DISK')]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('DC Name')]",
+            "name": "[parameters('DC_VM_Name')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('VM Size')]"
+                    "vmSize": "[parameters('DC_VM_Size')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -120,7 +119,7 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('DC Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('DC_VM_Name'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
@@ -144,9 +143,9 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('DC Name')]",
-                    "adminUsername": "[parameters('Administrator User')]",
-                    "adminPassword": "[parameters('Administrator Password')]",
+                    "computerName": "[parameters('DC_VM_Name')]",
+                    "adminUsername": "[parameters('Administrator_User')]",
+                    "adminPassword": "[parameters('Administrator_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -166,13 +165,12 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]"
             ],
             "resources": [
                 {
@@ -181,7 +179,7 @@
                     "apiVersion": "2018-06-01",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC Name'))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -189,20 +187,20 @@
                         "typeHandlerVersion": "2.19",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "ModulesUrl": "[concat(parameters('Artifacts Location'), parameters('Artifacts Location SAS Token'))]",
+                            "ModulesUrl": "[concat(parameters('Artifacts_Location'), parameters('Artifacts_Location_SAS_Token'))]",
                             "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
                             "Properties": {
-                                "DomainName": "[parameters('Domain Name')]",
-                                "DomainNetBIOSName": "[parameters('NetBIOS Name')]",
+                                "DomainName": "[parameters('Domain_Name')]",
+                                "DomainNetBIOSName": "[parameters('Domain_NetBios_Name')]",
                                 "AdminCreds": {
-                                    "UserName": "[parameters('Administrator User')]",
+                                    "UserName": "[parameters('Administrator_User')]",
                                     "Password": "PrivateSettingsRef:AdminPassword"
                                 }
                             }
                         },
                         "protectedSettings": {
                             "Items": {
-                                "AdminPassword": "[parameters('Administrator Password')]"
+                                "AdminPassword": "[parameters('Administrator_Password')]"
                             }
                         }
                     }
@@ -220,7 +218,7 @@
                     {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('IP Address')]",
+                            "privateIPAddress": "[parameters('DC_IP_Address')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
                                 "id": "[variables('subnet')]"
@@ -242,42 +240,8 @@
             "dependsOn": []
         },
         {
-            "type": "Microsoft.Storage/storageAccounts",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "Storage",
-            "name": "[variables('diagStorageAccountName')]",
-            "apiVersion": "2018-07-01",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "scale": null,
-            "properties": {
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": false,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "enabled": true
-                        },
-                        "blob": {
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                }
-            },
-            "dependsOn": []
-        },
-        {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('DC Name'), '/', 'bginfo')]",
+            "name": "[concat(parameters('DC_VM_Name'), '/', 'bginfo')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "scale": null,
@@ -288,7 +252,7 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
             ]
         }
     ]

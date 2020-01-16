@@ -4,16 +4,18 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
 
-# Get SRE config
-# --------------
-$config = Get-SreConfig($sreId);
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set constants used in this script
@@ -22,50 +24,33 @@ $artifactsFolderNameConfig = "sre-dc-configuration"
 $artifactsFolderNameCreate = "sre-dc-ad-setup-scripts"
 $dcCreationZipFileName = "dc-create.zip"
 $remoteUploadDir = "C:\Installation"
-$storageAccountLocation = $config.dsg.location
-$storageAccountName = $config.dsg.storage.artifacts.accountName
-$storageAccountRg = $config.dsg.storage.artifacts.rg
-$storageAccountSubscription = $config.dsg.subscriptionName
-
-
-# Switch to SRE subscription
-# --------------------------
-$_ = Set-AzContext -Subscription $storageAccountSubscription;
 
 
 # Retrieve passwords from the keyvault
 # ------------------------------------
-Write-Host -ForegroundColor DarkCyan "Creating/retrieving user passwords..."
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.dsg.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsg.keyVault.name -SecretName $config.dsg.keyVault.secretNames.dcAdminPassword
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 
 
-# Create storage account if it doesn't exist
-# ------------------------------------------
-Write-Host -ForegroundColor DarkCyan "Ensuring that storage account '$storageAccountName' exists..."
-$_ = New-AzResourceGroup -Name $storageAccountRg -Location $storageAccountLocation -Force;
-$storageAccount = Get-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -ErrorVariable notExists -ErrorAction SilentlyContinue
-if($notExists) {
-    Write-Host -ForegroundColor DarkCyan " - creating storage account '$storageAccountName'..."
-    $storageAccount = New-AzStorageAccount -Name $storageAccountName -ResourceGroupName $storageAccountRg -Location $storageAccountLocation -SkuName "Standard_GRS" -Kind "StorageV2"
-}
+# Ensure that storage resource group and storage account exist
+# ------------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
+$storageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.accountName -ResourceGroupName $config.sre.storage.artifacts.rg -Location $config.sre.location
 
 
 # Create blob storage containers
 # ------------------------------
-Write-Host -ForegroundColor DarkCyan "Creating blob storage containers in storage account '$storageAccountName'..."
-ForEach ($containerName in ($artifactsFolderNameConfig, $artifactsFolderNameCreate)) {
-    if(-not (Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" })){
-        Write-Host -ForegroundColor DarkCyan " - creating container '$containerName'..."
-        $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context;
-    }
+Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
+foreach ($containerName in ($artifactsFolderNameConfig, $artifactsFolderNameCreate)) {
+    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
     $blobs = @(Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context)
     $numBlobs = $blobs.Length
     if($numBlobs -gt 0){
-        Write-Host -ForegroundColor DarkCyan " - deleting $numBlobs blobs aready in container '$containerName'..."
+        Add-LogMessage -Level Info "Deleting $numBlobs blobs aready in container '$containerName'..."
         $blobs | ForEach-Object {Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $storageAccount.Context -Force}
         while($numBlobs -gt 0){
-            Write-Host -ForegroundColor DarkCyan " - waiting for deletion of $numBlobs remaining blobs..."
+            Add-LogMessage -Level Info "Waiting for deletion of $numBlobs remaining blobs..."
             Start-Sleep -Seconds 10
             $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $storageAccount.Context).Length
         }
@@ -75,191 +60,234 @@ ForEach ($containerName in ($artifactsFolderNameConfig, $artifactsFolderNameCrea
 
 # Upload artifacts for configuring the DC
 # ---------------------------------------
-Write-Host -ForegroundColor DarkCyan "Uploading DC configuration files to storage account '$storageAccountName'..."
+Add-LogMessage -Level Info "Uploading DC configuration files to storage account '$($config.sre.storage.artifacts.accountName)'..."
 ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName),
                              ($artifactsFolderNameConfig, "GPOs.zip"),
                              ($artifactsFolderNameConfig, "StartMenuLayoutModification.xml"))) {
     $artifactsFolderName, $artifactsFileName = $folderFilePair
-    Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File "$PSScriptRoot/artifacts/$artifactsFolderName/$artifactsFileName" -Force
+    $_ = Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File "$PSScriptRoot/artifacts/$artifactsFolderName/$artifactsFileName" -Force
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Uploaded '$artifactsFileName' to '$artifactsFolderName'"
+        Add-LogMessage -Level Success "Uploaded '$artifactsFileName' to '$artifactsFolderName'"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to upload '$artifactsFileName'!"
+        Add-LogMessage -Level Fatal "Failed to upload '$artifactsFileName'!"
     }
 }
 
 
+# Get SAS token and location of artifacts
+# ---------------------------------------
+Add-LogMessage -Level Info "[ ] Obtaining SAS token..."
+$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $config.sre.storage.artifacts.rg -accountName $config.sre.storage.artifacts.accountName
+if ($?) {
+    Add-LogMessage -Level Success "Obtaining SAS token succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Obtaining SAS token failed!"
+}
+$artifactLocation = "https://$($config.sre.storage.artifacts.accountName).blob.core.windows.net/${artifactsFolderNameCreate}/${dcCreationZipFileName}"
+
+
+# Ensure that boot diagnostics resource group and storage account exist
+# ---------------------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.bootdiagnostics.rg -Location $config.sre.location
+$_ = Deploy-StorageAccount -Name $config.sre.bootdiagnostics.accountName -ResourceGroupName $config.sre.bootdiagnostics.rg -Location $config.sre.location
+
+
+# Ensure that DC resource group exists
+# ------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.dc.rg -Location $config.sre.location
+
+
 # Deploy DC from template
 # -----------------------
-Write-Host -ForegroundColor DarkCyan "Deploying DC from template..."
-
-# Get SAS token
-Write-Host -ForegroundColor DarkCyan " [ ] Obtaining SAS token..."
-$artifactLocation = "https://$storageAccountName.blob.core.windows.net/$artifactsFolderNameCreate/$dcCreationZipFileName";
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $storageAccountSubscription -resourceGroup $storageAccountRg -accountName $storageAccountName
-if ($?) {
-    Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed!"
-}
-
-# Deploy template
-$templateName = "sredc-template"
-Write-Host -ForegroundColor DarkCyan " [ ] Deploying template $templateName..."
+Add-LogMessage -Level Info "Deploying DC from template..."
 $netbiosNameMaxLength = 15
-if($config.dsg.domain.netbiosName.length -gt $netbiosNameMaxLength) {
-    throw "NetBIOS name must be no more than 15 characters long. '$($config.dsg.domain.netbiosName)' is $($config.dsg.domain.netbiosName.length) characters long."
+if($config.sre.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+    throw "NetBIOS name must be no more than 15 characters long. '$($config.sre.domain.netbiosName)' is $($config.sre.domain.netbiosName.length) characters long."
 }
 $params = @{
-    "SRE ID" = $config.dsg.id
-    "DC Name" = $config.dsg.dc.vmName
-    "VM Size" = $config.dsg.dc.vmSize
-    "IP Address" = $config.dsg.dc.ip
-    "Administrator User" = $dcAdminUsername
-    "Administrator Password" = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-    "Virtual Network Name" = $config.dsg.network.vnet.name
-    "Virtual Network Resource Group" = $config.dsg.network.vnet.rg
-    "Virtual Network Subnet" = $config.dsg.network.subnets.identity.name
-    "Artifacts Location" = $artifactLocation
-    "Artifacts Location SAS Token" = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    "Domain Name" = $config.dsg.domain.fqdn
-    "NetBIOS Name" = $config.dsg.domain.netbiosName
+    Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
+    Administrator_User = $dcAdminUsername
+    Artifacts_Location = $artifactLocation
+    Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    BootDiagnostics_Account_Name = $config.sre.bootdiagnostics.accountName
+    DC_IP_Address = $config.sre.dc.ip
+    DC_VM_Name = $config.sre.dc.vmName
+    DC_VM_Size = $config.sre.dc.vmSize
+    Domain_Name = $config.sre.domain.fqdn
+    Domain_NetBios_Name = $config.sre.domain.netbiosName
+    SRE_ID = $config.sre.id
+    Virtual_Network_Name = $config.sre.network.vnet.name
+    Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
+    Virtual_Network_Subnet = $config.sre.network.subnets.identity.name
 }
-$_ = New-AzResourceGroup -Name $config.dsg.dc.rg -Location $config.dsg.location -Force
-New-AzResourceGroupDeployment -ResourceGroupName $config.dsg.dc.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
-$result = $?
-LogTemplateOutput -ResourceGroupName $config.dsg.dc.rg -DeploymentName $templateName
-if ($result) {
-  Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
-} else {
-  Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
-  throw "Template deployment has failed. Please check the error message above before re-running this script."
-}
+Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-dc-template.json" -Params $params -ResourceGroupName $config.sre.dc.rg
+
+
+# # Deploy template
+# $templateName = "sredc-template"
+# Write-Host -ForegroundColor DarkCyan " [ ] Deploying template $templateName..."
+# $netbiosNameMaxLength = 15
+# if($config.sre.domain.netbiosName.length -gt $netbiosNameMaxLength) {
+#     throw "NetBIOS name must be no more than 15 characters long. '$($config.sre.domain.netbiosName)' is $($config.sre.domain.netbiosName.length) characters long."
+# }
+# $params = @{
+#     "SRE ID" = $config.sre.id
+#     "DC Name" = $config.sre.dc.vmName
+#     "VM Size" = $config.sre.dc.vmSize
+#     "IP Address" = $config.sre.dc.ip
+#     "Administrator User" = $dcAdminUsername
+#     "Administrator Password" = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
+#     "Virtual Network Name" = $config.sre.network.vnet.name
+#     "Virtual Network Resource Group" = $config.sre.network.vnet.rg
+#     "Virtual Network Subnet" = $config.sre.network.subnets.identity.name
+#     "Artifacts Location" = $artifactLocation
+#     "Artifacts Location SAS Token" = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+#     "Domain Name" = $config.sre.domain.fqdn
+#     "NetBIOS Name" = $config.sre.domain.netbiosName
+# }
+# $_ = New-AzResourceGroup -Name $config.sre.dc.rg -Location $config.sre.location -Force
+# New-AzResourceGroupDeployment -ResourceGroupName $config.sre.dc.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
+# $result = $?
+# LogTemplateOutput -ResourceGroupName $config.sre.dc.rg -DeploymentName $templateName
+# if ($result) {
+#   Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
+# } else {
+#   Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
+#   throw "Template deployment has failed. Please check the error message above before re-running this script."
+# }
 
 
 # Import artifacts from blob storage
 # ----------------------------------
-Write-Host -ForegroundColor DarkCyan "Importing configuration artifacts for: $($config.dsg.dc.vmName)..."
-
+Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.sre.dc.vmName)..."
 # Get list of blobs in the storage account
 $blobNames = Get-AzStorageBlob -Container $artifactsFolderNameConfig -Context $storageAccount.Context | ForEach-Object{$_.Name}
-$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.dsg.subscriptionName -resourceGroup $storageAccountRg -accountName $storageAccountName
-
+$artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $config.sre.storage.artifacts.rg -accountName $config.sre.storage.artifacts.accountName
 # Run import script remotely
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Import_Artifacts.ps1"
 $params = @{
     remoteDir = "`"$remoteUploadDir`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName = "`"$storageAccountName`""
+    storageAccountName = "`"$($config.sre.storage.artifacts.accountName)`""
     storageContainerName = "`"$artifactsFolderNameConfig`""
     sasToken = "`"$artifactSasToken`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Importing artifacts succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Importing artifacts failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+Write-Output $result.Value
+# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Importing artifacts succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Importing artifacts failed!"
+# }
 
 
 # Remotely set the OS language for the DC
 # ---------------------------------------
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Locale.ps1"
-Write-Host -ForegroundColor DarkCyan "Setting OS language for: $($config.dsg.dc.vmName)..."
-$result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Setting OS language succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Setting OS language failed!"
-}
+Add-LogMessage -Level Info "Setting OS language for: $($config.sre.dc.vmName)..."
+# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Locale.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
+Write-Output $result.Value
+
+# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Setting OS language succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Setting OS language failed!"
+# }
 
 
 # Create users, groups and OUs
 # ----------------------------
+Add-LogMessage -Level Info "Creating users, groups and OUs for: $($config.sre.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_Users_Groups_OUs.ps1"
-Write-Host -ForegroundColor DarkCyan "Creating users, groups and OUs for: $($config.dsg.dc.vmName)..."
 $params = @{
-    sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
-    sreDn = "`"$($config.dsg.domain.dn)`""
-    sreServerAdminSgName = "`"$($config.dsg.domain.securityGroups.serverAdmins.name)`""
+    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
+    sreDn = "`"$($config.sre.domain.dn)`""
+    sreServerAdminSgName = "`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
     sreDcAdminUsername = "`"$($dcAdminUsername)`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Creating users, groups and OUs succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Creating users, groups and OUs failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+Write-Output $result.Value
+# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Creating users, groups and OUs succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Creating users, groups and OUs failed!"
+# }
 
 
 # Configure DNS
 # -------------
+Add-LogMessage -Level Info "Configuring DNS for: $($config.sre.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DNS.ps1"
-Write-Host -ForegroundColor DarkCyan "Configuring DNS..."
 $params = @{
-    identitySubnetCidr = "`"$($config.dsg.network.subnets.identity.cidr)`""
-    rdsSubnetCidr = "`"$($config.dsg.network.subnets.rds.cidr)`""
-    dataSubnetCidr = "`"$($config.dsg.network.subnets.data.cidr)`""
+    identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
+    rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
+    dataSubnetCidr = "`"$($config.sre.network.subnets.data.cidr)`""
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
     shmDcIp = "`"$($config.shm.dc.ip)`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Configuring DNS succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Configuring DNS failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+Write-Output $result.Value
+# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Configuring DNS succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Configuring DNS failed!"
+# }
 
 
 # Configure GPOs
 # --------------
+Add-LogMessage -Level Info "Configuring GPOs for: $($config.sre.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_GPOs.ps1"
-Write-Host -ForegroundColor DarkCyan "Configuring GPOs..."
 $params = @{
     oubackuppath = "`"$remoteUploadDir\GPOs`""
-    sreNetbiosName = "`"$($config.dsg.domain.netbiosName)`""
-    sreFqdn = "`"$($config.dsg.domain.fqdn)`""
-    sreDomainOu = "`"$($config.dsg.domain.dn)`""
+    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
+    sreFqdn = "`"$($config.sre.domain.fqdn)`""
+    sreDomainOu = "`"$($config.sre.domain.dn)`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Configuring GPOs succeeded"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Configuring GPOs failed!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+Write-Output $result.Value
+# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Configuring GPOs succeeded"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Configuring GPOs failed!"
+# }
 
 
 # Restart the DC
 # --------------
-Write-Host "Restarting $($config.dsg.dc.vmName)..."
-Restart-AzVM -Name $config.dsg.dc.vmName -ResourceGroupName $config.dsg.dc.rg
+Add-LogMessage -Level Info "Restarting $($config.sre.dc.vmName)..."
+Restart-AzVM -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 if ($?) {
-    Write-Host -ForegroundColor DarkGreen " [o] Restarting DC succeeded"
+    Add-LogMessage -Level Success "Restarting DC succeeded"
 } else {
-    Write-Host -ForegroundColor DarkRed " [x] Restarting DC failed!"
+    Add-LogMessage -Level Fatal "Restarting DC failed!"
 }
 
 
-# Create domain trust
-# -------------------
-Write-Host -ForegroundColor DarkCyan "Creating domain trust between: $($config.dsg.domain.fqdn) and $($config.shm.domain.fqdn)..."
-
-# Switch to SHM subscription
+# Create domain trust from SHM DC to SRE DC
+# -----------------------------------------
+Add-LogMessage -Level Info "Creating domain trust between: $($config.sre.domain.fqdn) and $($config.shm.domain.fqdn)..."
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 
 # Encrypt password
@@ -270,19 +298,22 @@ $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Domain_Trust.p
 $params = @{
     sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
     sreDcAdminUsername = "`"$dcAdminUsername`""
-    sreFqdn = "`"$($config.dsg.domain.fqdn)`""
+    sreFqdn = "`"$($config.sre.domain.fqdn)`""
 }
-$result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
-} else {
-    Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
+
+# $result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
+#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
+# $success = $?
+# Write-Output $result.Value
+# if ($success) {
+#     Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
+# } else {
+#     Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
+# }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$_ = Set-AzContext -Context $originalContext

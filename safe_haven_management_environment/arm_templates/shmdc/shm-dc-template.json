@@ -56,7 +56,7 @@
                 "Description": "Enter the correct public domain name"
             }
         },
-        "Domain_Name_NetBIOS_Name":{
+        "Domain_NetBIOS_Name":{
             "type": "string",
             "metadata": {
                 "Description": "Enter the correct NetBIOS name"
@@ -145,7 +145,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -157,7 +157,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 20
                         }
@@ -186,7 +186,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -217,7 +217,7 @@
                             },
                             "configurationArguments": {
                                 "DomainName": "[parameters('Domain_Name')]",
-                                "DomainNetBIOSName": "[parameters('Domain_Name_NetBIOS_Name')]"
+                                "DomainNetBIOSName": "[parameters('Domain_NetBIOS_Name')]"
                             }
                         },
                         "protectedSettings": {
@@ -312,7 +312,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -324,7 +324,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 20
                         }
@@ -353,7 +353,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
                     }
                 }
             },

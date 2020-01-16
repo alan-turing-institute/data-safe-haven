@@ -164,7 +164,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - The VNet peerings may take a few minutes to provision after the script completes.
 
 ### Set up a VPN connection to the SRE
-- In the **SRE subscription** open `Resource Groups -> RG_SRE_VNET -> VNET_SRE_<sre-id>_GW`
+- In the **SRE subscription** open `Resource Groups -> RG_SRE_NETWORKING -> VNET_SRE_<sre-id>_GW`
   - Select "**Point to Site Configuration**" from the left-hand navigation
   - Download the VPN client from the "Point to Site configuration" menu
     ![VPN client](images/vpn_client.png)
