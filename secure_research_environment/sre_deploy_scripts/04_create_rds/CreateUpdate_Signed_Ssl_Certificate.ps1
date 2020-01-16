@@ -1,16 +1,16 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId,
-  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
-  [string]$emailAddress = "dsgbuild@turing.ac.uk",
-  [Parameter(Position=2, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
-  [bool]$dryRun = $false,
-  [Parameter(Position=3, Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
-  [bool]$forceInstall = $false,
-  [Parameter(Position=4, Mandatory = $false, HelpMessage = "Local directory (defaults to '~/Certificates')")]
-  [string]$localDirectory = "$HOME/Certificates",
-  [Parameter(Position=5, Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
-  [string]$remoteDirectory = "/Certificates"
+    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId,
+    [Parameter(Position = 1,Mandatory = $false,HelpMessage = "Email address to associate with the certificate request.")]
+    [string]$emailAddress = "dsgbuild@turing.ac.uk",
+    [Parameter(Position = 2,Mandatory = $false,HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
+    [bool]$dryRun = $false,
+    [Parameter(Position = 3,Mandatory = $false,HelpMessage = "Force the installation step even for dry runs.")]
+    [bool]$forceInstall = $false,
+    [Parameter(Position = 4,Mandatory = $false,HelpMessage = "Local directory (defaults to '~/Certificates')")]
+    [string]$localDirectory = "$HOME/Certificates",
+    [Parameter(Position = 5,Mandatory = $false,HelpMessage = "Remote directory (defaults to '/Certificates')")]
+    [string]$remoteDirectory = "/Certificates"
 )
 
 # Ensure that Posh-ACME is installed for current user
@@ -25,13 +25,13 @@ Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
 
 # Get SRE config
 # --------------
-$config = Get-SreConfig($sreId);
+$config = Get-SreConfig ($sreId);
 $originalContext = Get-AzContext
 
 
 # Set common variables
 # --------------------
-$keyvaultName = $config.dsg.keyVault.name
+$keyvaultName = $config.dsg.keyVault.Name
 $certificateName = $config.dsg.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
@@ -49,7 +49,7 @@ if ($kvCertificate -eq $null) {
     Write-Host -ForegroundColor DarkCyan "No certificate found in KeyVault '$keyvaultName'"
     $requestCertificate = $true
 } else {
-    $renewalDate = [DateTime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
+    $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter,"MM/dd/yyyy HH:mm:ss",$null).AddDays(-30)
     Write-Host -ForegroundColor DarkGreen " [o] Loaded certificate from KeyVault '$keyvaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
     if ($(Get-Date) -ge $renewalDate) {
         Write-Host -ForegroundColor DarkGreen "Removing outdated certificate from KeyVault '$keyvaultName'..."
@@ -66,7 +66,7 @@ if ($requestCertificate) {
 
     # Set the Posh-ACME server to the appropriate Let's Encrypt endpoint
     # ------------------------------------------------------------------
-    if($dryRun){
+    if ($dryRun) {
         Write-Host -ForegroundColor DarkCyan "Using Let's Encrypt staging server (dry-run)"
         Set-PAServer LE_STAGE
     } else {
@@ -88,7 +88,7 @@ if ($requestCertificate) {
     # Get token for DNS subscription
     # ------------------------------
     $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName;
-    $token = ($azureContext.TokenCache.ReadItems() | ?{ ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select -First 1).AccessToken
+    $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
     $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
 
     # Test DNS record creation
@@ -183,7 +183,7 @@ if ($doInstall) {
     # -------------------------------------------------
     Write-Host -ForegroundColor DarkCyan "Adding SSL certificate to RDS Gateway VM"
     $vaultId = (Get-AzKeyVault -ResourceGroupName $config.dsg.keyVault.rg -VaultName $keyVaultName).ResourceId
-    $secretURL = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $certificateName).id
+    $secretURL = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $certificateName).Id
     $gatewayVm = Get-AzVM -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
     $_ = Update-AzVM -ResourceGroupName $config.dsg.rds.rg -VM $gatewayVm
@@ -205,7 +205,7 @@ if ($doInstall) {
         remoteDirectory = "`"$remoteDirectory`""
     };
     $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg `
-                                    -CommandId "RunPowerShellScript" -ScriptPath $scriptPath -Parameter $params;
+         -CommandId "RunPowerShellScript" -ScriptPath $scriptPath -Parameter $params;
     $success = $?
     Write-Output $result.Value
     if ($success) {

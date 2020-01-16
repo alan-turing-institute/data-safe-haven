@@ -5,34 +5,24 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, HelpMessage = "DSG fully qualified domain name")]
-  [string]$dsgFqdn,
-  [Parameter(Position=1, HelpMessage = "SHM fully qualified domain name")]
-  [string]$shmFqdn
+    [Parameter(Position=0, HelpMessage = "SRE fully qualified domain name")]
+    [string]$sreFqdn,
+    [Parameter(Position=1, HelpMessage = "SHM fully qualified domain name")]
+    [string]$shmFqdn
 )
 
-# Set locale and timezone
-# -----------------------
-Write-Host "Setting locale and timezone...."
-Set-WinHomeLocation -GeoId 0xf2
-Set-TimeZone -Name "GMT Standard Time"
-Set-WinSystemLocale en-GB
-Set-Culture en-GB
-Set-WinUserLanguageList -LanguageList (New-WinUserLanguageList -Language en-GB) -Force
-if ($?) {
-  Write-Host " [o] Completed"
-} else {
-  Write-Host " [x] Failed"
-}
+
+# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE
+
 
 # Set DNS defaults
 # ----------------
-Write-Output "Setting DNS suffixes"
-$suffixes = "$dsgFqdn", "$shmFqdn"
+Write-Host "Setting DNS suffixes"
+$suffixes = "$sreFqdn", "$shmFqdn"
 $class = [wmiclass]'Win32_NetworkAdapterConfiguration'
 $_ = $class.SetDNSSuffixSearchOrder($suffixes)
 if ($?) {
-  Write-Host " [o] Completed"
+    Write-Host " [o] Completed"
 } else {
-  Write-Host " [x] Failed"
+    Write-Host " [x] Failed"
 }

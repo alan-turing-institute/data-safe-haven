@@ -15,8 +15,8 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Create secrets resource group if it does not exist
-# --------------------------------------------------
+# Create VNet resource group if it does not exist
+# -----------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 
 

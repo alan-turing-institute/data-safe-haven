@@ -8,7 +8,7 @@ param(
   $rdsGatewayIp,
   $rdsGatewayFqdn,
   $npsSecret,
-  $dsgId
+  $sreId
 )
 
 
@@ -31,7 +31,7 @@ if (Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}) {
 # Add RDS gateway inbound rule
 # ----------------------------
 Write-Host "Adding RDS gateway inbound rule..."
-$ruleName = "DSGROUP$dsgId RDS Gateway RADIUS inbound ($rdsGatewayIp)"
+$ruleName = "SRE $sreId RDS Gateway RADIUS inbound ($rdsGatewayIp)"
 if (Get-NetFirewallRule | Where-Object {$_.DisplayName -eq "$ruleName"}) {
     Write-Host " [o] Inbound RADIUS firewall rule '$ruleName' already exists"
 } else {

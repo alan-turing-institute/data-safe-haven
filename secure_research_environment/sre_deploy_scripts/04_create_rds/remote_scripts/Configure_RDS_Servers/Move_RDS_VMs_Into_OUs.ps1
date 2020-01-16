@@ -6,9 +6,9 @@
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
   [Parameter(Position=0, HelpMessage = "DSG DN")]
-  [string]$dsgDn,
+  [string]$sreDn,
   [Parameter(Position=1, HelpMessage = "DSG Netbios name")]
-  [string]$dsgNetbiosName,
+  [string]$sreNetbiosName,
   [Parameter(Position=2, HelpMessage = "RDS Gateway hostname")]
   [string]$gatewayHostname,
   [Parameter(Position=3, HelpMessage = "RDS Session Host 1 hostname")]
@@ -17,8 +17,8 @@ param(
   [string]$sh2Hostname
 )
 
-$gatewayTargetPath = "OU=$dsgNetbiosName Service Servers,$dsgDn"
-$shTargetPath = "OU=$dsgNetbiosName RDS Session Servers,$dsgDn"
+$gatewayTargetPath = "OU=$sreNetbiosName Service Servers,$sreDn"
+$shTargetPath = "OU=$sreNetbiosName RDS Session Servers,$sreDn"
 
 Write-Output " [ ] Moving '$gatewayHostname' to '$gatewayTargetPath'"
 Move-ADObject (Get-ADComputer -Identity $gatewayHostname) -TargetPath "$gatewayTargetPath"

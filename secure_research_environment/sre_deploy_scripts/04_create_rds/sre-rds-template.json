@@ -96,7 +96,6 @@
             }
         },
         "Domain Name": {
-            "defaultValue": "DSGROUPx.CO.UK",
             "type": "string",
             "metadata": {
                 "description": "Enter domain name"
@@ -116,7 +115,6 @@
         },
         "Virtual Network Name": {
             "type": "string",
-            "defaultValue": "DSG_DSGROUPX_VNET1",
             "metadata": {
                 "description": "Enter name of virtual network to provision this VM"
             }

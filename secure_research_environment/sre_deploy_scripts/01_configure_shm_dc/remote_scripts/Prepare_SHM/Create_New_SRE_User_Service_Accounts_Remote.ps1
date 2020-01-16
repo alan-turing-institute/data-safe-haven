@@ -5,7 +5,7 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [String]$dsgFqdn,
+  [String]$sreFqdn,
   [String]$researchUserSgName,
   [String]$researchUserSgDescription,
   [String]$ldapUserSgName,
@@ -39,7 +39,7 @@ function New-DsgUser($samAccountName, $name, $path, $passwordSecureString) {
   if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
     Write-Output " - User '$samAccountName' already exists"
   } else {
-    $principalName = $samAccountName + "@" + $dsgFqdn;
+    $principalName = $samAccountName + "@" + $sreFqdn;
     Write-Output " - Creating user '$name' ($samAccountName)"
     return (New-ADUser -Name "$name" `
                -UserPrincipalName $principalName `
