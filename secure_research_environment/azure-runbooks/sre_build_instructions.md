@@ -167,7 +167,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - In the **SRE subscription** open `Resource Groups -> RG_SRE_VNET -> VNET_SRE_<sre-id>_GW`
   - Select "**Point to Site Configuration**" from the left-hand navigation
   - Download the VPN client from the "Point to Site configuration" menu
-    ![VPN client](images/media/image4.png)
+    ![VPN client](images/vpn_client.png)
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
 ## 5. Deploy SRE Domain Controller

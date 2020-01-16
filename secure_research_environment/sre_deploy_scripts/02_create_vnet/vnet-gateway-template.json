@@ -70,7 +70,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "dsggwipconf",
+                        "name": "sregwipconf",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
@@ -103,7 +103,7 @@
                     ],
                     "vpnClientRootCertificates": [
                         {
-                            "name": "DSG_P2S_RootCert.cer",
+                            "name": "SRE_P2S_RootCert.cer",
                             "properties": {
                                 "publicCertData": "[parameters('P2S VPN Certificate')]"
                             }

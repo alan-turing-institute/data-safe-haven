@@ -28,10 +28,6 @@ $keyVault = Deploy-KeyVault -Name $config.sre.keyVault.Name -ResourceGroupName $
 Set-KeyVaultPermissions -Name $config.sre.keyVault.Name -GroupName $config.shm.adminSecurityGroupName
 
 
-# # Switch to SHM subscription
-# # --------------------------
-#
-
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
