@@ -123,40 +123,6 @@ $params = @{
 Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-dc-template.json" -Params $params -ResourceGroupName $config.sre.dc.rg
 
 
-# # Deploy template
-# $templateName = "sredc-template"
-# Write-Host -ForegroundColor DarkCyan " [ ] Deploying template $templateName..."
-# $netbiosNameMaxLength = 15
-# if($config.sre.domain.netbiosName.length -gt $netbiosNameMaxLength) {
-#     throw "NetBIOS name must be no more than 15 characters long. '$($config.sre.domain.netbiosName)' is $($config.sre.domain.netbiosName.length) characters long."
-# }
-# $params = @{
-#     "SRE ID" = $config.sre.id
-#     "DC Name" = $config.sre.dc.vmName
-#     "VM Size" = $config.sre.dc.vmSize
-#     "IP Address" = $config.sre.dc.ip
-#     "Administrator User" = $dcAdminUsername
-#     "Administrator Password" = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-#     "Virtual Network Name" = $config.sre.network.vnet.name
-#     "Virtual Network Resource Group" = $config.sre.network.vnet.rg
-#     "Virtual Network Subnet" = $config.sre.network.subnets.identity.name
-#     "Artifacts Location" = $artifactLocation
-#     "Artifacts Location SAS Token" = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-#     "Domain Name" = $config.sre.domain.fqdn
-#     "NetBIOS Name" = $config.sre.domain.netbiosName
-# }
-# $_ = New-AzResourceGroup -Name $config.sre.dc.rg -Location $config.sre.location -Force
-# New-AzResourceGroupDeployment -ResourceGroupName $config.sre.dc.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
-# $result = $?
-# LogTemplateOutput -ResourceGroupName $config.sre.dc.rg -DeploymentName $templateName
-# if ($result) {
-#   Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
-# } else {
-#   Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
-#   throw "Template deployment has failed. Please check the error message above before re-running this script."
-# }
-
-
 # Import artifacts from blob storage
 # ----------------------------------
 Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.sre.dc.vmName)..."
@@ -174,15 +140,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Importing artifacts succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Importing artifacts failed!"
-# }
 
 
 # Remotely set the OS language for the DC
@@ -192,16 +149,6 @@ Add-LogMessage -Level Info "Setting OS language for: $($config.sre.dc.vmName)...
 $scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
-
-# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Setting OS language succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Setting OS language failed!"
-# }
 
 
 # Create users, groups and OUs
@@ -216,15 +163,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Creating users, groups and OUs succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Creating users, groups and OUs failed!"
-# }
 
 
 # Configure DNS
@@ -240,15 +178,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Configuring DNS succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Configuring DNS failed!"
-# }
 
 
 # Configure GPOs
@@ -263,15 +192,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Configuring GPOs succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Configuring GPOs failed!"
-# }
 
 
 # Restart the DC
@@ -302,16 +222,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
-
-# $result = Invoke-AzVMRunCommand -Name $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg `
-#                                 -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Successfully created domain trust"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Failed to create domain trust!"
-# }
 
 
 # Switch back to original subscription
