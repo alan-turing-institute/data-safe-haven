@@ -273,7 +273,7 @@
       "rg": "RG_SRE_RDS",
       "nsg": {
         "gateway": {
-          "Name": "NSG_RDS_SREstring ToUpper(), string ToUpper(cultureinfo culture)_SERVER",
+          "Name": "NSG_RDS_SRE_SANDBOX_SERVER",
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         }

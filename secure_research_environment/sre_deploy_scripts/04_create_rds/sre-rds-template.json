@@ -34,8 +34,10 @@
             }
         },
         "RDS_Gateway_Name": {
-            "defaultValue": "RDS",
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Name of the RDS gateway VM"
+            }
         },
         "RDS_Gateway_VM_Size": {
             "type": "string",
@@ -43,13 +45,14 @@
             "allowedValues": [
                 "Standard_B2ms",
                 "Standard_B8ms",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2",
+                "Standard_D4s_v3",
+                "Standard_D32_v3",
+                "Standard_DS2_v2",
                 "Standard_DS4_v2",
                 "Standard_DS14_v2",
-                "Standard_D32_v3",
-                "Standard_DS2_v2"
+                "Standard_F8s_v2",
+                "Standard_F16s_v2",
+                "Standard_F32s_v2"
             ],
             "metadata": {
                 "description": "Select size of RDS Gateway VM"
@@ -63,8 +66,10 @@
             }
         },
         "RDS_Session_Host_Apps_Name": {
-            "defaultValue": "RDSSH1",
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Name of the RDS apps session host VM"
+            }
         },
         "RDS_Session_Host_Apps_VM_Size": {
             "type": "string",
@@ -72,13 +77,14 @@
             "allowedValues": [
                 "Standard_B2ms",
                 "Standard_B8ms",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2",
+                "Standard_D4s_v3",
+                "Standard_D32_v3",
+                "Standard_DS2_v2",
                 "Standard_DS4_v2",
                 "Standard_DS14_v2",
-                "Standard_D32_v3",
-                "Standard_DS2_v2"
+                "Standard_F8s_v2",
+                "Standard_F16s_v2",
+                "Standard_F32s_v2"
             ],
             "metadata": {
                 "description": "Select size of RDS_Session_Host_Apps VM"
@@ -92,8 +98,10 @@
             }
         },
         "RDS_Session_Host_Desktop_Name": {
-            "defaultValue": "RDSSH2",
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Name of the RDS desktop session host VM"
+            }
         },
         "RDS_Session_Host_Desktop_VM_Size": {
             "type": "string",
@@ -101,13 +109,14 @@
             "allowedValues": [
                 "Standard_B2ms",
                 "Standard_B8ms",
-                "Standard_F8s_v2",
-                "Standard_F16s_v2",
-                "Standard_F32s_v2",
+                "Standard_D4s_v3",
+                "Standard_D32_v3",
+                "Standard_DS2_v2",
                 "Standard_DS4_v2",
                 "Standard_DS14_v2",
-                "Standard_D32_v3",
-                "Standard_DS2_v2"
+                "Standard_F8s_v2",
+                "Standard_F16s_v2",
+                "Standard_F32s_v2"
             ],
             "metadata": {
                 "description": "Select size of RDS_Session_Host_Apps VM"
@@ -138,7 +147,7 @@
                 "description": "Enter name of subnet where you want to provision this VM"
             }
         }
-},
+    },
     "variables": {
         "rdsnic": "[concat(parameters('RDS_Gateway_Name'),'-','NIC')]",
         "rdssh1nic": "[concat(parameters('RDS_Session_Host_Apps_Name'),'-','NIC')]",

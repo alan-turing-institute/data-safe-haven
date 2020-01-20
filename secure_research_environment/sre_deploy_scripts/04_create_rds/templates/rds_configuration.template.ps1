@@ -43,7 +43,7 @@ ForEach (`$server in `$(Get-RDServer -ErrorAction SilentlyContinue)) {
 # Create RDS Environment
 # ----------------------
 Write-Host -ForegroundColor Cyan "Creating RDS Environment..."
-New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "$rdsGatewayVmFqdn" -SessionHost @("$rdsSh1VmFqdn","$rdsSh2VmFqdn")
+New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "$rdsGatewayVmFqdn" -SessionHost @("$rdsSh1VmFqdn", "$rdsSh2VmFqdn")
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmFqdn -Force
 Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature

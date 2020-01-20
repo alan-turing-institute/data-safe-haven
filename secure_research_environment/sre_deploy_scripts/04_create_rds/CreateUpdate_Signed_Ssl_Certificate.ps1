@@ -21,24 +21,25 @@ if (-not (Get-Module -ListAvailable -Name Posh-ACME)) {
 # Import modules
 Import-Module Posh-ACME
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 
 
-# Get SRE config
-# --------------
-$config = Get-SreConfig ($sreId);
+# Get config and original context
+# -------------------------------
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 
 
 # Set common variables
 # --------------------
-$keyvaultName = $config.dsg.keyVault.Name
-$certificateName = $config.dsg.keyVault.secretNames.letsEncryptCertificate
+$keyvaultName = $config.sre.keyVault.Name
+$certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
 
 # Check for existing certificate in KeyVault
 # ------------------------------------------
-Write-Host -ForegroundColor DarkCyan "Checking whether signed certificate '$certificateName' already exists in KeyVault..."
+Add-LogMessage -Level Info "Checking whether signed certificate '$certificateName' already exists in KeyVault..."
 $kvCertificate = Get-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName
 $requestCertificate = $false
 
@@ -46,13 +47,13 @@ $requestCertificate = $false
 # Determine whether a certificate request is needed
 # -------------------------------------------------
 if ($kvCertificate -eq $null) {
-    Write-Host -ForegroundColor DarkCyan "No certificate found in KeyVault '$keyvaultName'"
+    Add-LogMessage -Level Info "No certificate found in KeyVault '$keyvaultName'"
     $requestCertificate = $true
 } else {
     $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter,"MM/dd/yyyy HH:mm:ss",$null).AddDays(-30)
-    Write-Host -ForegroundColor DarkGreen " [o] Loaded certificate from KeyVault '$keyvaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
+    Add-LogMessage -Level Success "Loaded certificate from KeyVault '$keyvaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
     if ($(Get-Date) -ge $renewalDate) {
-        Write-Host -ForegroundColor DarkGreen "Removing outdated certificate from KeyVault '$keyvaultName'..."
+        Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyvaultName'..."
         $_ = Remove-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -Force
         $requestCertificate = $true
     }
@@ -62,105 +63,101 @@ if ($kvCertificate -eq $null) {
 # Request a new certificate
 # -------------------------
 if ($requestCertificate) {
-    Write-Host -ForegroundColor DarkCyan "Preparing to request a new certificate..."
+    Add-LogMessage -Level Info "Preparing to request a new certificate..."
 
     # Set the Posh-ACME server to the appropriate Let's Encrypt endpoint
     # ------------------------------------------------------------------
     if ($dryRun) {
-        Write-Host -ForegroundColor DarkCyan "Using Let's Encrypt staging server (dry-run)"
+        Add-LogMessage -Level Info "Using Let's Encrypt staging server (dry-run)"
         Set-PAServer LE_STAGE
     } else {
-        Write-Host -ForegroundColor DarkCyan "Using Let's Encrypt production server!"
+        Add-LogMessage -Level Info "Using Let's Encrypt production server!"
         Set-PAServer LE_PROD
     }
 
     # Set Posh-ACME account
     # --------------
-    Write-Host -ForegroundColor DarkCyan " [ ] Checking for Posh-ACME account"
+    Add-LogMessage -Level Info " [ ] Checking for Posh-ACME account"
     $acct = Get-PAAccount -List -Contact $emailAddress
     if ($acct -eq $null) {
         $account = New-PAAccount -Contact $emailAddress -AcceptTOS
-        Write-Host -ForegroundColor DarkGreen " [o] Created new Posh-ACME account with ID: '$($account.id)'"
+        Add-LogMessage -Level Success "Created new Posh-ACME account with ID: '$($account.id)'"
         $acct = Get-PAAccount -List -Contact $emailAddress
     }
-    Write-Host -ForegroundColor DarkGreen " [o] Using Posh-ACME account: $($acct.id)"
+    Add-LogMessage -Level Success "Using Posh-ACME account: $($acct.id)"
 
     # Get token for DNS subscription
     # ------------------------------
     $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName;
     $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
-    $_ = Set-AzContext -Subscription $config.dsg.subscriptionName;
+    $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
     # Test DNS record creation
     # ------------------------
-    Write-Host -ForegroundColor DarkCyan "Test that we can interact with DNS records..."
-    $testDomain = "dnstest.$($config.dsg.rds.gateway.fqdn)"
+    Add-LogMessage -Level Info "Test that we can interact with DNS records..."
+    $testDomain = "dnstest.$($config.sre.rds.gateway.fqdn)"
 
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
     }
-    Write-Host -ForegroundColor DarkCyan " [ ] DNS record creation..."
+    Add-LogMessage -Level Info " [ ] Attempting to create a DNS record for $testDomain..."
     Publish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] DNS record creation succeeded"
+        Add-LogMessage -Level Success "DNS record creation succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] DNS record creation failed!"
-        throw "Unable to create a DNS record for $testDomain!"
+        Add-LogMessage -Level Fatal "DNS record creation failed!"
     }
-    Write-Host -ForegroundColor DarkCyan " [ ] DNS record deletion..."
+    Write-Host -ForegroundColor DarkCyan " [ ] Attempting to delete a DNS record for $testDomain..."
     Unpublish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] DNS record deletion succeeded"
+        Add-LogMessage -Level Success "DNS record deletion succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] DNS record deletion failed!"
-        throw "Unable to delete a DNS record for $testDomain!"
+        Add-LogMessage -Level Fatal "DNS record deletion failed!"
     }
+
 
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
     $csrPath = (New-TemporaryFile).FullName + ".csr"
-    Write-Host -ForegroundColor DarkCyan "Generating a certificate signing request at '$csrPath' to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($config.dsg.rds.gateway.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($config.sre.rds.gateway.fqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($config.sre.rds.gateway.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
     $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName"
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
     "-----BEGIN CERTIFICATE REQUEST-----`n" + $certificateOperation.CertificateSigningRequest + "`n-----END CERTIFICATE REQUEST-----" | Out-File -FilePath $csrPath
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] CSR creation succeeded"
+        Add-LogMessage -Level Success "CSR creation succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] CSR creation failed!"
-        throw "Unable to create a certificate signing request for $($config.dsg.rds.gateway.fqdn)!"
+        Add-LogMessage -Level Fatal "CSR creation failed!"
     }
 
     # Send the certificate to be signed
     # ---------------------------------
-    Write-Host -ForegroundColor DarkCyan "Sending the CSR to be signed by Let's Encrypt..."
-    Publish-DnsChallenge $config.dsg.rds.gateway.fqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
+    Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
+    Publish-DnsChallenge $config.sre.rds.gateway.fqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     $azParams = @{
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
     }
-    Write-Host -ForegroundColor DarkCyan " [ ] Creating certificate..."
+    Add-LogMessage -Level Info " [ ] Creating certificate for $($config.sre.rds.gateway.fqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Certificate creation succeeded"
+        Add-LogMessage -Level Success "Certificate creation succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Certificate creation failed!"
-        throw "Unable to create a certificate for $($config.dsg.rds.gateway.fqdn)!"
+        Add-LogMessage -Level Fatal "Certificate creation failed!"
     }
-    $paCertificate = Get-PACertificate -MainDomain $config.dsg.rds.gateway.fqdn
+    $paCertificate = Get-PACertificate -MainDomain $config.sre.rds.gateway.fqdn
 
     # Import signed certificate
     # -------------------------
-    Write-Host -ForegroundColor DarkCyan "Importing signed certificate into KeyVault '$keyvaultName'..."
+    Add-LogMessage -Level Info "Importing signed certificate into KeyVault '$keyvaultName'..."
     $kvCertificate = Import-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -FilePath $paCertificate.CertFile
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Certificate import succeeded"
+        Add-LogMessage -Level Success "Certificate import succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Certificate import failed!"
-        throw "Unable to import certificate to $keyvaultName!"
+        Add-LogMessage -Level Fatal "Certificate import failed!"
     }
 }
 
@@ -170,9 +167,9 @@ if ($requestCertificate) {
 $doInstall = $true
 if ($dryRun) {
     if ($forceInstall) {
-        Write-Host -ForegroundColor DarkCyan "Dry run produces an unsigned certificate! Forcing installation on the gateway anyway!"
+        Add-LogMessage -Level Warning "Dry run produces an unsigned certificate! Forcing installation on the gateway anyway!"
     } else {
-        Write-Host -ForegroundColor DarkCyan "Dry run produces an unsigned certificate! Use '-forceInstall `$true' if you want to install this on the gateway anyway"
+        Add-LogMessage -Level Error "Dry run produces an unsigned certificate! Use '-forceInstall `$true' if you want to install this on the gateway anyway"
         $doInstall = $false
     }
 }
@@ -181,39 +178,39 @@ if ($dryRun) {
 if ($doInstall) {
     # Add signed KeyVault certificate to the gateway VM
     # -------------------------------------------------
-    Write-Host -ForegroundColor DarkCyan "Adding SSL certificate to RDS Gateway VM"
-    $vaultId = (Get-AzKeyVault -ResourceGroupName $config.dsg.keyVault.rg -VaultName $keyVaultName).ResourceId
+    Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
+    $vaultId = (Get-AzKeyVault -ResourceGroupName $config.sre.keyVault.rg -VaultName $keyVaultName).ResourceId
     $secretURL = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $certificateName).Id
-    $gatewayVm = Get-AzVM -ResourceGroupName $config.dsg.rds.rg -Name $config.dsg.rds.gateway.vmName | Remove-AzVMSecret
+    $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-    $_ = Update-AzVM -ResourceGroupName $config.dsg.rds.rg -VM $gatewayVm
+    $_ = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
     if ($?) {
-        Write-Host -ForegroundColor DarkGreen " [o] Adding certificate succeeded"
+        Add-LogMessage -Level Success "Adding certificate succeeded"
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Adding certificate failed!"
-        throw "Unable to add certificate to $($config.dsg.rds.gateway.vmName)!"
+        Add-LogMessage -Level Fatal "Adding certificate failed!"
     }
 
     # Configure RDS Gateway VM to use signed certificate
     # --------------------------------------------------
-    Write-Host -ForegroundColor DarkCyan "Configuring RDS Gateway VM to use SSL certificate"
-    # Run remote script
+    Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Generate_New_Ssl_Cert" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
-        rdsFqdn = "`"$($config.dsg.rds.gateway.fqdn)`""
+        rdsFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
         certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
         remoteDirectory = "`"$remoteDirectory`""
-    };
-    $result = Invoke-AzVMRunCommand -Name $config.dsg.rds.gateway.vmName -ResourceGroupName $config.dsg.rds.rg `
-         -CommandId "RunPowerShellScript" -ScriptPath $scriptPath -Parameter $params;
-    $success = $?
-    Write-Output $result.Value
-    if ($success) {
-        Write-Host -ForegroundColor DarkGreen " [o] Certificate installation succeeded"
-    } else {
-        Write-Host -ForegroundColor DarkRed " [x] Certificate installation failed!"
-        throw "Unable to install certificate on $($config.dsg.rds.gateway.vmName)!"
     }
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+    Write-Output $result.Value
+    # $result = Invoke-AzVMRunCommand -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg `
+    #      -CommandId "RunPowerShellScript" -ScriptPath $scriptPath -Parameter $params;
+    # $success = $?
+    # Write-Output $result.Value
+    # if ($success) {
+    #     Write-Host -ForegroundColor DarkGreen " [o] Certificate installation succeeded"
+    # } else {
+    #     Write-Host -ForegroundColor DarkRed " [x] Certificate installation failed!"
+    #     throw "Unable to install certificate on $($config.sre.rds.gateway.vmName)!"
+    # }
 }
 
 

@@ -24,24 +24,22 @@ $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 
 
-# Set variables used in template expansion
-# ----------------------------------------
+# Set variables used in template expansion, retrieving from the key vault where appropriate
+# -----------------------------------------------------------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.rds.gateway.npsSecretName -DefaultLength 12
+$rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
+$rdsGatewayVmName = $config.sre.rds.gateway.vmName
+$rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
+$rdsSh1VmName = $config.sre.rds.sessionHost1.vmName
+$rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
+$rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
+$shmNetbiosName = $config.shm.domain.netbiosName
 $sreFqdn = $config.sre.domain.fqdn
 $sreNetbiosName = $config.sre.domain.netbiosName
-$shmNetbiosName = $config.shm.domain.netbiosName
-$dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
-$rdsGatewayVmName = $config.sre.rds.gateway.vmName
-$rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
-$rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
-$rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
-
-
-# Retrieve passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
-$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.rds.gateway.npsSecretName -DefaultLength 12
 
 
 # Get SHM storage account
@@ -160,10 +158,8 @@ $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Wher
 $rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
-# Switch to DNS subscription
-$_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-
 # Add DNS record to SRE DNS Zone
+$_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
 $dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30

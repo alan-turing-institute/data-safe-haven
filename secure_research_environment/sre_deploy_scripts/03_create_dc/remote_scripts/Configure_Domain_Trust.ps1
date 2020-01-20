@@ -20,13 +20,14 @@ Param(
 $sreDcAdminPasswordSecureString = ConvertTo-SecureString -String $sreDcAdminPasswordEncrypted -Key (1..16)
 $sreDcAdminPassword = [System.Runtime.InteropServices.marshal]::PtrToStringAuto([System.Runtime.InteropServices.marshal]::SecureStringToBSTR($sreDcAdminPasswordSecureString))
 
-# Connect to remote domain
-Write-Host "Connecting to remote domain..."
+# Get context for remote domain
+Write-Host "Retrieving remote domain context..."
 $remoteDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
 if ($?) {
     Write-Host " [o] Succeeded"
 } else {
     Write-Host " [x] Failed!"
+    throw "Failed to retrieve remote domain context!"
 }
 
 # Access remote domain
@@ -36,6 +37,7 @@ if ($?) {
     Write-Host " [o] Succeeded"
 } else {
     Write-Host " [x] Failed!"
+    throw "Failed to access remote domain!"
 }
 
 # Access local domain
@@ -45,6 +47,7 @@ if ($?) {
     Write-Host " [o] Succeeded"
 } else {
     Write-Host " [x] Failed!"
+    throw "Failed to access local domain!"
 }
 
 # Checking whether that trust relationship exists
@@ -65,5 +68,6 @@ if($relationshipExists) {
         Write-Host " [o] Succeeded"
     } else {
         Write-Host " [x] Failed!"
+        throw "Failed to create trust relationship!"
     }
 }

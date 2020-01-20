@@ -64,7 +64,7 @@ function Get-ShmFullConfig {
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "RG_SHM_NETWORKING"
-            Name = "VNET_SHM_" + "$($shm.id)".ToUpper()
+            Name = "VNET_SHM_" + $($shm.id).ToUpper()
             cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
         }
         subnets = [ordered]@{}
@@ -89,7 +89,7 @@ function Get-ShmFullConfig {
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
-    $shm.dc.vmName = "DC1-SHM-" + "$($shm.id)".ToUpper()
+    $shm.dc.vmName = "DC1-SHM-" + $($shm.id).ToUpper()
     $shm.dc.vmSize = "Standard_DS2_v2"
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
@@ -97,7 +97,7 @@ function Get-ShmFullConfig {
 
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "DC2-SHM-" + "$($shm.id)".ToUpper()
+    $shm.dcb.vmName = "DC2-SHM-" + $($shm.id).ToUpper()
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
@@ -105,7 +105,7 @@ function Get-ShmFullConfig {
     # --- NPS config ---
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
-    $shm.nps.vmName = "NPS-SHM-" + "$($shm.id)".ToUpper()
+    $shm.nps.vmName = "NPS-SHM-" + $($shm.id).ToUpper()
     $shm.nps.vmSize = "Standard_DS2_v2"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
@@ -385,7 +385,7 @@ function Add-SreConfig {
     $config.sre.rds.nsg = [ordered]@{
         gateway = [ordered]@{}
     }
-    $config.sre.rds.nsg.gateway.Name = "NSG_RDS_SRE" + ($config.sre.Id).ToUpper + "_SERVER"
+    $config.sre.rds.nsg.gateway.Name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SERVER"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {

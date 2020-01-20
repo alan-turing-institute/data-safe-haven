@@ -2,7 +2,7 @@
 Write-Host "List installed modules..."
 Get-Module
 
-# Install PowerShellGet
+# Install NuGet
 Write-Host "Installing NuGet..."
 Install-PackageProvider -Name NuGet -Force
 if ($?) {
