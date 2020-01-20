@@ -145,7 +145,6 @@ Write-Output $result.Value
 # Remotely set the OS language for the DC
 # ---------------------------------------
 Add-LogMessage -Level Info "Setting OS language for: $($config.sre.dc.vmName)..."
-# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Locale.ps1"
 $scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
