@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
     [string]$sreId
 )
 
@@ -44,7 +44,7 @@ $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPasswor
 
 # Add SRE users and groups to SHM
 # -------------------------------
-Add-LogMessage -Level Info " [ ] Adding SRE users and groups to SHM..."
+Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
@@ -74,7 +74,7 @@ Write-Output $result.Value
 
 # Add SRE DNS entries to SHM
 # --------------------------
-Add-LogMessage -Level Info " [ ] Adding SRE DNS records to SHM..."
+Add-LogMessage -Level Info "[ ] Adding SRE DNS records to SHM..."
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Prepare_SHM" "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""

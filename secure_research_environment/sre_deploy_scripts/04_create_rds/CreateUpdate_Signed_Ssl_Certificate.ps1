@@ -1,15 +1,15 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
     [string]$sreId,
-    [Parameter(Position = 1,Mandatory = $false,HelpMessage = "Email address to associate with the certificate request.")]
+    [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Email address to associate with the certificate request.")]
     [string]$emailAddress = "dsgbuild@turing.ac.uk",
-    [Parameter(Position = 2,Mandatory = $false,HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
+    [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [bool]$dryRun = $false,
-    [Parameter(Position = 3,Mandatory = $false,HelpMessage = "Force the installation step even for dry runs.")]
+    [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Force the installation step even for dry runs.")]
     [bool]$forceInstall = $false,
-    [Parameter(Position = 4,Mandatory = $false,HelpMessage = "Local directory (defaults to '~/Certificates')")]
+    [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Local directory (defaults to '~/Certificates')")]
     [string]$localDirectory = "$HOME/Certificates",
-    [Parameter(Position = 5,Mandatory = $false,HelpMessage = "Remote directory (defaults to '/Certificates')")]
+    [Parameter(Position = 5, Mandatory = $false, HelpMessage = "Remote directory (defaults to '/Certificates')")]
     [string]$remoteDirectory = "/Certificates"
 )
 
@@ -50,7 +50,7 @@ if ($kvCertificate -eq $null) {
     Add-LogMessage -Level Info "No certificate found in KeyVault '$keyvaultName'"
     $requestCertificate = $true
 } else {
-    $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter,"MM/dd/yyyy HH:mm:ss",$null).AddDays(-30)
+    $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
     Add-LogMessage -Level Success "Loaded certificate from KeyVault '$keyvaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
     if ($(Get-Date) -ge $renewalDate) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyvaultName'..."
@@ -77,7 +77,7 @@ if ($requestCertificate) {
 
     # Set Posh-ACME account
     # --------------
-    Add-LogMessage -Level Info " [ ] Checking for Posh-ACME account"
+    Add-LogMessage -Level Info "[ ] Checking for Posh-ACME account"
     $acct = Get-PAAccount -List -Contact $emailAddress
     if ($acct -eq $null) {
         $account = New-PAAccount -Contact $emailAddress -AcceptTOS
@@ -101,7 +101,7 @@ if ($requestCertificate) {
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
     }
-    Add-LogMessage -Level Info " [ ] Attempting to create a DNS record for $testDomain..."
+    Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
     Publish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "DNS record creation succeeded"
@@ -141,7 +141,7 @@ if ($requestCertificate) {
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
     }
-    Add-LogMessage -Level Info " [ ] Creating certificate for $($config.sre.rds.gateway.fqdn)..."
+    Add-LogMessage -Level Info "[ ] Creating certificate for $($config.sre.rds.gateway.fqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "Certificate creation succeeded"

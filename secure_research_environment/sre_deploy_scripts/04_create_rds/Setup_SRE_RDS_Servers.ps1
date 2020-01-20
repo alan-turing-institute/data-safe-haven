@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
     [string]$sreId
 )
 
@@ -92,12 +92,12 @@ Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-rds-template.json" -Params $
 # Create blob containers in SRE storage account
 # ---------------------------------------------
 Add-LogMessage -Level Info "Creating blob storage containers in storage account '$sreStorageAccountName'..."
-foreach ($containerName in ($containerNameGateway,$containerNameSessionHosts)) {
+foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
     $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
     $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
     $numBlobs = $blobs.Length
     if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info " [ ] deleting $numBlobs blobs aready in container '$containerName'..."
+        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
         $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
         while ($numBlobs -gt 0) {
             Start-Sleep -Seconds 5
@@ -127,7 +127,7 @@ $template = Get-Content (Join-Path $PSScriptRoot "templates" "ServerList.templat
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
 
 # Copy existing files
-Add-LogMessage -Level Info " [ ] Copying RDS installers to storage account '$sreStorageAccountName'"
+Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$sreStorageAccountName'"
 $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
 $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
 if ($?) {
@@ -137,7 +137,7 @@ if ($?) {
 }
 
 # Upload scripts
-Add-LogMessage -Level Info " [ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
+Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
 if ($?) {
@@ -164,7 +164,7 @@ $dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
 $sreDomain = $config.sre.domain.fqdn
-Add-LogMessage -Level Info " [ ] Setting 'A' record for 'rds' host to '$rdsGatewayPublicIp' in SRE $sreId DNS zone ($sreDomain)"
+Add-LogMessage -Level Info "[ ] Setting 'A' record for 'rds' host to '$rdsGatewayPublicIp' in SRE $sreId DNS zone ($sreDomain)"
 Remove-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
 $result = New-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
                              -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
@@ -223,17 +223,17 @@ $params = @{
 }
 
 # RDS gateway
-Add-LogMessage -Level Info " [ ] Setting OS locale and DNS on RDS Gateway ($($config.sre.rds.gateway.vmName))"
+Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Gateway ($($config.sre.rds.gateway.vmName))"
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 # RDS_Session_Host_Apps
-Add-LogMessage -Level Info " [ ] Setting OS locale and DNS on RDS Session Host App server"
+Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host App server"
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 # RDS_Session_Host_Desktop
-Add-LogMessage -Level Info " [ ] Setting OS locale and DNS on RDS Session Host Desktop (Remote desktop server)"
+Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host Desktop (Remote desktop server)"
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
@@ -279,15 +279,7 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name "$($config.sre.rds.sessionHost1.vmName)" -ResourceGroupName $config.sre.rds.rg `
-#      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value;
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
-# }
+
 
 # Copy software and/or scripts to RDS SH2 (Remote desktop server)
 Add-LogMessage -Level Info " [ ] Copying $($filePathsSh2.Count) files to RDS_Session_Host_Desktop (Remote desktop server)"
@@ -301,15 +293,7 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name "$($config.sre.rds.sessionHost2.vmName)" -ResourceGroupName $config.sre.rds.rg `
-#      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value;
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
-# }
+
 
 # Copy software and/or scripts to RDS Gateway
 Add-LogMessage -Level Info " [ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
@@ -323,15 +307,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
-# $result = Invoke-AzVMRunCommand -Name "$($config.sre.rds.gateway.vmName)" -ResourceGroupName $config.sre.rds.rg `
-#      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params
-# $success = $?
-# Write-Output $result.Value;
-# if ($success) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Failed!"
-# }
 
 
 # Install packages on RDS VMs
@@ -340,7 +315,7 @@ Add-LogMessage -Level Info "Installing packages on RDS VMs..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Install software packages on RDS SH1 (App server)
-Add-LogMessage -Level Info " [ ] Installing packages on RDS_Session_Host_Apps (App server)"
+Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Apps (App server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Packages.ps1"
 $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg `
      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
@@ -353,7 +328,7 @@ if ($success) {
 }
 
 # Install software packages on RDS SH2 (Remote desktop server)
-Add-LogMessage -Level Info " [ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
+Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Packages.ps1"
 $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg `
      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
@@ -368,7 +343,7 @@ if ($success) {
 
 # Install required Powershell modules on RDS Gateway
 # --------------------------------------------------
-Add-LogMessage -Level Info "Installing required Powershell modules on RDS Gateway..."
+Add-LogMessage -Level Info "[ ] Installing required Powershell modules on RDS Gateway..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $params = @{
     dcAdminUsername = "`"$dcAdminUsername`""
@@ -380,20 +355,6 @@ foreach ($scriptNameParamsPair in (("Install_Powershell_Modules_01.ps1", $params
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" $scriptName
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
     Write-Output $result.Value
-    # if ($params -eq $null) {
-    #     $result = Invoke-AzVMRunCommand -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg `
-    #          -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
-    # } else {
-    #     $result = Invoke-AzVMRunCommand -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg `
-    #          -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath -Parameter $params;
-    # }
-    # $success = $?
-    # Write-Output $result.Value;
-    # if ($success) {
-    #     Write-Host -ForegroundColor DarkGreen " [o] Succeeded"
-    # } else {
-    #     Write-Host -ForegroundColor DarkRed " [x] Failed!"
-    # }
 }
 
 

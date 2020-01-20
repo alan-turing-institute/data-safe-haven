@@ -17,10 +17,9 @@ param(
 
 # Set DNS defaults
 # ----------------
-Write-Host "Setting DNS suffixes"
-$suffixes = "$sreFqdn", "$shmFqdn"
+Write-Host "Setting DNS search order to: $sreFqdn, $shmFqdn"
 $class = [wmiclass]'Win32_NetworkAdapterConfiguration'
-$_ = $class.SetDNSSuffixSearchOrder($suffixes)
+$_ = $class.SetDNSSuffixSearchOrder("$sreFqdn", "$shmFqdn")
 if ($?) {
     Write-Host " [o] Completed"
 } else {

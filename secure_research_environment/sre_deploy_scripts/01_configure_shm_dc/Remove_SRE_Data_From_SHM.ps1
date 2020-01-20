@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
     [string]$sreId
 )
 
@@ -84,7 +84,7 @@ if ($sreResources -or $sreResourceGroups) {
     $mirrorVnets = Get-AzVirtualNetwork -Name "*" -ResourceGroupName $config.shm.mirrors.rg
     foreach ($mirrorVNet in $mirrorVnets) {
         $peeringName = "PEER_$($config.sre.network.vnet.name)"
-        Add-LogMessage -Level Info " [ ] Removing peering '$peeringName' from $($mirrorVNet.Name)..."
+        Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from $($mirrorVNet.Name)..."
         $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name -ResourceGroupName $config.sre.mirrors.rg -Force
         if ($?) {
             Add-LogMessage -Level Success "Peering removal succeeded"
@@ -152,12 +152,12 @@ if ($sreResources -or $sreResourceGroups) {
     $sreDomain = $config.sre.domain.fqdn
     # RDS DDNS record
     $rdsDdnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-    Add-LogMessage -Level Info " [ ] Removing '$rdsDdnsRecordname' A record from SRE $sreId DNS zone ($sreDomain)"
+    Add-LogMessage -Level Info "[ ] Removing '$rdsDdnsRecordname' A record from SRE $sreId DNS zone ($sreDomain)"
     Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $?
     # RDS ACME record
     $rdsAcmeDnsRecordname = ("_acme-challenge." + "$($config.sre.rds.gateway.hostname)".ToLower())
-    Add-LogMessage -Level Info " [ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($sreDomain)"
+    Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($sreDomain)"
     Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $success -and $?
     # Print success/failure message
