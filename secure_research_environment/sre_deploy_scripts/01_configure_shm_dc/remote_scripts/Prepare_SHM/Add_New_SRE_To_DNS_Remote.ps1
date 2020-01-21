@@ -32,9 +32,9 @@ function DNSZoneExists($cidr) {
 # Create Reverse Lookup Zones
 # ---------------------------
 if (DNSZoneExists $identitySubnetCidr) {
-    Write-Host " [o] Reverse lookup record for SRE Identity subnet already exists"
+    Write-Host "Reverse lookup record for SRE Identity subnet already exists"
 } else {
-    Write-Host " - Adding reverse lookup record for SRE Identity subnet (CIDR: $identitySubnetCidr)"
+    Write-Host " [ ] Adding reverse lookup record for SRE Identity subnet (CIDR: $identitySubnetCidr)"
     Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $identitySubnetCidr -ReplicationScope Domain
     if ($?) {
         Write-Host " [o] Successfully created reverse lookup record for SRE Identity subnet"
@@ -44,9 +44,9 @@ if (DNSZoneExists $identitySubnetCidr) {
 }
 
 if (DNSZoneExists $rdsSubnetCidr) {
-    Write-Host " [o] Reverse lookup record for SRE RDS subnet already exists"
+    Write-Host "Reverse lookup record for SRE RDS subnet already exists"
 } else {
-    Write-Host " - Adding reverse lookup record for SRE RDS subnet (CIDR: $rdsSubnetCidr)"
+    Write-Host " [ ] Adding reverse lookup record for SRE RDS subnet (CIDR: $rdsSubnetCidr)"
     Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $rdsSubnetCidr -ReplicationScope Domain
     if ($?) {
         Write-Host " [o] Successfully created reverse lookup record for SRE RDS subnet"
@@ -56,9 +56,9 @@ if (DNSZoneExists $rdsSubnetCidr) {
 }
 
 if (DNSZoneExists $dataSubnetCidr) {
-    Write-Host " [o] Reverse lookup record for SRE Data subnet already exists"
+    Write-Host "Reverse lookup record for SRE Data subnet already exists"
 } else {
-    Write-Host " - Adding reverse lookup record for SRE Data subnet (CIDR: $dataSubnetCidr)"
+    Write-Host " [ ] Adding reverse lookup record for SRE Data subnet (CIDR: $dataSubnetCidr)"
     Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $dataSubnetCidr -ReplicationScope Domain
     if ($?) {
         Write-Host " [o] Successfully created reverse lookup record for SRE Data subnet"
@@ -72,10 +72,10 @@ if (DNSZoneExists $dataSubnetCidr) {
 # Check whether the SRE fqdn ends with the SHM fqdn
 if ($sreFqdn -match "$($shmFqdn)$") {
     $childzone = $sreFqdn -replace ".$($shmFqdn)$"
-    Write-Host " - Adding zone delegation record for SRE subdomain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+    Write-Host " [ ] Adding zone delegation record for SRE subdomain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
     Add-DnsServerZoneDelegation -Name $shmFqdn -ChildZoneName $childzone -NameServer $sreDcName -IPAddress $sreDcIp
 } else {
-    Write-Host " - Adding conditional forwarder record for SRE domain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+    Write-Host " [ ] Adding conditional forwarder record for SRE domain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
     Add-DnsServerConditionalForwarderZone -name $sreFqdn -MasterServers $sreDcIp -ReplicationScope "Forest"
 }
 if ($?) {
