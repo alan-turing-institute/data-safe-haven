@@ -476,17 +476,25 @@ function Invoke-RemoteScript {
         $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
         $success = $?
     }
-    foreach ($statuscode in $result.Value) {
-        $success = $success -and (($statuscode.Code -split "/")[-1] -eq "succeeded")
+    $success = $success -and ($result.Status -eq "Succeeded")
+    foreach ($outputStream in $result.Value) {
+        # Check for 'ComponentStatus/<stream name>/succeeded' as a signal of success
+        $success = $success -and (($outputStream.Code -split "/")[-1] -eq "succeeded")
+        # Check for '[x]' in the output stream as a signal of failure
+        if ($outputStream.Message -ne "") {
+            $success = $success -and ([string]$outputStream.Message -NotLike "* `[x`] *")
+        }
     }
+    # Clean up any temporary scripts
+    if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
+    # Check for success or failure
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
         Add-LogMessage -Level Failure "Remote script execution failed!"
+        Add-LogMessage -Level Failure "Script output:`n$($result | Out-String)"
         throw "Remote script execution has failed. Please check the error message above before re-running this script."
     }
-    # Clean up any temporary scripts
-    if ($tmpScriptFile) { Remove-Item $tmpScriptFile.FullName }
     return $result
 }
 Export-ModuleMember -Function Invoke-RemoteScript

@@ -5,52 +5,52 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [String]$sreFqdn,
-  [String]$researchUserSgName,
-  [String]$researchUserSgDescription,
-  [String]$ldapUserSgName,
-  [String]$securityOuPath,
-  [String]$serviceOuPath,
-  [String]$researchUserOuPath,
-  [String]$hackmdSamAccountName,
-  [String]$hackmdName,
-  [String]$hackmdPasswordEncrypted,
-  [String]$gitlabSamAccountName,
-  [String]$gitlabName,
-  [String]$gitlabPasswordEncrypted,
-  [String]$dsvmSamAccountName,
-  [String]$dsvmName,
-  [String]$dsvmPasswordEncrypted,
-  [String]$testResearcherSamAccountName,
-  [String]$testResearcherName,
-  [String]$testResearcherPasswordEncrypted
+    [String]$sreFqdn,
+    [String]$researchUserSgName,
+    [String]$researchUserSgDescription,
+    [String]$ldapUserSgName,
+    [String]$securityOuPath,
+    [String]$serviceOuPath,
+    [String]$researchUserOuPath,
+    [String]$hackmdSamAccountName,
+    [String]$hackmdName,
+    [String]$hackmdPasswordEncrypted,
+    [String]$gitlabSamAccountName,
+    [String]$gitlabName,
+    [String]$gitlabPasswordEncrypted,
+    [String]$dsvmSamAccountName,
+    [String]$dsvmName,
+    [String]$dsvmPasswordEncrypted,
+    [String]$testResearcherSamAccountName,
+    [String]$testResearcherName,
+    [String]$testResearcherPasswordEncrypted
 )
 
-function New-DsgGroup($name, $description, $path, $groupCategory, $groupScope) {
-  if(Get-ADGroup -Filter "Name -eq '$name'"){
-    Write-Output " - Group '$name' already exists"
-  } else {
-    Write-Output " - Creating group '$name' in OU '$serviceOuPath'"
-    return (New-ADGroup -Name "$name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
-  }
+function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
+    if(Get-ADGroup -Filter "Name -eq '$name'"){
+        Write-Output " [o] Group '$name' already exists"
+    } else {
+        Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'"
+        return (New-ADGroup -Name "$name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
+    }
 }
 
-function New-DsgUser($samAccountName, $name, $path, $passwordSecureString) {
-  if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
-    Write-Output " - User '$samAccountName' already exists"
-  } else {
-    $principalName = $samAccountName + "@" + $sreFqdn;
-    Write-Output " - Creating user '$name' ($samAccountName)"
-    return (New-ADUser -Name "$name" `
-               -UserPrincipalName $principalName `
-               -Path $path `
-               -SamAccountName $samAccountName `
-               -DisplayName "$name" `
-               -Description "$name" `
-               -AccountPassword $passwordSecureString `
-               -Enabled $true `
-               -PasswordNeverExpires $true)
-  }
+function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
+    if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
+        Write-Output " [o] User '$samAccountName' already exists"
+    } else {
+        $principalName = $samAccountName + "@" + $sreFqdn;
+        Write-Output " [ ] Creating user '$name' ($samAccountName)"
+        return (New-ADUser -Name "$name" `
+                           -UserPrincipalName $principalName `
+                           -Path $path `
+                           -SamAccountName $samAccountName `
+                           -DisplayName "$name" `
+                           -Description "$name" `
+                           -AccountPassword $passwordSecureString `
+                           -Enabled $true `
+                           -PasswordNeverExpires $true)
+    }
 }
 
 # Convert encrypted string to secure string
@@ -59,19 +59,19 @@ $gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncr
 $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
-# Create DSG Security Group
-New-DsgGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+# Create SRE Security Group
+New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
-# ---- Create Service Accounts for DSG ---
-New-DsgUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-DsgUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
-New-DsgUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
-New-DsgUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
+# ---- Create Service Accounts for SRE ---
+New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
+New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
+New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
+New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
 # Add Data Science LDAP users to SG Data Science LDAP Users security group
-Write-Output " - Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
+Write-Output " [ ] Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
 Add-ADGroupMember "$ldapUserSgName" "$dsvmSamAccountName"
 
-# Add DSG test users to the relative Security Groups
-Write-Output " - Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
+# Add SRE test users to the relative Security Groups
+Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
 Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"

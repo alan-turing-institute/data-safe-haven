@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
 
@@ -36,39 +37,12 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "--------------------------------------"
     $sreResources
 
-    # ... otherwise continuing removing artifacts in the SHM subscription
+# ... otherwise continuing removing artifacts in the SHM subscription
 } else {
-    # Switch to SHM subscription
-    # --------------------------
-    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-
-    # # === Remove all DSG secrets from SHM KeyVault ===
-    # function Remove-SreSecret($secretName){
-    #     if(Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $secretName) {
-    #         Write-Host " - Deleting secret '$secretName'"
-    #         Remove-AzKeyVaultSecret -VaultName $config.sre.keyVault.name -Name $secretName -Force
-    #     } else {
-    #         Write-Host " - No secret '$secretName' exists"
-    #     }
-    # }
-    # Write-Host -ForegroundColor DarkGreen "Removing SRE secrets from key vault..."
-    # $vault = Get-AzKeyVault -VaultName $config.sre.keyVault.name
-    # if ($vault -eq $null) {
-    #     Write-Host " - Keyvault '$($config.sre.keyVault.name)' does not exist"
-    # } else {
-    #     Remove-SreSecret $config.sre.dc.admin.passwordSecretName
-    #     Remove-SreSecret $config.sre.users.ldap.dsvm.passwordSecretName
-    #     Remove-SreSecret $config.sre.users.ldap.gitlab.passwordSecretName
-    #     Remove-SreSecret $config.sre.users.ldap.hackmd.passwordSecretName
-    #     Remove-SreSecret $config.sre.users.researchers.test.passwordSecretName
-    #     Remove-SreSecret $config.sre.rds.gateway.npsSecretName
-    #     Remove-SreSecret $config.sre.linux.gitlab.rootPasswordSecretName
-    #     Remove-SreSecret $config.sre.dsvm.admin.passwordSecretName
-    # }
-
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
     Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
+    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
     # Remove main SRE <-> SHM VNet peering
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
@@ -103,17 +77,18 @@ if ($sreResources -or $sreResourceGroups) {
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
         gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
         hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
-        dsgResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+        sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
+
 
     # Remove SRE DNS records from SHM DC
     # ----------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
-        dsgFqdn = "`"$($config.sre.domain.fqdn)`""
+        sreFqdn = "`"$($config.sre.domain.fqdn)`""
         identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
         rdsSubnetPrefix = "`"$($config.sre.network.subnets.rds.prefix)`""
         dataSubnetPrefix = "`"$($config.sre.network.subnets.data.prefix)`""
@@ -122,13 +97,13 @@ if ($sreResources -or $sreResourceGroups) {
     Write-Output $result.Value
 
 
-    # Remove DSG AD Trust from SHM DC
+    # Remove SRE AD Trust from SHM DC
     # -------------------------------
     Add-LogMessage -Level Info "Removing SRE AD Trust from SHM DC..."
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_AD_Trust_Remote.ps1" -Resolve
     $params = @{
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
-        dsgFqdn = "`"$($config.sre.domain.fqdn)`""
+        sreFqdn = "`"$($config.sre.domain.fqdn)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
