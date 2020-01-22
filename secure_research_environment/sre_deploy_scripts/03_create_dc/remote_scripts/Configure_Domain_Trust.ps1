@@ -16,58 +16,55 @@ Param(
     [String]$sreDcAdminPasswordEncrypted
 )
 
-# Convert encrypted string to secure string and then to plaintext
-$sreDcAdminPasswordSecureString = ConvertTo-SecureString -String $sreDcAdminPasswordEncrypted -Key (1..16)
-$sreDcAdminPassword = [System.Runtime.InteropServices.marshal]::PtrToStringAuto([System.Runtime.InteropServices.marshal]::SecureStringToBSTR($sreDcAdminPasswordSecureString))
-
-# Get context for remote domain
-Write-Host "Retrieving remote domain context..."
-$remoteDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
-if ($?) {
-    Write-Host " [o] Succeeded"
-} else {
-    Write-Host " [x] Failed!"
-    throw "Failed to retrieve remote domain context!"
-}
-
-# Access remote domain
-Write-Host "Accessing remote domain '$sreFqdn'..."
-$remoteDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteDirectoryContext)
-if ($?) {
-    Write-Host " [o] Succeeded"
-} else {
-    Write-Host " [x] Failed!"
-    throw "Failed to access remote domain!"
-}
-
 # Access local domain
 Write-Host "Accessing local domain..."
-$localDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+$localShmDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
 if ($?) {
-    Write-Host " [o] Succeeded"
+    Write-Host " [o] Accessing local (SHM) domain succeeded"
 } else {
-    Write-Host " [x] Failed!"
+    Write-Host " [x] Accessing local (SHM) domain failed!"
     throw "Failed to access local domain!"
 }
 
 # Checking whether that trust relationship exists
-Write-Host "Ensuring that trust relationship exists..."
+Write-Host " [ ] Ensuring that trust relationship exists..."
 $relationshipExists = $false
-foreach($relationship in $localDomainConnection.GetAllTrustRelationships()) {
+foreach($relationship in $localShmDomainConnection.GetAllTrustRelationships()) {
     if (($relationship.TargetName -eq $sreFqdn) -and ($relationship.TrustDirection -eq "Bidirectional")){
       $relationshipExists = $true
     }
 }
+
 # Create relationship if it does not exist
-if($relationshipExists) {
+if ($relationshipExists) {
     Write-Host " [o] Bidirectional trust relationship already exists"
 } else {
-    Write-Host "Creating new trust relationship..."
-    $localDomainConnection.CreateTrustRelationship($remoteDomainConnection, "Bidirectional")
+    Write-Host " [ ] Creating new trust relationship..."
+
+    # Convert encrypted string to secure string and then to plaintext
+    $sreDcAdminPasswordSecureString = ConvertTo-SecureString -String $sreDcAdminPasswordEncrypted -Key (1..16)
+    $sreDcAdminPassword = [System.Runtime.InteropServices.marshal]::PtrToStringAuto([System.Runtime.InteropServices.marshal]::SecureStringToBSTR($sreDcAdminPasswordSecureString))
+
+    # Access remote domain
+    Write-Host " [ ] Accessing remote domain '$sreFqdn'..."
+    $remoteSreDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
+    $remoteSreDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteSreDirectoryContext)
     if ($?) {
-        Write-Host " [o] Succeeded"
+        Write-Host " [o] Accessing remote (SRE) domain succeeded"
     } else {
-        Write-Host " [x] Failed!"
+        Write-Host " [x] Accessing remote (SRE) domain failed!"
+        throw "Failed to access remote domain!"
+    }
+
+    # Create trust relationship
+    $localShmDomainConnection.CreateTrustRelationship($remoteSreDomainConnection, "Bidirectional")
+    if ($?) {
+        Write-Host " [o] Creating new trust relationship succeeded"
+    } else {
+        Write-Host " [x] Creating new trust relationship failed!"
         throw "Failed to create trust relationship!"
     }
 }
+
+
+

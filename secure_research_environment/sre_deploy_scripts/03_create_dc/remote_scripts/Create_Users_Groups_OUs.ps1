@@ -53,7 +53,6 @@ ForEach($groupName in ("$sreServerAdminSgName")) {
   if ("$groupExists" -ne "") {
     Write-Host " [o] Security group '$groupName' already exists"
   } else {
-    Write-Host "New-ADGroup -Name '$groupName' -GroupScope Global -Description '$groupName' -GroupCategory Security -Path 'OU=$sreNetbiosName Security Groups,$sreDn'"
     New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=$sreNetbiosName Security Groups,$sreDn"
     if ($?) {
       Write-Host " [o] Security group '$groupName' created successfully"

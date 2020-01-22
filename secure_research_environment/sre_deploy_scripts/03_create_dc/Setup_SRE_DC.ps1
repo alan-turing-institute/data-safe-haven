@@ -99,7 +99,7 @@ $_ = Deploy-ResourceGroup -Name $config.sre.dc.rg -Location $config.sre.location
 
 # Deploy DC from template
 # -----------------------
-Add-LogMessage -Level Info "Deploying DC from template..."
+Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
 $netbiosNameMaxLength = 15
 if($config.sre.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "NetBIOS name must be no more than 15 characters long. '$($config.sre.domain.netbiosName)' is $($config.sre.domain.netbiosName.length) characters long."
@@ -127,7 +127,7 @@ Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-dc-template.json" -Params $p
 # ----------------------------------
 Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.sre.dc.vmName)..."
 # Get list of blobs in the storage account
-$blobNames = Get-AzStorageBlob -Container $artifactsFolderNameConfig -Context $storageAccount.Context | ForEach-Object{$_.Name}
+$blobNames = Get-AzStorageBlob -Container $artifactsFolderNameConfig -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $config.sre.storage.artifacts.rg -accountName $config.sre.storage.artifacts.accountName
 # Run import script remotely
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Import_Artifacts.ps1"

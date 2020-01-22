@@ -100,6 +100,8 @@ $gpo = Get-GPO -Name "All servers - Local Administrators"
 # Get SIDs for the relevant groups
 $domainAdminsSID = (Get-ADGroup "Domain Admins").SID.Value
 $serverAdminsSID = (Get-ADGroup "SG $sreNetbiosName Server Administrators").SID.Value
+Write-Host "domainAdminsSID: $domainAdminsSID"
+Write-Host "serverAdminsSID: $serverAdminsSID"
 
 # Get path to the GptTmpl file
 $GptTmplPath = "F:"; "SYSVOL", "domain", "Policies", "{$($gpo.ID)}", "Machine", "Microsoft", "Windows NT", "SecEdit", "GptTmpl.inf" | ForEach-Object -Process { $GptTmplPath = Join-Path $GptTmplPath $_ }

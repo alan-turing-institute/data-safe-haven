@@ -482,7 +482,7 @@ function Invoke-RemoteScript {
         $success = $success -and (($outputStream.Code -split "/")[-1] -eq "succeeded")
         # Check for '[x]' in the output stream as a signal of failure
         if ($outputStream.Message -ne "") {
-            $success = $success -and ([string]$outputStream.Message -NotLike "* `[x`] *")
+            $success = $success -and ([string]($outputStream.Message) -NotLike '* `[x`] *')
         }
     }
     # Clean up any temporary scripts
