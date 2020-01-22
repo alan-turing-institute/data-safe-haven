@@ -1,0 +1,127 @@
+#cloud-config
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Update apt database on first boot (ie run apt-get update)
+  update: true
+
+# List of packages to install with apt-get
+packages:
+  - openssh-server
+  - rsync
+
+# Add the atiadmin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+
+# Initialise an empty file `internal_mirror_ip_addresses.txt`
+# When internal mirrors are deployed, they add their IP address to this file
+# Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
+write_files:
+  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    content: |
+  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    content: |
+      #! /bin/bash
+      # rsync: make the destination look like the source
+      #   -p          preserve permissions
+      #   -r          recursive
+      #   -t          preserve times
+      #   -l          follow symlinks
+      #   -v          verbose
+      #   --delete    delete files present in destination but not source
+      #   --progress  show progress
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors"  | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
+          START_TIME=$(date +%s)
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/www/cran/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/push_to_internal_mirrors.log
+          ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+          echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      done
+  - path: "/home/mirrordaemon/pull_from_internet.sh"
+    content: |
+      #! /bin/bash
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
+      START_TIME=$(date +%s)
+      RSYNC_INCLUDES=""
+      # DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
+      # IF_WHITELIST_ENABLED WHITELISTED_PACKAGES=
+      # IF_WHITELIST_ENABLED for RPACKAGE in $WHITELISTED_PACKAGES; do
+      # IF_WHITELIST_ENABLED     RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
+      # IF_WHITELIST_ENABLED done
+      # IF_WHITELIST_ENABLED RSYNC_INCLUDES='--include="*/" $RSYNC_INCLUDES --exclude="*"'
+      rsync -rtlv --delete --progress $RSYNC_INCLUDES cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+      echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
+  - path: "/home/mirrordaemon/pull_then_push.sh"
+    content: |
+      #! /bin/bash
+      source ~mirrordaemon/pull_from_internet.sh
+      source ~mirrordaemon/push_to_internal_mirrors.sh
+
+runcmd:
+  # Suppress apt prompts and warning messages
+  - export DEBIAN_FRONTEND=noninteractive
+
+  # Generate SSH keys for connecting to the internal mirror
+  # - do this early since it is pulled out of the VM by the deployment script
+  - echo "*** Generating SSH keys for connecting to the internal mirror"
+  - ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - sed -i 's/root@/mirrordaemon@/' id_rsa.pub
+  - mkdir -p ~mirrordaemon/.ssh
+  - mv id_rsa id_rsa.pub ~mirrordaemon/.ssh/
+  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
+  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+
+  # Upgrade installation then clean up
+  - echo "*** Upgrade and clean up apt-get packages... ***"
+  - apt-get -y upgrade
+  - apt-get clean
+
+  # Set up and partition data disk
+  - echo "*** Setting up local disk... ***"
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
+  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+  - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/mirrordaemon/www/cran
+
+  # Set up mirroring
+  - chmod u+x ~mirrordaemon/*.sh
+  - echo "*** Adding external update (bandersnatch) job to crontab (3am on 15th of each month)... ***"
+  - echo "0 3 15 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "*** Adding internal mirror update job to crontab (2am on 1st of each month)... ***"
+  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+
+  # Fix permissions so that mirrordaemon owns its files
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
+
+  # Schedule initial update for next boot
+  - echo "*** Schedule mirror update jobs for next boot... ***"
+  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
+
+  # Print out some diagnostic information
+  - echo "*** This server is currently aware of internal mirrors at the following locations ***"
+  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId
 )
 
@@ -13,227 +13,268 @@ Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig ($shmId)
+$config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
-$caValidityMonths = 60 # 5 years
-$clientValidityMonths = 24 # 2 years
 
-
-# Retrieve usernames/passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Retrieving usernames and passwords..."
-$dcNpsAdminUsername = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
-$dcNpsAdminPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminPassword
-$dcSafemodePassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcSafemodePassword
-
-
-# Generate or retrieve root certificate
-# -------------------------------------
-Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-$status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
-if ($status -eq "completed") {
-    Add-LogMessage -Level Info "[ ] Retrieving existing CA certificate..."
-} else {
-    Add-LogMessage -Level Info "[ ] Generating self-signed CA certificate..."
-    $caPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-P2S-$($config.id)-CA" -SecretContentType "application/x-pkcs12" `
-                                                -ValidityInMonths $caValidityMonths -IssuerName "Self" -KeySize 2048 -KeyType "RSA"
-    $caPolicy.Exportable = $true
-    $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
-    while ($status -ne "completed") {
-        $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
-        $progress += 1
-        Write-Progress -Activity "Certificate creation:" -Status $status -PercentComplete $progress
-        Start-Sleep 1
-    }
-}
-$vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-if ($?) {
-    Add-LogMessage -Level Success "Retrieved CA certificate"
-} else {
-    Add-LogMessage -Level Failure "Failed to retrieve CA certificate!"
-}
-
-
-# Generate or retrieve client certificate
-# ---------------------------------------
-Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
-$status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate).Status
-if ($status -eq "completed") {
-    Add-LogMessage -Level Info "[ ] Retrieving existing client certificate..."
-} else {
-    # Generate a CSR
-    # --------------
+# Ensure that certificates exist
+# ------------------------------
+try {
+    # Define single folder for certificate generation for easier cleanup
     $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
-    $csrPath = Join-Path $certFolderPath "client.csr"
-    Add-LogMessage -Level Info "[ ] Generating a certificate signing request at '$csrPath' to be signed by the CA certificate..."
-    if ($status -ne "inProgress") {
-        $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=SHM-P2S-$($config.id)-Client" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
-        $_ = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
-    }
-    $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
-    $success = $?
-    # Write the CSR after reflowing to a maximum of 64 characters per line
-    "-----BEGIN CERTIFICATE REQUEST-----" | Out-File -FilePath $csrPath
-    $certificateOperation.CertificateSigningRequest -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $csrPath
-    "-----END CERTIFICATE REQUEST-----" | Out-File -Append -FilePath $csrPath
-    if ($success) {
-        Add-LogMessage -Level Success "CSR creation succeeded"
+
+    # Certificate validities
+    $caValidityDays = 825 # The CAB standard now limits certificates to this maximum lifetime
+    $caValidityMonths = 28 # The CAB standard limits certificates to 825 days
+    $clientValidityDays = 732 # 2 years
+
+    # Certificate local paths
+    $caStem = "SHM-$($config.id)-P2S-CA".ToUpper()
+    $caCrtPath = Join-Path $certFolderPath "$caStem.crt"
+    $caKeyPath = Join-Path $certFolderPath "$caStem.key"
+    $caPfxPath = Join-Path $certFolderPath "$caStem.pfx"
+    $clientStem = "SHM-$($config.id)-P2S-CLIENT".ToUpper()
+    $clientCrtPath = Join-Path $certFolderPath "$clientStem.crt"
+    $clientCsrPath = Join-Path $certFolderPath "$clientStem.csr"
+    $clientKeyPath = Join-Path $certFolderPath "$clientStem.key"
+    $clientPfxPath = Join-Path $certFolderPath "$clientStem.pfx"
+    $clientPkcs7Path = Join-Path $certFolderPath "$clientStem.p7b"
+
+    # Generate or retrieve CA certificate
+    # -----------------------------------
+    Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
+    $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
+        Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
-        Add-LogMessage -Level Failure "CSR creation failed!"
-        throw "Unable to create a certificate signing request for the gateway client!"
+        # Remove any previous certificate with the same name
+        # --------------------------------------------------
+        Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
+        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
+
+        # Create self-signed CA certificate with private key
+        # --------------------------------------------------
+        Add-LogMessage -Level Info "[ ] Generating self-signed certificate locally"
+        $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnCaCertPassword
+        openssl req -subj "/CN=$caStem" -new -newkey rsa:2048 -sha256 -days $caValidityDays -nodes -x509 -keyout $caKeyPath -out $caCrtPath
+        openssl pkcs12 -in $caCrtPath -inkey $caKeyPath -export -out $caPfxPath -password "pass:$vpnCaCertPassword"
+        if ($?) {
+            Add-LogMessage -Level Success "Generating self-signed certificate succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Generating self-signed certificate failed!"
+        }
+
+        # Upload the CA key + cert bundle to the KeyVault
+        # -----------------------------------------------
+        Add-LogMessage -Level Info "[ ] Uploading CA private key + certificate bundle as certificate $($config.keyVault.secretNames.vpnCaCertificate) (includes private key)"
+        $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyvault.secretNames.vpnCaCertificate -FilePath $caPfxPath -Password (ConvertTo-SecureString $vpnCaCertPassword -AsPlainText -Force);
+        if ($?) {
+            Add-LogMessage -Level Success "Uploading the full CA certificate succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Uploading the full CA certificate failed!"
+        }
+
+        # # NB. this is not working at present - OSX reports that the CA certificate "is not standards compliant"
+        # # Generate a self-signed CA certificate in the KeyVault
+        # # -----------------------------------------------------
+        # Add-LogMessage -Level Info "[ ] Generating self-signed certificate in the '$($config.keyVault.name)' KeyVault"
+        # $caPolicy = New-AzKeyVaultCertificatePolicy -SecretContentType "application/x-pkcs12" -KeyType "RSA" -KeySize 2048 `
+        #                                             -SubjectName "CN=$caStem" -ValidityInMonths $caValidityMonths -IssuerName "Self"
+        # $caPolicy.Exportable = $true
+        # $certificateOperation = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate -CertificatePolicy $caPolicy
+        # while ($status -ne "completed") {
+        #     $status = (Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Status
+        #     $progress = [math]::min(100, $progress + 9)
+        #     Write-Progress -Activity "Certificate creation:" -Status $status -PercentComplete $progress
+        #     Start-Sleep 1
+        # }
+        # if ($?) {
+        #     Add-LogMessage -Level Success "Generating self-signed certificate succeeded"
+        # } else {
+        #     Add-LogMessage -Level Fatal "Generating self-signed certificate failed!"
+        # }
+
+        # Store plain CA certificate as a KeyVault secret
+        # -----------------------------------------------
+        Add-LogMessage -Level Info "[ ] Uploading the plain CA certificate as secret $($config.keyVault.secretNames.vpnCaCertificatePlain) (without private key)"
+        $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+        # Extract the public certificate and encode it as a Base64 string, without the header and footer lines and with a space every 64 characters
+        $vpnCaCertificateB64String = [System.Convert]::ToBase64String($vpnCaCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert))
+        $vpnCaCertificatePlain = ($vpnCaCertificateB64String -split '(.{64})' | Where-Object { $_ }) -join " "
+        $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString "$vpnCaCertificatePlain" -AsPlainText -Force)
+        if ($?) {
+            Add-LogMessage -Level Success "Uploading the plain CA certificate succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Uploading the plain CA certificate failed!"
+        }
     }
 
-    # Load CA certificate (with private key) into local PFX file
-    # ----------------------------------------------------------
-    Add-LogMessage -Level Info "[ ] Loading CA full certificate (with private key) into local PFX file..."
-    $caPfxPath = Join-Path $certFolderPath "ca.pfx"
-    $caPfxSecret = Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate
-    $caPfxUnprotectedBytes = [Convert]::FromBase64String($caPfxSecret.SecretValueText)
-    [IO.File]::WriteAllBytes($caPfxPath,$caPfxUnprotectedBytes)
-    if ($?) {
-        Add-LogMessage -Level Success "Loading CA certificate succeeded"
+    # Generate or retrieve client certificate
+    # ---------------------------------------
+    Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' KeyVault..."
+    $vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
+    if ($vpnClientCertificate) {
+        Add-LogMessage -Level InfoSuccess "Found existing client certificate"
     } else {
-        Add-LogMessage -Level Failure "Loading CA certificate failed!"
-        throw "Unable to load the CA certificate!"
-    }
+        # Remove any previous certificate with the same name
+        # --------------------------------------------------
+        Add-LogMessage -Level Info "Creating new client certificate..."
+        Remove-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
 
-    # Split CA certificate into key and certificate
-    # ---------------------------------------------
-    Add-LogMessage -Level Info "[ ] Splitting CA full certificate into key and certificate components..."
-    # Write CA key to a file
-    $caKeyPath = Join-Path $certFolderPath "ca.key"
-    $caKeyPassword = New-Password
-    openssl pkcs12 -in $caPfxPath -passin pass: -passout pass:$caKeyPassword -nocerts -out "$($caKeyPath).encrypted" 2>&1 | Out-Null
-    openssl rsa -in "$($caKeyPath).encrypted" -passin pass:$caKeyPassword -outform PEM -out $caKeyPath 2>&1 | Out-Null
-    $keyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
-    # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
-    $caCrtPath = Join-Path $certFolderPath "ca.crt"
-    $caCrtFull = openssl pkcs12 -in $caPfxPath -passin pass: -passout pass: -clcerts -nokeys 2> Out-Null
-    $pattern = "-----BEGIN CERTIFICATE-----(.*)-----END CERTIFICATE-----"
-    $vpnCaCertificatePlain = [regex]::match($caCrtFull,$pattern).Groups[1].Value -replace " ",""
-    "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
-    $vpnCaCertificatePlain -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
-    "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
-    $certMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
-    if ($keyMD5 -eq $certMD5) {
-        Add-LogMessage -Level Success "Splitting CA certificate succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Splitting CA certificate failed!"
-        throw "Unable to split the CA certificate!"
-    }
+        # Load CA certificate into local PFX file and extract the private key
+        # -------------------------------------------------------------------
+        Add-LogMessage -Level Info "[ ] Loading CA private key from key vault..."
+        $caPfxBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
+        [IO.File]::WriteAllBytes($caPfxPath, [System.Convert]::FromBase64String($caPfxBase64))
+        $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
+        $caKeyData.Where({ $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
+        $caKeyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
+        if ($?) {
+            Add-LogMessage -Level Success "Loading CA private key succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Loading CA private key failed!"
+        }
 
-    # Sign the client certificate
-    # ---------------------------
-    Add-LogMessage -Level Info "[ ] Signing the client certificate..."
-    $clientCrtPath = Join-Path $certFolderPath "client.crt"
-    openssl x509 -req -in $csrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days 360 -sha256 2> Out-Null
-    if ((Get-Content $clientCrtPath) -ne $null) {
-        Add-LogMessage -Level Success "Signing the client certificate succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Signing the client certificate failed!"
-        throw "Unable to sign the client certificate!"
-    }
+        # Split CA certificate into key and certificate
+        # ---------------------------------------------
+        Add-LogMessage -Level Info "[ ] Retrieving CA plain certificate..."
+        # Write CA certificate to a file after stripping headers and reflowing to a maximum of 64 characters per line
+        $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+        "-----BEGIN CERTIFICATE-----" | Out-File -FilePath $caCrtPath
+        $vpnCaCertificatePlain.Replace(" ", "") -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $caCrtPath
+        "-----END CERTIFICATE-----" | Out-File -Append -FilePath $caCrtPath
+        $caCrtMD5 = openssl x509 -noout -modulus -in $caCrtPath | openssl md5
+        if ($caKeyMD5 -eq $caCrtMD5) {
+            Add-LogMessage -Level Success "Validated CA certificate retrieval using MD5"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to validate CA certificate retrieval using MD5!"
+        }
 
-    # Create PKCS#7 file from full certificate chain and merge it with the private key
-    # --------------------------------------------------------------------------------
-    Add-LogMessage -Level Info "[ ] Signing the client certificate and merging into the '$($config.keyVault.name)' KeyVault..."
-    $clientPkcs7Path = Join-Path $certFolderPath "client.p7b"
-    openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2> Out-Null
-    $vpnClientCertPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.vpnClientCertPassword
-    $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString $vpnClientCertPassword -AsPlainText -Force)
-    if ($?) {
-        Add-LogMessage -Level Success "Importing the signed client certificate succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Importing the signed client certificate failed!"
-        throw "Unable to import the signed client certificate!"
-    }
+        # Generate a CSR in the KeyVault
+        # ------------------------------
+        Add-LogMessage -Level Info "[ ] Creating new certificate signing request to be signed by the CA certificate..."
+        if ($status -ne "inProgress") {
+            $clientPolicy = New-AzKeyVaultCertificatePolicy -SubjectName "CN=$clientStem" -ValidityInMonths $clientValidityMonths -IssuerName "Unknown"
+            $_ = Add-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -CertificatePolicy $clientPolicy
+        }
+        $certificateOperation = Get-AzKeyVaultCertificateOperation -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate
+        $success = $?
+        # Write the CSR after reflowing to a maximum of 64 characters per line
+        "-----BEGIN CERTIFICATE REQUEST-----" | Out-File -FilePath $clientCsrPath
+        $certificateOperation.CertificateSigningRequest -split '(.{64})' | Where-Object { $_ } | Out-File -Append -FilePath $clientCsrPath
+        "-----END CERTIFICATE REQUEST-----" | Out-File -Append -FilePath $clientCsrPath
+        if ($success) {
+            Add-LogMessage -Level Success "CSR creation succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "CSR creation failed!"
+        }
 
-    # Store plain CA certificate as a KeyVault secret
-    # -----------------------------------------------
-    Add-LogMessage -Level Info "[ ] Storing the plain client certificate (without private key) in the '$($config.keyVault.name)' KeyVault..."
-    $_ = Set-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain -SecretValue (ConvertTo-SecureString $vpnCaCertificatePlain -AsPlainText -Force);
-    if ($?) {
-        Add-LogMessage -Level Success "Storing the plain client certificate succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Storing the plain client certificate failed!"
-        throw "Unable to store the plain client certificate!"
+        # Sign the client certificate - create a PKCS#7 file from full certificate chain and merge it with the private key
+        # ----------------------------------------------------------------------------------------------------------------
+        Add-LogMessage -Level Info "[ ] Signing the CSR and merging into the '$($config.keyVault.secretNames.vpnClientCertificate)' certificate..."
+        $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnClientCertPassword
+        openssl x509 -req -in $clientCsrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days $clientValidityDays -sha256
+        openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2>&1 | Out-Null
+        $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString "$vpnClientCertPassword" -AsPlainText -Force)
+        if ($?) {
+            Add-LogMessage -Level Success "Importing the signed client certificate succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Importing the signed client certificate failed!"
+        }
     }
-
-    # Clean up local files
-    # --------------------
+} finally {
+    # Delete local copies of certificates and private keys
     Get-ChildItem $certFolderPath -Recurse | Remove-Item -Recurse
 }
-$vpnClientCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate).Certificate
-if ($?) {
-    Add-LogMessage -Level Success "Retrieved client certificate"
-} else {
-    Add-LogMessage -Level Failure "Failed to retrieve client certificate!"
-}
+
+# Setup boot diagnostics resource group and storage account
+# ---------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.bootdiagnostics.rg -Location $config.location
+$_ = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
+# Setup artifacts resource group and storage account
+# --------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-
-
-# Setup storage account and upload artifacts
-# ------------------------------------------
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
 
 # Create blob storage containers
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-foreach ($containerName in ("armdsc", "dcconfiguration", "sre-rds-sh-packages")) {
-    $exists = Get-AzStorageContainer -Context $storageAccount.Context | Where-Object { $_.Name -eq "$containerName" }
-    if ($exists) {
-        Add-LogMessage -Level Success "Storage container '$containerName' already exists in storage account '$storageAccountName'"
-    } else {
-        Add-LogMessage -Level Info "[ ] Creating storage container '$containerName' in storage account '$storageAccountName'"
-        $_ = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context
-        if ($?) {
-            Add-LogMessage -Level Success "Created storage container"
-        } else {
-            Add-LogMessage -Level Failure "Failed to create storage container!"
-        }
-    }
+foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-packages")) {
+    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
+# NB. we would like the NPS VM to log to a database, but this is not yet working
 # # Create file storage shares
 # foreach ($shareName in ("sqlserver")) {
 #     if (-not (Get-AzStorageShare -Context $storageAccount.Context | Where-Object { $_.Name -eq "$shareName" })) {
-#         Write-Host " - Creating share '$shareName' in storage account '$storageAccountName'"
+#         Add-LogMessage -Level Info "Creating share '$shareName' in storage account '$($config.storage.artifacts.accountName)'"
 #         New-AzStorageShare -Name $shareName -Context $storageAccount.Context;
 #     }
 # }
 
+
 # Upload artifacts
 # ----------------
-Add-LogMessage -Level Info "Uploading artifacts to blob storage..."
+Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
 # Upload DSC scripts
-Add-LogMessage -Level Info "[ ] Uploading DSC files to storage account '$storageAccountName'"
-$_ = Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
+Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "armdsc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
 $success = $success -and $?
 if ($?) {
-    Add-LogMessage -Level Success "Uploaded DSC files"
+    Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload DSC files!"
+    Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
 }
 # Upload artifacts for configuring the DC
-Add-LogMessage -Level Info "[ ] Uploading DC configuration files to storage account '$storageAccountName'"
-$_ = Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
+Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "dcconfiguration" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
 $success = $success -and $?
 if ($?) {
-    Add-LogMessage -Level Success "Uploaded DC configuration files"
+    Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {
-    Add-LogMessage -Level Failure "Failed to upload DC configuration files!"
+    Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
 }
-# Write-Host " - Uploading SQL server installation files to storage account '$storageAccountName'"
+# Upload Windows package installers
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to blob storage"
+$success = $true
+# Chrome
+$filename = "GoogleChromeStandaloneEnterprise64.msi"
+Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "GoogleChrome_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# LibreOffice
+$baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
+$httpContent = Invoke-WebRequest -URI $baseUri
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | % { $_.href }
+Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# PuTTY
+$baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+$httpContent = Invoke-WebRequest -URI $baseUri
+$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | % { $_.href }
+$version = ($filename -split "-")[2]
+Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+# WinSCP
+$httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
+$filename = $httpContent.Links  | Where-Object { $_.href -like "*Setup.exe" } | % { ($_.href -split "/")[-1] }
+$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*$filename" } | % { $_.href }
+Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
+$success = $success -and $?
+if ($success) {
+    Add-LogMessage -Level Success "Uploaded Windows package installers"
+} else {
+    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
+}
+# NB. we would like the NPS VM to log to a database, but this is not yet working
+# Add-LogMessage -Level Info "Uploading SQL server installation files to storage account '$($config.storage.artifacts.accountName)'"
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=853017"
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
@@ -245,28 +286,37 @@ if ($?) {
 $_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
-# Deploy VNet from template
-# -------------------------
-Add-LogMessage -Level Info "Deploying VNet from template..."
+# Deploy VNet gateway from template
+# ---------------------------------
+Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    Virtual_Network_Name = $config.network.vnet.Name
     P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-    VNET_CIDR = $config.network.vnet.cidr
-    Subnet_Identity_Name = $config.network.subnets.identity.Name
-    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
-    Subnet_Web_Name = $config.network.subnets.web.Name
-    Subnet_Web_CIDR = $config.network.subnets.web.cidr
-    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
+    Shm_Id = "$($config.id)".ToLower()
     Subnet_Gateway_CIDR = $config.network.subnets.gateway.cidr
+    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
+    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
+    Subnet_Identity_Name = $config.network.subnets.identity.Name
+    Subnet_Web_CIDR = $config.network.subnets.web.cidr
+    Subnet_Web_Name = $config.network.subnets.web.Name
+    Virtual_Network_Name = $config.network.vnet.Name
+    VNET_CIDR = $config.network.vnet.cidr
     VNET_DNS1 = $config.dc.ip
     VNET_DNS2 = $config.dcb.ip
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmvnet/shmvnet-template.json" -Params $params -ResourceGroupName $config.network.vnet.rg
+Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmvnet/shm-vnet-template.json" -Params $params -ResourceGroupName $config.network.vnet.rg
 
 
 # Create SHM DC resource group if it does not exist
-# ---------------------------------------------
+# -------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
+
+
+# Retrieve usernames/passwords from the keyvault
+# ------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
+$dcNpsAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+$dcNpsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
+$dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
 
 
 # Deploy SHM DC from template
@@ -278,6 +328,7 @@ $params = @{
     Administrator_User = $dcNpsAdminUsername
     Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    BootDiagnostics_Account_Name = $config.bootdiagnostics.accountName
     DC1_Host_Name = $config.dc.hostname
     DC1_IP_Address = $config.dc.ip
     DC1_VM_Name = $config.dc.vmName
@@ -285,7 +336,7 @@ $params = @{
     DC2_IP_Address = $config.dcb.ip
     DC2_VM_Name = $config.dcb.vmName
     Domain_Name = $config.domain.fqdn
-    Domain_Name_NetBIOS_Name = $config.domain.netbiosName
+    Domain_NetBIOS_Name = $config.domain.netbiosName
     SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
     Shm_Id = "$($config.id)".ToLower()
     Virtual_Network_Name = $config.network.vnet.Name
@@ -293,14 +344,14 @@ $params = @{
     Virtual_Network_Subnet = $config.network.subnets.identity.Name
     VM_Size = $config.dc.vmSize
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shmdc-template.json" -Params $params -ResourceGroupName $config.dc.rg
+Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shm-dc-template.json" -Params $params -ResourceGroupName $config.dc.rg
 
 
 # Import artifacts from blob storage
 # ----------------------------------
 Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.dc.vmName)..."
 # Get list of blobs in the storage account
-$storageContainerName = "dcconfiguration"
+$storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script
@@ -312,14 +363,15 @@ $params = @{
     storageContainerName = "`"$storageContainerName`""
     sasToken = "`"$artifactSasToken`""
 }
-Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Configure Active Directory remotely
 # -----------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
 # Fetch ADSync user password
-$adsyncPassword = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.adsyncPassword
+$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.adsyncPassword
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Configuration.ps1"
@@ -333,15 +385,17 @@ $params = @{
     serverAdminName = "`"$dcNpsAdminUsername`""
     adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
 }
-Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Set the OS language to en-GB remotely
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Set_OS_Language.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Add-LogMessage -Level Info "Setting OS language for: $vmName..."
-    Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    Write-Output $result.Value
 }
 
 
@@ -349,7 +403,8 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 # ------------------------
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Configure_Group_Policies.ps1"
-Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
+Write-Output $result.Value
 
 
 # Active directory delegation
@@ -360,9 +415,10 @@ $params = @{
     netbiosName = "`"$($config.domain.netbiosName)`""
     ldapUsersGroup = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
 }
-Invoke-LoggedRemotePowershell -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+Write-Output $result.Value
 
 
 # Switch back to original subscription
 # ------------------------------------
-Set-AzContext -Context $originalContext;
+$_ = Set-AzContext -Context $originalContext

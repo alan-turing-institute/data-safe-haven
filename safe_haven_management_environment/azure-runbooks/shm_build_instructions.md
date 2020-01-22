@@ -7,10 +7,11 @@
   - Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
 - Microsoft Remote Desktop
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
-- Azure CLI (bash)
-  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 - OpenSSL
   - Install using your package manager of choice
+
+<!-- - Azure CLI (bash)
+  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
 
 
 
@@ -27,17 +28,18 @@
 
 
 ### Create a Custom Domain Name
-#### Create a DNS zone for the custom domain
-Create a new DNS zone according to the following rules:
+#### Choose your custom domain
+Choose your domain according to the following rules:
   - Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_PRODUCTION` resource group
-  - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain [in the `Safe Haven Domains` subscription]
+  - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
     - use the `Safe Haven Domains` subscription
     - use the `RG_SHM_DNS_TEST` resource group
-  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
-**NB.** For Turing Safe Havens, we use the `UK South` region wherever possible.
+  - Other safe havens: follow your organisation's guidance.
+    - this may require purchasing a dedicated domain
 
+#### Create a DNS zone for the custom domain
 Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
 - If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
 - Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the resource group and subscription specified above.
@@ -47,15 +49,18 @@ Whatever new domain or subdomain you choose, you must create a new Azure DNS Zon
   - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
 - Click through the various validation screens
 
-Once deployed, duplicate the `NS` record in the DNS Zone for the new domain / subdomain to its parent record in the DNS system.
-- Navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone". The NS record will list 4 Azure name servers.
-- If using a subdomain of an existing Azure DNS Zone, create an NS record in the parent Azure DNS Zone for the new subdomain with the same value as the NS record in the new Azure DNS Zone for the subdomain (i.e. for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
-- If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+#### Add DNS records to the parent DNS system
+Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
+- To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
+- Duplicate these records to the parent DNS system as follows:
+  - If using a subdomain of an existing Azure DNS Zone, create an NS record set in the parent Azure DNS Zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
+  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
 
 ### Create and add the custom domain to the new AAD
 1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
 2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
-3. Note the DNS record details displayed
+3. If DNS record details are displayed similar to the image below, you need to verify the domain. Note these details and complete the following steps.
+   * If no DNS details are displayed and instead the custom domain is showing `Status Verified`, you can skip to the next section.
   ![AAD DNS record details](images/aad_dns_record_details.png)
 4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
 5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
@@ -125,7 +130,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
     - Use this password to log into https://portal.azure.com as the user `admin@<custom domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
       - Look in the KeyVault under the `RG_SHM_SECRETS` resource group in the management subscription.
-      - There should be a secret there called `shm-aad-admin-password`
+      - There should be a secret there called `shm-<shmId>-aad-admin-password`
       - Use this as the new password
       - If you are prompted to associate a phone number and email address with the account - do so.
     - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
@@ -196,6 +201,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
 
 
 ## 3. Deploy and configure VNET and Domain Controllers
+
 ### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
@@ -212,44 +218,29 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
    ![Resource groups](images/resource_groups.png)
 
 
-### Download software and upload to blob storage
-A number of files are needed for the SRE deployment. They must be added to blob storage:
-
-1. On the portal navigate to `RG_SHM_ARTIFACTS` resource group and go to the storage account. Click `blobs` and check that there is a container called `sre-rds-sh-packages`:
-   ![Blob storage](images/blobstorage.png)
-2. On your local machine download the following files, appending version numbers manually if needed:
-    - `GoogleChromeStandaloneEnterprise64-<version number>.msi` which you should unpack from the [Chrome bundle for Windows 64‑bit](https://cloud.google.com/chrome-enterprise/browser/download/?h1=en) zip file, appending the version number
-    - `install-tl-windows-<date>.exe` taking the [latex TexLive version from here](http://mirror.ctan.org/systems/texlive/tlnet/install-tl-windows.exe), appending the creation date.
-    - `LibreOffice_<version number>_Win_x64.msi` taking the [latest Windows (64 bit) version from here](https://www.libreoffice.org/download/download/)
-    - `putty-64bit-<version number>-installer.msi` taking the [latest version from here](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-    - `WinSCP-<version number>-Setup.exe` taking the [latest version from here](https://winscp.net/eng/download.php)
-    <!-- https://get.adobe.com/uk/reader/download/?installer=Reader_DC_2019.021.20058_English_UK_for_Windows&stype=7779&standalone=1 -->
-3. Use the Azure portal to upload all of these files to the `sre-rds-sh-packages` folder. The container will now look like this:
-   ![sre-rds-sh-packages contents](images/sre-rds-sh-packages.png)
-
-
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-3. Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+3. Click on the certificate named `shm-<shmId>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
 **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
 
 
 ### Configure a VPN connection to the Safe Haven Management VNet
-1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
+  ![certificate details](images/certificate_details.png)
+4. Read through the following notes, then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
-**NOTE:**
+**NOTES:**
 - **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
+- Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
+- Name the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
 - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
-  ![certificate details](images/certificate_details.png)
-
-4. Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
 
@@ -261,8 +252,9 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
   - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is in the `shm-dcnps-admin-username` secret.
-  - The password in the `shm-dcnps-admin-password` secret.
+  - The username is in the `shm-<shm-id>-dcnps-admin-username` secret.
+  - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
+6. Log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
 
 
 ### Install Azure Active Directory Connect
@@ -276,26 +268,26 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
   - On the `Install required components` screen:
     - Click "Install"
   - On the `User sign-in` screen:
-    - Ensure that "Password Hash Synchronization" is selected
+    - Ensure that `Password Hash Synchronization` is selected
     - Click "Next"
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
     - You should have created `admin@<custom domain>` during the `Add additional administrators` step
     - Click "Next"
   - On the `Connect your directories` screen:
-    - Ensure that correct forest (your custom domain name; e.g `TURINGSAFEHAVEN.ac.uk`) is selected and click "Add Directory"
+    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
       - Select "Use existing AD account"
       - Enter the details of the "localadsync" user.
         - Username: `localadsync@<custom domain>` (e.g. localadsync)
-        - Password: Look in the `shm-adsync-password` secret in the management KeyVault.
+        - Password: Look in the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
       - Click "OK"
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `sh-management-adsync` secret in the management KeyVault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
           - In Server Manager click "Tools -> Active Directory Users and Computers"
           - Expand the domain in the left hand panel
           - Expand the "Safe Haven Service Accounts" OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-adsync-password` secret in the management KeyVault.
+          - Set the password to the the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
           - Leave the other settings as is and click "Ok"
     - Click "Next"
   - On the `Azure AD sign-in configuration` screen:
@@ -321,7 +313,7 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Click "Exit"
 
 ### Set AAD sync permissions
-The `localadsync@<custom domain>` needs to be given permissions to change passwords or self-service password reset will not work.
+The `localadsync@<custom domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
 - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
 - Click on the "View" menu item and make sure that "Advanced Features" is enabled
 - Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select "Properties"
@@ -329,23 +321,25 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 - In the pop-up window, go to the "Security" tab and click on the "Advanced" button
   ![AD permissions security](images/aad_permissions_security.png)
 - In the pop-up window, click on the "Add" button
-- Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names"
-- In the "Applies to" section, select "Descendant User objects"
-- Under permission and properties, assign following permissions (NB. there are a lot of properties, so this might take some scrolling!)
-  - `Reset password`
-  - `Change password`
-  - `Write lockoutTime`
-  - `Write pwdLastSet`
-- Click "OK"
+  - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names". When the `localadsync@<custom domain>` principal is selected, click "OK" to return to the "Permissions Entry for <custom domain>" window.
+  - In the "Applies to" section, select "Descendant User objects"
+  - Under `Permissions`, ensure that the following options are checked:
+    - `Reset password`
+    - `Change password`
+  - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling!):
+    - `Write lockoutTime`
+    - `Write pwdLastSet`
+  - Click "OK"
 - Now go through the same procedure, this time selecting "This object and descendant objects" in the "Applies to" section
-- Enable the following permissions:
-  - `Replicating Directory Changes`
-  - `Replicating Directory Changes All`
+  - Enable the following permissions:
+    - `Replicating Directory Changes`
+    - `Replicating Directory Changes All`
+  - Click "OK" on all open dialog boxes
  <!-- Look at https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-configure-ad-ds-connector-account for automation-->
 
 
 ### Additional AAD Connect Configuration
-1. Open the `Synchronization Rules Editor` from the start menu
+1. Open `Azure Ad Connect > Synchronization Rules Editor` from the start menu
 
   ![synchronisation rules](images/synchronisation_rules.png)
 
@@ -353,11 +347,11 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 3. Select the `Out to AAD - User Join` rule.
   - Click "Disable".
   - Click "Edit".
-  - In the "Edit Reserved Rule Confirmation" dialog box click "OK"
+  - In the "Edit Reserved Rule Confirmation" dialog box click `Yes`
 4. In the editing view set `precedence` to 1.
   - Select "Transformations" from the sidebar and locate the rule with its "Target Attribute" set to "usageLocation"
     - Change the "FlowType" column from "Expression" to "Direct"
-    - On the "Source" column click drop-down and choose "c" attribute
+    - On the "Source" column click the drop-down menu and select `c`
     - Click "Save" (in the "Warning" dialog box click "OK")
 5. You will now see a cloned version of the `Out to AAD - User Join`.
   - Delete the original.
@@ -381,7 +375,7 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
   - Create a new user:
     - First name: Test
     - Lastname: AD Sync
-    - User login name: `test-adsync`
+    - User login name: `testadsync`
     - Click "Next"
   - Enter a default password of your choice
     - Click "Next"
@@ -397,7 +391,7 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`
-  - Select "Manage > Password reset" from the left hand menu
+  - Select `Manage > Password reset` from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
     ![Enable writeback](images/enable_writeback.png)
@@ -425,41 +419,48 @@ The `localadsync@<custom domain>` needs to be given permissions to change passwo
 
 
 ### Configure NPS server
-1. Connect to the NPS Server VM using Microsoft Remote desktop, using the same procedure as for SHMDC1/SHMDC2, but using the private IP address for SHMNPS VM, which is found in the `RG_SHM_NPS` resource group.
-   - **NOTE:** The Username and Password is the same as for SHMDC1 and SHMDC2, but you must log in as a **domain** user rather than a local user (i.e. use `<admin username>@<custom domain>` rather than just `<admin username>`).
+1. Log in to the NPS Server VM using Microsoft Remote Desktop
+  - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
+  - the Username and Password are the same as for SHMDC1 and SHMDC2
+  - ensure you log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
 2. In Server Manager select `Tools -> Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to text file:
-  - Click on "Accounting" under "NPS (Local)"
+  - Select `NPS (Local) > Accounting` on the left-hand sidebar
     ![NPS accounting](images/nps_accounting.png)
-  - Select "Configure Accounting"
-  - Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
-  - In the "Log file properties" section, click "Change log file properties"
-  - On the "Log file" tab, select "Daily" under "Create a new log file"
+  - Click on `Accounting > Configure Accounting`
+    - Click "Next" -> "Log to text file on the local computer" then click "Next" -> "Next" -> "Next" -> "Close"
+  - Click on `Log file properties > Change log file properties`
+    - On the "Log file" tab, select "Daily" under "Create a new log file"
   - Click "Ok"
 4. Add NPS policy to allow connections
-  - Expand "NPS (Local)" and then "Policies" and select "Network policies"
+  - Select `NPS (Local) > Policies > Network policies` on the left-hand sidebar
     ![NPS network policies](images/nps_network_policies.png)
   - Right click on "Network policies" and select "New"
   - Set the policy name to "RDG_CAP" and click "Next"
   - Click "Add" to add a restriction
   - Select "Day and Time Restrictions" and click "Add"
   - Select "Permitted" (the whole weekly calendar should turn blue) and click "OK" then "Next"
-  - On the next screen click "Next", leaving "Access granted checked"
-  - On the "Configure authentication methods" screen
+  - On the `Specify Access Permission` screen:
+    - Click "Next", leaving `Access granted` checked
+  - On the `Configure authentication methods` screen:
     - Check the "Allow clients to connect without negotiating an authentication method" checkbox
     - Click "Next".
-  - Click "No" on the "Connection Request Policy" pop up.
-  - On the "Configure constraints" screen click "Next"
-  - On the "Configure settings" screen, click "Next"
-  - On the "Completing network policy" screen click "Finish"
+  - Click "No" on the `Connection Request Policy` pop up.
+  - On the `Configure constraints` screen:
+    - Click "Next"
+  - On the `Configure settings` screen:
+    - Click "Next"
+  - On the `Completing network policy` screen:
+    - Click "Finish"
 
 **NOTE:** If this policy is not present, then users will not be prompted for MFA when launching an RDS app.
 This is because, without this policy, the NPS server will reject their authentication with the following error:
+```
   - Event ID: 6273
   - First line of even message: Network Policy Server discarded the request for a user.
   - Reason Code: 21
   - Reason: An NPS extension dynamic link library (DLL) that is installed on the NPS server rejected the connection request.
-
+```
 
 ### MFA Configuation
 1. Navigate to `C:\Installation`
@@ -474,7 +475,8 @@ This is because, without this policy, the NPS server will reject their authentic
   - Enter "Y" when prompted
   - Enter "A" when prompted
   - If you are prompted to add webpages to exceptions then accept them.
-6. Sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
+  - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
+6. On the webpage pop-up, sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
   - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
 7. Enter your Azure Active directory ID. To get this:
   - In the Azure portal select "Azure Active Directory" in the left hand side bar
@@ -502,28 +504,28 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first SRE.
 
 
-### Prerequisites
+<!-- ### Prerequisites
 Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script makes use of the `--output none` option, which is only available in version `2.0.55` and above.
   - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
-  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
 
 ### Deploying package mirrors
-1. Ensure you are logged into the Azure CLI (bash) with the commands:
+<!-- 1. Ensure you are logged into the Azure CLI (bash) with the commands:
    ```bash
    az login
    az account list
-   ```
-2. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
+   ``` -->
+1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
    Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
-3. From a clone of the data-safe-haven repository, deploy package mirrors (depending on which tiers of SRE you want to support) using the following commands (where `<SHM ID>` is the one defined in the config file):
+2. From a clone of the data-safe-haven repository, deploy package mirrors (depending on which tiers of SRE you want to support) using the following commands (where `<SHM ID>` is the one defined in the config file):
    ```pwsh
    cd safe_haven_management_environment/setup
    ./create_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
    ```
-4. This will take **a few minutes** to run.
+3. This will take **around 20 minutes** to run.
 
 
 ## 6. Tear down package mirrors

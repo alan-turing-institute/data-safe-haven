@@ -5,7 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 
@@ -17,31 +17,29 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
-Add-LogMessage -Level Info "Ensuring that resource group '$($config.keyVault.rg)' exists..."
-$_ = New-AzResourceGroup -Name $config.keyVault.rg -Location $config.location -Force
-if ($?) {
-    Add-LogMessage -Level Success "Created resource group '$($config.keyVault.rg)'"
-} else {
-    Add-LogMessage -Level Failure "Failed to create resource group '$($config.keyVault.rg)'!"
-}
+# Create secrets resource group if it does not exist
+# --------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 
-# Ensure the keyvault exists
-# --------------------------
-Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
-$keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
-if ($null -ne $keyVault) {
-    Add-LogMessage -Level Success "Key vault $($config.keyVault.name) already exists"
-} else {
-    $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
-    if ($?) {
-        Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
-    } else {
-        Add-LogMessage -Level Failure "Failed to create resource group $($config.keyVault.rg)!"
-    }
-}
+# Ensure the keyvault exists and set its access policies
+# ------------------------------------------------------
+$keyVault = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
+Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
+
+
+# Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
+# $keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
+# if ($null -ne $keyVault) {
+#     Add-LogMessage -Level InfoSuccess "Key vault $($config.keyVault.name) already exists"
+# } else {
+#     $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
+#     if ($?) {
+#         Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
+#     } else {
+#         Add-LogMessage -Level Fatal "Failed to create resource group $($config.keyVault.rg)!"
+#     }
+# }
 
 
 # Set correct access policies for key vault
@@ -57,50 +55,58 @@ $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Set correct access policies"
 } else {
-    Add-LogMessage -Level Failure "Failed to set correct access policies!"
+    Add-LogMessage -Level Fatal "Failed to set correct access policies!"
 }
 
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring secrets exist in the key vault..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 # :: AAD Global Administrator password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.aadAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created AAD Global Administrator password"
+    Add-LogMessage -Level Success "AAD Global Administrator password exists"
 } else {
-    Add-LogMessage -Level Failure "Failed to create AAD Global Administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create AAD Global Administrator password!"
 }
 
 # :: DC/NPS administrator username
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 if ($?) {
-    Add-LogMessage -Level Success "Created DC/NPS administrator username"
+    Add-LogMessage -Level Success "DC/NPS administrator username exists"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC/NPS administrator username!"
+    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator username!"
 }
 
 # :: DC/NPS administrator password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcNpsAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created DC/NPS administrator password"
+    Add-LogMessage -Level Success "DC/NPS administrator password exists"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC/NPS administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator password!"
 }
 
 # :: DC safe mode password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.dcSafemodePassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
 if ($?) {
-    Add-LogMessage -Level Success "Created DC safe mode password"
+    Add-LogMessage -Level Success "DC safe mode password exists"
 } else {
-    Add-LogMessage -Level Failure "Failed to create DC safe mode password!"
+    Add-LogMessage -Level Fatal "Failed to create DC safe mode password!"
 }
 
 # :: AD sync password
-$_ = EnsureKeyvaultSecret -keyvaultName $config.keyVault.Name -secretName $config.keyVault.secretNames.adsyncPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.adsyncPassword
 if ($?) {
-    Add-LogMessage -Level Success "Created AD sync password"
+    Add-LogMessage -Level Success "AD sync password exists"
 } else {
-    Add-LogMessage -Level Failure "Failed to create AD sync password!"
+    Add-LogMessage -Level Fatal "Failed to create AD sync password!"
+}
+
+# :: Package mirror administrator username
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+if ($?) {
+    Add-LogMessage -Level Success "Package mirror administrator username exists"
+} else {
+    Add-LogMessage -Level Fatal "Failed to create package mirror administrator username!"
 }
 
 

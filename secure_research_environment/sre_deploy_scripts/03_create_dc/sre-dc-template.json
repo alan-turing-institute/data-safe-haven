@@ -1,0 +1,259 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for VM Administrator Password"
+            }
+        },
+        "Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for VM Administrator"
+            }
+        },
+        "Artifacts_Location": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the URL of the blob storage where the artifacts are held"
+            }
+        },
+        "Artifacts_Location_SAS_Token": {
+            "type": "securestring",
+            "metadata": {
+                "Description": "Enter the SAS token for the artifact store above, you may need to generate this"
+            }
+        },
+        "BootDiagnostics_Account_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of storage account used for boot diagnostics"
+            }
+        },
+        "DC_IP_Address": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter IP address for VM, must end in 250 e.g. 10.250.x.250"
+            }
+        },
+        "DC_VM_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC VM e.g. DC-SRE-SANDBOX"
+            }
+        },
+        "DC_VM_Size": {
+            "type": "string",
+            "defaultValue": "Standard_DS2_v2",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_F4s_v2",
+                "Standard_DS2_v2"
+            ],
+            "metadata": {
+                "description": "Select size of VM"
+            }
+        },
+        "Domain_Name":{
+            "type": "string",
+            "metadata": {
+                "Description": "Enter the correct public domain name"
+            }
+        },
+        "Domain_NetBios_Name": {
+            "type": "string",
+            "metadata": {
+                "Description": "Enter the correct NetBIOS Name"
+            }
+        },
+        "SRE_ID": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter ID for SRE e.g. 'sandbox'"
+            }
+        },
+        "Virtual_Network_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of virtual network to provision this VM"
+            }
+        },
+        "Virtual_Network_Resource_Group": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of resource group that is assoicated with the virtual network above"
+            }
+        },
+        "Virtual_Network_Subnet": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of subnet where you want to provision this VM"
+            }
+        }
+    },
+    "variables": {
+        "nic": "[concat(parameters('DC_VM_Name'), '-', 'NIC')]",
+        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
+        "datadisk": "[concat(parameters('DC_VM_Name'),'-DATA-DISK')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('DC_VM_Name')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('DC_VM_Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('DC_VM_Name'),'-OS-DISK')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 128
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[variables('datadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": 20
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('DC_VM_Name')]",
+                    "adminUsername": "[parameters('Administrator_User')]",
+                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]"
+            ],
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "CreateADForest",
+                    "apiVersion": "2018-06-01",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Powershell",
+                        "type": "DSC",
+                        "typeHandlerVersion": "2.19",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "ModulesUrl": "[concat(parameters('Artifacts_Location'), parameters('Artifacts_Location_SAS_Token'))]",
+                            "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
+                            "Properties": {
+                                "DomainName": "[parameters('Domain_Name')]",
+                                "DomainNetBIOSName": "[parameters('Domain_NetBios_Name')]",
+                                "AdminCreds": {
+                                    "UserName": "[parameters('Administrator_User')]",
+                                    "Password": "PrivateSettingsRef:AdminPassword"
+                                }
+                            }
+                        },
+                        "protectedSettings": {
+                            "Items": {
+                                "AdminPassword": "[parameters('Administrator_Password')]"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nic')]",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('DC_IP_Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('subnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "primary": true,
+                "tapConfigurations": []
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('DC_VM_Name'), '/', 'bginfo')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "bginfo",
+                "typeHandlerVersion": "2.1"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
+            ]
+        }
+    ]
+}

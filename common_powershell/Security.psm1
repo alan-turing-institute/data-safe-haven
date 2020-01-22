@@ -61,29 +61,56 @@ function New-Password {
 Export-ModuleMember -Function New-Password
 
 
+# Create a string of random letters
+# ---------------------------------
+function New-RandomLetters {
+    param(
+        [int]$Length = 20,
+        [int]$Seed = 0,
+        [string]$SeedPhrase = $null
+    )
+    if ($SeedPhrase -ne $null) {
+        $Seed = [bigint](($SeedPhrase).ToCharArray() | % { [string][int]$_ } | Join-String) % [int32]::MaxValue
+    }
+    return (-join ((97..122) | Get-Random -SetSeed $Seed -Count $Length | % {[char]$_}))
+
+}
+Export-ModuleMember -Function New-RandomLetters
+
+
 # Ensure that a password is in the keyvault
 # -----------------------------------------
-function EnsureKeyvaultSecret {
+function Resolve-KeyVaultSecret {
     param(
-        [string]$keyvaultName = "",
-        [string]$secretName = "",
-        [string]$defaultValue = "",
-        [string]$length = 20
+        [string]$VaultName = "",
+        [string]$SecretName = "",
+        [string]$DefaultValue = "",
+        [string]$DefaultLength = 20
     )
-    # Attempt to retrieve secret
-    $secret = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName).SecretValueText;
-
-    # Store default value in keyvault, then retrieve it
-    if ($secret -eq $null) {
+    # Create a new secret if one does not exist in the key vault
+    if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
         # Generate a new password if there is no default
-        if ($defaultValue -eq "") {
-            $defaultValue = $(New-Password -length $length)
+        if ($DefaultValue -eq "") {
+            $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $secretValue = (ConvertTo-SecureString $defaultValue -AsPlainText -Force);
-        Set-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName -SecretValue $secretValue;
-        $secret = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $secretName).SecretValueText;
+        $_ = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
     }
-    return $secret
+    # Retrieve the secret from the key vault and return its value
+    $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName
+    return $secret.SecretValueText
 }
-Export-ModuleMember -Function EnsureKeyvaultSecret
+Export-ModuleMember -Function Resolve-KeyVaultSecret
+
+
+# # Strip non-Base64 characters from text
+# # -------------------------------------
+# function Format-AsBase64String {
+#     [CmdletBinding()]
+#     param(
+#         [Parameter(ValueFromPipeline, Mandatory = $true)]
+#         $InputText
+#     )
+#     return [string]($InputText) -replace '[^A-Za-z0-9+/=`n]', ''
+# }
+# Export-ModuleMember -Function Format-AsBase64String
