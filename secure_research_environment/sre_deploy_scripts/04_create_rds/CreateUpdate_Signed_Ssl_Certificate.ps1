@@ -32,29 +32,29 @@ $originalContext = Get-AzContext
 
 # Set common variables
 # --------------------
-$keyvaultName = $config.sre.keyVault.Name
+$keyVaultName = $config.sre.keyVault.Name
 $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 
 
 # Check for existing certificate in KeyVault
 # ------------------------------------------
-Add-LogMessage -Level Info "Checking whether signed certificate '$certificateName' already exists in KeyVault..."
-$kvCertificate = Get-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName
+Add-LogMessage -Level Info "[ ] Checking whether signed certificate '$certificateName' already exists in key vault..."
+$kvCertificate = Get-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName
 $requestCertificate = $false
 
 
 # Determine whether a certificate request is needed
 # -------------------------------------------------
 if ($kvCertificate -eq $null) {
-    Add-LogMessage -Level Info "No certificate found in KeyVault '$keyvaultName'"
+    Add-LogMessage -Level Info "No certificate found in key vault '$keyVaultName'"
     $requestCertificate = $true
 } else {
     $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
-    Add-LogMessage -Level Success "Loaded certificate from KeyVault '$keyvaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
+    Add-LogMessage -Level Success "Loaded certificate from key vault '$keyVaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
     if ($(Get-Date) -ge $renewalDate) {
-        Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyvaultName'..."
-        $_ = Remove-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -Force
+        Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyVaultName'..."
+        $_ = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
         $requestCertificate = $true
     }
 }
@@ -64,6 +64,9 @@ if ($kvCertificate -eq $null) {
 # -------------------------
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
+    # $targetFqdn = $config.sre.rds.gateway.fqdn
+    $targetFqdn = $config.sre.domain.fqdn
+    $rdsFqdn = $config.sre.rds.gateway.fqdn
 
     # Set the Posh-ACME server to the appropriate Let's Encrypt endpoint
     # ------------------------------------------------------------------
@@ -88,14 +91,14 @@ if ($requestCertificate) {
 
     # Get token for DNS subscription
     # ------------------------------
-    $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName;
+    $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName
     $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
     $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
     # Test DNS record creation
     # ------------------------
     Add-LogMessage -Level Info "Test that we can interact with DNS records..."
-    $testDomain = "dnstest.$($config.sre.rds.gateway.fqdn)"
+    $testDomain = "dnstest.$($targetFqdn)"
 
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
@@ -120,12 +123,11 @@ if ($requestCertificate) {
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
     $csrPath = (New-TemporaryFile).FullName + ".csr"
-    Add-LogMessage -Level Info "Generating a certificate signing request for $($config.sre.rds.gateway.fqdn) to be signed by Let's Encrypt..."
-    # $SubjectName = "CN=$($config.sre.rds.gateway.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $SubjectName = "CN=*.$($config.sre.domain.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($targetFqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($targetFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
     $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName"
     $manualPolicy.Exportable = $true
-    $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -CertificatePolicy $manualPolicy
+    $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
     "-----BEGIN CERTIFICATE REQUEST-----`n" + $certificateOperation.CertificateSigningRequest + "`n-----END CERTIFICATE REQUEST-----" | Out-File -FilePath $csrPath
     if ($success) {
@@ -137,24 +139,25 @@ if ($requestCertificate) {
     # Send the certificate to be signed
     # ---------------------------------
     Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
-    Publish-DnsChallenge $config.sre.rds.gateway.fqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
+    Publish-DnsChallenge $targetFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     $azParams = @{
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
     }
-    Add-LogMessage -Level Info "[ ] Creating certificate for $($config.sre.rds.gateway.fqdn)..."
+    # Add-LogMessage -Level Info "[ ] Creating certificate for $($targetFqdn)..."
+    Add-LogMessage -Level Info "[ ] Creating certificate for $($targetFqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "Certificate creation succeeded"
     } else {
         Add-LogMessage -Level Fatal "Certificate creation failed!"
     }
-    $paCertificate = Get-PACertificate -MainDomain $config.sre.rds.gateway.fqdn
+    $paCertificate = Get-PACertificate -MainDomain $targetFqdn
 
     # Import signed certificate
     # -------------------------
-    Add-LogMessage -Level Info "Importing signed certificate into KeyVault '$keyvaultName'..."
-    $kvCertificate = Import-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -FilePath $paCertificate.CertFile
+    Add-LogMessage -Level Info "Importing signed certificate into KeyVault '$keyVaultName'..."
+    $kvCertificate = Import-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -FilePath $paCertificate.CertFile
     if ($?) {
         Add-LogMessage -Level Success "Certificate import succeeded"
     } else {
@@ -181,7 +184,7 @@ if ($doInstall) {
     # -------------------------------------------------
     Add-LogMessage -Level Info "Adding SSL certificate to RDS Gateway VM"
     $vaultId = (Get-AzKeyVault -ResourceGroupName $config.sre.keyVault.rg -VaultName $keyVaultName).ResourceId
-    $secretURL = (Get-AzKeyVaultSecret -VaultName $keyvaultName -Name $certificateName).Id
+    $secretURL = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $certificateName).Id
     $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
     $_ = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
@@ -196,7 +199,7 @@ if ($doInstall) {
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Generate_New_Ssl_Cert" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
-        rdsFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
+        rdsFqdn = "`"$rdsFqdn`""
         certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
         remoteDirectory = "`"$remoteDirectory`""
     }

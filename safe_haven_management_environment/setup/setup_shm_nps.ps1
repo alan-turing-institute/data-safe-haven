@@ -50,6 +50,14 @@ $params = @{
 Deploy-ArmTemplate -TemplatePath "$templatePath" -Params $params -ResourceGroupName $config.nps.rg
 
 
+# Install required Powershell packages
+# ------------------------------------
+Add-LogMessage -Level Info "Installing required Powershell packages on: '$($config.nps.vmName)'..."
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
+Write-Output $result.Value
+
+
 # Set the OS language to en-GB and install updates
 # ------------------------------------------------
 Add-LogMessage -Level Info "Setting OS language for: '$($config.nps.vmName)' and installing updates..."

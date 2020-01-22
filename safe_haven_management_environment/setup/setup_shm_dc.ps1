@@ -389,12 +389,18 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Set the OS language to en-GB and install updates
-# ------------------------------------------------
-$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
+# Install required Powershell packages; set the OS language to en-GB then install updates
+# ---------------------------------------------------------------------------------------
+$installationScriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$configurationScriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    # Install Powershell modules
+    Add-LogMessage -Level Info "Installing required Powershell packages on: '$vmName'..."
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $installationScriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    Write-Output $result.Value
+    # Configure Windows
     Add-LogMessage -Level Info "Setting OS language for: '$vmName' and installing updates..."
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $configurationScriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
     Write-Output $result.Value
 }
 

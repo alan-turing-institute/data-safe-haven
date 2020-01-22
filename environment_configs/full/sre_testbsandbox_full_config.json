@@ -21,15 +21,15 @@
       "securityOuPath": "OU=Safe Haven Security Groups,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
-          "Name": "SG Data Science LDAP Users",
-          "description": null
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
-        "Name": "VNET_SHM_TESTB",
+        "name": "VNET_SHM_TESTB",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
@@ -79,7 +79,7 @@
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "Name": "kv-shm-testb",
+      "name": "kv-shm-testb",
       "secretNames": {
         "aadAdminPassword": "shm-testb-aad-admin-password",
         "dcNpsAdminUsername": "shm-testb-dcnps-admin-username",
@@ -146,12 +146,12 @@
       "dn": "DC=sandbox,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "Name": "SG SANDBOX Server Administrators",
-          "description": null
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
         "researchUsers": {
-          "Name": "SG SANDBOX Research Users",
-          "description": null
+          "name": "SG SANDBOX Research Users",
+          "description": "SG SANDBOX Research Users"
         }
       }
     },
@@ -197,7 +197,7 @@
       }
     },
     "keyVault": {
-      "Name": "kv-testb-sre-sandbox",
+      "name": "kv-testb-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "dcAdminPassword": "sre-sandbox-dc-admin-password",
@@ -228,21 +228,21 @@
     "users": {
       "ldap": {
         "gitlab": {
-          "Name": "SANDBOX Gitlab LDAP",
+          "name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox"
         },
         "hackmd": {
-          "Name": "SANDBOX HackMD LDAP",
+          "name": "SANDBOX HackMD LDAP",
           "samAccountName": "hackmdldapsandbox"
         },
         "dsvm": {
-          "Name": "SANDBOX DSVM LDAP",
+          "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
         }
       },
       "researchers": {
         "test": {
-          "Name": "SANDBOX Test Researcher",
+          "name": "SANDBOX Test Researcher",
           "samAccountName": "testresrchsandbox"
         }
       }

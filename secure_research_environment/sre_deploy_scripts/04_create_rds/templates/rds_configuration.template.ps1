@@ -104,3 +104,14 @@ if (`$?) {
 } else {
     Write-Host " [x] RDS webclient installation failed!"
 }
+
+
+# Update where the remote desktop is hosted
+# -----------------------------------------
+Invoke-Expression -Command "$remoteUploadDir\Set-RDPublishedName.ps1 -ClientAccessName `$sreFqdn"
+
+
+# Remove the requirement for the /RDWeb/webclient/ suffix by setting up a redirect in IIS
+# ---------------------------------------------------------------------------------------
+Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\Default Web Site" -Value @{enabled="true";destination="/RDWeb/webclient/";httpResponseStatus="Permanent"}
+

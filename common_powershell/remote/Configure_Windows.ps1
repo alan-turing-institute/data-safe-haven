@@ -8,18 +8,19 @@ Set-Culture en-GB
 Set-WinUserLanguageList -LanguageList en-GB -Force
 Get-WinUserLanguageList
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Host " [o] Setting locale succeeded"
 } else {
-    Write-Host " [x] Failed"
+    Write-Host " [x] Setting locale failed!"
 }
 
 
 # Install Windows updates
 # -----------------------
+Write-Host "Installing Windows updates...."
 Get-WindowsUpdate
-Install-WindowsUpdate -AcceptAll -IgnoreReboot
+$_ = Install-WindowsUpdate -AcceptAll -IgnoreReboot
 if ($?) {
-    Write-Host " [o] Succeeded"
+    Write-Host " [o] Installing Windows updates succeeded"
 } else {
-    Write-Host " [x] Failed!"
+    Write-Host " [x] Installing Windows updates failed!"
 }

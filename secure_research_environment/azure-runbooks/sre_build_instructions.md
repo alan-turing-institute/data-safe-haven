@@ -190,9 +190,9 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
 - The IP address can be found using the Azure portal (`RG_SRE_RDS` > `RDG-SRE-<SRE ID>`)
 - Login as the **domain** admin user (eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
-- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 
 #### Install RDS environment and webclient
+- Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 

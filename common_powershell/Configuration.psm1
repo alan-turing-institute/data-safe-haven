@@ -53,10 +53,11 @@ function Get-ShmFullConfig {
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
     $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
     $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
+    $groupName = "SG Data Science LDAP Users"
     $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{
-            Name = "SG Data Science LDAP Users"
-            description = $shm.domain.securityGroups.dsvmLdapUsers.name
+            name = $groupName
+            description = $groupName
         }
     }
 
@@ -64,7 +65,7 @@ function Get-ShmFullConfig {
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "RG_SHM_NETWORKING"
-            Name = "VNET_SHM_" + $($shm.id).ToUpper()
+            name = "VNET_SHM_" + $($shm.id).ToUpper()
             cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
         }
         subnets = [ordered]@{}
@@ -121,7 +122,7 @@ function Get-ShmFullConfig {
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{
         rg = "RG_SHM_SECRETS"
-        Name = "kv-shm-" + "$($shm.id)".ToLower()
+        name = "kv-shm-" + "$($shm.id)".ToLower()
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-aad-admin-password"
@@ -268,14 +269,16 @@ function Add-SreConfig {
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=" + ($config.sre.domain.fqdn.Replace('.',',DC='))
+    $serverAdminsGroup = "SG " + $config.sre.domain.netbiosName + " Server Administrators"
+    $researchUsersGroup = "SG " + $config.sre.domain.netbiosName + " Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
-            Name = ("SG " + $config.sre.domain.netbiosName + " Server Administrators")
-            description = $config.sre.domain.securityGroups.serverAdmins.name
+            name = $serverAdminsGroup
+            description = $serverAdminsGroup
         }
         researchUsers = [ordered]@{
-            Name = "SG " + $config.sre.domain.netbiosName + " Research Users"
-            description = $config.sre.domain.securityGroups.researchUsers.name
+            name = $researchUsersGroup
+            description = $researchUsersGroup
         }
     }
 
@@ -321,7 +324,7 @@ function Add-SreConfig {
 
     # --- Secrets ---
     $config.sre.keyVault = [ordered]@{
-        Name = "kv-" + $config.shm.Id + "-sre-" + $($config.sre.Id).ToLower()
+        name = "kv-" + $config.shm.Id + "-sre-" + $($config.sre.Id).ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             dcAdminPassword = $config.sre.shortName + '-dc-admin-password'
@@ -355,21 +358,21 @@ function Add-SreConfig {
     $config.sre.users = [ordered]@{
         ldap = [ordered]@{
             gitlab = [ordered]@{
-                Name = $config.sre.domain.netbiosName + " Gitlab LDAP"
+                name = $config.sre.domain.netbiosName + " Gitlab LDAP"
                 samAccountName = "gitlabldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
             hackmd = [ordered]@{
-                Name = $config.sre.domain.netbiosName + " HackMD LDAP"
+                name = $config.sre.domain.netbiosName + " HackMD LDAP"
                 samAccountName = "hackmdldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
             dsvm = [ordered]@{
-                Name = $config.sre.domain.netbiosName + " DSVM LDAP"
+                name = $config.sre.domain.netbiosName + " DSVM LDAP"
                 samAccountName = "dsvmldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
         }
         researchers = [ordered]@{
             test = [ordered]@{
-                Name = $config.sre.domain.netbiosName + " Test Researcher"
+                name = $config.sre.domain.netbiosName + " Test Researcher"
                 samAccountName = "testresrch" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
             }
         }

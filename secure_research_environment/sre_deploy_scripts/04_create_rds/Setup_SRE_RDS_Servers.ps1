@@ -182,8 +182,8 @@ $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -l
 
 # Add DNS record to SRE DNS Zone
 $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-$dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-# $dnsRecordname = "@"
+# $dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+$dnsRecordname = "@"
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
 $sreDomain = $config.sre.domain.fqdn
@@ -233,9 +233,9 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Set OS locale and DNS on RDS servers
-# ------------------------------------
-Add-LogMessage -Level Info "Setting OS locale and DNS on RDS servers..."
+# Configuring Windows and setting DNS on RDS servers
+# --------------------------------------------------
+Add-LogMessage -Level Info "Configuring Windows and setting DNS on RDS servers..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Set_OS_Locale_and_DNS.ps1") -Raw
 $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
@@ -246,21 +246,20 @@ $params = @{
 }
 $moduleScript = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
 
-
-# RDS gateway
-Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Gateway ($($config.sre.rds.gateway.vmName))"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# RDS_Session_Host_Apps
-Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host App server"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# RDS_Session_Host_Desktop
-Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host Desktop (Remote desktop server)"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
+# Run on each of the RDS VMs
+foreach ($nameVMNameParamsPair in (("RDS Gateway", $config.sre.rds.gateway.vmName),
+                                   ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
+                                   ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))) {
+    $name, $vmName = $nameVMNameParamsPair
+    # Powershell modules
+    Add-LogMessage -Level Info "[ ] Installing required Powershell modules on $name: '$vmName'"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $moduleScript -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+    Write-Output $result.Value
+    # Configuration
+    Add-LogMessage -Level Info "[ ] Setting OS locale and DNS and installing updates on $name: '$vmName'"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+    Write-Output $result.Value
+}
 
 
 # Import files to RDS VMs
@@ -269,7 +268,7 @@ Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 # Get list of packages for each session host
-Add-LogMessage -Level Info " [ ] Getting list of packages for each VM"
+Add-LogMessage -Level Info "[ ] Getting list of packages for each VM"
 $filePathsSh1 = New-Object System.Collections.ArrayList ($null)
 $filePathsSh2 = New-Object System.Collections.ArrayList ($null)
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
@@ -292,8 +291,21 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $sasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $sreStorageAccountRg -accountName $sreStorageAccountName
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Import_Artifacts.ps1"
 
+# Copy software and/or scripts to RDS Gateway
+Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
+$params = @{
+    storageAccountName = "`"$sreStorageAccountName`""
+    storageService = "blob"
+    shareOrContainerName = "`"$containerNameGateway`""
+    sasToken = "`"$sasToken`""
+    pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
+    downloadDir = "$remoteUploadDir"
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+Write-Output $result.Value
+
 # Copy software and/or scripts to RDS SH1 (App server)
-Add-LogMessage -Level Info " [ ] Copying $($filePathsSh1.Count) files to RDS_Session_Host_Apps (App server)"
+Add-LogMessage -Level Info "[ ] Copying $($filePathsSh1.Count) files to RDS Session Host (App server)"
 $params = @{
     storageAccountName = "`"$sreStorageAccountName`""
     storageService = "blob"
@@ -305,9 +317,8 @@ $params = @{
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
-
 # Copy software and/or scripts to RDS SH2 (Remote desktop server)
-Add-LogMessage -Level Info " [ ] Copying $($filePathsSh2.Count) files to RDS_Session_Host_Desktop (Remote desktop server)"
+Add-LogMessage -Level Info "[ ] Copying $($filePathsSh2.Count) files to RDS Session Host (Remote desktop server)"
 $params = @{
     storageAccountName = "`"$sreStorageAccountName`""
     storageService = "blob"
@@ -317,20 +328,6 @@ $params = @{
     downloadDir = "$remoteUploadDir"
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-
-# Copy software and/or scripts to RDS Gateway
-Add-LogMessage -Level Info " [ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
-$params = @{
-    storageAccountName = "`"$sreStorageAccountName`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameGateway`""
-    sasToken = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
-    downloadDir = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 

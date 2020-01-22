@@ -62,7 +62,18 @@ Write-Output $result.Value
 # ------------------------
 Add-LogMessage -Level Info "Configuring data server VM..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-# $scriptPath = Join-Path "remote_scripts" "Configure_Data_Server_Remote.ps1"
+
+
+# Install required Powershell packages
+# ------------------------------------
+Add-LogMessage -Level Info "[ ] Installing required Powershell packages on data server: '$($config.sre.dataserver.vmName)'..."
+$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
+Write-Output $result.Value
+
+
+# Set the OS language to en-GB and install updates
+# ------------------------------------------------
 $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1") -Raw
 $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
 $setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
