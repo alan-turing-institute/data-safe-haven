@@ -142,10 +142,10 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Remotely set the OS language for the DC
-# ---------------------------------------
-Add-LogMessage -Level Info "Setting OS language for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1"
+# Set the OS language to en-GB and install updates
+# ------------------------------------------------
+Add-LogMessage -Level Info "Setting OS language for: '$($config.sre.dc.vmName)' and installing updates..."
+$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
 

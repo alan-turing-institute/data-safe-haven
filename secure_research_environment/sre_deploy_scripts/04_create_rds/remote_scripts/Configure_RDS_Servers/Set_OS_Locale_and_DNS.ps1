@@ -19,7 +19,7 @@ param(
 # ----------------
 Write-Host "Setting DNS search order to: $sreFqdn, $shmFqdn"
 $class = [wmiclass]'Win32_NetworkAdapterConfiguration'
-$_ = $class.SetDNSSuffixSearchOrder("$sreFqdn", "$shmFqdn")
+$_ = $class.SetDNSSuffixSearchOrder(@("$sreFqdn", "$shmFqdn"))
 if ($?) {
     Write-Host " [o] Completed"
 } else {

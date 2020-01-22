@@ -12,3 +12,14 @@ if ($?) {
 } else {
     Write-Host " [x] Failed"
 }
+
+
+# Install Windows updates
+# -----------------------
+Get-WindowsUpdate
+Install-WindowsUpdate -AcceptAll -IgnoreReboot
+if ($?) {
+    Write-Host " [o] Succeeded"
+} else {
+    Write-Host " [x] Failed!"
+}

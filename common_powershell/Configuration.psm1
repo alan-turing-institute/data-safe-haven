@@ -35,7 +35,7 @@ function Get-ShmFullConfig {
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
     $shm.Id = $shmConfigBase.shmId
-    $shm.Name = $shmConfigBase.Name
+    $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
     $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
@@ -56,7 +56,7 @@ function Get-ShmFullConfig {
     $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{
             Name = "SG Data Science LDAP Users"
-            description = $shm.domain.securityGroups.dsvmLdapUsers.Name
+            description = $shm.domain.securityGroups.dsvmLdapUsers.name
         }
     }
 
@@ -71,17 +71,17 @@ function Get-ShmFullConfig {
     }
     # --- Identity subnet
     $shm.network.subnets.identity = [ordered]@{}
-    $shm.network.subnets.identity.Name = "IdentitySubnet" # Name to match required format of GatewaySubnet
+    $shm.network.subnets.identity.name = "IdentitySubnet" # Name to match required format of GatewaySubnet
     $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
     $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
     # --- Web subnet
     $shm.network.subnets.web = [ordered]@{}
-    $shm.network.subnets.web.Name = "WebSubnet" # Name to match required format of GatewaySubnet
+    $shm.network.subnets.web.name = "WebSubnet" # Name to match required format of GatewaySubnet
     $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int]$shmThirdOctet + 1)
     $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
     # --- Gateway subnet
     $shm.network.subnets.gateway = [ordered]@{}
-    $shm.network.subnets.gateway.Name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    $shm.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int]$shmThirdOctet + 7)
     $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
 
@@ -247,11 +247,11 @@ function Add-SreConfig {
     }
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if (@("2","3").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.Name = "VNET_SHM_" + $($config.shm.Id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.sre.tier
+        $config.sre.mirrors.vnet.name = "VNET_SHM_" + $($config.shm.Id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.sre.tier
         $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
         $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
     } elseif (@("0","1").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.Name = $null
+        $config.sre.mirrors.vnet.name = $null
         $config.sre.mirrors.pypi.ip = $null
         $config.sre.mirrors.cran.ip = $null
     } else {
@@ -271,11 +271,11 @@ function Add-SreConfig {
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             Name = ("SG " + $config.sre.domain.netbiosName + " Server Administrators")
-            description = $config.sre.domain.securityGroups.serverAdmins.Name
+            description = $config.sre.domain.securityGroups.serverAdmins.name
         }
         researchUsers = [ordered]@{
             Name = "SG " + $config.sre.domain.netbiosName + " Research Users"
-            description = $config.sre.domain.securityGroups.researchUsers.Name
+            description = $config.sre.domain.securityGroups.researchUsers.name
         }
     }
 
@@ -293,23 +293,23 @@ function Add-SreConfig {
         }
     }
     $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.sre.network.vnet.Name = "VNET_SRE_" + $($config.sre.Id).ToUpper()
+    $config.sre.network.vnet.name = "VNET_SRE_" + $($config.sre.Id).ToUpper()
     $config.sre.network.vnet.cidr = $sreBasePrefix + "." + $sreThirdOctet + ".0/21"
-    $config.sre.network.subnets.identity.Name = "IdentitySubnet"
+    $config.sre.network.subnets.identity.name = "IdentitySubnet"
     $config.sre.network.subnets.identity.prefix = $sreBasePrefix + "." + $sreThirdOctet
     $config.sre.network.subnets.identity.cidr = $config.sre.network.subnets.identity.prefix + ".0/24"
-    $config.sre.network.subnets.rds.Name = "RDSSubnet"
+    $config.sre.network.subnets.rds.name = "RDSSubnet"
     $config.sre.network.subnets.rds.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 1)
     $config.sre.network.subnets.rds.cidr = $config.sre.network.subnets.rds.prefix + ".0/24"
-    $config.sre.network.subnets.data.Name = "SharedDataSubnet"
+    $config.sre.network.subnets.data.name = "SharedDataSubnet"
     $config.sre.network.subnets.data.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 2)
     $config.sre.network.subnets.data.cidr = $config.sre.network.subnets.data.prefix + ".0/24"
     # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
-    $config.sre.network.subnets.gateway.Name = "GatewaySubnet"
+    $config.sre.network.subnets.gateway.name = "GatewaySubnet"
     $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
     $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
     $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
-    $config.sre.network.nsg.data.Name = "NSG_SRE_WEBAPPS"
+    $config.sre.network.nsg.data.name = "NSG_SRE_WEBAPPS"
 
     # --- Storage config --
     $config.sre.storage = [ordered]@{
@@ -384,8 +384,10 @@ function Add-SreConfig {
     $config.sre.rds.rg = "RG_SRE_RDS"
     $config.sre.rds.nsg = [ordered]@{
         gateway = [ordered]@{}
+        session_hosts = [ordered]@{}
     }
-    $config.sre.rds.nsg.gateway.Name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SERVER"
+    $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SERVER"
+    $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SESSION_HOSTS"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
@@ -443,7 +445,7 @@ function Add-SreConfig {
         hackmd = [ordered]@{}
     }
     $config.sre.linux.rg = $config.sre.network.nsg.data.rg
-    $config.sre.linux.nsg = $config.sre.network.nsg.data.Name
+    $config.sre.linux.nsg = $config.sre.network.nsg.data.name
     $config.sre.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.sre.Id).ToUpper()
     $config.sre.linux.gitlab.vmSize = "Standard_D2s_v3"
     $config.sre.linux.gitlab.hostname = $config.sre.linux.gitlab.vmName

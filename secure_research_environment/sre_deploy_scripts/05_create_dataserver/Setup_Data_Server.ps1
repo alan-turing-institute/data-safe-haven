@@ -64,15 +64,15 @@ Add-LogMessage -Level Info "Configuring data server VM..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # $scriptPath = Join-Path "remote_scripts" "Configure_Data_Server_Remote.ps1"
 $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1") -Raw
-$localeScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1") -Raw
-$setLocaleAndDns = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $localeScript)
+$configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
+$setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     serverAdminSgName = "`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
 Write-Output $result.Value
 
 

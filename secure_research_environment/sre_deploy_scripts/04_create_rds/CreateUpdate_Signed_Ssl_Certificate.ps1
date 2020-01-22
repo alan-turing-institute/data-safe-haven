@@ -121,13 +121,14 @@ if ($requestCertificate) {
     # ------------------------------------------------------
     $csrPath = (New-TemporaryFile).FullName + ".csr"
     Add-LogMessage -Level Info "Generating a certificate signing request for $($config.sre.rds.gateway.fqdn) to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($config.sre.rds.gateway.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    # $SubjectName = "CN=$($config.sre.rds.gateway.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    $SubjectName = "CN=*.$($config.sre.domain.fqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
     $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName"
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyvaultName -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
     "-----BEGIN CERTIFICATE REQUEST-----`n" + $certificateOperation.CertificateSigningRequest + "`n-----END CERTIFICATE REQUEST-----" | Out-File -FilePath $csrPath
-    if ($?) {
+    if ($success) {
         Add-LogMessage -Level Success "CSR creation succeeded"
     } else {
         Add-LogMessage -Level Fatal "CSR creation failed!"

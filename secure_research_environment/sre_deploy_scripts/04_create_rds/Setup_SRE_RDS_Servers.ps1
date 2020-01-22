@@ -58,6 +58,26 @@ $sreStorageAccountName = $config.sre.storage.artifacts.accountName
 $sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -ResourceGroupName $sreStorageAccountRg
 
 
+# Set up the NSGs for the gateway and session hosts
+# -------------------------------------------------
+$nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.gateway.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
+                             -Name "HTTPS_In" `
+                             -Description "Allow HTTPS inbound to RDS server" `
+                             -Priority 100 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix Internet -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange 443
+$nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
+                             -Name "Deny_Internet" `
+                             -Description "Deny Outbound Internet Access" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
+
+
 # Create RDS resource group if it does not exist
 # ----------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.location
@@ -72,6 +92,7 @@ $params = @{
     Administrator_User = $dcAdminUsername
     BootDiagnostics_Account_Name = $config.sre.bootdiagnostics.accountName
     Domain_Name = $config.sre.domain.fqdn
+    NSG_Gateway_Name = $config.sre.rds.nsg.gateway.name
     RDS_Gateway_IP_Address = $config.sre.rds.gateway.ip
     RDS_Gateway_Name = $config.sre.rds.gateway.vmName
     RDS_Gateway_VM_Size = $config.sre.rds.gateway.vmSize
@@ -140,6 +161,7 @@ if ($?) {
 Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
+Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File (Join-Path $PSScriptRoot "templates" "Set-RDPublishedName.ps1") -Blob "Set-RDPublishedName.ps1" -Force
 if ($?) {
     Add-LogMessage -Level Success "File uploading succeeded"
 } else {
@@ -161,6 +183,7 @@ $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -l
 # Add DNS record to SRE DNS Zone
 $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
 $dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+# $dnsRecordname = "@"
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
 $sreDomain = $config.sre.domain.fqdn
@@ -215,26 +238,28 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Setting OS locale and DNS on RDS servers..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Set_OS_Locale_and_DNS.ps1") -Raw
-$localeScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Set_Windows_Locale.ps1") -Raw
-$setLocaleAndDns = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $localeScript)
+$configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
+$setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
 $params = @{
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
 }
+$moduleScript = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+
 
 # RDS gateway
 Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Gateway ($($config.sre.rds.gateway.vmName))"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 # RDS_Session_Host_Apps
 Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host App server"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 # RDS_Session_Host_Desktop
 Add-LogMessage -Level Info "[ ] Setting OS locale and DNS on RDS Session Host Desktop (Remote desktop server)"
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleAndDns -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
 
@@ -330,15 +355,17 @@ if ($success) {
 # Install software packages on RDS SH2 (Remote desktop server)
 Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Packages.ps1"
-$result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg `
-     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Add-LogMessage -Level Success "Successfully installed packages"
-} else {
-    Add-LogMessage -Level Fatal "Failed to install packages!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+Write-Output $result.Value
+# $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg `
+#      -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
+# $success = $?
+# Write-Output $result.Value;
+# if ($success) {
+#     Add-LogMessage -Level Success "Successfully installed packages"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to install packages!"
+# }
 
 
 # Install required Powershell modules on RDS Gateway
@@ -349,13 +376,17 @@ $params = @{
     dcAdminUsername = "`"$dcAdminUsername`""
     sreNetbiosName = "`"$sreNetbiosName`""
 }
-foreach ($scriptNameParamsPair in (("Install_Powershell_Modules_01.ps1", $params),
-                                   ("Install_Powershell_Modules_02.ps1", $null))) {
-    $scriptName, $params = $scriptNameParamsPair
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" $scriptName
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-    Write-Output $result.Value
-}
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" "Install_Additional_Powershell_Modules.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
+Write-Output $result.Value
+# foreach ($scriptNameParamsPair in (("Install_Powershell_Modules_01.ps1", $params),
+#                                    ("Install_Powershell_Modules_02.ps1", $null))) {
+#     $scriptName, $params = $scriptNameParamsPair
+#     $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_RDS_Servers" $scriptName
+#     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+#     Write-Output $result.Value
+# }
+
 
 
 # Reboot the gateway VM

@@ -2,7 +2,7 @@
   "shm": {
     "subscriptionName": "Safe Haven Management Test B",
     "Id": "testb",
-    "Name": "Turing Development Safe Haven B",
+    "name": "Turing Development Safe Haven B",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -34,17 +34,17 @@
       },
       "subnets": {
         "identity": {
-          "Name": "IdentitySubnet",
+          "name": "IdentitySubnet",
           "prefix": "10.0.0",
           "cidr": "10.0.0.0/24"
         },
         "web": {
-          "Name": "WebSubnet",
+          "name": "WebSubnet",
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
-          "Name": "GatewaySubnet",
+          "name": "GatewaySubnet",
           "prefix": "10.0.7",
           "cidr": "10.0.7.0/24"
         }
@@ -131,7 +131,7 @@
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "mirrors": {
       "vnet": {
-        "Name": "VNET_SHM_TESTB_PKG_MIRRORS_TIER2"
+        "name": "VNET_SHM_TESTB_PKG_MIRRORS_TIER2"
       },
       "cran": {
         "ip": "10.20.2.21"
@@ -158,27 +158,27 @@
     "network": {
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
-        "Name": "VNET_SRE_SANDBOX",
+        "name": "VNET_SRE_SANDBOX",
         "cidr": "10.151.0.0/21"
       },
       "subnets": {
         "identity": {
-          "Name": "IdentitySubnet",
+          "name": "IdentitySubnet",
           "prefix": "10.151.0",
           "cidr": "10.151.0.0/24"
         },
         "rds": {
-          "Name": "RDSSubnet",
+          "name": "RDSSubnet",
           "prefix": "10.151.1",
           "cidr": "10.151.1.0/24"
         },
         "data": {
-          "Name": "SharedDataSubnet",
+          "name": "SharedDataSubnet",
           "prefix": "10.151.2",
           "cidr": "10.151.2.0/24"
         },
         "gateway": {
-          "Name": "GatewaySubnet",
+          "name": "GatewaySubnet",
           "prefix": "10.151.7",
           "cidr": "10.151.7.0/27"
         }
@@ -186,7 +186,7 @@
       "nsg": {
         "data": {
           "rg": "RG_SRE_WEBAPPS",
-          "Name": "NSG_SRE_WEBAPPS"
+          "name": "NSG_SRE_WEBAPPS"
         }
       }
     },
@@ -273,9 +273,12 @@
       "rg": "RG_SRE_RDS",
       "nsg": {
         "gateway": {
-          "Name": "NSG_RDS_SRE_SANDBOX_SERVER",
+          "name": "NSG_RDS_SRE_SANDBOX_SERVER",
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
+        },
+        "session_hosts": {
+          "name": "NSG_RDS_SRE_SANDBOX_SESSION_HOSTS"
         }
       }
     },
