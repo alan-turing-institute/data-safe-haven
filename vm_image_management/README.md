@@ -74,7 +74,7 @@ For example, if you have recently built a compute VM using Ubuntu 18.04 as the b
 ./images_register_azure_image_in_gallery.sh -n ImageComputeVM-Ubuntu1804Base-201907171714
 ```
 
-## Creating a DSG environment
+<!-- ## Creating a DSG environment
 See [DSG Build instructions](../azure-runbooks/dsg_build_instructions.md).
 
 ## Safe deployment to a Turing DSG environment
@@ -93,9 +93,9 @@ To deploy a compute VM you will need the following available on the machine you 
 - The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
 - A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
 
-**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details.
+**NOTE:** You can only deploy to **one DSG at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many DSGs as you have deployment VMs. See the [parallel deployment guide](../../azure-vms/README-parallel-deploy-using-azure-vms.md)) for details. -->
 
-### Deploy a compute VM
+<!-- ### Deploy a compute VM
 - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms`
 - Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
 - Ensure you have the latest changes locally using `git pull`
@@ -115,10 +115,10 @@ To deploy a compute VM you will need the following available on the machine you 
 - Enter `atiadmin` for the username
 - Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` respource group of the SHM subscription.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
-- To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
+- To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up. -->
 
 
-## Deploying a VM from the image gallery into a DSG environment
+<!-- ## Deploying a VM from the image gallery into a DSG environment
 During development, VMs can be deployed into a DSG environment using the `./deploy_azure_compute_vm.sh` script with more granular control over configuration parameters.
 However, it is strongly recommended that the wrapper Powershell script `Create_Compute_VM.ps1` in `dsg_deploy_scripts/07_deploy_compute_vms` is used for this purpose, as the configuration parameters will then be loaded from the appropriate config file.
 
@@ -157,9 +157,9 @@ Example usage
 ./deploy_azure_compute_vm.sh -s "Safe Haven Management Testing" -t "Data Study Group Testing"
 ```
 
-For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console.
+For monitoring deployments without SSH access, enable "Boot Diagnostics" for that VM through the Azure portal and then access through the serial console. -->
 
-## Deploying the mirror servers
+<!-- ## Deploying the mirror servers
 We use a separate resource group and associated VNet to contain all of the external and internal package repository mirrors.
 This can be created and deployed using `deploy_azure_external_mirror_servers.sh` and `deploy_azure_internal_mirror_servers.sh`.
 
@@ -203,9 +203,9 @@ Example usage:
 
 ```bash
 ./deploy_azure_internal_mirror_servers.sh -s "Safe Haven Management Testing" -x DSG1
-```
+``` -->
 
-### Peer DSG VNet to mirror VNet
+<!-- ### Peer DSG VNet to mirror VNet
 **NOTE:** At the  moment, package mirrors are suitable for **Tier 2 and below** DSGs only.
 ```bash
 usage: ./peer_mirrors_to_compute_vms.sh [-h] -s subscription_compute -t subscription_mirror [-g resource_group_compute] [-h resource_group_mirror] [-n vnet_name_compute] [-m vnet_name_mirror]
@@ -227,4 +227,4 @@ Example usage:
 
 ```bash
 ./peer_mirrors_to_compute_vms.sh -s "Data Study Group Testing" "Safe Haven Management Testing"
-```
+``` -->
