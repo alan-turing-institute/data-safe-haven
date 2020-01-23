@@ -2,7 +2,7 @@
 # Tests
 
 ## Prerequisites
-The package installation tests require a copy of the `package_lists` folder in the `<safe-haven-repository>/new_dsg_environment/azure-vms/` folder to exist at the same level as the folder containing this README file.
+The package installation tests require a copy of the `package_lists` folder from the `<safe-haven-repository>/environment_configs/` folder to exist at the same level as the folder containing this README file.
 
 
 ## Test everything

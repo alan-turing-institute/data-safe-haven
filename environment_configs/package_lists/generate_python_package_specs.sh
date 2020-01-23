@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Insert package addition instructions
-echo "  # To add additional packages update package_lists/python<python version>-packages.list"
+echo "  # To add additional packages update python<python version>-packages.list"
 
 # Initialise temporary files for list operations
 CONDA_PKGS_27_SORTED=$(mktemp)

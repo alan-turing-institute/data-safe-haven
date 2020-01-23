@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Insert package addition instructions
-echo "  # To add additional packages update package_lists/cran.list or package_lists/bioconductor.list"
+echo "  # To add additional packages update cran.list or bioconductor.list"
 
 # Construct formatted lists
 CRANPACKAGES=$(cat cran.list | sed -e "s/^/'/" -e "s/$/',/" | tr "\n" " " | sed -e "s/', $/'/")

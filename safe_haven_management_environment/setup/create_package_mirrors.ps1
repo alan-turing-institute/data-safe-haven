@@ -213,7 +213,7 @@ function Deploy-PackageMirror {
     # Load cloud-init file
     # --------------------
     $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($mirrorType).ToLower()).yaml"
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "secure_research_environment" "azure-vms" "package_lists" "tier$($tier)_$($($mirrorType).ToLower())_whitelist.list"
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($mirrorType).ToLower())_whitelist.list"
     $cloudInitYaml = Resolve-CloudInit -MirrorType $mirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror

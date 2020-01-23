@@ -449,8 +449,8 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
 $zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
-Copy-Item $PSScriptRoot/../../azure-vms/package_lists -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
-Copy-Item $PSScriptRoot/../../azure-vms/tests -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "vm_image_management" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
 if (Test-path $zipFilePath) { Remove-item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
