@@ -51,9 +51,13 @@ if ($null -eq $kvCertificate) {
     Add-LogMessage -Level Info "No certificate found in key vault '$keyVaultName'"
     $requestCertificate = $true
 } else {
-    $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
-    Add-LogMessage -Level Success "Loaded certificate from key vault '$keyVaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
-    if ($(Get-Date) -ge $renewalDate) {
+    try {
+        $renewalDate = [datetime]::ParseExact($kvCertificate.Certificate.NotAfter, "MM/dd/yyyy HH:mm:ss", $null).AddDays(-30)
+        Add-LogMessage -Level Success "Loaded certificate from key vault '$keyVaultName' with earliest renewal date $($renewalDate.ToString('dd MMM yyyy'))"
+    } catch [System.Management.Automation.MethodInvocationException] {
+        $renewalDate = $null
+    }
+    if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyVaultName'..."
         $_ = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
         $requestCertificate = $true
@@ -65,8 +69,8 @@ if ($null -eq $kvCertificate) {
 # -------------------------
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    # $basFqdn = $config.sre.rds.gateway.fqdn
-    $basFqdn = $config.sre.domain.fqdn
+    # $baseFqdn = $config.sre.rds.gateway.fqdn
+    $baseFqdn = $config.sre.domain.fqdn
     $rdsFqdn = $config.sre.rds.gateway.fqdn
 
     # Set the Posh-ACME server to the appropriate Let's Encrypt endpoint
@@ -99,7 +103,7 @@ if ($requestCertificate) {
     # Test DNS record creation
     # ------------------------
     Add-LogMessage -Level Info "Test that we can interact with DNS records..."
-    $testDomain = "dnstest.$($basFqdn)"
+    $testDomain = "dnstest.$($baseFqdn)"
 
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
@@ -124,8 +128,8 @@ if ($requestCertificate) {
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
     $csrPath = (New-TemporaryFile).FullName + ".csr"
-    Add-LogMessage -Level Info "Generating a certificate signing request for $($basFqdn) to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($basFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($baseFqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($baseFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
     $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$rdsFqdn"
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -CertificatePolicy $manualPolicy
@@ -140,19 +144,19 @@ if ($requestCertificate) {
     # Send the certificate to be signed
     # ---------------------------------
     Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
-    Publish-DnsChallenge $basFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
+    Publish-DnsChallenge $baseFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
     # $azParams = @{
     #     AZSubscriptionId = $azureContext.Subscription.Id
     #     AZAccessToken = $token
     # }
-    Add-LogMessage -Level Info "[ ] Creating certificate for $($basFqdn)..."
+    Add-LogMessage -Level Info "[ ] Creating certificate for $($baseFqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "Certificate creation succeeded"
     } else {
         Add-LogMessage -Level Fatal "Certificate creation failed!"
     }
-    $paCertificate = Get-PACertificate -MainDomain $basFqdn
+    $paCertificate = Get-PACertificate -MainDomain $baseFqdn
 
     # Import signed certificate
     # -------------------------

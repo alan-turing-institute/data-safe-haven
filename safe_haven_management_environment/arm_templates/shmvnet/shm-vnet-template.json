@@ -323,7 +323,7 @@
                         }
                     },
                     {
-                        "name": "RADIUS_Authenitcation_RDS_to_NPS",
+                        "name": "RADIUS_Authentication_RDS_to_NPS",
                         "properties": {
                             "description": "Allows RDS servers to connection to NPS server for MFA",
                             "protocol": "Udp",
@@ -335,6 +335,8 @@
                             "direction": "Inbound",
                             "sourcePortRanges": [],
                             "destinationPortRanges": [
+                                "1645",
+                                "1646",
                                 "1812",
                                 "1813"
                             ],

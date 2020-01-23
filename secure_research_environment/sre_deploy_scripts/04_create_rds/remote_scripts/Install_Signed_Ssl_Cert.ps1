@@ -46,6 +46,9 @@ if($success) {
     Write-Host " [x] Failed to update RDS roles!"
     throw "Could not update RDS roles"
 }
+Write-Host "Currently installed certificates:"
+Get-RDCertificate -ConnectionBroker $rdsFqdn
+Write-Host "`n"
 
 
 # Extract a base64-encoded certificate

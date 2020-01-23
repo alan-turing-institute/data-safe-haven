@@ -176,7 +176,7 @@ if ($?) {
 # Add DNS record for RDS Gateway
 # ------------------------------
 Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName;
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 # Get public IP address of RDS gateway
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
@@ -184,23 +184,34 @@ $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Wher
 $rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg)
 $rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
-# Add DNS record to SRE DNS Zone
+# Add DNS records to SRE DNS Zone
 $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
-# $dnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-$dnsRecordname = "@"
+$baseDnsRecordname = "@"
+$gatewayDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
 $sreDomain = $config.sre.domain.fqdn
-Add-LogMessage -Level Info "[ ] Setting 'A' record for 'rds' host to '$rdsGatewayPublicIp' in SRE $sreId DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $dnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
+
+# Setting the A record
+Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
+Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
                              -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for 'rds' host"
+if ($?) {
+    Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
-    Add-LogMessage -Level Info "Failed to set 'A' record for 'rds' host!"
+    Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
+}
+
+# Setting the CNAME record
+Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreDomain)"
+Remove-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+$result = New-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
+                             -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
+if ($?) {
+    Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
+} else {
+    Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
 }
 
 
@@ -338,34 +349,37 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Installing packages on RDS VMs..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
+
+foreach ($nameVMNameParamsPair in $vmNamePairs) {
+    $name, $vmName = $nameVMNameParamsPair
+    if ($name -ne "RDS Gateway") {
+        Add-LogMessage -Level Info "[ ] Installing packages on ${name}: '$vmName'"
+    }
+}
+
 # Install software packages on RDS SH1 (App server)
 Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Apps (App server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
-$result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg `
-     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath;
-$success = $?
-Write-Output $result.Value;
-if ($success) {
-    Add-LogMessage -Level Success "Successfully installed packages"
-} else {
-    Add-LogMessage -Level Fatal "Failed to install packages!"
-}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
+# $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath
+# $success = $?
+# Write-Output $result.Value;
+# if ($success) {
+#     Add-LogMessage -Level Success "Successfully installed packages"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to install packages!"
+# }
 
 # Install software packages on RDS SH2 (Remote desktop server)
 Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
 Write-Output $result.Value
 
 
 # Install required Powershell modules on RDS Gateway
 # --------------------------------------------------
 Add-LogMessage -Level Info "[ ] Installing required Powershell modules on RDS Gateway..."
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$params = @{
-    dcAdminUsername = "`"$dcAdminUsername`""
-    sreNetbiosName = "`"$sreNetbiosName`""
-}
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Additional_Powershell_Modules.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
 Write-Output $result.Value
@@ -376,14 +390,14 @@ Write-Output $result.Value
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
-    Restart-AzVM -Name $vmName  -ResourceGroupName $config.sre.rds.rg
+    Restart-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
     # The following syntax is preferred in future, but does not yet work
     # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
     # Restart-AzVM -Id$vmID
     if ($?) {
-        Add-LogMessage -Level Success "Rebooting the RDS Gateway succeeded"
+        Add-LogMessage -Level Success "Rebooting the ${name} succeeded"
     } else {
-        Add-LogMessage -Level Fatal "Rebooting the RDS Gateway failed!"
+        Add-LogMessage -Level Fatal "Rebooting the ${name} failed!"
     }
 }
 
