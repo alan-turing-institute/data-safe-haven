@@ -301,20 +301,16 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
   - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
   - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<sre-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
 
-### Configure or log into a suitable deployment environment
+<!-- ### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:
-  - The [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
   - [PowerShell Core v 6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6). **NOTE:** On Windows make sure to run `Windows Powershell 6 Preview` and **not** `Powershell` to run Powershell Core once installed.
 - The [PowerShell Azure commandlet](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.3.0)
-- A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux)
+- A bash shell (via the Linux or MacOS terminal or the Windows Subsystem for Linux) -->
 
 ### Deploy a compute VM
-- Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms`
-- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
-- Ensure you have the latest changes locally using `git pull`
-- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
-- Open a Powershell terminal with `pwsh`
-- Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms/` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
 - Deploy a new VM into an SRE environment using `./Create_Compute_VM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - You will also be prompted for the VM size (optional) and the desired last octet of the IP address (the first machine deployed should use `160` here)
@@ -322,14 +318,28 @@ To deploy a compute VM you will need the following available on the machine you 
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
 - After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
 
+
+- The deployment will take around 10 minutes to complete
+
+
+
+<!-- - Navigate to the folder in the safe haven repo with the deployment scripts at `<data-safe-haven-repo>/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms`
+- Checkout the `master` branch using `git checkout master` (or the deployment branch for the DSG environment you are deploying to - you may need to run `git fetch` first if not using `master`)
+- Ensure you have the latest changes locally using `git pull`
+- Ensure you are authenticated in the Azure CLI using `az login` and then checking this has worked with `az account list`
+- Open a Powershell terminal with `pwsh`
+- Ensure you are authenticated within the Powershell `Az` module by running `Connect-AzAccount` within Powershell
+- Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record). -->
+
 ### Troubleshooting Compute VM deployments
 - Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of its IP address at the end of its name.
-- Scroll to the bottom of the VM menu on the left hand side of the VM information panel
-- Activate boot diagnostics on the VM and click save. You need to stay on that screen until the activation is complete.
-- Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
+<!-- - Scroll to the bottom of the VM menu on the left hand side of the VM information panel -->
+<!-- - Activate boot diagnostics on the VM and click save. You need to stay on that screen until the activation is complete. -->
+<!-- - Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel. -->
+- Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
-- Enter the username from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
-- Enter the password from the `<sre-id>-dsvm-admin-password` secret in the DSG KeyVault.
+- Enter the username from the `<sre-id>-dsvm-admin-password` secret in the SRE KeyVault.
+- Enter the password from the `<sre-id>-dsvm-admin-password` secret in the SRE KeyVault.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-DSG-<sre-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 

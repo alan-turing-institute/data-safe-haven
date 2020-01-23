@@ -413,6 +413,7 @@ packages:
   - sssd-tools
   - sysstat
   - texlive-full
+  - unzip
   - xfce4
   - xfce4-terminal
   - xrdp

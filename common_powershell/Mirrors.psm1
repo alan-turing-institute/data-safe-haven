@@ -7,13 +7,11 @@ function Get-MirrorAddresses {
         [Parameter(Position = 1,HelpMessage = "PyPI IP address")]
         [string]$pypiIp = $null
     )
-    # if($config.dsg.mirrors.cran.ip) {
     if ($cranIp) {
         $cranUrl = "http://$($cranIp)"
     } else {
         $cranUrl = "https://cran.r-project.org"
     }
-    # if($config.dsg.mirrors.pypi.ip) {
     if ($pypiIp) {
         $pypiUrl = "http://$($pypiIp):3128"
     } else {

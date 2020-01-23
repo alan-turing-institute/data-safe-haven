@@ -34,6 +34,9 @@ function Get-ShmFullConfig {
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
     $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
+    $shm.computeVmImageResourceGroupName = "RG_SH_IMAGE_GALLERY"
+    $shm.computeVmImageImageGalleryName = "SAFE_HAVEN_COMPUTE_IMAGES"
+
     $shm.Id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
@@ -465,6 +468,10 @@ function Add-SreConfig {
     $config.sre.dsvm.rg = "RG_SRE_COMPUTE"
     $config.sre.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
+    $config.sre.dsvm.vmImageResourceGroup = $config.shm.computeVmImageResourceGroupName
+    $config.shm.Remove("computeVmImageResourceGroupName")
+    $config.sre.dsvm.vmImageGallery = $config.shm.computeVmImageImageGalleryName
+    $config.shm.Remove("computeVmImageImageGalleryName")
     $config.sre.dsvm.vmSizeDefault = "Standard_B2ms"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
