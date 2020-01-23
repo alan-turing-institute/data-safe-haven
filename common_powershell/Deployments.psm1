@@ -500,6 +500,42 @@ function Invoke-RemoteScript {
 Export-ModuleMember -Function Invoke-RemoteScript
 
 
+# Update and reboot a machine
+# ---------------------------
+function Invoke-WindowsConfigureAndUpdate {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
+        $VMName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Path to common_powershell directory")]
+        $CommonPowershellPath
+    )
+    # Install Powershell modules
+    Add-LogMessage -Level Info "[ ] Installing required Powershell modules on '$VMName'"
+    $powershellScriptPath = Join-Path $CommonPowershellPath "remote" "Install_Powershell_Modules.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $powershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
+    Write-Output $result.Value
+    # Set locale and run update script
+    Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
+    $InstallationScriptPath = Join-Path $CommonPowershellPath "remote" "Configure_Windows.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
+    Write-Output $result.Value
+    # Reboot the VM
+    Add-LogMessage -Level Info "[ ] Rebooting VM '$VMName'"
+    $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
+    # The following syntax is preferred in future, but does not yet work
+    # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
+    # Restart-AzVM -Id $vmID
+    if ($?) {
+        Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
+    }
+}
+Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
+
+
 # Set key vault permissions to the group and remove the user who deployed it
 # --------------------------------------------------------------------------
 function Set-KeyVaultPermissions {
@@ -524,6 +560,3 @@ function Set-KeyVaultPermissions {
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions
-
-
-

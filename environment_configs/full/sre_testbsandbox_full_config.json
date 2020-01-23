@@ -284,10 +284,10 @@
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
-      "vmName": "DSV-SRE-SANDBOX",
+      "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
-      "hostname": "DSV-SRE-SANDBOX",
-      "fqdn": "DSV-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+      "hostname": "DAT-SRE-SANDBOX",
+      "fqdn": "DAT-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
       "ip": "10.151.2.250"
     },
     "linux": {

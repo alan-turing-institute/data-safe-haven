@@ -436,7 +436,7 @@ function Add-SreConfig {
     # Data server
     $config.sre.dataserver = [ordered]@{}
     $config.sre.dataserver.rg = "RG_SRE_DATA"
-    $config.sre.dataserver.vmName = "DSV-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.dataserver.vmName = "DAT-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
     $config.sre.dataserver.vmSize = "Standard_DS2_v2"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
