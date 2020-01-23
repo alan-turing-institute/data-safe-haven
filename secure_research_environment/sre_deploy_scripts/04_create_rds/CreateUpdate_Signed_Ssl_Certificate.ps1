@@ -21,6 +21,7 @@ if (-not (Get-Module -ListAvailable -Name Posh-ACME)) {
 # Import modules
 Import-Module Posh-ACME
 Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
 
 
@@ -46,7 +47,7 @@ $requestCertificate = $false
 
 # Determine whether a certificate request is needed
 # -------------------------------------------------
-if ($kvCertificate -eq $null) {
+if ($null -eq $kvCertificate) {
     Add-LogMessage -Level Info "No certificate found in key vault '$keyVaultName'"
     $requestCertificate = $true
 } else {
@@ -64,8 +65,8 @@ if ($kvCertificate -eq $null) {
 # -------------------------
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    # $targetFqdn = $config.sre.rds.gateway.fqdn
-    $targetFqdn = $config.sre.domain.fqdn
+    # $basFqdn = $config.sre.rds.gateway.fqdn
+    $basFqdn = $config.sre.domain.fqdn
     $rdsFqdn = $config.sre.rds.gateway.fqdn
 
     # Set the Posh-ACME server to the appropriate Let's Encrypt endpoint
@@ -82,7 +83,7 @@ if ($requestCertificate) {
     # --------------
     Add-LogMessage -Level Info "[ ] Checking for Posh-ACME account"
     $acct = Get-PAAccount -List -Contact $emailAddress
-    if ($acct -eq $null) {
+    if ($null -eq $acct) {
         $account = New-PAAccount -Contact $emailAddress -AcceptTOS
         Add-LogMessage -Level Success "Created new Posh-ACME account with ID: '$($account.id)'"
         $acct = Get-PAAccount -List -Contact $emailAddress
@@ -98,7 +99,7 @@ if ($requestCertificate) {
     # Test DNS record creation
     # ------------------------
     Add-LogMessage -Level Info "Test that we can interact with DNS records..."
-    $testDomain = "dnstest.$($targetFqdn)"
+    $testDomain = "dnstest.$($basFqdn)"
 
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
@@ -123,9 +124,9 @@ if ($requestCertificate) {
     # Generate a certificate signing request in the KeyVault
     # ------------------------------------------------------
     $csrPath = (New-TemporaryFile).FullName + ".csr"
-    Add-LogMessage -Level Info "Generating a certificate signing request for $($targetFqdn) to be signed by Let's Encrypt..."
-    $SubjectName = "CN=$($targetFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
-    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName"
+    Add-LogMessage -Level Info "Generating a certificate signing request for $($basFqdn) to be signed by Let's Encrypt..."
+    $SubjectName = "CN=$($basFqdn),OU=$($config.shm.name),O=$($config.shm.organisation.name),L=$($config.shm.organisation.townCity),S=$($config.shm.organisation.stateCountyRegion),C=$($config.shm.organisation.countryCode)"
+    $manualPolicy = New-AzKeyVaultCertificatePolicy -ValidityInMonths 1 -IssuerName "Unknown" -SubjectName "$SubjectName" -DnsName "$rdsFqdn"
     $manualPolicy.Exportable = $true
     $certificateOperation = Add-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -CertificatePolicy $manualPolicy
     $success = $?
@@ -139,20 +140,19 @@ if ($requestCertificate) {
     # Send the certificate to be signed
     # ---------------------------------
     Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
-    Publish-DnsChallenge $targetFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
-    $azParams = @{
-        AZSubscriptionId = $azureContext.Subscription.Id
-        AZAccessToken = $token
-    }
-    # Add-LogMessage -Level Info "[ ] Creating certificate for $($targetFqdn)..."
-    Add-LogMessage -Level Info "[ ] Creating certificate for $($targetFqdn)..."
+    Publish-DnsChallenge $basFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
+    # $azParams = @{
+    #     AZSubscriptionId = $azureContext.Subscription.Id
+    #     AZAccessToken = $token
+    # }
+    Add-LogMessage -Level Info "[ ] Creating certificate for $($basFqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {
         Add-LogMessage -Level Success "Certificate creation succeeded"
     } else {
         Add-LogMessage -Level Fatal "Certificate creation failed!"
     }
-    $paCertificate = Get-PACertificate -MainDomain $targetFqdn
+    $paCertificate = Get-PACertificate -MainDomain $basFqdn
 
     # Import signed certificate
     # -------------------------
@@ -197,7 +197,7 @@ if ($doInstall) {
     # Configure RDS Gateway VM to use signed certificate
     # --------------------------------------------------
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Generate_New_Ssl_Cert" "Install_Signed_Ssl_Cert.ps1"
+    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
         rdsFqdn = "`"$rdsFqdn`""
         certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
@@ -205,16 +205,6 @@ if ($doInstall) {
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
     Write-Output $result.Value
-    # $result = Invoke-AzVMRunCommand -Name $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg `
-    #      -CommandId "RunPowerShellScript" -ScriptPath $scriptPath -Parameter $params;
-    # $success = $?
-    # Write-Output $result.Value
-    # if ($success) {
-    #     Write-Host -ForegroundColor DarkGreen " [o] Certificate installation succeeded"
-    # } else {
-    #     Write-Host -ForegroundColor DarkRed " [x] Certificate installation failed!"
-    #     throw "Unable to install certificate on $($config.sre.rds.gateway.vmName)!"
-    # }
 }
 
 

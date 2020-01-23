@@ -186,7 +186,7 @@
       "nsg": {
         "data": {
           "rg": "RG_SRE_WEBAPPS",
-          "name": "NSG_SRE_WEBAPPS"
+          "name": "NSG_SRE_SANDBOX_WEBAPPS"
         }
       }
     },
@@ -306,7 +306,7 @@
         "ip": "10.151.2.152"
       },
       "rg": "RG_SRE_WEBAPPS",
-      "nsg": "NSG_SRE_WEBAPPS"
+      "nsg": "NSG_SRE_SANDBOX_WEBAPPS"
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",

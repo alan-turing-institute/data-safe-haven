@@ -18,9 +18,10 @@ if ($?) {
 # -----------------------
 Write-Host "Installing Windows updates...."
 Get-WindowsUpdate
-$_ = Install-WindowsUpdate -AcceptAll -IgnoreReboot
+$installLogPath = (New-TemporaryFile).FullName
+Install-WindowsUpdate -AcceptAll -IgnoreReboot | Out-File $installLogPath
 if ($?) {
-    Write-Host " [o] Installing Windows updates succeeded"
+    Write-Host " [o] Installing Windows updates succeeded. See $installLogPath for logs"
 } else {
-    Write-Host " [x] Installing Windows updates failed!"
+    Write-Host " [x] Installing Windows updates failed! See $installLogPath for logs"
 }

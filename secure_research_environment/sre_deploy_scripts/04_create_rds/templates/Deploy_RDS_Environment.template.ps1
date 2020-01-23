@@ -47,7 +47,8 @@ New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmFqdn -Force
 Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature
-Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $rdsGatewayVmFqdn
+# Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $rdsGatewayVmFqdn
+Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $sreFqdn
 
 
 # Create collections
@@ -106,9 +107,9 @@ if (`$?) {
 }
 
 
-# Update where the remote desktop is hosted
-# -----------------------------------------
-Invoke-Expression -Command "$remoteUploadDir\Set-RDPublishedName.ps1 -ClientAccessName `$sreFqdn"
+# # Update where the remote desktop is hosted
+# # -----------------------------------------
+# Invoke-Expression -Command "$remoteUploadDir\Set-RDPublishedName.ps1 -ClientAccessName `$sreFqdn"
 
 
 # Remove the requirement for the /RDWeb/webclient/ suffix by setting up a redirect in IIS

@@ -312,7 +312,7 @@ function Add-SreConfig {
     $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
     $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
     $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
-    $config.sre.network.nsg.data.name = "NSG_SRE_WEBAPPS"
+    $config.sre.network.nsg.data.name = "NSG_SRE_" + $($config.sre.id).ToUpper() + "_WEBAPPS"
 
     # --- Storage config --
     $config.sre.storage = [ordered]@{

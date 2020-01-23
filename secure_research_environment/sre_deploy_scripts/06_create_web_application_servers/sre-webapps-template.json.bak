@@ -1,0 +1,521 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SRE ID": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter ID for SRE e.g. 'testsandbox'"
+            }
+        },
+        "GitLab Server Name": {
+            "defaultValue": "GITLAB",
+            "type": "string"
+        },
+        "GitLab VM Size": {
+            "type": "string",
+            "defaultValue": "Standard_B2ms",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_D2s_v3",
+                "Standard_DS2_v2",
+                "Standard_F4s_v2"
+            ],
+            "metadata": {
+                "description": "Select size of VM"
+            }
+        },
+        "GitLab IP Address": {
+            "type": "string",
+            "defaultValue": "10.250.x.153",
+            "metadata": {
+                "description": "Enter IP address for VM, must end in 153"
+            }
+        },
+        "HackMD Server Name": {
+            "defaultValue": "HACKMD",
+            "type": "string"
+        },
+        "HackMD VM Size": {
+            "type": "string",
+            "defaultValue": "Standard_B2ms",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_D2s_v3",
+                "Standard_DS2_v2",
+                "Standard_F4s_v2"
+            ],
+            "metadata": {
+                "description": "Select size of VM"
+            }
+        },
+        "HackMD IP Address": {
+            "type": "string",
+            "defaultValue": "10.250.x.154",
+            "metadata": {
+                "description": "Enter IP address for VM, must end in 154"
+            }
+        },
+        "Administrator User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for VM Administrator"
+            }
+        },
+        "Administrator Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for VM Administrator Password"
+            }
+        },
+        "NSG Name" : {
+            "type": "string",
+            "defaultValue": "NSG_Linux_Servers",
+            "metadata": {
+                "description": "Enter name of NSG to provision this VM"
+            }
+        },
+        "NSG Resource Group" : {
+            "type": "string",
+            "defaultValue": "RG_SRE_WEBAPPS",
+            "metadata": {
+                "description": "Enter name of resource group where NSGs should be provisioned"
+            }
+        },
+        "Virtual Network Name": {
+            "type": "string",
+            "defaultValue": "DSG_DSGROUPX_VNET1",
+            "metadata": {
+                "description": "Enter name of virtual network to provision this VM"
+            }
+        },
+        "Virtual Network Resource Group": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name of resource group that is associated with the virtual network above"
+            }
+        },
+        "Virtual Network Subnet": {
+            "type": "string",
+            "defaultValue": "Subnet-Data",
+            "metadata": {
+                "description": "Enter name of subnet where you want to provision this VM"
+            }
+        },
+       "GitLab Cloud Init": {
+         "type": "string",
+         "defaultValue": "",
+         "metadata": {
+           "description": "String passed down to the Virtual Machine."
+         }
+       },
+      "HackMD Cloud Init": {
+         "type": "string",
+         "defaultValue": "",
+         "metadata": {
+           "description": "String passed down to the Virtual Machine."
+         }
+       }
+    },
+    "variables": {
+        "gitlabnic": "[concat(parameters('GitLab Server Name'),'-','NIC')]",
+        "hackmdnic": "[concat(parameters('HackMD Server Name'),'-','NIC')]",
+        "diagStorageAccountName": "[substring(concat('webbootdiag', parameters('SRE ID'), uniqueString(subscription().subscriptionId), uniqueString(resourceGroup().id)), 0, 24)]",
+        "vnetID": "[resourceId(parameters('Virtual Network Resource Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]",
+        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual Network Subnet'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('GitLab Server Name')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "plan": {
+                "name": "gitlab-ce",
+                "product": "gitlab-ce",
+                "publisher": "gitlab"
+            },
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('GitLab VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "gitlab",
+                        "offer": "gitlab-ce",
+                        "sku": "gitlab-ce",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('GitLab Server Name'),'-OS-DISK')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 100
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat(parameters('GitLab Server Name'),'-DATA-DISK')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": 750
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('GitLab Server Name')]",
+                    "adminUsername": "[parameters('Administrator User')]",
+                    "adminPassword": "[parameters('Administrator Password')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false,
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "customData": "[parameters('GitLab Cloud Init')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('gitlabnic'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('gitlabnic'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('HackMD Server Name')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('HackMD VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "16.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('HackMD Server Name'),'-OS-DISK')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 750
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('HackMD Server Name')]",
+                    "adminUsername": "[parameters('Administrator User')]",
+                    "adminPassword": "[parameters('Administrator Password')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false,
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                  "customData": "[parameters('HackMD Cloud Init')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('hackmdnic'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https', '://', variables('diagStorageAccountName'), '.blob.core.windows.net', '/')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('hackmdnic'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagStorageAccountName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('gitlabnic')]",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('GitLab IP Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('subnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "primary": true,
+                "tapConfigurations": []
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('hackmdnic')]",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[parameters('HackMD IP Address')]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[variables('subnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "primary": true,
+                "tapConfigurations": []
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[variables('diagStorageAccountName')]",
+            "apiVersion": "2018-07-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": false,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "NestedNetworkingDeployment",
+            "resourceGroup": "[parameters('Virtual Network Resource Group')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/networkSecurityGroups",
+                            "name": "[parameters('NSG Name')]",
+                            "apiVersion": "2018-10-01",
+                            "location": "[resourceGroup().location]",
+                            "scale": null,
+                            "properties": {
+                                "securityRules": [
+                                    {
+                                        "name": "Internet_Out",
+                                        "properties": {
+                                            "description": "Deny Outbound Internet Access",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "VirtualNetwork",
+                                            "destinationAddressPrefix": "Internet",
+                                            "access": "Deny",
+                                            "priority": 4000,
+                                            "direction": "Outbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    }
+                                ],
+                                "defaultSecurityRules": [
+                                    {
+                                        "name": "AllowVnetInBound",
+                                        "properties": {
+                                            "description": "Allow inbound traffic from all VMs in VNET",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "VirtualNetwork",
+                                            "destinationAddressPrefix": "VirtualNetwork",
+                                            "access": "Allow",
+                                            "priority": 65000,
+                                            "direction": "Inbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    },
+                                    {
+                                        "name": "AllowAzureLoadBalancerInBound",
+                                        "properties": {
+                                            "description": "Allow inbound traffic from azure load balancer",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "AzureLoadBalancer",
+                                            "destinationAddressPrefix": "*",
+                                            "access": "Allow",
+                                            "priority": 65001,
+                                            "direction": "Inbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    },
+                                    {
+                                        "name": "DenyAllInBound",
+                                        "properties": {
+                                            "description": "Deny all inbound traffic",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "*",
+                                            "destinationAddressPrefix": "*",
+                                            "access": "Deny",
+                                            "priority": 65500,
+                                            "direction": "Inbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    },
+                                    {
+                                        "name": "AllowVnetOutBound",
+                                        "properties": {
+                                            "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "VirtualNetwork",
+                                            "destinationAddressPrefix": "VirtualNetwork",
+                                            "access": "Allow",
+                                            "priority": 65000,
+                                            "direction": "Outbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    },
+                                    {
+                                        "name": "AllowInternetOutBound",
+                                        "properties": {
+                                            "description": "Allow outbound traffic from all VMs to Internet",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "*",
+                                            "destinationAddressPrefix": "Internet",
+                                            "access": "Allow",
+                                            "priority": 65001,
+                                            "direction": "Outbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    },
+                                    {
+                                        "name": "DenyAllOutBound",
+                                        "properties": {
+                                            "description": "Deny all outbound traffic",
+                                            "protocol": "*",
+                                            "sourcePortRange": "*",
+                                            "destinationPortRange": "*",
+                                            "sourceAddressPrefix": "*",
+                                            "destinationAddressPrefix": "*",
+                                            "access": "Deny",
+                                            "priority": 65500,
+                                            "direction": "Outbound",
+                                            "sourcePortRanges": [],
+                                            "destinationPortRanges": [],
+                                            "sourceAddressPrefixes": [],
+                                            "destinationAddressPrefixes": []
+                                        }
+                                    }
+                                ]
+                            },
+                            "dependsOn": []
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
