@@ -82,12 +82,6 @@
                 "description": "Select size of VM"
             }
         },
-        "SRE_ID": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter ID for SRE e.g. 'testsandbox'"
-            }
-        },
         "Virtual_Network_Name": {
             "type": "string",
             "defaultValue": "DSG_DSGROUPX_VNET1",

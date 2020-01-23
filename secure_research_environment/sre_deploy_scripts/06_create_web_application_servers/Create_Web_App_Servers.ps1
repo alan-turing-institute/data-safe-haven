@@ -73,8 +73,8 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdL
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
 
 
-# Set up the NSGs for the webapps
-# -------------------------------
+# Set up the NSG for the webapps
+# ------------------------------
 $nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.linux.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "Internet_Out" `
@@ -88,13 +88,11 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
 # Create webapps resource group
 # --------------------------------
 $_ = Deploy-ResourceGroup -Name $config.sre.linux.rg -Location $config.sre.location
-# $_ = New-AzResourceGroup -Name $config.sre.linux.rg -Location $config.sre.location -Force
 
 
 # Deploy GitLab/HackMD VMs from template
 # --------------------------------------
 Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
-# $templateName = "sre-webapps-template"
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
     Administrator_User = $dcAdminUsername
@@ -107,22 +105,11 @@ $params = @{
     HackMD_IP_Address = $config.sre.linux.hackmd.ip
     HackMD_Server_Name = $config.sre.linux.hackmd.vmName
     HackMD_VM_Size = $config.sre.linux.hackmd.vmSize
-    SRE_ID = $config.sre.id
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.linux.rg
-# # Deploy webapp template
-# New-AzResourceGroupDeployment -ResourceGroupName $config.sre.linux.rg -TemplateFile $(Join-Path $PSScriptRoot "$($templateName).json") @params -Verbose -DeploymentDebugLogLevel ResponseContent
-# $result = $?
-# LogTemplateOutput -ResourceGroupName $config.sre.linux.rg -DeploymentName $templateName
-# if ($result) {
-#     Write-Host -ForegroundColor DarkGreen " [o] Template deployment succeeded"
-# } else {
-#     Write-Host -ForegroundColor DarkRed " [x] Template deployment failed!"
-#     throw "Template deployment has failed. Please check the error message above before re-running this script."
-# }
 
 
 # Switch back to original subscription
