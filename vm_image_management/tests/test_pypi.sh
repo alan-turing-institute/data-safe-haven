@@ -1,10 +1,7 @@
 # Use "MarkupSafe" as it is the first linux package on the Tier-3 whitelist (in the "00/00" package directory) so should be rsync'd near the end
 # Use "Fiona" as it is the last linux package on the Tier-3 whitelist (in the "ff/fb" package directory) so should be rsync'd near the end
 # Also take packages which are alphabetically early and late in the Tier-3 list
-packages=("MarkupSafe" "Fiona" "aequitas" "zipp")
-
-# Create local user library directory (not present by default)
-Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, recursive = TRUE)"
+packages=("MarkupSafe" "Fiona" "alabaster" "zipp")
 
 # Install sample packages to local user library
 OUTCOME=0

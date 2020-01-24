@@ -14,7 +14,7 @@ rm -rf smoke_tests.zip
 chown -R ${ADMIN_USERNAME}:${ADMIN_USERNAME} /home/${ADMIN_USERNAME}
 chmod -R 644 smoke_tests/
 chmod ugo+x smoke_tests/ smoke_tests/tests/ smoke_tests/package_lists/
-chmod u+x smoke_tests/tests/*.{py,sh,R}
+chmod ugo+rx smoke_tests/tests/*.{py,sh,R}
 
 # Show final outputs
 ls -alh /home/${ADMIN_USERNAME}/smoke_tests/*

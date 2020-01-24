@@ -345,9 +345,9 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets. They are automatically uploaded to the compute VM during the deployment step.
 
 To run the smoke tests:
-- Connect to a **remote desktop** on the Shared VM using the "Shared VM (Desktop)" app
+- Connect to a **remote desktop** on the Main VM using the "Main VM (Desktop)" app
 - Open a terminal session
-- Change to the tests folder using `cd ~/smoke_test/tests`
+- Change to the tests folder using `cd ~<sre-admin>/smoke_test/tests`
 - Follow the instructions in the `README.md` file. These should involve running `./run_all_tests.sh`
 - If all test results are expected you are done! Otherwise, contact REG for help diagnosing test failures.
 

@@ -2,7 +2,9 @@
 
 # Test R packages
 R_packages () {
-    conda deactivate
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
     OUTPUT=$(Rscript test_R_package_installation.R 2>&1)
     echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
     KNOWN_ISSUES=("clusterProfiler" "GOSemSim" "graphite" "rgl" "tmap")
