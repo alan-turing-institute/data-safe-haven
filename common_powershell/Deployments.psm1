@@ -301,22 +301,22 @@ function Deploy-UbuntuVirtualMachine {
         $Name,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
         $Size,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
-        $OsDiskType,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "ID of VM image to deploy")]
-        $CloudInitYaml,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Administrator username")]
-        $AdminUsername,
         [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Administrator password")]
         $AdminPassword,
-        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $NicId,
-        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Administrator username")]
+        $AdminUsername,
         [Parameter(Position = 8, Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "ID of VM image to deploy")]
+        $CloudInitYaml,
         [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location,
+        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $NicId,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
+        $OsDiskType,
+        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
         [Parameter(Position = 10, HelpMessage = "ID of VM image to deploy")]
         $ImageId = $null,
         [Parameter(Position = 11, HelpMessage = "IDs of data disks")]

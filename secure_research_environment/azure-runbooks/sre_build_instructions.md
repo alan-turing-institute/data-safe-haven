@@ -297,9 +297,9 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
 
 ## 9. Deploy initial shared compute VM
-### [OPTIONAL] Create a custom cloud init file for the DSG if required
-  - By default, compute VM deployments will use the `cloud-init-compute-vm-DEFAULT.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
-  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-DSG-<sre-id>.yaml` in the same folder and add any additional required steps in the `DSG-SPECIFIC COMMANDS` block marked with comments.
+### [OPTIONAL] Create a custom cloud init file for the SRE if required
+  - By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
+  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<sre-id>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
 <!-- ### Configure or log into a suitable deployment environment
 To deploy a compute VM you will need the following available on the machine you run the deployment script from:

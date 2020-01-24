@@ -30,8 +30,6 @@ $vnetName = $config.sre.network.vnet.name
 $subnetName = $config.sre.network.subnets.data.name
 
 
-
-
 # # Register shared image gallery
 # # -----------------------------
 # $galleryFeatureName = "GalleryPreview"
@@ -243,7 +241,12 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
-$cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot "templates" "cloud-init-compute-vm.template.yaml") -Raw
+# Load cloud-init template
+$cloudInitBasePath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "cloud_init" -Resolve
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | % { $_.FullName }
+if (-Not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
+$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+# Set template expansion variables
 $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
 $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
 $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
@@ -282,15 +285,16 @@ $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsv
 $params = @{
     Name = $vmName
     Size = $vmSize
-    OsDiskType = $config.sre.dsvm.osdisk.type
-    AdminUsername = $dsvmAdminUsername
     AdminPassword = $dsvmAdminPassword
-    CloudInitYaml = $cloudInitYaml
-    NicId = $vmNic.Id
-    ResourceGroupName = $config.sre.dsvm.rg
+    AdminUsername = $dsvmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
+    CloudInitYaml = $cloudInitYaml
     Location = $config.sre.location
+    NicId = $vmNic.Id
+    OsDiskType = $config.sre.dsvm.osdisk.type
+    ResourceGroupName = $config.sre.dsvm.rg
     DataDiskIds = @($dataDisk.Id, $homeDisk.Id)
+    ImageId = $image.Id
 }
 $_ = Deploy-UbuntuVirtualMachine @params
 
