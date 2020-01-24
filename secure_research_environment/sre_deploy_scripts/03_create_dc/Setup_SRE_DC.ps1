@@ -88,8 +88,8 @@ $artifactLocation = "https://$($config.sre.storage.artifacts.accountName).blob.c
 
 # Ensure that boot diagnostics resource group and storage account exist
 # ---------------------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.bootdiagnostics.rg -Location $config.sre.location
-$_ = Deploy-StorageAccount -Name $config.sre.bootdiagnostics.accountName -ResourceGroupName $config.sre.bootdiagnostics.rg -Location $config.sre.location
+$_ = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$_ = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 
 
 # Ensure that DC resource group exists
@@ -109,7 +109,7 @@ $params = @{
     Administrator_User = $dcAdminUsername
     Artifacts_Location = $artifactLocation
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.sre.bootdiagnostics.accountName
+    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     DC_IP_Address = $config.sre.dc.ip
     DC_VM_Name = $config.sre.dc.vmName
     DC_VM_Size = $config.sre.dc.vmSize

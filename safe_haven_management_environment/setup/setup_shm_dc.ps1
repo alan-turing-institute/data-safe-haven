@@ -191,8 +191,8 @@ try {
 
 # Setup boot diagnostics resource group and storage account
 # ---------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.bootdiagnostics.rg -Location $config.location
-$_ = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
+$_ = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
+$_ = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
 # Setup artifacts resource group and storage account
@@ -328,7 +328,7 @@ $params = @{
     Administrator_User = $dcNpsAdminUsername
     Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.bootdiagnostics.accountName
+    BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
     DC1_Host_Name = $config.dc.hostname
     DC1_IP_Address = $config.dc.ip
     DC1_VM_Name = $config.dc.vmName

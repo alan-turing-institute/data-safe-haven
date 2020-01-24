@@ -35,7 +35,7 @@ Add-LogMessage -Level Info "Creating data server '$($config.sre.dataserver.vmNam
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
     Administrator_User = $dcAdminUsername
-    BootDiagnostics_Account_Name = $config.sre.bootdiagnostics.accountName
+    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     Data_Server_Name = $config.sre.dataserver.vmName
     Domain_Name = $config.sre.domain.fqdn
     IP_Address = $config.sre.dataserver.ip

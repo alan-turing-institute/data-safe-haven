@@ -96,7 +96,7 @@ Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
     Administrator_User = $dcAdminUsername
-    BootDiagnostics_Account_Name = $config.sre.bootdiagnostics.accountName
+    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
     GitLab_IP_Address =  $config.sre.linux.gitlab.ip
     GitLab_Server_Name = $config.sre.linux.gitlab.vmName

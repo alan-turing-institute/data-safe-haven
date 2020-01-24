@@ -75,6 +75,10 @@
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
         "accountName": "shmtestbartifactsnhavsfr"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmtestbbootdiagsnhavsfr"
       }
     },
     "keyVault": {
@@ -116,10 +120,6 @@
           "tier3": 256
         }
       }
-    },
-    "bootdiagnostics": {
-      "rg": "RG_SHM_ARTIFACTS",
-      "accountName": "shmtestbbootdiagsnhavsfr"
     }
   },
   "sre": {
@@ -179,7 +179,11 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sresandboxartifactsmzgcb"
+        "accountName": "sreartifactsmzgcboxwifps"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "srebootdiagsmzgcboxwifps"
       }
     },
     "keyVault": {
@@ -314,6 +318,7 @@
         "type": "Standard_LRS",
         "size_gb": "128"
       }
+<<<<<<< HEAD
     },
     "mirrors": {
       "vnet": {
@@ -329,6 +334,8 @@
     "bootdiagnostics": {
       "rg": "RG_SRE_ARTIFACTS",
       "accountName": "sresandboxbootdiagsmzgcb"
+=======
+>>>>>>> Updated bootdiagnostics settings
     }
   }
 }

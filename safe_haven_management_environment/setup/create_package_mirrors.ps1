@@ -136,7 +136,7 @@ if ($?) {
 
 # Get common objects
 # ------------------
-$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.bootdiagnostics.accountName -ResourceGroupName $config.bootdiagnostics.rg -Location $config.location
+$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 $adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername
 
 

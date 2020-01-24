@@ -15,7 +15,7 @@ function Get-ShmFullConfig {
         $shmId
     )
     $configRootDir = Get-ConfigRootDir
-    $shmCoreConfigFilename = "shm_" + $shmId + "_core_config.json"
+    $shmCoreConfigFilename = "shm_${shmId}_core_config.json"
     $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -37,7 +37,7 @@ function Get-ShmFullConfig {
     $shm.computeVmImageResourceGroupName = "RG_SH_IMAGE_GALLERY"
     $shm.computeVmImageImageGalleryName = "SAFE_HAVEN_COMPUTE_IMAGES"
 
-    $shm.Id = $shmConfigBase.shmId
+    $shm.id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
@@ -68,7 +68,7 @@ function Get-ShmFullConfig {
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "RG_SHM_NETWORKING"
-            name = "VNET_SHM_" + $($shm.id).ToUpper()
+            name = "VNET_SHM_$($shm.id)".ToUpper()
             cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
         }
         subnets = [ordered]@{}
@@ -93,7 +93,7 @@ function Get-ShmFullConfig {
     # --- Domain controller config ---
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
-    $shm.dc.vmName = "DC1-SHM-" + $($shm.id).ToUpper()
+    $shm.dc.vmName = "DC1-SHM-$($shm.id)".ToUpper()
     $shm.dc.vmSize = "Standard_DS2_v2"
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
@@ -101,7 +101,7 @@ function Get-ShmFullConfig {
 
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
-    $shm.dcb.vmName = "DC2-SHM-" + $($shm.id).ToUpper()
+    $shm.dcb.vmName = "DC2-SHM-$($shm.id)".ToUpper()
     $shm.dcb.hostname = $shm.dcb.vmName
     $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
     $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
@@ -109,16 +109,22 @@ function Get-ShmFullConfig {
     # --- NPS config ---
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
-    $shm.nps.vmName = "NPS-SHM-" + $($shm.id).ToUpper()
+    $shm.nps.vmName = "NPS-SHM-$($shm.id)".ToUpper()
     $shm.nps.vmSize = "Standard_DS2_v2"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
+    $storageRg = "RG_SHM_ARTIFACTS"
+    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
-            rg = "RG_SHM_ARTIFACTS"
-            accountName = "shm" + "$($shm.id)".ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $shm.subscriptionName ) | TrimToLength 24
+            rg = $storageRg
+            accountName = "shm$($shm.id)artifacts${storageSuffix}".ToLower() | TrimToLength 24
+        }
+        bootdiagnostics = [ordered]@{
+            rg = $storageRg
+            accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
         }
     }
 
@@ -128,17 +134,17 @@ function Get-ShmFullConfig {
         name = "kv-shm-" + "$($shm.id)".ToLower()
     }
     $shm.keyVault.secretNames = [ordered]@{
-        aadAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-aad-admin-password"
-        dcNpsAdminUsername = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-username"
-        dcNpsAdminPassword = "shm-" + "$($shm.id)".ToLower() + "-dcnps-admin-password"
-        dcSafemodePassword = "shm-" + "$($shm.id)".ToLower() + "-dc-safemode-password"
-        mirrorAdminUsername = "shm-" + "$($shm.id)".ToLower() + "-package-mirror-admin-username"
-        adsyncPassword = "shm-" + "$($shm.id)".ToLower() + "-adsync-password"
-        vpnCaCertificate = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert"
-        vpnCaCertPassword = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert-password"
-        vpnCaCertificatePlain = "shm-" + "$($shm.id)".ToLower() + "-vpn-ca-cert-plain"
-        vpnClientCertificate = "shm-" + "$($shm.id)".ToLower() + "-vpn-client-cert"
-        vpnClientCertPassword = "shm-" + "$($shm.id)".ToLower() + "-vpn-client-cert-password"
+        aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+        dcNpsAdminUsername = "shm-$($shm.id)-dcnps-admin-username".ToLower()
+        dcNpsAdminPassword = "shm-$($shm.id)-dcnps-admin-password".ToLower()
+        dcSafemodePassword = "shm-$($shm.id)-dc-safemode-password".ToLower()
+        mirrorAdminUsername = "shm-$($shm.id)-package-mirror-admin-username".ToLower()
+        adsyncPassword = "shm-$($shm.id)-adsync-password".ToLower()
+        vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
+        vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
+        vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
+        vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
+        vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
     }
 
     # --- DNS config ---
@@ -175,12 +181,6 @@ function Get-ShmFullConfig {
         }
     }
 
-    # --- Boot diagnostics config ---
-    $shm.bootdiagnostics = [ordered] @{
-        rg = $shm.storage.artifacts.rg
-        accountName = "shm" + "$($shm.id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $shm.subscriptionName) | TrimToLength 24
-    }
-
     return $shm
 }
 Export-ModuleMember -Function Get-ShmFullConfig
@@ -206,9 +206,9 @@ function Add-SreConfig {
         $sreId
     )
     $configRootDir = Get-ConfigRootDir
-    $sreCoreConfigFilename = "sre_" + $sreId + "_core_config.json"
+    $sreCoreConfigFilename = "sre_${sreId}_core_config.json"
     $sreCoreConfigPath = Join-Path $configRootDir "core" $sreCoreConfigFilename -Resolve
-    $sreFullConfigFilename = "sre_" + $sreId + "_full_config.json"
+    $sreFullConfigFilename = "sre_${sreId}_full_config.json"
     $sreFullConfigPath = Join-Path $configRootDir "full" $sreFullConfigFilename
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -233,11 +233,11 @@ function Add-SreConfig {
 
     # --- Top-level config ---
     $config.sre.subscriptionName = $sreConfigBase.subscriptionName
-    $config.sre.Id = $sreConfigBase.sreId
+    $config.sre.id = $sreConfigBase.sreId
     if ($config.sre.id.length -gt 7) {
         Write-Host "sreId should be 7 characters or fewer if possible. '$($config.sre.id)' is $($config.sre.id.length) characters long."
     }
-    $config.sre.shortName = "sre-" + $sreConfigBase.sreId.ToLower()
+    $config.sre.shortName = "sre-$($sreConfigBase.sreId)".ToLower()
     $config.sre.location = $config.shm.location
     $config.sre.tier = $sreConfigBase.tier
     $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
@@ -278,7 +278,7 @@ function Add-SreConfig {
         }
     }
     $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.sre.network.vnet.name = "VNET_SRE_" + $($config.sre.Id).ToUpper()
+    $config.sre.network.vnet.name = "VNET_SRE_" + $($config.sre.id).ToUpper()
     $config.sre.network.vnet.cidr = $sreBasePrefix + "." + $sreThirdOctet + ".0/21"
     $config.sre.network.subnets.identity.name = "IdentitySubnet"
     $config.sre.network.subnets.identity.prefix = $sreBasePrefix + "." + $sreThirdOctet
@@ -293,20 +293,24 @@ function Add-SreConfig {
     $config.sre.network.subnets.gateway.name = "GatewaySubnet"
     $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
     $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
-    # $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
-    # $config.sre.network.nsg.data.name = "NSG_SRE_" + $($config.sre.id).ToUpper() + "_WEBAPPS"
 
     # --- Storage config --
+    $storageRg = "RG_SRE_ARTIFACTS"
+    $storageSuffix = New-RandomLetters -SeedPhrase $config.sre.subscriptionName
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
-            rg = "RG_SRE_ARTIFACTS"
-            accountName = "sre" + $($config.sre.id).ToLower() + "artifacts" + (New-RandomLetters -SeedPhrase $config.sre.subscriptionName) | TrimToLength 24
+            rg = $storageRg
+            accountName = "sre$($shm.id)artifacts${storageSuffix}".ToLower() | TrimToLength 24
+        }
+        bootdiagnostics = [ordered]@{
+            rg = $storageRg
+            accountName = "sre$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
         }
     }
 
     # --- Secrets ---
     $config.sre.keyVault = [ordered]@{
-        name = "kv-" + $config.shm.Id + "-sre-" + $($config.sre.Id).ToLower()
+        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             dcAdminPassword = $config.sre.shortName + '-dc-admin-password'
@@ -330,7 +334,7 @@ function Add-SreConfig {
     # --- Domain controller ---
     $config.sre.dc = [ordered]@{}
     $config.sre.dc.rg = "RG_SRE_DC"
-    $config.sre.dc.vmName = "DC-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.dc.vmName = "DC-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
     $config.sre.dc.vmSize = "Standard_DS2_v2"
     $config.sre.dc.hostname = $config.sre.dc.vmName
     $config.sre.dc.fqdn = $config.sre.dc.hostname + "." + $config.sre.domain.fqdn
@@ -371,8 +375,8 @@ function Add-SreConfig {
         gateway = [ordered]@{}
         session_hosts = [ordered]@{}
     }
-    $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SERVER"
-    $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.Id).ToUpper() + "_SESSION_HOSTS"
+    $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SERVER"
+    $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SESSION_HOSTS"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
@@ -396,18 +400,18 @@ function Add-SreConfig {
     } else {
         $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
-    $config.sre.rds.gateway.vmName = "RDG-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.gateway.vmName = "RDG-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
     $config.sre.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
     $config.sre.rds.gateway.fqdn = $config.sre.rds.gateway.hostname + "." + $config.sre.domain.fqdn
     $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
-    $config.sre.rds.gateway.npsSecretName = "sre-" + $($config.sre.Id).ToLower() + "-nps-secret"
-    $config.sre.rds.sessionHost1.vmName = "APP-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.gateway.npsSecretName = "sre-" + $($config.sre.id).ToLower() + "-nps-secret"
+    $config.sre.rds.sessionHost1.vmName = "APP-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
     $config.sre.rds.sessionHost1.vmSize = "Standard_D4s_v3"
     $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
     $config.sre.rds.sessionHost1.fqdn = $config.sre.rds.sessionHost1.hostname + "." + $config.sre.domain.fqdn
     $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
-    $config.sre.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
     $config.sre.rds.sessionHost2.vmSize = "Standard_D4s_v3"
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
     $config.sre.rds.sessionHost2.fqdn = $config.sre.rds.sessionHost2.hostname + "." + $config.sre.domain.fqdn
@@ -418,7 +422,7 @@ function Add-SreConfig {
     # Data server
     $config.sre.dataserver = [ordered]@{}
     $config.sre.dataserver.rg = "RG_SRE_DATA"
-    $config.sre.dataserver.vmName = "DAT-SRE-" + $($config.sre.Id).ToUpper() | TrimToLength 15
+    $config.sre.dataserver.vmName = "DAT-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
     $config.sre.dataserver.vmSize = "Standard_DS2_v2"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
@@ -431,15 +435,15 @@ function Add-SreConfig {
     }
     $config.sre.linux.rg = "RG_SRE_WEBAPPS" #$config.sre.network.nsg.data.rg
     $config.sre.linux.nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper() #$config.sre.network.nsg.data.name
-    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-$($config.sre.Id)".ToUpper()
+    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
     $config.sre.linux.gitlab.vmSize = "Standard_D2s_v3"
     $config.sre.linux.gitlab.hostname = $config.sre.linux.gitlab.vmName
-    $config.sre.linux.gitlab.fqdn = $config.sre.linux.gitlab.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.linux.gitlab.fqdn = "$($config.sre.linux.gitlab.hostname).$($config.sre.domain.fqdn)"
     $config.sre.linux.gitlab.ip = $config.sre.network.subnets.data.prefix + ".151"
-    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-$($config.sre.Id)".ToUpper()
+    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
     $config.sre.linux.hackmd.vmSize = "Standard_D2s_v3"
     $config.sre.linux.hackmd.hostname = $config.sre.linux.hackmd.vmName
-    $config.sre.linux.hackmd.fqdn = $config.sre.linux.hackmd.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.linux.hackmd.fqdn = "$($config.sre.linux.hackmd.hostname).$($config.sre.domain.fqdn)"
     $config.sre.linux.hackmd.ip = $config.sre.network.subnets.data.prefix + ".152"
 
     # Compute VMs
@@ -475,7 +479,7 @@ function Add-SreConfig {
     }
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if (@("2","3").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.Id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
+        $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
         $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
         $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
     } elseif (@("0","1").Contains($config.sre.tier)) {
@@ -485,12 +489,6 @@ function Add-SreConfig {
     } else {
         Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
         return
-    }
-
-    # --- Boot diagnostics config ---
-    $config.sre.bootdiagnostics = [ordered]@{
-        rg = $config.sre.storage.artifacts.rg
-        accountName = "sre" + "$($config.sre.Id)".ToLower() + "bootdiags" + (New-RandomLetters -SeedPhrase $config.sre.subscriptionName) | TrimToLength 24
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
@@ -507,10 +505,10 @@ function Get-SreConfig {
         [string]$sreId
     )
     # Read SRE config from file
-    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve;
-    $configFilename = "sre_" + $sreId + "_full_config.json";
-    $configPath = Join-Path $configRootDir $configFilename -Resolve;
-    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json;
+    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve
+    $configFilename = "sre_${sreId}_full_config.json"
+    $configPath = Join-Path $configRootDir $configFilename -Resolve
+    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
     return $config
 }
 Export-ModuleMember -Function Get-SreConfig
