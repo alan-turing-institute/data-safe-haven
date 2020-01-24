@@ -7,7 +7,6 @@ rm -rf smoke_tests*
 echo "$PAYLOAD" | base64 -d > smoke_tests.zip
 
 # Unzip and remove the zip file
-apt-get install unzip
 unzip smoke_tests.zip
 rm -rf smoke_tests.zip
 

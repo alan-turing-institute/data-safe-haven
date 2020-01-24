@@ -61,6 +61,29 @@ function Add-NetworkSecurityGroupRule {
 Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 
 
+# Associate a VM to an NSG
+# ------------------------
+function Add-VmToNSG {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine")]
+        $VMName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of network security group")]
+        $NSGName
+    )
+    Add-LogMessage -Level Info ("[ ] Associating $VMName with $NSGName...")
+    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $VMName).Id }
+    $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Name -eq $NSGName }
+    $nic.NetworkSecurityGroup = $nsg
+    $_ = ($nic | Set-AzNetworkInterface)
+    if ($?) {
+        Add-LogMessage -Level Success "NSG association succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "NSG association failed!"
+    }
+}
+Export-ModuleMember -Function Add-VmToNSG
+
+
 # Deploy an ARM template and log the output
 # -----------------------------------------
 function Deploy-ArmTemplate {

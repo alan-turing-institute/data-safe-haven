@@ -242,27 +242,6 @@ function Add-SreConfig {
     $config.sre.tier = $sreConfigBase.tier
     $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
 
-
-    # --- Package mirror config ---
-    $config.sre.mirrors = [ordered]@{
-        vnet = [ordered]@{}
-        cran = [ordered]@{}
-        pypi = [ordered]@{}
-    }
-    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if (@("2","3").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.name = "VNET_SHM_" + $($config.shm.Id).ToUpper() + "_PKG_MIRRORS_TIER" + $config.sre.tier
-        $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
-        $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
-    } elseif (@("0","1").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.name = $null
-        $config.sre.mirrors.pypi.ip = $null
-        $config.sre.mirrors.cran.ip = $null
-    } else {
-        Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
-        return
-    }
-
     # -- Domain config ---
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
@@ -314,8 +293,8 @@ function Add-SreConfig {
     $config.sre.network.subnets.gateway.name = "GatewaySubnet"
     $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
     $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
-    $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
-    $config.sre.network.nsg.data.name = "NSG_SRE_" + $($config.sre.id).ToUpper() + "_WEBAPPS"
+    # $config.sre.network.nsg.data.rg = "RG_SRE_WEBAPPS"
+    # $config.sre.network.nsg.data.name = "NSG_SRE_" + $($config.sre.id).ToUpper() + "_WEBAPPS"
 
     # --- Storage config --
     $config.sre.storage = [ordered]@{
@@ -450,14 +429,14 @@ function Add-SreConfig {
         gitlab = [ordered]@{}
         hackmd = [ordered]@{}
     }
-    $config.sre.linux.rg = $config.sre.network.nsg.data.rg
-    $config.sre.linux.nsg = $config.sre.network.nsg.data.name
-    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-" + $($config.sre.Id).ToUpper()
+    $config.sre.linux.rg = "RG_SRE_WEBAPPS" #$config.sre.network.nsg.data.rg
+    $config.sre.linux.nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper() #$config.sre.network.nsg.data.name
+    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-$($config.sre.Id)".ToUpper()
     $config.sre.linux.gitlab.vmSize = "Standard_D2s_v3"
     $config.sre.linux.gitlab.hostname = $config.sre.linux.gitlab.vmName
     $config.sre.linux.gitlab.fqdn = $config.sre.linux.gitlab.hostname + "." + $config.sre.domain.fqdn
     $config.sre.linux.gitlab.ip = $config.sre.network.subnets.data.prefix + ".151"
-    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-" + $($config.sre.Id).ToUpper()
+    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-$($config.sre.Id)".ToUpper()
     $config.sre.linux.hackmd.vmSize = "Standard_D2s_v3"
     $config.sre.linux.hackmd.hostname = $config.sre.linux.hackmd.vmName
     $config.sre.linux.hackmd.fqdn = $config.sre.linux.hackmd.hostname + "." + $config.sre.domain.fqdn
@@ -486,6 +465,26 @@ function Add-SreConfig {
     $config.sre.dsvm.homedisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "128"
+    }
+
+    # --- Package mirror config ---
+    $config.sre.mirrors = [ordered]@{
+        vnet = [ordered]@{}
+        cran = [ordered]@{}
+        pypi = [ordered]@{}
+    }
+    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
+    if (@("2","3").Contains($config.sre.tier)) {
+        $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.Id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
+        $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
+        $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
+    } elseif (@("0","1").Contains($config.sre.tier)) {
+        $config.sre.mirrors.vnet.name = $null
+        $config.sre.mirrors.pypi.ip = $null
+        $config.sre.mirrors.cran.ip = $null
+    } else {
+        Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
+        return
     }
 
     # --- Boot diagnostics config ---

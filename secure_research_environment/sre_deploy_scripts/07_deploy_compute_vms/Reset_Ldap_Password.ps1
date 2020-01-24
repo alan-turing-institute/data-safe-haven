@@ -1,15 +1,15 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$dsgId,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
-  [string]$ipLastOctet
+    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$dsgId,
+    [Parameter(Position = 1,Mandatory = $true,HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
+    [string]$ipLastOctet
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
 # Get DSG config
-$config = Get-SreConfig($dsgId);
+$config = Get-SreConfig ($dsgId);
 $prevContext = Get-AzContext
 
 
@@ -17,8 +17,8 @@ $prevContext = Get-AzContext
 # ----------------------------------------------------------------
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Write-Host "Finding VM with last IP octet: $ipLastOctet"
-$vmId = Get-AzNetworkInterface -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | % { $_.VirtualMachine.Id }
-$vm = Get-AzVm -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { $_.Id -eq $vmId }
+$vmId = Get-AzNetworkInterface -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
+$vm = Get-AzVM -ResourceGroupName $config.dsg.dsvm.rg | Where-Object { $_.Id -eq $vmId }
 if ($?) {
     Write-Host "Found VM: $($vm.Name)"
 } else {
@@ -30,7 +30,7 @@ if ($?) {
 # ---------------------------------
 $_ = Set-AzContext -SubscriptionId $config.dsg.subscriptionName;
 Write-Host "Checking LDAP secret in KeyVault: $($config.dsg.keyVault.name)"
-$kvLdapPassword = (Get-AzKeyVaultSecret -vaultName $config.dsg.keyVault.name -name $config.dsg.users.ldap.dsvm.passwordSecretName).SecretValueText;
+$kvLdapPassword = (Get-AzKeyVaultSecret -VaultName $config.dsg.keyVault.Name -Name $config.dsg.users.ldap.dsvm.passwordSecretName).SecretValueText;
 if ($kvLdapPassword -ne $null) {
     Write-Host "Found LDAP secret in the KeyVault"
 } else {
@@ -48,8 +48,8 @@ $params = @{
 }
 Write-Host "Setting LDAP secret in local AD on: $($config.shm.dc.vmName)"
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.shm.dc.rg -Name $config.shm.dc.vmName `
-                                -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
-                                -Parameter $params
+     -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath `
+     -Parameter $params
 $success = $?
 Write-Output $result.Value
 if ($success) {
@@ -66,7 +66,7 @@ $params = @{
     ldapPassword = "`"$kvLdapPassword`""
 }
 $result = Invoke-AzVMRunCommand -ResourceGroupName $config.dsg.dsvm.rg -Name $vm.Name `
-                                -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
+     -CommandId 'RunShellScript' -ScriptPath $scriptPath -Parameter $params
 $success = $?
 Write-Output $result.Value
 if ($success) {

@@ -1,12 +1,12 @@
 #!/bin/bash
-# $CRAN_MIRROR_URL must be present as an environment variable
-# $PYPI_MIRROR_URL must be present as an environment variable
+# $CRAN_MIRROR_IP must be present as an environment variable
+# $PYPI_MIRROR_IP must be present as an environment variable
 # $PYPI_MIRROR_HOST must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
 # the Powershell Invoke-AzVMRunCommand, which sets all variables
 # passed in its -Parameter argument as environment variables
 
-echo "Updating PyPI mirror to point at $PYPI_MIRROR_URL..."
+echo "Updating PyPI mirror to point at $PYPI_MIRROR_HOST..."
 echo "" > /etc/pip.conf
 echo "[global]" >> /etc/pip.conf
 echo "index = ${PYPI_MIRROR_IP}" >> /etc/pip.conf

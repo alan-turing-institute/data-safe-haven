@@ -129,17 +129,6 @@
     "location": "uksouth",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
-    "mirrors": {
-      "vnet": {
-        "name": "VNET_SHM_TESTB_PKG_MIRRORS_TIER2"
-      },
-      "cran": {
-        "ip": "10.20.2.21"
-      },
-      "pypi": {
-        "ip": "10.20.2.20"
-      }
-    },
     "domain": {
       "fqdn": "sandbox.testb.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
@@ -184,10 +173,7 @@
         }
       },
       "nsg": {
-        "data": {
-          "rg": "RG_SRE_WEBAPPS",
-          "name": "NSG_SRE_SANDBOX_WEBAPPS"
-        }
+        "data": {}
       }
     },
     "storage": {
@@ -327,6 +313,17 @@
       "homedisk": {
         "type": "Standard_LRS",
         "size_gb": "128"
+      }
+    },
+    "mirrors": {
+      "vnet": {
+        "name": "VNET_SHM_TESTB_PACKAGE_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
       }
     },
     "bootdiagnostics": {
