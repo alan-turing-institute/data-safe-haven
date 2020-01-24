@@ -74,7 +74,7 @@ write_files:
       create extension if not exists earthdistance;
   - path: "/installation/spark_sha512.hash"
     content: |
-      80a4c564ceff0d9aff82b7df610b1d34e777b45042e21e2d41f3e497bb1fa5d8  spark-2.4.3-bin-hadoop2.7.tgz
+      72833745defba95262fbe67306a48c251dbbe17585d65f6095057fc3dc2812ea  spark-2.4.4-bin-hadoop2.7.tgz
   - path: "/installation/dbeaver_sha512.hash"
     content: |
       d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
@@ -550,7 +550,7 @@ runcmd:
   - echo ">=== Installing spark... ===<"
   - mkdir -p /opt/spark
   - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.3/spark-2.4.3-bin-hadoop2.7.tgz
+  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz
   - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
   - tar -zxf spark-2.4.3-bin-hadoop2.7.tgz
   - rm -rf spark-2.4.3-bin-hadoop2.7.tgz
