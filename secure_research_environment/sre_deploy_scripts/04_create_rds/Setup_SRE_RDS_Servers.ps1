@@ -64,7 +64,7 @@ $sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -Resource
 
 # Set up the NSGs for the gateway and session hosts
 # -------------------------------------------------
-$nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.gateway.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -Name "HTTPS_In" `
                              -Description "Allow HTTPS inbound to RDS server" `
@@ -72,7 +72,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -Direction Inbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix Internet -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange 443
-$nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `
@@ -400,6 +400,13 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
         Add-LogMessage -Level Fatal "Rebooting the ${name} failed!"
     }
 }
+
+
+# Add VMs to correct NSG
+# ----------------------
+Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
 
 
 # Switch back to original subscription

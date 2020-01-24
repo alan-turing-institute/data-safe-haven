@@ -39,6 +39,17 @@ $_ = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $conf
 $storageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.accountName -ResourceGroupName $config.sre.storage.artifacts.rg -Location $config.sre.location
 
 
+# Create network security group
+# -----------------------------
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dc.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+#                              -Name "Deny_Internet" `
+#                              -Description "Deny Outbound Internet Access" `
+#                              -Priority 4000 `
+#                              -Direction Outbound -Access Deny -Protocol * `
+#                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+#                              -DestinationAddressPrefix Internet -DestinationPortRange *
+
 # Create blob storage containers
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
@@ -231,17 +242,9 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Create network security group
-# -----------------------------
-$nsgDomainServers = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
-                             -Name "Deny_Internet" `
-                             -Description "Deny Outbound Internet Access" `
-                             -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
-
+# Add DC to NSG
+# -------------
+Add-VmToNSG -VMName $config.sre.dc.vmName -NSGName $nsg.Name
 
 # Switch back to original subscription
 # ------------------------------------

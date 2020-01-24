@@ -24,8 +24,6 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$deploymentNsgName = "NSG_SRE_" + $($config.sre.Id).ToUpper() + "_IMAGE_DEPLOYMENT"
-$secureNsgName = $config.sre.webapps.nsg
 $vnetName = $config.sre.network.vnet.Name
 $subnetName = $config.sre.network.subnets.data.Name
 
@@ -85,52 +83,52 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 $_ = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Check that secure NSG exists
-# ----------------------------
-Add-LogMessage -Level Info "Looking for secure NSG '$secureNsgName'..."
-# $secureNsg = $null
-try {
-    $secureNsg = Get-AzNetworkSecurityGroup -ResourceGroupName $config.sre.network.vnet.rg -Name $secureNsgName -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
-    Add-LogMessage -Level Fatal "NSG '$($secureNsgName )' could not be found!"
-}
-Add-LogMessage -Level Success "Found secure NSG '$($secureNsg.Name)' in $($secureNsg.ResourceGroupName)"
+# Set up the NSG for the webapps
+# ------------------------------
+$secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
+                             -Name "OutboundDenyInternet" `
+                             -Description "Outbound deny internet" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
 # Check that deployment NSG exists
 # --------------------------------
-$deploymentNsg = Deploy-NetworkSecurityGroup -Name $deploymentNsgName -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-     -Name "InboundAllowLDAP" `
-     -Description "Inbound allow LDAP" `
-     -Priority 2000 `
-     -Direction Inbound -Access Allow -Protocol * `
-     -SourceAddressPrefix $shmIdentitySubnetIpRange -SourcePortRange 88,389,636 `
-     -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+                             -Name "InboundAllowLDAP" `
+                             -Description "Inbound allow LDAP" `
+                             -Priority 2000 `
+                             -Direction Inbound -Access Allow -Protocol * `
+                             -SourceAddressPrefix $shmIdentitySubnetIpRange -SourcePortRange 88,389,636 `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-     -Name "InboundDenyAll" `
-     -Description "Inbound deny all" `
-     -Priority 3000 `
-     -Direction Inbound -Access Deny -Protocol * `
-     -SourceAddressPrefix * -SourcePortRange * `
-     -DestinationAddressPrefix * -DestinationPortRange *
+                             -Name "InboundDenyAll" `
+                             -Description "Inbound deny all" `
+                             -Priority 3000 `
+                             -Direction Inbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
 # Outbound: allow LDAP then deny all Virtual Network
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-     -Name "OutboundAllowLDAP" `
-     -Description "Outbound allow LDAP" `
-     -Priority 2000 `
-     -Direction Outbound -Access Allow -Protocol * `
-     -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-     -DestinationAddressPrefix $shmIdentitySubnetIpRange -DestinationPortRange *
+                             -Name "OutboundAllowLDAP" `
+                             -Description "Outbound allow LDAP" `
+                             -Priority 2000 `
+                             -Direction Outbound -Access Allow -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix $shmIdentitySubnetIpRange -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-     -Name "OutboundDenyVNet" `
-     -Description "Outbound deny virtual network" `
-     -Priority 3000 `
-     -Direction Outbound -Access Deny -Protocol * `
-     -SourceAddressPrefix * -SourcePortRange * `
-     -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+                             -Name "OutboundDenyVNet" `
+                             -Description "Outbound deny virtual network" `
+                             -Priority 3000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 
 
 # Check that VNET and subnet exist
@@ -237,14 +235,15 @@ while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("P
 # VM must be off for us to switch NSG, but we can restart after the switch
 # ------------------------------------------------------------------------
 Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)' at $(Get-Date -UFormat '%d-%b-%Y %R')..."
-$vmNic.NetworkSecurityGroup = $secureNsg
-$_ = ($vmNic | Set-AzNetworkInterface)
-if ($?) {
-    Add-LogMessage -Level Success "NSG switching succeeded"
-} else {
-    Add-LogMessage -Level Fatal "NSG switching failed!"
-}
-$_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
+# $vmNic.NetworkSecurityGroup = $secureNsg
+# $_ = ($vmNic | Set-AzNetworkInterface)
+# if ($?) {
+#     Add-LogMessage -Level Success "NSG switching succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "NSG switching failed!"
+# }
+# $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Create Postgres roles

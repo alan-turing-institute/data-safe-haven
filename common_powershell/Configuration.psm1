@@ -251,8 +251,8 @@ function Add-SreConfig {
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=" + ($config.sre.domain.fqdn.Replace('.',',DC='))
-    $serverAdminsGroup = "SG " + $config.sre.domain.netbiosName + " Server Administrators"
-    $researchUsersGroup = "SG " + $config.sre.domain.netbiosName + " Research Users"
+    $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
+    $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
@@ -334,7 +334,7 @@ function Add-SreConfig {
     # --- Domain controller ---
     $config.sre.dc = [ordered]@{}
     $config.sre.dc.rg = "RG_SRE_DC"
-    # $config.sre.dc.nsg = "NSG_RDS_SRE_$($config.sre.id)_IDENTITY".ToUpper()
+    $config.sre.dc.nsg = "NSG_RDS_SRE_$($config.sre.id)_IDENTITY".ToUpper()
     $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dc.vmSize = "Standard_DS2_v2"
     $config.sre.dc.hostname = $config.sre.dc.vmName
@@ -346,74 +346,87 @@ function Add-SreConfig {
         ldap = [ordered]@{
             gitlab = [ordered]@{
                 name = $config.sre.domain.netbiosName + " Gitlab LDAP"
-                samAccountName = "gitlabldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
+                samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             hackmd = [ordered]@{
                 name = $config.sre.domain.netbiosName + " HackMD LDAP"
-                samAccountName = "hackmdldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
+                samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             dsvm = [ordered]@{
                 name = $config.sre.domain.netbiosName + " DSVM LDAP"
-                samAccountName = "dsvmldap" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
+                samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
         researchers = [ordered]@{
             test = [ordered]@{
                 name = $config.sre.domain.netbiosName + " Test Researcher"
-                samAccountName = "testresrch" + $sreConfigBase.sreId.ToLower() | TrimToLength 20
+                samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
     }
 
     # --- RDS Servers ---
     $config.sre.rds = [ordered]@{
-        gateway = [ordered]@{}
-        sessionHost1 = [ordered]@{}
-        sessionHost2 = [ordered]@{}
+        rg = "RG_SRE_RDS"
+        gateway = [ordered]@{
+            vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmSize = "Standard_D4s_v3"
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
+            networkRules = [ordered]@{}
+        }
+        sessionHost1 = [ordered]@{
+            vmName = "APP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmSize = "Standard_D4s_v3"
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+        }
+        sessionHost2 = [ordered]@{
+            vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmSize = "Standard_D4s_v3"
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+        }
     }
-    $config.sre.rds.rg = "RG_SRE_RDS"
-    $config.sre.rds.nsg = [ordered]@{
-        gateway = [ordered]@{}
-        session_hosts = [ordered]@{}
-    }
-    $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SERVER"
-    $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SESSION_HOSTS"
+    # $config.sre.rds.nsg = [ordered]@{
+    #     gateway = [ordered]@{}
+    #     session_hosts = [ordered]@{}
+    # }
+    # $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SERVER"
+    # $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SESSION_HOSTS"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
         if (@("3","4").Contains($config.sre.tier)) {
-            $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.240"
+            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.240"
+            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
-            $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.253"
+            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.253"
+            $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            $config.sre.rds.nsg.gateway.allowedSources = "Internet"
+            # $config.sre.rds.nsg.gateway.allowedSources = "Internet"
+            $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
         }
     } else {
-        $config.sre.rds.nsg.gateway.allowedSources = $sreConfigBase.rdsAllowedSources
+        # $config.sre.rds.nsg.gateway.allowedSources = $sreConfigBase.rdsAllowedSources
+        $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.rdsAllowedSources
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsInternetAccess -eq "default") {
         if (@("2","3","4").Contains($config.sre.tier)) {
-            $config.sre.rds.nsg.gateway.outboundInternet = "Deny"
+            # $config.sre.rds.nsg.gateway.outboundInternet = "Deny"
+            $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            $config.sre.rds.nsg.gateway.outboundInternet = "Allow"
+            # $config.sre.rds.nsg.gateway.outboundInternet = "Allow"
+            $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
         $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
-    $config.sre.rds.gateway.vmName = "RDG-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
-    $config.sre.rds.gateway.vmSize = "Standard_DS2_v2"
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
     $config.sre.rds.gateway.fqdn = $config.sre.rds.gateway.hostname + "." + $config.sre.domain.fqdn
     $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
-    $config.sre.rds.gateway.npsSecretName = "sre-" + $($config.sre.id).ToLower() + "-nps-secret"
-    $config.sre.rds.sessionHost1.vmName = "APP-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
-    $config.sre.rds.sessionHost1.vmSize = "Standard_D4s_v3"
+    $config.sre.rds.gateway.npsSecretName = "sre-$($config.sre.id)-nps-secret".ToLower()
     $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
     $config.sre.rds.sessionHost1.fqdn = $config.sre.rds.sessionHost1.hostname + "." + $config.sre.domain.fqdn
     $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
-    $config.sre.rds.sessionHost2.vmName = "DKP-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
-    $config.sre.rds.sessionHost2.vmSize = "Standard_D4s_v3"
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
     $config.sre.rds.sessionHost2.fqdn = $config.sre.rds.sessionHost2.hostname + "." + $config.sre.domain.fqdn
     $config.sre.rds.sessionHost2.ip = $config.sre.network.subnets.rds.prefix + ".248"
@@ -423,15 +436,16 @@ function Add-SreConfig {
     # Data server
     $config.sre.dataserver = [ordered]@{}
     $config.sre.dataserver.rg = "RG_SRE_DATA"
-    $config.sre.dataserver.vmName = "DAT-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
-    $config.sre.dataserver.vmSize = "Standard_DS2_v2"
+    $config.sre.dataserver.nsg = "NSG_RDS_SRE_$($config.sre.id)_DATA".ToUpper()
+    $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+    $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
     $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
     $config.sre.webapps = [ordered]@{
-        rg = "RG_SRE_WEBAPPS" #$config.sre.network.nsg.data.rg
+        rg = "RG_SRE_WEBAPPS"
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
@@ -452,6 +466,8 @@ function Add-SreConfig {
     # Compute VMs
     $config.sre.dsvm = [ordered]@{}
     $config.sre.dsvm.rg = "RG_SRE_COMPUTE"
+    $config.sre.dsvm.nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
+    $config.sre.dsvm.deploymentNsg = "NSG_SRE_$($config.sre.Id)_COMPUTE_DEPLOYMENT".ToUpper()
     $config.sre.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
     $config.shm.Remove("computeVmImageSubscriptionName")
     $config.sre.dsvm.vmImageResourceGroup = $config.shm.computeVmImageResourceGroupName

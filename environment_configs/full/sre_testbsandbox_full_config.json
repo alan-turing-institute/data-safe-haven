@@ -209,6 +209,7 @@
     },
     "dc": {
       "rg": "RG_SRE_DC",
+      "nsg": "NSG_RDS_SRE_SANDBOX_IDENTITY",
       "vmName": "DC-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC-SRE-SANDBOX",
@@ -238,9 +239,15 @@
       }
     },
     "rds": {
+      "rg": "RG_SRE_RDS",
       "gateway": {
         "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
+        "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
+        "networkRules": {
+          "allowedSources": "Internet",
+          "outboundInternet": "Deny"
+        },
         "hostname": "RDG-SRE-SANDBOX",
         "fqdn": "RDG-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.250",
@@ -249,6 +256,7 @@
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.249"
@@ -256,31 +264,22 @@
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.248"
-      },
-      "rg": "RG_SRE_RDS",
-      "nsg": {
-        "gateway": {
-          "name": "NSG_RDS_SRE_SANDBOX_SERVER",
-          "allowedSources": "Internet",
-          "outboundInternet": "Deny"
-        },
-        "session_hosts": {
-          "name": "NSG_RDS_SRE_SANDBOX_SESSION_HOSTS"
-        }
       }
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
+      "nsg": "NSG_RDS_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
-      "vmSize": "Standard_DS2_v2",
+      "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
       "ip": "10.151.2.250"
     },
-    "linux": {
+    "webapps": {
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
@@ -300,6 +299,8 @@
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
+      "nsg": "NSG_SRE_SANDBOX_COMPUTE",
+      "deploymentNsg": "NSG_SRE_SANDBOX_IMAGE_DEPLOYMENT",
       "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",

@@ -29,6 +29,18 @@ $dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 $_ = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
 
 
+# Set up the NSG for the data server
+# ----------------------------------
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "Deny_Internet" `
+                             -Description "Deny Outbound Internet Access" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
+
+
 # Deploy data server from template
 # --------------------------------
 Add-LogMessage -Level Info "Creating data server '$($config.sre.dataserver.vmName)' from template..."
