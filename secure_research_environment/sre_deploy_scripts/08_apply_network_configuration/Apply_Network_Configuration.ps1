@@ -23,7 +23,7 @@ Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sr
 # Get NSGs
 $nsgGateway = Get-AzNetworkSecurityGroup -Name $config.sre.rds.nsg.gateway.name
 if ($nsgGateway -eq $null) { throw "Could not load RDS gateway NSG" }
-$nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.linux.nsg
+$nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
 if ($nsgLinux -eq $null) { throw "Could not load Linux VMs NSG" }
 $nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name
 if ($nsgSessionHosts -eq $null) { throw "Could not load RDS session hosts NSG" }
@@ -46,7 +46,7 @@ Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgSessionHosts.Na
 # -------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
 $computeVMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name }
-$webappVMs = $config.sre.linux.gitlab.vmName, $config.sre.linux.hackmd.vmName
+$webappVMs = $config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName
 foreach ($vmName in ([array]$computeVMs + $webappVMs)) {
     Add-VmToNSG -VMName $vmName -NSGName $nsgLinux.Name
 }

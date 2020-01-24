@@ -313,32 +313,33 @@ function Add-SreConfig {
         name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
-            dcAdminPassword = $config.sre.shortName + '-dc-admin-password'
-            dcAdminUsername = $config.sre.shortName + '-dc-admin-username'
-            dsvmAdminPassword = $config.sre.shortName + "-dsvm-admin-password"
-            dsvmAdminUsername = $config.sre.shortName + "-dsvm-admin-username"
-            dsvmDbAdminPassword = $config.sre.shortName + "-dsvm-pgdb-admin-password"
-            dsvmDbReaderPassword = $config.sre.shortName + "-dsvm-pgdb-reader-password"
-            dsvmDbWriterPassword = $config.sre.shortName + "-dsvm-pgdb-writer-password"
-            dsvmLdapPassword = $config.sre.shortName + "-dsvm-ldap-password"
-            gitlabLdapPassword = $config.sre.shortName + "-gitlab-ldap-password"
-            gitlabRootPassword = $config.sre.shortName + "-gitlab-root-password"
-            gitlabUserPassword = $config.sre.shortName + "-gitlab-user-password"
-            hackmdLdapPassword = $config.sre.shortName + "-hackmd-ldap-password"
-            hackmdUserPassword = $config.sre.shortName + "-hackmd-user-password"
-            letsEncryptCertificate = $config.sre.shortName + "-lets-encrypt-certificate"
-            testResearcherPassword = $config.sre.shortName + "-test-researcher-password"
+            dcAdminPassword = "$($config.sre.shortName)-dc-admin-password"
+            dcAdminUsername = "$($config.sre.shortName)-dc-admin-username"
+            dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
+            dsvmAdminUsername = "$($config.sre.shortName)-dsvm-admin-username"
+            dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
+            dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
+            dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
+            dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
+            gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
+            gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
+            gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
+            hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
+            hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
+            letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
+            testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
         }
     }
 
     # --- Domain controller ---
     $config.sre.dc = [ordered]@{}
     $config.sre.dc.rg = "RG_SRE_DC"
-    $config.sre.dc.vmName = "DC-SRE-" + $($config.sre.id).ToUpper() | TrimToLength 15
+    # $config.sre.dc.nsg = "NSG_RDS_SRE_$($config.sre.id)_IDENTITY".ToUpper()
+    $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dc.vmSize = "Standard_DS2_v2"
     $config.sre.dc.hostname = $config.sre.dc.vmName
-    $config.sre.dc.fqdn = $config.sre.dc.hostname + "." + $config.sre.domain.fqdn
-    $config.sre.dc.ip = $config.sre.network.subnets.identity.prefix + ".250"
+    $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
 
     # --- Domain users ---
     $config.sre.users = [ordered]@{
@@ -429,22 +430,24 @@ function Add-SreConfig {
     $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
-    $config.sre.linux = [ordered]@{
-        gitlab = [ordered]@{}
-        hackmd = [ordered]@{}
+    $config.sre.webapps = [ordered]@{
+        rg = "RG_SRE_WEBAPPS" #$config.sre.network.nsg.data.rg
+        nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
+        gitlab = [ordered]@{
+            vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
+            vmSize = "Standard_D2s_v3"
+        }
+        hackmd = [ordered]@{
+            vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
+            vmSize = "Standard_D2s_v3"
+        }
     }
-    $config.sre.linux.rg = "RG_SRE_WEBAPPS" #$config.sre.network.nsg.data.rg
-    $config.sre.linux.nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper() #$config.sre.network.nsg.data.name
-    $config.sre.linux.gitlab.vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
-    $config.sre.linux.gitlab.vmSize = "Standard_D2s_v3"
-    $config.sre.linux.gitlab.hostname = $config.sre.linux.gitlab.vmName
-    $config.sre.linux.gitlab.fqdn = "$($config.sre.linux.gitlab.hostname).$($config.sre.domain.fqdn)"
-    $config.sre.linux.gitlab.ip = $config.sre.network.subnets.data.prefix + ".151"
-    $config.sre.linux.hackmd.vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
-    $config.sre.linux.hackmd.vmSize = "Standard_D2s_v3"
-    $config.sre.linux.hackmd.hostname = $config.sre.linux.hackmd.vmName
-    $config.sre.linux.hackmd.fqdn = "$($config.sre.linux.hackmd.hostname).$($config.sre.domain.fqdn)"
-    $config.sre.linux.hackmd.ip = $config.sre.network.subnets.data.prefix + ".152"
+    $config.sre.webapps.gitlab.hostname = $config.sre.webapps.gitlab.vmName
+    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.gitlab.ip = "$($config.sre.network.subnets.data.prefix).151"
+    $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
+    $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
 
     # Compute VMs
     $config.sre.dsvm = [ordered]@{}

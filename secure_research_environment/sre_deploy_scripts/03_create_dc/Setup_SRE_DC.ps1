@@ -231,6 +231,18 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
+# Create network security group
+# -----------------------------
+$nsgDomainServers = Deploy-NetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
+                             -Name "Deny_Internet" `
+                             -Description "Deny Outbound Internet Access" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
+
+
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext

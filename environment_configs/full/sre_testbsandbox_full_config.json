@@ -1,7 +1,7 @@
 {
   "shm": {
     "subscriptionName": "Safe Haven Management Test B",
-    "Id": "testb",
+    "id": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
       "name": "The Alan Turing Institute",
@@ -124,7 +124,7 @@
   },
   "sre": {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
-    "Id": "sandbox",
+    "id": "sandbox",
     "shortName": "sre-sandbox",
     "location": "uksouth",
     "tier": "2",
@@ -281,6 +281,8 @@
       "ip": "10.151.2.250"
     },
     "linux": {
+      "rg": "RG_SRE_WEBAPPS",
+      "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
@@ -294,9 +296,7 @@
         "hostname": "HACKMD-SRE-SANDBOX",
         "fqdn": "HACKMD-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
         "ip": "10.151.2.152"
-      },
-      "rg": "RG_SRE_WEBAPPS",
-      "nsg": "NSG_SRE_SANDBOX_WEBAPPS"
+      }
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
@@ -318,7 +318,6 @@
         "type": "Standard_LRS",
         "size_gb": "128"
       }
-<<<<<<< HEAD
     },
     "mirrors": {
       "vnet": {
@@ -330,12 +329,6 @@
       "pypi": {
         "ip": "10.20.2.20"
       }
-    },
-    "bootdiagnostics": {
-      "rg": "RG_SRE_ARTIFACTS",
-      "accountName": "sresandboxbootdiagsmzgcb"
-=======
->>>>>>> Updated bootdiagnostics settings
     }
   }
 }

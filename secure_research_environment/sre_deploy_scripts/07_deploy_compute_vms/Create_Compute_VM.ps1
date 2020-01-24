@@ -25,7 +25,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Set common variables
 # --------------------
 $deploymentNsgName = "NSG_SRE_" + $($config.sre.Id).ToUpper() + "_IMAGE_DEPLOYMENT"
-$secureNsgName = $config.sre.linux.nsg# $config.sre.network.nsg.data.Name
+$secureNsgName = $config.sre.webapps.nsg
 $vnetName = $config.sre.network.vnet.Name
 $subnetName = $config.sre.network.subnets.data.Name
 

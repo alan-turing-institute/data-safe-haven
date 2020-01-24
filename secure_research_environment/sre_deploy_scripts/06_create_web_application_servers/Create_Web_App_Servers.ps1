@@ -35,7 +35,7 @@ $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 # Patch GitLab_Cloud_Init
 # -----------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
-$gitlabFqdn = $config.sre.linux.gitlab.hostname + "." + $config.sre.domain.fqdn
+$gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot "templates" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
@@ -44,8 +44,8 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.replace('<gitlab-rb-host>', $shmDcFq
                                             replace('<gitlab-rb-pw>',$gitlabUserPassword).
                                             replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
                                             replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
-                                            replace('<gitlab-ip>',$config.sre.linux.gitlab.ip).
-                                            replace('<gitlab-hostname>',$config.sre.linux.gitlab.hostname).
+                                            replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
+                                            replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
                                             replace('<gitlab-fqdn>',$gitlabFqdn).
                                             replace('<gitlab-root-password>',$gitlabRootPassword).
                                             replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
@@ -55,7 +55,7 @@ $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 
 # Patch HackMD_Cloud_Init
 # -----------------------
-$hackmdFqdn = $config.sre.linux.hackmd.hostname + "." + $config.sre.domain.fqdn
+$hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
 $hackmdLdapUserDn = "CN=" + $config.sre.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
@@ -64,8 +64,8 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.replace('<hackmd-bind-dn>', $hackmdL
                                             replace('<hackmd-bind-creds>', $hackmdUserPassword).
                                             replace('<hackmd-user-filter>',$hackmdUserFilter).
                                             replace('<hackmd-ldap-base>',$config.shm.domain.userOuPath).
-                                            replace('<hackmd-ip>',$config.sre.linux.hackmd.ip).
-                                            replace('<hackmd-hostname>',$config.sre.linux.hackmd.hostname).
+                                            replace('<hackmd-ip>',$config.sre.webapps.hackmd.ip).
+                                            replace('<hackmd-hostname>',$config.sre.webapps.hackmd.hostname).
                                             replace('<hackmd-fqdn>',$hackmdFqdn).
                                             replace('<hackmd-ldap-url>',$hackMdLdapUrl).
                                             replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
@@ -75,7 +75,7 @@ $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 
 # Set up the NSG for the webapps
 # ------------------------------
-$nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.linux.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "Internet_Out" `
                              -Description "Deny Outbound Internet Access" `
@@ -87,7 +87,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
 
 # Create webapps resource group
 # --------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.linux.rg -Location $config.sre.location
+$_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
 
 
 # Deploy GitLab/HackMD VMs from template
@@ -98,18 +98,18 @@ $params = @{
     Administrator_User = $dcAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
-    GitLab_IP_Address =  $config.sre.linux.gitlab.ip
-    GitLab_Server_Name = $config.sre.linux.gitlab.vmName
-    GitLab_VM_Size = $config.sre.linux.gitlab.vmSize
+    GitLab_IP_Address =  $config.sre.webapps.gitlab.ip
+    GitLab_Server_Name = $config.sre.webapps.gitlab.vmName
+    GitLab_VM_Size = $config.sre.webapps.gitlab.vmSize
     HackMD_Cloud_Init = $hackmdCloudInitEncoded
-    HackMD_IP_Address = $config.sre.linux.hackmd.ip
-    HackMD_Server_Name = $config.sre.linux.hackmd.vmName
-    HackMD_VM_Size = $config.sre.linux.hackmd.vmSize
+    HackMD_IP_Address = $config.sre.webapps.hackmd.ip
+    HackMD_Server_Name = $config.sre.webapps.hackmd.vmName
+    HackMD_VM_Size = $config.sre.webapps.hackmd.vmSize
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.subnets.data.name
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.linux.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
 
 
 # Switch back to original subscription

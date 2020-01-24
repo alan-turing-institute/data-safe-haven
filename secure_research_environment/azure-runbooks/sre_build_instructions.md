@@ -348,8 +348,8 @@ To run the smoke tests:
 - Connect to a **remote desktop** on the Main VM using the "Main VM (Desktop)" app
 - Open a terminal session
 - Change to the tests folder using `cd ~<sre-admin>/smoke_test/tests`
-- Follow the instructions in the `README.md` file. These should involve running `./run_all_tests.sh`
-- If all test results are expected you are done! Otherwise, contact REG for help diagnosing test failures.
+- Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
+- If all test results are expected you are done! Otherwise, contact Turing REG for help diagnosing test failures.
 
 ## Server list
 - The following virtual machines are created as a result of these instructions:
