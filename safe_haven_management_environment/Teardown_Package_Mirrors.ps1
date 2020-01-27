@@ -25,7 +25,7 @@ $arguments = "-s '$($config.subscriptionName)' \
               -t $tier"
 
 # Get path to bash scripts
-$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent "new_dsg_environment" "azure-vms" -Resolve
+$deployScriptDir = Join-Path (Get-Item $PSScriptRoot).Parent "secure_research_environment" "azure-vms" -Resolve
 
 # Teardown PyPI mirror servers
 Write-Host "Tearing down PyPI mirror servers"
