@@ -17,7 +17,7 @@ The expired certificate can be ignored but login will not be possible.
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 
-- Open a Powershell terminal and navigate to the `new_dsg_environment/dsg_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+- Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
@@ -59,11 +59,11 @@ there are a couple of possible causes.
 
 2. the computer is unable to communicate with the login server
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
-- Run the script under `dsg_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
+- Run the script under `sre_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
 
 ```
-PS /home/atiadmin/data-safe-haven/new_dsg_environment/dsg_deploy_scripts/07_deploy_compute_vms> ./Run_Remote_Diagnostics.ps1 -dsgId 2 -ipLastOctet 160
+PS /home/atiadmin/data-safe-haven/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms> ./Run_Remote_Diagnostics.ps1 -dsgId 2 -ipLastOctet 160
 
 Name                                     Account                                           SubscriptionName                                 Environment                                      TenantId
 ----                                     -------                                           ----------------                                 -----------                                      --------
