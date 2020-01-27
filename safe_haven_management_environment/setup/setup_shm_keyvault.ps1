@@ -28,28 +28,6 @@ $_ = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyV
 Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
 
 
-# Set correct access policies for key vault
-# -----------------------------------------
-Add-LogMessage -Level Info "Setting correct access policies for key vault '$($config.keyVault.name)'..."
-try {
-    $securityGroupId = (Get-AzADGroup -DisplayName $config.adminSecurityGroupName)[0].Id
-} catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
-    Add-LogMessage -Level Fatal "Could not identify an Azure security group called $($config.adminSecurityGroupName)!"
-}
-Set-AzKeyVaultAccessPolicy -VaultName $config.keyVault.Name -ObjectId $securityGroupId `
-                           -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
-                           -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
-                           -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
-$success = $?
-Remove-AzKeyVaultAccessPolicy -VaultName $config.keyVault.Name -UserPrincipalName (Get-AzContext).Account.Id
-$success = $success -and $?
-if ($success) {
-    Add-LogMessage -Level Success "Set correct access policies"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set correct access policies!"
-}
-
-
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
