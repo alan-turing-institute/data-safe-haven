@@ -24,7 +24,7 @@ $_ = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.lo
 
 # Ensure the keyvault exists
 # --------------------------
-$keyVault = Deploy-KeyVault -Name $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+$_ = Deploy-KeyVault -Name $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
 Set-KeyVaultPermissions -Name $config.sre.keyVault.Name -GroupName $config.shm.adminSecurityGroupName
 Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
 
