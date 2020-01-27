@@ -24,28 +24,19 @@ $_ = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.location
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-$keyVault = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
+$_ = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
 Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
-
-
-# Add-LogMessage -Level Info "Ensuring that key vault '$($config.keyVault.name)' exists..."
-# $keyVault = Get-AzKeyVault -VaultName $config.keyVault.Name -ResourceGroupName $config.keyVault.rg
-# if ($null -ne $keyVault) {
-#     Add-LogMessage -Level InfoSuccess "Key vault $($config.keyVault.name) already exists"
-# } else {
-#     $_ = New-AzKeyVault -Name $config.keyVault.Name -ResourceGroupName $config.keyVault.rg -Location $config.location
-#     if ($?) {
-#         Add-LogMessage -Level Success "Created resource group $($config.keyVault.rg)"
-#     } else {
-#         Add-LogMessage -Level Fatal "Failed to create resource group $($config.keyVault.rg)!"
-#     }
-# }
 
 
 # Set correct access policies for key vault
 # -----------------------------------------
 Add-LogMessage -Level Info "Setting correct access policies for key vault '$($config.keyVault.name)'..."
-Set-AzKeyVaultAccessPolicy -VaultName $config.keyVault.Name -ObjectId (Get-AzADGroup -SearchString $config.adminSecurityGroupName)[0].Id `
+try {
+    $securityGroupId = (Get-AzADGroup -DisplayName $config.adminSecurityGroupName)[0].Id
+} catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
+    Add-LogMessage -Level Fatal "Could not identify an Azure security group called $($config.adminSecurityGroupName)!"
+}
+Set-AzKeyVaultAccessPolicy -VaultName $config.keyVault.Name -ObjectId $securityGroupId `
                            -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
                            -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
                            -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
@@ -57,6 +48,7 @@ if ($success) {
 } else {
     Add-LogMessage -Level Fatal "Failed to set correct access policies!"
 }
+
 
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
