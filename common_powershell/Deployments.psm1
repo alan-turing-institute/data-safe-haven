@@ -579,8 +579,10 @@ function Set-KeyVaultPermissions {
                                -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
                                -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
     $success = $?
-    Remove-AzKeyVaultAccessPolicy -VaultName $Name -UserPrincipalName (Get-AzContext).Account.Id
-    $success = $success -and $?
+    foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
+        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
+        $success = $success -and $?
+    }
     if ($success) {
         Add-LogMessage -Level Success "Set correct access policies"
     } else {
