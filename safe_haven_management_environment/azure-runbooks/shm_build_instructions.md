@@ -1,5 +1,8 @@
 # Safe Haven Management Environment Build Instructions
 
+These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently (eg one for each Data Study Group).
+
+
 ## Prerequisites
 - An Azure subscription with sufficient credits to build the environment in
 - PowerShell for Azure
