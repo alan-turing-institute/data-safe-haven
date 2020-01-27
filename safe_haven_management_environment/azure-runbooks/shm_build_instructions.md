@@ -17,65 +17,21 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
 
 
+## 1. Safe Haven Management configuration
 
-## 1. Setup Azure Active Directory (AAD) with P1 Licenses
-### Create a new AAD
-1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
-2. Click `Create a Resource`  and search for `Azure Active Directory`
-   ![AAD](images/AAD.png)
-3. Click `Create`
-4. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
-5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-6. Set the "Country or Region" to "United Kingdom"
-7. Click `Create`
-
-
-### Create a Custom Domain Name
-#### Choose your custom domain
-Choose your domain according to the following rules:
+### Domain name
+Choose a domain according to the following rules:
   - Turing production: a subdomain of the `turingsafehaven.ac.uk` domain
-    - use the `Safe Haven Domains` subscription
-    - use the `RG_SHM_DNS_PRODUCTION` resource group
   - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
-    - use the `Safe Haven Domains` subscription
-    - use the `RG_SHM_DNS_TEST` resource group
-  - Other safe havens: follow your organisation's guidance.
-    - this may require purchasing a dedicated domain
+  - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
-#### Create a DNS zone for the custom domain
-Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
-- If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
-- Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the resource group and subscription specified above.
-- For the `Name` field enter the fully qualified domain / subdomain. Examples are:
-  - `testa.dsgroupdev.co.uk` for the first test SHM deployed as part of the Turing `test` environment
-  - `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment
-  - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
-- Click through the various validation screens
+### Management environment ID `<shmId>`
+Choose a short ID `<shmId>` to identify the management environment (e.g. `testa`).
 
-#### Add DNS records to the parent DNS system
-Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
-- To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
-- Duplicate these records to the parent DNS system as follows:
-  - If using a subdomain of an existing Azure DNS Zone, create an NS record set in the parent Azure DNS Zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
-  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+### Create configuration file
 
-### Create and add the custom domain to the new AAD
-1. Ensure your Azure Portal session is using the new AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new AAD directory.
-2. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
-3. If DNS record details are displayed similar to the image below, you need to verify the domain. Note these details and complete the following steps.
-   * If no DNS details are displayed and instead the custom domain is showing `Status Verified`, you can skip to the next section.
-  ![AAD DNS record details](images/aad_dns_record_details.png)
-4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
-5. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
-  ![Create AAD DNS Record](images/create_aad_dns_record.png)
-6. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
-
-
-
-## 2. Setup Safe Haven administrators
-### Safe Haven Management configuration
 The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
-The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. `<shmId>` is a short ID to identify the environment (e.g. `testa`). The `shm_testa_core_config.json` provides an example.
+The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testa_core_config.json` provides an example.
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
 
@@ -100,7 +56,60 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 }
 ```
 
-### Deploy KeyVault for SHM secrets
+
+
+## 2. Configure DNS for the custom domain
+### Create a DNS zone for the custom domain
+Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
+- Use the following resource group and subscriptions:
+  - Turing production (`.turingsafehaven.ac.uk`):
+    - use the `Safe Haven Domains` subscription
+    - use the `RG_SHM_DNS_PRODUCTION` resource group
+  - Turing testing (`.dsgroupdev.co.uk`):
+    - use the `Safe Haven Domains` subscription
+    - use the `RG_SHM_DNS_TEST` resource group
+  - Other safe havens: follow your organisation's guidance.
+
+- If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
+- Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the above resource group and subscription.
+- For the `Name` field enter the fully qualified domain / subdomain. Examples are:
+  - `testa.dsgroupdev.co.uk` for the first test SHM deployed as part of the Turing `test` environment
+  - `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment
+  - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
+- Click through the various validation screens
+
+### Add DNS records to the parent DNS system
+Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
+- To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
+- Duplicate these records to the parent DNS system as follows:
+  - If using a subdomain of an existing Azure DNS Zone, create an NS record set in the parent Azure DNS Zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
+  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+
+
+
+## 2. Setup Azure Active Directory (AAD) with P1 Licenses
+### Create a new AAD
+1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
+2. Click `Create a Resource`  and search for `Azure Active Directory`
+   ![AAD](images/AAD.png)
+3. Click `Create`
+4. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
+5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
+6. Set the "Country or Region" to "United Kingdom"
+7. Click `Create`
+
+### Add the custom domain to the new AAD
+1. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
+2. If the Custom domain name blade shows `Status Verified` and no DNS details are displayed, you can skip to the next section. Otherwise, if you see DNS record details similar to the image below, you need to verify the domain. Note down the required details displayed and complete the following steps.
+  ![AAD DNS record details](images/aad_dns_record_details.png)
+3. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
+4. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
+  ![Create AAD DNS Record](images/create_aad_dns_record.png)
+5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
+
+
+
+## 3. Deploy KeyVault for SHM secrets
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
@@ -113,6 +122,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
    ```
 3. This will take **a few minutes** to run.
 
+## 4. Setup Safe Haven administrators
 
 ### Add global administrator
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory).
@@ -203,7 +213,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
    - Click "Save"
 
 
-## 3. Deploy and configure VNET and Domain Controllers
+## 5. Deploy and configure VNET and Domain Controllers
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
@@ -406,7 +416,7 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 
 
 
-## 4. Deploy and configure Network Policy Server (NPS)
+## 6. Deploy and configure Network Policy Server (NPS)
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
@@ -502,7 +512,7 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 
 
 
-## 5. Deploy package mirrors
+## 7. Deploy package mirrors
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first SRE.
 
@@ -531,7 +541,7 @@ Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progre
 3. This will take **around 20 minutes** to run.
 
 
-## 6. Tear down package mirrors
+## 8. Tear down package mirrors
 If you ever need to tear down the package mirrors, use the following procedure.
 
 1. Ensure you are logged into the Azure CLI (bash) with the commands:
