@@ -31,6 +31,8 @@ You can set up a data safe haven yourself.
 
 [Data Ingress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
+[Data Egress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
+
 Before you go ahead to set up a Data Safe Haven, you'll need to have the following pre-requisites:
 - `Powershell`
     - needed to deploy infrastructure
