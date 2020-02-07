@@ -264,11 +264,12 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
-  - To obtain the username and password on Azure navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is in the `shm-<shm-id>-dcnps-admin-username` secret.
+6. Log in as a **domain** user (ie. `<admin username>@<custom domain>`) using the username and password obtained from the Azure portal as follows:
+rather than simply `<admin username>`)
+  - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
+  - The username is the `shm-<shm-id>-dcnps-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@<custom domain>` rather than simply `<admin username>`.
   - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
-6. Log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
-
+7. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ### Install Azure Active Directory Connect
 1. Navigate to `C:\Installation`
@@ -287,6 +288,18 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
     - Provide a global administrator details for the Azure Active Directory you are connected to
     - You should have created `admin@<custom domain>` during the `Add additional administrators` step
     - Click "Next"
+  - If you receive an Internet Explorer pop-up dialog "Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com"
+    - Click "Add"
+    - Click "Add"
+    - Click "Close"
+    - Repeat for the same dialog with "https://aadcdn.msftauth.net"
+  - If you receive an error box "We can't sign you in,. Javascript is required to sign you in. Do you want to continue running scripts on this page"
+    - Click "Yes"
+    - Close the dialog by clicking "X"
+    - Back on the `Connect to Azure AD` screen, click "Next"
+    - Enter the global administrator password if prompted
+    - Approve the login with MFA if required
+    - If you see a Windows Security Warning, check "Don't show this message again and click "Yes".
   - On the `Connect your directories` screen:
     - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
@@ -434,8 +447,10 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 ### Configure NPS server
 1. Log in to the NPS Server VM using Microsoft Remote Desktop
   - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
-  - the Username and Password are the same as for SHMDC1 and SHMDC2
-  - ensure you log in as a **domain** user (ie. `<admin username>@<custom domain>` rather than simply `<admin username>`)
+  - the Username and Password are the same as for SHMDC1 and SHMDC2 (ie the credentials you used above to Remote Desktop into the domain controller above):
+    - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
+    - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus the domain, ie `<admin username>@custom domain`
+    - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
 2. In Server Manager select `Tools -> Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to text file:
   - Select `NPS (Local) > Accounting` on the left-hand sidebar
