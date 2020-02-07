@@ -230,7 +230,7 @@
                     },
                     "secrets": [],
                     "allowExtensionOperations": true,
-                  "customData": "[parameters('HackMD_Cloud_Init')]"
+                    "customData": "[parameters('HackMD_Cloud_Init')]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
