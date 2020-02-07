@@ -213,9 +213,9 @@ function Deploy-PackageMirror {
     )
     # Load cloud-init file
     # --------------------
-    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($mirrorType).ToLower()).yaml"
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($mirrorType).ToLower())_whitelist.list"
-    $cloudInitYaml = Resolve-CloudInit -MirrorType $mirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($MirrorType).ToLower()).yaml"
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($MirrorType).ToLower())_whitelist.list"
+    $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror
     # ------------------------------------
@@ -225,7 +225,7 @@ function Deploy-PackageMirror {
         $subnet = $subnetExternal
     }
     $ipOctets = $subnet.AddressPrefix.Split("/")[0].Split(".")
-    $ipOctets[3] = [int]$ipOctets[3] + [int]$config.mirrors[$($mirrorType).ToLower()].ipOffset
+    $ipOctets[3] = [int]$ipOctets[3] + [int]$config.mirrors[$($MirrorType).ToLower()].ipOffset
     $privateIpAddress = $ipOctets -join "."
 
     # Check whether the VM already exists
