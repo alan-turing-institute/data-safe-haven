@@ -29,7 +29,7 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "*** SRE $sreId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
     Add-LogMessage -Level Warning "********************************************************************************"
     Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
-    Add-LogMessage -Level Warning ""
+    Add-LogMessage -Level Warning " "
     Add-LogMessage -Level Warning "Resource Groups present in SRE subscription:"
     Add-LogMessage -Level Warning "--------------------------------------------"
     $sreResourceGroups
