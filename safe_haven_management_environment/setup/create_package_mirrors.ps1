@@ -167,8 +167,9 @@ function Resolve-CloudInit {
         cat /home/mirrordaemon/.ssh/id_rsa.pub | grep '^ssh'
         "
         $vmNameExternal = "$($MirrorType.ToUpper())-EXTERNAL-MIRROR-TIER-$tier"
-        $result = LoggedRemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
-        Write-Output $result.Value
+        $result = Invoke-RemoteScript -VMName $vmNameExternal -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+        Add-LogMessage -Level Success "Fetching ssh key from external package mirror succeeded"
+
         $externalPublicSshKey = $result.Value[0].Message -split "\n" | Select-String "^ssh"
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
     }
