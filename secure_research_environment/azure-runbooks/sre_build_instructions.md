@@ -316,7 +316,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 etty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record). -->
 
 ### Troubleshooting Compute VM deployments
-- Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of its IP address at the end of its name.
+- Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 - Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
 - Enter the username from the `<sre-id>-dsvm-admin-username` secret in the SRE KeyVault.
