@@ -244,6 +244,7 @@ Write-Output $result.Value
 
 # Add DC to NSG
 # -------------
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 Add-VmToNSG -VMName $config.sre.dc.vmName -NSGName $nsg.Name
 
 # Switch back to original subscription
