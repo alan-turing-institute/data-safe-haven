@@ -571,7 +571,7 @@ If you ever need to tear down the package mirrors, use the following procedure.
    ```
 3. From a clone of the data-safe-haven repository, teardown package mirrors (depending on which tiers of SRE you want to remove) using the following commands (where `<SHM ID>` is the one defined in the config file):
    ```pwsh
-   cd safe_haven_management_environment
-   ./Teardown_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
+   cd safe_haven_management_environment/setup
+   ./teardown_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
    ```
 4. This will take **a few minutes** to run.

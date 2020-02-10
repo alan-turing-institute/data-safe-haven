@@ -590,3 +590,80 @@ function Set-KeyVaultPermissions {
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions
+
+
+# Remove Virtual Machine
+# ----------------------
+function Remove-VirtualMachine {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of the VM to remove")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
+        $ResourceGroupName
+    )
+
+    $_ = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level InfoSuccess "VM '$Name' does not exist"
+    } else {
+        Add-LogMessage -Level Info "[ ] Removing VM '$Name'"
+        $_ = Remove-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed VM '$Name'"
+        } else {
+            Add-LogMessage -Level Failure "Failed to remove VM '$Name'"
+        }
+    }
+}
+Export-ModuleMember -Function Remove-VirtualMachine
+
+
+# Remove Virtual Machine disk
+# ---------------------------
+function Remove-VirtualMachineDisk {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of the disk to remove")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group containing the disk")]
+        $ResourceGroupName
+    )
+
+    $_ = Get-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level InfoSuccess "Disk '$Name' does not exist"
+    } else {
+        Add-LogMessage -Level Info "[ ] Removing disk '$Name'"
+        $_ = Remove-AzDisk -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed disk '$Name'"
+        } else {
+            Add-LogMessage -Level Failure "Failed to remove disk '$Name'"
+        }
+    }
+}
+Export-ModuleMember -Function Remove-VirtualMachineDisk
+
+
+# Remove a virtual machine NIC
+# ----------------------------
+function Remove-VirtualMachineNIC {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to remove")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
+        $ResourceGroupName
+    )
+    $_ = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level InfoSuccess "VM network card '$Name' does not exist"
+    } else {
+        Add-LogMessage -Level Info "[ ] Removing VM network card '$Name'"
+        $_ = Remove-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Removed VM network card '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to remove VM network card '$Name'"
+        }
+    }
+}
+Export-ModuleMember -Function Remove-VirtualMachineNIC
