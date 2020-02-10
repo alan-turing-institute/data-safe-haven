@@ -188,8 +188,8 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
-- The IP address can be found using the Azure portal (`RG_SRE_RDS` > `RDG-SRE-<SRE ID>`)
-- Login as the **domain** admin user (eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
+- The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>`)
+- Login as the **domain** admin user eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
 
 #### Install RDS environment and webclient
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server managment commandlets are not installed on the x86 version.
@@ -199,22 +199,22 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
   ![Remote Desktop Gateway Manager](images/rd_gateway_manager_01.png)
-- Right click the RDS server object and select "Properties"
+- In the left pane, underneath "RD Gateway Manager`, right click on the `RDG-SRE-<sre-id>` object and select "Properties"
   ![RDS server properties](images/rd_gateway_manager_02.png)
 - Select "RD CAP Store" tab
 - Select the "Central Server Running NPS"
-- Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal)
-- Set the "Shared Secret" to the value of the `sre-<sre-id>-nps-secret` in the SRE KeyVault.
+- Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal (`Resource Groups -> RG_SHM_NPS -> NPS-SHM-<SHM ID>`)
+- Set the "Shared Secret" to the value of the `sre-<sre-id>-nps-secret` in the SRE KeyVault (`Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>`).
   ![RD CAP store](images/rd_gateway_manager_03.png)
 - Click "OK" to close the dialogue box.
 
 #### Set the security groups for access to session hosts
-- Expand the RDS server object and select `Policies -> Resource Authorization Policies`
-- Right click on "RDG_AllDomainControllers" and select "Properties`
+- Expand the `RDG-SRE-<sre-id>` server object and select `Policies -> Resource Authorization Policies`
+- Right click on "RDG_AllDomainComputers" and select "Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_01.png)
 - On the "User Groups" tab click "Add"
-- Click "Locations" and select the management domain
-- Enter the "SG" into the "Enter the object names to select" box and click on "Check Names" select the `SG <SRE-ID> Research Users`security group from the list.
+- Click "Locations" and select the management domain (e.g. `testa.dsgroupdev.co.uk`) and click "OK"
+- Enter "SG" into the "Enter the object names to select" box and click on "Check Names" select the `SG <SRE-ID> Research Users`security group from the list.
   ![Session host security groups](images/rd_gateway_session_hosts_02.png)
 - Click "OK" and the group will be added to the "User Groups" screen
   ![Session host security groups](images/rd_gateway_session_hosts_03.png)
@@ -242,7 +242,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Test RDS deployment
 - Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login as the **domain** admin user (eg. `sretestsandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username is stored in the SRE KeyVault as `sre-<sre-id>-dc-admin-username` and the password as `sre-<sre-id>-dc-admin-password` (NB. all SRE Windows servers use the same admin credentials)+
+- Login as the **domain** admin user (eg. `sretestsandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
 - Right click the `SG <sre-id> Research Users` security group and select "Properties"
