@@ -274,7 +274,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 ## 7. Deploy Data Server
 ### Create Dataserver VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/02_create_vnet/` directory within the Safe Haven repository.
+- Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/05_create_dataserver/` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run the `./Setup_Data_Server.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take around 10 minutes to complete
