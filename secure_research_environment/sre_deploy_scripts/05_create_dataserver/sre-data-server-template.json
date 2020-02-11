@@ -64,7 +64,8 @@
                 "Standard_B2ms",
                 "Standard_B4ms",
                 "Standard_F4s_v2",
-                "Standard_DS2_v2"
+                "Standard_DS2_v2",
+                "Standard_D2s_v3"
             ],
             "metadata": {
                 "description": "Select size of VM"
