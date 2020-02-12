@@ -29,7 +29,9 @@ $dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 $dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword
 $gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword
+$gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
 $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
+$hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
 
 
 # Patch GitLab_Cloud_Init
@@ -41,7 +43,7 @@ $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.sec
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot "templates" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
-                                            Replace('<gitlab-rb-pw>',$gitlabUserPassword).
+                                            Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
                                             Replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
                                             Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
                                             Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
@@ -61,7 +63,7 @@ $hackmdLdapUserDn = "CN=" + $config.sre.users.ldap.hackmd.name + "," + $config.s
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
 $hackmdCloudInitTemplate = Join-Path $PSScriptRoot "templates" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
-                                            Replace('<hackmd-bind-creds>', $hackmdUserPassword).
+                                            Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
                                             Replace('<hackmd-user-filter>',$hackmdUserFilter).
                                             Replace('<hackmd-ldap-base>',$config.shm.domain.userOuPath).
                                             Replace('<hackmd-ip>',$config.sre.webapps.hackmd.ip).
