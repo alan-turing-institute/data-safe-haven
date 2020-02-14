@@ -175,7 +175,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-- The deployment will take around 30 minutes. Most of this is running the setup scripts after creating the VM.
+- The deployment will normally take around 30 minutes. Most of this is running the setup scripts after creating the VM. However it may take longer if many Windows updates need to be performed.
 
 
 ## 6. Deploy Remote Desktop Service Environment
@@ -199,7 +199,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
   ![Remote Desktop Gateway Manager](images/rd_gateway_manager_01.png)
-- In the left pane, underneath "RD Gateway Manager`, right click on the `RDG-SRE-<sre-id>` object and select "Properties"
+- In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<sre-id> (Local)` object and select "Properties"
   ![RDS server properties](images/rd_gateway_manager_02.png)
 - Select "RD CAP Store" tab
 - Select the "Central Server Running NPS"
@@ -209,7 +209,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Click "OK" to close the dialogue box.
 
 #### Set the security groups for access to session hosts
-- Expand the `RDG-SRE-<sre-id>` server object and select `Policies -> Resource Authorization Policies`
+- Expand the `RDG-SRE-<sre-id> (Local)` server object and select `Policies -> Resource Authorization Policies`
 - Right click on "RDG_AllDomainComputers" and select "Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_01.png)
 - On the "User Groups" tab click "Add"
@@ -241,8 +241,13 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.sandbox.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the KeyVault for easy redeployment. However, if you find yourself needing to re-run this step without the KeyVault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./CreateUpdate_Signed_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
 ### Test RDS deployment
-- Connect to the **SHM Domain Controller** via Remote Desktop client over the VPN connection
-- Login as the **domain** admin user (eg. `sretestsandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
+- Disconnect from any SRE VMs and connect to the SHM VPN
+- Connect to the **SHM Domain Controller** via the Remote Desktop client
+- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<shm-id>` key vault, under "SECRETS". 
+  - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
+  - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
+
+- Login as the **domain** admin user (eg. `@dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
 - Right click the `SG <sre-id> Research Users` security group and select "Properties"
@@ -343,7 +348,7 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets. They are automatically uploaded to the compute VM during the deployment step.
 
 To run the smoke tests:
-- Connect to a **remote desktop** on the Main VM using the "Main VM (Desktop)" app
+- Connect to a **remote desktop** on the Main VM (e.g. `https://sandbox.dsgroupdev.co.uk/`) using the "Main VM (Desktop)" app
 - Open a terminal session
 - Change to the tests folder using `cd ~<sre-admin>/smoke_test/tests`
 - Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
