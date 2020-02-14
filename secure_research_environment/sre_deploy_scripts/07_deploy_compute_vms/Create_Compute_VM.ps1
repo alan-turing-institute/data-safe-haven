@@ -280,14 +280,14 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Zip file creation failed!"
 }
-Remove-Item ?Path $tempDir -Recurse -Force
+Remove-Item -Path $tempDir -Recurse -Force
 
 
 # Upload the zip file to the compute VM
 # -------------------------------------
 Add-LogMessage -Level Info "Uploading smoke tests to the DSVM..."
 $zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
-Remove-Item ?Path $zipFilePath
+Remove-Item -Path $zipFilePath
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "upload_smoke_tests.sh"
 $params = @{
