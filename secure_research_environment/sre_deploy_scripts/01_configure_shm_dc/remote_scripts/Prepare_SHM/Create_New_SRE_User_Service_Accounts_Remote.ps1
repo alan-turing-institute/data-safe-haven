@@ -6,6 +6,7 @@
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
     [String]$sreFqdn,
+    [String]$shmFqdn,
     [String]$researchUserSgName,
     [String]$researchUserSgDescription,
     [String]$ldapUserSgName,
@@ -39,7 +40,7 @@ function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
     if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
         Write-Output " [o] User '$samAccountName' already exists"
     } else {
-        $principalName = $samAccountName + "@" + $sreFqdn;
+        $principalName = $samAccountName + "@" + $shmFqdn;
         Write-Output " [ ] Creating user '$name' ($samAccountName)"
         return (New-ADUser -Name "$name" `
                            -UserPrincipalName $principalName `
