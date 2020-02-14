@@ -63,31 +63,25 @@ while ($sreResourceGroups.Length) {
 
 # # Remove DNS data from the DNS subscription
 # # -----------------------------------------
-# $scriptPath = Join-Path $PSScriptRoot "01_configure_shm_dc" "Remove_SRE_Data_From_SHM.ps1"
-# Invoke-Expression -Command "$scriptPath -sreId $sreId"
-
-
-# Remove RDS entries from SHM DNS Zone
-# ------------------------------------
-$_ = Set-AzContext -SubscriptionId $config.dns.subscriptionName
-$dnsResourceGroup = $config.dns.rg
-$shmDomain = $config.domain.fqdn
-# RDS DNS record
-$rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $sreId DNS zone ($shmDomain)"
-Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-$success = $?
-# RDS ACME record
-$rdsAcmeDnsRecordname = ("_acme-challenge." + "$($config.sre.rds.gateway.hostname)".ToLower())
-Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($shmDomain)"
-Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-$success = $success -and $?
-# Print success/failure message
-if ($success) {
-    Add-LogMessage -Level Success "Record removal succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Record removal failed!"
-}
+# $_ = Set-AzContext -SubscriptionId $config.dns.subscriptionName
+# $dnsResourceGroup = $config.dns.rg
+# $shmDomain = $config.domain.fqdn
+# # RDS DNS record
+# $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+# Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $sreId DNS zone ($shmDomain)"
+# Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
+# $success = $?
+# # RDS ACME record
+# $rdsAcmeDnsRecordname = "_acme-challenge"
+# Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($shmDomain)"
+# Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
+# $success = $success -and $?
+# # Print success/failure message
+# if ($success) {
+#     Add-LogMessage -Level Success "Record removal succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "Record removal failed!"
+# }
 
 
 # Switch back to original subscription
