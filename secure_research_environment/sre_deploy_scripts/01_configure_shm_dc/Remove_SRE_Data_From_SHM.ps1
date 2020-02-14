@@ -125,10 +125,13 @@ if ($sreResources -or $sreResourceGroups) {
     $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
-    # RDS DDNS record
-    $rdsDdnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-    Add-LogMessage -Level Info "[ ] Removing '$rdsDdnsRecordname' A record from SRE $sreId DNS zone ($sreDomain)"
-    Remove-AzDnsRecordSet -Name $rdsDdnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+    # RDS @ record
+    Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $sreId DNS zone ($sreDomain)"
+    Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+    # RDS DNS record
+    $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+    Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $sreId DNS zone ($sreDomain)"
+    Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $?
     # RDS ACME record
     $rdsAcmeDnsRecordname = ("_acme-challenge." + "$($config.sre.rds.gateway.hostname)".ToLower())
