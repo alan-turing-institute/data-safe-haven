@@ -25,8 +25,7 @@ try {
     $certFolderPath = (New-Item -ItemType "directory" -Path "$((New-TemporaryFile).FullName).certificates").FullName
 
     # Certificate validities
-    $caValidityDays = 825 # The CAB standard now limits certificates to this maximum lifetime
-    $caValidityMonths = 28 # The CAB standard limits certificates to 825 days
+    $caValidityDays = 825 # The CAB standard now limits certificates to 825 days
     $clientValidityDays = 732 # 2 years
 
     # Certificate local paths
@@ -37,8 +36,8 @@ try {
     $clientStem = "SHM-$($config.id)-P2S-CLIENT".ToUpper()
     $clientCrtPath = Join-Path $certFolderPath "$clientStem.crt"
     $clientCsrPath = Join-Path $certFolderPath "$clientStem.csr"
-    $clientKeyPath = Join-Path $certFolderPath "$clientStem.key"
-    $clientPfxPath = Join-Path $certFolderPath "$clientStem.pfx"
+    # $clientKeyPath = Join-Path $certFolderPath "$clientStem.key"
+    # $clientPfxPath = Join-Path $certFolderPath "$clientStem.pfx"
     $clientPkcs7Path = Join-Path $certFolderPath "$clientStem.p7b"
 
     # Generate or retrieve CA certificate
@@ -237,6 +236,17 @@ $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storag
 $success = $?
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
 $success = $success -and $?
+# Expand the AD disconnection template before uploading
+$adScriptLocalFilePath = (New-TemporaryFile).FullName
+$template = Get-Content (Join-Path $PSScriptRoot ".." "scripts" "shmdc" "artifacts" "Disconnect_AD.template.ps1") -Raw
+$tmplKeyVaultName = $config.keyvault.secretNames.aadAdminPassword
+$tmplAadPasswordName = $config.keyvault.secretNames.aadAdminPassword
+$tmplShmFqdn = $config.domain.fqdn
+$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $adScriptLocalFilePath
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
+$success = $success -and $?
+# $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Disconnect_AD.ps1" -Force
+# $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {

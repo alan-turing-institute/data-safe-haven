@@ -15,25 +15,16 @@ if ($?) {
 }
 
 
-# Install PowerShellGet
-# ---------------------
-Write-Host "Installing PowerShellGet..."
-Install-Module -Name PowerShellGet -Force -AllowClobber
-if ($?) {
-    Write-Host " [o] Succeeded"
-} else {
-    Write-Host " [x] Failed!"
-}
-
-
-# Install PSWindowsUpdate
-# -----------------------
-Write-Host "Installing PSWindowsUpdate..."
-Install-Module -Name PSWindowsUpdate -Force -AllowClobber
-if ($?) {
-    Write-Host " [o] Succeeded"
-} else {
-    Write-Host " [x] Failed!"
+# Install modules
+# ---------------
+foreach ($module in ("PowerShellGet", "PSWindowsUpdate")) {
+    Write-Host "Installing $module..."
+    Install-Module -Name $module -Force -AllowClobber
+    if ($?) {
+        Write-Host " [o] Succeeded"
+    } else {
+        Write-Host " [x] Failed!"
+    }
 }
 
 

@@ -1,9 +1,19 @@
 # Safe Haven Management Environment Build Instructions
-
 These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently (eg one for each Data Study Group).
 
+## Contents
+1. [Prerequisites](#1.-Prerequisites)
+2. [Safe Haven Management configuration](#2.-Safe-Haven-Management-configuration)
+3. [Configure DNS for the custom domain](#3.-Configure-DNS-for-the-custom-domain)
+4. [Setup Azure Active Directory (AAD)](#4.-Setup-Azure-Active-Directory-(AAD))
+5. [Deploy key vault for SHM secrets](#5.-Deploy-key-vault-for-SHM-secrets)
+6. [Setup Safe Haven administrators](#6.-Setup-Safe-Haven-administrators)
+7. [Deploy and configure VNET and Domain Controllers](#7.-Deploy-and-configure-VNET-and-Domain-Controllers)
+8. [Deploy and configure Network Policy Server (NPS)](#7.-Deploy-and-cconfigure-Network-Policy-Server-(NPS))
+9. [Deploy package mirrors](#9.-Deploy-package-mirrors)
+10. [Tear down SHM](#10.-Apply-network-configuration)
 
-## Prerequisites
+## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in
 - PowerShell for Azure
   - Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
@@ -13,11 +23,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 - OpenSSL
   - Install using your package manager of choice
 
-<!-- - Azure CLI (bash)
-  - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
-
-
-## 1. Safe Haven Management configuration
+## 2. Safe Haven Management configuration
 
 ### Domain name
 Choose a domain according to the following rules:
@@ -58,7 +64,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 
 
 
-## 2. Configure DNS for the custom domain
+## 3. Configure DNS for the custom domain
 ### Create a DNS zone for the custom domain
 Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
 - Use the following resource group and subscriptions:
@@ -87,7 +93,7 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 
 
 
-## 2. Setup Azure Active Directory (AAD) with P1 Licenses
+## 4. Setup Azure Active Directory (AAD)
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
@@ -107,9 +113,7 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
 
-
-
-## 3. Deploy KeyVault for SHM secrets
+## 5. Deploy key vault for SHM secrets
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
@@ -122,7 +126,7 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
    ```
 3. This will take **a few minutes** to run.
 
-## 4. Setup Safe Haven administrators
+## 6. Setup Safe Haven administrators
 
 ### Add global administrator
 The User who creates the AAD will automatically have the Global Administrator (GA) Role (Users with this role have access to all administrative features in Azure Active Directory).
@@ -213,7 +217,7 @@ To enable MFA, purchase sufficient P1 licences and add them to all the new users
    - Click "Save"
 
 
-## 5. Deploy and configure VNET and Domain Controllers
+## 7. Deploy and configure VNET and Domain Controllers
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
@@ -429,7 +433,7 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 
 
 
-## 6. Deploy and configure Network Policy Server (NPS)
+## 8. Deploy and configure Network Policy Server (NPS)
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
@@ -527,9 +531,9 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 
 
 
-## 7. Deploy package mirrors
+## 9. Deploy package mirrors
 ### When to deploy mirrors
-A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploiying your first SRE.
+A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
 
 <!-- ### Prerequisites
@@ -556,8 +560,8 @@ Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progre
 3. This will take **around 20 minutes** to run.
 
 
-## 8. Tear down package mirrors
-If you ever need to tear down the package mirrors, use the following procedure.
+### [Optional] Tearing down package mirrors
+During normal usage, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
 
 1. Ensure you are logged into the Azure CLI (bash) with the commands:
    ```bash
@@ -575,3 +579,34 @@ If you ever need to tear down the package mirrors, use the following procedure.
    ./teardown_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
    ```
 4. This will take **a few minutes** to run.
+
+## 10. Tearing down the SHM
+In order to tear down the SHM, use the following procedure:
+
+### Disconnect from the Azure Active Directory
+1. Using Microsoft Remote Desktop, connect to the `DC1-SHM-<shm-id>` virtual machine (VM).
+2. Log in as a **domain** user (ie. `<admin username>@<custom domain>`) using the username and password obtained from the Azure portal.
+3. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
+4. Open Powershell as an administrator
+  - Navigate to `C:\Installation`
+  - Run `.\Disconnect_AD.ps1`
+  - You will need to provide login credentials (including MFA if set up) for `<admin username>@<custom domain>`
+
+### Tear down any attached SREs
+1. From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
+   ```pwsh
+   cd secure_research_environment/sre_deploy_scripts
+   ./Teardown_SRE.ps1 -sreId <SRE ID>
+   ```
+2. Repeat this step for all SREs attached to this SHM
+
+
+### Tear down the SHM
+1. From a clone of the data-safe-haven repository, run the following commands, where `<SHM ID>` is the one defined in the config file.
+   ```pwsh
+   cd safe_haven_management_environment/setup
+   ./Teardown_SHM.ps1 -shmId <SHM ID>
+   ```
+
+
+<!-- RG_SHM_WEBAPP -->
