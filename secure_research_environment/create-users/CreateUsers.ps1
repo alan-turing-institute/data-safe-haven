@@ -2,25 +2,11 @@ Param (
      [Parameter(Mandatory=$true, 
           HelpMessage="Path to the CSV file of users")]
      [ValidateNotNullOrEmpty()]
-     [string]$userFilePath,
-
-     [Parameter(Mandatory=$true, 
-          HelpMessage="Safe Haven Management environment ('test' for test and 'prod' for production")]
-     [ValidateSet('test','prod','bris1')]
-     [string]$shmId
+     [string]$userFilePath
 )
 
-# Set SHM specific parameters from SHM ID
-if ($ShmId -eq 'test') {
-     $domain="dsgroupdev.co.uk";
-     $userOuPath="OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk";
-} elseif ($shmId -eq 'bris1') {
-     $domain="bristolsafehaven.uk";
-     $userOuPath="OU=Safe Haven Research Users,DC=bristolsafehaven,DC=uk";
-} elseif ($shmId -eq 'prod') {
-     $domain="turingsafehaven.ac.uk";
-     $userOuPath="OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk";
-}
+$domain=(Get-ADForest).Domains
+$userOuPath=(Get-ADObject -Filter * | Where-Object { $_.Name -eq "Safe Haven Research Users"}).DistinguishedName
 
 Add-Type -AssemblyName System.Web
 $Description = "Research User"
