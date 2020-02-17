@@ -8,7 +8,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../DsgConfig.psm1 -Force
 
-# Get DSG config
+# Get SRE config
 $config = Get-SreConfig ($dsgId);
 $prevContext = Get-AzContext
 

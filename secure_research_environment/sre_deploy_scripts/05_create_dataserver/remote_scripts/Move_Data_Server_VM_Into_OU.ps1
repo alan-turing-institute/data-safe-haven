@@ -5,9 +5,9 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, HelpMessage = "DSG DN")]
+  [Parameter(Position=0, HelpMessage = "SRE DN")]
   [string]$sreDn,
-  [Parameter(Position=1, HelpMessage = "DSG Netbios name")]
+  [Parameter(Position=1, HelpMessage = "SRE Netbios name")]
   [string]$sreNetbiosName,
   [Parameter(Position=2, HelpMessage = "Data server hostname")]
   [string]$dataServerHostname

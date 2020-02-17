@@ -8,7 +8,7 @@ Param(
   [Parameter(HelpMessage="Enter Path to GPO backup files")]
   [ValidateNotNullOrEmpty()]
   [string]$oubackuppath,
-  [Parameter(HelpMessage="DSG Netbios name")]
+  [Parameter(HelpMessage="SRE Netbios name")]
   [ValidateNotNullOrEmpty()]
   [string]$sreNetbiosName,
   [Parameter(HelpMessage="Domain (eg. testsandbox.turingsafehaven.ac.uk)")]

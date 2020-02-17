@@ -18,7 +18,7 @@ write_files:
       # The distinguished name of the search base.
       base $LDAP_BASE_DN
 
-      # Restrict users to those in the security group of this DSG
+      # Restrict users to those in the security group of this RSE
       filter $LDAP_FILTER
 
       # Another way to specify your LDAP server is to provide a URI

@@ -1,5 +1,5 @@
 ﻿param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "DSG Netbios name")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
   [string]$sreNetbiosName,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
   [string]$shmNetbiosName,

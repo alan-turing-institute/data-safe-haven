@@ -17,7 +17,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Resize all VMs
 # --------------
 $vmSize = "Standard_B2ms"
-Write-Host "Resizing all VMs in DSG $($config.sre.id) to size '$vmSize'"
+Write-Host "Resizing all VMs in SRE $($config.sre.id) to size '$vmSize'"
 
 
 Write-Host "===Resizing all compute VMs==="
