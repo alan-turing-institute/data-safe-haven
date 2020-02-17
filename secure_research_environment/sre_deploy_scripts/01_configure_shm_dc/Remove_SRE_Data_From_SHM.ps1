@@ -135,7 +135,6 @@ if ($sreResources -or $sreResourceGroups) {
     $success = $?
     # RDS ACME records
     foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
-        $rdsAcmeDnsRecordname =
         Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($sreDomain)"
         Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
         $success = $success -and $?
