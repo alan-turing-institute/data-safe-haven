@@ -112,6 +112,7 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 4. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
   ![Create AAD DNS Record](images/create_aad_dns_record.png)
 5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
+6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
 
 ## 5. Deploy key vault for SHM secrets
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:

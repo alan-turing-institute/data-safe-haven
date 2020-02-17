@@ -43,7 +43,7 @@ Before you go ahead to set up a Data Safe Haven, you'll need to have the followi
 [Design choices](docs/design/overview.md) - You can find out more about the design of Data Safe Havens here.
 
 
-## Using a Data Safe Havens
+## Using a Data Safe Haven
 
 
 Once a Safe Haven environment has been set up for a project, you can get access to it to carry out secure research.
