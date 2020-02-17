@@ -27,7 +27,7 @@ while ($confirmation -ne "y") {
 
 # Remove resources
 # ----------------
-$sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*SECRETS*" }
+$sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 while ($sreResources.Length) {
     Add-LogMessage -Level Info "Found $($sreResources.Length) resource to remove..."
     foreach ($resource in $sreResources) {
@@ -39,13 +39,13 @@ while ($sreResources.Length) {
             Add-LogMessage -Level Info "Resource removal failed - rescheduling."
         }
     }
-    $sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*SECRETS*" }
+    $sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 }
 
 
 # Remove resource groups
 # ----------------------
-$sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*SECRETS*" }
+$sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 while ($sreResourceGroups.Length) {
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource groups to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
@@ -57,7 +57,7 @@ while ($sreResourceGroups.Length) {
             Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
         }
     }
-    $sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*SECRETS*" }
+    $sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 }
 
 

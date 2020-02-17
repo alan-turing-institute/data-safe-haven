@@ -12,9 +12,11 @@ Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig ($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
+Write-Host $config.subscriptionName
+exit 1
 
 
 # Create secrets resource group if it does not exist
