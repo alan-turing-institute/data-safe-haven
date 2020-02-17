@@ -5,7 +5,7 @@ Param (
      [string]$userFilePath
 )
 
-$domain=(Get-ADForest).Domains
+$domain=(Get-ADForest -Current LocalComputer).Domains
 $userOuPath=(Get-ADObject -Filter * | Where-Object { $_.Name -eq "Safe Haven Research Users"}).DistinguishedName
 
 Add-Type -AssemblyName System.Web
