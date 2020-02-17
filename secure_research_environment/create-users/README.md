@@ -24,6 +24,7 @@
 ## User creation (Domain Admin - IT)
 - Log into the Active Directory Domain Controller (DC)
 - Run Powershell
+- Navigate to `C:\Installation`
 - Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -shmId <shm-id>`, where `<shm-id>` is "test" for the test SHM and "prod" for the production SHM
 - The `CreateUsers.ps1` script will trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
