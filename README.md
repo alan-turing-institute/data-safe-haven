@@ -51,7 +51,7 @@ Once a Safe Haven environment has been set up for a project, you can get access 
 
 [Data Classification User Guide](docs/safe_haven_webapp_user_guide.md) - Step by Step instructions on classify project data using our classification WebApp.
 
-[Safe Havens Cheat Sheet]docs/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+[Safe Havens Cheat Sheet](docs/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
 [Safe Havens User Guide](docs/safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment.
 
