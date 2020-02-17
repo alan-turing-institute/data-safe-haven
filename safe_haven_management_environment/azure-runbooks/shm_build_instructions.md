@@ -137,7 +137,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
-    - Click on "+New user" and enter the following details:
+    - Click on `+New user` and enter the following details:
       - Name: `AAD Global Admin`
       - Username: `admin@<custom domain>`
       - Under `Groups and roles > Roles` change the role to `Global Administrator`
@@ -166,27 +166,31 @@ Giving additional users the GA role, prevents the user you set up earlier from b
 2. Let Azure set their passwords. They can reset these later.
 
 ### Enable MFA
-To enable MFA, purchase sufficient P1 licences and add them to all the new users.
-- You will also need P1 licences for standard users accessing the Safe Haven.
-- You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription
+To enable MFA, purchase sufficient licences and add them to all the new users.
+- You will also need licences for standard users accessing the Safe Haven.
+<!-- - You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription -->
 
-1. To buy P1 licences:
-  - Click on `Azure Active Directory` in the left hand sidebar
-  - Click on `Manage > Licences` in the left hand sidebar
-  - Click on `All products` in the left hand sidebar
-  - Click on the `+Try/Buy` text above the empty product list
-  - Click the `Purchase services` link in the infomation panel above the trial options.
-     - In the "Microsoft 365 Admin Centre" portal that opens:
-       - Expand the `Billing` section of the left hand side bar
-       - Click on `Purchase services`
-       - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
-       - Select `Pay monthly`
-       - Enter the number of licences required.
-       - Leave `automatically assign all of your users with no licences` checked
-       - Click `Check out now`
-       - Enter the address of the organisation running the Safe Haven on the next screen
-       - Click next and enter payment details when requested
-  - **For testing only**, you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+1. Ensure that you are logged in as the "Local admin" user `admin@<custom domain>`
+    - Navigate to `Azure Active Directory` in the portal
+    - Click on `Manage > Licences` in the left hand sidebar
+    - Click on `All products` in the left hand sidebar
+    - Click on the `+Try/Buy` text above the empty product list
+    - **For production** buy P1 licences:
+      - Click the `Purchase services` link in the infomation panel above the trial options.
+      - In the "Microsoft 365 Admin Centre" portal that opens:
+        - Expand the `Billing` section of the left hand side bar
+        - Click on `Purchase services`
+        - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
+        - Select `Pay monthly`
+        - Enter the number of licences required.
+        - Leave `automatically assign all of your users with no licences` checked
+        - Click `Check out now`
+        - Enter the address of the organisation running the Safe Haven on the next screen
+        - Click next and enter payment details when requested
+    - **For testing** you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
+      - Expand the `Free trial` arrow under `Azure AD Premium P2`
+      - Click the `Activate` button
+
 2. Adding licenses to a user:
    - Click on `Users` in the left hand sidebar
    - For each user you want to add a licence to, click on their username
