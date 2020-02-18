@@ -63,7 +63,7 @@ there are a couple of possible causes.
 - You should see output like the following:
 
 ```
-PS /home/atiadmin/data-safe-haven/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms> ./Run_Remote_Diagnostics.ps1 -dsgId 2 -ipLastOctet 160
+PS /home/atiadmin/data-safe-haven/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms> ./Run_Remote_Diagnostics.ps1 -sreId 2 -ipLastOctet 160
 
 Name                                     Account                                           SubscriptionName                                 Environment                                      TenantId
 ----                                     -------                                           ----------------                                 -----------                                      --------
