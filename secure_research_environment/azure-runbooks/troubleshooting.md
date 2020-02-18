@@ -21,7 +21,7 @@ The expired certificate can be ignored but login will not be possible.
 
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
 
-- Run the `./Create_Or_Renew_Ssl_Cert.ps1` script, providing the DSG ID when prompted
+- Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1` script, providing the SRE ID when prompted
 
 ### 2. Failure when logging into the environment via web browser
 
