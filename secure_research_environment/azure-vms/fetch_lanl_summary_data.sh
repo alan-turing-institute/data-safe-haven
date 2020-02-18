@@ -31,7 +31,7 @@ while getopts "d:h" opt; do
     esac
 done
 
-# Check that a DSG group ID has been provided
+# Check that a destination directory has been provided
 if [ "$DESTINATION_DIR" = "" ]; then
     echo -e "${RED}Destination directory is a required argument!${END}"
     print_usage_and_exit
