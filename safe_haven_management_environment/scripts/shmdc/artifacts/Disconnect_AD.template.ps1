@@ -4,7 +4,7 @@ Write-Host "Please use username admin@$tmplShmFqdn and the $tmplAadPasswordName 
 Connect-MsolService
 Write-Host "Disabling directory synchronisation..."
 Set-MsolDirSyncEnabled -EnableDirSync `$False -Force
-Write-Host "Is directory synchronisation currently enabled? $((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled)"
+Write-Host "Is directory synchronisation currently enabled? `$((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled)"
 Write-Host "Removing any connected applications..."
 Get-MsolServicePrincipal | Select-Object DisplayName
 Get-MsolServicePrincipal | Remove-MsolServicePrincipal
