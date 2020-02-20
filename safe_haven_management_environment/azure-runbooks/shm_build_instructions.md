@@ -361,11 +361,11 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
   - Under `Permissions`, ensure that the following options are checked:
     - `Reset password`
     - `Change password`
-  - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling!):
+  - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling. _The properties are listed in alphabetical order of the main part of the property name excluding the initial prefix Read/Write etc)_:
     - `Write lockoutTime`
     - `Write pwdLastSet`
   - Click "OK"
-- Now go through the same procedure, this time selecting "This object and descendant objects" in the "Applies to" section
+- Now go through the same procedure, this time selecting "This object and all descendant objects" in the "Applies to" section
   - Enable the following permissions:
     - `Replicating Directory Changes`
     - `Replicating Directory Changes All`
