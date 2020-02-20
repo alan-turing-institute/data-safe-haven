@@ -28,7 +28,7 @@ The following instructions will walk you through deploying a Secure Research Env
 
 
 ### Access to required Safe Haven Management resources
-- You need to be a member of the relevant "Safe Haven `<shm-id>` Admins" Security Group, where `<shm-id>` is `test` for test and `production` for production. This will give you the following access:
+- You need to be a member of the relevant "Safe Haven Test Admins" (for testing/development) or "Safe Haven Production Admins" (for production deployment) Security Group. This will give you the following access:
   - Administrative access to the relevant Safe Haven Management Azure subscription
   - Administrative access to the relevant Safe Haven Management Active Directory Domain
   - Administrative access to the relevant Safe Haven Management VMs
