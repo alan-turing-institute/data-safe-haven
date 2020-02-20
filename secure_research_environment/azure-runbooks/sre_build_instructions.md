@@ -116,6 +116,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<sre
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
+    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this SHM belong to",
     "sreId": "A short ID to identify the secure research environment. Ideally this should be 7 characters or less; if not it will be truncated in some places, but will otherwise not cause problems.",
     "shmId": "The short ID for the SHM segment to deploy against",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
