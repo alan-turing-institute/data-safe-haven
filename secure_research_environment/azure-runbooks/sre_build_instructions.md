@@ -36,13 +36,13 @@ The following instructions will walk you through deploying a Secure Research Env
 ### Download a client VPN certificate for the Safe Haven Management VNet
   - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`.
   - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-  - Click on the certificate named `shm-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+  - Click on the certificate named `shm-<shm-id>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
   - To install, double click on the downloaded certificate, leaving the password field blank.
   - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
   -  This certificate will also allow you to connect via VPN to the SRE VNets once deployed.
 
 - #### Configure a VPN connection to the Safe Haven Management VNet
-  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_VNET -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
   - Click the "Download VPN client" link at the top of the page to get the root certificate (VpnServerRoot.cer) and VPN configuration file (VpnSettings.xml), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
   - On Windows you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
   - On Windows do not rename the vpn client as this will break it
