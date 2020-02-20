@@ -349,32 +349,34 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Installing packages on RDS VMs..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     if ($name -ne "RDS Gateway") {
         Add-LogMessage -Level Info "[ ] Installing packages on ${name}: '$vmName'"
+        $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+        Write-Output $result.Value
     }
 }
 
-# Install software packages on RDS SH1 (App server)
-Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Apps (App server)"
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
-# $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath
-# $success = $?
-# Write-Output $result.Value;
-# if ($success) {
-#     Add-LogMessage -Level Success "Successfully installed packages"
-# } else {
-#     Add-LogMessage -Level Fatal "Failed to install packages!"
-# }
+# # Install software packages on RDS SH1 (App server)
+# Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Apps (App server)"
+# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
+# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
+# # $result = Invoke-AzVMRunCommand -Name $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -CommandId 'RunPowerShellScript' -ScriptPath $scriptPath
+# # $success = $?
+# # Write-Output $result.Value;
+# # if ($success) {
+# #     Add-LogMessage -Level Success "Successfully installed packages"
+# # } else {
+# #     Add-LogMessage -Level Fatal "Failed to install packages!"
+# # }
 
-# Install software packages on RDS SH2 (Remote desktop server)
-Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
-Write-Output $result.Value
+# # Install software packages on RDS SH2 (Remote desktop server)
+# Add-LogMessage -Level Info "[ ] Installing packages on RDS_Session_Host_Desktop (Remote desktop server)"
+# $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
+# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg #-Parameter $params
+# Write-Output $result.Value
 
 
 # Install required Powershell modules on RDS Gateway
