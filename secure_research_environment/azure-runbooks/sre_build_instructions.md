@@ -90,6 +90,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
+    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
     "domain": "The fully qualified domain name for the management environment",
     "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
