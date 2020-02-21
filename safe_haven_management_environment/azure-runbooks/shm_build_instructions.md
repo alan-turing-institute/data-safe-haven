@@ -115,10 +115,9 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
 
 ## 5. Deploy key vault for SHM secrets
-1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
+1. Ensure you are logged into Azure within PowerShell with the command:
    ```pwsh
    Connect-AzAccount
-   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
    ```
 2. From a clone of the data-safe-haven repository, setup the keyvault with the following commands (where `<SHM ID>` is the one defined in the config file)
    ```pwsh
@@ -165,10 +164,12 @@ Giving additional users the GA role, prevents the user you set up earlier from b
       - Click `Create`
 2. Let Azure set their passwords. They can reset these later.
 
+NB. You can also invite guest users from other Azure Active Directories at this stage
+- If their account (`user@domain`) does not have an associated mailbox, invite them as normal and then give them a direct link to the portal for a specific tenant (i.e. `https://portal.azure.com/<tenant id>`). When they click this they will get taken through the same process that would have happened from the email link. [Via Microsoft documentation](https://docs.microsoft.com/en-us/azure/active-directory/b2b/redemption-experience)
+
 ### Enable MFA
 To enable MFA, purchase sufficient licences and add them to all the new users.
 - You will also need licences for standard users accessing the Safe Haven.
-<!-- - You will need to be logged in as the "Local admin" user `admin@<custom domain>` to purchase a P1 subscription -->
 
 1. Ensure that you are logged in as the "Local admin" user `admin@<custom domain>`
     - Navigate to `Azure Active Directory` in the portal
@@ -190,6 +191,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
     - **For testing** you can enable a free trial of the P2 License (NB. It can take a while for these to appear on your AAD)
       - Expand the `Free trial` arrow under `Azure AD Premium P2`
       - Click the `Activate` button
+      - Wait for around 20 minutes until the `Azure AD Premium P2` licences appear on the list of `All Products`
 
 2. Adding licenses to a user:
    - Click on `Users` in the left hand sidebar
@@ -203,7 +205,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
    - Sign in to the Azure portal as a user administrator or global administrator.
    - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
    - Click `Manage > MFA` in the left hand side bar
-   - Click on the `Additional cloud-based MFA settings` link in the `Configure` section of the main panel
+   - Click on the `Additional cloud-based MFA settings` link in the `Configure` section of the main panel (if this is not available, trying signing out of the portal and back in again)
    - Configure MFA as follows:
      - In "App passwords" section select "Do not allow users to create app passwords to sign in to non-browser apps"
      - In "Verification options" section.
@@ -241,7 +243,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-1. Navigate to the SHM KeyVault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
+1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 3. Click on the certificate named `shm-<shmId>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
@@ -295,7 +297,7 @@ rather than simply `<admin username>`)
     - Click "Next"
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
-    - You should have created `admin@<custom domain>` during the `Add additional administrators` step
+    - You should have created `admin@<custom domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
     - Click "Next"
   - If you receive an Internet Explorer pop-up dialog "Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com"
     - Click "Add"
@@ -313,16 +315,16 @@ rather than simply `<admin username>`)
     - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
       - Select "Use existing AD account"
-      - Enter the details of the "localadsync" user.
+      - Enter the details for the `localadsync` user.
         - Username: `localadsync@<custom domain>` (e.g. localadsync)
-        - Password: Look in the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
+        - Password: use the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
       - Click "OK"
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
           - In Server Manager click "Tools -> Active Directory Users and Computers"
           - Expand the domain in the left hand panel
           - Expand the "Safe Haven Service Accounts" OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<shm-id>-adsync-password` secret in the management KeyVault.
+          - Set the password to the the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
           - Leave the other settings as is and click "Ok"
     - Click "Next"
   - On the `Azure AD sign-in configuration` screen:
@@ -370,11 +372,10 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
     - `Replicating Directory Changes`
     - `Replicating Directory Changes All`
   - Click "OK" on all open dialog boxes
- <!-- Look at https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-configure-ad-ds-connector-account for automation-->
 
 
 ### Additional AAD Connect Configuration
-1. Open `Azure Ad Connect > Synchronization Rules Editor` from the start menu
+1. Open `Azure AD Connect > Synchronization Rules Editor` from the start menu
 
   ![synchronisation rules](images/synchronisation_rules.png)
 
@@ -409,10 +410,11 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
     - First name: Test
-    - Lastname: AD Sync
-    - User login name: `testadsync`
+    - Last name: ADUser
+    - User login name: `testaduser`
     - Click "Next"
-  - Enter a default password of your choice
+  - Password: use the `shm-<shm-id>-testaduser-password` secret in the management Key Vault.
+    - Untick `User must change password at next logon`
     - Click "Next"
   - Click "Finish"
 2. Force a sync to the Azure Active Directory

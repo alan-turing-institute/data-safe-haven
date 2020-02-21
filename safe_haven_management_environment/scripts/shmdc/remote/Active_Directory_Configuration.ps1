@@ -99,8 +99,8 @@ foreach ($groupName in ("SG Safe Haven Server Administrators","SG Data Science L
 }
 
 # Creating global service accounts
-Write-Host "Creating AD Sync Service account - $adsyncAccountName" # - enter password for this account when prompted"
 $adsyncAccountName = "localadsync"
+Write-Host "Creating AD Sync Service account ($adsyncAccountName)..." # - enter password for this account when prompted"
 $adsyncUserName = "Local AD Sync Administrator" # NB. name must be less than 20 characters
 $serviceOuPath = "OU=Safe Haven Service Accounts,$domainou"
 $userExists = $(Get-ADUser -Filter "Name -eq '$adsyncUserName'").Name
