@@ -10,7 +10,7 @@ foreach ($package in $packages){
         Start-Process $package.FullName -ArgumentList '/quiet' -Verbose -Wait
     } else {
         if($package -like "*WinSCP*exe") {
-            Start-Process $package.FullName -ArgumentList '/SILENT' -Verbose -Wait
+            Start-Process $package.FullName -ArgumentList '/SILENT','/ALLUSERS' -Verbose -Wait
         }
     }
     # Check installation status
