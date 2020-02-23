@@ -517,7 +517,7 @@ This is because, without this policy, the NPS server will reject their authentic
   - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
 6. On the webpage pop-up, sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
   - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
-7. Enter your Azure Active directory ID. To get this:
+7. When prompted to `Provide your Tenant ID`, enter your Azure Active Directory ID. To get this:
   - In the Azure portal select "Azure Active Directory" in the left hand side bar
   - Select "Properties" in the left hand side bar
   - Copy the "Directory ID" field

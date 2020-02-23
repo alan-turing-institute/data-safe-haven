@@ -90,7 +90,8 @@
         "dcNpsAdminPassword": "shm-testb-dcnps-admin-password",
         "dcSafemodePassword": "shm-testb-dc-safemode-password",
         "mirrorAdminUsername": "shm-testb-package-mirror-admin-username",
-        "adsyncPassword": "shm-testb-adsync-password",
+        "localAdsyncPassword": "shm-testb-localadsync-password",
+        "testAdUserPassword": "shm-testb-testaduser-password",
         "vpnCaCertificate": "shm-testb-vpn-ca-cert",
         "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
         "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
@@ -300,7 +301,7 @@
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
-      "deploymentNsg": "NSG_SRE_SANDBOX_IMAGE_DEPLOYMENT",
+      "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
