@@ -248,14 +248,15 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
   - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
 <!-- - Login as the **domain** admin user (eg. `@dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.) -->
-- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. You must ensure that you have assigned a licence to this user so that MFA will work correctly. The test researcher would be a good example.**
+- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. You must ensure that you have assigned a licence to this user so that MFA will work correctly. In the following example, we assume that you are using the automatically-created test researcher.**
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
 - Right click the `SG <sre-id> Research Users` security group and select "Properties"
 - Click on the "Members" tab and click the "Add" button
-- Enter the start of your name and click "Check names"
-- Select your name and click "Ok"
+- Enter the start of the `<sre-id>` and click "Check names"
+- Select the `<sre-id> Test Researcher` and click "Ok"
 - Click "Ok" again to exit the add users dialogue
+- At this point please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
 <!-- - Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rdg-sre-sandbox.sandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in. -->
 - Launch a local web browser and go to `https://<sre-id>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient. <!-- , but get an IIS landing page when accessing `https://<rds-name>.<sre-id>.<safe haven domain>/`,-->
@@ -286,19 +287,19 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - The deployment will take around 10 minutes to complete
 
 ## 8. Deploy Web Application Servers (Gitlab and HackMD)
-- Note: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.
+- **NB.: Before deploying the Linux Servers ensure that you've allowed GitLab Community Edition to be programmatically deployed within the Azure Portal.**
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run the `./Create_Web_App_Servers.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take a few minutes to complete
 
-### Configure GitLab Server
+### Test GitLab Server
 - GitLab is fully configured by the `Create_Web_App_Servers.ps1` deployment script
 - There is a built-in `root` user, whose password is stored in the SRE KeyVault (see SRE config file for KeyVault and secret names).
 - You can test Gitlab independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <sre-id> Research Users` security group.
 
-### Configure HackMD Server
+### Test HackMD Server
 - HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
 - You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
 

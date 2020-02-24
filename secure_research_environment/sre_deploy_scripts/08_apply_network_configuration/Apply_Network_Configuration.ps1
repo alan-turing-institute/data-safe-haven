@@ -17,42 +17,42 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# # Set common variables
-# # --------------------
-# Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
-# # Get NSGs
-# $nsgGateway = Get-AzNetworkSecurityGroup -Name $config.sre.rds.nsg.gateway.name
-# if ($nsgGateway -eq $null) { throw "Could not load RDS gateway NSG" }
-# $nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
-# if ($nsgLinux -eq $null) { throw "Could not load Linux VMs NSG" }
-# $nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.nsg.session_hosts.name
-# if ($nsgSessionHosts -eq $null) { throw "Could not load RDS session hosts NSG" }
-# # Load allowed sources into an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-# $allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })
+# Set common variables
+# --------------------
+Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
+# Get NSGs
+$nsgGateway = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg
+if ($nsgGateway -eq $null) { throw "Could not load RDS gateway NSG" }
+$nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
+if ($nsgLinux -eq $null) { throw "Could not load Linux VMs NSG" }
+$nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
+if ($nsgSessionHosts -eq $null) { throw "Could not load RDS session hosts NSG" }
+# Load allowed sources into an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
+$allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })
 
 
-# # Ensure RDS session hosts and dataserver are bound to session hosts NSG
-# # ----------------------------------------------------------------------
-# Add-LogMessage -Level Info "Ensure RDS session hosts and data server are bound to correct Network Security Group (NSG)..."
-# foreach ($vmName in ($config.sre.rds.sessionHost1.vmName, $config.sre.rds.sessionHost2.vmName, $config.sre.dataserver.vmName)) {
-#     Add-VmToNSG -VMName $vmName -NSGName $nsgSessionHosts.Name
-# }
-# Start-Sleep -Seconds 30
-# Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgSessionHosts.Name)' NSG"
-# @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+# Ensure RDS session hosts and dataserver are bound to session hosts NSG
+# ----------------------------------------------------------------------
+Add-LogMessage -Level Info "Ensure RDS session hosts and data server are bound to correct Network Security Group (NSG)..."
+foreach ($vmName in ($config.sre.rds.sessionHost1.vmName, $config.sre.rds.sessionHost2.vmName, $config.sre.dataserver.vmName)) {
+    Add-VmToNSG -VMName $vmName -NSGName $nsgSessionHosts.Name
+}
+Start-Sleep -Seconds 30
+Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgSessionHosts.Name)' NSG"
+@($nsgSessionHosts.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
-# # Ensure webapp servers and compute VMs are bound to webapp NSG
-# # -------------------------------------------------------------
-# Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
-# $computeVMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name }
-# $webappVMs = $config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName
-# foreach ($vmName in ([array]$computeVMs + $webappVMs)) {
-#     Add-VmToNSG -VMName $vmName -NSGName $nsgLinux.Name
-# }
-# Start-Sleep -Seconds 30
-# Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgLinux.Name)' NSG"
-# @($nsgLinux.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+# Ensure webapp servers and compute VMs are bound to webapp NSG
+# -------------------------------------------------------------
+Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
+$computeVMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name }
+$webappVMs = $config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName
+foreach ($vmName in ([array]$computeVMs + $webappVMs)) {
+    Add-VmToNSG -VMName $vmName -NSGName $nsgLinux.Name
+}
+Start-Sleep -Seconds 30
+Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgLinux.Name)' NSG"
+@($nsgLinux.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
 # Ensure VMs are bound to correct NSGs
@@ -112,7 +112,7 @@ if ("$($ruleAfter.SourceAddressPrefix)" -eq "$allowedSources") {
 # -----------------------------------------------
 Add-LogMessage -Level Info "Updating restricted Linux NSG to match SRE config..."
 # Update RDS Gateway NSG inbound access rule
-$ruleName = "Internet_Out"
+$ruleName = "OutboundDenyInternet"
 $ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgLinux
 # Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
 $access = $config.sre.rds.gateway.networkRules.outboundInternet
