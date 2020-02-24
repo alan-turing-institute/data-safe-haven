@@ -247,8 +247,8 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<shm-id>` key vault, under "SECRETS".
   - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
-
-- Login as the **domain** admin user (eg. `@dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
+<!-- - Login as the **domain** admin user (eg. `@dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.) -->
+- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. You must ensure that you have assigned a licence to this user so that MFA will work correctly. The test researcher would be a good example.**
 - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Security Groups` OU
 - Right click the `SG <sre-id> Research Users` security group and select "Properties"
@@ -266,7 +266,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
     - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
         - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
         - OR open a new private / incognito browser window and visit the page.
-- Once you have logged in, double click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app.
+- Once you have logged in, click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app.
 - Once you have approved the sign in, you should see a remote Windows desktop.
     - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
         - Ensure that the [SHM NPS server RADIUS Client configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.

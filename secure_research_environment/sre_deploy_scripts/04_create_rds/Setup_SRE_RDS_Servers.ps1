@@ -72,6 +72,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -Direction Inbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix Internet -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange 443
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
+                             -Name "RADIUS_Authentication_RDS_to_NPS" `
+                             -Description "Authenticate to SHM RADIUS server" `
+                             -Priority 300 `
+                             -Direction Outbound -Access Allow -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.nps.ip -DestinationPortRange 1645,1646,1812,1813
 $nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
                              -Name "Deny_Internet" `
