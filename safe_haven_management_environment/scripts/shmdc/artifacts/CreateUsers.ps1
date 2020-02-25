@@ -1,5 +1,5 @@
 Param (
-     [Parameter(Mandatory=$true, 
+     [Parameter(Mandatory=$true,
           HelpMessage="Path to the CSV file of users")]
      [ValidateNotNullOrEmpty()]
      [string]$userFilePath
@@ -41,5 +41,5 @@ New-ADUser @props -PassThru
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-Import-Module –Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
+Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync"
 Start-ADSyncSyncCycle -PolicyType Delta
