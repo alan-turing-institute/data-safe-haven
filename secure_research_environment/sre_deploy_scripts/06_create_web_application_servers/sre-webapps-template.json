@@ -115,11 +115,6 @@
             "name": "[parameters('GitLab_Server_Name')]",
             "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
-            "plan": {
-                "name": "gitlab-ce",
-                "product": "gitlab-ce",
-                "publisher": "gitlab"
-            },
             "scale": null,
             "properties": {
                 "hardwareProfile": {
@@ -127,9 +122,9 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "publisher": "gitlab",
-                        "offer": "gitlab-ce",
-                        "sku": "gitlab-ce",
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -204,7 +199,7 @@
                     "imageReference": {
                         "publisher": "Canonical",
                         "offer": "UbuntuServer",
-                        "sku": "16.04-LTS",
+                        "sku": "18.04-LTS",
                         "version": "latest"
                     },
                     "osDisk": {

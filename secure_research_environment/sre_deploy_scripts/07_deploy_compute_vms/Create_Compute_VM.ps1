@@ -236,14 +236,7 @@ while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("P
 # ------------------------------------------------------------------------
 Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)' at $(Get-Date -UFormat '%d-%b-%Y %R')..."
 Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
-# $vmNic.NetworkSecurityGroup = $secureNsg
-# $_ = ($vmNic | Set-AzNetworkInterface)
-# if ($?) {
-#     Add-LogMessage -Level Success "NSG switching succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "NSG switching failed!"
-# }
-# $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+$_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Create Postgres roles

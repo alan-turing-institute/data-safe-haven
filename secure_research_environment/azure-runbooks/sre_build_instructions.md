@@ -297,11 +297,11 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 ### Test GitLab Server
 - GitLab is fully configured by the `Create_Web_App_Servers.ps1` deployment script
 - There is a built-in `root` user, whose password is stored in the SRE KeyVault (see SRE config file for KeyVault and secret names).
-- You can test Gitlab independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <sre-id> Research Users` security group.
+- You can test Gitlab from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <sre-id> Research Users` security group.
 
 ### Test HackMD Server
 - HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
-- You can test HackMD independently of the RDS servers by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
+- You can test HackMD from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
 
 ## 9. Deploy initial shared compute VM
 ### [OPTIONAL] Create a custom cloud init file for the SRE if required

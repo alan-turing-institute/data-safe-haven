@@ -1,15 +1,36 @@
 #cloud-config
-package_upgrade: false
+package_update: true
+package_upgrade: true
+
+# Install LDAP tools for debugging LDAP issues
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - docker-ce
+  - docker-compose
+  - ldap-utils
+  - software-properties-common
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    gitlab.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+      keyid: 8D81803C0EBFCD88
 
 write_files:
   - path: "/docker-compose-hackmd.yml"
     content: |
-      version: '2'
+      version: '3'
       services:
         database:
           # Don't upgrade PostgreSQL by simply changing the version number
           # You need to migrate the Database to the new PostgreSQL version
-          image: postgres:9.6-alpine
+          image: postgres:11.5
           #mem_limit: 256mb         # version 2 only
           #memswap_limit: 512mb     # version 2 only
           #read_only: true          # not supported in swarm mode please enable along with tmpfs
@@ -27,7 +48,7 @@ write_files:
           restart: always
 
         app:
-          image: hackmdio/hackmd:1.2.0
+          image: nabo.codimd.dev/hackmdio/hackmd:1.4.1
           #mem_limit: 256mb         # version 2 only
           #memswap_limit: 512mb     # version 2 only
           #read_only: true          # not supported in swarm mode, enable along with tmpfs
@@ -44,18 +65,18 @@ write_files:
             # - mysql://hackmd:hackmdpass@database:3306/hackmd
             # - sqlite:///data/sqlite.db (NOT RECOMMENDED)
             # - For details see the official sequelize docs: http://docs.sequelizejs.com/en/v3/
-            - HMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
-            - HMD_ALLOW_ANONYMOUS=false
-            - HMD_ALLOW_FREEURL=true
-            - HMD_EMAIL=false
-            - HMD_USECDN=false
-            - HMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
-            - HMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
-            - HMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
-            - HMD_LDAP_BINDDN=<hackmd-bind-dn>
-            - HMD_LDAP_URL=<hackmd-ldap-url>
-            - HMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
-            - HMD_IMAGE_UPLOAD_TYPE=filesystem
+            - CMD_DB_URL=postgres://hackmd:hackmdpass@database:5432/hackmd
+            - CMD_ALLOW_ANONYMOUS=false
+            - CMD_ALLOW_FREEURL=true
+            - CMD_EMAIL=false
+            - CMD_USECDN=false
+            - CMD_LDAP_SEARCHFILTER=<hackmd-user-filter>
+            - CMD_LDAP_SEARCHBASE=<hackmd-ldap-base>
+            - CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds>
+            - CMD_LDAP_BINDDN=<hackmd-bind-dn>
+            - CMD_LDAP_URL=<hackmd-ldap-url>
+            - CMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios>
+            - CMD_IMAGE_UPLOAD_TYPE=filesystem
           ports:
             # Ports that are published to the outside.
             # The latter port is the port inside the container. It should always stay on 3000
@@ -74,7 +95,7 @@ write_files:
       networks:
         # Internal network for communication with PostgreSQL/MySQL
         backend:
-          
+
       # Define named volumes so data stays in place
       volumes:
         # Volume for PostgreSQL/MySQL database
@@ -82,22 +103,25 @@ write_files:
         uploads:
 
 runcmd:
-  # Install LDAP tools for debugging LDAP issues
-  - apt-get install ldap-utils
+  # Configure server
+  - echo "Configuring server"
   - echo "<hackmd-ip> <hackmd-hostname> <hackmd-fqdn>" >> /etc/hosts
   - echo "Europe/London" > /etc/timezone
   - dpkg-reconfigure -f noninteractive tzdata
-  - apt-get update
-  - apt upgrade
-  - apt install -y apt-transport-https ca-certificates curl software-properties-common
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
-  - apt update
-  - apt install -y docker-ce
-  - apt install -y docker-compose
+  # Checking Docker status
+  - echo "Current Docker status"
+  - systemctl status docker
+  # Pulling HackMD Docker image
   - echo "Pulling HackMD Docker image"
   - git clone https://github.com/hackmdio/docker-hackmd.git /src/docker-hackmd
   - echo "Overwriting HackMD configuration"
   - cp /docker-compose-hackmd.yml /src/docker-hackmd/docker-compose.yml
   - echo "Starting HackMD"
   - docker-compose -f /src/docker-hackmd/docker-compose.yml up -d
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

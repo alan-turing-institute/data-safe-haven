@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE_ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId
+    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE_ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId
 )
 
 Import-Module Az
@@ -17,9 +17,10 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Make sure terms for gitlab-ce are accepted
-# ------------------------------------------
-$_ = Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
+# # Make sure terms for the GitLab image are accepted
+# # -------------------------------------------------
+# $_ = Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
+# $_ = Get-AzMarketplaceTerms -Publisher bitnami -Product gitlab -Name 8-5 |  Set-AzMarketplaceTerms -Accept
 
 
 # Retrieve passwords from the keyvault
@@ -34,13 +35,25 @@ $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 $hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
 
 
-# Patch GitLab_Cloud_Init
+# Set up the NSG for the webapps
+# ------------------------------
+$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+                             -Name "OutboundDenyInternet" `
+                             -Description "Outbound deny internet" `
+                             -Priority 4000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix Internet -DestinationPortRange *
+
+
+# Expand GitLab cloudinit
 # -----------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 $gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot "templates" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." ".." ".." "environment_configs" "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
                                             Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
@@ -55,13 +68,13 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 
 
-# Patch HackMD_Cloud_Init
+# Expand HackMD cloudinit
 # -----------------------
 $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
 $hackmdLdapUserDn = "CN=" + $config.sre.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
-$hackmdCloudInitTemplate = Join-Path $PSScriptRoot "templates" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
+$hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
                                             Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
                                             Replace('<hackmd-user-filter>',$hackmdUserFilter).
@@ -73,18 +86,6 @@ $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdL
                                             Replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
-
-
-# Set up the NSG for the webapps
-# ------------------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                             -Name "OutboundDenyInternet" `
-                             -Description "Outbound deny internet" `
-                             -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
 # Create webapps resource group
@@ -112,6 +113,47 @@ $params = @{
     Virtual_Network_Subnet = $config.sre.network.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
+
+
+# Poll VMs to see when they have finished running
+# -----------------------------------------------
+Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
+$progress = 0
+$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+$hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+while ((-not ($gitlabStatuses.Contains("PowerState/stopped") -and $gitlabStatuses.Contains("ProvisioningState/succeeded"))) -and
+       (-not ($hackmdStatuses.Contains("PowerState/stopped") -and $hackmdStatuses.Contains("ProvisioningState/succeeded")))) {
+    $progress = [math]::min(100, $progress + 1)
+    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    Write-Progress -Activity "Deployment status:" -Status "GitLab [$($gitlabStatuses[0]) $($gitlabStatuses[1])], HackMD [$($hackmdStatuses[0]) $($hackmdStatuses[1])]" -PercentComplete $progress
+    Start-Sleep 10
+}
+
+
+# While webapp servers are off, ensure they are bound to correct NSG
+# ------------------------------------------------------------------
+Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
+foreach ($vmName in ($config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName)) {
+    Add-VmToNSG -VMName $vmName -NSGName $nsg.Name
+}
+Start-Sleep -Seconds 30
+Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"
+@($nsg.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+
+
+# Finally, reboot the webapp servers
+# ----------------------------------
+foreach ($nameVMNameParamsPair in (("GitLab", $config.sre.webapps.gitlab.vmName), ("HackMD", $config.sre.webapps.hackmd.vmName))) {
+    $name, $vmName = $nameVMNameParamsPair
+    Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
+    $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
+    if ($?) {
+        Add-LogMessage -Level Success "Rebooting the ${name} VM succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Rebooting the ${name} VM failed!"
+    }
+}
 
 
 # Switch back to original subscription
