@@ -7,6 +7,7 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
 
+
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-SreConfig $sreId

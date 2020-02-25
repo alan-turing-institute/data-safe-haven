@@ -1,10 +1,12 @@
 param(
     [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId,
+    [string]$sreId
 )
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
+
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
@@ -15,19 +17,19 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Stop all VMs
 # ------------
-Write-Host "===Stopping all compute VMs==="
+Add-LogMessage -Level Info "Stopping all compute VMs..."
 Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Stop-AzVM -Force -NoWait
-Write-Host "===Stopping web app servers==="
+Add-LogMessage -Level Info "Stopping web app servers..."
 Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName -Force -NoWait
 Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName -Force -NoWait
-Write-Host "===Stopping dataserver==="
+Add-LogMessage -Level Info "Stopping dataserver..."
 Stop-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName -Force -NoWait
-Write-Host "===Stopping RDS session hosts==="
+Add-LogMessage -Level Info "Stopping RDS session hosts..."
 Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName -Force -NoWait
 Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName -Force -NoWait
-Write-Host "===Stopping RDS gateway==="
+Add-LogMessage -Level Info "Stopping RDS gateway..."
 Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName -Force -NoWait
-Write-Host "===Stopping AD DC==="
+Add-LogMessage -Level Info "Stopping AD DC..."
 Stop-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName -Force -NoWait
 
 

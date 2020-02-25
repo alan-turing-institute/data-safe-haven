@@ -5,6 +5,8 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
+
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
@@ -15,20 +17,20 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Start all VMs
 # -------------
-Write-Host "===Starting AD DC==="
-Write-Host " - Waiting for AD to start before starting other VMs to ensure domain joining works."
+Add-LogMessage -Level Info "Starting AD DC..."
+Add-LogMessage -Level Info "Waiting for AD to start before starting other VMs to ensure domain joining works..."
 Start-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName
-Write-Host "===Starting RDS gateway==="
+Add-LogMessage -Level Info "Starting RDS gateway..."
 Start-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName -NoWait
-Write-Host "===Starting RDS session hosts==="
+Add-LogMessage -Level Info "Starting RDS session hosts..."
 Start-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName -NoWait
 Start-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName -NoWait
-Write-Host "===Starting dataserver==="
+Add-LogMessage -Level Info "Starting dataserver..."
 Start-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName -NoWait
-Write-Host "===Starting web app servers==="
+Add-LogMessage -Level Info "Starting web app servers..."
 Start-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName -NoWait
 Start-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName -NoWait
-Write-Host "===Starting all compute VMs==="
+Add-LogMessage -Level Info "Starting all compute VMs..."
 Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Start-AzVM -NoWait
 
 
