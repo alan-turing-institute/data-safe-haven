@@ -450,7 +450,7 @@ function Add-SreConfig {
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
-            vmSize = "Standard_D2s_v3"
+            vmSize = "Standard_DS3_v2"
         }
         hackmd = [ordered]@{
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()

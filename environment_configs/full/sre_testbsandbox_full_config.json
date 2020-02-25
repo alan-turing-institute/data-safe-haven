@@ -285,7 +285,7 @@
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
+        "vmSize": "Standard_DS3_v2",
         "hostname": "GITLAB-SRE-SANDBOX",
         "fqdn": "GITLAB-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
         "ip": "10.151.2.151"

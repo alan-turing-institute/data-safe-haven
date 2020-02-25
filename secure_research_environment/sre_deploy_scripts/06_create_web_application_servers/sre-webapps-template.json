@@ -45,6 +45,7 @@
                 "Standard_B2ms",
                 "Standard_D2s_v3",
                 "Standard_DS2_v2",
+                "Standard_DS3_v2",
                 "Standard_F4s_v2"
             ],
             "metadata": {
@@ -76,6 +77,7 @@
                 "Standard_B2ms",
                 "Standard_D2s_v3",
                 "Standard_DS2_v2",
+                "Standard_DS3_v2",
                 "Standard_F4s_v2"
             ],
             "metadata": {
@@ -136,7 +138,7 @@
                         "managedDisk": {
                             "storageAccountType": "Standard_LRS"
                         },
-                        "diskSizeGB": 100
+                        "diskSizeGB": 50
                     },
                     "dataDisks": [
                         {
