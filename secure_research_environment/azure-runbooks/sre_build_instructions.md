@@ -221,7 +221,7 @@
 
   #### Increase the authorisation timeout to allow for MFA
   - In "Server Manager", select `Tools -> Network Policy Server`
-  - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Servers` and double click on `TS GATEWAY SERVER GROUP`
+  - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Server Groups` and double click on `TS GATEWAY SERVER GROUP`
     ![Remote RADIUS server](images/media/rds_local_nps_remote_server_selection.png)
   - Highlight the server shown in the “RADIUS Server” column and click “Edit”
   - Change to the “Load Balancing” tab and change the parameters to match the screen below
