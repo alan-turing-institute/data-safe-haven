@@ -1,8 +1,8 @@
 {
   "shm": {
     "subscriptionName": "Safe Haven Management Test A",
-    "Id": "testa",
-    "Name": "Turing Development Safe Haven A",
+    "id": "testa",
+    "name": "Turing Development Safe Haven A",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -21,30 +21,30 @@
       "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
-          "Name": "SG Data Science LDAP Users",
-          "description": null
+          "name": "SG Data Science LDAP Users",
+          "description": "SG Data Science LDAP Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
-        "Name": "VNET_SHM_TESTA",
+        "name": "VNET_SHM_TESTA",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
         "identity": {
-          "Name": "IdentitySubnet",
+          "name": "IdentitySubnet",
           "prefix": "10.0.0",
           "cidr": "10.0.0.0/24"
         },
         "web": {
-          "Name": "WebSubnet",
+          "name": "WebSubnet",
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
         },
         "gateway": {
-          "Name": "GatewaySubnet",
+          "name": "GatewaySubnet",
           "prefix": "10.0.7",
           "cidr": "10.0.7.0/24"
         }
@@ -75,22 +75,28 @@
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
         "accountName": "shmtestaartifactsvkdrslu"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmtestabootdiagsvkdrslu"
       }
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "Name": "kv-shm-testa",
+      "name": "kv-shm-testa",
       "secretNames": {
-        "aadAdminPassword": "shm-aad-admin-password",
-        "dcNpsAdminUsername": "shm-dcnps-admin-username",
-        "dcNpsAdminPassword": "shm-dcnps-admin-password",
-        "dcSafemodePassword": "shm-dc-safemode-password",
-        "adsyncPassword": "shm-adsync-password",
-        "vpnCaCertificate": "shm-vpn-ca-cert",
-        "vpnCaCertPassword": "shm-vpn-ca-cert-password",
-        "vpnCaCertificatePlain": "shm-vpn-ca-cert-plain",
-        "vpnClientCertificate": "shm-vpn-client-cert",
-        "vpnClientCertPassword": "shm-vpn-client-cert-password"
+        "aadAdminPassword": "shm-testa-aad-admin-password",
+        "dcNpsAdminUsername": "shm-testa-dcnps-admin-username",
+        "dcNpsAdminPassword": "shm-testa-dcnps-admin-password",
+        "dcSafemodePassword": "shm-testa-dc-safemode-password",
+        "mirrorAdminUsername": "shm-testa-package-mirror-admin-username",
+        "localAdsyncPassword": "shm-testa-localadsync-password",
+        "testAdUserPassword": "shm-testa-testaduser-password",
+        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
+        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
+        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
+        "vpnClientCertificate": "shm-testa-vpn-client-cert",
+        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -98,89 +104,91 @@
       "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
-      "rg": "RG_SHM_PKG_MIRRORS"
-    },
-    "bootdiagnostics": {
-      "rg": "RG_SHM_ARTIFACTS",
-      "accountName": "shmtestabootdiagsvkdrslu"
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "vmSize": "Standard_F4",
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "ipOffset": 4,
+        "diskSize": {
+          "tier2": 16384,
+          "tier3": 512
+        }
+      },
+      "cran": {
+        "ipOffset": 5,
+        "diskSize": {
+          "tier2": 512,
+          "tier3": 256
+        }
+      }
     }
   },
   "sre": {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
-    "Id": "sandbox",
+    "id": "sandbox",
     "shortName": "sre-sandbox",
     "location": "uksouth",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
-    "mirrors": {
-      "vnet": {
-        "Name": "VNET_SHM_TESTA_PKG_MIRRORS_TIER2"
-      },
-      "cran": {
-        "ip": "10.20.2.21"
-      },
-      "pypi": {
-        "ip": "10.20.2.20"
-      }
-    },
     "domain": {
       "fqdn": "sandbox.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
-          "Name": "SG SANDBOX Server Administrators",
-          "description": null
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
         "researchUsers": {
-          "Name": "SG SANDBOX Research Users",
-          "description": null
+          "name": "SG SANDBOX Research Users",
+          "description": "SG SANDBOX Research Users"
         }
       }
     },
     "network": {
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
-        "Name": "VNET_SRE_SANDBOX",
+        "name": "VNET_SRE_SANDBOX",
         "cidr": "10.150.0.0/21"
       },
       "subnets": {
         "identity": {
-          "Name": "IdentitySubnet",
+          "name": "IdentitySubnet",
           "prefix": "10.150.0",
           "cidr": "10.150.0.0/24"
         },
         "rds": {
-          "Name": "RDSSubnet",
+          "name": "RDSSubnet",
           "prefix": "10.150.1",
           "cidr": "10.150.1.0/24"
         },
         "data": {
-          "Name": "SharedDataSubnet",
+          "name": "SharedDataSubnet",
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
         "gateway": {
-          "Name": "GatewaySubnet",
+          "name": "GatewaySubnet",
           "prefix": "10.150.7",
           "cidr": "10.150.7.0/27"
         }
       },
       "nsg": {
-        "data": {
-          "rg": "RG_SRE_WEBAPPS",
-          "Name": "NSG_SRE_WEBAPPS"
-        }
+        "data": {}
       }
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sresandboxartifactszvmwt"
+        "accountName": "sreartifactszvmwtqkigrld"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "srebootdiagszvmwtqkigrld"
       }
     },
     "keyVault": {
-      "Name": "kv-testa-sre-sandbox",
+      "name": "kv-testa-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "dcAdminPassword": "sre-sandbox-dc-admin-password",
@@ -202,6 +210,7 @@
     },
     "dc": {
       "rg": "RG_SRE_DC",
+      "nsg": "NSG_SRE_SANDBOX_IDENTITY",
       "vmName": "DC-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC-SRE-SANDBOX",
@@ -211,29 +220,35 @@
     "users": {
       "ldap": {
         "gitlab": {
-          "Name": "SANDBOX Gitlab LDAP",
+          "name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox"
         },
         "hackmd": {
-          "Name": "SANDBOX HackMD LDAP",
+          "name": "SANDBOX HackMD LDAP",
           "samAccountName": "hackmdldapsandbox"
         },
         "dsvm": {
-          "Name": "SANDBOX DSVM LDAP",
+          "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
         }
       },
       "researchers": {
         "test": {
-          "Name": "SANDBOX Test Researcher",
+          "name": "SANDBOX Test Researcher",
           "samAccountName": "testresrchsandbox"
         }
       }
     },
     "rds": {
+      "rg": "RG_SRE_RDS",
       "gateway": {
         "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
+        "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
+        "networkRules": {
+          "allowedSources": "Internet",
+          "outboundInternet": "Deny"
+        },
         "hostname": "RDG-SRE-SANDBOX",
         "fqdn": "RDG-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.250",
@@ -242,6 +257,7 @@
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.249"
@@ -249,31 +265,27 @@
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_D4s_v3",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
         "ip": "10.150.1.248"
-      },
-      "rg": "RG_SRE_RDS",
-      "nsg": {
-        "gateway": {
-          "Name": "NSG_RDS-DSGsandbox_Server",
-          "allowedSources": "Internet",
-          "outboundInternet": "Deny"
-        }
       }
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
-      "vmName": "DSV-SRE-SANDBOX",
-      "vmSize": "Standard_DS2_v2",
-      "hostname": "DSV-SRE-SANDBOX",
-      "fqdn": "DSV-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+      "nsg": "NSG_SRE_SANDBOX_DATA",
+      "vmName": "DAT-SRE-SANDBOX",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "DAT-SRE-SANDBOX",
+      "fqdn": "DAT-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
       "ip": "10.150.2.250"
     },
-    "linux": {
+    "webapps": {
+      "rg": "RG_SRE_WEBAPPS",
+      "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
+        "vmSize": "Standard_DS3_v2",
         "hostname": "GITLAB-SRE-SANDBOX",
         "fqdn": "GITLAB-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
         "ip": "10.150.2.151"
@@ -284,13 +296,15 @@
         "hostname": "HACKMD-SRE-SANDBOX",
         "fqdn": "HACKMD-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
         "ip": "10.150.2.152"
-      },
-      "rg": "RG_SRE_WEBAPPS",
-      "nsg": "NSG_SRE_WEBAPPS"
+      }
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
+      "nsg": "NSG_SRE_SANDBOX_COMPUTE",
+      "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "vmImageSubscription": "Turing Safe Haven VM Images",
+      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
+      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_B2ms",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019082900",
@@ -307,9 +321,16 @@
         "size_gb": "128"
       }
     },
-    "bootdiagnostics": {
-      "rg": "RG_SRE_ARTIFACTS",
-      "accountName": "sresandboxbootdiagszvmwt"
+    "mirrors": {
+      "vnet": {
+        "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
     }
   }
 }
