@@ -28,29 +28,26 @@
   - `OpenSSL`
     - Install using your package manager of choice
 
-
-  ### Access to required Safe Haven Management resources
-
   ### Download a client VPN certificate for the Safe Haven Management VNet
-    - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`.
-    - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-    - Click on the certificate named `shm-<shm-id>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
-    - To install, double click on the downloaded certificate, leaving the password field blank.
-    - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
-    -  This certificate will also allow you to connect via VPN to the SRE VNets once deployed.
+  - Navigate to the Safe Haven Management (SHM) KeyVault in the Safe Haven Management subscription via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`.
+  - Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
+  - Click on the certificate named `shm-<shm-id>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+  - To install, double click on the downloaded certificate, leaving the password field blank.
+  - **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
+  -  This certificate will also allow you to connect via VPN to the SRE VNets once deployed.
 
-  - #### Configure a VPN connection to the Safe Haven Management VNet
-    - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-    - Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
-    - On Windows you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
-    - On Windows do not rename the vpn client as this will break it
-    - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
+  ### Configure a VPN connection to the Safe Haven Management VNet
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
+  - Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
+  - On Windows you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
+  - On Windows do not rename the vpn client as this will break it
+  - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
-      ![image1.png](images/media/image1.png)
+      ![Point-to-site connection](images/vpn/point_to_site.png)
 
-    - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is defined in the config file.
+  - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` is defined in the config file.
 
-  ### Access to required SRE resources
+  ### Ensure the required SRE resources can be accessed
   - Access to a new Azure subscription which the SRE will be deployed to
     - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
     - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
@@ -71,7 +68,6 @@
               ![Subdomain NS record](images/subdomain_ns_record.png)
 
   ### Deploying multiple SREs in parallel
-
   **NOTE:** You can only deploy to **one SRE at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
 
 
