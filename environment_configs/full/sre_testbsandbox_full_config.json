@@ -210,7 +210,7 @@
     },
     "dc": {
       "rg": "RG_SRE_DC",
-      "nsg": "NSG_RDS_SRE_SANDBOX_IDENTITY",
+      "nsg": "NSG_SRE_SANDBOX_IDENTITY",
       "vmName": "DC-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC-SRE-SANDBOX",
@@ -273,7 +273,7 @@
     },
     "dataserver": {
       "rg": "RG_SRE_DATA",
-      "nsg": "NSG_RDS_SRE_SANDBOX_DATA",
+      "nsg": "NSG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",

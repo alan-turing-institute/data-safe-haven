@@ -335,7 +335,7 @@ function Add-SreConfig {
     # --- Domain controller ---
     $config.sre.dc = [ordered]@{}
     $config.sre.dc.rg = "RG_SRE_DC"
-    $config.sre.dc.nsg = "NSG_RDS_SRE_$($config.sre.id)_IDENTITY".ToUpper()
+    $config.sre.dc.nsg = "NSG_SRE_$($config.sre.id)_IDENTITY".ToUpper()
     $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dc.vmSize = "Standard_DS2_v2"
     $config.sre.dc.hostname = $config.sre.dc.vmName
@@ -437,7 +437,7 @@ function Add-SreConfig {
     # Data server
     $config.sre.dataserver = [ordered]@{}
     $config.sre.dataserver.rg = "RG_SRE_DATA"
-    $config.sre.dataserver.nsg = "NSG_RDS_SRE_$($config.sre.id)_DATA".ToUpper()
+    $config.sre.dataserver.nsg = "NSG_SRE_$($config.sre.id)_DATA".ToUpper()
     $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
