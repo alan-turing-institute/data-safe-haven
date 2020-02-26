@@ -76,10 +76,11 @@ try {
     $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
 }
 $imageVersion = $image.Name
-# Set VM name including the image version
-$vmName = "DSVM-" + ($imageVersion).Replace(".","-").ToUpper() + "-SRE-" + ($config.sre.Id).ToUpper() + "-" + $ipLastOctet
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
 
+# Set VM name including the image version.
+# As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
+$vmName = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM-${imageVersion}".Replace(".","-").ToUpper()
 
 # Create DSVM resource group if it does not exist
 # ----------------------------------------------
@@ -229,7 +230,7 @@ while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("P
 
 # VM must be off for us to switch NSG, but we can restart after the switch
 # ------------------------------------------------------------------------
-Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)' at $(Get-Date -UFormat '%d-%b-%Y %R')..."
+Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
 Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
 $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
@@ -290,5 +291,4 @@ Write-Output $result.Value
 # Get private IP address for this machine
 # ---------------------------------------
 $privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
-Add-LogMessage -Level Info "Deployment complete at $(Get-Date -UFormat '%d-%b-%Y %R')"
-Add-LogMessage -Level Info "This new VM can be accessed with SSH or remote desktop at $privateIpAddress"
+Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed from the RDS at $privateIpAddress"
