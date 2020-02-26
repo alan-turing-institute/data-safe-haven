@@ -67,6 +67,29 @@ function Compare-NSGRules {
     }
 }
 
+
+function Test-OutboundConnection {
+    param (
+        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine] $VM,
+        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
+        [string] $DestinationAddress,
+        [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
+        [string] $DestinationPort
+    )
+    $networkWatcher = Get-AzNetworkWatcher | Where-Object -Property Location -EQ -Value $VM.Location
+    if (-Not $networkWatcher) {
+        $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
+    }
+    Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name "AzureNetworkWatcherExtension" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+    if ($NotInstalled) {
+        Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4"
+    }
+    return Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort
+}
+
+
+
 # Get original context before switching subscription
 # --------------------------------------------------
 $originalContext = Get-AzContext
@@ -77,13 +100,18 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $currentShmSubscription
 $currentShmVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
 Add-LogMessage -Level Info "Found $($currentShmVMs.Count) VMs in current subscription"
+foreach ($VM in $currentShmVMs) {
+    Add-LogMessage -Level Info ".. $($VM.Name)"
+}
 
 # Get VMs in new SHM
 # ------------------
 $_ = Set-AzContext -SubscriptionId $newShmSubscription
 $newShmVMs = Get-AzVM
 Add-LogMessage -Level Info "Found $($newShmVMs.Count) VMs in new subscription"
-
+foreach ($VM in $newShmVMs) {
+    Add-LogMessage -Level Info ".. $($VM.Name)"
+}
 
 # Create a hash table which maps current SHM VMs to new ones
 # ----------------------------------------------------------
@@ -95,27 +123,44 @@ foreach ($currentVM in $currentShmVMs) {
     $vmHashTable[$currentVM] = $newVM
 }
 
-# Iterate over paired VMs checking their effective NSG rules
-# ----------------------------------------------------------
+# Iterate over paired VMs checking their network settings
+# -------------------------------------------------------
 foreach ($currentVM in $currentShmVMs) {
     $newVM = $vmHashTable[$currentVM]
 
-    # Get existing rules
+    # Get parameters for current VM
+    # -----------------------------
     $_ = Set-AzContext -SubscriptionId $currentShmSubscription
+    # NSG rules
     $currentEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($currentVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $currentVM.ResourceGroupName
     $currentRules = $currentEffectiveNSG.EffectiveSecurityRules
+    # Internet out
+    $currentInternetCheck = Test-OutboundConnection -VM $currentVM -DestinationAddress "google.com" -DestinationPort 80
 
-    # Get new rules
+    # Get parameters for new VM
+    # -------------------------
     $_ = Set-AzContext -SubscriptionId $newShmSubscription
+    # NSG rules
     $newEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($newVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $newVM.ResourceGroupName
     $newRules = $newEffectiveNSG.EffectiveSecurityRules
+    # Internet out
+    $newInternetCheck = Test-OutboundConnection -VM $newVM -DestinationAddress "google.com" -DestinationPort 80
 
-    # Check that each NSG rules has a matching equivalent (which might be named differently)
+    # Check that each NSG rule has a matching equivalent (which might be named differently)
     Add-LogMessage -Level Info "Comparing NSG rules for $($currentVM.Name) and $($newVM.Name)"
     Add-LogMessage -Level Info "... ensuring that all $($currentVM.Name) rules exist on $($newVM.Name)"
     Compare-NSGRules -CurrentRules $currentRules -NewRules $newRules
     Add-LogMessage -Level Info "... ensuring that all $($newVM.Name) rules exist on $($currentVM.Name)"
     Compare-NSGRules -CurrentRules $newRules -NewRules $currentRules
+
+    # Check that internet connectivity is the same for matched VMs
+    Add-LogMessage -Level Info "Comparing internet connectivity for $($currentVM.Name) and $($newVM.Name)..."
+    if ($currentInternetCheck.ConnectionStatus -eq $newInternetCheck.ConnectionStatus) {
+        Add-LogMessage -Level Success "... the internet is '$($currentInternetCheck.ConnectionStatus)' from both"
+    } else {
+        Add-LogMessage -Level Failure "... the internet is '$($currentInternetCheck.ConnectionStatus)' from $($currentVM.Name)"
+        Add-LogMessage -Level Failure "... the internet is '$($newInternetCheck.ConnectionStatus)' from $($newVM.Name)"
+    }
 }
 
 
