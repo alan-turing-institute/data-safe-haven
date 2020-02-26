@@ -1,9 +1,9 @@
 # You will need `Install-Package Communary.PASM`
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Name of the current SHM subscription")]
-    [string]$currentShmSubscription,
-    [Parameter(Mandatory = $true, HelpMessage = "Name of the new SHM subscription")]
-    [string]$newShmSubscription,
+    [Parameter(Mandatory = $true, HelpMessage = "Name of the current (working) subscription")]
+    [string]$currentSubscription,
+    [Parameter(Mandatory = $true, HelpMessage = "Name of the new (proposed) subscription")]
+    [string]$newSubscription,
     [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
     [switch]$VerboseLogging = $false
 )
@@ -97,18 +97,18 @@ $originalContext = Get-AzContext
 
 # Get VMs in current SHM
 # ----------------------
-$_ = Set-AzContext -SubscriptionId $currentShmSubscription
+$_ = Set-AzContext -SubscriptionId $currentSubscription
 $currentShmVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
-Add-LogMessage -Level Info "Found $($currentShmVMs.Count) VMs in current subscription"
+Add-LogMessage -Level Info "Found $($currentShmVMs.Count) VMs in current subscription: '$currentSubscription'"
 foreach ($VM in $currentShmVMs) {
     Add-LogMessage -Level Info ".. $($VM.Name)"
 }
 
 # Get VMs in new SHM
 # ------------------
-$_ = Set-AzContext -SubscriptionId $newShmSubscription
+$_ = Set-AzContext -SubscriptionId $newSubscription
 $newShmVMs = Get-AzVM
-Add-LogMessage -Level Info "Found $($newShmVMs.Count) VMs in new subscription"
+Add-LogMessage -Level Info "Found $($newShmVMs.Count) VMs in new subscription: '$newSubscription'"
 foreach ($VM in $newShmVMs) {
     Add-LogMessage -Level Info ".. $($VM.Name)"
 }
@@ -130,7 +130,7 @@ foreach ($currentVM in $currentShmVMs) {
 
     # Get parameters for current VM
     # -----------------------------
-    $_ = Set-AzContext -SubscriptionId $currentShmSubscription
+    $_ = Set-AzContext -SubscriptionId $currentSubscription
     # NSG rules
     $currentEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($currentVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $currentVM.ResourceGroupName
     $currentRules = $currentEffectiveNSG.EffectiveSecurityRules
@@ -139,7 +139,7 @@ foreach ($currentVM in $currentShmVMs) {
 
     # Get parameters for new VM
     # -------------------------
-    $_ = Set-AzContext -SubscriptionId $newShmSubscription
+    $_ = Set-AzContext -SubscriptionId $newSubscription
     # NSG rules
     $newEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($newVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $newVM.ResourceGroupName
     $newRules = $newEffectiveNSG.EffectiveSecurityRules
@@ -162,7 +162,6 @@ foreach ($currentVM in $currentShmVMs) {
         Add-LogMessage -Level Failure "... the internet is '$($newInternetCheck.ConnectionStatus)' from $($newVM.Name)"
     }
 }
-
 
 
 # Switch back to original subscription
