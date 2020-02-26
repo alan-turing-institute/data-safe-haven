@@ -24,8 +24,10 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$vnetName = $config.sre.network.vnet.Name
 $subnetName = $config.sre.network.subnets.data.Name
+$vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
+$vnetName = $config.sre.network.vnet.Name
+if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
 # Retrieve passwords from the keyvault
@@ -74,6 +76,8 @@ try {
     $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
 }
 $imageVersion = $image.Name
+# Set VM name including the image version
+$vmName = "DSVM-" + ($imageVersion).Replace(".","-").ToUpper() + "-SRE-" + ($config.sre.Id).ToUpper() + "-" + $ipLastOctet
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
 
 
@@ -184,15 +188,6 @@ $PYPI_MIRROR_URL = $addresses.pypi.url
 $PYPI_MIRROR_HOST = $addresses.pypi.host
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
 
-
-# Get some default VM names
-# -------------------------
-# Set default VM size if no argument is provided
-if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
-# Set IP address using last IP octet
-$vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
-# Set machine name using last IP octet
-$vmName = "DSVM-" + ($imageVersion).Replace(".","-").ToUpper() + "-SRE-" + ($config.sre.Id).ToUpper() + "-" + $ipLastOctet
 
 # Deploy NIC and data disks
 # -------------------------
