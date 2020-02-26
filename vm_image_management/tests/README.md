@@ -33,7 +33,9 @@ Rscript test_package_installation.R
 The installation check will take several minutes to run.
 
 There are a few known packages that will cause warnings and errors during this test.
+- `BiocManager`: False positive - warning about not being able to connect to the internet
 - `clusterProfiler`: Error is `multiple methods tables found for ‘toTable’`. Not yet understood
+- `flowUtils`: False positive - warning about string translations
 - `GOSemSim`: False positive - no warning on package load
 - `graphite`: False positive - no warning on package load
 - `rgl`: Error is because the X11 server could not be loaded

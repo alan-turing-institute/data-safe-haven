@@ -5,9 +5,10 @@ R_packages () {
     if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
         conda deactivate
     fi
-    OUTPUT=$(Rscript test_R_package_installation.R 2>&1)
+    # Suppress a known spurious warning about database connections from BiocManager
+    OUTPUT=$(Rscript test_R_package_installation.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()")
     echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    KNOWN_ISSUES=("clusterProfiler" "GOSemSim" "graphite" "rgl" "tmap")
+    KNOWN_ISSUES=("BiocManager" "clusterProfiler" "flowUtils" "GOSemSim" "graphite" "rgl" "tmap")
     PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
     OUTCOME=0
     for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
