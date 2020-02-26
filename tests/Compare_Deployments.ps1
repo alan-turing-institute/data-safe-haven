@@ -56,6 +56,11 @@ function Compare-NSGRules {
         } else {
             Add-LogMessage -Level Error "Could not find matching rule for $($currentRule.Name)"
             $unmatched += $currentRule.Name
+            Write-Host "currentRule: $($currentRule | Out-String)"
+            foreach ($newRule in $NewRules) {
+                Write-Host "    newRule: $($newRule | Out-String)"
+            }
+
         }
     }
 
@@ -81,13 +86,66 @@ function Test-OutboundConnection {
     if (-Not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
-    Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Name "AzureNetworkWatcherExtension" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
-    if ($NotInstalled) {
-        Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4"
+    $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq "Microsoft.Azure.NetworkWatcher" }
+    if (-Not $networkWatcherExtension) {
+        Add-LogMessage -Level Info "... attempting to register the AzureNetworkWatcherExtension on $($VM.Name). This may take some time."
+        $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+        if ($NotInstalled) {
+            return "Unknown"
+        }
     }
-    return Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort
+    Add-LogMessage -Level Info "... testing connectivity"
+    $networkCheck = Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
+    if ($NotAvailable) {
+        return "Unknown"
+    } else {
+        return $networkCheck.ConnectionStatus
+    }
 }
 
+function Get-NSGRules {
+    param (
+        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
+        [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine] $VM
+    )
+    $effectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($VM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $VM.ResourceGroupName -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
+    if ($NotAvailable) {
+        # Not able to get effective rules so we'll construct them by hand
+        # Get rules from NSG directly attached to the NIC
+        $nic = Get-AzNetworkInterface | Where-Object { $_.Id -eq $VM.NetworkProfile.NetworkInterfaces.Id }
+        $directRules = $nic.NetworkSecurityGroup.SecurityRules + $nic.NetworkSecurityGroup.DefaultSecurityRules
+        # Get rules from NSG attached to the subnet
+        $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Subnets.Id -eq $nic.IpConfigurations.Subnet.Id }
+        $effectiveRules = @()
+        # Convert each PSSecurityRule into a PSEffectiveSecurityRule
+        foreach ($rule in ($directRules + $nsg.SecurityRules + $nsg.DefaultSecurityRules)) {
+            $effectiveRule = [Microsoft.Azure.Commands.Network.Models.PSEffectiveSecurityRule]::new()
+            $effectiveRule.Name = $rule.Name
+            $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
+            # Source port range
+            $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
+            if ($rule.SourcePortRange[0] -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535") }
+            # elseif ($rule.SourcePortRange.Count -eq "1") { $effectiveRule.SourcePortRange.Add("$($rule.SourcePortRange[0])-$($rule.SourcePortRange[0])") }
+            elseif (-Not $rule.SourcePortRange.Contains("-")) { $effectiveRule.SourcePortRange.Add("$($rule.SourcePortRange[0])-$($rule.SourcePortRange[0])") }
+            else { $effectiveRule.SourcePortRange = $rule.SourcePortRange }
+            # Destination port range
+            $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
+            if ($rule.DestinationPortRange[0] -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535") }
+            # elseif ($rule.DestinationPortRange.Count -eq "1") { $effectiveRule.DestinationPortRange.Add("$($rule.DestinationPortRange[0])-$($rule.DestinationPortRange[0])") }
+            elseif (-Not $rule.DestinationPortRange.Contains("-")) { $effectiveRule.DestinationPortRange.Add("$($rule.DestinationPortRange[0])-$($rule.DestinationPortRange[0])") }
+            else { $effectiveRule.DestinationPortRange = $rule.DestinationPortRange }
+            $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix
+            $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix
+            $effectiveRule.Access = $rule.Access
+            $effectiveRule.Priority = $rule.Priority
+            $effectiveRule.Direction = $rule.Direction
+            $effectiveRules = $effectiveRules + $effectiveRule
+        }
+        return $effectiveRules
+    } else {
+        return $effectiveNSG.EffectiveSecurityRules
+    }
+}
 
 
 # Get original context before switching subscription
@@ -116,11 +174,16 @@ foreach ($VM in $newShmVMs) {
 # Create a hash table which maps current SHM VMs to new ones
 # ----------------------------------------------------------
 $vmHashTable = @{}
-$newShmVMNames = $newShmVMs | ForEach-Object { $_.Name }
-
 foreach ($currentVM in $currentShmVMs) {
-    $newVM = $newShmVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $newShmVMNames -Value $currentVM.Name) }
+    $nameToCheck = $currentVM.Name
+    # Override matches for names that would otherwise fail
+    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE")}
+    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE")}
+    # Only match against names that have not been matched yet
+    $newShmVMNames = $newShmVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
+    $newVM = $newShmVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $newShmVMNames -Value $nameToCheck) }
     $vmHashTable[$currentVM] = $newVM
+    Add-LogMessage -Level Info "matched $($currentVM.Name) => $($newVM.Name)"
 }
 
 # Iterate over paired VMs checking their network settings
@@ -131,19 +194,15 @@ foreach ($currentVM in $currentShmVMs) {
     # Get parameters for current VM
     # -----------------------------
     $_ = Set-AzContext -SubscriptionId $currentSubscription
-    # NSG rules
-    $currentEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($currentVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $currentVM.ResourceGroupName
-    $currentRules = $currentEffectiveNSG.EffectiveSecurityRules
-    # Internet out
+    Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($currentVM.Name)"
+    $currentRules = Get-NSGRules -VM $currentVM
     $currentInternetCheck = Test-OutboundConnection -VM $currentVM -DestinationAddress "google.com" -DestinationPort 80
 
     # Get parameters for new VM
     # -------------------------
     $_ = Set-AzContext -SubscriptionId $newSubscription
-    # NSG rules
-    $newEffectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($newVM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $newVM.ResourceGroupName
-    $newRules = $newEffectiveNSG.EffectiveSecurityRules
-    # Internet out
+    Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($newVM.Name)"
+    $newRules = Get-NSGRules -VM $newVM
     $newInternetCheck = Test-OutboundConnection -VM $newVM -DestinationAddress "google.com" -DestinationPort 80
 
     # Check that each NSG rule has a matching equivalent (which might be named differently)
@@ -155,11 +214,11 @@ foreach ($currentVM in $currentShmVMs) {
 
     # Check that internet connectivity is the same for matched VMs
     Add-LogMessage -Level Info "Comparing internet connectivity for $($currentVM.Name) and $($newVM.Name)..."
-    if ($currentInternetCheck.ConnectionStatus -eq $newInternetCheck.ConnectionStatus) {
-        Add-LogMessage -Level Success "... the internet is '$($currentInternetCheck.ConnectionStatus)' from both"
+    if ($currentInternetCheck -eq $newInternetCheck) {
+        Add-LogMessage -Level Success "... the internet is '$($currentInternetCheck)' from both"
     } else {
-        Add-LogMessage -Level Failure "... the internet is '$($currentInternetCheck.ConnectionStatus)' from $($currentVM.Name)"
-        Add-LogMessage -Level Failure "... the internet is '$($newInternetCheck.ConnectionStatus)' from $($newVM.Name)"
+        Add-LogMessage -Level Failure "... the internet is '$($currentInternetCheck)' from $($currentVM.Name)"
+        Add-LogMessage -Level Failure "... the internet is '$($newInternetCheck)' from $($newVM.Name)"
     }
 }
 
