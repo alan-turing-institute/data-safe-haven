@@ -116,7 +116,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `
                              -Priority 3000 `
-                             -Direction Inbound -Access Deny -Protocol TCP `
+                             -Direction Inbound -Access Deny -Protocol * `
                              -SourceAddressPrefix * -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
