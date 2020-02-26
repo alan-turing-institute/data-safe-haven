@@ -170,6 +170,8 @@ runcmd:
   # *** END OF SRE-SPECIFIC COMMANDS ***
   # ==========================================
   - echo ">=== Beginning DSVM configuration... ===<"
+  # Set default keyboard to en-GB
+  - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
   # Copy CRAN mirror config to appropriate locations
   - echo ">=== Updating CRAN mirror config... ===<"
   - cp /Rprofile.site /etc/R/Rprofile.site

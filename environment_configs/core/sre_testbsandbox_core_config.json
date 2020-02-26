@@ -10,5 +10,5 @@
     "rdsAllowedSources": "Internet",
     "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.1.2019082900"
+    "computeVmImageVersion": "0.1.2019122000"
 }

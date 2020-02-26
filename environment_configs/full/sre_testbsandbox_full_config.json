@@ -307,7 +307,7 @@
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_B2ms",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019082900",
+      "vmImageVersion": "0.1.2019122000",
       "osdisk": {
         "type": "Standard_LRS",
         "size_gb": "60"
