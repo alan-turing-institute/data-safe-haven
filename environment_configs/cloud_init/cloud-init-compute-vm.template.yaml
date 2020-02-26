@@ -18,11 +18,11 @@ write_files:
       # The distinguished name of the search base.
       base $LDAP_BASE_DN
 
-      # Restrict users to those in the security group of this RSE
+      # Restrict users to those in the security group of this SRE
       filter $LDAP_FILTER
 
       # Another way to specify your LDAP server is to provide a URI
-      uri ldap://$AD_DC_NAME_UPPER.$DOMAIN_LOWER:389
+      uri ldap://${AD_DC_NAME_UPPER}.${DOMAIN_LOWER}:389
 
       # The LDAP version to use (defaults to 3
       # if supported by client library)

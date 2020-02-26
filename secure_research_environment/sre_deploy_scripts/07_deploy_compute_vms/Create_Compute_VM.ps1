@@ -175,9 +175,9 @@ $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 # Set template expansion variables
 $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
 $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
-$DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
+$DOMAIN_LOWER = $DOMAIN_UPPER.ToLower()
 $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
-$AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
+$AD_DC_NAME_LOWER = $AD_DC_NAME_UPPER.ToLower()
 $ADMIN_USERNAME = $dsvmAdminUsername
 $MACHINE_NAME = $vmName
 $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
@@ -228,11 +228,21 @@ while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("P
 }
 
 
-# VM must be off for us to switch NSG, but we can restart after the switch
-# ------------------------------------------------------------------------
+# VM must be off for us to switch NSG
+# -----------------------------------
 Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
 Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
+
+
+# Restart after the NSG switch
+# ----------------------------
+Add-LogMessage -Level Info "Rebooting $vmName..."
 $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+if ($?) {
+    Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
+}
 
 
 # Create Postgres roles
