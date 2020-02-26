@@ -32,8 +32,8 @@ function Compare-NSGRules {
     )
     $nMatched = 0
     $unmatched = @()
-    $matchFound = $false
     foreach ($currentRule in $CurrentRules) {
+        $matchFound = $false
         foreach ($newRule in $NewRules) {
             if (
                 ($currentRule.Protocol -eq $newRule.Protocol) -and
@@ -56,11 +56,10 @@ function Compare-NSGRules {
         } else {
             Add-LogMessage -Level Error "Could not find matching rule for $($currentRule.Name)"
             $unmatched += $currentRule.Name
-            Write-Host "currentRule: $($currentRule | Out-String)"
-            foreach ($newRule in $NewRules) {
-                Write-Host "    newRule: $($newRule | Out-String)"
-            }
-
+            Add-LogMessage -Level Error "Existing rule:"
+            $currentRule | Out-String
+            Add-LogMessage -Level Error "New rule (if any) with same priority:"
+            $NewRules | Where-Object { ($_.Priority -eq $currentRule.Priority) -and ($_.Direction -eq $currentRule.Direction) } | Out-String
         }
     }
 
@@ -124,18 +123,32 @@ function Get-NSGRules {
             $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
             # Source port range
             $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
-            if ($rule.SourcePortRange[0] -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535") }
-            # elseif ($rule.SourcePortRange.Count -eq "1") { $effectiveRule.SourcePortRange.Add("$($rule.SourcePortRange[0])-$($rule.SourcePortRange[0])") }
-            elseif (-Not $rule.SourcePortRange.Contains("-")) { $effectiveRule.SourcePortRange.Add("$($rule.SourcePortRange[0])-$($rule.SourcePortRange[0])") }
-            else { $effectiveRule.SourcePortRange = $rule.SourcePortRange }
+            if ($rule.SourcePortRange[0] -eq "*") {
+                $effectiveRule.SourcePortRange.Add("0-65535")
+            } else {
+                foreach ($port in $rule.SourcePortRange) {
+                    if ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
+                    else { $effectiveRule.SourcePortRange.Add("$port-$port") }
+                }
+            }
             # Destination port range
             $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
-            if ($rule.DestinationPortRange[0] -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535") }
-            # elseif ($rule.DestinationPortRange.Count -eq "1") { $effectiveRule.DestinationPortRange.Add("$($rule.DestinationPortRange[0])-$($rule.DestinationPortRange[0])") }
-            elseif (-Not $rule.DestinationPortRange.Contains("-")) { $effectiveRule.DestinationPortRange.Add("$($rule.DestinationPortRange[0])-$($rule.DestinationPortRange[0])") }
-            else { $effectiveRule.DestinationPortRange = $rule.DestinationPortRange }
-            $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix
-            $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix
+            if ($rule.DestinationPortRange[0] -eq "*") {
+                $effectiveRule.DestinationPortRange.Add("0-65535")
+            } else {
+                foreach ($port in $rule.DestinationPortRange) {
+                    if ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
+                    else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
+                }
+            }
+            # Source address prefix
+            $effectiveRule.SourceAddressPrefix = New-Object System.Collections.Generic.List[string]
+            if ($rule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*") }
+            else { $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix }
+            # Destination address prefix
+            $effectiveRule.DestinationAddressPrefix = New-Object System.Collections.Generic.List[string]
+            if ($rule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*") }
+            else { $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix }
             $effectiveRule.Access = $rule.Access
             $effectiveRule.Priority = $rule.Priority
             $effectiveRule.Direction = $rule.Direction
@@ -143,7 +156,12 @@ function Get-NSGRules {
         }
         return $effectiveRules
     } else {
-        return $effectiveNSG.EffectiveSecurityRules
+        $effectiveRules = $effectiveNSG.EffectiveSecurityRules
+        foreach ($effectiveRule in $effectiveRules) {
+            if ($effectiveRule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Clear(); $effectiveRule.SourceAddressPrefix.Add("*") }
+            if ($effectiveRule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Clear(); $effectiveRule.DestinationAddressPrefix.Add("*") }
+        }
+        return $effectiveRules
     }
 }
 
@@ -159,7 +177,7 @@ $_ = Set-AzContext -SubscriptionId $currentSubscription
 $currentShmVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
 Add-LogMessage -Level Info "Found $($currentShmVMs.Count) VMs in current subscription: '$currentSubscription'"
 foreach ($VM in $currentShmVMs) {
-    Add-LogMessage -Level Info ".. $($VM.Name)"
+    Add-LogMessage -Level Info "... $($VM.Name)"
 }
 
 # Get VMs in new SHM
@@ -168,7 +186,7 @@ $_ = Set-AzContext -SubscriptionId $newSubscription
 $newShmVMs = Get-AzVM
 Add-LogMessage -Level Info "Found $($newShmVMs.Count) VMs in new subscription: '$newSubscription'"
 foreach ($VM in $newShmVMs) {
-    Add-LogMessage -Level Info ".. $($VM.Name)"
+    Add-LogMessage -Level Info "... $($VM.Name)"
 }
 
 # Create a hash table which maps current SHM VMs to new ones
@@ -177,8 +195,10 @@ $vmHashTable = @{}
 foreach ($currentVM in $currentShmVMs) {
     $nameToCheck = $currentVM.Name
     # Override matches for names that would otherwise fail
-    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE")}
-    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE")}
+    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE") }
+    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE") }
+    if ($nameToCheck.StartsWith("CRAN-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
+    if ($nameToCheck.StartsWith("PYPI-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
     # Only match against names that have not been matched yet
     $newShmVMNames = $newShmVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
     $newVM = $newShmVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $newShmVMNames -Value $nameToCheck) }
@@ -215,10 +235,10 @@ foreach ($currentVM in $currentShmVMs) {
     # Check that internet connectivity is the same for matched VMs
     Add-LogMessage -Level Info "Comparing internet connectivity for $($currentVM.Name) and $($newVM.Name)..."
     if ($currentInternetCheck -eq $newInternetCheck) {
-        Add-LogMessage -Level Success "... the internet is '$($currentInternetCheck)' from both"
+        Add-LogMessage -Level Success "The internet is '$($currentInternetCheck)' from both"
     } else {
-        Add-LogMessage -Level Failure "... the internet is '$($currentInternetCheck)' from $($currentVM.Name)"
-        Add-LogMessage -Level Failure "... the internet is '$($newInternetCheck)' from $($newVM.Name)"
+        Add-LogMessage -Level Failure "The internet is '$($currentInternetCheck)' from $($currentVM.Name)"
+        Add-LogMessage -Level Failure "The internet is '$($newInternetCheck)' from $($newVM.Name)"
     }
 }
 
