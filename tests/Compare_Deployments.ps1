@@ -56,9 +56,8 @@ function Compare-NSGRules {
         } else {
             Add-LogMessage -Level Error "Could not find matching rule for $($currentRule.Name)"
             $unmatched += $currentRule.Name
-            Add-LogMessage -Level Error "Existing rule:"
             $currentRule | Out-String
-            Add-LogMessage -Level Error "New rule (if any) with same priority:"
+            Add-LogMessage -Level Error "Closest match:"
             $NewRules | Where-Object { ($_.Priority -eq $currentRule.Priority) -and ($_.Direction -eq $currentRule.Direction) } | Out-String
         }
     }
@@ -85,17 +84,21 @@ function Test-OutboundConnection {
     if (-Not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
-    $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { $_.Publisher -eq "Microsoft.Azure.NetworkWatcher" }
+    $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { ($_.Publisher -eq "Microsoft.Azure.NetworkWatcher") -and ($_.ProvisioningState -eq "Succeeded") }
     if (-Not $networkWatcherExtension) {
-        Add-LogMessage -Level Info "... attempting to register the AzureNetworkWatcherExtension on $($VM.Name). This may take some time."
+        Add-LogMessage -Level Info "... attempting to register the Azure NetworkWatcher extension on $($VM.Name). This may take some time."
         $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
         if ($NotInstalled) {
+            Add-LogMessage -Level Warning "Unable to register extension for $($VM.Name)"
+            Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4"
             return "Unknown"
         }
     }
     Add-LogMessage -Level Info "... testing connectivity"
     $networkCheck = Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
     if ($NotAvailable) {
+        Add-LogMessage -Level Warning "Unable to test connection for $($VM.Name)"
+        Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort
         return "Unknown"
     } else {
         return $networkCheck.ConnectionStatus
@@ -110,45 +113,70 @@ function Get-NSGRules {
     $effectiveNSG = Get-AzEffectiveNetworkSecurityGroup -NetworkInterfaceName ($VM.NetworkProfile.NetworkInterfaces.Id -Split '/')[-1] -ResourceGroupName $VM.ResourceGroupName -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
     if ($NotAvailable) {
         # Not able to get effective rules so we'll construct them by hand
+        $rules = @()
         # Get rules from NSG directly attached to the NIC
         $nic = Get-AzNetworkInterface | Where-Object { $_.Id -eq $VM.NetworkProfile.NetworkInterfaces.Id }
-        $directRules = $nic.NetworkSecurityGroup.SecurityRules + $nic.NetworkSecurityGroup.DefaultSecurityRules
+        $directNsgs = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $nic.NetworkSecurityGroup.Id }
+        foreach ($directNsg in $directNsgs) {
+            $rules = $rules + $directNsg.SecurityRules + $directNsg.DefaultSecurityRules
+        }
         # Get rules from NSG attached to the subnet
-        $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Subnets.Id -eq $nic.IpConfigurations.Subnet.Id }
+        $subnetNsgs = Get-AzNetworkSecurityGroup | Where-Object { $_.Subnets.Id -eq $nic.IpConfigurations.Subnet.Id }
+        foreach ($subnetNsg in $subnetNsgs) {
+            $rules = $rules + $subnetNsg.SecurityRules + $subnetNsg.DefaultSecurityRules
+        }
         $effectiveRules = @()
         # Convert each PSSecurityRule into a PSEffectiveSecurityRule
-        foreach ($rule in ($directRules + $nsg.SecurityRules + $nsg.DefaultSecurityRules)) {
+        foreach ($rule in $rules) {
             $effectiveRule = [Microsoft.Azure.Commands.Network.Models.PSEffectiveSecurityRule]::new()
             $effectiveRule.Name = $rule.Name
             $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
             # Source port range
             $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
-            if ($rule.SourcePortRange[0] -eq "*") {
-                $effectiveRule.SourcePortRange.Add("0-65535")
-            } else {
-                foreach ($port in $rule.SourcePortRange) {
-                    if ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
-                    else { $effectiveRule.SourcePortRange.Add("$port-$port") }
-                }
+            # if (($rule.SourcePortRange.Count -eq 1) -and ($rule.SourcePortRange[0] -eq "*")) {
+            #     $effectiveRule.SourcePortRange.Add("0-65535")
+            # } else {
+            #     foreach ($port in $rule.SourcePortRange) {
+            #         if ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
+            #         else { $effectiveRule.SourcePortRange.Add("$port-$port") }
+            #     }
+            # }
+            foreach ($port in $rule.SourcePortRange) {
+                if ($port -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535"); break }
+                elseif ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
+                else { $effectiveRule.SourcePortRange.Add("$port-$port") }
             }
             # Destination port range
             $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
-            if ($rule.DestinationPortRange[0] -eq "*") {
-                $effectiveRule.DestinationPortRange.Add("0-65535")
-            } else {
-                foreach ($port in $rule.DestinationPortRange) {
-                    if ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
-                    else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
-                }
+            # if (($rule.DestinationPortRange.Count -eq 1) -and ($rule.DestinationPortRange[0] -eq "*")) {
+            #         $effectiveRule.DestinationPortRange.Add("0-65535")
+            # } else {
+            #     foreach ($port in $rule.DestinationPortRange) {
+            #         if ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
+            #         else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
+            #     }
+            # }
+            foreach ($port in $rule.DestinationPortRange) {
+                if ($port -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535"); break }
+                elseif ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
+                else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
             }
             # Source address prefix
             $effectiveRule.SourceAddressPrefix = New-Object System.Collections.Generic.List[string]
-            if ($rule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*") }
-            else { $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix }
+            # if ($rule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*") }
+            # else { $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix }
+            foreach ($prefix in $rule.SourceAddressPrefix) {
+                if ($prefix -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*"); break }
+                else { $effectiveRule.SourceAddressPrefix.Add($rule.SourceAddressPrefix) }
+            }
             # Destination address prefix
             $effectiveRule.DestinationAddressPrefix = New-Object System.Collections.Generic.List[string]
-            if ($rule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*") }
-            else { $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix }
+            # if ($rule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*") }
+            # else { $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix }
+            foreach ($prefix in $rule.DestinationAddressPrefix) {
+                if ($prefix -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*"); break }
+                else { $effectiveRule.DestinationAddressPrefix.Add($rule.DestinationAddressPrefix) }
+            }
             $effectiveRule.Access = $rule.Access
             $effectiveRule.Priority = $rule.Priority
             $effectiveRule.Direction = $rule.Direction
