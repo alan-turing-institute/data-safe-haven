@@ -66,14 +66,14 @@ $sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -Resource
 # -------------------------------------------------
 $nsgGateway = Deploy-NetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "HTTPS_In" `
+                             -Name "HttpsIn" `
                              -Description "Allow HTTPS inbound to RDS server" `
                              -Priority 100 `
                              -Direction Inbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix Internet -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange 443
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
-                             -Name "RADIUS_Authentication_RDS_to_NPS" `
+                             -Name "RadiusAuthenticationRdsToNps" `
                              -Description "Authenticate to SHM RADIUS server" `
                              -Priority 300 `
                              -Direction Outbound -Access Allow -Protocol * `

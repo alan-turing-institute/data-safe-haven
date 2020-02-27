@@ -39,9 +39,13 @@ function Add-NetworkSecurityGroupRule {
                                              -Name "$Name" `
                                              -Description "$Description" `
                                              -Priority $Priority `
-                                             -Direction "$Direction" -Access "$Access" -Protocol "$Protocol" `
-                                             -SourceAddressPrefix $SourceAddressPrefix -SourcePortRange $SourcePortRange `
-                                             -DestinationAddressPrefix $DestinationAddressPrefix -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+                                             -Direction "$Direction" `
+                                             -Access "$Access" `
+                                             -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix `
+                                             -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix `
+                                             -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
         if ($?) {
             if ($VerboseLogging) { Add-LogMessage -Level Success "Created NSG rule '$Name'" }
         } else {
@@ -559,39 +563,6 @@ function Invoke-WindowsConfigureAndUpdate {
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 
 
-# Set key vault permissions to the group and remove the user who deployed it
-# --------------------------------------------------------------------------
-function Set-KeyVaultPermissions {
-    param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
-        $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
-        $GroupName
-    )
-    Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
-    try {
-        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
-    } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
-        Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
-    }
-    Set-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $securityGroupId `
-                               -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
-                               -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
-                               -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
-    $success = $?
-    foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
-        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
-        $success = $success -and $?
-    }
-    if ($success) {
-        Add-LogMessage -Level Success "Set correct access policies"
-    } else {
-        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
-    }
-}
-Export-ModuleMember -Function Set-KeyVaultPermissions
-
-
 # Remove Virtual Machine
 # ----------------------
 function Remove-VirtualMachine {
@@ -667,3 +638,125 @@ function Remove-VirtualMachineNIC {
     }
 }
 Export-ModuleMember -Function Remove-VirtualMachineNIC
+
+
+# Set key vault permissions to the group and remove the user who deployed it
+# --------------------------------------------------------------------------
+function Set-KeyVaultPermissions {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
+        $GroupName
+    )
+    Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
+    try {
+        $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
+    } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
+        Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
+    }
+    Set-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $securityGroupId `
+                               -PermissionsToKeys Get,List,Update,Create,Import,Delete,Backup,Restore,Recover `
+                               -PermissionsToSecrets Get,List,Set,Delete,Recover,Backup,Restore `
+                               -PermissionsToCertificates Get,List,Delete,Create,Import,Update,Managecontacts,Getissuers,Listissuers,Setissuers,Deleteissuers,Manageissuers,Recover,Backup,Restore
+    $success = $?
+    foreach ($accessPolicy in (Get-AzKeyVault $Name).AccessPolicies | Where-Object { $_.ObjectId -ne $securityGroupId }) {
+        Remove-AzKeyVaultAccessPolicy -VaultName $Name -ObjectId $accessPolicy.ObjectId
+        $success = $success -and $?
+    }
+    if ($success) {
+        Add-LogMessage -Level Success "Set correct access policies"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+    }
+}
+Export-ModuleMember -Function Set-KeyVaultPermissions
+
+
+# Update NSG rule to match a given configuration
+# ----------------------------------------------
+function Update-NetworkSecurityGroupRule {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of NSG rule to update")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of NSG that this rule belongs to")]
+        $NetworkSecurityGroup,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule Priority")]
+        $Priority = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule direction")]
+        [ValidateSet("Inbound", "Outbound")]
+        $Direction = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule access type")]
+        $Access = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule protocol")]
+        $Protocol = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule source address prefix")]
+        $SourceAddressPrefix = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule source port range")]
+        $SourcePortRange = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule destination address prefix")]
+        $DestinationAddressPrefix = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Rule destination port range")]
+        $DestinationPortRange = $null
+    )
+    # Load any unspecified parameters from the existing rule
+    try {
+        $ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
+        $Description = $ruleBefore.Description
+        if ($Priority -eq $null) { $Priority = $ruleBefore.Priority }
+        if ($Direction -eq $null) { $Direction = $ruleBefore.Direction }
+        if ($Access -eq $null) { $Access = $ruleBefore.Access }
+        if ($Protocol -eq $null) { $Protocol = $ruleBefore.Protocol }
+        if ($SourceAddressPrefix -eq $null) { $SourceAddressPrefix = $ruleBefore.SourceAddressPrefix }
+        if ($SourcePortRange -eq $null) { $SourcePortRange = $ruleBefore.SourcePortRange }
+        if ($DestinationAddressPrefix -eq $null) { $DestinationAddressPrefix = $ruleBefore.DestinationAddressPrefix }
+        if ($DestinationPortRange -eq $null) { $DestinationPortRange = $ruleBefore.DestinationPortRange }
+        # Print the update we're about to make
+        if ($Direction -eq "Inbound") {
+            Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access from '$SourceAddressPrefix'"
+        } else {
+            Add-LogMessage -Level Info "[ ] Updating '$Name' rule on '$($NetworkSecurityGroup.Name)' to '$Access' access to '$DestinationAddressPrefix'"
+        }
+        # Update rule and NSG (both are required)
+        $_ = Set-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $NetworkSecurityGroup `
+                                             -Name "$Name" `
+                                             -Description "$Description" `
+                                             -Priority "$Priority" `
+                                             -Direction "$Direction" `
+                                             -Access "$Access" `
+                                             -Protocol "$Protocol" `
+                                             -SourceAddressPrefix $SourceAddressPrefix `
+                                             -SourcePortRange $SourcePortRange `
+                                             -DestinationAddressPrefix $DestinationAddressPrefix `
+                                             -DestinationPortRange $DestinationPortRange | Set-AzNetworkSecurityGroup
+        # Apply the rule and validate whether it succeeded
+        $ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $Name -NetworkSecurityGroup $NetworkSecurityGroup
+        if (($ruleAfter.Name -eq $Name) -and
+            ($ruleAfter.Description -eq $Description) -and
+            ($ruleAfter.Priority -eq $Priority) -and
+            ($ruleAfter.Direction -eq $Direction) -and
+            ($ruleAfter.Access -eq $Access) -and
+            ($ruleAfter.Protocol -eq $Protocol) -and
+            ("$($ruleAfter.SourceAddressPrefix)" -eq "$SourceAddressPrefix") -and
+            ("$($ruleAfter.SourcePortRange)" -eq "$SourcePortRange") -and
+            ("$($ruleAfter.DestinationAddressPrefix)" -eq "$DestinationAddressPrefix") -and
+            ("$($ruleAfter.DestinationPortRange)" -eq "$DestinationPortRange")) {
+            if ($Direction -eq "Inbound") {
+                Add-LogMessage -Level Success "'$Name' on '$($NetworkSecurityGroup.Name)' will now '$($ruleAfter.Access)' access from '$($ruleAfter.SourceAddressPrefix)'"
+            } else {
+                Add-LogMessage -Level Success "'$Name' on '$($NetworkSecurityGroup.Name)' will now '$($ruleAfter.Access)' access to '$($ruleAfter.DestinationAddressPrefix)'"
+            }
+        } else {
+            if ($Direction -eq "Inbound") {
+                Add-LogMessage -Level Failure "'$Name' on '$($NetworkSecurityGroup.Name)' will now '$($ruleAfter.Access)' access from '$($ruleAfter.SourceAddressPrefix)'"
+            } else {
+                Add-LogMessage -Level Failure "'$Name' on '$($NetworkSecurityGroup.Name)' will now '$($ruleAfter.Access)' access to '$($ruleAfter.DestinationAddressPrefix)'"
+            }
+        }
+        # Return the rule
+        return $ruleAfter
+    } catch [System.Management.Automation.ValidationMetadataException] {
+        Add-LogMessage -Level Fatal "Could not find rule '$Name' on NSG '$($NetworkSecurityGroup.Name)'"
+    }
+}
+Export-ModuleMember -Function Update-NetworkSecurityGroupRule

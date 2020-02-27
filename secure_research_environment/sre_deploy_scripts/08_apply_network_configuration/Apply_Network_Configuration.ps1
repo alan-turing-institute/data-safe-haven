@@ -27,8 +27,6 @@ $nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
 if ($nsgLinux -eq $null) { throw "Could not load Linux VMs NSG" }
 $nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
 if ($nsgSessionHosts -eq $null) { throw "Could not load RDS session hosts NSG" }
-# Load allowed sources into an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-$allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })
 
 
 # Ensure RDS session hosts and dataserver are bound to session hosts NSG
@@ -38,7 +36,7 @@ foreach ($vmName in ($config.sre.rds.sessionHost1.vmName, $config.sre.rds.sessio
     Add-VmToNSG -VMName $vmName -NSGName $nsgSessionHosts.Name
 }
 Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgSessionHosts.Name)' NSG"
+Add-LogMessage -Level Info "NICs associated with $($nsgSessionHosts.Name):"
 @($nsgSessionHosts.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
@@ -51,7 +49,7 @@ foreach ($vmName in ([array]$computeVMs + $webappVMs)) {
     Add-VmToNSG -VMName $vmName -NSGName $nsgLinux.Name
 }
 Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgLinux.Name)' NSG"
+Add-LogMessage -Level Info "NICs associated with $($nsgLinux.Name):"
 @($nsgLinux.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
@@ -76,84 +74,27 @@ foreach ($vmName in $computeVMs) {
 }
 
 
-# Update RDS Gateway NSG to match SRE config
-# ------------------------------------------
-Add-LogMessage -Level Info "Updating RDS Gateway NSG to match SRE config"
-# Update RDS Gateway NSG inbound access rule
-$ruleName = "HTTPS_In"
-$ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgGateway
-Add-LogMessage -Level Info "[ ] Updating '$($ruleName)' rule on '$($nsgGateway.name)' NSG to '$($ruleBefore.Access)' access from '$allowedSources' (was previously '$($ruleBefore.SourceAddressPrefix)')"
-$params = @{
-    Name = $ruleName
-    NetworkSecurityGroup = $nsgGateway
-    Description = "Allow HTTPS inbound to RDS server"
-    Access = "Allow"
-    Direction = "Inbound"
-    SourceAddressPrefix = $allowedSources
-    Protocol = "TCP"
-    SourcePortRange = "*"
-    DestinationPortRange = "443"
-    DestinationAddressPrefix = "*"
-    Priority = "101"
-}
-# Update rule and NSG (both are required)
-$_ = Set-AzNetworkSecurityRuleConfig @params
-$_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgGateway
-# Confirm update has being successfully applied
-$ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgGateway
-if ("$($ruleAfter.SourceAddressPrefix)" -eq "$allowedSources") {
-    Add-LogMessage -Level Success "'$ruleName' on '$($nsgGateway.name)' NSG will now '$($ruleAfter.Access)' access from '$($ruleAfter.SourceAddressPrefix)'"
-} else {
-    Add-LogMessage -Level Fatal "'$ruleName' on '$($nsgGateway.name)' NSG will now '$($ruleAfter.Access)' access from '$($ruleAfter.SourceAddressPrefix)'"
-}
+# Update NSG rules
+# ----------------
 
+# Update RDS Gateway NSG
+Add-LogMessage -Level Info "Updating RDS Gateway NSG to match SRE config..."
+$allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
+$_ = Update-NetworkSecurityGroupRule -Name "HttpsIn" -NetworkSecurityGroup $nsgGateway -SourceAddressPrefix $allowedSources
 
-# Update restricted Linux NSG to match SRE config
-# -----------------------------------------------
+# Update restricted Linux NSG
 Add-LogMessage -Level Info "Updating restricted Linux NSG to match SRE config..."
-# Update RDS Gateway NSG inbound access rule
-$ruleName = "OutboundDenyInternet"
-$ruleBefore = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgLinux
-# Outbound access to Internet is Allowed for Tier 0 and 1 but Denied for Tier 2 and above
-$access = $config.sre.rds.gateway.networkRules.outboundInternet
-Add-LogMessage -Level Info "[ ] Updating '$($ruleName)' rule on '$($nsgLinux.name)' NSG to '$access' access to '$($ruleBefore.DestinationAddressPrefix)' (was previously '$($ruleBefore.Access)')"
-$params = @{
-    Name = $ruleName
-    NetworkSecurityGroup = $nsgLinux
-    Description = "Control outbound internet access from user accessible VMs"
-    Access = $access
-    Direction = "Outbound"
-    SourceAddressPrefix = "VirtualNetwork"
-    Protocol = "*"
-    SourcePortRange = "*"
-    DestinationPortRange = "*"
-    DestinationAddressPrefix = "Internet"
-    Priority = "4000"
-}
-# Update rule and NSG (both are required)
-$_ = Set-AzNetworkSecurityRuleConfig @params
-$_ = Set-AzNetworkSecurityGroup -NetworkSecurityGroup $nsgLinux
-# Confirm update has being successfully applied
-$ruleAfter = Get-AzNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsgLinux
-if ("$($ruleAfter.Access)" -eq "$access") {
-    Add-LogMessage -Level Success "'$ruleName' on '$($nsgLinux.name)' NSG will now '$($ruleAfter.Access)' access to '$($ruleAfter.DestinationAddressPrefix)'"
-} else {
-    Add-LogMessage -Level Fatal "'$ruleName' on '$($nsgLinux.name)' NSG will now '$($ruleAfter.Access)' access to '$($ruleAfter.DestinationAddressPrefix)'"
-}
+$_ = Update-NetworkSecurityGroupRule -Name "OutboundDenyInternet" -NetworkSecurityGroup $nsgLinux -Access $config.sre.rds.gateway.networkRules.outboundInternet
 
 
 # Ensure SRE is peered to correct mirror set
 # ------------------------------------------
 Add-LogMessage -Level Info "Ensuring SRE is peered to correct mirror set..."
 
-
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-# -----------------------------------------------------------------------------
 Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Networks.ps1) -sreId $sreId"
 
-
 # Re-peer to the correct network for this SRE
-# -------------------------------------------
 Add-LogMessage -Level Info "Peering to the correct mirror network..."
 if (!$config.sre.mirrors.vnet.Name) {
     Write-Host -ForegroundColor DarkGreen "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
@@ -164,22 +105,24 @@ if (!$config.sre.mirrors.vnet.Name) {
     $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg
 
     # Add peering to Mirror Vnet
-    Add-LogMessage -Level Info "[ ] Adding peering '$($params.Name)' to mirror VNet '$($params.VirtualNetwork.Name)'."
-    $_ = Add-AzVirtualNetworkPeering -Name "PEER_$($config.sre.network.vnet.Name)" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
+    $peeringName = "PEER_$($config.sre.network.vnet.Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to mirror VNet '$mirrorVnet'."
+    $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
     if ($?) {
-        Add-LogMessage -Level Success "Peering addition succeeded"
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
     } else {
-        Add-LogMessage -Level Fatal "Peering addition failed!"
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
     }
 
     # Add Peering to SRE Vnet
     $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-    Add-LogMessage -Level Info "[ ] Adding peering '$($params.Name)' to SRE VNet '$($params.VirtualNetwork.Name)'."
-    $_ = Add-AzVirtualNetworkPeering -Name "PEER_$($config.sre.mirrors.vnet.Name)" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
+    $peeringName = "PEER_$($config.sre.mirrors.vnet.Name)"
+    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet '$sreVnet'."
+    $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
     if ($?) {
-        Add-LogMessage -Level Success "Peering addition succeeded"
+        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
     } else {
-        Add-LogMessage -Level Fatal "Peering addition failed!"
+        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
     }
 }
 
@@ -188,9 +131,9 @@ if (!$config.sre.mirrors.vnet.Name) {
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
 $addresses = Get-MirrorAddresses -cranIp $config.sre.mirrors.cran.ip -pypiIp $config.sre.mirrors.pypi.ip
-Add-LogMessage -Level Success "CRAN: '$($addresses.cran.url)'"
-Add-LogMessage -Level Success "PyPI server: '$($addresses.pypi.url)'"
-Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
+Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
+Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
+Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
 
 # Set PyPI and CRAN locations on the compute VM
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
