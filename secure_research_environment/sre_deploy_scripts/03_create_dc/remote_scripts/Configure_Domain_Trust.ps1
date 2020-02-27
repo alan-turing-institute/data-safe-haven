@@ -48,12 +48,27 @@ if ($relationshipExists) {
     # Access remote domain
     Write-Host " [ ] Accessing remote domain '$sreFqdn'..."
     $remoteSreDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
-    $remoteSreDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteSreDirectoryContext)
-    if ($?) {
-        Write-Host " [o] Accessing remote (SRE) domain succeeded"
-    } else {
-        Write-Host " [x] Accessing remote (SRE) domain failed!"
-        throw "Failed to access remote domain!"
+
+    $retryElapsedSec = 0
+    $maxRetrySec = 200
+    $retryIntervalSec = 10
+    $success = $false
+
+    while ($success -eq $false ) {
+        $remoteSreDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteSreDirectoryContext)
+        if ($?) {
+            $success = $true
+            Write-Host " [o] Accessing remote (SRE) domain succeeded"
+        } else {
+            $retryElapsedSec = $retryElapsedSec + $retryIntervalSec
+            if ($retryElapsedSec -gt $maxRetrySec) {
+                Write-Host " [x] Accessing remote (SRE) domain failed after '$retryElapsedSec' seconds!"
+                throw "Failed to access remote domain!"    
+            } else {
+                Write-Host " [ ] Accessing remote (SRE) domain failed after '$retryElapsedSec' seconds - sleeping and retrying"
+                Start-Sleep -Seconds $retryIntervalSec
+            }
+        }
     }
 
     # Create trust relationship

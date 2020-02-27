@@ -161,11 +161,18 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Set the OS language to en-GB and install updates
-# ------------------------------------------------
-Add-LogMessage -Level Info "Setting OS locale for: '$($config.sre.dc.vmName)' and installing updates..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
+# Configure DNS
+# -------------
+Add-LogMessage -Level Info "Configuring DNS for: $($config.sre.dc.vmName)..."
+$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DNS.ps1"
+$params = @{
+    identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
+    rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
+    dataSubnetCidr = "`"$($config.sre.network.subnets.data.cidr)`""
+    shmFqdn = "`"$($config.shm.domain.fqdn)`""
+    shmDcIp = "`"$($config.shm.dc.ip)`""
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
 
 
@@ -183,19 +190,6 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Configure DNS
-# -------------
-Add-LogMessage -Level Info "Configuring DNS for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DNS.ps1"
-$params = @{
-    identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
-    rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
-    dataSubnetCidr = "`"$($config.sre.network.subnets.data.cidr)`""
-    shmFqdn = "`"$($config.shm.domain.fqdn)`""
-    shmDcIp = "`"$($config.shm.dc.ip)`""
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
-Write-Output $result.Value
 
 
 # Configure GPOs
@@ -209,6 +203,14 @@ $params = @{
     sreDomainOu = "`"$($config.sre.domain.dn)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+Write-Output $result.Value
+
+
+# Set the OS language to en-GB and install updates
+# ------------------------------------------------
+Add-LogMessage -Level Info "Setting OS locale for: '$($config.sre.dc.vmName)' and installing updates..."
+$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
 
 
