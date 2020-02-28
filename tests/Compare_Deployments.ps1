@@ -25,9 +25,9 @@ function Select-ClosestMatch {
 
 function Compare-NSGRules {
     param (
-        [Parameter()][ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.Array] $CurrentRules,
-        [Parameter()][ValidateNotNullOrEmpty()]
+        [Parameter()]
         [System.Array] $NewRules
     )
     $nMatched = 0
@@ -57,7 +57,7 @@ function Compare-NSGRules {
             Add-LogMessage -Level Error "Could not find matching rule for $($currentRule.Name)"
             $unmatched += $currentRule.Name
             $currentRule | Out-String
-            Add-LogMessage -Level Error "Closest match:"
+            Add-LogMessage -Level Info "Closest match was:"
             $NewRules | Where-Object { ($_.Priority -eq $currentRule.Priority) -and ($_.Direction -eq $currentRule.Direction) } | Out-String
         }
     }
@@ -80,25 +80,36 @@ function Test-OutboundConnection {
         [Parameter(Position = 1)][ValidateNotNullOrEmpty()]
         [string] $DestinationPort
     )
+    # Get the network watcher, creating a new one if required
     $networkWatcher = Get-AzNetworkWatcher | Where-Object -Property Location -EQ -Value $VM.Location
     if (-Not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
+    # Ensure that the VM has the extension installed (if we have permissions for this)
     $networkWatcherExtension = Get-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name | Where-Object { ($_.Publisher -eq "Microsoft.Azure.NetworkWatcher") -and ($_.ProvisioningState -eq "Succeeded") }
     if (-Not $networkWatcherExtension) {
-        Add-LogMessage -Level Info "... attempting to register the Azure NetworkWatcher extension on $($VM.Name). This may take some time."
-        $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
-        if ($NotInstalled) {
-            Add-LogMessage -Level Warning "Unable to register extension for $($VM.Name)"
-            Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "networkWatcherAgent" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4"
-            return "Unknown"
+        Add-LogMessage -Level Info "... registering the Azure NetworkWatcher extension on $($VM.Name). "
+        # Add the Windows extension
+        if ($VM.OSProfile.WindowsConfiguration) {
+            $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+            if ($NotInstalled) {
+                Add-LogMessage -Level Warning "Unable to register Windows network watcher extension for $($VM.Name)"
+                return "Unknown"
+            }
+        }
+        # Add the Linux extension
+        if ($VM.OSProfile.LinuxConfiguration) {
+            $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentLinux" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+            if ($NotInstalled) {
+                Add-LogMessage -Level Warning "Unable to register Linux network watcher extension for $($VM.Name)"
+                return "Unknown"
+            }
         }
     }
     Add-LogMessage -Level Info "... testing connectivity"
     $networkCheck = Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
     if ($NotAvailable) {
         Add-LogMessage -Level Warning "Unable to test connection for $($VM.Name)"
-        Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort
         return "Unknown"
     } else {
         return $networkCheck.ConnectionStatus
@@ -133,14 +144,6 @@ function Get-NSGRules {
             $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
             # Source port range
             $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
-            # if (($rule.SourcePortRange.Count -eq 1) -and ($rule.SourcePortRange[0] -eq "*")) {
-            #     $effectiveRule.SourcePortRange.Add("0-65535")
-            # } else {
-            #     foreach ($port in $rule.SourcePortRange) {
-            #         if ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
-            #         else { $effectiveRule.SourcePortRange.Add("$port-$port") }
-            #     }
-            # }
             foreach ($port in $rule.SourcePortRange) {
                 if ($port -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535"); break }
                 elseif ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
@@ -148,14 +151,6 @@ function Get-NSGRules {
             }
             # Destination port range
             $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
-            # if (($rule.DestinationPortRange.Count -eq 1) -and ($rule.DestinationPortRange[0] -eq "*")) {
-            #         $effectiveRule.DestinationPortRange.Add("0-65535")
-            # } else {
-            #     foreach ($port in $rule.DestinationPortRange) {
-            #         if ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
-            #         else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
-            #     }
-            # }
             foreach ($port in $rule.DestinationPortRange) {
                 if ($port -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535"); break }
                 elseif ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
@@ -163,16 +158,12 @@ function Get-NSGRules {
             }
             # Source address prefix
             $effectiveRule.SourceAddressPrefix = New-Object System.Collections.Generic.List[string]
-            # if ($rule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*") }
-            # else { $effectiveRule.SourceAddressPrefix = $rule.SourceAddressPrefix }
             foreach ($prefix in $rule.SourceAddressPrefix) {
                 if ($prefix -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*"); break }
                 else { $effectiveRule.SourceAddressPrefix.Add($rule.SourceAddressPrefix) }
             }
             # Destination address prefix
             $effectiveRule.DestinationAddressPrefix = New-Object System.Collections.Generic.List[string]
-            # if ($rule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*") }
-            # else { $effectiveRule.DestinationAddressPrefix = $rule.DestinationAddressPrefix }
             foreach ($prefix in $rule.DestinationAddressPrefix) {
                 if ($prefix -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*"); break }
                 else { $effectiveRule.DestinationAddressPrefix.Add($rule.DestinationAddressPrefix) }
