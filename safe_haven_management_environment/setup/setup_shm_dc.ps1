@@ -383,7 +383,7 @@ Write-Output $result.Value
 # -----------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
 # Fetch ADSync user password
-$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.adsyncPassword
+$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Configuration.ps1"
