@@ -33,24 +33,26 @@ function Compare-NSGRules {
     $nMatched = 0
     $unmatched = @()
     foreach ($currentRule in $CurrentRules) {
-        $matchFound = $false
+        $lowestDifference = 99
+        $closestMatchingRule = $null
         foreach ($newRule in $NewRules) {
-            if (
-                ($currentRule.Protocol -eq $newRule.Protocol) -and
-                ([string]($currentRule.SourcePortRange) -eq [string]($newRule.SourcePortRange)) -and
-                ([string]($currentRule.DestinationPortRange) -eq [string]($newRule.DestinationPortRange)) -and
-                ([string]($currentRule.SourceAddressPrefix) -eq [string]($newRule.SourceAddressPrefix)) -and
-                ([string]($currentRule.DestinationAddressPrefix) -eq [string]($newRule.DestinationAddressPrefix)) -and
-                ($currentRule.Access -eq $newRule.Access) -and
-                ($currentRule.Priority -eq $newRule.Priority) -and
-                ($currentRule.Direction -eq $newRule.Direction)
-            ) {
-                $matchFound = $true
-                break
+            $difference = 0
+            if ($currentRule.Protocol -ne $newRule.Protocol) { $difference += 1 }
+            if ([string]($currentRule.SourcePortRange) -ne [string]($newRule.SourcePortRange)) { $difference += 1 }
+            if ([string]($currentRule.DestinationPortRange) -ne [string]($newRule.DestinationPortRange)) { $difference += 1 }
+            if ([string]($currentRule.SourceAddressPrefix) -ne [string]($newRule.SourceAddressPrefix)) { $difference += 1 }
+            if ([string]($currentRule.DestinationAddressPrefix) -ne [string]($newRule.DestinationAddressPrefix)) { $difference += 1 }
+            if ($currentRule.Access -ne $newRule.Access) { $difference += 1 }
+            if ($currentRule.Priority -ne $newRule.Priority) { $difference += 1 }
+            if ($currentRule.Direction -ne $newRule.Direction) { $difference += 1 }
+            if ($difference -lt $lowestDifference) {
+                $lowestDifference = $difference
+                $closestMatchingRule = $newRule
             }
+            if ($difference -eq 0) { break }
         }
 
-        if ($matchFound) {
+        if ($lowestDifference -eq 0) {
             $nMatched += 1
             if ($VerboseLogging) { Add-LogMessage -Level Info "Found matching rule for $($currentRule.Name)" }
         } else {
@@ -58,7 +60,7 @@ function Compare-NSGRules {
             $unmatched += $currentRule.Name
             $currentRule | Out-String
             Add-LogMessage -Level Info "Closest match was:"
-            $NewRules | Where-Object { ($_.Priority -eq $currentRule.Priority) -and ($_.Direction -eq $currentRule.Direction) } | Out-String
+            $closestMatchingRule | Out-String
         }
     }
 
