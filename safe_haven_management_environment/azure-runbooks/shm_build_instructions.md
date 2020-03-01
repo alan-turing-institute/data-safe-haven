@@ -349,6 +349,8 @@ rather than simply `<admin username>`)
   - On the `Configuration complete` screen:
     - Click "Exit"
 
+  - **Troubleshooting:** The error "Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again" may occur if you have recently tore down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting- if you need to, you can disconnect from the RDS and VPN and reconnect later to click Retry.
+
 ### Set AAD sync permissions
 The `localadsync@<custom domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
 - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
@@ -598,6 +600,7 @@ In order to tear down the SHM, use the following procedure:
   - Navigate to `C:\Installation`
   - Run `.\Disconnect_AD.ps1`
   - You will need to provide login credentials (including MFA if set up) for `<admin username>@<custom domain>`
+5. Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 
 ### Tear down any attached SREs
 1. From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
