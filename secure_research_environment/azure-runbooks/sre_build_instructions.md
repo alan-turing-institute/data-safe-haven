@@ -2,17 +2,17 @@
   The following instructions will walk you through deploying a Secure Research Environment. This assumes the Safe Haven Management (SHM) environment has already been set up.
 
   ## Contents
-  1. [Prerequisites](#1.-Prerequisites)
-  2. [Define SRE configuration](#2.-Define-SRE-configuration)
-  3. [Prepare Safe Haven Management deployment](#3.-Prepare-Safe-Haven-Management-deployment)
-  4. [Deploy Virtual Network](#4.-Deploy-Virtual-Network)
-  5. [Deploy SRE Domain Controller](#5.-Deploy-SRE-Domain-Controller)
-  6. [Deploy Remote Desktop Service Environment](#6.-Deploy-Remote-Desktop-Service-Environment)
-  7. [Deploy Data Server](#7.-Deploy-Data-Server)
-  8. [Deploy Web Application Servers (Gitlab and HackMD)](#8.-Deploy-Web-Application-Servers-(Gitlab-and-HackMD))
-  9. [Deploy initial shared compute VM](#9.-Deploy-initial-shared-compute-VM)
-  10. [Apply network configuration](#10.-Apply-network-configuration)
-  11. [Run smoke tests on shared compute VM](#11.-Run-smoke-tests-on-shared-compute-VM)
+  1. [Prerequisites](#1-prerequisites)
+  2. [Define SRE configuration](#2-define-sre-configuration)
+  3. [Prepare Safe Haven Management deployment](#3-prepare-safe-haven-management-deployment)
+  4. [Deploy Virtual Network](#4-deploy-virtual-network)
+  5. [Deploy SRE Domain Controller](#5-deploy-sre-domain-controller)
+  6. [Deploy Remote Desktop Service Environment](#6-deploy-remote-desktop-service-environment)
+  7. [Deploy Data Server](#7-deploy-data-server)
+  8. [Deploy Web Application Servers (Gitlab and HackMD)](#8-deploy-web-application-servers-gitlab-and-hackmd)
+  9. [Deploy initial shared compute VM](#9-deploy-initial-shared-compute-vm)
+  10. [Apply network configuration](#10-apply-network-configuration)
+  11. [Run smoke tests on shared compute VM](#11-run-smoke-tests-on-shared-compute-vm)
 
   ## 1. Prerequisites
   - An Azure subscription with sufficient credits to build the environment in
