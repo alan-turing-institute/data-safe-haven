@@ -9,7 +9,7 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 5. [Deploy key vault for SHM secrets](#5.-Deploy-key-vault-for-SHM-secrets)
 6. [Setup Safe Haven administrators](#6.-Setup-Safe-Haven-administrators)
 7. [Deploy and configure VNET and Domain Controllers](#7.-Deploy-and-configure-VNET-and-Domain-Controllers)
-8. [Deploy and configure Network Policy Server (NPS)](#7.-Deploy-and-cconfigure-Network-Policy-Server-(NPS))
+8. [Deploy and configure Network Policy Server (NPS)](#8.-Deploy-and-cconfigure-Network-Policy-Server-(NPS))
 9. [Deploy package mirrors](#9.-Deploy-package-mirrors)
 10. [Tear down SHM](#10.-Apply-network-configuration)
 
