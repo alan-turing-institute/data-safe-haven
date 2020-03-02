@@ -437,6 +437,19 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
+# Restart the DCs
+# ---------------
+foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    Add-LogMessage -Level Info "Restarting $vmName..."
+    Restart-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
+    if ($?) {
+        Add-LogMessage -Level Success "Restarting DC $vmName succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Restarting DC $vmName failed!"
+    }
+}
+
+
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext
