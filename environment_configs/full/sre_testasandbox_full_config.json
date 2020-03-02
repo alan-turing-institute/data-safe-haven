@@ -12,13 +12,13 @@
     "location": "uksouth",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "dsgroupdev.co.uk",
+      "fqdn": "testa.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENTESTA",
-      "dn": "DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Data Science LDAP Users",
@@ -55,13 +55,13 @@
       "vmName": "DC1-SHM-TESTA",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC1-SHM-TESTA",
-      "fqdn": "DC1-SHM-TESTA.dsgroupdev.co.uk",
+      "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
     },
     "dcb": {
       "vmName": "DC2-SHM-TESTA",
       "hostname": "DC2-SHM-TESTA",
-      "fqdn": "DC2-SHM-TESTA.dsgroupdev.co.uk",
+      "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
@@ -131,9 +131,9 @@
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "sandbox.dsgroupdev.co.uk",
+      "fqdn": "sandbox.testa.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
-      "dn": "DC=sandbox,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
           "name": "SG SANDBOX Server Administrators",
@@ -214,7 +214,7 @@
       "vmName": "DC-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC-SRE-SANDBOX",
-      "fqdn": "DC-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+      "fqdn": "DC-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
       "ip": "10.150.0.250"
     },
     "users": {
@@ -246,11 +246,11 @@
         "vmSize": "Standard_D4s_v3",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
-          "allowedSources": "Internet",
+          "allowedSources": "193.60.220.253",
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+        "fqdn": "RDG-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
         "ip": "10.150.1.250",
         "npsSecretName": "sre-sandbox-nps-secret"
       },
@@ -259,7 +259,7 @@
         "vmSize": "Standard_D4s_v3",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+        "fqdn": "APP-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
         "ip": "10.150.1.249"
       },
       "sessionHost2": {
@@ -267,7 +267,7 @@
         "vmSize": "Standard_D4s_v3",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+        "fqdn": "DKP-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
         "ip": "10.150.1.248"
       }
     },
@@ -277,7 +277,7 @@
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+      "fqdn": "DAT-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
       "ip": "10.150.2.250"
     },
     "webapps": {
@@ -287,14 +287,14 @@
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_DS3_v2",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+        "fqdn": "GITLAB-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
         "ip": "10.150.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.sandbox.dsgroupdev.co.uk",
+        "fqdn": "HACKMD-SRE-SANDBOX.sandbox.testa.dsgroupdev.co.uk",
         "ip": "10.150.2.152"
       }
     },
