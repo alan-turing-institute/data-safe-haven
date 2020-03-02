@@ -2,16 +2,16 @@
 These instructions will deploy a new Safe Haven Management Environment (SHM). This is required to manage your Secure Research Environments (SREs) and must be deployed before you create any SREs. A single SHM can manage all your SREs. Alternatively, you may run multiple SHMs concurrently (eg one for each Data Study Group).
 
 ## Contents
-1. [Prerequisites](#1.-Prerequisites)
-2. [Safe Haven Management configuration](#2.-Safe-Haven-Management-configuration)
-3. [Configure DNS for the custom domain](#3.-Configure-DNS-for-the-custom-domain)
-4. [Setup Azure Active Directory (AAD)](#4.-Setup-Azure-Active-Directory-(AAD))
-5. [Deploy key vault for SHM secrets](#5.-Deploy-key-vault-for-SHM-secrets)
-6. [Setup Safe Haven administrators](#6.-Setup-Safe-Haven-administrators)
-7. [Deploy and configure VNET and Domain Controllers](#7.-Deploy-and-configure-VNET-and-Domain-Controllers)
-8. [Deploy and configure Network Policy Server (NPS)](#8.-Deploy-and-cconfigure-Network-Policy-Server-(NPS))
-9. [Deploy package mirrors](#9.-Deploy-package-mirrors)
-10. [Tear down SHM](#10.-Apply-network-configuration)
+1. [Prerequisites](#1-prerequisites)
+2. [Safe Haven Management configuration](#2-safe-haven-management-configuration)
+3. [Configure DNS for the custom domain](#3-configure-dns-for-the-custom-domain)
+4. [Setup Azure Active Directory (AAD)](#4-setup-azure-active-directory-aad)
+5. [Deploy key vault for SHM secrets](#5-deploy-key-vault-for-shm-secrets)
+6. [Setup Safe Haven administrators](#6-setup-safe-haven-administrators)
+7. [Deploy and configure VNET and Domain Controllers](#7-deploy-and-configure-vnet-and-domain-controllers)
+8. [Deploy and configure Network Policy Server (NPS)](#8-deploy-and-configure-network-policy-server-nps)
+9. [Deploy package mirrors](#9-deploy-package-mirrors)
+10. [Tear down SHM](#10-tearing-down-the-shm)
 
 ## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in
