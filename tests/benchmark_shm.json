@@ -1,0 +1,2834 @@
+{
+  "DC1-SHM-turing1": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "RPC_endpoint_mapper",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "135-135"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 201,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_Ping",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 202,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "636-636"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 203,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3268-3268"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 204,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3269-3269"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 205,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DNS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "53-53"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 206,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "88-88"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 207,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "SMB_over_IP_Microsoft-DS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "445-445"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 208,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_service",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "137-137"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 209,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_datagram_service",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "138-138"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 210,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_session_service",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "139-139"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 211,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RPC_for_LSA_SAM_Netlogon",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "49152-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 212,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos_Password_Change",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "464-464"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 213,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Active_Directory_Web_Services",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "9389-9389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 214,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RADIUS_Authenitcation_RDS_to_NPS",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "1645-1645",
+          "1646-1646",
+          "1812-1812",
+          "1813-1813"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Remote_Desktop_Connection",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3389-3389"
+        ],
+        "SourceAddressPrefix": [
+          "172.16.201.0/24"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Deny_All",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "DC2-SHM-turing1": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "RPC_endpoint_mapper",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "135-135"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 201,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_Ping",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 202,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "636-636"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 203,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3268-3268"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 204,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3269-3269"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 205,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DNS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "53-53"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 206,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "88-88"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 207,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "SMB_over_IP_Microsoft-DS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "445-445"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 208,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_service",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "137-137"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 209,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_datagram_service",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "138-138"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 210,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_session_service",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "139-139"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 211,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RPC_for_LSA_SAM_Netlogon",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "49152-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 212,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos_Password_Change",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "464-464"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 213,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Active_Directory_Web_Services",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "9389-9389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 214,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RADIUS_Authenitcation_RDS_to_NPS",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "1645-1645",
+          "1646-1646",
+          "1812-1812",
+          "1813-1813"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Remote_Desktop_Connection",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3389-3389"
+        ],
+        "SourceAddressPrefix": [
+          "172.16.201.0/24"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Deny_All",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "NPS-SHM-turing1": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "RPC_endpoint_mapper",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "135-135"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 201,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_Ping",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "389-389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 202,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "636-636"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 203,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3268-3268"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 204,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Global_catalog_LDAP_over_SSL",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3269-3269"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 205,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DNS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "53-53"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 206,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "88-88"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 207,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "SMB_over_IP_Microsoft-DS",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "445-445"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 208,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_service",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "137-137"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 209,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_datagram_service",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "138-138"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 210,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "NetBIOS_session_service",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "139-139"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 211,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RPC_for_LSA_SAM_Netlogon",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "49152-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 212,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Kerberos_Password_Change",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "464-464"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 213,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Active_Directory_Web_Services",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "9389-9389"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 214,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "RADIUS_Authenitcation_RDS_to_NPS",
+        "Protocol": "Udp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "1645-1645",
+          "1646-1646",
+          "1812-1812",
+          "1813-1813"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Remote_Desktop_Connection",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "3389-3389"
+        ],
+        "SourceAddressPrefix": [
+          "172.16.201.0/24"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "Deny_All",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "CRAN-MIRROR-EXTERNAL-TIER-2": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "updateOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "443-443",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "rsyncOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "10.20.2.16/28"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "CRAN-MIRROR-INTERNAL-TIER-2": {
+    "Internet": "Unreachable",
+    "Rules": [{
+        "Name": "rsyncInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "mirrorRequestsInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "80-80",
+          "443-443",
+          "3128-3128"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "PYPI-MIRROR-EXTERNAL-TIER-2": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "updateOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "443-443",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "rsyncOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "10.20.2.16/28"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "PYPI-MIRROR-EXTERNAL-TIER-3": {
+    "Internet": "Reachable",
+    "Rules": [{
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "updateOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "443-443",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.3.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "rsyncOutbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.3.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "10.20.3.16/28"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 400,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "PYPI-MIRROR-INTERNAL-TIER-2": {
+    "Internet": "Unreachable",
+    "Rules": [{
+        "Name": "rsyncInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.2.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "mirrorRequestsInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "80-80",
+          "443-443",
+          "3128-3128"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  },
+  "PYPI-MIRROR-INTERNAL-TIER-3": {
+    "Internet": "Unreachable",
+    "Rules": [{
+        "Name": "rsyncInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "22-22",
+          "873-873"
+        ],
+        "SourceAddressPrefix": [
+          "10.20.3.0/28"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 200,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "mirrorRequestsInbound",
+        "Protocol": "Tcp",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "80-80",
+          "443-443",
+          "3128-3128"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 300,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreInboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "IgnoreOutboundRulesBelowHere",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 3000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowVnetInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowAzureLoadBalancerInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "AzureLoadBalancer"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "DenyAllInBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Inbound"
+      },
+      {
+        "Name": "AllowVnetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "DestinationAddressPrefix": [
+          "VirtualNetwork"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65000,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "AllowInternetOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "Internet"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Allow",
+        "Priority": 65001,
+        "Direction": "Outbound"
+      },
+      {
+        "Name": "DenyAllOutBound",
+        "Protocol": "All",
+        "SourcePortRange": [
+          "0-65535"
+        ],
+        "DestinationPortRange": [
+          "0-65535"
+        ],
+        "SourceAddressPrefix": [
+          "*"
+        ],
+        "DestinationAddressPrefix": [
+          "*"
+        ],
+        "ExpandedSourceAddressPrefix": null,
+        "ExpandedDestinationAddressPrefix": null,
+        "Access": "Deny",
+        "Priority": 65500,
+        "Direction": "Outbound"
+      }
+    ]
+  }
+}

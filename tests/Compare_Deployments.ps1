@@ -1,9 +1,11 @@
 # You will need `Install-Package Communary.PASM`
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Name of the current (working) subscription")]
-    [string]$currentSubscription,
-    [Parameter(Mandatory = $true, HelpMessage = "Name of the new (proposed) subscription")]
-    [string]$newSubscription,
+    [Parameter(Mandatory = $true, HelpMessage = "Name of the test (proposed) subscription")]
+    [string]$Subscription,
+    [Parameter(ParameterSetName="BenchmarkSubscription", Mandatory = $true, HelpMessage = "Name of the benchmark subscription to compare against")]
+    [string]$BenchmarkSubscription,
+    [Parameter(ParameterSetName="BenchmarkConfig", Mandatory = $true, HelpMessage = "Path to the benchmark config to compare against")]
+    [string]$BenchmarkConfig,
     [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
     [switch]$VerboseLogging = $false
 )
@@ -26,39 +28,39 @@ function Select-ClosestMatch {
 function Compare-NSGRules {
     param (
         [Parameter()]
-        [System.Array] $CurrentRules,
+        [System.Array] $BenchmarkRules,
         [Parameter()]
-        [System.Array] $NewRules
+        [System.Array] $TestRules
     )
     $nMatched = 0
     $unmatched = @()
-    foreach ($currentRule in $CurrentRules) {
+    foreach ($benchmarkRule in $BenchmarkRules) {
         $lowestDifference = 99
         $closestMatchingRule = $null
-        foreach ($newRule in $NewRules) {
+        foreach ($testRule in $TestRules) {
             $difference = 0
-            if ($currentRule.Protocol -ne $newRule.Protocol) { $difference += 1 }
-            if ([string]($currentRule.SourcePortRange) -ne [string]($newRule.SourcePortRange)) { $difference += 1 }
-            if ([string]($currentRule.DestinationPortRange) -ne [string]($newRule.DestinationPortRange)) { $difference += 1 }
-            if ([string]($currentRule.SourceAddressPrefix) -ne [string]($newRule.SourceAddressPrefix)) { $difference += 1 }
-            if ([string]($currentRule.DestinationAddressPrefix) -ne [string]($newRule.DestinationAddressPrefix)) { $difference += 1 }
-            if ($currentRule.Access -ne $newRule.Access) { $difference += 1 }
-            if ($currentRule.Priority -ne $newRule.Priority) { $difference += 1 }
-            if ($currentRule.Direction -ne $newRule.Direction) { $difference += 1 }
+            if ($benchmarkRule.Protocol -ne $testRule.Protocol) { $difference += 1 }
+            if ([string]($benchmarkRule.SourcePortRange) -ne [string]($testRule.SourcePortRange)) { $difference += 1 }
+            if ([string]($benchmarkRule.DestinationPortRange) -ne [string]($testRule.DestinationPortRange)) { $difference += 1 }
+            if ([string]($benchmarkRule.SourceAddressPrefix) -ne [string]($testRule.SourceAddressPrefix)) { $difference += 1 }
+            if ([string]($benchmarkRule.DestinationAddressPrefix) -ne [string]($testRule.DestinationAddressPrefix)) { $difference += 1 }
+            if ($benchmarkRule.Access -ne $testRule.Access) { $difference += 1 }
+            if ($benchmarkRule.Priority -ne $testRule.Priority) { $difference += 1 }
+            if ($benchmarkRule.Direction -ne $testRule.Direction) { $difference += 1 }
             if ($difference -lt $lowestDifference) {
                 $lowestDifference = $difference
-                $closestMatchingRule = $newRule
+                $closestMatchingRule = $testRule
             }
             if ($difference -eq 0) { break }
         }
 
         if ($lowestDifference -eq 0) {
             $nMatched += 1
-            if ($VerboseLogging) { Add-LogMessage -Level Info "Found matching rule for $($currentRule.Name)" }
+            if ($VerboseLogging) { Add-LogMessage -Level Info "Found matching rule for $($benchmarkRule.Name)" }
         } else {
-            Add-LogMessage -Level Error "Could not find matching rule for $($currentRule.Name)"
-            $unmatched += $currentRule.Name
-            $currentRule | Out-String
+            Add-LogMessage -Level Error "Could not find matching rule for $($benchmarkRule.Name)"
+            $unmatched += $benchmarkRule.Name
+            $benchmarkRule | Out-String
             Add-LogMessage -Level Info "Closest match was:"
             $closestMatchingRule | Out-String
         }
@@ -118,6 +120,47 @@ function Test-OutboundConnection {
     }
 }
 
+function Convert-RuleToEffectiveRule {
+    param (
+        [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
+        [System.Object] $rule
+    )
+    $effectiveRule = [Microsoft.Azure.Commands.Network.Models.PSEffectiveSecurityRule]::new()
+    $effectiveRule.Name = $rule.Name
+    $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
+    # Source port range
+    $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
+    foreach ($port in $rule.SourcePortRange) {
+        if ($port -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535"); break }
+        elseif ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
+        else { $effectiveRule.SourcePortRange.Add("$port-$port") }
+    }
+    # Destination port range
+    $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
+    foreach ($port in $rule.DestinationPortRange) {
+        if ($port -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535"); break }
+        elseif ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
+        else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
+    }
+    # Source address prefix
+    $effectiveRule.SourceAddressPrefix = New-Object System.Collections.Generic.List[string]
+    foreach ($prefix in $rule.SourceAddressPrefix) {
+        if ($prefix -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*"); break }
+        else { $effectiveRule.SourceAddressPrefix.Add($rule.SourceAddressPrefix) }
+    }
+    # Destination address prefix
+    $effectiveRule.DestinationAddressPrefix = New-Object System.Collections.Generic.List[string]
+    foreach ($prefix in $rule.DestinationAddressPrefix) {
+        if ($prefix -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*"); break }
+        else { $effectiveRule.DestinationAddressPrefix.Add($rule.DestinationAddressPrefix) }
+    }
+    $effectiveRule.Access = $rule.Access
+    $effectiveRule.Priority = $rule.Priority
+    $effectiveRule.Direction = $rule.Direction
+    return $effectiveRule
+}
+
+
 function Get-NSGRules {
     param (
         [Parameter(Position = 0)][ValidateNotNullOrEmpty()]
@@ -141,39 +184,7 @@ function Get-NSGRules {
         $effectiveRules = @()
         # Convert each PSSecurityRule into a PSEffectiveSecurityRule
         foreach ($rule in $rules) {
-            $effectiveRule = [Microsoft.Azure.Commands.Network.Models.PSEffectiveSecurityRule]::new()
-            $effectiveRule.Name = $rule.Name
-            $effectiveRule.Protocol = $rule.Protocol.Replace("*", "All")
-            # Source port range
-            $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
-            foreach ($port in $rule.SourcePortRange) {
-                if ($port -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535"); break }
-                elseif ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
-                else { $effectiveRule.SourcePortRange.Add("$port-$port") }
-            }
-            # Destination port range
-            $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
-            foreach ($port in $rule.DestinationPortRange) {
-                if ($port -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535"); break }
-                elseif ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
-                else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
-            }
-            # Source address prefix
-            $effectiveRule.SourceAddressPrefix = New-Object System.Collections.Generic.List[string]
-            foreach ($prefix in $rule.SourceAddressPrefix) {
-                if ($prefix -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Add("*"); break }
-                else { $effectiveRule.SourceAddressPrefix.Add($rule.SourceAddressPrefix) }
-            }
-            # Destination address prefix
-            $effectiveRule.DestinationAddressPrefix = New-Object System.Collections.Generic.List[string]
-            foreach ($prefix in $rule.DestinationAddressPrefix) {
-                if ($prefix -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Add("*"); break }
-                else { $effectiveRule.DestinationAddressPrefix.Add($rule.DestinationAddressPrefix) }
-            }
-            $effectiveRule.Access = $rule.Access
-            $effectiveRule.Priority = $rule.Priority
-            $effectiveRule.Direction = $rule.Direction
-            $effectiveRules = $effectiveRules + $effectiveRule
+            $effectiveRules = $effectiveRules + $(Convert-RuleToEffectiveRule $rule) #$effectiveRule
         }
         return $effectiveRules
     } else {
@@ -192,74 +203,106 @@ function Get-NSGRules {
 $originalContext = Get-AzContext
 
 
-# Get VMs in current SHM
-# ----------------------
-$_ = Set-AzContext -SubscriptionId $currentSubscription
-$currentShmVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
-Add-LogMessage -Level Info "Found $($currentShmVMs.Count) VMs in current subscription: '$currentSubscription'"
-foreach ($VM in $currentShmVMs) {
+# Load configuration from a benchmark subscription or config
+# ----------------------------------------------------------
+if ($BenchmarkSubscription) {
+    $JsonConfig = [ordered]@{}
+    # Get VMs in current subscription
+    $_ = Set-AzContext -SubscriptionId $BenchmarkSubscription
+    $benchmarkVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
+    Add-LogMessage -Level Info "Found $($benchmarkVMs.Count) VMs in subscription: '$BenchmarkSubscription'"
+    foreach ($VM in $benchmarkVMs) {
+        Add-LogMessage -Level Info "... $($VM.Name)"
+    }
+    # Get the NSG rules and connectivity for each VM in the subscription
+    foreach ($benchmarkVM in $benchmarkVMs) {
+        Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($VM.Name)"
+        $DestinationPort = 80
+        if ($VM.Name.Contains("MIRROR")) { $DestinationPort = 443 }
+        $JsonConfig[$benchmarkVM.Name] = [ordered]@{
+            Internet = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80
+            Rules = Get-NSGRules -VM $benchmarkVM
+        }
+    }
+    $OutputFile = New-TemporaryFile
+    Out-File -FilePath $OutputFile -Encoding "UTF8" -InputObject ($JsonConfig | ConvertTo-Json -Depth 10)
+    Add-LogMessage -Level Info "Configuration file generated at '$($OutputFile.FullName)'"
+} elseif ($BenchmarkConfig) {
+    $JsonConfig = Get-Content -Path $BenchmarkConfig -Raw -Encoding UTF-8 | ConvertFrom-Json
+}
+
+
+# Deserialise VMs from JSON config
+# --------------------------------
+$benchmarkVMs = @()
+foreach ($JsonVm in $JsonConfig.PSObject.Properties) {
+    $VM = New-Object -TypeName PsObject
+    $VM | Add-Member -MemberType NoteProperty -Name Name -Value $JsonVm.Name
+    $VM | Add-Member -MemberType NoteProperty -Name Internet -Value $JsonVm.PSObject.Properties.Value.Internet
+    $VM | Add-Member -MemberType NoteProperty -Name Rules -Value @()
+    foreach ($rule in $JsonVm.PSObject.Properties.Value.Rules) {
+        if ($rule.Name) { $VM.Rules += $(Convert-RuleToEffectiveRule $rule) }
+    }
+    $benchmarkVMs += $VM
+}
+
+
+# Get VMs in test SHM
+# -------------------
+$_ = Set-AzContext -SubscriptionId $Subscription
+$testVMs = Get-AzVM
+Add-LogMessage -Level Info "Found $($testVMs.Count) VMs in subscription: '$Subscription'"
+foreach ($VM in $testVMs) {
     Add-LogMessage -Level Info "... $($VM.Name)"
 }
 
-# Get VMs in new SHM
-# ------------------
-$_ = Set-AzContext -SubscriptionId $newSubscription
-$newShmVMs = Get-AzVM
-Add-LogMessage -Level Info "Found $($newShmVMs.Count) VMs in new subscription: '$newSubscription'"
-foreach ($VM in $newShmVMs) {
-    Add-LogMessage -Level Info "... $($VM.Name)"
-}
 
 # Create a hash table which maps current SHM VMs to new ones
 # ----------------------------------------------------------
 $vmHashTable = @{}
-foreach ($currentVM in $currentShmVMs) {
-    $nameToCheck = $currentVM.Name
+foreach ($benchmarkVM in $benchmarkVMs) {
+    $nameToCheck = $benchmarkVM.Name
     # Override matches for names that would otherwise fail
-    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE") }
-    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE") }
     if ($nameToCheck.StartsWith("CRAN-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
     if ($nameToCheck.StartsWith("PYPI-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
+    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE") }
+    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE") }
     # Only match against names that have not been matched yet
-    $newShmVMNames = $newShmVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
-    $newVM = $newShmVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $newShmVMNames -Value $nameToCheck) }
-    $vmHashTable[$currentVM] = $newVM
-    Add-LogMessage -Level Info "matched $($currentVM.Name) => $($newVM.Name)"
+    $testVMNames = $testVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
+    $testVM = $testVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $testVMNames -Value $nameToCheck) }
+    $vmHashTable[$benchmarkVM] = $testVM
+    Add-LogMessage -Level Info "matched $($testVM.Name) => $($benchmarkVM.Name)"
 }
+
 
 # Iterate over paired VMs checking their network settings
 # -------------------------------------------------------
-foreach ($currentVM in $currentShmVMs) {
-    $newVM = $vmHashTable[$currentVM]
-
-    # Get parameters for current VM
-    # -----------------------------
-    $_ = Set-AzContext -SubscriptionId $currentSubscription
-    Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($currentVM.Name)"
-    $currentRules = Get-NSGRules -VM $currentVM
-    $currentInternetCheck = Test-OutboundConnection -VM $currentVM -DestinationAddress "google.com" -DestinationPort 80
+foreach ($benchmarkVM in $benchmarkVMs) {
+    $testVM = $vmHashTable[$benchmarkVM]
 
     # Get parameters for new VM
     # -------------------------
-    $_ = Set-AzContext -SubscriptionId $newSubscription
-    Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($newVM.Name)"
-    $newRules = Get-NSGRules -VM $newVM
-    $newInternetCheck = Test-OutboundConnection -VM $newVM -DestinationAddress "google.com" -DestinationPort 80
-
+    $_ = Set-AzContext -SubscriptionId $Subscription
+    Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($testVM.Name)"
+    $testRules = Get-NSGRules -VM $testVM
+    # Set appropriate port for testing internet access
+    $DestinationPort = 80
+    if ($testVM.Name.Contains("MIRROR")) { $DestinationPort = 443 }
+    $testInternet = Test-OutboundConnection -VM $testVM -DestinationAddress "google.com" -DestinationPort $DestinationPort
     # Check that each NSG rule has a matching equivalent (which might be named differently)
-    Add-LogMessage -Level Info "Comparing NSG rules for $($currentVM.Name) and $($newVM.Name)"
-    Add-LogMessage -Level Info "... ensuring that all $($currentVM.Name) rules exist on $($newVM.Name)"
-    Compare-NSGRules -CurrentRules $currentRules -NewRules $newRules
-    Add-LogMessage -Level Info "... ensuring that all $($newVM.Name) rules exist on $($currentVM.Name)"
-    Compare-NSGRules -CurrentRules $newRules -NewRules $currentRules
+    Add-LogMessage -Level Info "Comparing NSG rules for $($benchmarkVM.Name) and $($testVM.Name)"
+    Add-LogMessage -Level Info "... ensuring that all $($benchmarkVM.Name) rules exist on $($testVM.Name)"
+    Compare-NSGRules -BenchmarkRules $benchmarkVM.Rules -TestRules $testRules
+    Add-LogMessage -Level Info "... ensuring that all $($testVM.Name) rules exist on $($benchmarkVM.Name)"
+    Compare-NSGRules -BenchmarkRules $testRules -TestRules $benchmarkVM.Rules
 
     # Check that internet connectivity is the same for matched VMs
-    Add-LogMessage -Level Info "Comparing internet connectivity for $($currentVM.Name) and $($newVM.Name)..."
-    if ($currentInternetCheck -eq $newInternetCheck) {
-        Add-LogMessage -Level Success "The internet is '$($currentInternetCheck)' from both"
+    Add-LogMessage -Level Info "Comparing internet connectivity for $($benchmarkVM.Name) and $($testVM.Name)..."
+    if ($benchmarkVM.Internet -eq $testInternet) {
+        Add-LogMessage -Level Success "The internet is '$($benchmarkVM.Internet)' from both"
     } else {
-        Add-LogMessage -Level Failure "The internet is '$($currentInternetCheck)' from $($currentVM.Name)"
-        Add-LogMessage -Level Failure "The internet is '$($newInternetCheck)' from $($newVM.Name)"
+        Add-LogMessage -Level Failure "The internet is '$($benchmarkVM.Internet)' from $($benchmarkVM.Name)"
+        Add-LogMessage -Level Failure "The internet is '$($testInternet)' from $($testVM.Name)"
     }
 }
 
