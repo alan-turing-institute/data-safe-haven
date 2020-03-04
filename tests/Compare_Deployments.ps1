@@ -1,3 +1,4 @@
+# Parameter sets in Powershell are a bit counter-intuitive. See here (https://docs.microsoft.com/en-us/powershell/scripting/developer/cmdlet/cmdlet-parameter-sets?view=powershell-7) for details
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Name of the test (proposed) subscription")]
     [string]$Subscription,
