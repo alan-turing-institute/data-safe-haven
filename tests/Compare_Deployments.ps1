@@ -29,7 +29,9 @@ function Select-ClosestMatch {
     $Array | Sort-Object @{Expression={ Get-PasmScore -String1 $Value -String2 $_ -Algorithm "LevenshteinDistance" }; Ascending=$false} | Select-Object -First 1
 }
 
-
+# Compare two NSG rule sets
+# Match parameter-by-parameter
+# --------------------------------------------
 function Compare-NSGRules {
     param (
         [Parameter()]
@@ -40,8 +42,10 @@ function Compare-NSGRules {
     $nMatched = 0
     $unmatched = @()
     foreach ($benchmarkRule in $BenchmarkRules) {
-        $lowestDifference = 99
+        $lowestDifference = [double]::PositiveInfinity
         $closestMatchingRule = $null
+        # Iterate over TestRules checking for an identical match by checking how many of the rule parameters differ
+        # If an exact match is found then increment the counter, otherwise log the rule and the closest match
         foreach ($testRule in $TestRules) {
             $difference = 0
             if ($benchmarkRule.Protocol -ne $testRule.Protocol) { $difference += 1 }
@@ -90,7 +94,7 @@ function Test-OutboundConnection {
         [string] $DestinationPort
     )
     # Get the network watcher, creating a new one if required
-    $networkWatcher = Get-AzNetworkWatcher | Where-Object -Property Location -EQ -Value $VM.Location
+    $networkWatcher = Get-AzNetworkWatcher | Where-Object { $_.Location -eq $VM.Location }
     if (-Not $networkWatcher) {
         $networkWatcher = New-AzNetworkWatcher -Name "NetworkWatcher" -ResourceGroupName "NetworkWatcherRG" -Location $VM.Location
     }
@@ -136,6 +140,7 @@ function Convert-RuleToEffectiveRule {
     # Source port range
     $effectiveRule.SourcePortRange = New-Object System.Collections.Generic.List[string]
     foreach ($port in $rule.SourcePortRange) {
+        # We do not explicitly deal with the case where the port is not an integer, a range or '*'
         if ($port -eq "*") { $effectiveRule.SourcePortRange.Add("0-65535"); break }
         elseif ($port.Contains("-")) { $effectiveRule.SourcePortRange.Add($port) }
         else { $effectiveRule.SourcePortRange.Add("$port-$port") }
@@ -143,6 +148,7 @@ function Convert-RuleToEffectiveRule {
     # Destination port range
     $effectiveRule.DestinationPortRange = New-Object System.Collections.Generic.List[string]
     foreach ($port in $rule.DestinationPortRange) {
+        # We do not explicitly deal with the case where the port is not an integer, a range or '*'
         if ($port -eq "*") { $effectiveRule.DestinationPortRange.Add("0-65535"); break }
         elseif ($port.Contains("-")) { $effectiveRule.DestinationPortRange.Add($port) }
         else { $effectiveRule.DestinationPortRange.Add("$port-$port") }
@@ -178,18 +184,23 @@ function Get-NSGRules {
         # Get rules from NSG directly attached to the NIC
         $nic = Get-AzNetworkInterface | Where-Object { $_.Id -eq $VM.NetworkProfile.NetworkInterfaces.Id }
         $directNsgs = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $nic.NetworkSecurityGroup.Id }
+        $directNsgRules = @()
         foreach ($directNsg in $directNsgs) {
-            $rules = $rules + $directNsg.SecurityRules + $directNsg.DefaultSecurityRules
+            $directNsgRules = $directNsgRules + $directNsg.SecurityRules + $directNsg.DefaultSecurityRules
         }
         # Get rules from NSG attached to the subnet
         $subnetNsgs = Get-AzNetworkSecurityGroup | Where-Object { $_.Subnets.Id -eq $nic.IpConfigurations.Subnet.Id }
+        $subnetNsgRules = @()
         foreach ($subnetNsg in $subnetNsgs) {
-            $rules = $rules + $subnetNsg.SecurityRules + $subnetNsg.DefaultSecurityRules
+            $subnetNsgRules = $subnetNsgRules + $subnetNsg.SecurityRules + $subnetNsg.DefaultSecurityRules
         }
         $effectiveRules = @()
+        if ($directNsgRules.Count -And $subnetNsgRules.Count) {
+            Add-LogMessage -Level Warning "Found both NSG rules from both the NIC and the subnet for $($VM.Name). Evaluation of effective rules may be incorrect!"
+        }
         # Convert each PSSecurityRule into a PSEffectiveSecurityRule
-        foreach ($rule in $rules) {
-            $effectiveRules = $effectiveRules + $(Convert-RuleToEffectiveRule $rule) #$effectiveRule
+        foreach ($rule in ($directNsgRules + $subnetNsgRules)) {
+            $effectiveRules = $effectiveRules + $(Convert-RuleToEffectiveRule $rule)
         }
         return $effectiveRules
     } else {
