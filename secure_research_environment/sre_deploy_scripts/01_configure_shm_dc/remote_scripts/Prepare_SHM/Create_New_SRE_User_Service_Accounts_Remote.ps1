@@ -31,8 +31,14 @@ function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
     if(Get-ADGroup -Filter "Name -eq '$name'"){
         Write-Output " [o] Group '$name' already exists"
     } else {
-        Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'"
-        return (New-ADGroup -Name "$name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
+        Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'..."
+        $group = (New-ADGroup -Name "$name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
+        if ($?) {
+            Write-Output " [o] Group '$name' created"
+        } else {
+            Write-Output " [x] Failed to create group '$name'!"
+        }
+        return $group
     }
 }
 
@@ -41,16 +47,22 @@ function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
         Write-Output " [o] User '$samAccountName' already exists"
     } else {
         $principalName = $samAccountName + "@" + $shmFqdn;
-        Write-Output " [ ] Creating user '$name' ($samAccountName)"
-        return (New-ADUser -Name "$name" `
-                           -UserPrincipalName $principalName `
-                           -Path $path `
-                           -SamAccountName $samAccountName `
-                           -DisplayName "$name" `
-                           -Description "$name" `
-                           -AccountPassword $passwordSecureString `
-                           -Enabled $true `
-                           -PasswordNeverExpires $true)
+        Write-Output " [ ] Creating user '$name' ($samAccountName)..."
+        $user = (New-ADUser -Name "$name" `
+                            -UserPrincipalName $principalName `
+                            -Path $path `
+                            -SamAccountName $samAccountName `
+                            -DisplayName "$name" `
+                            -Description "$name" `
+                            -AccountPassword $passwordSecureString `
+                            -Enabled $true `
+                            -PasswordNeverExpires $true)
+        if ($?) {
+            Write-Output " [o] User '$name' ($samAccountName) created"
+        } else {
+            Write-Output " [x] Failed to create user '$name' ($samAccountName)!"
+        }
+        return $user
     }
 }
 
