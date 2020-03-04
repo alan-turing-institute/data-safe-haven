@@ -6,12 +6,13 @@ Write-Host "`n"
 
 # Install NuGet
 # -------------
-Write-Host "Installing NuGet..."
-Install-PackageProvider -Name NuGet -Force 2>&1 | Out-Null
-if ($?) {
-    Write-Host " [o] Succeeded"
+$provider = "NuGet"
+Write-Host "Installing $provider..."
+Install-PackageProvider -Name $provider -Force 2>&1 | Out-Null
+if (Get-PackageProvider -ListAvailable -Name $provider) {
+    Write-Host " [o] $provider is installed"
 } else {
-    Write-Host " [x] Failed!"
+    Write-Host " [x] Failed to install $provider!"
 }
 
 
@@ -20,10 +21,10 @@ if ($?) {
 foreach ($module in ("PowerShellGet", "PSWindowsUpdate")) {
     Write-Host "Installing $module..."
     Install-Module -Name $module -Force -AllowClobber
-    if ($?) {
-        Write-Host " [o] Succeeded"
+    if (Get-Module -ListAvailable -Name $module) {
+        Write-Host " [o] $module is installed"
     } else {
-        Write-Host " [x] Failed!"
+        Write-Host " [x] Failed to install $module!"
     }
 }
 
