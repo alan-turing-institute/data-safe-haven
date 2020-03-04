@@ -131,7 +131,7 @@
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
   - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
   - Generate a new full configuration file for the new SRE using the following commands.
-    - `Import-Module ./common_powershell/Configuration.psm1 -Force`
+    - `Import-Module ./deployment/common/Configuration.psm1 -Force`
     - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
   - A full configuration file for the new SRE will be created at `environment_configs/full/sre_<sre-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
   - Commit this new full configuration file to the Safe Haven repository
