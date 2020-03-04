@@ -273,28 +273,29 @@ foreach ($VM in $testVMs) {
 }
 
 
-# Create a hash table which maps current SHM VMs to new ones
-# ----------------------------------------------------------
+# Create a hash table which maps test VMs to benchmark ones
+# ---------------------------------------------------------
 $vmHashTable = @{}
-foreach ($benchmarkVM in $benchmarkVMs) {
-    $nameToCheck = $benchmarkVM.Name
+foreach ($testVM in $testVMs) {
+    $nameToCheck = $testVM.Name
     # Override matches for names that would otherwise fail
-    if ($nameToCheck.StartsWith("CRAN-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
-    if ($nameToCheck.StartsWith("PYPI-MIRROR")) { $nameToCheck = $nameToCheck.Replace("MIRROR", "") }
-    if ($nameToCheck.StartsWith("RDSSH1")) { $nameToCheck = $nameToCheck.Replace("RDSSH1", "APP-SRE") }
-    if ($nameToCheck.StartsWith("RDSSH2")) { $nameToCheck = $nameToCheck.Replace("RDSSH2", "DKP-SRE") }
+    if ($nameToCheck.StartsWith("CRAN-EXTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("CRAN-EXTERNAL-MIRROR", "CRAN-MIRROR-EXTERNAL") }
+    if ($nameToCheck.StartsWith("CRAN-INTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("CRAN-INTERNAL-MIRROR", "CRAN-MIRROR-INTERNAL") }
+    if ($nameToCheck.StartsWith("PYPI-EXTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("PYPI-EXTERNAL-MIRROR", "PYPI-MIRROR-EXTERNAL") }
+    if ($nameToCheck.StartsWith("PYPI-INTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("PYPI-INTERNAL-MIRROR", "PYPI-MIRROR-INTERNAL") }
+    if ($nameToCheck.StartsWith("APP-SRE")) { $nameToCheck = $nameToCheck.Replace("APP-SRE", "RDSSH1") }
+    if ($nameToCheck.StartsWith("DKP-SRE")) { $nameToCheck = $nameToCheck.Replace("DKP-SRE", "RDSSH2") }
     # Only match against names that have not been matched yet
-    $testVMNames = $testVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
-    $testVM = $testVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $testVMNames -Value $nameToCheck) }
-    $vmHashTable[$benchmarkVM] = $testVM
+    $benchmarkVMNames = $benchmarkVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
+    $benchmarkVM = $benchmarkVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $benchmarkVMNames -Value $nameToCheck) }
+    $vmHashTable[$testVM] = $benchmarkVM
     Add-LogMessage -Level Info "matched $($testVM.Name) => $($benchmarkVM.Name)"
 }
 
-
 # Iterate over paired VMs checking their network settings
 # -------------------------------------------------------
-foreach ($benchmarkVM in $benchmarkVMs) {
-    $testVM = $vmHashTable[$benchmarkVM]
+foreach ($testVM in $testVMs) {
+    $benchmarkVM = $vmHashTable[$testVM]
 
     # Get parameters for new VM
     # -------------------------
