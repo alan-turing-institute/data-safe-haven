@@ -205,6 +205,7 @@ function Get-NSGRules {
         return $effectiveRules
     } else {
         $effectiveRules = $effectiveNSG.EffectiveSecurityRules
+        # Sometimes the address prefix is retrieved as ("0.0.0.0/0", "0.0.0.0/0") rather than "*" (although these mean the same thing)
         foreach ($effectiveRule in $effectiveRules) {
             if ($effectiveRule.SourceAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.SourceAddressPrefix.Clear(); $effectiveRule.SourceAddressPrefix.Add("*") }
             if ($effectiveRule.DestinationAddressPrefix[0] -eq "0.0.0.0/0") { $effectiveRule.DestinationAddressPrefix.Clear(); $effectiveRule.DestinationAddressPrefix.Add("*") }
@@ -212,7 +213,6 @@ function Get-NSGRules {
         return $effectiveRules
     }
 }
-
 
 # Get original context before switching subscription
 # --------------------------------------------------
@@ -233,10 +233,11 @@ if ($BenchmarkSubscription) {
     # Get the NSG rules and connectivity for each VM in the subscription
     foreach ($benchmarkVM in $benchmarkVMs) {
         Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($VM.Name)"
-        $DestinationPort = 80
-        if ($VM.Name.Contains("MIRROR")) { $DestinationPort = 443 }
         $JsonConfig[$benchmarkVM.Name] = [ordered]@{
-            Internet = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80
+            InternetFromPort = [ordered]@{
+                80 = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80
+                443 = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 443
+            }
             Rules = Get-NSGRules -VM $benchmarkVM
         }
     }
@@ -254,7 +255,9 @@ $benchmarkVMs = @()
 foreach ($JsonVm in $JsonConfig.PSObject.Properties) {
     $VM = New-Object -TypeName PsObject
     $VM | Add-Member -MemberType NoteProperty -Name Name -Value $JsonVm.Name
-    $VM | Add-Member -MemberType NoteProperty -Name Internet -Value $JsonVm.PSObject.Properties.Value.Internet
+    $VM | Add-Member -MemberType NoteProperty -Name InternetFromPort -Value @{}
+    $VM.InternetFromPort.80 = $JsonVm.PSObject.Properties.Value.InternetFromPort.80
+    $VM.InternetFromPort.443 = $JsonVm.PSObject.Properties.Value.InternetFromPort.443
     $VM | Add-Member -MemberType NoteProperty -Name Rules -Value @()
     foreach ($rule in $JsonVm.PSObject.Properties.Value.Rules) {
         if ($rule.Name) { $VM.Rules += $(Convert-RuleToEffectiveRule $rule) }
@@ -302,10 +305,6 @@ foreach ($testVM in $testVMs) {
     $_ = Set-AzContext -SubscriptionId $Subscription
     Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($testVM.Name)"
     $testRules = Get-NSGRules -VM $testVM
-    # Set appropriate port for testing internet access
-    $DestinationPort = 80
-    if ($testVM.Name.Contains("MIRROR")) { $DestinationPort = 443 }
-    $testInternet = Test-OutboundConnection -VM $testVM -DestinationAddress "google.com" -DestinationPort $DestinationPort
     # Check that each NSG rule has a matching equivalent (which might be named differently)
     Add-LogMessage -Level Info "Comparing NSG rules for $($benchmarkVM.Name) and $($testVM.Name)"
     Add-LogMessage -Level Info "... ensuring that all $($benchmarkVM.Name) rules exist on $($testVM.Name)"
@@ -315,11 +314,15 @@ foreach ($testVM in $testVMs) {
 
     # Check that internet connectivity is the same for matched VMs
     Add-LogMessage -Level Info "Comparing internet connectivity for $($benchmarkVM.Name) and $($testVM.Name)..."
-    if ($benchmarkVM.Internet -eq $testInternet) {
-        Add-LogMessage -Level Success "The internet is '$($benchmarkVM.Internet)' from both"
-    } else {
-        Add-LogMessage -Level Failure "The internet is '$($benchmarkVM.Internet)' from $($benchmarkVM.Name)"
-        Add-LogMessage -Level Failure "The internet is '$($testInternet)' from $($testVM.Name)"
+    # Test internet access on ports 80 and 443
+    foreach ($port in (80, 443)) {
+        $testInternet = Test-OutboundConnection -VM $testVM -DestinationAddress "google.com" -DestinationPort $port
+        if ($benchmarkVM.InternetFromPort[$port] -eq $testInternet) {
+            Add-LogMessage -Level Success "The internet is '$($benchmarkVM.InternetFromPort[$port])' on port $port from both"
+        } else {
+            Add-LogMessage -Level Failure "The internet is '$($benchmarkVM.InternetFromPort[$port])' on port $port from $($benchmarkVM.Name)"
+            Add-LogMessage -Level Failure "The internet is '$($testInternet)' on port $port from $($testVM.Name)"
+        }
     }
 }
 

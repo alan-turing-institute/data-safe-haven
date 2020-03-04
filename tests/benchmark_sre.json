@@ -1,6 +1,9 @@
 {
     "DSG201912021337-160": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Internet_Out",
                 "Protocol": "All",
@@ -151,7 +154,10 @@
         ]
     },
     "DATA-DSG11": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Deny_Internet",
                 "Protocol": "All",
@@ -302,7 +308,10 @@
         ]
     },
     "DC-DSG11": {
-        "Internet": "Reachable",
+        "InternetFromPort": {
+            "80": "Reachable",
+            "443": "Reachable"
+        },
         "Rules": [
             {
                 "Name": "AllowVnetInBound",
@@ -433,7 +442,10 @@
         ]
     },
     "GITLAB-DSG11": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Internet_Out",
                 "Protocol": "All",
@@ -584,7 +596,10 @@
         ]
     },
     "HACKMD-DSG11": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Internet_Out",
                 "Protocol": "All",
@@ -735,7 +750,10 @@
         ]
     },
     "RDS-DSG11": {
-        "Internet": "Reachable",
+        "InternetFromPort": {
+            "80": "Reachable",
+            "443": "Reachable"
+        },
         "Rules": [{
                 "Name": "HTTPS_In",
                 "Protocol": "TCP",
@@ -910,7 +928,10 @@
         ]
     },
     "RDSSH1-DSG11": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Deny_Internet",
                 "Protocol": "All",
@@ -1061,7 +1082,10 @@
         ]
     },
     "RDSSH2-DSG11": {
-        "Internet": "Unreachable",
+        "InternetFromPort": {
+            "80": "Unreachable",
+            "443": "Unreachable"
+        },
         "Rules": [{
                 "Name": "Deny_Internet",
                 "Protocol": "All",
