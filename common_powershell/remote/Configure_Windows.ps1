@@ -21,7 +21,7 @@ if ($success) {
 
 # Install Windows updates
 # -----------------------
-Write-Host "Installing Windows updates:"
+Write-Host "  [ ] Installing Windows updates..."
 Get-WindowsUpdate -MicrosoftUpdate | % { $_.Title }
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
 if ($?) {
@@ -33,5 +33,5 @@ if ($?) {
 
 # Report any updates that were installed today
 # --------------------------------------------
-Write-Host "Successfully installed updates:"
+Write-Host " [ ] Installed updates are as follows:"
 Get-WUHistory | Where-Object { ($_.Date.Date -eq (Get-Date).Date) -and ($_.Result -eq "Succeeded") } | % { $_.Title }
