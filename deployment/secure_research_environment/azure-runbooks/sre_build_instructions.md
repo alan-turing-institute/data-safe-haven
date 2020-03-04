@@ -138,7 +138,7 @@
 
   ## 3. Prepare Safe Haven Management deployment
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/01_configure_shm_dc/` directory within the Safe Haven repository.
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 
   ### Clear out any remaining SRE data from previous deployments

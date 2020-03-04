@@ -4,10 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -71,7 +71,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     # ---------------------------------------
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_Users_And_Groups_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
         testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
@@ -86,7 +86,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE DNS records from SHM DC
     # ----------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
         sreFqdn = "`"$($config.sre.domain.fqdn)`""
         identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
@@ -100,7 +100,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE AD Trust from SHM DC
     # -------------------------------
     Add-LogMessage -Level Info "Removing SRE AD Trust from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_AD_Trust_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_AD_Trust_Remote.ps1" -Resolve
     $params = @{
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
         sreFqdn = "`"$($config.sre.domain.fqdn)`""
@@ -112,7 +112,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove RDS Gateway RADIUS Client from SHM NPS
     # ---------------------------------------------
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Remove_SRE_Data_From_SHM" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
     $params = @{
         rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
     }
