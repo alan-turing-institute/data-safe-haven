@@ -119,7 +119,7 @@ function Test-OutboundConnection {
             }
         }
     }
-    Add-LogMessage -Level Info "... testing connectivity"
+    Add-LogMessage -Level Info "... testing connectivity on port $DestinationPort"
     $networkCheck = Test-AzNetworkWatcherConnectivity -NetworkWatcher $networkWatcher -SourceId $VM.Id -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -ErrorVariable NotAvailable -ErrorAction SilentlyContinue
     if ($NotAvailable) {
         Add-LogMessage -Level Warning "Unable to test connection for $($VM.Name)"
@@ -235,8 +235,8 @@ if ($BenchmarkSubscription) {
         Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($VM.Name)"
         $JsonConfig[$benchmarkVM.Name] = [ordered]@{
             InternetFromPort = [ordered]@{
-                80 = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80
-                443 = Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 443
+                "80" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 80)
+                "443" = (Test-OutboundConnection -VM $benchmarkVM -DestinationAddress "google.com" -DestinationPort 443)
             }
             Rules = Get-NSGRules -VM $benchmarkVM
         }
@@ -244,15 +244,17 @@ if ($BenchmarkSubscription) {
     $OutputFile = New-TemporaryFile
     Out-File -FilePath $OutputFile -Encoding "UTF8" -InputObject ($JsonConfig | ConvertTo-Json -Depth 10)
     Add-LogMessage -Level Info "Configuration file generated at '$($OutputFile.FullName)'"
+    $BenchmarkJsonPath = $OutputFile.FullName
 } elseif ($BenchmarkConfig) {
-    $JsonConfig = Get-Content -Path $BenchmarkConfig -Raw -Encoding UTF-8 | ConvertFrom-Json
+    $BenchmarkJsonPath = $BenchmarkConfig
 }
 
 
 # Deserialise VMs from JSON config
 # --------------------------------
+$BenchmarkJsonConfig = Get-Content -Path $BenchmarkJsonPath -Raw -Encoding UTF-8 | ConvertFrom-Json
 $benchmarkVMs = @()
-foreach ($JsonVm in $JsonConfig.PSObject.Properties) {
+foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
     $VM = New-Object -TypeName PsObject
     $VM | Add-Member -MemberType NoteProperty -Name Name -Value $JsonVm.Name
     $VM | Add-Member -MemberType NoteProperty -Name InternetFromPort -Value @{}
