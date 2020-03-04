@@ -21,7 +21,7 @@ if ($success) {
 
 # Install Windows updates
 # -----------------------
-Write-Host "  [ ] Installing Windows updates..."
+Write-Host " [ ] Installing Windows updates..."
 Get-WindowsUpdate -MicrosoftUpdate | % { $_.Title }
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
 if ($?) {
