@@ -1,4 +1,3 @@
-# You will need `Install-Package Communary.PASM`
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Name of the test (proposed) subscription")]
     [string]$Subscription,
@@ -10,6 +9,11 @@ param(
     [switch]$VerboseLogging = $false
 )
 
+# Install required modules
+if (-Not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force}
+if (-Not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force}
+
+# Import modules
 Import-Module Az
 Import-Module Communary.PASM
 Import-Module $PSScriptRoot/../common_powershell/Logging.psm1 -Force
