@@ -42,7 +42,7 @@ $ruleName = "SRE $sreId RDS Gateway RADIUS inbound ($rdsGatewayIp)"
 if (Get-NetFirewallRule | Where-Object {$_.DisplayName -eq "$ruleName"}) {
     Write-Host " [o] Inbound RADIUS firewall rule '$ruleName' already exists"
     Write-Host "Updating '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
-    $_ = Set-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1812","1813" -Profile Domain -Enabled True
+    $_ = Set-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645","1646","1812","1813" -Profile Domain -Enabled True
     if ($?) {
         Write-Host -ForegroundColor DarkGreen " [o] Successfully updated RDS gateway inbound rule"
     } else {
@@ -50,7 +50,7 @@ if (Get-NetFirewallRule | Where-Object {$_.DisplayName -eq "$ruleName"}) {
     }
 } else {
     Write-Host "Adding '$ruleName' inbound RADIUS firewall rule for $rdsGatewayFqdn ($rdsGatewayIp)..."
-    $_ = New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1812","1813" -Profile Domain -Enabled True
+    $_ = New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -RemoteAddress $rdsGatewayIp -Action Allow -Protocol UDP -LocalPort "1645","1646","1812","1813" -Profile Domain -Enabled True
     if ($?) {
         Write-Host -ForegroundColor DarkGreen " [o] Successfully added RDS gateway inbound rule"
     } else {

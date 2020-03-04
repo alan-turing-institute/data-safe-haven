@@ -242,7 +242,6 @@
   - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<shm-id>` key vault, under "SECRETS".
     - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
     - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
-  <!-- - Login as the **domain** admin user (eg. `@dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.) -->
   - **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. You must ensure that you have assigned a licence to this user so that MFA will work correctly. In the following example, we assume that you are using the automatically-created test researcher.**
   - In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
   - Open the `Safe Haven Security Groups` OU
@@ -252,9 +251,8 @@
   - Select the `<sre-id> Test Researcher` and click "Ok"
   - Click "Ok" again to exit the add users dialogue
   - At this point please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
-  <!-- - Launch a local web browser and go to `https://<rds-name>.<sre-id>.<safe haven domain>/RDWeb/webclient/` (eg. `https://rdg-sre-sandbox.sandbox.dsgroupdev.co.uk/RDWeb/webclient/`) and log in. -->
   - Launch a local web browser and go to `https://<sre-id>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
-      - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient. <!-- , but get an IIS landing page when accessing `https://<rds-name>.<sre-id>.<safe haven domain>/`,-->
+      - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
           - Go back to the previous section and run the webclient installation step.
           - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
               - `Import-RDWebClientBrokerCert <path-to-full-certificate-chain>`
@@ -262,19 +260,20 @@
       - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
           - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
           - OR open a new private / incognito browser window and visit the page.
-  - Once you have logged in, click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app.
       - **Troubleshooting** If you can see an empty screen with "Work resources" but no app icons, your user has not been correctly added to the security group.
-  - Once you have approved the sign in, you should see a remote Windows desktop.
+  - Once you have logged in, click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app.
       - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
           - Ensure that both the SHM NPS server and the RDS Gateway are running
           - Ensure that the [SHM NPS server RADIUS Client configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
-          - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
           - Use the Event viewer on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
           - Use the Event viewer on the SHM NPS server  (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
+          - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful. This may indicate that the shared secret is different between the SHM and SRE.
+          - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the SHM NPS server RADIUS Client configuration and the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
           - Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
       - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been [increased as described in a previous section](sre_build_instructions.md#increase-the-authorisation-timeout-to-allow-for-mfa). It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
       - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
       - **Troubleshooting** If you are able to log into the webclient with a username and password but cannot connect to the presentation server (as no MFA prompt is given), please look at [this documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)). In particular, ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`).
+  - Once you have approved the sign in, you should see a remote Windows desktop.
   - **NOTE:** The other apps will not work until the other servers have been deployed.
 
 

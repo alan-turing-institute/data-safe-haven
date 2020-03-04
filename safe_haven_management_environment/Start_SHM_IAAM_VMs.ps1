@@ -15,11 +15,11 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 Write-Host "===Starting AD DCs==="
 Write-Host " - Waiting for Primary AD to start before starting other VMs."
-Start-AzVM -ResourceGroupName $config.dc.rg -Name $config.dc.vmName
+Restart-AzVM -ResourceGroupName $config.dc.rg -Name $config.dc.vmName
 Write-Host " - Waiting for Backup AD to start before starting other VMs."
-Start-AzVM -ResourceGroupName $config.dc.rg -Name $config.dcb.vmName
+Restart-AzVM -ResourceGroupName $config.dc.rg -Name $config.dcb.vmName
 Write-Host "===Starting NPS Server==="
-Start-AzVM -ResourceGroupName $config.nps.rg -Name $config.nps.vmName
+Restart-AzVM -ResourceGroupName $config.nps.rg -Name $config.nps.vmName
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

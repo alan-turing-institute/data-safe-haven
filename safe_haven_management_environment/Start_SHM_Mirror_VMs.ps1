@@ -14,7 +14,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 Write-Host "===Starting all Mirror Servers==="
-Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | Start-AzVM -NoWait
+Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | Restart-AzVM -NoWait
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

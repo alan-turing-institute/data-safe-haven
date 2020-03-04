@@ -14,7 +14,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
 Write-Host "===Stopping all Deployment Servers==="
-Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL"  | Start-AzVM -NoWait
+Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL"  | Restart-AzVM -NoWait
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;

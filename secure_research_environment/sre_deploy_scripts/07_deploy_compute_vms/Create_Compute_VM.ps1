@@ -237,7 +237,7 @@ Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
 # Restart after the NSG switch
 # ----------------------------
 Add-LogMessage -Level Info "Rebooting $vmName..."
-$_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+$_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 if ($?) {
     Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
 } else {

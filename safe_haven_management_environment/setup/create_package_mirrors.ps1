@@ -299,7 +299,7 @@ function Deploy-PackageMirror {
             }
         }
         # Restart the VM
-        $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        $_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
 
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
