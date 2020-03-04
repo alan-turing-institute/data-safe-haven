@@ -380,7 +380,7 @@ Write-Output $result.Value
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
-    $_ = Start-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
+    $_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
     if ($?) {
         Add-LogMessage -Level Success "Rebooting the ${name} succeeded"
     } else {
