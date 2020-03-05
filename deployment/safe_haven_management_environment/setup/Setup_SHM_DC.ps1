@@ -4,11 +4,11 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/GenerateSasToken.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -221,9 +221,9 @@ foreach ($containerName in ("shm-dsc-dc", "shm-configuration-dc", "sre-rds-sh-pa
 Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
 # Upload DSC scripts
 Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) files to blob storage"
-$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc1/CreateADPDC.zip" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-setup-scripts" "CreateADPDC.zip") -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../arm_templates/shmdc/dscdc2/CreateADBDC.zip" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
 $success = $success -and $?
 if ($?) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
@@ -232,23 +232,22 @@ if ($?) {
 }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/GPOs.zip" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "GPOs.zip") -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Run_ADSync.ps1" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Run_ADSync.ps1") -Force
 $success = $success -and $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/CreateUsers.ps1" -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "CreateUsers.ps1") -Force
 $success = $success -and $?
 # Expand the AD disconnection template before uploading
 $adScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot ".." "scripts" "shmdc" "artifacts" "Disconnect_AD.template.ps1") -Raw
+$template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw
 $tmplKeyVaultName = $config.keyvault.secretNames.aadAdminPassword
 $tmplAadPasswordName = $config.keyvault.secretNames.aadAdminPassword
 $tmplShmFqdn = $config.domain.fqdn
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $adScriptLocalFilePath
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
 $success = $success -and $?
-# $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File "$PSScriptRoot/../scripts/shmdc/artifacts/Disconnect_AD.ps1" -Force
-# $success = $success -and $?
+Remove-Item $adScriptLocalFilePath
 if ($?) {
     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {
@@ -315,7 +314,7 @@ $params = @{
     VNET_DNS1 = $config.dc.ip
     VNET_DNS2 = $config.dcb.ip
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmvnet/shm-vnet-template.json" -Params $params -ResourceGroupName $config.network.vnet.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 
 
 # Create SHM DC resource group if it does not exist
@@ -356,7 +355,7 @@ $params = @{
     Virtual_Network_Subnet = $config.network.subnets.identity.Name
     VM_Size = $config.dc.vmSize
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/shmdc/shm-dc-template.json" -Params $params -ResourceGroupName $config.dc.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 
 
 # Import artifacts from blob storage
@@ -367,7 +366,7 @@ $storageContainerName = "shm-configuration-dc"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Import_Artifacts.ps1" -Resolve
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
     remoteDir = "`"C:\Installation`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
@@ -386,7 +385,7 @@ Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmNam
 $adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Configuration.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1"
 $params = @{
     oubackuppath = "`"C:\Installation\GPOs`""
     domainou = "`"$($config.domain.dn)`""
@@ -403,8 +402,8 @@ Write-Output $result.Value
 
 # Install required Powershell packages; set the OS language to en-GB then install updates
 # ---------------------------------------------------------------------------------------
-$installationScriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
-$configurationScriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
+$installationScriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
+$configurationScriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1"
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     # Install Powershell modules
     Add-LogMessage -Level Info "Installing required Powershell packages on: '$vmName'..."
@@ -420,7 +419,7 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
 # Configure group policies
 # ------------------------
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Configure_Group_Policies.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 Write-Output $result.Value
 
@@ -428,7 +427,7 @@ Write-Output $result.Value
 # Active directory delegation
 # ---------------------------
 Add-LogMessage -Level Info "Enabling Active Directory delegation on: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmdc" "remote" "Active_Directory_Delegation.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Delegation.ps1"
 $params = @{
     netbiosName = "`"$($config.domain.netbiosName)`""
     ldapUsersGroup = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""

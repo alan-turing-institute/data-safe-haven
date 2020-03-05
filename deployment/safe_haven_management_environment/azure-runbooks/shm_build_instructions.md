@@ -115,16 +115,11 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
 
 ## 5. Deploy key vault for SHM secrets
-1. Ensure you are logged into Azure within PowerShell with the command:
-   ```pwsh
-   Connect-AzAccount
-   ```
-2. From a clone of the data-safe-haven repository, setup the keyvault with the following commands (where `<SHM ID>` is the one defined in the config file)
-   ```pwsh
-   cd safe_haven_management_environment/setup
-   ./setup_shm_keyvault.ps1 -shmId <SHM ID>
-   ```
-3. This will take **a few minutes** to run.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Setup_SHM_KeyVault.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- This will take **a few minutes** to run.
 
 ## 6. Setup Safe Haven administrators
 
@@ -227,18 +222,12 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 ## 7. Deploy and configure VNET and Domain Controllers
 
 ### Deploy the Virtual Network and Active Directory Domain Controller
-1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
-   ```pwsh
-   Connect-AzAccount
-   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
-   ```
-2. From a clone of the data-safe-haven repository, setup the virtual network and domain controller with the following commands (where `<SHM ID>` is the one defined in the config file)
-   ```pwsh
-   cd safe_haven_management_environment/setup
-   ./setup_shm_dc.ps1 -shmId <SHM ID>
-   ```
-3. This will take **around one hour** to run.
-4. Once the script exits successfully you should see the following resource groups under the SHM subscription:
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+- This will take **around one hour** to run.
+- Once the script exits successfully you should see the following resource groups under the SHM subscription:
    ![Resource groups](images/resource_groups.png)
 
 
@@ -546,17 +535,7 @@ If you get a `New-msolserviceprincipalcredential: Access denied` error stating `
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
 
-<!-- ### Prerequisites
-Ensure your Azure CLI client is at version `2.0.55` or above. To keep the progress output manageable, the deployment script makes use of the `--output none` option, which is only available in version `2.0.55` and above.
-  - To see your current version run `az --version` and scroll up to see the version of the `azure-cli` component.
-  - To update your Azure CLI, see [this link](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) -->
-
 ### Deploying package mirrors
-<!-- 1. Ensure you are logged into the Azure CLI (bash) with the commands:
-   ```bash
-   az login
-   az account list
-   ``` -->
 1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
    ```pwsh
    Connect-AzAccount
