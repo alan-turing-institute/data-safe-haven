@@ -4,10 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -32,7 +32,6 @@ $dcNpsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -S
 # Deploy NPS from template
 # ------------------------
 Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
-$templatePath = Join-Path $PSScriptRoot ".." "arm_templates" "shmnps" "shm-nps-template.json"
 $params = @{
     Administrator_User = $dcNpsAdminUsername
     Administrator_Password = (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force)
@@ -48,13 +47,13 @@ $params = @{
     NPS_IP_Address = $config.nps.ip
     OU_Path = $config.domain.serviceServerOuPath
 }
-Deploy-ArmTemplate -TemplatePath "$templatePath" -Params $params -ResourceGroupName $config.nps.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
 
 
 # Install required Powershell packages
 # ------------------------------------
 Add-LogMessage -Level Info "Installing required Powershell packages on: '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
 Write-Output $result.Value
 
@@ -62,7 +61,7 @@ Write-Output $result.Value
 # Set the OS language to en-GB and install updates
 # ------------------------------------------------
 Add-LogMessage -Level Info "Setting OS language for: '$($config.nps.vmName)' and installing updates..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg
 Write-Output $result.Value
 
@@ -70,12 +69,23 @@ Write-Output $result.Value
 # Run configuration script remotely
 # ---------------------------------
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "shmnps" "remote" "Prepare_NPS_Server.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
 $params = @{
     remoteDir = "`"C:\Installation`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 Write-Output $result.Value
+
+
+# Restart the NPS server
+# ----------------------
+Add-LogMessage -Level Info "Restarting $($config.nps.vmName)..."
+$_ = Restart-AzVM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+if ($?) {
+    Add-LogMessage -Level Success "Restarting NPS $($config.nps.vmName) succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Restarting NPS $($config.nps.vmName) failed!"
+}
 
 
 # Switch back to original subscription
