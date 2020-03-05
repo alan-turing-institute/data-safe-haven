@@ -553,18 +553,10 @@ In order to tear down the SHM, use the following procedure:
   - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 5. Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 
-### Tear down any attached SREs
-1. From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
-   ```pwsh
-   cd secure_research_environment/sre_deploy_scripts
-   ./Teardown_SRE.ps1 -sreId <SRE ID>
-   ```
-2. Repeat this step for all SREs attached to this SHM
-
-
-### Tear down the SHM
-1. From a clone of the data-safe-haven repository, run the following commands, where `<SHM ID>` is the one defined in the config file.
-  ```pwsh
-  cd deployment/administration
-  ./SRE_Teardown.ps1 -sreId <SRE ID>
-  ```
+### Tear down any attached SREs then the SHM
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- For each SRE that each attached to the SHM, do the following:
+  - Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
+- Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config

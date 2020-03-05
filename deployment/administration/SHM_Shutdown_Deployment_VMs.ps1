@@ -4,7 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 # Get SHM config
 $config = Get-ShmFullConfig($shmId)
@@ -13,7 +14,7 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
-Write-Host "===Stopping all Deployment Servers==="
+Add-LogMessage -Level Info "Stopping all Deployment Servers"
 Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL" | Stop-AzVM -Force -NoWait
 
 # Switch back to original subscription

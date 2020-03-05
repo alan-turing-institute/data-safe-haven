@@ -4,7 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 # Get SHM config
 $config = Get-ShmFullConfig($shmId)
@@ -13,12 +14,12 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
-Write-Host "===Starting AD DCs==="
-Write-Host " - Waiting for Primary AD to start before starting other VMs."
+Add-LogMessage -Level Info "Starting AD DCs..."
+Add-LogMessage -Level Info " - Waiting for Primary AD to start before starting other VMs."
 Restart-AzVM -ResourceGroupName $config.dc.rg -Name $config.dc.vmName
-Write-Host " - Waiting for Backup AD to start before starting other VMs."
+Add-LogMessage -Level Info " - Waiting for Backup AD to start before starting other VMs."
 Restart-AzVM -ResourceGroupName $config.dc.rg -Name $config.dcb.vmName
-Write-Host "===Starting NPS Server==="
+Add-LogMessage -Level Info "Starting NPS Server"
 Restart-AzVM -ResourceGroupName $config.nps.rg -Name $config.nps.vmName
 
 # Switch back to original subscription

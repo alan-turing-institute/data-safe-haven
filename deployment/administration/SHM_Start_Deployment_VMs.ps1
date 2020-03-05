@@ -4,7 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 # Get SHM config
 $config = Get-ShmFullConfig($shmId)
@@ -13,8 +14,8 @@ $config = Get-ShmFullConfig($shmId)
 $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
-Write-Host "===Starting all Mirror Servers==="
-Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | Restart-AzVM -NoWait
+Add-LogMessage -Level Info "Stopping all Deployment Servers"
+Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL"  | Restart-AzVM -NoWait
 
 # Switch back to original subscription
 $_ = Set-AzContext -Context $prevContext;
