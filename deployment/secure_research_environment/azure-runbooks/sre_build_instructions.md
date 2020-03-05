@@ -288,18 +288,16 @@
 
   ## 8. Deploy Web Application Servers (Gitlab and HackMD)
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/06_create_web_application_servers/` directory of the Safe Haven repository.
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run the `./Create_Web_App_Servers.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
   - The deployment will take a few minutes to complete
 
   ### Test GitLab Server
-  - GitLab is fully configured by the `Create_Web_App_Servers.ps1` deployment script
   - There is a built-in `root` user, whose password is stored in the SRE KeyVault (see SRE config file for KeyVault and secret names).
   - You can test Gitlab from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <sre-id> Research Users` security group.
 
   ### Test HackMD Server
-  - HackMD is fully configured by the `Create_Web_App_Servers.ps1` deployment script
   - You can test HackMD from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
 
   ## 9. Deploy initial shared compute VM
@@ -309,7 +307,7 @@
 
   ### Deploy a compute VM
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms/` directory within the Safe Haven repository.
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
   - Deploy a new VM into an SRE environment using `./Create_Compute_VM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
@@ -330,7 +328,7 @@
 
   ## 10. Apply network configuration
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Change to the `secure_research_environment/sre_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
@@ -340,7 +338,7 @@
 
   **Note: this script should not normally be run manually**
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Change to the `secure_research_environment/sre_deploy_scripts/08_apply_network_configuration/` directory of the Safe Haven repository
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run the `./Unpeer_Sre_And_Mirror_Networks.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
@@ -365,4 +363,4 @@
     - `RDG-SRE-<sre-id>` (Remote Desktop Gateway)
     - `APP-SRE-<sre-id>` (Remote Desktop app server)
     - `DKP-SRE-<sre-id>` (Remote Desktop desktop server)
-    - `DSVM-0-1-2019082900-SRE-<sre-id>-160`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
+    - `SRE-<sre-id>-160-DSVM-0-1-2019082900`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)

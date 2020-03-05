@@ -4,15 +4,15 @@ param(
     [Parameter(Position = 1,Mandatory = $true,HelpMessage = "Last octet of IP address eg. '160'")]
     [string]$ipLastOctet = (Read-Host -Prompt "Last octet of IP address eg. '160'"),
     [Parameter(Position = 2,Mandatory = $false,HelpMessage = "Enter VM size to use (or leave empty to use default)")]
-    [string]$vmSize = "" #(Read-Host -prompt "Enter VM size to use (or leave empty to use default)")
+    [string]$vmSize = ""
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Mirrors.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -248,7 +248,7 @@ if ($?) {
 # Create Postgres roles
 # ---------------------
 Add-LogMessage -Level Info "[ ] Ensuring Postgres DB roles and initial shared users exist on VM $vmName"
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "create_postgres_roles.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "remote_scripts" "create_postgres_roles.sh"
 $params = @{
     DBADMINROLE = "admin"
     DBADMINUSER = "dbadmin"
@@ -270,7 +270,7 @@ Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
 $zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "vm_image_management" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
 if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
@@ -288,7 +288,7 @@ Add-LogMessage -Level Info "Uploading smoke tests to the DSVM..."
 $zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
 Remove-Item -Path $zipFilePath
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "upload_smoke_tests.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "remote_scripts" "upload_smoke_tests.sh"
 $params = @{
     PAYLOAD = $zipFileEncoded
     ADMIN_USERNAME = $dsvmAdminUsername
