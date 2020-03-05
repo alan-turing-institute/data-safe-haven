@@ -524,40 +524,21 @@ This is because, without this policy, the NPS server will reject their authentic
 ### When to deploy mirrors
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
-
 ### Deploying package mirrors
-1. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
-   ```pwsh
-   Connect-AzAccount
-   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
-   ```
-2. From a clone of the data-safe-haven repository, deploy package mirrors (depending on which tiers of SRE you want to support) using the following commands (where `<SHM ID>` is the one defined in the config file):
-   ```pwsh
-   cd safe_haven_management_environment/setup
-   ./create_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
-   ```
-3. This will take **around 20 minutes** to run.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Create_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
+- This will take **around 20 minutes** to run.
 
 
 ### [Optional] Tearing down package mirrors
 During normal usage, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
-
-1. Ensure you are logged into the Azure CLI (bash) with the commands:
-   ```bash
-   az login
-   az account list
-   ```
-2. Ensure you are logged into Azure within PowerShell and using the correct subscription with the commands:
-   ```pwsh
-   Connect-AzAccount
-   Set-AzContext -SubscriptionId "<SHM-subscription-id>"
-   ```
-3. From a clone of the data-safe-haven repository, teardown package mirrors (depending on which tiers of SRE you want to remove) using the following commands (where `<SHM ID>` is the one defined in the config file):
-   ```pwsh
-   cd safe_haven_management_environment/setup
-   ./teardown_package_mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>
-   ```
-4. This will take **a few minutes** to run.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Teardown_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
+- This will take **a few minutes** to run.
 
 ## 10. Tearing down the SHM
 In order to tear down the SHM, use the following procedure:

@@ -9,10 +9,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -30,9 +30,9 @@ $_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.locati
 
 # Common variable names
 # ---------------------
-$vnetName = "VNET_SHM_$($config.id.ToUpper())_PACKAGE_MIRRORS_TIER${tier}"
-$nsgInternalName = "NSG_SHM_$($config.id.ToUpper())_INTERNAL_PACKAGE_MIRRORS_TIER${tier}"
-$nsgExternalName = "NSG_SHM_$($config.id.ToUpper())_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}"
+$vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+$nsgInternalName = "NSG_SHM_$($config.id)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+$nsgExternalName = "NSG_SHM_$($config.id)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
 $subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
 $subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $vnetIpTriplet = "10.20.$tier"
@@ -230,7 +230,7 @@ function Deploy-PackageMirror {
 
     # Check whether the VM already exists
     # -----------------------------------
-    $vmName = "$($MirrorType.ToUpper())-$($MirrorDirection.ToUpper())-MIRROR-TIER-$tier"
+    $vmName = "$MirrorType-$MirrorDirection-MIRROR-TIER-$tier".ToUpper()
     $adminPasswordSecretName = ("shm-" + "$($config.id)".ToLower() + "-package-mirror-" + "$MirrorType".ToLower() + "-" + "$MirrorDirection".ToLower() + "-tier-$tier-admin-password")
     $_ = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {

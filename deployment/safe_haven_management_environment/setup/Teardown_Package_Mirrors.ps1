@@ -7,9 +7,9 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -29,7 +29,7 @@ function Remove-PackageMirror {
         [ValidateSet("Internal", "External")]
         $MirrorDirection
     )
-    $vmName = "$($MirrorType.ToUpper())-$($MirrorDirection.ToUpper())-MIRROR-TIER-$tier"
+    $vmName = "$MirrorType-$MirrorDirection-MIRROR-TIER-$tier".ToUpper()
     Remove-VirtualMachine -Name $vmName -ResourceGroupName $config.mirrors.rg
     Remove-VirtualMachineDisk -Name "$vmName-OS-DISK" -ResourceGroupName $config.mirrors.rg
     Remove-VirtualMachineDisk -Name "$vmName-DATA-DISK" -ResourceGroupName $config.mirrors.rg
@@ -42,7 +42,7 @@ function Remove-PackageMirror {
 
 $_ = Get-AzResourceGroup -Name $config.mirrors.rg -Location $config.location -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
-    Add-LogMessage -Level InfoSuccess "Resource group '$config.mirrors.rg' does not exist"
+    Add-LogMessage -Level InfoSuccess "Resource group '$($config.mirrors.rg)' does not exist"
 } else {
     # Tear down package mirrors
     # -------------------------
