@@ -454,7 +454,7 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
    ./setup_shm_nps.ps1 -shmId <SHM ID>
    ```
 3. This will take **a few minutes** to run.
-
+  - **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-shmId/joindomain' failed with message` you may find this error resolves if you wait and retry later.
 
 
 ### Configure NPS server
@@ -517,6 +517,7 @@ This is because, without this policy, the NPS server will reject their authentic
   - Enter "A" when prompted
   - If you are prompted to add webpages to exceptions then accept them.
   - **NOTE:** You may get a Javascript error. If you do, simply run this script again.
+  - **Troubleshooting:** If you see an error `New-MsolServicePrincipalCredential : Service principal was not found` you may find this error resolves if you retry later
 6. On the webpage pop-up, sign in as the "Global Administrator" (eg. `admin@<custom domain>`) user. Other administrators added as guests will not work for this step.
   - If you have not done so already, you may be prompted to add a phone number and backup email for the `admin@<custom domain>` account at this point.
 7. When prompted to `Provide your Tenant ID`, enter your Azure Active Directory ID. To get this:
