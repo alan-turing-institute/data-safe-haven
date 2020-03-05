@@ -4,11 +4,11 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/GenerateSasToken.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -76,7 +76,7 @@ ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName
                              ($artifactsFolderNameConfig, "GPOs.zip"),
                              ($artifactsFolderNameConfig, "StartMenuLayoutModification.xml"))) {
     $artifactsFolderName, $artifactsFileName = $folderFilePair
-    $_ = Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File "$PSScriptRoot/artifacts/$artifactsFolderName/$artifactsFileName" -Force
+    $_ = Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "artifacts" $artifactsFolderName $artifactsFileName) -Force
     if ($?) {
         Add-LogMessage -Level Success "Uploaded '$artifactsFileName' to '$artifactsFolderName'"
     } else {
@@ -131,7 +131,7 @@ $params = @{
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.subnets.identity.name
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-dc-template.json" -Params $params -ResourceGroupName $config.sre.dc.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-dc-template.json") -Params $params -ResourceGroupName $config.sre.dc.rg
 
 
 # Import artifacts from blob storage
@@ -141,7 +141,7 @@ Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.sre
 $blobNames = Get-AzStorageBlob -Container $artifactsFolderNameConfig -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $config.sre.storage.artifacts.rg -accountName $config.sre.storage.artifacts.accountName
 # Run import script remotely
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Import_Artifacts.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Import_Artifacts.ps1"
 $params = @{
     remoteDir = "`"$remoteUploadDir`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
@@ -156,7 +156,7 @@ Write-Output $result.Value
 # Install required Powershell packages
 # ------------------------------------
 Add-LogMessage -Level Info "Installing required Powershell packages on: '$($config.sre.dc.vmName)'..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
 
@@ -164,7 +164,7 @@ Write-Output $result.Value
 # Configure DNS
 # -------------
 Add-LogMessage -Level Info "Configuring DNS for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_DNS.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_DNS.ps1"
 $params = @{
     identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
     rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
@@ -179,7 +179,7 @@ Write-Output $result.Value
 # Create users, groups and OUs
 # ----------------------------
 Add-LogMessage -Level Info "Creating users, groups and OUs for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Create_Users_Groups_OUs.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Create_Users_Groups_OUs.ps1"
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     sreDn = "`"$($config.sre.domain.dn)`""
@@ -195,7 +195,7 @@ Write-Output $result.Value
 # Configure GPOs
 # --------------
 Add-LogMessage -Level Info "Configuring GPOs for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_GPOs.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_GPOs.ps1"
 $params = @{
     oubackuppath = "`"$remoteUploadDir\GPOs`""
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -209,7 +209,7 @@ Write-Output $result.Value
 # Set the OS language to en-GB and install updates
 # ------------------------------------------------
 Add-LogMessage -Level Info "Setting OS locale for: '$($config.sre.dc.vmName)' and installing updates..."
-$scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 Write-Output $result.Value
 
@@ -234,7 +234,7 @@ $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 $dcAdminPasswordEncrypted = ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 # Run domain configuration script remotely
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Domain_Trust.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_Domain_Trust.ps1"
 $params = @{
     sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
     sreDcAdminUsername = "`"$dcAdminUsername`""

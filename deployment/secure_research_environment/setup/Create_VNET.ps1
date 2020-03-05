@@ -38,7 +38,7 @@ $params = @{
     "GatewaySubnet Name" = $config.sre.network.subnets.gateway.Name
     "DNS Server IP Address" = $config.sre.dc.ip
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/../arm_templates/sre-vnet-gateway-template.json" -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Fetch VNet information

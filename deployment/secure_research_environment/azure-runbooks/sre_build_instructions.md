@@ -168,7 +168,7 @@
 
   ## 5. Deploy SRE Domain Controller
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/03_create_dc/` directory within the Safe Haven repository
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
   - The deployment will normally take around 30 minutes. Most of this is running the setup scripts after creating the VM. However it may take longer if many Windows updates need to be performed.
