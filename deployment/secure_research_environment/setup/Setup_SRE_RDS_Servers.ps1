@@ -4,11 +4,11 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/GenerateSasToken.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -118,7 +118,7 @@ $params = @{
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.subnets.rds.Name
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-rds-template.json" -Params $params -ResourceGroupName $config.sre.rds.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
 
 # Create blob containers in SRE storage account
@@ -150,12 +150,12 @@ Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot "templates" "Deploy_RDS_Environment.template.ps1") -Raw
+$template = Get-Content (Join-Path $PSScriptRoot ".." "scripts" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1") -Raw
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
 
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot "templates" "ServerList.template.xml") -Raw
+$template = Get-Content (Join-Path $PSScriptRoot ".." "scripts" "create_rds" "templates" "ServerList.template.xml") -Raw
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
 
 # Copy existing files
@@ -172,7 +172,7 @@ if ($?) {
 Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
-Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File (Join-Path $PSScriptRoot "templates" "Set-RDPublishedName.ps1") -Blob "Set-RDPublishedName.ps1" -Force
+Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File (Join-Path $PSScriptRoot ".." "scripts" "create_rds" "templates" "Set-RDPublishedName.ps1") -Blob "Set-RDPublishedName.ps1" -Force
 if ($?) {
     Add-LogMessage -Level Success "File uploading succeeded"
 } else {
@@ -227,7 +227,7 @@ if ($?) {
 Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 $params = @{
     rdsGatewayIp = "`"$($config.sre.rds.gateway.ip)`""
     rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
@@ -243,7 +243,7 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Adding RDS VMs to correct OUs"
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Move_RDS_VMs_Into_OUs.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Move_RDS_VMs_Into_OUs.ps1"
 $params = @{
     sreDn = "`"$($config.sre.domain.dn)`""
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -259,14 +259,14 @@ Write-Output $result.Value
 # --------------------------------------------------
 Add-LogMessage -Level Info "Configuring Windows and setting DNS on RDS servers..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Set_OS_Locale_and_DNS.ps1") -Raw
-$configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
+$templateScript = Get-Content -Path (Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Set_OS_Locale_and_DNS.ps1") -Raw
+$configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1") -Raw
 $setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
 $params = @{
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
 }
-$moduleScript = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+$moduleScript = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
 
 # Run on each of the RDS VMs
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -309,7 +309,7 @@ Add-LogMessage -Level Success "Found $($filePathsSh1.Count + $filePathsSh2.Count
 # Get SAS token to download files from storage account
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $sasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $sreStorageAccountRg -accountName $sreStorageAccountName
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Import_Artifacts.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Import_Artifacts.ps1"
 
 # Copy software and/or scripts to RDS Gateway
 Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
@@ -360,7 +360,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     if ($name -ne "RDS Gateway") {
         Add-LogMessage -Level Info "[ ] Installing packages on ${name}: '$vmName'"
-        $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Packages.ps1"
+        $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Install_Packages.ps1"
         $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg
         Write-Output $result.Value
     }
@@ -370,7 +370,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
 # Install required Powershell modules on RDS Gateway
 # --------------------------------------------------
 Add-LogMessage -Level Info "[ ] Installing required Powershell modules on RDS Gateway..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Additional_Powershell_Modules.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Install_Additional_Powershell_Modules.ps1"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
 Write-Output $result.Value
 

@@ -178,15 +178,15 @@
   ## 6. Deploy Remote Desktop Service Environment
   ### Create RDS VMs and perform initial configuration
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Deploy and configure the RDS VMs by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-  - The deployment will take around 20 minutes to complete.
+  - The deployment will take around 40 minutes to complete.
 
   ### Install and configure RDS Environment and webclient
   - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
   - The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>`)
-  - Login as the **domain** admin user eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
+  - Login as the **SRE domain** admin user eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
 
   #### Install RDS environment and webclient
   - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.

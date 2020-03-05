@@ -20,9 +20,9 @@ if (-not (Get-Module -ListAvailable -Name Posh-ACME)) {
 
 # Import modules
 Import-Module Posh-ACME
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
 
 # Get config and original context
@@ -201,7 +201,7 @@ if ($doInstall) {
     # Configure RDS Gateway VM to use signed certificate
     # --------------------------------------------------
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Install_Signed_Ssl_Cert.ps1"
+    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
         rdsFqdn = "`"$rdsFqdn`""
         certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
