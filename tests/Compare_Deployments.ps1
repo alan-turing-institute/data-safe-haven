@@ -67,7 +67,7 @@ function Compare-NSGRules {
             $nMatched += 1
             if ($VerboseLogging) { Add-LogMessage -Level Info "Found matching rule for $($benchmarkRule.Name)" }
         } else {
-            Add-LogMessage -Level Error "Could not find matching rule for $($benchmarkRule.Name)"
+            Add-LogMessage -Level Error "Could not find an identical rule for $($benchmarkRule.Name)"
             $unmatched += $benchmarkRule.Name
             $benchmarkRule | Out-String
             Add-LogMessage -Level Info "Closest match was:"
