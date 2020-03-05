@@ -231,7 +231,7 @@
 
   ### Configuration of SSL on RDS Gateway
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1 -sreId <SRE ID> -emailAddress <email>`, where the SRE ID is the one specified in the config and the email address is one that you would like to be notified when certificate expiry is approaching.
   - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
@@ -281,10 +281,10 @@
   ## 7. Deploy Data Server
   ### Create Dataserver VM
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-  - Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/05_create_dataserver/` directory within the Safe Haven repository.
+  - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
   - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - Run the `./Setup_Data_Server.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-  - The deployment will take around 10 minutes to complete
+  - The deployment will take around 20 minutes to complete
 
   ## 8. Deploy Web Application Servers (Gitlab and HackMD)
   - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).

@@ -4,10 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -56,13 +56,13 @@ $params = @{
     Virtual_Network_Subnet = $config.sre.network.subnets.data.name
     VM_Size = $config.sre.dataserver.vmSize
 }
-Deploy-ArmTemplate -TemplatePath "$PSScriptRoot/sre-data-server-template.json" -Params $params -ResourceGroupName $config.sre.dataserver.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
 
 
 # Move Data Server VM into correct OU
 # -----------------------------------
 Add-LogMessage -Level Info "Adding data server to correct security group..."
-$scriptPath = Join-Path "remote_scripts" "Move_Data_Server_VM_Into_OU.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dataserver" "remote_scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
     sreDn = "`"$($config.sre.domain.dn)`""
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -72,12 +72,10 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-
-
 # # Install required Powershell packages
 # # ------------------------------------
 # Add-LogMessage -Level Info "[ ] Installing required Powershell packages on data server: '$($config.sre.dataserver.vmName)'..."
-# $scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Install_Powershell_Modules.ps1"
+# $scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
 # $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
 # Write-Output $result.Value
 
@@ -85,7 +83,7 @@ Write-Output $result.Value
 # # Set the OS language to en-GB and install updates
 # # ------------------------------------------------
 # $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1") -Raw
-# $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell" "remote" "Configure_Windows.ps1") -Raw
+# $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1") -Raw
 # $setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
 # $params = @{
 #     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -100,13 +98,13 @@ Write-Output $result.Value
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating data server VM..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." ".." "common_powershell")
+Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 
 
 # Configure data server
 # ---------------------
 Add-LogMessage -Level Info "Configuring data server VM..."
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dataserver" "remote_scripts" "Configure_Data_Server_Remote.ps1"
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
