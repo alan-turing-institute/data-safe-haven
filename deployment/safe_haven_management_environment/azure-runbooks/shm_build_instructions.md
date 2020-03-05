@@ -276,93 +276,92 @@ rather than simply `<admin username>`)
 2. Run the `AzureADConnect.msi` installer
   - On the `Welcome to Azure AD Connect` screen:
     - Tick the `I agree to the license terms` box
-    - Click "Continue"
+    - Click `Continue`
   - On the `Express Settings` screen:
-    - Click "Customize"
+    - Click `Customize`
   - On the `Install required components` screen:
-    - Click "Install"
+    - Click `Install`
   - On the `User sign-in` screen:
     - Ensure that `Password Hash Synchronization` is selected
-    - Click "Next"
+    - Click `Next`
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
     - You should have created `admin@<custom domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
-    - Click "Next"
-  - If you receive an Internet Explorer pop-up dialog "Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com"
-    - Click "Add"
-    - Click "Add"
-    - Click "Close"
-    - Repeat for the same dialog with "https://aadcdn.msftauth.net"
-  - If you receive an error box "We can't sign you in,. Javascript is required to sign you in. Do you want to continue running scripts on this page"
-    - Click "Yes"
-    - Close the dialog by clicking "X"
-    - Back on the `Connect to Azure AD` screen, click "Next"
+      - If you receive an Internet Explorer pop-up dialog "Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com"
+        - Click `Add`
+        - Click `Add`
+        - Click `Close`
+        - Repeat for the same dialog with `https://aadcdn.msftauth.net`
+      - If you receive an error box `We can't sign you in,. Javascript is required to sign you in. Do you want to continue running scripts on this page`
+        - Click `Yes`
+        - Close the dialog by clicking `X`
     - Enter the global administrator password if prompted
+    - Back on the `Connect to Azure AD` screen, click `Next`
     - Approve the login with MFA if required
-    - If you see a Windows Security Warning, check "Don't show this message again and click "Yes".
+      - If you see a Windows Security Warning, check `Don't show this message again and click "Yes`.
   - On the `Connect your directories` screen:
     - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
     - On the `AD forest account` pop-up:
-      - Select "Use existing AD account"
+      - Select `Use existing AD account`
       - Enter the details for the `localadsync` user.
         - Username: `localadsync@<custom domain>` (e.g. localadsync)
         - Password: use the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
-      - Click "OK"
+      - Click `OK`
       - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
-          - In Server Manager click "Tools -> Active Directory Users and Computers"
+          - In Server Manager click `Tools > Active Directory Users and Computers`
           - Expand the domain in the left hand panel
-          - Expand the "Safe Haven Service Accounts" OU
+          - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
           - Set the password to the the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
           - Leave the other settings as is and click "Ok"
-    - Click "Next"
+    - Click `Next`
   - On the `Azure AD sign-in configuration` screen:
     - Verify that the `User Principal Name` is set to `userPrincipalName`
-    - Click "Next"
+    - Click `Next`
   - On the `Domain and OU filtering` screen:
-    - Select "Sync Selected domains and OUs"
+    - Select `Sync Selected domains and OUs`
     - Expand the domain and deselect all objects
-    - Select "Safe Haven Research Users"
-    - Click "Next"
+    - Select `Safe Haven Research Users`
+    - Click `Next`
   - On the `Uniquely identifying your users` screen:
-    - Click "Next"
+    - Click `Next`
   - On the `Filter users and devices` screen:
-    - Select "Synchronize all users and devices"
-    - Click "Next"
+    - Select `Synchronize all users and devices`
+    - Click `Next`
   - On the `Optional features` screen:
-    - Select "Password Writeback"
-    - Click "Next"
+    - Select `Password Writeback`
+    - Click `Next`
   - On the `Ready to configure` screen:
-    - Click "Install"
+    - Click `Install`
     - This may take a few minutes to complete
   - On the `Configuration complete` screen:
-    - Click "Exit"
+    - Click `Exit`
 
-  - **Troubleshooting:** The error "Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again" may occur if you have recently tore down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting- if you need to, you can disconnect from the RDS and VPN and reconnect later to click Retry.
+  - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the RDS and VPN and reconnect later before clicking `Retry`.
 
 ### Set AAD sync permissions
 The `localadsync@<custom domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
-- In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
-- Click on the "View" menu item and make sure that "Advanced Features" is enabled
-- Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select "Properties"
+- In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
+- Click on the `View` menu item and make sure that `Advanced Features` is enabled
+- Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select `Properties`
   ![AD permissions properties](images/aad_permissions_properties.png)
-- In the pop-up window, go to the "Security" tab and click on the "Advanced" button
+- In the pop-up window, go to the `Security` tab and click on the `Advanced` button
   ![AD permissions security](images/aad_permissions_security.png)
-- In the pop-up window, click on the "Add" button
-  - Click on "Select a principal" and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on "Check Names". When the `localadsync@<custom domain>` principal is selected, click "OK" to return to the "Permissions Entry for <custom domain>" window.
-  - In the "Applies to" section, select "Descendant User objects"
+- In the pop-up window, click on the `Add` button
+  - Click on `Select a principal` and then select the `localadsync@<custom domain>` by typing the first few letters into the search box and clicking on `Check Names`. When the `localadsync@<custom domain>` principal is selected, click `OK` to return to the `Permissions Entry for <custom domain>` window.
+  - In the `Applies to` section, select `Descendant User objects`
   - Under `Permissions`, ensure that the following options are checked:
     - `Reset password`
     - `Change password`
   - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling. _The properties are listed in alphabetical order of the main part of the property name excluding the initial prefix Read/Write etc)_:
     - `Write lockoutTime`
     - `Write pwdLastSet`
-  - Click "OK"
-- Now go through the same procedure, this time selecting "This object and all descendant objects" in the "Applies to" section
-  - Enable the following permissions:
+  - Click `OK`
+- Now go through the same procedure, this time selecting `This object and all descendant objects` in the `Applies to` section
+  - Enable the following under `Permissions`:
     - `Replicating Directory Changes`
     - `Replicating Directory Changes All`
-  - Click "OK" on all open dialog boxes
+  - Click `OK` on all open dialog boxes
 
 
 ### Additional AAD Connect Configuration
@@ -370,25 +369,25 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 
   ![synchronisation rules](images/synchronisation_rules.png)
 
-2. Change the "Direction" drop down to "Outbound"
+2. Change the `Direction` drop down to `Outbound`
 3. Select the `Out to AAD - User Join` rule.
-  - Click "Disable".
-  - Click "Edit".
-  - In the "Edit Reserved Rule Confirmation" dialog box click `Yes`
+  - Click `Disable`.
+  - Click `Edit`.
+  - In the `Edit Reserved Rule Confirmation` dialog box click `Yes`
 4. In the editing view set `precedence` to 1.
-  - Select "Transformations" from the sidebar and locate the rule with its "Target Attribute" set to "usageLocation"
-    - Change the "FlowType" column from "Expression" to "Direct"
-    - On the "Source" column click the drop-down menu and select `c`
-    - Click "Save" (in the "Warning" dialog box click "OK")
+  - Select `Transformations` from the sidebar and locate the rule with its `Target Attribute` set to `usageLocation`
+    - Change the `FlowType` column from `Expression` to `Direct`
+    - On the `Source` column click the drop-down menu and select `c`
+    - Click `Save` (in the `Warning` dialog box click `OK`)
 5. You will now see a cloned version of the `Out to AAD - User Join`.
   - Delete the original.
-  - In the "Warning" dialog box click "OK"
+  - In the `Warning` dialog box click `OK`
 6. Edit the cloned version.
-  - Change `Precedence to 115`
+  - Change `Precedence` to 115
   - Edit the name to `Out to AAD - User Join`.
   - Click "Save" (in the "Warning" dialog box click "OK").
 7. Click `Enable` on the `Out to AAD - User Join` rule that you have just edited
-8. Click the `X` to close the Synchronization Rules Editor window
+8. Click the `X` to close the `Synchronization Rules Editor` window
 9. Open Powershell as an administrator
   - Navigate to `C:\Installation`
   - Run `.\Run_ADSync.ps1`
@@ -396,26 +395,25 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 
 ### Validation of AD sync
 1. Add a research user:
-  - In Server Manager select `Tools -> Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
+  - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
-    - First name: Test
-    - Last name: ADUser
+    - First name: `Test`
+    - Last name: `ADUser`
     - User login name: `testaduser`
     - Click "Next"
   - Password: use the `shm-<shm-id>-testaduser-password` secret in the management Key Vault.
     - Untick `User must change password at next logon`
-    - Click "Next"
-  - Click "Finish"
+    - Click `Next`
+  - Click `Finish`
 2. Force a sync to the Azure Active Directory
   - Open Powershell as an administrator
   - Navigate to `C:\Installation`
   - Run `.\Run_ADSync.ps1 -sync Delta`
 3. Go to the Azure Active Directory in `portal.azure.com`
-  - Click "Users -> All users" and confirm that the new user is shown in the user list.
+  - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
-
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`
@@ -423,12 +421,11 @@ The `localadsync@<custom domain>` account needs to be given permissions to chang
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
     ![Enable writeback](images/enable_writeback.png)
-  - If you changed this setting, click the "Save" icon
+  - If you changed this setting, click the `Save` icon
 - Select `Properties` from the left hand side bar
   - Make sure that `Self service password reset enabled` is set to `All`
     ![Enable password reset](images/enable_passwordreset.png)
-  - If you changed this setting, click the "Save" icon
-
+  - If you changed this setting, click the `Save` icon
 
 
 ## 8. Deploy and configure Network Policy Server (NPS)
