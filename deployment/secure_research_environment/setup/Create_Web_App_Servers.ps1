@@ -4,10 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -112,7 +112,7 @@ $params = @{
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.subnets.data.name
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
 
 
 # Poll VMs to see when they have finished running
