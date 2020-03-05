@@ -1,9 +1,0 @@
-Safe Haven Management Domain Controller
- - Create DNS Conditional Forwarder in DNS referencing DSG DNS server
- - Create Two-Way External Forest trust between Safe Haven Domain Controller and DSG domain controller.
- 
-DSG Domain Controller
- - Create DNS Conditional Forwarder in DNS referencing Safe Haven Management DNS server
- - Create Two-Way External Forest trust between SG domain controller and Safe Haven Domain Controller.
- 
-Verify that trust is in place and working.
