@@ -4,8 +4,8 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -63,7 +63,7 @@ while ($sreResourceGroups.Length) {
 
 # Remove residual SRE data from the SHM
 # -------------------------------------
-$scriptPath = Join-Path $PSScriptRoot "01_configure_shm_dc" "Remove_SRE_Data_From_SHM.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
 Invoke-Expression -Command "$scriptPath -sreId $sreId"
 
 

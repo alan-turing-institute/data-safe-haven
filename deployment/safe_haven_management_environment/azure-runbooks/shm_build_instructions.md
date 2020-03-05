@@ -614,10 +614,7 @@ In order to tear down the SHM, use the following procedure:
 
 ### Tear down the SHM
 1. From a clone of the data-safe-haven repository, run the following commands, where `<SHM ID>` is the one defined in the config file.
-   ```pwsh
-   cd safe_haven_management_environment
-   ./Teardown_SHM.ps1 -shmId <SHM ID>
-   ```
-
-
-<!-- RG_SHM_WEBAPP -->
+  ```pwsh
+  cd deployment/administration
+  ./SRE_Teardown.ps1 -sreId <SRE ID>
+  ```
