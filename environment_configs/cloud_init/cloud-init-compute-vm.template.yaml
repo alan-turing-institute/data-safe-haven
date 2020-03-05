@@ -1,0 +1,260 @@
+#cloud-config
+package_upgrade: false
+
+write_files:
+  - path: "/etc/xrdp/startwm.sh"
+    content: |
+      #!/bin/sh
+      echo "LANG=en_GB.UTF-8" > /etc/default/locale
+      . /etc/default/locale
+      # Start xfce4
+      startxfce4
+  - path: "/etc/ldap.secret"
+    permissions: "0600"
+    content: |
+      $LDAP_SECRET_PLAINTEXT
+  - path: "/etc/ldap.conf"
+    content: |
+      # The distinguished name of the search base.
+      base $LDAP_BASE_DN
+
+      # Restrict users to those in the security group of this SRE
+      filter $LDAP_FILTER
+
+      # Another way to specify your LDAP server is to provide a URI
+      uri ldap://${AD_DC_NAME_UPPER}.${DOMAIN_LOWER}:389
+
+      # The LDAP version to use (defaults to 3
+      # if supported by client library)
+      ldap_version 3
+
+      # The distinguished name to bind to the server with
+      # if the effective user ID is root. Password is
+      # stored in /etc/ldap.secret (mode 600)
+      rootbinddn $LDAP_BIND_DN
+
+      # Do not hash the password at all; presume
+      # the directory server will do it, if
+      # necessary. This is the default.
+      pam_password md5
+  - path: "/etc/krb5.conf"
+    content: |
+      [libdefaults]
+        default_realm = $DOMAIN_UPPER
+
+        # The following krb5.conf variables are only for MIT Kerberos.
+        krb4_config = /etc/krb.conf
+        krb4_realms = /etc/krb.realms
+        kdc_timesync = 1
+        ccache_type = 4
+        forwardable = true
+        proxiable = true
+
+        # The following libdefaults parameters are only for Heimdal Kerberos.
+        v4_instance_resolve = false
+        v4_name_convert = {
+          host = {
+            rcmd = host
+            ftp = ftp
+          }
+          plain = {
+            something = something-else
+          }
+        }
+        fcc-mit-ticketflags = true
+
+      [realms]
+        $DOMAIN_UPPER = {
+          kdc = $AD_DC_NAME_UPPER.$DOMAIN_UPPER:88
+          admin_server = $AD_DC_NAME_UPPER.$DOMAIN_UPPER
+          default_domain = $DOMAIN_UPPER
+        }
+
+      [domain_realm]
+        .$DOMAIN_LOWER = $DOMAIN_UPPER
+        $DOMAIN_LOWER = $DOMAIN_UPPER
+
+      [login]
+        krb4_convert = true
+        krb4_get_tickets = false
+  - path: "/active_directory_step01_pre"
+    content: |
+      #!/bin/sh
+      # Set up Active Directory
+      # -----------------------
+      echo ">=== Setting up Active Directory... ===<"
+      # Ensure that sssd is running
+      echo "Ensuring that sssd is running"
+      systemctl status sssd.service
+      # Add information to hosts file
+      echo "Setting hostname"
+      echo "$MACHINE_NAME" > /etc/hostname
+      echo ">=== /etc/hostname ===<"
+      cat /etc/hostname
+      echo ">=== end of /etc/hostname ===<"
+      echo "Adding $MACHINE_NAME [`$(hostname -I)] to /etc/hosts"
+      HOST_INFORMATION="`$(hostname -I) $MACHINE_NAME $MACHINE_NAME.$DOMAIN_LOWER"
+      sed -i "/127.0.0.1/ a `$HOST_INFORMATION" /etc/hosts
+      echo ">=== /etc/hosts ===<"
+      cat /etc/hosts
+      echo ">=== end of /etc/hosts ===<"
+      # Set timezone
+      echo "Setting timezone"
+      timedatectl set-timezone Europe/London
+      # Create a default sssd.conf file
+      echo "Creating sssd config"
+      cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+      echo ">=== /etc/sssd/sssd.conf ===<"
+      cat /etc/sssd/sssd.conf
+      echo ">=== end of /etc/sssd/sssd.conf ===<"
+      chmod 0600 /etc/sssd/sssd.conf
+      # Edit LDAP config
+      echo "Checking LDAP config"
+      # mv /ldap.conf /etc/ldap.conf
+      echo ">=== /etc/ldap.conf ===<"
+      cat /etc/ldap.conf
+      echo ">=== end of /etc/ldap.conf ===<"
+      # Edit Kerberos config
+      echo "Checking Kerberos config"
+      # mv /krb5.conf /etc/krb5.conf
+      echo ">=== /etc/krb5.conf ===<"
+      cat /etc/krb5.conf
+      echo ">=== end of /etc/krb5.conf ===<"
+  - path: "/active_directory_step02_realm_join"
+    content: |
+      # Join the VM to the domain
+      echo "Joining VM to the domain"
+      cat /etc/ldap.secret | realm join --verbose -U $LDAP_USER $DOMAIN_LOWER --install=/
+  - path: "/active_directory_step03_update_sssd"
+    content: |
+      # Check the sssd.conf file
+      echo "Updating sssd settings"
+      sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
+      sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
+      sed -i -E 's/(access_provider = ).*/\1simple/' /etc/sssd/sssd.conf
+      echo ">=== /etc/sssd/sssd.conf ===<"
+      cat /etc/sssd/sssd.conf
+      echo ">=== end of /etc/sssd/sssd.conf ===<"
+      # Restart the sssd daemon
+      echo "Restarting sssd"
+      systemctl restart sssd
+  - path: "/active_directory_step04_update_pam"
+    content: |
+      # Edit the pam session configuration file
+      echo "Updating PAM configuration"
+      PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
+      sed "/pam_unix/ a `$PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
+      mv common-session /etc/pam.d/common-session
+      echo ">=== /etc/pam.d/common-session ===<"
+      cat /etc/pam.d/common-session
+      echo ">=== end of /etc/pam.d/common-session ===<"
+  - path: "/etc/pip.conf"
+    content: |
+      # Add the PyPI mirror to our global settings
+      [global]
+      index = $PYPI_MIRROR_URL
+      index-url = $PYPI_MIRROR_URL/simple
+      trusted-host = $PYPI_MIRROR_HOST
+  - path: "/Rprofile.site"
+    content: |
+      ## Set Rprofile.site to the appropriate CRAN mirror
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "$CRAN_MIRROR_URL"
+          options(repos = r)
+      })
+
+runcmd:
+  # ==========================================
+  # *** BEGINNING OF SRE-SPECIFIC COMMANDS ***
+  # *** END OF SRE-SPECIFIC COMMANDS ***
+  # ==========================================
+  - echo ">=== Beginning DSVM configuration... ===<"
+  # Set default keyboard to en-GB
+  - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
+  # Copy CRAN mirror config to appropriate locations
+  - echo ">=== Updating CRAN mirror config... ===<"
+  - cp /Rprofile.site /etc/R/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
+  - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+  # Make sure that sssd is running
+  - echo ">=== Restarting sssd service... ===<"
+  - service sssd restart
+  # Disable light-locker which can cause irritating error messages
+  - echo ">=== Disabling screen lock... ===<"
+  - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  # Set default session to xfce4
+  - echo ">=== Setting default session to xfce4... ===<"
+  # - mv /startwm.sh /etc/xrdp/startwm.sh
+  - chmod 0755 /etc/xrdp/startwm.sh
+  - echo xfce4-session > ~$ADMIN_USERNAME/.xsession
+  # Set default terminal for xfce
+  - echo ">=== Setting default xfce terminal... ===<"
+  - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
+  # Ensure that the admin user owns their home directory
+  - echo ">=== Ensuring that user owns their home directory... ===<"
+  - chown -R $ADMIN_USERNAME ~$ADMIN_USERNAME
+  # Restart xrdp to reflect changes made above
+  - echo ">=== Restart xrdp... ===<"
+  - service xrdp restart
+  # Add execute permission to the Active Directory set up scripts
+  - echo ">=== Initialise Active Directory configuration... ===<"
+  - chmod +x /active_directory_step01_pre
+  - chmod +x /active_directory_step02_realm_join
+  - chmod +x /active_directory_step03_update_sssd
+  - chmod +x /active_directory_step04_update_pam
+  # Run the Active Directory set up scripts
+  - echo ">=== Run Active Directory setup scripts... ===<"
+  - /active_directory_step01_pre
+  - /active_directory_step02_realm_join
+  - /active_directory_step03_update_sssd
+  - /active_directory_step04_update_pam
+  # Remove the Active Directory set up scripts (as these contain secrets and are world readable
+  - echo ">=== Delete Active Directory setup scripts... ===<"
+  - rm /active_directory_step01_pre
+  - rm /active_directory_step02_realm_join
+  - rm /active_directory_step03_update_sssd
+  - rm /active_directory_step04_update_pam
+  # Update resolv.conf to point to the correct location
+  - echo ">=== Update resolv.conf to point to the correct file... ===<"
+  - rm /etc/resolv.conf
+  - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
+  - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  # Create home folder and grant appropriate access
+  - echo ">=== Create shared data folder using data disk... ===<"
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /tmp/home
+  - mount /dev/sdc1 /tmp/home
+  - chmod 755 /tmp/home
+  # - cp -R /home/* /tmp/home
+  - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - umount /tmp/home
+  # Create shared data folder and grant all users access
+  - echo ">=== Create shared data folder using data disk... ===<"
+  - parted /dev/sdd mklabel gpt
+  - parted /dev/sdd mkpart primary ext4 0% 100%
+  - parted /dev/sdd print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdd1
+  - mkdir -p /data
+  - mount /dev/sdd1 /data
+  - chmod go+rw /data
+  - UUID=`$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
+  - echo "UUID=`${UUID}\t/data\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - echo ">=== /etc/fstab ===<"
+  - cat /etc/fstab
+  - echo ">=== end of /etc/fstab ===<"
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

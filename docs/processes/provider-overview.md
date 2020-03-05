@@ -65,7 +65,7 @@ For the initial work package in a project, a new Environment must always be depl
 When considering adding a work package to an existing environment, the **combination** of the new work package plus all existing work packages the Environment has already been used for must be considered as the effective work package when making classification decisions.
 The classification tier of a combination of work package(s) can never be lower than the highest classification tier of any of the individual work packages, but may be higher due to additional risks introduced by combining datasets and activities across work packages.
 If the combined classification is higher than the tier associated with the existing Environment, a new Environment must be deployed.
-The classification tier of an Environment cannot be upgraded or downgraded "in place". 
+The classification tier of an Environment cannot be upgraded or downgraded "in place".
 
 Depending on the classification assigned, an Environment may be instantiated on one of several supported Platforms. The Turing currently supports secure deployments to Microsoft's Azure cloud platform.
 
@@ -100,7 +100,7 @@ A staff member with responsibility for running a particular project. This role c
 
 While the Programme Manager should maintain responsibility for adding users to the user list, and can add users to projects, the Project Manager should also have the authority to assign existing users to their project. To do this they will need to be able to review and search existing users.
 
-### System Manager 
+### System Manager
 
 Members of Turing staff responsible for configuration and maintenance of the Environment.
 
@@ -147,7 +147,7 @@ In the below, "personal data" follows the GDPR definition: information from whic
 
 ### Tier 0
 
-Tier 0 Environments are used to handle publicly available, open information, where all generated and combined information is also suitable for open handling.
+Tier 0 Environments are used to handle open information, which is legally available to the general public with no restrictions, where all generated and combined information is also suitable for open handling.
 
 Tier 0 applies where none of the information processed, combined or generated includes personal data, commercially sensitive data, or data which will have legal, political or reputational consequences in the event of unauthorised disclosure.
 
@@ -173,39 +173,48 @@ Information is kept private in order to give the research team a competitive adv
 
 Both the datasets and the proposed processing must otherwise meet the criteria for Tier 0.
 
-In particular, Tier 1 is not suitable for any data derived from personal data that is not otherwise suitable for processing in Tier 0. If this is not the case, then the minimum tier environment such data can be processed in is Tier 2.
+It may be used for pseudonymised or synthetic information generated from personal data, where one has **absolute** confidence that the personal data cannot be re-identified.
 
 It may also be used for commercial data where commercial consequences of disclosure would be no impact or very low impact, with the agreement of all parties.
+
+#### Relationships to other classification schemes
+Pseudonymised data is considered [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR. Anonymised data is not considered Personal Data under the GDPR, but in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolutely** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR and therefore at least Tier 2.
+
+In particular, Tier 1 is not suitable for any data derived from personal data that is not otherwise suitable for processing in Tier 0. If this is not the case, then the minimum tier environment such data can be processed in is Tier 2.
 
 
 ### Tier 2
 
-Tier 2 Environments are used to handle, combine or generate information which is not linked to personal data.
+Tier 2 Environments are used to handle, combine or generate information which is not linked to identifiable personal data.
 
-It may be used for pseudonymised or synthetic information generated from personal data, where we have strong, but not absolute, confidence in the quality of pseudonymisation. The risk of processing it so that individuals are capable of being re-identified must be considered as part of the classification process.
+It may be used for pseudonymised, synthetic or anonymised information generated from personal data, where we have strong, but not absolute, confidence that the personal data cannot be re-identified. This assessment should consider the risk of processing the data in a manner that permits personal data to be re-identified, including by combining it with other data available within the environment.
 
-The pseudonymisation or anonymisation process itself, if carried out in the Turing, should take place in a Tier 3 Environment.
+The pseudonymisation, synthesis or anonymisation process itself, if carried out in the Turing, should take place in a Tier 3 Environment.
+A typical model for a project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised, synthetic or anonymised data generated in the Tier 3 Environment and then transferred to the Tier 2 Environment.
 
-A typical model for a project will be to instantiate both Tier 2 and Tier 3 Environments, with pseudonymised or synthetic data generated in the Tier 3 Environment and then transferred to the Tier 2 Environment.
+Tier 2 Environments are also used to handle, combine or generate information which is confidential but not, in commercial or national security terms, sensitive.
+This includes commercial-in-confidence datasets or intellectual property where the legal, commercial, political and reputational consequences from disclosure are low.
+Where such consequences are not low, Tier 3 should be used.
 
-Tier 2 Environments are also used to handle, combine or generate information which is confidential, but not, in commercial or national security terms, sensitive. This includes commercial-in-confidence datasets or intellectual property where the legal, commercial, political and reputational consequences from disclosure are low. Where such consequences are not low, Tier 3 should be used.
-
-At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised, when in fact re-identification might be possible.
+At Tier 2, the most significant risks are "workaround breach" and the risk of mistakenly believing data is robustly pseudonymised or anonymised, when in fact re-identification might be possible.
 
 #### Relationships to other classification schemes
 
 Almost all data at the baseline UK government OFFICIAL classification is likely to be Tier 2, as well as a large proportion of data at the OFFICIAL-SENSITIVE [COMMERCIAL] classification.
 
-All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are absolutely confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
+All pseudonymised [Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/key-definitions/what-is-personal-data/) under the GDPR that is not [Special Category Personal Data](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/lawful-basis-for-processing/special-category-data/) is Tier 2. Note that pseudonymised data is Personal Data under the GDPR. While anonymised data is not considered Personal Data under the GDPR, in practice it is extremely difficult (if not impossible) to guarantee that data is truly anonymous. Therefore, unless we are **absolute** confident in the anonymisation process, we consider all data related to living individuals as Personal Data under the GDPR.
 
 
 ### Tier 3
 
 Tier 3 Environments are used to handle, combine or generate personal data, excluding personal data where there is a risk that disclosure might pose a substantial threat to the personal safety, health or security of the data subjects (which would be Tier 4).
 
-This also includes pseudonymised or synthetic information generated from personal data, where we have only weak confidence in the quality of pseudonymisation.
+This also includes pseudonymised, synthetic or anonymised information generated from personal data, where we have only weak confidence that the personal data cannot be re-identified. 
 
-Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms. This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources. This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups. The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
+Tier 3 Environments are also used to handle, combine or generate information, including intellectual property, which is sensitive in commercial, legal, political, or national security terms.
+This tier anticipates the need to defend against compromise by attackers with bounded capabilities and resources.
+This may include hacktivists, single-issue pressure groups, investigative journalists, competent individual hackers and the majority of criminal individuals and groups.
+The threat profile excludes sophisticated, well-resourced and determined threat actors, such as highly capable serious organised crime groups and state actors.
 
 The difference between Tier 2 and Tier 3 Environments is the most significant in this model, both for researcher productivity and organisational risk.
 
@@ -291,7 +300,7 @@ Data sharing agreement
 This should be a formal data sharing agreement as required under data protection law, drafted with the benefit of legal advice, and should be signed after the initial classification of a work package but before a dataset is received by the Turing.
 Where the Dataset Provider is not the owner of all the dataset(s) covered by the data sharing agreement, the agreement must  specify the legal basis under which the Dataset Provider is permitted to share this data with the Turing.
 This agreement should include any specific commitments required from Researchers working with the dataset.
-The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required. 
+The Turing has a template agreement that can be used to minimise the turnaround time and legal effort required.
 
 The classification tier may potentially be raised from that agreed prior to data ingress, once the Investigator and Referee have had a chance to view the actual data.
 The classification tier for later work packages in a project may also be higher than that for the original work package, depending on the planned analysis and any additional data required.
@@ -436,7 +445,7 @@ User Devices
 
 What devices should researchers use to connect to the Environment?
 
-We define two types of devices: 
+We define two types of devices:
 
 * Managed devices
 * Open devices
@@ -495,7 +504,7 @@ Software is ingressed in a similar manner as data, using a software ingress volu
   - Once the Researcher transfers the software source or installation package to this volume, their access is revoked and the software is subject to a level of review appropriate to the Environment tier.
 
   - Once any required review has been passed, the software ingress volume is switched to **internal mode**, where it is made available to Researchers within the analysis Environment with **read-only** access.
-  
+
   - For software that does not require administrative rights to install, the Researcher can then install the software or transfer the source to a version control repository within the Environment as appropriate.
 
   - For software that requires administrative rights to install, a System Manager must run the installation process.
@@ -512,7 +521,7 @@ However, we recommend the following at each tier.
 
 At Tier 3 and above, package mirrors (copies of external repositories inside the secure Environment) should include only white-listed software packages.
 
-At Tier 2, package mirrors should include all software packages. 
+At Tier 2, package mirrors should include all software packages.
 
 At Tier 2 and above, all software not available from a package mirror must be installed either at the time the analysis machine is first deployed or by ingressing the software installer as data, with an associated ingress review.
 

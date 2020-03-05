@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing SRE - 108 - WMCA",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "sreId": "108",
+    "shmId": "turing1",
+    "tier": "2",
+    "domain": "dsgroup108.co.uk",
+    "netbiosName": "DSGROUP108",
+    "ipPrefix": "10.212.0",
+    "rdsAllowedSources": "Internet",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

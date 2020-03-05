@@ -9,3 +9,12 @@ This is a list of all the R packages that will be installed in the compute VM. I
 ## Known problems
  - `fiftystater` and `geohash` are no longer available on CRAN
  - `ballgown`, `DMRcate`, `maftools` and `TCGAbiolinks` from BioConductor all fail with the error `object ‘path’ is not exported by 'namespace:Rsamtools'.`
+
+### Sign off
+If you have read this document and you're happy with its contents, please add your name and the date on which you read the wiki page (as it may be updated after you've read it!)
+
+| Name | Date | Comments |
+| ---- | ---- | -------- |
+| Catalina Vallejos | 17 September 2018 | R version is missing. I added link to standard R library. We might consider [rstan](https://cran.r-project.org/web/packages/rstan/index.html) installed as [installation from CRAN](https://github.com/stan-dev/rstan/wiki/Installing-RStan-on-Mac-or-Linux) is not always trivial |
+| Catalina Vallejos | 20 November 2018 | Added link to top downloaded Bioconductor packages (version 3.8). List includes top 200 packages, stratified in groups of 50. Also included additional list of packages that I curated for a different DSH environment (focusing on those that were not included in Sebastian's list)
+| James Robinson | 21 November 2018 | Consolidated various lists of R packages into one list linked from here

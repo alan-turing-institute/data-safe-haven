@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "sreId": "sandbox",
+    "shmId": "testa",
+    "tier": "2",
+    "domain": "sandbox.testa.dsgroupdev.co.uk",
+    "netbiosName": "SANDBOX",
+    "ipPrefix": "10.150.0",
+    "rdsAllowedSources": "default",
+    "rdsInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2019082900"
+}

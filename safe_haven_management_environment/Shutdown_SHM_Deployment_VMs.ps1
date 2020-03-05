@@ -1,10 +1,10 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter DSG ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
   [string]$shmId
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../new_dsg_environment/dsg_deploy_scripts/DsgConfig.psm1 -Force
+Import-Module $PSScriptRoot/../common_powershell/Configuration.psm1 -Force
 
 # Get SHM config
 $config = Get-ShmFullConfig($shmId)

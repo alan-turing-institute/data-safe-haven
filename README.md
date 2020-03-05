@@ -10,9 +10,9 @@ Welcome to the Data Safe Havens project. This repository contains the code neces
 Secure environments for analysis of sensitive datasets are essential for research. Data Safe Havens provide a way to build a secure environment for data analysis.
 
 
-[Overview](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-overview.md) - Find out more about Data Safe Havens, and how to use our model.
+[Overview](docs/processes/provider-overview.md) - Find out more about Data Safe Havens, and how to use our model.
 
-[Implementation on Azure](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
+[Implementation on Azure](docs/processes/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
 
 
 ## Setting up a Data Safe Haven
@@ -21,17 +21,17 @@ Secure environments for analysis of sensitive datasets are essential for researc
 You can set up a data safe haven yourself.
 
 
-[Safe Haven Management](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/new_dsg_environment/azure-runbooks/shm_build_instructions.md) - Instructions on how to build a Safe Haven Management environment in Azure.
+[Safe Haven Management](safe_haven_management_environment/azure-runbooks/shm_build_instructions.md) - Instructions on how to build a Safe Haven Management environment in Azure.
 
-[Secure Research Environment](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/new_dsg_environment/azure-runbooks/dsg_build_instructions.md) - Instructions on how to build a Secure Research Environment in Azure.
+[Secure Research Environment](secure_research_environment/azure-runbooks/sre_build_instructions.md) - Instructions on how to build a Secure Research Environment in Azure.
 
-[Azure VMs](https://github.com/alan-turing-institute/data-safe-haven/tree/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/new_dsg_environment/azure-vms) - Instructions on how to build Azure VMs in your secure environment.
+[Azure VMs](vm_image_management/README.md) - Instructions on how to build the VM image that is used for data analysis in your secure environment.
 
-[Create New Users](https://github.com/alan-turing-institute/data-safe-haven/blob/9213c9b949be04a2a8ea5c075ee698f23115ef9f/new_dsg_environment/create-users/README.md) - Create and add new users to Data Safe Haven environments.
+[Create New Users](secure_research_environment/create-users/README.md) - Create and add new users to Data Safe Haven environments.
 
-[Data Ingress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
+[Data Ingress](docs/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
-[Data Egress](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/processes/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
+[Data Egress](docs/processes/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
 Before you go ahead to set up a Data Safe Haven, you'll need to have the following pre-requisites:
 - `Powershell`
@@ -42,20 +42,20 @@ Before you go ahead to set up a Data Safe Haven, you'll need to have the followi
     - target for infrastructure deployment
 
 
-[Design choices](https://github.com/alan-turing-institute/data-safe-haven/tree/9213c9b949be04a2a8ea5c075ee698f23115ef9f/design) - You can find out more about the design of Data Safe Havens here.
+[Design choices](docs/design/overview.md) - You can find out more about the design of Data Safe Havens here.
 
 
-## Using a Data Safe Havens
+## Using a Data Safe Haven
 
 
 Once a Safe Haven environment has been set up for a project, you can get access to it to carry out secure research.
 
 
-[Data Classification User Guide](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/docs/safe_haven_webapp_user_guide.md) - Step by Step instructions on classify project data using our classification WebApp.
+[Data Classification User Guide](docs/safe_haven_webapp_user_guide.md) - Step by Step instructions on classify project data using our classification WebApp.
 
-[Safe Havens Cheat Sheet](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/docs/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
+[Safe Havens Cheat Sheet](docs/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
-[Safe Havens User Guide](https://github.com/alan-turing-institute/data-safe-haven/blob/1593bf2f18ec439fc1dbfa4fae519365aa3f06c7/docs/safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment.
+[Safe Havens User Guide](docs/safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment.
 
 ## The philosophy of our Safe Haven design
 
@@ -86,8 +86,8 @@ A declarative approach is preferred for the following reasons:
 - **Consistency** of deployment: With a procedural approach, the steps required to reach a desired deployed configuration depend on the current state of the deployment. Unless all instances of a given infrastructure are updated in lockstep, each instance will require different subsets of update scripts to be applied to bring it up to date with the current configuration. Even just deploying a "fresh" instance requires running the initial deployment script plus all subsequent updates in order. In contrast, with a declarative approach, the latest configuration can simply be deployed against all instances and they will be updated to match it.
 
 #### A focus on infrastructure orchestration
-Many of the long-standing tools being considered have traditionally focussed on setting up and updating the configuration of existing physical or virtual machines, with support for **orchestrating** the deployment of virtual infrastructure added later as a secondary provision. We plan to use virtual machine images and docker to manage the configuration of compute resources, so orchestration of virtual infrastructure should be first class functionality in our chosen solution.
+Many of the long-standing tools being considered have traditionally focused on setting up and updating the configuration of existing physical or virtual machines, with support for **orchestrating** the deployment of virtual infrastructure added later as a secondary provision. We plan to use virtual machine images and docker to manage the configuration of compute resources, so orchestration of virtual infrastructure should be first class functionality in our chosen solution.
 
 ## Contributing
 
-We welcome contributions from anyone who is interested in the project. Therte are lots of ways to contribute, not just writing code. See our [Contributor Guide](https://github.com/alan-turing-institute/data-safe-haven/blob/master/CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
+We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.

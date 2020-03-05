@@ -1,7 +1,7 @@
 # System files
 *.DS_Store
 .idea/
-new_dsg_environment/azure-vms/tests/logistic.csv
+secure_research_environment/azure-vms/tests/logistic.csv
 
 # All secrets folders, no matter how nested
 secrets/
