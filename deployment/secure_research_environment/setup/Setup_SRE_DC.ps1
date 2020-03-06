@@ -76,7 +76,7 @@ ForEach ($folderFilePair in (($artifactsFolderNameCreate, $dcCreationZipFileName
                              ($artifactsFolderNameConfig, "GPOs.zip"),
                              ($artifactsFolderNameConfig, "StartMenuLayoutModification.xml"))) {
     $artifactsFolderName, $artifactsFileName = $folderFilePair
-    $_ = Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "artifacts" $artifactsFolderName $artifactsFileName) -Force
+    $_ = Set-AzStorageBlobContent -Container $artifactsFolderName -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" $artifactsFolderName $artifactsFileName) -Force
     if ($?) {
         Add-LogMessage -Level Success "Uploaded '$artifactsFileName' to '$artifactsFolderName'"
     } else {
@@ -141,7 +141,7 @@ Add-LogMessage -Level Info "Importing configuration artifacts for: $($config.sre
 $blobNames = Get-AzStorageBlob -Container $artifactsFolderNameConfig -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $config.sre.storage.artifacts.rg -accountName $config.sre.storage.artifacts.accountName
 # Run import script remotely
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Import_Artifacts.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1"
 $params = @{
     remoteDir = "`"$remoteUploadDir`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
@@ -164,7 +164,7 @@ Write-Output $result.Value
 # Configure DNS
 # -------------
 Add-LogMessage -Level Info "Configuring DNS for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_DNS.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
 $params = @{
     identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
     rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
@@ -179,7 +179,7 @@ Write-Output $result.Value
 # Create users, groups and OUs
 # ----------------------------
 Add-LogMessage -Level Info "Creating users, groups and OUs for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Create_Users_Groups_OUs.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Create_Users_Groups_OUs.ps1"
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     sreDn = "`"$($config.sre.domain.dn)`""
@@ -190,12 +190,10 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-
-
 # Configure GPOs
 # --------------
 Add-LogMessage -Level Info "Configuring GPOs for: $($config.sre.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_GPOs.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_GPOs.ps1"
 $params = @{
     oubackuppath = "`"$remoteUploadDir\GPOs`""
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -234,7 +232,7 @@ $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 $dcAdminPasswordEncrypted = ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 # Run domain configuration script remotely
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dc" "remote_scripts" "Configure_Domain_Trust.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Domain_Trust.ps1"
 $params = @{
     sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
     sreDcAdminUsername = "`"$dcAdminUsername`""
@@ -248,6 +246,7 @@ Write-Output $result.Value
 # -------------
 $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 Add-VmToNSG -VMName $config.sre.dc.vmName -NSGName $nsg.Name
+
 
 # Switch back to original subscription
 # ------------------------------------

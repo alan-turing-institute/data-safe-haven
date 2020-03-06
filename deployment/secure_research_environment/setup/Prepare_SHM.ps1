@@ -47,7 +47,7 @@ $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPasswor
 # -------------------------------
 Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
@@ -77,7 +77,7 @@ Write-Output $result.Value
 # Add SRE DNS entries to SHM
 # --------------------------
 Add-LogMessage -Level Info "[ ] Adding SRE DNS records to SHM..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Add_New_SRE_To_DNS_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Add_New_SRE_To_DNS_Remote.ps1"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
