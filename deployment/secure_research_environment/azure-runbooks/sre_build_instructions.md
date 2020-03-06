@@ -197,36 +197,37 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
   ![Remote Desktop Gateway Manager](images/rd_gateway_manager_01.png)
 - In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<sre-id> (Local)` object and select "Properties"
   ![RDS server properties](images/rd_gateway_manager_02.png)
-- Select "RD CAP Store" tab
-- Select the "Central Server Running NPS"
+- Select `RD CAP Store` tab
+- Select the `Central Server Running NPS`
 - Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal (`Resource Groups -> RG_SHM_NPS -> NPS-SHM-<SHM ID>`)
 - Set the "Shared Secret" to the value of the `sre-<sre-id>-nps-secret` in the SRE Key Vault (`Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>`).
   ![RD CAP store](images/rd_gateway_manager_03.png)
-- Click "OK" to close the dialogue box.
+- Click `OK` to close the dialogue box.
 
 #### Set the security groups for access to session hosts
 - Expand the `RDG-SRE-<sre-id> (Local)` server object and select `Policies -> Resource Authorization Policies`
-- Right click on "RDG_AllDomainComputers" and select "Properties`
+- Right click on `RDG_AllDomainComputers` and select "Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_01.png)
-- On the "User Groups" tab click "Add"
-- Click "Locations" and select the management domain (e.g. `testa.dsgroupdev.co.uk`) and click "OK"
-- Enter "SG" into the "Enter the object names to select" box and click on "Check Names" select the `SG <SRE-ID> Research Users`security group from the list.
+- On the `User Groups` tab click `Add`
+- Click `Locations` and select the management domain (e.g. `testa.dsgroupdev.co.uk`) and click `OK`
+- Enter `SG` into the `Enter the object names to select` box and click on `Check Names`
+- Select the `SG <SRE-ID> Research Users`security group from the list.
   ![Session host security groups](images/rd_gateway_session_hosts_02.png)
-- Click "OK" and the group will be added to the "User Groups" screen
+- Click `OK` and the group will be added to the "User Groups" screen
   ![Session host security groups](images/rd_gateway_session_hosts_03.png)
-- Click "OK" to exit the dialogue box
-- Right click on "RDG_RDConnectionBrokers" policy and select "Properties"
+- Click `OK` to exit the dialogue box
+- Right click on `RDG_RDConnectionBrokers` policy and select `Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_04.png)
-- Repeat the process you did for the "RDG_AllDomainComputers" policy, again adding the `SG <SRE-ID> Research Users`security group from the list.
+- Repeat the process you did for the `RDG_AllDomainComputers` policy, again adding the `SG <SRE-ID> Research Users` security group from the list.
 
 #### Increase the authorisation timeout to allow for MFA
 - In "Server Manager", select `Tools -> Network Policy Server`
 - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Server Groups` and double click on `TS GATEWAY SERVER GROUP`
   ![Remote RADIUS server](images/media/rds_local_nps_remote_server_selection.png)
-- Highlight the server shown in the “RADIUS Server” column and click “Edit”
-- Change to the “Load Balancing” tab and change the parameters to match the screen below
+- Highlight the server shown in the `RADIUS Server` column and click `Edit`
+- Change to the `Load Balancing` tab and change the parameters to match the screen below
   ![Load balancing](images/media/rds_local_nps_remote_server_timeouts.png)
-- Click “OK” twice and close “Network Policy Server” MMC
+- Click `OK` twice and close `Network Policy Server` MMC
 
 ### Configuration of SSL on RDS Gateway
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).

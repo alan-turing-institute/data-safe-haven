@@ -529,7 +529,7 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Deploy and configure the RDS VMs by running `./Create_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
-- This will take **around 20 minutes** to run.
+- This will take **around 30 minutes** to run.
 
 
 ### [Optional] Tearing down package mirrors

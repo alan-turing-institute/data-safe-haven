@@ -201,7 +201,7 @@ if ($doInstall) {
     # Configure RDS Gateway VM to use signed certificate
     # --------------------------------------------------
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
-    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_rds" "remote_scripts" "Install_Signed_Ssl_Cert.ps1"
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
         rdsFqdn = "`"$rdsFqdn`""
         certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
