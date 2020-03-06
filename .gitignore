@@ -1,7 +1,7 @@
 # System files
 *.DS_Store
 .idea/
-deployment/secure_research_environment/scripts/compute_vm/tests/logistic.csv
+deployment/secure_research_environment/remote/compute_vm/tests/logistic.csv
 
 # All secrets folders, no matter how nested
 secrets/
