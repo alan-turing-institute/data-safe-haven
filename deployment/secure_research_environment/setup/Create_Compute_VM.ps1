@@ -168,7 +168,7 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 # Load cloud-init template
-$cloudInitBasePath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "cloud_init" -Resolve
+$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
@@ -218,11 +218,11 @@ $_ = Deploy-UbuntuVirtualMachine @params
 
 # Poll VM to see whether it has finished running
 Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
 $progress = 0
-while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
+$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
+while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Contains("PowerState/stopped"))) {
     $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
-    $progress += 1
+    $progress = [math]::min(100, $progress + 1)
     Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
     Start-Sleep 10
 }
@@ -248,7 +248,7 @@ if ($?) {
 # Create Postgres roles
 # ---------------------
 Add-LogMessage -Level Info "[ ] Ensuring Postgres DB roles and initial shared users exist on VM $vmName"
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "remote_scripts" "create_postgres_roles.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "create_postgres_roles.sh"
 $params = @{
     DBADMINROLE = "admin"
     DBADMINUSER = "dbadmin"
@@ -270,7 +270,7 @@ Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."
 $zipFilePath = Join-Path $PSScriptRoot "smoke_tests.zip"
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "smoke_tests")
 Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists") -Filter *.* -Destination (Join-Path $tempDir package_lists) -Recurse
-Copy-Item (Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
+Copy-Item (Join-Path $PSScriptRoot ".." "remote" "compute_vm" "tests") -Filter *.* -Destination (Join-Path $tempDir tests) -Recurse
 if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
 Add-LogMessage -Level Info "[ ] Creating zip file at $zipFilePath..."
 Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
@@ -288,7 +288,7 @@ Add-LogMessage -Level Info "Uploading smoke tests to the DSVM..."
 $zipFileEncoded = [Convert]::ToBase64String((Get-Content $zipFilePath -Raw -AsByteStream))
 Remove-Item -Path $zipFilePath
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "compute_vm" "remote_scripts" "upload_smoke_tests.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
 $params = @{
     PAYLOAD = $zipFileEncoded
     ADMIN_USERNAME = $dsvmAdminUsername
