@@ -6,25 +6,19 @@ Troubleshooting Compute VM deployments
 There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
 
 ### 1. Certificate expiry before getting to the environment
-
 ![01_certificate_expiry](images/environment_access/01_certificate_expiry.png)
 
 #### Possible problems and solutions
 The expired certificate can be ignored but login will not be possible.
 
 #### Replace the SSL certificate with a new one
-- Ensure you have [Certbot](https://certbot.eff.org/) installed. This required using a Mac or Linux computer.
-
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-
-- Open a Powershell terminal and navigate to the `secure_research_environment/sre_deploy_scripts/04_create_rds/` directory of the Safe Haven repository
-
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
+- Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
-- Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1` script, providing the SRE ID when prompted
 
 ### 2. Failure when logging into the environment via web browser
-
 ![environment_access_02_password_login](images/environment_access/02_password_login.png)
 
 #### Possible problems and solutions
@@ -33,7 +27,6 @@ The expired certificate can be ignored but login will not be possible.
 
 
 ### 3. Failure when authenticating with the Shared VM or presentation server
-
 ![environment_access_03_shared_vm](images/environment_access/03_shared_vm.png)
 
 #### Possible problems and solutions
@@ -59,11 +52,11 @@ there are a couple of possible causes.
 
 2. the computer is unable to communicate with the login server
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
-- Run the script under `sre_deploy_scripts/07_deploy_compute_vms/Run_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
+- Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
 
 ```
-PS /home/atiadmin/data-safe-haven/secure_research_environment/sre_deploy_scripts/07_deploy_compute_vms> ./Run_Remote_Diagnostics.ps1 -sreId 2 -ipLastOctet 160
+PS /home/atiadmin/data-safe-haven/deployment/administration> ./SRE_DSVM_Remote_Diagnostics.ps1 -sreId 2 -ipLastOctet 160
 
 Name                                     Account                                           SubscriptionName                                 Environment                                      TenantId
 ----                                     -------                                           ----------------                                 -----------                                      --------
