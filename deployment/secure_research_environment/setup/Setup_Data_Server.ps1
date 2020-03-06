@@ -62,7 +62,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Move Data Server VM into correct OU
 # -----------------------------------
 Add-LogMessage -Level Info "Adding data server to correct security group..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dataserver" "remote_scripts" "Move_Data_Server_VM_Into_OU.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
     sreDn = "`"$($config.sre.domain.dn)`""
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
@@ -104,7 +104,7 @@ Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -Resource
 # Configure data server
 # ---------------------
 Add-LogMessage -Level Info "Configuring data server VM..."
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "create_dataserver" "remote_scripts" "Configure_Data_Server_Remote.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Configure_Data_Server_Remote.ps1"
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""

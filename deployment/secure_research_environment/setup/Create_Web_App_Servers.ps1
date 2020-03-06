@@ -17,12 +17,6 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# # Make sure terms for the GitLab image are accepted
-# # -------------------------------------------------
-# $_ = Get-AzMarketplaceTerms -Publisher gitlab -Product gitlab-ce -Name gitlab-ce |  Set-AzMarketplaceTerms -Accept
-# $_ = Get-AzMarketplaceTerms -Publisher bitnami -Product gitlab -Name 8-5 |  Set-AzMarketplaceTerms -Accept
-
-
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
@@ -53,7 +47,7 @@ $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 $gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." ".." ".." "environment_configs" "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
                                             Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
@@ -74,7 +68,7 @@ $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqd
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
 $hackmdLdapUserDn = "CN=" + $config.sre.users.ldap.hackmd.name + "," + $config.shm.domain.serviceOuPath
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
-$hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
+$hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
                                             Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
                                             Replace('<hackmd-user-filter>',$hackmdUserFilter).
@@ -134,7 +128,7 @@ while ((-not ($gitlabStatuses.Contains("PowerState/stopped") -and $gitlabStatuse
 # While webapp servers are off, ensure they are bound to correct NSG
 # ------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
-foreach ($vmName in ($config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName)) {
+foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.vmName)) {
     Add-VmToNSG -VMName $vmName -NSGName $nsg.Name
 }
 Start-Sleep -Seconds 30
@@ -144,14 +138,14 @@ Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"
 
 # Finally, reboot the webapp servers
 # ----------------------------------
-foreach ($nameVMNameParamsPair in (("GitLab", $config.sre.webapps.gitlab.vmName), ("HackMD", $config.sre.webapps.hackmd.vmName))) {
+foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
-    Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
+    Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
     $_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
     if ($?) {
-        Add-LogMessage -Level Success "Rebooting the ${name} VM succeeded"
+        Add-LogMessage -Level Success "Rebooting the $name VM ($vmName) succeeded"
     } else {
-        Add-LogMessage -Level Fatal "Rebooting the ${name} VM failed!"
+        Add-LogMessage -Level Fatal "Rebooting the $name VM ($vmName) failed!"
     }
 }
 

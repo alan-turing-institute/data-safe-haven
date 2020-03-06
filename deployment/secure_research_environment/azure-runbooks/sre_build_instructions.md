@@ -104,7 +104,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<shm
 ### Core SRE configuration properties
 
 The core properties for the new SRE environment must be present in the `environment_configs/core` folder.
-The following core SRE properties must be defined in a JSON file named `sre_<sre-id>_core_config.json`.
+The following core SRE properties must be defined in a JSON file named `sre_<SRE ID>_core_config.json`.
 
 ```json
 {
@@ -132,8 +132,8 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
   - `Import-Module ./deployment/common/Configuration.psm1 -Force`
-  - `Add-SreConfig -sreId <sre-id>`, where `<sre-id>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
-- A full configuration file for the new SRE will be created at `environment_configs/full/sre_<sre-id>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
+  - `Add-SreConfig -sreId <SRE ID>`, where `<SRE ID>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
+- A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
 
 ## 3. Prepare Safe Haven Management deployment
@@ -160,7 +160,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - The VNet peerings may take a few minutes to provision after the script completes.
 
 ### Set up a VPN connection to the SRE
-- In the **SRE subscription** open `Resource Groups -> RG_SRE_NETWORKING -> VNET_SRE_<sre-id>_GW`
+- In the **SRE subscription** open `Resource Groups -> RG_SRE_NETWORKING -> VNET_SRE_<SRE ID>_GW`
   - Select "**Point to Site Configuration**" from the left-hand navigation
   - Download the VPN client from the "Point to Site configuration" menu
     ![VPN client](images/vpn_client.png)
@@ -185,7 +185,7 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
 - The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>`)
-- Login as the **SRE domain** admin user eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<sre-id>-dc-admin-username` and `sre-<sre-id>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
+- Login as the **SRE domain** admin user eg. `sresandboxadmin@sandbox.dsgroupdev.co.uk`) where the admin username and password are stored in the SRE KeyVault `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>` as `sre-<SRE ID>-dc-admin-username` and `sre-<SRE ID>-dc-admin-password`. (NB. all SRE Windows servers use the same admin credentials.)
 
 #### Install RDS environment and webclient
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
@@ -195,30 +195,30 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 #### Configure RDS to use SHM NPS server for client access policies
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
   ![Remote Desktop Gateway Manager](images/rd_gateway_manager_01.png)
-- In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<sre-id> (Local)` object and select "Properties"
+- In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<SRE ID> (Local)` object and select "Properties"
   ![RDS server properties](images/rd_gateway_manager_02.png)
 - Select `RD CAP Store` tab
 - Select the `Central Server Running NPS`
 - Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal (`Resource Groups -> RG_SHM_NPS -> NPS-SHM-<SHM ID>`)
-- Set the "Shared Secret" to the value of the `sre-<sre-id>-nps-secret` in the SRE Key Vault (`Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>`).
+- Set the "Shared Secret" to the value of the `sre-<SRE ID>-nps-secret` in the SRE Key Vault (`Resource Groups -> RG_SRE_SECRETS -> kv-shm-<shm-id>-sre-<SRE ID>`).
   ![RD CAP store](images/rd_gateway_manager_03.png)
 - Click `OK` to close the dialogue box.
 
 #### Set the security groups for access to session hosts
-- Expand the `RDG-SRE-<sre-id> (Local)` server object and select `Policies -> Resource Authorization Policies`
+- Expand the `RDG-SRE-<SRE ID> (Local)` server object and select `Policies -> Resource Authorization Policies`
 - Right click on `RDG_AllDomainComputers` and select "Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_01.png)
 - On the `User Groups` tab click `Add`
 - Click `Locations` and select the management domain (e.g. `testa.dsgroupdev.co.uk`) and click `OK`
 - Enter `SG` into the `Enter the object names to select` box and click on `Check Names`
-- Select the `SG <SRE-ID> Research Users`security group from the list.
+- Select the `SG <SRE ID> Research Users`security group from the list.
   ![Session host security groups](images/rd_gateway_session_hosts_02.png)
 - Click `OK` and the group will be added to the "User Groups" screen
   ![Session host security groups](images/rd_gateway_session_hosts_03.png)
 - Click `OK` to exit the dialogue box
 - Right click on `RDG_RDConnectionBrokers` policy and select `Properties`
   ![Session host security groups](images/rd_gateway_session_hosts_04.png)
-- Repeat the process you did for the `RDG_AllDomainComputers` policy, again adding the `SG <SRE-ID> Research Users` security group from the list.
+- Repeat the process you did for the `RDG_AllDomainComputers` policy, again adding the `SG <SRE ID> Research Users` security group from the list.
 
 #### Increase the authorisation timeout to allow for MFA
 - In "Server Manager", select `Tools -> Network Policy Server`
@@ -243,16 +243,30 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<shm-id>` key vault, under "SECRETS".
   - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
-- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. You must ensure that you have assigned a licence to this user so that MFA will work correctly. In the following example, we assume that you are using the automatically-created test researcher.**
-- In the "Server Management" app, click `Tools -> Active Directory Users and Computers`
-- Open the `Safe Haven Security Groups` OU
-- Right click the `SG <sre-id> Research Users` security group and select "Properties"
-- Click on the "Members" tab and click the "Add" button
-- Enter the start of the `<sre-id>` and click "Check names"
-- Select the `<sre-id> Test Researcher` and click "Ok"
-- Click "Ok" again to exit the add users dialogue
-- At this point please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
-- Launch a local web browser and go to `https://<sre-id>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
+
+- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly.**
+
+1. Ensuring that a non-privileged user account exists
+- In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
+- Open the `Safe Haven Research Users` OU
+- Ensure that the non-privileged user account that you want to use is listed here, or if it is not then create it.
+
+2. Adding the user account to the correct Security Group
+- Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
+- Right click the `SG <SRE ID> Research Users` security group and select `Properties`
+- Click on the `Members` tab.
+- If the user you plan to use is not already listed here you must add them to the group (*the automatically-created test researcher should already be in the correct group*)
+  - Click the `Add` button
+  - Enter the start of the `<SRE ID>` and click "Check names"
+  - Select the `<SRE ID> Test Researcher` and click `Ok`
+  - Click `Ok` again to exit the add users dialogue
+
+3. Ensure that the account has MFA enabled
+- If you have just created the account, you will need to synchronise with Azure Active Directory
+- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
+
+4. Test using the RDG web interface
+- Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
         - Once the webclient is installed, you will need to manually run the steps from the SSL certificate generation script to install the SSL certificate on the  webclient. Still on the RDS Gateway, run the commands below, replacing `<path-to-full-certificate-chain>` with the path to the `xxx_full_chain.pem` file in the `C:\Certificates` folder.
@@ -261,15 +275,15 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
     - **Troubleshooting** If you get an "unexpected server authentication certificate error", your browser has probably cached a previous certificate for this domain.
         - Do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (permanent fix)
         - OR open a new private / incognito browser window and visit the page.
-    - **Troubleshooting** If you can see an empty screen with "Work resources" but no app icons, your user has not been correctly added to the security group.
-- Once you have logged in, click on the "Presentation server" app icon. You should receive an MFA request to your phone or authentication app.
+    - **Troubleshooting** If you can see an empty screen with `Work resources` but no app icons, your user has not been correctly added to the security group.
+- Once you have logged in, click on the `Presentation server` app icon. You should receive an MFA request to your phone or authentication app.
     - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
         - Ensure that both the SHM NPS server and the RDS Gateway are running
         - Ensure that the [SHM NPS server RADIUS Client configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
         - Use the Event viewer on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
         - Use the Event viewer on the SHM NPS server  (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
         - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful. This may indicate that the shared secret is different between the SHM and SRE.
-        - Ensure the same shared secret from the `sre-<sre-id>-nps-secret` in the SRE KeyVault is used in **both** the SHM NPS server RADIUS Client configuration (you can set this manually by connecting to the Network Policy Server) and the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
+        - Ensure the same shared secret from the `sre-<SRE ID>-nps-secret` in the SRE KeyVault is used in **both** the SHM NPS server RADIUS Client configuration (you can set this manually by connecting to the Network Policy Server) and the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
         - Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
     - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been [increased as described in a previous section](sre_build_instructions.md#increase-the-authorisation-timeout-to-allow-for-mfa). It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
     - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
@@ -295,15 +309,15 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 
 ### Test GitLab Server
 - There is a built-in `root` user, whose password is stored in the SRE KeyVault (see SRE config file for KeyVault and secret names).
-- You can test Gitlab from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <sre-id> Research Users` security group.
+- You can test Gitlab from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.151` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG <SRE ID> Research Users` security group.
 
 ### Test HackMD Server
-- You can test HackMD from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<sre-id> Research Users` security group.
+- You can test HackMD from inside the RDS environment by connecting to `<sre-subnet-data-prefix>.152:3000` and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<SRE ID> Research Users` security group.
 
 ## 9. Deploy initial shared compute VM
 ### [OPTIONAL] Create a custom cloud init file for the SRE if required
   - By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `<data-safe-haven-repo>/environment_configs/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP log on etc.
-  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<sre-id>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
+  - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
 ### Deploy a compute VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -321,9 +335,9 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
 - Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 - Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
-- Enter the username from the `<sre-id>-dsvm-admin-username` secret in the SRE KeyVault.
-- Enter the password from the `<sre-id>-dsvm-admin-password` secret in the SRE KeyVault.
-- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-sre-<sre-id>.template.yaml` file in the Safe Haven git repository.
+- Enter the username from the `<SRE ID>-dsvm-admin-username` secret in the SRE KeyVault.
+- Enter the password from the `<SRE ID>-dsvm-admin-password` secret in the SRE KeyVault.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-sre-<SRE ID>.template.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## 10. Apply network configuration
@@ -356,14 +370,14 @@ To run the smoke tests:
 
 ## Server list
 - The following virtual machines are created as a result of these instructions:
-  - `DC-SRE-<sre-id>` (domain controller)
-  - `DAT-SRE-<sre-id>` (data server)
-  - `HACKMD-SRE-<sre-id>` (HackMD server)
-  - `GITLAB-SRE-<sre-id>` (GitLab server)
-  - `RDG-SRE-<sre-id>` (Remote Desktop Gateway)
-  - `APP-SRE-<sre-id>` (Remote Desktop app server)
-  - `DKP-SRE-<sre-id>` (Remote Desktop desktop server)
-  - `SRE-<sre-id>-160-DSVM-0-1-2019082900`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
+  - `DC-SRE-<SRE ID>` (domain controller)
+  - `DAT-SRE-<SRE ID>` (data server)
+  - `HACKMD-SRE-<SRE ID>` (HackMD server)
+  - `GITLAB-SRE-<SRE ID>` (GitLab server)
+  - `RDG-SRE-<SRE ID>` (Remote Desktop Gateway)
+  - `APP-SRE-<SRE ID>` (Remote Desktop app server)
+  - `DKP-SRE-<SRE ID>` (Remote Desktop desktop server)
+  - `SRE-<SRE ID>-160-DSVM-0-1-2019082900`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
 
 ## Tearing down the SRE
 From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
