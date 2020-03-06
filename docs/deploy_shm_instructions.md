@@ -97,7 +97,7 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
-   ![AAD](images/AAD.png)
+   ![AAD](images/deploy_shm/AAD.png)
 3. Click `Create`
 4. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
 5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
@@ -107,10 +107,10 @@ Once the new DNS Zone for your domain/subdomain has been deployed, you need to a
 ### Add the custom domain to the new AAD
 1. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
 2. If the Custom domain name blade shows `Status Verified` and no DNS details are displayed, you can skip to the next section. Otherwise, if you see DNS record details similar to the image below, you need to verify the domain. Note down the required details displayed and complete the following steps.
-  ![AAD DNS record details](images/aad_dns_record_details.png)
+  ![AAD DNS record details](images/deploy_shm/aad_dns_record_details.png)
 3. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
 4. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
-  ![Create AAD DNS Record](images/create_aad_dns_record.png)
+  ![Create AAD DNS Record](images/deploy_shm/create_aad_dns_record.png)
 5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
 6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
 
@@ -192,7 +192,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   - Click on `Users` in the left hand sidebar
   - For each user you want to add a licence to, click on their username
     - Ensure that the user has `usage location` set under "Settings" (see image below):
-  ![Set user location](images/set_user_location.png)
+  ![Set user location](images/deploy_shm/set_user_location.png)
     - Click on `Licences` in the left hand sidebar
     - Click on `+ Assignments` in the top bar
     - Assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication` then click `Save`
@@ -209,7 +209,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
     - In "Remember multi-factor authentication" section
       - ensure "Allow users to remember multi-factor authentication on devices they trust" is **unchecked**
     - Click "Save" and close window
-      ![AAD MFA settings](images/aad_mfa_settings.png)
+      ![AAD MFA settings](images/deploy_shm/aad_mfa_settings.png)
 8. Require MFA for all admins
   - Sign in to the Azure portal as a user administrator or global administrator.
   - Go to `Azure Active Directory` then click `Manage > Security` in the left hand side bar
@@ -228,7 +228,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around one hour** to run.
 - Once the script exits successfully you should see the following resource groups under the SHM subscription:
-   ![Resource groups](images/resource_groups.png)
+   ![Resource groups](images/deploy_shm/resource_groups.png)
 
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
@@ -244,7 +244,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
-  ![certificate details](images/certificate_details.png)
+  ![certificate details](images/deploy_shm/certificate_details.png)
 4. Read through the following notes, then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
 **NOTES:**
@@ -344,9 +344,9 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
 - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
 - Click on the `View` menu item and make sure that `Advanced Features` is enabled
 - Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select `Properties`
-  ![AD permissions properties](images/aad_permissions_properties.png)
+  ![AD permissions properties](images/deploy_shm/aad_permissions_properties.png)
 - In the pop-up window, go to the `Security` tab and click on the `Advanced` button
-  ![AD permissions security](images/aad_permissions_security.png)
+  ![AD permissions security](images/deploy_shm/aad_permissions_security.png)
 - In the pop-up window, click on the `Add` button
   - Click on `Select a principal` and then select the `localadsync@<SHM domain>` by typing the first few letters into the search box and clicking on `Check Names`. When the `localadsync@<SHM domain>` principal is selected, click `OK` to return to the `Permissions Entry for <SHM domain>` window.
   - In the `Applies to` section, select `Descendant User objects`
@@ -367,7 +367,7 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
 ### Additional AAD Connect Configuration
 1. Open `Azure AD Connect > Synchronization Rules Editor` from the start menu
 
-  ![synchronisation rules](images/synchronisation_rules.png)
+  ![synchronisation rules](images/deploy_shm/synchronisation_rules.png)
 
 2. Change the `Direction` drop down to `Outbound`
 3. Select the `Out to AAD - User Join` rule.
@@ -420,11 +420,11 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
   - Select `Manage > Password reset` from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
-    ![Enable writeback](images/enable_writeback.png)
+    ![Enable writeback](images/deploy_shm/enable_writeback.png)
   - If you changed this setting, click the `Save` icon
 - Select `Properties` from the left hand side bar
   - Make sure that `Self service password reset enabled` is set to `All`
-    ![Enable password reset](images/enable_passwordreset.png)
+    ![Enable password reset](images/deploy_shm/enable_passwordreset.png)
   - If you changed this setting, click the `Save` icon
 
 
@@ -446,7 +446,7 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to text file:
   - Select `NPS (Local) > Accounting` on the left-hand sidebar
-    ![NPS accounting](images/nps_accounting.png)
+    ![NPS accounting](images/deploy_shm/nps_accounting.png)
   - Click on `Accounting > Configure Accounting`
     - On the `Introduction` screen, click `Next`.
     - On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
@@ -458,7 +458,7 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
     - Click `Ok`
 4. Add NPS policy to allow connections
   - Select `NPS (Local) > Policies > Network policies` on the left-hand sidebar
-    ![NPS network policies](images/nps_network_policies.png)
+    ![NPS network policies](images/deploy_shm/nps_network_policies.png)
   - Right click on `Network policies` and select `New`
     - Set the policy name to `RDG_CAP` and click `Next`
     - Click `Add` to add a restriction

@@ -86,14 +86,14 @@ For security reasons, you must (re-)set your password before you can log in:
 
 4.	There will then be a password prompt. The first time you log in you need to click **“Forgotten my password”**
 
-   ![](images/resetpassword_1.png)
+   ![](images/user_guide/resetpassword_1.png)
 
    **NOTE:** If you do reset your password during the week, wait 5-10 mins before logging in again, to allow the user management to sync up with the new password.
 
 5. Complete the requested information (a captcha and the phone number you provided on registration).
 
-   ![](images/resetpassword_2.png)
-   ![](images/resetpassword_3.png)
+   ![](images/user_guide/resetpassword_2.png)
+   ![](images/user_guide/resetpassword_3.png)
 
 6. Generate a new password using the [Secure Password
 Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
@@ -111,8 +111,8 @@ If you feel you may struggle to remember your password, make a note of it on a s
 
 7. Enter your password into the ‘new password’ and ‘confirm new password’ fields.
 
-    ![](images/resetpassword_4.png)
-    ![](images/resetpassword_5.png)
+    ![](images/user_guide/resetpassword_4.png)
+    ![](images/user_guide/resetpassword_5.png)
 
 8. Log into your account
 
@@ -120,8 +120,8 @@ If you feel you may struggle to remember your password, make a note of it on a s
     This is **not** MFA.
     You still need to set up MFA in the next section, otherwise you will be unable to launch any apps.
 
-    ![](images/login_1.png)
-    ![](images/login_2.png)
+    ![](images/user_guide/login_1.png)
+    ![](images/user_guide/login_2.png)
 
     If you get a message saying "account or password is incorrect" , check that you:
      * typed the right username
@@ -129,11 +129,11 @@ If you feel you may struggle to remember your password, make a note of it on a s
 
 9. Answer your phone when it rings!
 
-   ![](images/login_3.png)
+   ![](images/user_guide/login_3.png)
 
 10. Finish logging in
 
-   ![](images/login_4.png)
+   ![](images/user_guide/login_4.png)
 
 ### Configuring Multi-Factor Authentication
 
@@ -148,14 +148,14 @@ Once you have logged in, you need to setup multi-factor authentication before yo
 
 4. Set up the second authentication method following the instructions on screen. If you select phone verification, go to step 5. If you select app verification, go to step 6.
 
-    ![](images/setup_mfa.png)
+    ![](images/user_guide/setup_mfa.png)
 
 5. **Phone option**: If you choose to set up the authentication by phone call you will receive a call straight away.
 
     Note that some people get a call that says, *"press the pound key"* and others receive *"press the hash key"* – both mean hit the `#` button.
 
-    ![](images/setup_mfa_phone_1.png)
-    ![](images/setup_mfa_phone_2.png)
+    ![](images/user_guide/setup_mfa_phone_1.png)
+    ![](images/user_guide/setup_mfa_phone_2.png)
 
     **NOTE:** when you click `close` the page will switch to your dashboard. You can close your browser at this point.
 
@@ -181,13 +181,13 @@ Once you have logged in, you need to setup multi-factor authentication before yo
 
     viii. Click **"Next"** again to test the app, you will get a verification on your app.
 
-    ![](images/setup_mfa_app_1.png)
-    ![](images/setup_mfa_app_2.png)
-    ![](images/setup_mfa_app_3.png)
+    ![](images/user_guide/setup_mfa_app_1.png)
+    ![](images/user_guide/setup_mfa_app_2.png)
+    ![](images/user_guide/setup_mfa_app_3.png)
 
 7. When confirmed you can close the browser.
 
-   ![](images/setup_mfa_app_4.png)
+   ![](images/user_guide/setup_mfa_app_4.png)
 
 #### MFA:Top tips
 
@@ -243,7 +243,7 @@ Follow the steps below to access the Azure safe haven environment:
 
 
 
-   ![](images/logon_environment.PNG)
+   ![](images/user_guide/logon_environment.PNG)
 
 4. Enter the username you’ve been provided, ensuring that you use the following format:
 
@@ -255,7 +255,7 @@ Follow the steps below to access the Azure safe haven environment:
 
    If successful, you’ll see the following screen - welcome to the Data Safe Haven!
 
-   ![](images/RDS_app_selection_options.png)
+   ![](images/user_guide/RDS_app_selection_options.png)
 
 7. *(First time only)* Follow the steps in Section 3.3 if this is the first time you are logging in.
 
@@ -274,15 +274,15 @@ The first time you use the safe haven, you’ll have to set up your user account
 1. Run the "Shared VM (SSH)" app.
    You will need to first authenticate using MFA.
 
-   ![](images/login_putty_2.png)
+   ![](images/user_guide/login_putty_2.png)
 
    If you don't respond fast enough to the MFA, or it has failed, you will likely get an error that looks like this:
 
-   ![](images/login_putty_3.png)
+   ![](images/user_guide/login_putty_3.png)
 
 2. When you get in the first time, there will be a security alert. Dismiss security alert (that looks like the screenshot below) by clicking  `"yes"` (this only happens on the first log in).
 
-   ![](images/1st_logon_putty.png)
+   ![](images/user_guide/1st_logon_putty.png)
 
 3. Run the "Shared VM (Desktop)" app. Verify using MFA, then login with:
 
@@ -290,11 +290,11 @@ The first time you use the safe haven, you’ll have to set up your user account
 
    Check the box in the security alert below and confirm by clicking the `"Yes"` button.
 
-   ![](images/1st_logon_sharedVMdesktop.png)
+   ![](images/user_guide/1st_logon_sharedVMdesktop.png)
 
 4. Insert your credentials as per the example below:
 
-   ![](images/logon_VMdesktop.png)
+   ![](images/user_guide/logon_VMdesktop.png)
 
    If you get a warning:
 
@@ -323,7 +323,7 @@ The first time you use the safe haven, you’ll have to set up your user account
 The Safe Haven contains a Linux VM for data analysis, with different packages installed on to it. The VM allows you to carry out data science research, completely isolated from the internet. You can access different applications from the terminal, including RStudio, Atom, jupyter notebook and Spider Integrated Development Environment. You can also access HackMD and Gitlab, through the browser in the VM. The analytics environment can be accessed through the `Shared VM` (desktop) app.
 Please log in with username `firstname.lastname` and password `password`.
 
-![](images/VM_arrived.png)
+![](images/user_guide/VM_arrived.png)
 
 When you get to this screen, it is important that you select the "Use default config" option.
 
@@ -345,7 +345,7 @@ This VM can also be used to directly access `GitLab` and `HackMD`, via the brosw
 1. Point firefox to the url provided by the resource dashboard for GitLab/HackMD
 2. Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
 
-   ![](images/gitlab_screenshot.png)
+   ![](images/user_guide/gitlab_screenshot.png)
 
 3. If you create a new repository, we recommend you make it **public**. As each challenge has it's own secure environment, this will make the repository accessible to your colleagues working on the same challenge but not to anyone else (who will not have access to the challenge environment).
 
@@ -421,7 +421,7 @@ You can access the same GitLab repositories from the Work Resources page or via 
 
 Login with username `firstname.lastname@turingsafehaven.ac.uk` and `password`.
 
-![](images/gitlab_screenshot_login.png)
+![](images/user_guide/gitlab_screenshot_login.png)
 
 Please make all your repositories public so they are easy to share within your group.
 (Note that they are not really public as the server is only available inside your team’s virtual environment.)
@@ -438,7 +438,7 @@ You can find a really great markdown cheat sheet at
 You can access a local installation of HackMD from the Work Resources page.
 Login with your username `firtname.lastname@turingsafehaven.ac.uk` and  `password`, as below.
 
-![](images/hackmd_logon.png)
+![](images/user_guide/hackmd_logon.png)
 
 We have provided some example report templates for you which outline a structure we recommend.
 
@@ -454,7 +454,7 @@ We recommend that one person start the document, then let everyone know the URL 
 > ( `I /= l` )
 > Try the one you didn’t try first time round if you don't get to the right place.
 
-![](images/hackmd_screenshot.png)
+![](images/user_guide/hackmd_screenshot.png)
 
 ### 4.5: Accessing the data and exporting figures
 
@@ -465,13 +465,13 @@ You can use Windows File Explorer to move data within the Windows environment.
 You can transfer the data to the Linux environment using the `File Transfer` WinSCP app. (See [Appendix A](#appendix-a-migrating-to-a-new-data-science-vm-post-package-update))
 To access the data science VM’s file system, enter username `username` and `password` into the login mask, as shown below, and confirm with "login".
 
-![](images/WinSCP_logon.png)
+![](images/user_guide/WinSCP_logon.png)
 
 > TOP TIP: Although the default says not to save the password – you’re in a super secure environment so your life will be easier if you do save it.
 
 You can now drag and drop any files between the data science VM and the Windows Azure environment, as in the screenshot below.
 
-![](images/WinSCP_screenshot.png)
+![](images/user_guide/WinSCP_screenshot.png)
 
 If only one person in your group completes this step, everyone will then be able to access the data.
 
@@ -627,7 +627,7 @@ In Git, when you copy a project you say you “clone” it. To work on a git pro
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
 
-![](images/project_clone_url.png)
+![](images/user_guide/project_clone_url.png)
 
 Go to your computer’s shell and type the following command with your SSH or HTTPS URL:
 ```
@@ -759,12 +759,12 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 3. Click on New merge request on the right side of the screen.
 4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
-   ![](images/merge1.png)
+   ![](images/user_guide/merge1.png)
 
 5. When ready, click on the Compare branches and continue button.
 6. At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
-   ![](images/merge2.png)
+   ![](images/user_guide/merge2.png)
 
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
@@ -777,7 +777,7 @@ Your merge request will be ready to be approved and merged.
 - You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
 - You do not see any available apps
 
-  ![](images/No_folders_present.png)
+  ![](images/user_guide/No_folders_present.png)
 
 #### Cause
 You have not yet set up your two factor authentication.
@@ -792,7 +792,7 @@ Follow the two factor authentication section from the [logging in section](https
 - When you try and launch an app, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
 - When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
 
-  ![](images/unexpected_certificate_error.png)
+  ![](images/user_guide/unexpected_certificate_error.png)
 
 ### Cause
 The SSL certificate protecting your connection to the RDS webclient expires every three months and is renewed every two months.

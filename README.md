@@ -21,9 +21,9 @@ Secure environments for analysis of sensitive datasets are essential for researc
 You can set up a data safe haven yourself.
 
 
-[Safe Haven Management](safe_haven_management_environment/azure-runbooks/shm_build_instructions.md) - Instructions on how to build a Safe Haven Management environment in Azure.
+[Safe Haven Management](docs/deploy_shm_instructions.md) - Instructions on how to build a Safe Haven Management environment in Azure.
 
-[Secure Research Environment](secure_research_environment/azure-runbooks/sre_build_instructions.md) - Instructions on how to build a Secure Research Environment in Azure.
+[Secure Research Environment](docs/deploy_sre_instructions.md) - Instructions on how to build a Secure Research Environment in Azure.
 
 [Azure VMs](vm_image_management/README.md) - Instructions on how to build the VM image that is used for data analysis in your secure environment.
 
