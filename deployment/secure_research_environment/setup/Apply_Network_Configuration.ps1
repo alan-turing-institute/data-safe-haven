@@ -97,7 +97,7 @@ Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Netw
 # Re-peer to the correct network for this SRE
 Add-LogMessage -Level Info "Peering to the correct mirror network..."
 if (!$config.sre.mirrors.vnet.Name) {
-    Write-Host -ForegroundColor DarkGreen "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
+    Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
 } else {
     # Fetch SRE and mirror VNets
     $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
@@ -137,7 +137,7 @@ Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
 
 # Set PyPI and CRAN locations on the compute VM
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$scriptPath = Join-Path $PSScriptRoot ".." "scripts" "network_configuration" "remote_scripts" "update_mirror_settings.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
 foreach ($vmName in $computeVMs) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
     $params = @{
