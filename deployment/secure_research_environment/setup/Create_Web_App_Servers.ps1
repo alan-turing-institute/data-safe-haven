@@ -115,8 +115,8 @@ Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this 
 $progress = 0
 $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
-while ((-not ($gitlabStatuses.Contains("PowerState/stopped") -and $gitlabStatuses.Contains("ProvisioningState/succeeded"))) -and
-       (-not ($hackmdStatuses.Contains("PowerState/stopped") -and $hackmdStatuses.Contains("ProvisioningState/succeeded")))) {
+while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitlabStatuses.Contains("PowerState/stopped") -and
+             $hackmdStatuses.Contains("ProvisioningState/succeeded") -and $hackmdStatuses.Contains("PowerState/stopped"))) {
     $progress = [math]::min(100, $progress + 1)
     $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
     $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
