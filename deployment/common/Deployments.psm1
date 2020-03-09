@@ -808,3 +808,119 @@ function Update-NetworkSecurityGroupRule {
     }
 }
 Export-ModuleMember -Function Update-NetworkSecurityGroupRule
+
+
+# Create DNS Zone if it does not exist
+# ------------------------------------
+function Deploy-DNSZone {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
+    Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
+        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
+        if ($?) {
+            Add-LogMessage -Level Success "Created DNS Zone '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create DNS Zone '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
+    }
+}
+Export-ModuleMember -Function Deploy-DNSZone
+
+
+# Get NS Records
+# --------------
+function Get-NSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        $RecordSetName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $DnsZoneName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+
+    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNZ Zone '$($DnsZoneName)'..."
+    
+    $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
+    return $recordSet.Records
+}
+Export-ModuleMember -Function Get-NSRecords
+
+
+# Add NS Record Set to DNS Zone if it doesnot already exist
+# ---------------------------------------------------------
+function Set-NSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        $RecordSetName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $DnsZoneName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "NS records to add")]
+        $NsRecords
+    )
+    $_ = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "Creating new Record Set '$($RecordSetName)' in DNS Zone '$($DnsZoneName)' with NS records '$($nsRecords)' to ..."
+        $_ = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
+        if ($?) {
+            Add-LogMessage -Level Success "Created DNS Record Set '$RecordSetName'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create DNS Record Set '$RecordSetName'!"
+        }
+    } else {
+        # It's not straightforward to modify existing record sets idempotently so if the set already exists we do nothing
+        Add-LogMessage -Level InfoSuccess "DNS record set '$RecordSetName' already exists. Will not update!"
+    }
+}
+Export-ModuleMember -Function Set-NSRecords
+
+
+# Add NS Record Set to DNS Zone if it doesnot already exist
+# ---------------------------------------------------------
+function CreateDnsZoneAndSetParentNSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
+        $DnsZoneName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
+        $ResourceGroupName,
+        [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Do not set NS records in parent DNS Zone")]
+        [switch]$DoNotSetParentNs = $false        
+    )
+
+    $subdomain = $DnsZoneName.Split('.')[0]
+    $parentDnsZoneName = $DnsZoneName -replace "$subdomain.",""
+    
+    # Create DNS Zone
+    # ---------------
+    Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
+    Deploy-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
+    
+    if($DoNotSetParentNs.IsPresent) {
+        Add-LogMessage -Level Info "Not adding NS records to parent DNS Zone because -DoNotSetParentNs set"
+    } else {
+        Add-LogMessage -Level Info "Adding NS records to parent DNS Zone"
+
+        # Get NS records from the new DNS Zone
+        # ------------------------------------
+        Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
+        $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName
+        
+        # Add NS records to the parent DNS Zone
+        # -------------------------------------
+        Add-LogMessage -Level Info "Add NS records to the parent DNS Zone..."
+        Set-NSRecords -RecordSetName $subdomain -DnsZoneName $parentDnsZoneName -ResourceGroupName $ResourceGroupName -NsRecords $nsRecords
+    }    
+
+}
+Export-ModuleMember -Function CreateDnsZoneAndSetParentNSRecords
