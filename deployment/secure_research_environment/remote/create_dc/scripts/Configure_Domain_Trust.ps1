@@ -51,7 +51,10 @@ if ($relationshipExists) {
     $retryIntervalSec = 10
     $success = $false
 
-    # Access remote domain
+    # Attempt to access remote domain. Failure here can indicate a DNS problem.
+    # In particular if the conditional forwarders on the SHM DC and/or the SRE DC
+    # have been configured incorrectly then attempting to resolve the FQDN into
+    # an IP address will fail
     Write-Host " [ ] Accessing remote domain '$sreFqdn'..."
     while ($success -eq $false ) {
         $remoteSreDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
