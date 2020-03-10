@@ -45,25 +45,25 @@ if ($relationshipExists) {
     $sreDcAdminPasswordSecureString = ConvertTo-SecureString -String $sreDcAdminPasswordEncrypted -Key (1..16)
     $sreDcAdminPassword = [System.Runtime.InteropServices.marshal]::PtrToStringAuto([System.Runtime.InteropServices.marshal]::SecureStringToBSTR($sreDcAdminPasswordSecureString))
 
-    # Access remote domain
-    Write-Host " [ ] Accessing remote domain '$sreFqdn'..."
-    $remoteSreDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
-
+    # Keep retrying access until a cap is reached
     $retryElapsedSec = 0
     $maxRetrySec = 200
     $retryIntervalSec = 10
     $success = $false
 
+    # Access remote domain
+    Write-Host " [ ] Accessing remote domain '$sreFqdn'..."
     while ($success -eq $false ) {
+        $remoteSreDirectoryContext = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext("Domain", $sreFqdn, $sreDcAdminUsername, $sreDcAdminPassword)
         $remoteSreDomainConnection = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($remoteSreDirectoryContext)
         if ($?) {
             $success = $true
             Write-Host " [o] Accessing remote (SRE) domain succeeded"
         } else {
-            $retryElapsedSec = $retryElapsedSec + $retryIntervalSec
+            $retryElapsedSec += $retryIntervalSec
             if ($retryElapsedSec -gt $maxRetrySec) {
                 Write-Host " [x] Accessing remote (SRE) domain failed after '$retryElapsedSec' seconds!"
-                throw "Failed to access remote domain!"    
+                throw "Failed to access remote domain!"
             } else {
                 Write-Host " [ ] Accessing remote (SRE) domain failed after '$retryElapsedSec' seconds - sleeping and retrying"
                 Start-Sleep -Seconds $retryIntervalSec
