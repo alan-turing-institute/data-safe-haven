@@ -80,7 +80,7 @@ Write-Output $result.Value
 # Restart the NPS server
 # ----------------------
 Add-LogMessage -Level Info "Restarting $($config.nps.vmName)..."
-$_ = Restart-AzVM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+Enable-AzVM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
 if ($?) {
     Add-LogMessage -Level Success "Restarting NPS $($config.nps.vmName) succeeded"
 } else {

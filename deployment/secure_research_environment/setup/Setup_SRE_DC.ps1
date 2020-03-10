@@ -215,7 +215,7 @@ Write-Output $result.Value
 # Restart the DC
 # --------------
 Add-LogMessage -Level Info "Restarting $($config.sre.dc.vmName)..."
-Restart-AzVM -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
+Enable-AzVM -Name $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg
 if ($?) {
     Add-LogMessage -Level Success "Restarting DC succeeded"
 } else {

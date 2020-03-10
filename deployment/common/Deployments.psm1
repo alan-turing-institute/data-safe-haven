@@ -578,15 +578,16 @@ function Invoke-WindowsConfigureAndUpdate {
     Write-Output $result.Value
     # Reboot the VM
     Add-LogMessage -Level Info "[ ] Rebooting VM '$VMName'"
-    $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
-    # The following syntax is preferred in future, but does not yet work
-    # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
-    # Restart-AzVM -Id $vmID
-    if ($?) {
-        Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
-    }
+    # $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
+    # # The following syntax is preferred in future, but does not yet work
+    # # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
+    # # Restart-AzVM -Id $vmID
+    # if ($?) {
+    #     Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
+    # } else {
+    #     Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
+    # }
+    Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 
