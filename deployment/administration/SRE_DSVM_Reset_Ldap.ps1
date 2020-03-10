@@ -9,9 +9,12 @@ Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SRE config
-$config = Get-SreConfig ($sreId);
-$prevContext = Get-AzContext
+
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig $sreId
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Find VM with private IP address matching the provided last octet
@@ -42,7 +45,8 @@ if ($kvLdapPassword -ne $null) {
 # Set LDAP secret in local Active Directory on the SHM DC
 # -------------------------------------------------------
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName;
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "ResetLdapPasswordOnAD.ps1"
+#$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "ResetLdapPasswordOnAD.ps1"
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
     samAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
     ldapPassword = "`"$kvLdapPassword`""
@@ -62,7 +66,8 @@ if ($success) {
 # -------------------------
 Add-LogMessage -Level Info "Setting LDAP secret on compute VM: $($vm.Name)"
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName;
-$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "reset_ldap_password.sh"
+#$scriptPath = Join-Path $PSScriptRoot "remote_scripts" "reset_ldap_password.sh"
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
 $params = @{
     ldapPassword = "`"$kvLdapPassword`""
 }
@@ -73,3 +78,8 @@ Write-Output $result.Value
 if ($success) {
     Add-LogMessage -Level Success "Setting LDAP secret on compute VM was successful"
 }
+
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

@@ -9,11 +9,12 @@ Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SRE config
-# --------------
-$config = Get-SreConfig ($sreId);
+
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Find VM with private IP address matching the provided last octect
@@ -45,12 +46,15 @@ $params = @{
 Add-LogMessage -Level Info "Running diagnostic scripts on VM ${computeVmName}..."
 
 foreach ($diagnostic_script in $diagnostic_scripts) {
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" $diagnostic_script
+    #$scriptPath = Join-Path $PSScriptRoot "remote_scripts" $diagnostic_script
+    $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" $diagnostic_script
     $result = Invoke-AzVMRunCommand -ResourceGroupName $config.sre.dsvm.rg -Name "$computeVmName" `
                                     -CommandId 'RunShellScript' -ScriptPath $scriptPath `
                                     -Parameter $params
     Write-Output $result.Value;
 }
 
-# Switch back to previous subscription
-$_ = Set-AzContext -Context $originalContext;
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

@@ -450,6 +450,34 @@ function Deploy-VirtualNetwork {
 Export-ModuleMember -Function Deploy-VirtualNetwork
 
 
+# Ensure that an Azure VM is turned on
+# ------------------------------------
+function Enable-AzVM {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM to enable")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "[ ] Ensuring that '$Name' is running"
+    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    if ($powerState -eq "PowerState/running") {
+        $_ = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $success = $?
+    } else {
+        $_ = Start-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $success = $?
+    }
+    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    if ($success) {
+        Add-LogMessage -Level Success "Successfully (re)started '$Name' [$powerstate]"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to (re)start '$Name' [$powerstate]!"
+    }
+}
+Export-ModuleMember -Function Enable-AzVM
+
+
 # Create subnet if it does not exist
 # ----------------------------------
 function Get-AzSubnet {

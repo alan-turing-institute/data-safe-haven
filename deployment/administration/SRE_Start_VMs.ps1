@@ -5,6 +5,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 
@@ -19,19 +20,19 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # -------------
 Add-LogMessage -Level Info "Starting AD DC..."
 Add-LogMessage -Level Info "Waiting for AD to start before starting other VMs to ensure domain joining works..."
-Restart-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName
+Enable-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName
 Add-LogMessage -Level Info "Starting RDS gateway..."
-Restart-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName -NoWait
+Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 Add-LogMessage -Level Info "Starting RDS session hosts..."
-Restart-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName -NoWait
-Restart-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName -NoWait
+Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName
+Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName
 Add-LogMessage -Level Info "Starting dataserver..."
-Restart-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName -NoWait
+Enable-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName
 Add-LogMessage -Level Info "Starting web app servers..."
-Restart-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName -NoWait
-Restart-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName -NoWait
+Enable-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName
+Enable-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName
 Add-LogMessage -Level Info "Starting all compute VMs..."
-Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Restart-AzVM -NoWait
+Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName }
 
 
 # Switch back to original subscription

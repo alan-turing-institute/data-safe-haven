@@ -5,17 +5,23 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SHM config
-$config = Get-ShmFullConfig($shmId)
 
-# Temporarily switch to SHM subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-ShmFullConfig $shmId
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
-Add-LogMessage -Level Info "Stopping all Deployment Servers"
-Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL"  | Restart-AzVM -NoWait
+
+# Start/restart the deployment servers
+# ------------------------------------
+Add-LogMessage -Level Info "Starting all Deployment Servers"
+Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL" | ForEach-Object { Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName }
+
 
 # Switch back to original subscription
-$_ = Set-AzContext -Context $prevContext;
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext
