@@ -65,31 +65,21 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 
 ## 3. Configure DNS for the custom domain
-### Create a DNS zone for the custom domain
-Whatever new domain or subdomain you choose, you must create a new Azure DNS Zone for the domain or subdomain.
-- Use the following resource group and subscriptions:
-  - Turing production (`.turingsafehaven.ac.uk`):
-    - use the `Safe Haven Domains` subscription
-    - use the `RG_SHM_DNS_PRODUCTION` resource group
-  - Turing testing (`.dsgroupdev.co.uk`):
-    - use the `Safe Haven Domains` subscription
-    - use the `RG_SHM_DNS_TEST` resource group
-  - Other safe havens: follow your organisation's guidance.
 
-- If the resource group specified above does not exist in your chosen subscription, create it now in the `UK South` region
-- Click `Create a resource` in the far left menu, search for "DNS Zone" and click `Create`, using the above resource group and subscription.
-- For the `Name` field enter the fully qualified domain / subdomain. Examples are:
-  - `testa.dsgroupdev.co.uk` for the first test SHM deployed as part of the Turing `test` environment
-  - `testb.dsgroupdev.co.uk` for a second test SHM deployed as part of the Turing `test` environment
-  - `turingsafehaven.ac.uk` for the production SHM deployed as the Turing `production` environment
-- Click through the various validation screens
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- The remaining steps differ depending on whether the SHM is using its own domain, or a subdomain of an existing Azure DNS Zone
+  - If the SHM is using a subdomain of an existing Azure DNS Zone (e.g. `testa.dsgroupdev.co.uk`, `dsgx.turingsafehaven.ac.uk`) and that DNS Zone is in the `Safe Haven Domains` subscription:
+    - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 
-### Add DNS records to the parent DNS system
-Once the new DNS Zone for your domain/subdomain has been deployed, you need to add an `NS` record set to the parent DNS records in the parent's DNS system.
-- To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
-- Duplicate these records to the parent DNS system as follows:
-  - If using a subdomain of an existing Azure DNS Zone, create an NS record set in the parent Azure DNS Zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
-  - If using a new domain, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
+  - If the SHM is using its own domain:
+    - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID> -DoNotSetParentNs`, where the SHM ID is the one specified in the config
+    - Add an `NS` record set to the parent DNS records in the parent's DNS system.
+      - To find the required values for the NS records, use the Azure portal to navigate to the new DNS Zone (click `All resources` in the far left panel and search for "DNS Zone"). The NS record will list 4 Azure name servers.
+      - Duplicate these records to the parent DNS system as follows:
+        - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate its NS record to the Azure DNS Zone for `dsgroupdev.co.uk`, under the name `testa`).
+        - If the parent domain is outside of Azure, create an NS record in at the registrar for the new domain with the same value as the NS record in the new Azure DNS Zone for the domain.
 
 
 

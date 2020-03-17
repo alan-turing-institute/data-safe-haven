@@ -47,25 +47,13 @@ The following instructions will walk you through deploying a Secure Research Env
   ![OSX Catalina_authentication](images/deploy_sre/vpn/catalina_authentication.png)
 - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is defined in the config file.
 
-### Ensure the required SRE resources can be accessed
-- Access to a new Azure subscription which the SRE will be deployed to
-  - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<SHM ID>)`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file.
+### Access to a new Azure subscription which the SRE will be deployed to
+  - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<shm-id>)`, picking an SRE ID that is not yet in use and setting `<shm-id>` to the value given in the config file.
   - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-  - Give the relevant "Safe Haven `<SHM ID>` Admins" Security Group **Owner** role on the new SRE subscription
-- Access to a public routable domain name for the SRE and its name servers
-  - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `sandbox.dsgroupdev.co.uk` or `sandbox.testb.dsgroupdev.co.uk`)
-  - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
-  - To create a new DNS zone:
-    - From within the resource group click `"+" Add -> DNS Zone` and click "create"
-    - Set the **Name** field to the SRE domain (eg. `sandbox.dsgroupdev.co.uk`)
-    - Click "Review + create"
-    - Once deployment is finished, click "Go to resource" to view the new Azure DNS zone
-    - Copy the 4 nameservers in the "NS" record to the domain's DNS record
-        - if this is a top-level domain, contact whoever registered the domain
-        - if this is a subdomain of an existing Azure domain (eg. `sandbox.dsgroupdev.co.uk` then:
-            - go to the DNS zone for the top-level domain in Azure
-            - add a new NS record using the 4 nameservers you copied down above
-            ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+  - Give the relevant "Safe Haven `<shm-id>` Admins" Security Group **Owner** role on the new SRE subscription
+
+### Access to a public routable domain name for the SRE and its name servers
+  - This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk`, or a top-level domain (eg. `dsgroup100.co.uk`))
 
 ### Deploying multiple SREs in parallel
 **NOTE:** You can only deploy to **one SRE at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
@@ -149,7 +137,19 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Prepare SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-## 4. Deploy the virtual network and remote desktop
+### Create DNS Zone and copy DNS records
+
+- If the SRE is using a subdomain of the SHM (e.g. `sandbox.testa.dsgroupdev.co.uk`):
+  - Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config. This will create a DNS Zone for the SRE and add its NS records to the SHM DNS Zone.
+- If the SRE is not using a subdomain of the SHM (e.g. the SRE has its own custom domain):
+  - Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID> -DoNotSetParentNs`, where the SRE ID is the one specified in the config.
+  - On the Azure portal, navigate to the new DNS Zone that has just been created. This will be in your DNS resource group (e.g. `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION`) with the Zone name as the FQDN of the SRE.
+  - Copy the 4 nameservers in the "NS" record to the domain's DNS record.
+  - Add these 4 nameservers as NS records to the DNS system of the parent domain
+    ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+
+
+## 4. Deploy Virtual Network
 
 ### Create the virtual network
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
