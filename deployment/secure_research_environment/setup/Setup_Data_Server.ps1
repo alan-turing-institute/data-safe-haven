@@ -49,7 +49,7 @@ $params = @{
     Administrator_User = $dcAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     Data_Server_Name = $config.sre.dataserver.vmName
-    Domain_Name = $config.sre.domain.fqdn
+    Domain_Name = $config.shm.domain.fqdn
     IP_Address = $config.sre.dataserver.ip
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
@@ -64,35 +64,12 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Adding data server to correct security group..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
-    sreDn = "`"$($config.sre.domain.dn)`""
-    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
+    shmDn = "`"$($config.shm.domain.dn)`""
+    shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
     dataServerHostname = "`"$($config.sre.dataserver.hostname)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
-
-
-# # Install required Powershell packages
-# # ------------------------------------
-# Add-LogMessage -Level Info "[ ] Installing required Powershell packages on data server: '$($config.sre.dataserver.vmName)'..."
-# $scriptPath = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
-# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
-# Write-Output $result.Value
-
-
-# # Set the OS language to en-GB and install updates
-# # ------------------------------------------------
-# $templateScript = Get-Content -Path (Join-Path $PSScriptRoot "remote_scripts" "Configure_Data_Server_Remote.ps1") -Raw
-# $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1") -Raw
-# $setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
-# $params = @{
-#     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
-#     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
-#     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-#     serverAdminSgName = "`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
-# }
-# $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
-# Write-Output $result.Value
 
 
 # Set locale, install updates and reboot

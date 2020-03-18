@@ -5,15 +5,15 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, HelpMessage = "SRE DN")]
-  [string]$sreDn,
-  [Parameter(Position=1, HelpMessage = "SRE Netbios name")]
-  [string]$sreNetbiosName,
+  [Parameter(Position=0, HelpMessage = "SHM DN")]
+  [string]$shmDn,
+  [Parameter(Position=1, HelpMessage = "SHM Netbios name")]
+  [string]$shmNetbiosName,
   [Parameter(Position=2, HelpMessage = "Data server hostname")]
   [string]$dataServerHostname
 )
 
-$targetPath = "OU=$sreNetbiosName Data Servers,$sreDn"
+$targetPath = "OU=$shmNetbiosName Data Servers,$shmDn"
 
 Write-Output " [ ] Moving '$dataServerHostname' to '$targetPath'"
 Move-ADObject (Get-ADComputer -Identity $dataServerHostname) -TargetPath "$targetPath"
