@@ -79,6 +79,10 @@ if ($sreResources -or $sreResourceGroups) {
         gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
         hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
         sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+        rdsDataserverVMName = "`"$($config.sre.dataserver.vmName)`""
+        rdsGatewayVMName = "`"$($config.sre.rds.gateway.vmName)`""
+        rdsSessionHostAppsVMName = "`"$($config.sre.rds.sessionHost1.vmName)`""
+        rdsSessionHostDesktopVMName = "`"$($config.sre.rds.sessionHost2.vmName)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value

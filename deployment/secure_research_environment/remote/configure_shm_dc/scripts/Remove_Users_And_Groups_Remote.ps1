@@ -9,9 +9,12 @@ param(
     [String]$dsvmLdapSamAccountName,
     [String]$gitlabLdapSamAccountName,
     [String]$hackmdLdapSamAccountName,
-    [String]$sreResearchUserSG
+    [String]$sreResearchUserSG,
+    [String]$rdsDataserverVMName,
+    [String]$rdsGatewayVMName,
+    [String]$rdsSessionHostAppsVMName,
+    [String]$rdsSessionHostDesktopVMName
 )
-
 
 function Remove-SreUser($samAccountName) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
@@ -25,6 +28,21 @@ function Remove-SreUser($samAccountName) {
         }
     } else {
         Write-Host "No user named '$samAccountName' exists"
+    }
+}
+
+function Remove-SreComputer($computerName) {
+    if (Get-ADComputer -Filter "Name -eq '$computerName'") {
+        Write-Host " [ ] Removing computer '$computerName'"
+        Get-ADComputer $computerName | Remove-ADObject -Recursive -Confirm:$False
+        if ($?) {
+            Write-Host " [o] Succeeded"
+        } else {
+            Write-Host " [x] Failed"
+            exit 1
+        }
+    } else {
+        Write-Host "No computer named '$computerName' exists"
     }
 }
 
@@ -43,12 +61,17 @@ function Remove-SreGroup($groupName) {
     }
 }
 
-
 # Remove users
 Remove-SreUser $testResearcherSamAccountName
 Remove-SreUser $dsvmLdapSamAccountName
 Remove-SreUser $gitlabLdapSamAccountName
 Remove-SreUser $hackmdLdapSamAccountName
+
+# Remove computers
+Remove-SreComputer $rdsDataserverVMName
+Remove-SreComputer $rdsGatewayVMName
+Remove-SreComputer $rdsSessionHostAppsVMName
+Remove-SreComputer $rdsSessionHostDesktopVMName
 
 # Remove groups
 Remove-SreGroup $sreResearchUserSG
