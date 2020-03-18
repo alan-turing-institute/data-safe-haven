@@ -32,6 +32,8 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
+$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
+$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminPassword
 $sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.rds.gateway.npsSecretName -DefaultLength 12
@@ -226,8 +228,8 @@ if ($?) {
 
 # Configure SHM NPS for SRE RDS RADIUS client
 # -------------------------------------------
-Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
 $params = @{
@@ -238,23 +240,24 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 Write-Output $result.Value
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Add RDS VMs to correct OUs
 # --------------------------
-Add-LogMessage -Level Info "Adding RDS VMs to correct OUs"
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+Add-LogMessage -Level Info "Adding RDS VMs to correct OUs on SHM DC..."
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Move_RDS_VMs_Into_OUs.ps1"
 $params = @{
-    sreDn = "`"$($config.sre.domain.dn)`""
-    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
+    shmDn = "`"$($config.shm.domain.dn)`""
     gatewayHostname = "`"$($config.sre.rds.gateway.hostname)`""
     sh1Hostname = "`"$($config.sre.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.sre.rds.sessionHost2.hostname)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Configuring Windows and setting DNS on RDS servers

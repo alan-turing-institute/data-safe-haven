@@ -47,7 +47,7 @@ Write-Host "Setting the layout file for the Remote Desktop servers..."
 $_ = Set-GPRegistryValue -Name "Session Servers - Remote Desktop Control" -Type "ExpandString" -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
                          -ValueName "StartLayoutFile" -Value "\\$shmFqdn\SYSVOL\$shmFqdn\scripts\ServerStartMenu\LayoutModification.xml"
 if ($?) {
-  Write-Host " [o] Succeeded"
+    Write-Host " [o] Succeeded"
 } else {
-  Write-Host " [x] Failed!"
+    Write-Host " [x] Failed!"
 }

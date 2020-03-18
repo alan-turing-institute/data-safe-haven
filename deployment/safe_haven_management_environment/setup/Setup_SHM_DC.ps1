@@ -417,6 +417,12 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Write-Output $result.Value
 }
 
+# # Set locale, install updates and reboot
+# # --------------------------------------
+# foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+#     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
+#     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
+# }
 
 # Configure group policies
 # ------------------------

@@ -66,7 +66,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # Move Data Server VM into correct OU
 # -----------------------------------
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
-Add-LogMessage -Level Info "Adding data server to correct security group..."
+Add-LogMessage -Level Info "Adding data server VM to correct OUs on SHM DC..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
     shmDn = "`"$($config.shm.domain.dn)`""

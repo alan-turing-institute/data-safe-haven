@@ -204,27 +204,27 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
     }
 }
 
-# Create Reverse Lookup Zones for SHM
-Write-Host "Creating reverse lookup zones..."
-foreach ($cidr in ($identitySubnetCidr,$webSubnetCidr)) {
-    $oct1,$oct2,$oct3,$oct4 = $cidr.Split(".")
-    $zoneName = "$oct3.$oct2.$oct1.in-addr.arpa"
-    # Check for a match in existing zone
-    $zoneExists = $false
-    foreach ($zone in Get-DnsServerZone) {
-        if (($zone.ZoneName -eq $zoneName) -and $zone.IsReverseLookupZone) {
-            $zoneExists = $true
-        }
-    }
-    # Create reverse lookup zone if it does not already exist
-    if ($zoneExists) {
-        Write-Host " [o] Reverse lookup zone for $cidr already exists"
-    } else {
-        Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "$cidr" -ReplicationScope Domain
-        if ($?) {
-            Write-Host " [o] Reverse lookup zone for $cidr created successfully"
-        } else {
-            Write-Host " [x] Reverse lookup zone for $cidr could not be created!"
-        }
-    }
-}
+# # Create Reverse Lookup Zones for SHM
+# Write-Host "Creating reverse lookup zones..."
+# foreach ($cidr in ($identitySubnetCidr,$webSubnetCidr)) {
+#     $oct1,$oct2,$oct3,$oct4 = $cidr.Split(".")
+#     $zoneName = "$oct3.$oct2.$oct1.in-addr.arpa"
+#     # Check for a match in existing zone
+#     $zoneExists = $false
+#     foreach ($zone in Get-DnsServerZone) {
+#         if (($zone.ZoneName -eq $zoneName) -and $zone.IsReverseLookupZone) {
+#             $zoneExists = $true
+#         }
+#     }
+#     # Create reverse lookup zone if it does not already exist
+#     if ($zoneExists) {
+#         Write-Host " [o] Reverse lookup zone for $cidr already exists"
+#     } else {
+#         Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "$cidr" -ReplicationScope Domain
+#         if ($?) {
+#             Write-Host " [o] Reverse lookup zone for $cidr created successfully"
+#         } else {
+#             Write-Host " [x] Reverse lookup zone for $cidr could not be created!"
+#         }
+#     }
+# }
