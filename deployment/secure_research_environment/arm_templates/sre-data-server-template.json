@@ -23,7 +23,19 @@
         "Data_Server_Name": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for DC VM i.e DSG2DC"
+                "description": "Enter name for data server VM"
+            }
+        },
+        "DC_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "DC_Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
             }
         },
         "Domain_Name": {
@@ -216,12 +228,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         }

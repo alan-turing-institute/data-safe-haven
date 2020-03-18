@@ -20,8 +20,10 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
+$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminPassword
 
 
 # Create data server resource group if it does not exist
@@ -45,10 +47,12 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 # --------------------------------
 Add-LogMessage -Level Info "Creating data server '$($config.sre.dataserver.vmName)' from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-    Administrator_User = $dcAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
+    Administrator_User = $sreAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     Data_Server_Name = $config.sre.dataserver.vmName
+    DC_Administrator_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
+    DC_Administrator_User = $shmDcAdminUsername
     Domain_Name = $config.shm.domain.fqdn
     IP_Address = $config.sre.dataserver.ip
     Virtual_Network_Name = $config.sre.network.vnet.name
@@ -61,15 +65,16 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 
 # Move Data Server VM into correct OU
 # -----------------------------------
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
 Add-LogMessage -Level Info "Adding data server to correct security group..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
     shmDn = "`"$($config.shm.domain.dn)`""
-    shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
     dataServerHostname = "`"$($config.sre.dataserver.hostname)`""
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set locale, install updates and reboot
