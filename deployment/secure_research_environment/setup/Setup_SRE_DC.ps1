@@ -29,8 +29,10 @@ $remoteUploadDir = "C:\Installation"
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
+$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminPassword
 
 
 # Ensure that storage resource group and storage account exist
@@ -116,8 +118,8 @@ if($config.sre.domain.netbiosName.length -gt $netbiosNameMaxLength) {
     throw "NetBIOS name must be no more than 15 characters long. '$($config.sre.domain.netbiosName)' is $($config.sre.domain.netbiosName.length) characters long."
 }
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-    Administrator_User = $dcAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
+    Administrator_User = $sreAdminUsername
     Artifacts_Location = $artifactLocation
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
@@ -184,7 +186,7 @@ $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     sreDn = "`"$($config.sre.domain.dn)`""
     sreServerAdminSgName = "`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
-    sreDcAdminUsername = "`"$($dcAdminUsername)`""
+    sreDcAdminUsername = "`"$($sreAdminUsername)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dc.vmName -ResourceGroupName $config.sre.dc.rg -Parameter $params
 Write-Output $result.Value
@@ -229,13 +231,13 @@ Add-LogMessage -Level Info "Creating domain trust between: $($config.sre.domain.
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 
 # Encrypt password
-$dcAdminPasswordEncrypted = ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+$sreAdminPasswordEncrypted = ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 # Run domain configuration script remotely
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Domain_Trust.ps1"
 $params = @{
-    sreDcAdminPasswordEncrypted = "`"$dcAdminPasswordEncrypted`""
-    sreDcAdminUsername = "`"$dcAdminUsername`""
+    sreDcAdminPasswordEncrypted = "`"$sreAdminPasswordEncrypted`""
+    sreDcAdminUsername = "`"$sreAdminUsername`""
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

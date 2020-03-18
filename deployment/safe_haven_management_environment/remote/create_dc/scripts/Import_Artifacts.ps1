@@ -44,8 +44,8 @@ foreach ($blobName in $blobNames) {
         $_ = New-Item -ItemType directory -Path $fileDirFull
     }
     $filePath = Join-Path $fileDirFull $fileName
-    $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken";
-    $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath;
+    $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken"
+    $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
 }
 
 # Download AzureADConnect
