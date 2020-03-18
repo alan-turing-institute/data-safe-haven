@@ -260,30 +260,38 @@ Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Configuring Windows and setting DNS on RDS servers
-# --------------------------------------------------
-Add-LogMessage -Level Info "Configuring Windows and setting DNS on RDS servers..."
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$templateScript = Get-Content -Path (Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Set_OS_Locale_and_DNS.ps1") -Raw
-$configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1") -Raw
-$setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
-$params = @{
-    sreFqdn = "`"$($config.sre.domain.fqdn)`""
-    shmFqdn = "`"$($config.shm.domain.fqdn)`""
-}
-$moduleScript = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
+# # Configuring Windows and setting DNS on RDS servers
+# # --------------------------------------------------
+# Add-LogMessage -Level Info "Configuring Windows and setting DNS on RDS servers..."
+# $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+# $templateScript = Get-Content -Path (Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Set_OS_Locale_and_DNS.ps1") -Raw
+# $configurationScript = Get-Content -Path (Join-Path $PSScriptRoot ".." ".." "common" "remote" "Configure_Windows.ps1") -Raw
+# $setLocaleDnsAndUpdate = $templateScript.Replace("# LOCALE CODE IS PROGRAMATICALLY INSERTED HERE", $configurationScript)
+# $params = @{
+#     sreFqdn = "`"$($config.sre.domain.fqdn)`""
+#     shmFqdn = "`"$($config.shm.domain.fqdn)`""
+# }
+# $moduleScript = Join-Path $PSScriptRoot ".." ".." "common" "remote" "Install_Powershell_Modules.ps1"
 
-# Run on each of the RDS VMs
+# # Run on each of the RDS VMs
+# foreach ($nameVMNameParamsPair in $vmNamePairs) {
+#     $name, $vmName = $nameVMNameParamsPair
+#     # Powershell modules
+#     Add-LogMessage -Level Info "[ ] Installing required Powershell modules on ${name}: '$vmName'"
+#     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $moduleScript -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+#     Write-Output $result.Value
+#     # Configuration
+#     Add-LogMessage -Level Info "[ ] Setting OS locale and DNS and installing updates on ${name}: '$vmName'"
+#     $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+#     Write-Output $result.Value
+# }
+
+# Set locale, install updates and reboot
+# --------------------------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
-    # Powershell modules
-    Add-LogMessage -Level Info "[ ] Installing required Powershell modules on ${name}: '$vmName'"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $moduleScript -VMName $vmName -ResourceGroupName $config.sre.rds.rg
-    Write-Output $result.Value
-    # Configuration
-    Add-LogMessage -Level Info "[ ] Setting OS locale and DNS and installing updates on ${name}: '$vmName'"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -Script $setLocaleDnsAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-    Write-Output $result.Value
+    Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 }
 
 
@@ -360,7 +368,6 @@ Write-Output $result.Value
 # ---------------------------
 Add-LogMessage -Level Info "Installing packages on RDS VMs..."
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     if ($name -ne "RDS Gateway") {
