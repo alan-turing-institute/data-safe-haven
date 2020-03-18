@@ -68,7 +68,14 @@ if ($?) {
 
 # Ensure that OUs exist
 Write-Host "Creating management OUs..."
-foreach ($ouName in ("Safe Haven Research Users","Safe Haven Security Groups","Safe Haven Service Accounts","Safe Haven Service Servers")) {
+foreach ($ouName in ("Safe Haven Research Users",
+                     "Safe Haven Security Groups",
+                     "Safe Haven Service Accounts",
+                     "Safe Haven Service Servers",
+                     "Secure Research Environment Data Servers",
+                     "Secure Research Environment RDS Session Servers",
+                     "Secure Research Environment Service Servers")
+                     ) {
     $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
     if ("$ouExists" -ne "") {
         Write-Host " [o] OU '$ouName' already exists"
