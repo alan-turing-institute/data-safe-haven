@@ -151,7 +151,9 @@ if ("$membershipExists" -eq "$adUserName") {
 Write-Host "Importing GPOs..."
 foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
                                ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
-                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"))) {
+                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
+                               ("D320C1D9-52EF-47D8-80A7-1E73A457CDAD", "Research Users - Mapped Drives"),
+                               ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
     $backup,$target = $backupTargetPair
     Import-GPO -BackupId "$backup" -TargetName "$target" -Path $oubackuppath -CreateIfNeeded
     if ($?) {
@@ -163,11 +165,22 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 
 # Link GPO with OUs
 Write-Host "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators","Safe Haven Service Servers"),
-        ("All Servers - Windows Services","Domain Controllers"),
-        ("All Servers - Windows Services","Safe Haven Service Servers"),
-        ("All Servers - Windows Update","Domain Controllers"),
-        ("All Servers - Windows Update","Safe Haven Service Servers"))) {
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment Data Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment RDS Session Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment Service Servers"),
+                            ("All Servers - Windows Services", "Domain Controllers"),
+                            ("All Servers - Windows Services", "Safe Haven Service Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment Data Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment RDS Session Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment Service Servers"),
+                            ("All Servers - Windows Update", "Domain Controllers"),
+                            ("All Servers - Windows Update", "Safe Haven Service Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment Data Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment RDS Session Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment Service Servers"),
+                            ("Research Users - Mapped Drives", "Secure Research Environment RDS Session Servers"),
+                            ("Session Servers - Remote Desktop Control", "Secure Research Environment RDS Session Servers"))) {
     $gpoName,$ouName = $gpoOuNamePair
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
