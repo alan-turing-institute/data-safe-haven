@@ -339,7 +339,7 @@ function Add-SreConfig {
     $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dc.vmSize = "Standard_DS2_v2"
     $config.sre.dc.hostname = $config.sre.dc.vmName
-    $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
+    # $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
     $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
 
     # --- Domain users ---
@@ -422,14 +422,14 @@ function Add-SreConfig {
         $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
-    $config.sre.rds.gateway.fqdn = $config.sre.rds.gateway.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
     $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
     $config.sre.rds.gateway.npsSecretName = "sre-$($config.sre.id)-nps-secret".ToLower()
     $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
-    $config.sre.rds.sessionHost1.fqdn = $config.sre.rds.sessionHost1.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.sessionHost1.fqdn = "$($config.sre.rds.sessionHost1.hostname).$($config.shm.domain.fqdn)"
     $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
-    $config.sre.rds.sessionHost2.fqdn = $config.sre.rds.sessionHost2.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.rds.sessionHost2.fqdn = "$($config.sre.rds.sessionHost2.hostname).$($config.shm.domain.fqdn)"
     $config.sre.rds.sessionHost2.ip = $config.sre.network.subnets.rds.prefix + ".248"
 
     # --- Secure servers ---
@@ -441,7 +441,7 @@ function Add-SreConfig {
     $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
-    $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
+    $config.sre.dataserver.fqdn = "$($config.sre.dataserver.hostname).$($config.shm.domain.fqdn)"
     $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
 
     # HackMD and Gitlab servers
@@ -458,10 +458,10 @@ function Add-SreConfig {
         }
     }
     $config.sre.webapps.gitlab.hostname = $config.sre.webapps.gitlab.vmName
-    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.gitlab.ip = "$($config.sre.network.subnets.data.prefix).151"
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
-    $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
 
     # Compute VMs

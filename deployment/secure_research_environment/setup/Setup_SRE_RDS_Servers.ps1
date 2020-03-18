@@ -45,7 +45,7 @@ $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
 $shmNetbiosName = $config.shm.domain.netbiosName
 $sreFqdn = $config.sre.domain.fqdn
-$sreNetbiosName = $config.sre.domain.netbiosName
+$shmNetbiosName = $config.shm.domain.netbiosName
 
 
 # Get SHM storage account

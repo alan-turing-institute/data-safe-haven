@@ -21,7 +21,7 @@ Write-Host -ForegroundColor Cyan "Creating user profile disk shares..."
 ForEach (`$sharePath in ("F:\AppFileShares", "G:\RDPFileShares")) {
     `$_ = New-Item -ItemType Directory -Force -Path `$sharePath
     if(`$(Get-SmbShare | Where-Object -Property Path -eq `$sharePath) -eq `$null) {
-        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$sreNetbiosName\$rdsGatewayVmName$","$sreNetbiosName\$rdsSh1VmName$","$sreNetbiosName\Domain Admins"
+        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$shmNetbiosName\$rdsGatewayVmName$","$shmNetbiosName\$rdsSh1VmName$","$shmNetbiosName\$rdsSh2VmName$","$shmNetbiosName\Domain Admins"
     }
 }
 
@@ -47,7 +47,6 @@ New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmFqdn -Force
 Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature
-# Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $rdsGatewayVmFqdn
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $sreFqdn
 
 
@@ -56,13 +55,13 @@ Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsG
 `$collectionName = "Remote Applications"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
 New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh1VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $shmNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\AppFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 `$collectionName = "Presentation Server"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
 New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $shmNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 
@@ -81,8 +80,8 @@ New-RDRemoteApp -Alias "putty (2)" -DisplayName "Other VM (SSH)" -FilePath "C:\P
 # Update server configuration
 # ---------------------------
 Write-Host -ForegroundColor Cyan "Updating server configuration..."
-`$targetDirectoryLocal = "C:\Users\$dcAdminUsername\AppData\Roaming\Microsoft\Windows\ServerManager"
-`$targetDirectoryDomain = "C:\Users\$dcAdminUsername.$sreNetbiosName\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$targetDirectoryLocal = "C:\Users\$shmDcAdminUsername\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$targetDirectoryDomain = "C:\Users\$shmDcAdminUsername.$shmNetbiosName\AppData\Roaming\Microsoft\Windows\ServerManager"
 `$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryLocal
 `$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryDomain
 Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force

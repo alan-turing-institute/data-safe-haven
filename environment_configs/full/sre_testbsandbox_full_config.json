@@ -214,7 +214,6 @@
       "vmName": "DC-SRE-SANDBOX",
       "vmSize": "Standard_DS2_v2",
       "hostname": "DC-SRE-SANDBOX",
-      "fqdn": "DC-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
       "ip": "10.151.0.250"
     },
     "users": {
@@ -250,7 +249,7 @@
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+        "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.250",
         "npsSecretName": "sre-sandbox-nps-secret"
       },
@@ -259,7 +258,7 @@
         "vmSize": "Standard_D4s_v3",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.249"
       },
       "sessionHost2": {
@@ -267,7 +266,7 @@
         "vmSize": "Standard_D4s_v3",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+        "fqdn": "DKP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "ip": "10.151.1.248"
       }
     },
@@ -277,7 +276,7 @@
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+      "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
       "ip": "10.151.2.250"
     },
     "webapps": {
@@ -287,14 +286,14 @@
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_DS3_v2",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "ip": "10.151.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.sandbox.testb.dsgroupdev.co.uk",
+        "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "ip": "10.151.2.152"
       }
     },
