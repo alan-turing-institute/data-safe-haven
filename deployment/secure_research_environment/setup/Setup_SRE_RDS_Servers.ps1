@@ -32,8 +32,8 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.rds.gateway.npsSecretName -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
@@ -99,10 +99,12 @@ $_ = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.locatio
 Add-LogMessage -Level Info "Deploying RDS from template..."
 $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-    Administrator_User = $dcAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
+    Administrator_User = $sreAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Name = $config.sre.domain.fqdn
+    DC_Administrator_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
+    DC_Administrator_User = $shmDcAdminUsername
+    Domain_Name = $config.shm.domain.fqdn
     NSG_Gateway_Name = $config.sre.rds.gateway.nsg
     RDS_Gateway_IP_Address = $config.sre.rds.gateway.ip
     RDS_Gateway_Name = $config.sre.rds.gateway.vmName
