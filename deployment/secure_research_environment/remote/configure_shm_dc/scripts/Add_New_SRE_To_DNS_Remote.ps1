@@ -67,19 +67,19 @@ if (DNSZoneExists $dataSubnetCidr) {
     }
 }
 
-# Create conditional forwarder / zone delegation
-# ----------------------------------------------
-# Check whether the SRE fqdn ends with the SHM fqdn
-if ($sreFqdn -match "$($shmFqdn)$") {
-    $childzone = $sreFqdn -replace ".$($shmFqdn)$"
-    Write-Host " [ ] Adding zone delegation record for SRE subdomain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
-    Add-DnsServerZoneDelegation -Name $shmFqdn -ChildZoneName $childzone -NameServer $sreDcName -IPAddress $sreDcIp
-} else {
-    Write-Host " [ ] Adding conditional forwarder record for SRE domain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
-    Add-DnsServerConditionalForwarderZone -name $sreFqdn -MasterServers $sreDcIp -ReplicationScope "Forest"
-}
-if ($?) {
-    Write-Host " [o] Successfully created/updated record for SRE domain"
-} else {
-    Write-Host " [x] Failed to create/update record for SRE domain"
-}
+# # Create conditional forwarder / zone delegation
+# # ----------------------------------------------
+# # Check whether the SRE fqdn ends with the SHM fqdn
+# if ($sreFqdn -match "$($shmFqdn)$") {
+#     $childzone = $sreFqdn -replace ".$($shmFqdn)$"
+#     Write-Host " [ ] Adding zone delegation record for SRE subdomain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+#     Add-DnsServerZoneDelegation -Name $shmFqdn -ChildZoneName $childzone -NameServer $sreDcName -IPAddress $sreDcIp
+# } else {
+#     Write-Host " [ ] Adding conditional forwarder record for SRE domain (domain: $sreFqdn; SRE DC IP: $sreDcIp)"
+#     Add-DnsServerConditionalForwarderZone -name $sreFqdn -MasterServers $sreDcIp -ReplicationScope "Forest"
+# }
+# if ($?) {
+#     Write-Host " [o] Successfully created/updated record for SRE domain"
+# } else {
+#     Write-Host " [x] Failed to create/update record for SRE domain"
+# }

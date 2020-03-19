@@ -487,8 +487,8 @@ This is because, without this policy, the NPS server will reject their authentic
 ### MFA Configuation
 1. Navigate to `C:\Installation`
 2. Run the `NpsExtnForAzureMfaInstaller.exe` installer
-3. Agree the license terms and click "Install"
-4. Click "Close" once the install has completed
+3. Agree the license terms and click `Install`
+4. Click `Close` once the install has completed
 5. Run PowerShell as administrator and run:
   ```pwsh
   cd "C:\Program Files\Microsoft\AzureMfa\Config"
