@@ -248,7 +248,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -308,7 +308,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -368,7 +368,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },

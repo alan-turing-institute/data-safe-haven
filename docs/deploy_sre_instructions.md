@@ -166,13 +166,13 @@ Each SRE must be assigned it's own unique IP address space, and it is very impor
     ![VPN client](images/deploy_sre/vpn_client.png)
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
-## 5. Deploy SRE Domain Controller
+<!-- ## 5. Deploy SRE Domain Controller
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will normally take around 30 minutes. Most of this is running the setup scripts after creating the VM. However it may take longer if many Windows updates need to be performed.
-- **Troubleshooting:** If you see errors such as `Installing Windows updates failed` you should try re-running the script (you do not need to destroy existing resources as the script is idempotent).
+- **Troubleshooting:** If you see errors such as `Installing Windows updates failed` you should try re-running the script (you do not need to destroy existing resources as the script is idempotent). -->
 
 ## 6. Deploy Remote Desktop Service Environment
 ### Create RDS VMs and perform initial configuration

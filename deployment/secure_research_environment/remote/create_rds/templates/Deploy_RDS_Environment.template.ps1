@@ -55,13 +55,13 @@ Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsG
 `$collectionName = "Remote Applications"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
 New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh1VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $shmNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\AppFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 `$collectionName = "Presentation Server"
 Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
 New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $shmNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 

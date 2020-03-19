@@ -45,23 +45,25 @@ $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
 $shmNetbiosName = $config.shm.domain.netbiosName
 $sreFqdn = $config.sre.domain.fqdn
-$shmNetbiosName = $config.shm.domain.netbiosName
+$sreNetbiosName = $config.sre.domain.netbiosName
 
+
+# Ensure that boot diagnostics resource group and storage account exist
+# ---------------------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$_ = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+
+
+# Ensure that SRE resource group and storage accounts exist
+# ---------------------------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.sre.storage.artifacts.rg -Location $config.sre.location
+$sreStorageAccount = Deploy-StorageAccount -Name $config.sre.storage.artifacts.accountName -ResourceGroupName $config.sre.storage.artifacts.rg -Location $config.sre.location
 
 # Get SHM storage account
 # -----------------------
-$_ = Set-AzContext -Subscription $config.shm.subscriptionName;
-$shmStorageAccountRg = $config.shm.storage.artifacts.rg
-$shmStorageAccountName = $config.shm.storage.artifacts.accountName
-$shmStorageAccount = Get-AzStorageAccount -Name $shmStorageAccountName -ResourceGroupName $shmStorageAccountRg
-
-
-# Get SRE storage account
-# -----------------------
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName;
-$sreStorageAccountRg = $config.sre.storage.artifacts.rg
-$sreStorageAccountName = $config.sre.storage.artifacts.accountName
-$sreStorageAccount = Get-AzStorageAccount -Name $sreStorageAccountName -ResourceGroupName $sreStorageAccountRg
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+$shmStorageAccount = Deploy-StorageAccount -Name $config.shm.storage.artifacts.accountName -ResourceGroupName $config.shm.storage.artifacts.rg -Location $config.shm.location
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set up the NSGs for the gateway and session hosts
@@ -127,7 +129,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 
 # Create blob containers in SRE storage account
 # ---------------------------------------------
-Add-LogMessage -Level Info "Creating blob storage containers in storage account '$sreStorageAccountName'..."
+Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
 foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
     $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
     $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
@@ -163,7 +165,7 @@ $template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_rds" "tem
 $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
 
 # Copy existing files
-Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$sreStorageAccountName'"
+Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
 $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
 $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
 if ($?) {
@@ -173,7 +175,7 @@ if ($?) {
 }
 
 # Upload scripts
-Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$sreStorageAccountName'"
+Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Set-RDPublishedName.ps1") -Blob "Set-RDPublishedName.ps1" -Force
@@ -321,13 +323,13 @@ Add-LogMessage -Level Success "Found $($filePathsSh1.Count + $filePathsSh2.Count
 
 # Get SAS token to download files from storage account
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$sasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.sre.subscriptionName -resourceGroup $sreStorageAccountRg -accountName $sreStorageAccountName
+$sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_Artifacts.ps1"
 
 # Copy software and/or scripts to RDS Gateway
 Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
 $params = @{
-    storageAccountName = "`"$sreStorageAccountName`""
+    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
     storageService = "blob"
     shareOrContainerName = "`"$containerNameGateway`""
     sasToken = "`"$sasToken`""
@@ -340,7 +342,7 @@ Write-Output $result.Value
 # Copy software and/or scripts to RDS SH1 (App server)
 Add-LogMessage -Level Info "[ ] Copying $($filePathsSh1.Count) files to RDS Session Host (App server)"
 $params = @{
-    storageAccountName = "`"$sreStorageAccountName`""
+    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
     storageService = "blob"
     shareOrContainerName = "`"$containerNameSessionHosts`""
     sasToken = "`"$sasToken`""
@@ -353,7 +355,7 @@ Write-Output $result.Value
 # Copy software and/or scripts to RDS SH2 (Remote desktop server)
 Add-LogMessage -Level Info "[ ] Copying $($filePathsSh2.Count) files to RDS Session Host (Remote desktop server)"
 $params = @{
-    storageAccountName = "`"$sreStorageAccountName`""
+    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
     storageService = "blob"
     shareOrContainerName = "`"$containerNameSessionHosts`""
     sasToken = "`"$sasToken`""
