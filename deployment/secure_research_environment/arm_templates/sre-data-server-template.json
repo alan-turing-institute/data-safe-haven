@@ -90,8 +90,7 @@
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
         "datadisk": "[concat(parameters('Data_Server_Name'), '-DATA-DISK')]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Data_Server_Name')]",
             "apiVersion": "2018-06-01",
@@ -119,19 +118,17 @@
                         },
                         "diskSizeGB": 128
                     },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[variables('datadisk')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
-                            },
-                            "diskSizeGB": 512
-                        }
-                    ]
+                    "dataDisks": [{
+                        "lun": 0,
+                        "name": "[variables('datadisk')]",
+                        "createOption": "Empty",
+                        "caching": "None",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 512
+                    }]
                 },
                 "osProfile": {
                     "computerName": "[parameters('Data_Server_Name')]",
@@ -144,14 +141,12 @@
                     "secrets": []
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -171,20 +166,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []

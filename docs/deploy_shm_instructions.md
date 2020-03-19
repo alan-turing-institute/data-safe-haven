@@ -287,7 +287,7 @@ rather than simply `<admin username>`)
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
     - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
-      - If you receive an Internet Explorer pop-up dialog "Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com"
+      - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
         - Click `Add`
         - Click `Add`
         - Click `Close`
@@ -298,9 +298,9 @@ rather than simply `<admin username>`)
     - Enter the global administrator password if prompted
     - Back on the `Connect to Azure AD` screen, click `Next`
     - Approve the login with MFA if required
-      - If you see a Windows Security Warning, check `Don't show this message again and click "Yes`.
+      - If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   - On the `Connect your directories` screen:
-    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click "Add Directory"
+    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`d
     - On the `AD forest account` pop-up:
       - Select `Use existing AD account`
       - Enter the details for the `localadsync` user.
@@ -313,7 +313,7 @@ rather than simply `<admin username>`)
           - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
           - Set the password to the the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
-          - Leave the other settings as is and click "Ok"
+          - Leave the other settings as is and click `OK`
     - Click `Next`
   - On the `Azure AD sign-in configuration` screen:
     - Verify that the `User Principal Name` is set to `userPrincipalName`
@@ -402,7 +402,7 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
     - First name: `Test`
     - Last name: `ADUser`
     - User login name: `testaduser`
-    - Click "Next"
+    - Click `Next`
   - Password: use the `shm-<shm-id>-testaduser-password` secret in the management Key Vault.
     - Untick `User must change password at next logon`
     - Click `Next`
