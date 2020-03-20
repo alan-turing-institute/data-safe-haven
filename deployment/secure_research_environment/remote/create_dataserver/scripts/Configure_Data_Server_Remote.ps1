@@ -1,11 +1,13 @@
-﻿param(
+param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
   [string]$sreNetbiosName,
   [Parameter(Position=1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
   [string]$shmNetbiosName,
-  [Parameter(Position=2, Mandatory = $true, HelpMessage = "Security group name for research users")]
+  [Parameter(Position=2, Mandatory = $true, HelpMessage = "User which enables the SMB share to be mounted locally")]
+  [string]$dataMountUser,
+  [Parameter(Position=3, Mandatory = $true, HelpMessage = "Security group name for research users")]
   [string]$researcherUserSgName,
-  [Parameter(Position=3, Mandatory = $true, HelpMessage = "Security group name for server admins")]
+  [Parameter(Position=4, Mandatory = $true, HelpMessage = "Security group name for server admins")]
   [string]$serverAdminSgName
 )
 
@@ -32,6 +34,7 @@ Start-Service ShellHWDetection
 Write-Host "Configuring disk shares..."
 $shareName = "Data"
 $sharePath = (Join-Path "F:" $shareName)
+$dataMountDomainUser = ($shmNetbiosName + "\" + $dataMountUser)
 $researcherUserSg = ($shmNetbiosName + "\" + $researcherUserSgName)
 $serverAdminSg = ($shmNetbiosName + "\" + $serverAdminSgName)
 Write-Host " [ ] Creating SMB data share '$shareName'..."
@@ -54,12 +57,15 @@ if (Get-SmbShare | Where-Object {$_.Name -eq "$shareName"}) {
 # --------------------
 Write-Host "Setting SMB share access for '$shareName' share..."
 # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
+Write-Host "dataMountDomainUser: '$dataMountDomainUser'"
 $_ = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
 $_ = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -Force -ErrorAction:Continue
 $_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
 # Set the permissions we want explicitly on the share
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
 $_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force
+$_ = Grant-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -AccessRight Change -Force
 # Print current permissions
 Write-Host "SMB share access for '$shareName' share is currently:"
 Get-SmbShareAccess -Name $shareName | Format-List
