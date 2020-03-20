@@ -322,6 +322,7 @@ function Add-SreConfig {
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
             dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
+            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
@@ -357,6 +358,10 @@ function Add-SreConfig {
                 name = $config.sre.domain.netbiosName + " DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
+        }
+        datamount = [ordered]@{
+            name = $config.sre.domain.netbiosName + " Data Mount"
+            samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
         }
         researchers = [ordered]@{
             test = [ordered]@{

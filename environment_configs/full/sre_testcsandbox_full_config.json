@@ -199,6 +199,7 @@
         "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
         "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
         "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
+        "dataMountPassword": "sre-sandbox-datamount-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
@@ -230,6 +231,10 @@
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
         }
+      },
+      "datamount": {
+        "name": "SANDBOX Data Mount",
+        "samAccountName": "datamountsandbox"
       },
       "researchers": {
         "test": {

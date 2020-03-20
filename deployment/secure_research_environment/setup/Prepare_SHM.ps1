@@ -35,11 +35,13 @@ Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($confi
 $hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
 $gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
 $dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
 $testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
 # Encrypt passwords for passing to script
 $hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $gitlabPasswordEncrypted = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $dsvmPasswordEncrypted = ConvertTo-SecureString $dsvmPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+$dataMountPasswordEncrypted = ConvertTo-SecureString $dataMountPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 
@@ -66,6 +68,9 @@ $params = @{
     dsvmSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
     dsvmName = "`"$($config.sre.users.ldap.dsvm.name)`""
     dsvmPasswordEncrypted = $dsvmPasswordEncrypted
+    dataMountSamAccountName = "`"$($config.sre.users.datamount.samAccountName)`""
+    dataMountName = "`"$($config.sre.users.datamount.name)`""
+    dataMountPasswordEncrypted = $dataMountPasswordEncrypted
     testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
     testResearcherName = "`"$($config.sre.users.researchers.test.name)`""
     testResearcherPasswordEncrypted = $testResearcherPasswordEncrypted
