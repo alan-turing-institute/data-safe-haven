@@ -41,6 +41,7 @@ The following instructions will walk you through deploying a Secure Research Env
 - On Windows you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
 - On Windows do not rename the vpn client as this will break it
 - Note that on OSX double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view it's details by double clicking the list entry. If the details match the certificate has been successfully installed.
+- Note: on OSX Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
 
     ![Point-to-site connection](images/deploy_sre/vpn/point_to_site.png)
 
