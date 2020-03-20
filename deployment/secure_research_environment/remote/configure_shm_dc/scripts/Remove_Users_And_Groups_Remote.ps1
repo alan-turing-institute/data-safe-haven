@@ -5,53 +5,50 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    $testResearcherSamAccountName,
-    $dsvmLdapSamAccountName,
-    $gitlabLdapSamAccountName,
-    $hackmdLdapSamAccountName,
-    $sreResearchUserSG
+    [String]$testResearcherSamAccountName,
+    [String]$dsvmLdapSamAccountName,
+    [String]$gitlabLdapSamAccountName,
+    [String]$hackmdLdapSamAccountName,
+    [String]$sreResearchUserSG
 )
 
 
 function Remove-SreUser($samAccountName) {
-    $user = Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"
-    if ($user) {
-        Write-Output " [ ] Removing user '$samAccountName'"
+    if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
+        Write-Host " [ ] Removing user '$samAccountName'"
         Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
         if ($?) {
-            Write-Output " [o] Succeeded"
+            Write-Host " [o] Succeeded"
         } else {
-            Write-Output " [x] Failed"
+            Write-Host " [x] Failed"
             exit 1
         }
     } else {
-        Write-Output "No user named '$samAccountName' exists"
+        Write-Host "No user named '$samAccountName' exists"
     }
 }
 
-
 function Remove-SreGroup($groupName) {
-    $group = Get-ADGroup -Filter "Name -eq '$groupName'"
-    if ($group) {
-        Write-Output " [ ] Removing group '$groupName'"
+    if (Get-ADGroup -Filter "Name -eq '$groupName'") {
+        Write-Host " [ ] Removing group '$groupName'"
         Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
         if ($?) {
-            Write-Output " [o] Succeeded"
+            Write-Host " [o] Succeeded"
         } else {
-            Write-Output " [x] Failed"
+            Write-Host " [x] Failed"
             exit 1
         }
     } else {
-        Write-Output "No group named '$groupName' exists"
+        Write-Host "No group named '$groupName' exists"
     }
 }
 
 
 # Remove users
-Remove-SreUser($testResearcherSamAccountName)
-Remove-SreUser($dsvmLdapSamAccountName)
-Remove-SreUser($gitlabLdapSamAccountName)
-Remove-SreUser($hackmdLdapSamAccountName)
+Remove-SreUser $testResearcherSamAccountName
+Remove-SreUser $dsvmLdapSamAccountName
+Remove-SreUser $gitlabLdapSamAccountName
+Remove-SreUser $hackmdLdapSamAccountName
 
 # Remove groups
-Remove-SreGroup($sreResearchUserSG)
+Remove-SreGroup $sreResearchUserSG

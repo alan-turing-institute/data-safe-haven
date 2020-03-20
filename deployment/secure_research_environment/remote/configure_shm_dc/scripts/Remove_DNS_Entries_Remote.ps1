@@ -5,10 +5,10 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  $sreFqdn,
-  $identitySubnetPrefix,
-  $rdsSubnetPrefix,
-  $dataSubnetPrefix
+    [String]$sreFqdn,
+    [String]$identitySubnetPrefix,
+    [String]$rdsSubnetPrefix,
+    [String]$dataSubnetPrefix
 )
 
 function IpPrefixToInAddrArpa($ipPrefix)
