@@ -13,6 +13,11 @@ write_files:
     permissions: "0600"
     content: |
       $LDAP_SECRET_PLAINTEXT
+  - path: "/etc/.smbcredentials"
+    permissions: "0600"
+    content: |
+      username=$DATA_MOUNT_USERNAME
+      password=$DATA_MOUNT_PASSWORD
   - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
@@ -222,7 +227,7 @@ runcmd:
   - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
   # Create home folder and grant appropriate access
-  - echo ">=== Create shared data folder using data disk... ===<"
+  - echo ">=== Create home folder using home disk... ===<"
   - parted /dev/sdc mklabel gpt
   - parted /dev/sdc mkpart primary ext4 0% 100%
   - parted /dev/sdc print
@@ -231,10 +236,14 @@ runcmd:
   - mkdir -p /tmp/home
   - mount /dev/sdc1 /tmp/home
   - chmod 755 /tmp/home
-  # - cp -R /home/* /tmp/home
   - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
   - umount /tmp/home
+  # Create data mount folder and grant all users access
+  - echo ">=== Mount data folder using SMB... ===<"
+  - mkdir -p /data/input
+  - chmod go+rw /data/input
+  - echo "//$DATASERVER_HOSTNAME/Data\t/data/input\tcifs\tcredentials=/etc/.smbcredentials\t0\t0" >> /etc/fstab
   # Create shared data folder and grant all users access
   - echo ">=== Create shared data folder using data disk... ===<"
   - parted /dev/sdd mklabel gpt
@@ -242,11 +251,11 @@ runcmd:
   - parted /dev/sdd print
   - sleep 5
   - mkfs -t ext4 /dev/sdd1
-  - mkdir -p /data
-  - mount /dev/sdd1 /data
-  - chmod go+rw /data
+  - mkdir -p /data/output
+  - mount /dev/sdd1 /data/output
+  - chmod go+rw /data/output
   - UUID=`$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
-  - echo "UUID=`${UUID}\t/data\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - echo "UUID=`${UUID}\t/data/output\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
   - echo ">=== end of /etc/fstab ===<"

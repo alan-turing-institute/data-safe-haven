@@ -33,12 +33,13 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
 $dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword
 $dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $dsvmDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbAdminPassword
 $dsvmDbReaderPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbReaderPassword
 $dsvmDbWriterPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbWriterPassword
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
 
 
 # Get list of image versions
@@ -173,6 +174,7 @@ $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 # Set template expansion variables
+$DATASERVER_HOSTNAME = $config.sre.dataserver.hostname
 $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
 $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
 $DOMAIN_LOWER = $DOMAIN_UPPER.ToLower()
@@ -180,6 +182,8 @@ $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
 $AD_DC_NAME_LOWER = $AD_DC_NAME_UPPER.ToLower()
 $ADMIN_USERNAME = $dsvmAdminUsername
 $MACHINE_NAME = $vmName
+$DATA_MOUNT_USERNAME = $config.sre.users.datamount.samAccountName
+$DATA_MOUNT_PASSWORD = $dataMountPassword
 $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
 $LDAP_BASE_DN = $config.shm.domain.userOuPath
 $LDAP_BIND_DN = "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath

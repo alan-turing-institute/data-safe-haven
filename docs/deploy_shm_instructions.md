@@ -365,10 +365,10 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
 
 
 ### Additional AAD Connect Configuration
+This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
+
 1. Open `Azure AD Connect > Synchronization Rules Editor` from the start menu
-
   ![synchronisation rules](images/deploy_shm/synchronisation_rules.png)
-
 2. Change the `Direction` drop down to `Outbound`
 3. Select the `Out to AAD - User Join` rule.
   - Click `Disable`.
