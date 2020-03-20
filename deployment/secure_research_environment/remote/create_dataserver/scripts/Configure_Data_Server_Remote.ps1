@@ -21,7 +21,7 @@ Foreach ($rawDisk in $CandidateRawDisks) {
     $disk = Initialize-Disk -PartitionStyle GPT -Number $rawDisk.Number
     $partition = New-Partition -DiskNumber $rawDisk.Number -UseMaximumSize -AssignDriveLetter
     $label = "DATA-$LUN"
-    Write-Output ("Formatting partition " + $partition.PartitionNumber + " of raw disk " + $rawDisk.Number + " with label '" + $label + "' at drive letter '" + $partition.DriveLetter + "'")
+    Write-Host ("Formatting partition " + $partition.PartitionNumber + " of raw disk " + $rawDisk.Number + " with label '" + $label + "' at drive letter '" + $partition.DriveLetter + "'")
     $volume = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
 }
 Start-Service ShellHWDetection
@@ -33,7 +33,7 @@ Write-Host "Configuring disk shares..."
 $shareName = "Data"
 $sharePath = (Join-Path "F:" $shareName)
 $researcherUserSg = ($shmNetbiosName + "\" + $researcherUserSgName)
-$serverAdminSg = ($sreNetbiosName + "\" + $serverAdminSgName)
+$serverAdminSg = ($shmNetbiosName + "\" + $serverAdminSgName)
 Write-Host " [ ] Creating SMB data share '$shareName'..."
 if (Get-SmbShare | Where-Object {$_.Name -eq "$shareName"}) {
     Write-Host " [o] SMB share '$shareName' already exists"
@@ -52,22 +52,22 @@ if (Get-SmbShare | Where-Object {$_.Name -eq "$shareName"}) {
 
 # Set SMB share access
 # --------------------
-Write-Host "Setting SMB share access for  '$shareName' share..."
+Write-Host "Setting SMB share access for '$shareName' share..."
 # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
-$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue;
-$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue;
-$_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue;
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
+$_ = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
 # Set the permissions we want explicitly on the share
-$_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force;
-$_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force;
+$_ = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
+$_ = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight Change -Force
 # Print current permissions
-Write-Output "SMB share access for '$shareName' share is currently:"
+Write-Host "SMB share access for '$shareName' share is currently:"
 Get-SmbShareAccess -Name $shareName | Format-List
 
 
 # Set ACL rules
 # -------------
-Write-Output "Setting ACL rules for folder '$sharePath'"
+Write-Host "Setting ACL rules for folder '$sharePath'"
 # Remove all existing ACL rules on the dataserver folder backing the share
 $acl = Get-Acl $sharePath;
 $_ = ($acl.Access | ForEach-Object{$acl.RemoveAccessRule($_)});
@@ -78,6 +78,6 @@ $_ = $acl.Setaccessrule($serverAdminAccessRule);
 $_ = $acl.Setaccessrule($researchUserAccessRule);
 $_ = (Set-Acl $sharePath $acl);
 # Print current access rules
-Write-Output "ACL access rules for '$sharePath' folder are currently:"
+Write-Host "ACL access rules for '$sharePath' folder are currently:"
 Get-Acl $sharePath | Format-List
 

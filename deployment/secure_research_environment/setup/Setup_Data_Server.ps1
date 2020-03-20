@@ -91,7 +91,7 @@ $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-    serverAdminSgName = "`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
+    serverAdminSgName = "SG Safe Haven Server Administrators" #"`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
 Write-Output $result.Value
