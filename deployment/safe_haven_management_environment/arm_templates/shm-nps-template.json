@@ -14,6 +14,18 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
+        "DC_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "DC_Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
         "Domain_Name": {
             "type": "string"
         },
@@ -27,9 +39,6 @@
             "type": "string"
         },
         "OU_Path": {
-            "type": "string"
-        },
-        "Shm_Id": {
             "type": "string"
         },
         "Virtual_Network_Name": {
@@ -184,12 +193,12 @@
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
                     "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         }

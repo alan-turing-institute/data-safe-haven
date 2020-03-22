@@ -327,8 +327,8 @@ $_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 # Retrieve usernames/passwords from the keyvault
 # ----------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$dcNpsAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
-$dcNpsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
+$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
+$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
 $dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
 
 
@@ -337,8 +337,8 @@ $dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -S
 Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $dcNpsAdminPassword -AsPlainText -Force)
-    Administrator_User = $dcNpsAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
+    Administrator_User = $shmAdminUsername
     Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
@@ -395,7 +395,7 @@ $params = @{
     identitySubnetCidr = "`"$($config.network.subnets.identity.cidr)`""
     webSubnetCidr = "`"$($config.network.subnets.web.cidr)`""
     serverName = "`"$($config.dc.vmName)`""
-    serverAdminName = "`"$dcNpsAdminUsername`""
+    serverAdminName = "`"$shmAdminUsername`""
     adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params

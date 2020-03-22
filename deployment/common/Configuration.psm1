@@ -135,15 +135,15 @@ function Get-ShmFullConfig {
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
-        dcNpsAdminUsername = "shm-$($shm.id)-dcnps-admin-username".ToLower()
-        dcNpsAdminPassword = "shm-$($shm.id)-dcnps-admin-password".ToLower()
         dcSafemodePassword = "shm-$($shm.id)-dc-safemode-password".ToLower()
-        mirrorAdminUsername = "shm-$($shm.id)-package-mirror-admin-username".ToLower()
+        domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
         localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
+        npsAdminPassword = "shm-$($shm.id)-nps-admin-password".ToLower()
         testAdUserPassword = "shm-$($shm.id)-testaduser-password".ToLower()
+        vmAdminUsername = "shm-$($shm.id)-vm-admin-username".ToLower()
         vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
-        vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
         vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
+        vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
         vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
         vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
     }
@@ -314,10 +314,11 @@ function Add-SreConfig {
         name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
-            dcAdminPassword = "$($config.sre.shortName)-dc-admin-password"
-            dcAdminUsername = "$($config.sre.shortName)-dc-admin-username"
+            adminUsername = "$($config.sre.shortName)-vm-admin-username"
+            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
             dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
-            dsvmAdminUsername = "$($config.sre.shortName)-dsvm-admin-username"
+            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
             dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"

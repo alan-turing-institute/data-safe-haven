@@ -40,19 +40,19 @@ if ($?) {
 }
 
 # :: DC/NPS administrator username
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 if ($?) {
-    Add-LogMessage -Level Success "DC/NPS administrator username exists"
+    Add-LogMessage -Level Success "VM administrator username exists"
 } else {
-    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator username!"
+    Add-LogMessage -Level Fatal "Failed to create VM administrator username!"
 }
 
 # :: DC/NPS administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcNpsAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
 if ($?) {
-    Add-LogMessage -Level Success "DC/NPS administrator password exists"
+    Add-LogMessage -Level Success "Domain administrator password exists"
 } else {
-    Add-LogMessage -Level Fatal "Failed to create DC/NPS administrator password!"
+    Add-LogMessage -Level Fatal "Failed to create domain administrator password!"
 }
 
 # :: DC safe mode password
@@ -79,13 +79,13 @@ if ($?) {
     Add-LogMessage -Level Fatal "Failed to create test user password!"
 }
 
-# :: Package mirror administrator username
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-if ($?) {
-    Add-LogMessage -Level Success "Package mirror administrator username exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create package mirror administrator username!"
-}
+# # :: Package mirror administrator username
+# $_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+# if ($?) {
+#     Add-LogMessage -Level Success "Package mirror administrator username exists"
+# } else {
+#     Add-LogMessage -Level Fatal "Failed to create package mirror administrator username!"
+# }
 
 
 # Ensure that certificates exist

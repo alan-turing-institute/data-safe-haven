@@ -30,12 +30,12 @@ $_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.locati
 
 # Common variable names
 # ---------------------
-$vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-$nsgInternalName = "NSG_SHM_$($config.id)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
 $nsgExternalName = "NSG_SHM_$($config.id)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+$nsgInternalName = "NSG_SHM_$($config.id)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
 $subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
 $subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $vnetIpTriplet = "10.20.$tier"
+$vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
 
 
 # Set up the VNet with subnets for internal and external package mirrors
@@ -137,7 +137,7 @@ if ($?) {
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-$adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.mirrorAdminUsername
+$adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername
 
 
 # Resolve the cloud init file, applying a whitelist if needed

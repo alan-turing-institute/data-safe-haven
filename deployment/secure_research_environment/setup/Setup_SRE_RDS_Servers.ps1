@@ -32,10 +32,6 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
-$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
-$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.dcNpsAdminPassword
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.rds.gateway.npsSecretName -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
@@ -43,7 +39,11 @@ $rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
 $rdsSh1VmName = $config.sre.rds.sessionHost1.vmName
 $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
+$shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
+$shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
 $shmNetbiosName = $config.shm.domain.netbiosName
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $sreFqdn = $config.sre.domain.fqdn
 $sreNetbiosName = $config.sre.domain.netbiosName
 
