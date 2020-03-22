@@ -29,7 +29,7 @@ while ($confirmation -ne "y") {
 # ----------------
 $sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 while ($sreResources.Length) {
-    Add-LogMessage -Level Info "Found $($sreResources.Length) resource to remove..."
+    Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
     foreach ($resource in $sreResources) {
         Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
         $_ = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
@@ -47,7 +47,7 @@ while ($sreResources.Length) {
 # ----------------------
 $sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
 while ($sreResourceGroups.Length) {
-    Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource groups to remove..."
+    Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
         Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
         $_ = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
