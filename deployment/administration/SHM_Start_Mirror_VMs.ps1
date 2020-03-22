@@ -5,17 +5,23 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SHM config
-$config = Get-ShmFullConfig($shmId)
 
-# Temporarily switch to SHM subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-ShmFullConfig $shmId
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
+
+# Start/restart the package mirrors
+# ---------------------------------
 Add-LogMessage -Level Info "Starting all Mirror Servers"
-Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | Restart-AzVM -NoWait
+Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | ForEach-Object { Enable-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName }
+
 
 # Switch back to original subscription
-$_ = Set-AzContext -Context $prevContext;
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

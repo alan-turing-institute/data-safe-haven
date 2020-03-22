@@ -450,6 +450,34 @@ function Deploy-VirtualNetwork {
 Export-ModuleMember -Function Deploy-VirtualNetwork
 
 
+# Ensure that an Azure VM is turned on
+# ------------------------------------
+function Enable-AzVM {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM to enable")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "[ ] Ensuring that '$Name' is running"
+    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    if ($powerState -eq "PowerState/running") {
+        $_ = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $success = $?
+    } else {
+        $_ = Start-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
+        $success = $?
+    }
+    $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    if ($success) {
+        Add-LogMessage -Level Success "Successfully (re)started '$Name' [$powerstate]"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to (re)start '$Name' [$powerstate]!"
+    }
+}
+Export-ModuleMember -Function Enable-AzVM
+
+
 # Create subnet if it does not exist
 # ----------------------------------
 function Get-AzSubnet {
@@ -550,15 +578,16 @@ function Invoke-WindowsConfigureAndUpdate {
     Write-Output $result.Value
     # Reboot the VM
     Add-LogMessage -Level Info "[ ] Rebooting VM '$VMName'"
-    $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
-    # The following syntax is preferred in future, but does not yet work
-    # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
-    # Restart-AzVM -Id $vmID
-    if ($?) {
-        Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
-    }
+    # $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
+    # # The following syntax is preferred in future, but does not yet work
+    # # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
+    # # Restart-AzVM -Id $vmID
+    # if ($?) {
+    #     Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
+    # } else {
+    #     Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
+    # }
+    Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 

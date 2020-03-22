@@ -5,9 +5,9 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    $rdsGatewayFqdn
+    [String]$rdsGatewayFqdn
 )
-if(Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}){
+if (Get-NpsRadiusClient | Where-Object {$_.Name -eq "$rdsGatewayFqdn"}) {
     Write-Output " [ ] Removing RADIUS Client '$rdsGatewayFqdn'"
     Remove-NpsRadiusClient -Name "$rdsGatewayFqdn"
     if ($?) {

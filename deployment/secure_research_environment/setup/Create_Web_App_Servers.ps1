@@ -141,7 +141,7 @@ Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"
 foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
-    $_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
+    Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
     if ($?) {
         Add-LogMessage -Level Success "Rebooting the $name VM ($vmName) succeeded"
     } else {

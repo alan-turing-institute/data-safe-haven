@@ -440,7 +440,7 @@ Write-Output $result.Value
 # ---------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Add-LogMessage -Level Info "Restarting $vmName..."
-    Restart-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
+    Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
     if ($?) {
         Add-LogMessage -Level Success "Restarting DC $vmName succeeded"
     } else {

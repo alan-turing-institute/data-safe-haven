@@ -5,8 +5,8 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  $shmFqdn,
-  $sreFqdn
+    [String]$shmFqdn,
+    [String]$sreFqdn
 )
 
 $cmd = "netdom trust $shmFqdn /d:$sreFqdn /remove /force"

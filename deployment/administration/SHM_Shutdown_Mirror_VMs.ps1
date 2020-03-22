@@ -7,15 +7,19 @@ Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SHM config
-$config = Get-ShmFullConfig($shmId)
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-ShmFullConfig $shmId
+$originalContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
-# Temporarily switch to SHM subscription
-$prevContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName;
 
-Add-LogMessage -Level Info "Stopping all Mirror Servers"
+# Stopping the package mirrors
+# ----------------------------
+Add-LogMessage -Level Info "Stopping all package mirror servers"
 Get-AzVM -ResourceGroupName "RG_SHM_PKG_MIRRORS" | Stop-AzVM -Force -NoWait
 
+
 # Switch back to original subscription
-$_ = Set-AzContext -Context $prevContext;
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

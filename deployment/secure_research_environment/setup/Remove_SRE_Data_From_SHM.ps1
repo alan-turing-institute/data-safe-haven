@@ -39,10 +39,11 @@ if ($sreResources -or $sreResourceGroups) {
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
+    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
     Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
-    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
     # Remove main SRE <-> SHM VNet peering
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
@@ -71,7 +72,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     # ---------------------------------------
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
         testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
@@ -86,7 +87,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE DNS records from SHM DC
     # ----------------------------------
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
         sreFqdn = "`"$($config.sre.domain.fqdn)`""
         identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
@@ -100,7 +101,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE AD Trust from SHM DC
     # -------------------------------
     Add-LogMessage -Level Info "Removing SRE AD Trust from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_AD_Trust_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_AD_Trust_Remote.ps1" -Resolve
     $params = @{
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
         sreFqdn = "`"$($config.sre.domain.fqdn)`""
@@ -112,7 +113,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove RDS Gateway RADIUS Client from SHM NPS
     # ---------------------------------------------
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "scripts" "configure_shm_dc" "remote_scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
     $params = @{
         rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
     }

@@ -9,48 +9,99 @@ Import-Module Az
 Import-Module $PSScriptRoot/../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
-# Get SRE config
-# --------------
-$config = Get-SreConfig ($sreId);
+
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName;
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Find VM with private IP address matching the provided last octect
-## Turn provided last octect into full IP address in the data subnet
-$vmIpAddress = ($config.sre.network.subnets.data.prefix + "." + $ipLastOctet)
-Add-LogMessage -Level Info "Finding VM with IP ${vmIpAddress}..."
-## Get all compute VMs
-$computeVms = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg
-## Get the NICs attached to all the compute VMs
-$computeVmNicIds = ($computeVms | ForEach-Object { (Get-AzVM -ResourceGroupName $config.sre.dsvm.rg -Name $_.Name).NetworkProfile.NetworkInterfaces.Id })
-$computeVmNics = ($computeVmNicIds | ForEach-Object { Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg -Name $_.Split("/")[-1] })
-## Filter the NICs to the one matching the desired IP address and get the name of the VM it is attached to
-$computeVmName = ($computeVmNics | Where-Object { $_.IpConfigurations.PrivateIpAddress -match $vmIpAddress })[0].VirtualMachine.Id.Split("/")[-1]
+# Find VM with private IP address matching the provided last octet
+# ----------------------------------------------------------------
+Add-LogMessage -Level Info "Finding compute VM with last IP octet: $ipLastOctet"
+$vmId = Get-AzNetworkInterface -ResourceGroupName $config.sre.dsvm.rg | Where-Object { ($_.IpConfigurations.PrivateIpAddress).Split(".") -eq $ipLastOctet } | ForEach-Object { $_.VirtualMachine.Id }
+$vm = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Where-Object { $_.Id -eq $vmId }
+if ($?) {
+    Add-LogMessage -Level Success "Found compute VM '$($vm.Name)'"
+} else {
+    Add-LogMessage -Level Fatal "Could not find VM with last IP octet '$ipLastOctet'"
+}
 
-# Run remote scripts
-$diagnostic_scripts = @("check_ldap_connection.sh", "restart_name_resolution_service.sh", "rerun_realm_join.sh", "restart_sssd_service.sh")
-$testHost = $config.shm.dc.fqdn
-$ldapUser = $config.sre.users.ldap.dsvm.samAccountName
-$domainLower = $config.shm.domain.fqdn
-$servicePath = $config.shm.domain.serviceOuPath
-
+# Run remote diagnostic scripts
+# -----------------------------
+Add-LogMessage -Level Info "Running diagnostic scripts on VM $($vm.Name)..."
 $params = @{
     TEST_HOST = $config.shm.dc.fqdn
     LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
-    SERVICE_PATH = "'" + $config.shm.domain.serviceOuPath + "'"
+    SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
+}
+foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
+                             ("name resolution", "restart_name_resolution_service.sh"),
+                             ("realm join", "rerun_realm_join.sh"),
+                             ("SSSD service", "restart_sssd_service.sh"))) {
+    $name, $diagnostic_script = $scriptNamePair
+    $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" $diagnostic_script
+    Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$($vm.Name)'"
+    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    $success = $?
+    Write-Output $result.Value
+    if ($success) {
+        Add-LogMessage -Level Success "Configuring $name on $($vm.Name) was successful"
+    } else {
+        Add-LogMessage -Level Failure "Configuring $name on $($vm.Name) failed!"
+    }
 }
 
-Add-LogMessage -Level Info "Running diagnostic scripts on VM ${computeVmName}..."
 
-foreach ($diagnostic_script in $diagnostic_scripts) {
-    $scriptPath = Join-Path $PSScriptRoot "remote_scripts" $diagnostic_script
-    $result = Invoke-AzVMRunCommand -ResourceGroupName $config.sre.dsvm.rg -Name "$computeVmName" `
-                                    -CommandId 'RunShellScript' -ScriptPath $scriptPath `
-                                    -Parameter $params
-    Write-Output $result.Value;
+# Get LDAP secret from the KeyVault
+# ---------------------------------
+Add-LogMessage -Level Info "[ ] Loading LDAP secret from key vault '$($config.sre.keyVault.name)'"
+$kvLdapPassword = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.dsvmLdapPassword).SecretValueText;
+if ($kvLdapPassword) {
+    Add-LogMessage -Level Success "Found LDAP secret in the key vault"
+} else {
+    Add-LogMessage -Level Fatal "Could not load LDAP secret from key vault '$($config.sre.keyVault.name)'"
 }
 
-# Switch back to previous subscription
-$_ = Set-AzContext -Context $originalContext;
+
+# Set LDAP secret on the compute VM
+# ---------------------------------
+Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '$($vm.Name)'"
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
+$params = @{
+    ldapPassword = "`"$kvLdapPassword`""
+}
+$result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+$success = $?
+Write-Output $result.Value
+if ($success) {
+    Add-LogMessage -Level Success "Setting LDAP secret on compute VM $($vm.Name) was successful"
+} else {
+    Add-LogMessage -Level Fatal "Setting LDAP secret on compute VM $($vm.Name) failed!"
+}
+
+
+# Set LDAP secret in local Active Directory on the SHM DC
+# -------------------------------------------------------
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
+$params = @{
+    samAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
+    ldapPassword = "`"$kvLdapPassword`""
+}
+Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+$success = $?
+Write-Output $result.Value
+if ($success) {
+    Add-LogMessage -Level Success "Setting LDAP secret on SHM DC was successful"
+} else {
+    Add-LogMessage -Level Fatal "Setting LDAP secret on SHM DC failed!"
+}
+
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

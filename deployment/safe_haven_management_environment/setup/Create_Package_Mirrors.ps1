@@ -17,7 +17,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
@@ -299,7 +299,7 @@ function Deploy-PackageMirror {
             }
         }
         # Restart the VM
-        $_ = Restart-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
+        Enable-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg
 
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
