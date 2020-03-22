@@ -267,8 +267,8 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 6. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal as follows:
 rather than simply `<admin username>`)
   - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<shm-id>-dcnps-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHMm domain>` rather than simply `<admin username>`.
-  - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
+  - The username is the `shm-<shm-id>-vm-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHMm domain>` rather than simply `<admin username>`.
+  - The password in the `shm-<shm-id>-domain-admin-password` secret.
 7. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ### Install Azure Active Directory Connect
@@ -389,8 +389,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 7. Click `Enable` on the `Out to AAD - User Join` rule that you have just edited
 8. Click the `X` to close the `Synchronization Rules Editor` window
 9. Open Powershell as an administrator
-  - Navigate to `C:\Installation`
-  - Run `.\Run_ADSync.ps1`
+  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
 
 
 ### Validation of AD sync
@@ -405,12 +404,12 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - Click `Next`
   - Password: use the `shm-<shm-id>-testaduser-password` secret in the management Key Vault.
     - Untick `User must change password at next logon`
+    - Tick `Password never expires`
     - Click `Next`
   - Click `Finish`
 2. Force a sync to the Azure Active Directory
   - Open Powershell as an administrator
-  - Navigate to `C:\Installation`
-  - Run `.\Run_ADSync.ps1 -sync Delta`
+  - Run `C:\Installation\Run_ADSync.ps1`
 3. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
@@ -441,8 +440,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
   - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
   - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
   - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<shm-id>-dcnps-admin-username` secret plus the domain, ie `<admin username>@custom domain`
-  - The password in the `shm-<shm-id>-dcnps-admin-password` secret.
+  - The username is the `shm-<shm-id>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
+  - The password in the `shm-<shm-id>-domain-admin-password` secret.
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to text file:
   - Select `NPS (Local) > Accounting` on the left-hand sidebar
