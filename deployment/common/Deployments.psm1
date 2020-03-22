@@ -524,11 +524,11 @@ function Invoke-RemoteScript {
         $commandId = "RunShellScript"
     }
     # Run the remote command
-    if ($Parameter -eq $null) {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
+    if ($Parameter) {
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
         $success = $?
     } else {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
         $success = $?
     }
     $success = $success -and ($result.Status -eq "Succeeded")

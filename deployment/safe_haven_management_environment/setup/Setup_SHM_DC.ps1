@@ -225,7 +225,7 @@ $_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.C
 $success = $?
 $_ = Set-AzStorageBlobContent -Container "shm-dsc-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc2-setup-scripts" "CreateADBDC.zip") -Force
 $success = $success -and $?
-if ($?) {
+if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
 } else {
     Add-LogMessage -Level Fatal "Failed to upload desired state configuration (DSC) files!"
@@ -250,7 +250,7 @@ $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $adScriptLoca
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
 $success = $success -and $?
 Remove-Item $adScriptLocalFilePath
-if ($?) {
+if ($success) {
     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {
     Add-LogMessage -Level Fatal "Failed to upload domain controller (DC) configuration files!"
@@ -417,12 +417,12 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     Write-Output $result.Value
 }
 
-# # Set locale, install updates and reboot
-# # --------------------------------------
-# foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-#     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
-#     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
-# }
+# Set locale, install updates and reboot
+# --------------------------------------
+foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
+}
 
 # Configure group policies
 # ------------------------
