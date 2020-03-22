@@ -53,7 +53,7 @@
     "dc": {
       "rg": "RG_SHM_DC",
       "vmName": "DC1-SHM-TESTC",
-      "vmSize": "Standard_DS2_v2",
+      "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-TESTC",
       "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
       "ip": "10.0.0.250"
@@ -67,7 +67,7 @@
     "nps": {
       "rg": "RG_SHM_NPS",
       "vmName": "NPS-SHM-TESTC",
-      "vmSize": "Standard_DS2_v2",
+      "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TESTC",
       "ip": "10.0.0.248"
     },
@@ -105,7 +105,7 @@
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
-      "vmSize": "Standard_F4",
+      "vmSize": "Standard_D2s_v3",
       "diskType": "Standard_LRS",
       "pypi": {
         "ipOffset": 4,
@@ -209,14 +209,6 @@
         "testResearcherPassword": "sre-sandbox-test-researcher-password"
       }
     },
-    "dc": {
-      "rg": "RG_SRE_DC",
-      "nsg": "NSG_SRE_SANDBOX_IDENTITY",
-      "vmName": "DC-SRE-SANDBOX",
-      "vmSize": "Standard_DS2_v2",
-      "hostname": "DC-SRE-SANDBOX",
-      "ip": "10.151.0.250"
-    },
     "users": {
       "ldap": {
         "gitlab": {
@@ -247,7 +239,7 @@
       "rg": "RG_SRE_RDS",
       "gateway": {
         "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_D4s_v3",
+        "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
           "allowedSources": "Internet",
@@ -260,7 +252,7 @@
       },
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
-        "vmSize": "Standard_D4s_v3",
+        "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
@@ -268,7 +260,7 @@
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
-        "vmSize": "Standard_D4s_v3",
+        "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
@@ -289,7 +281,7 @@
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_DS3_v2",
+        "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-SANDBOX",
         "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "ip": "10.151.2.151"
@@ -309,7 +301,7 @@
       "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmSizeDefault": "Standard_B2ms",
+      "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019122000",
       "osdisk": {

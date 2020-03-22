@@ -94,7 +94,7 @@ function Get-ShmFullConfig {
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
     $shm.dc.vmName = "DC1-SHM-$($shm.id)".ToUpper()
-    $shm.dc.vmSize = "Standard_DS2_v2"
+    $shm.dc.vmSize = "Standard_D2s_v3"
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
@@ -110,7 +110,7 @@ function Get-ShmFullConfig {
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
     $shm.nps.vmName = "NPS-SHM-$($shm.id)".ToUpper()
-    $shm.nps.vmSize = "Standard_DS2_v2"
+    $shm.nps.vmSize = "Standard_D2s_v3"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
@@ -164,7 +164,7 @@ function Get-ShmFullConfig {
     # Please note that each mirror type must have a distinct ipOffset in the range 4-15
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
-        vmSize = "Standard_F4"
+        vmSize = "Standard_D2s_v3"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
             ipOffset = 4
@@ -333,15 +333,15 @@ function Add-SreConfig {
         }
     }
 
-    # --- Domain controller ---
-    $config.sre.dc = [ordered]@{}
-    $config.sre.dc.rg = "RG_SRE_DC"
-    $config.sre.dc.nsg = "NSG_SRE_$($config.sre.id)_IDENTITY".ToUpper()
-    $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-    $config.sre.dc.vmSize = "Standard_DS2_v2"
-    $config.sre.dc.hostname = $config.sre.dc.vmName
-    # $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
-    $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
+    # # --- Domain controller ---
+    # $config.sre.dc = [ordered]@{}
+    # $config.sre.dc.rg = "RG_SRE_DC"
+    # $config.sre.dc.nsg = "NSG_SRE_$($config.sre.id)_IDENTITY".ToUpper()
+    # $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+    # $config.sre.dc.vmSize = "Standard_DS2_v2"
+    # $config.sre.dc.hostname = $config.sre.dc.vmName
+    # # $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
+    # $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
 
     # --- Domain users ---
     $config.sre.users = [ordered]@{
@@ -376,18 +376,18 @@ function Add-SreConfig {
         rg = "RG_SRE_RDS"
         gateway = [ordered]@{
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
         }
         sessionHost1 = [ordered]@{
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
     }
@@ -455,7 +455,7 @@ function Add-SreConfig {
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
-            vmSize = "Standard_DS3_v2"
+            vmSize = "Standard_D2s_v3"
         }
         hackmd = [ordered]@{
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
@@ -480,7 +480,7 @@ function Add-SreConfig {
     $config.shm.Remove("computeVmImageResourceGroupName")
     $config.sre.dsvm.vmImageGallery = $config.shm.computeVmImageImageGalleryName
     $config.shm.Remove("computeVmImageImageGalleryName")
-    $config.sre.dsvm.vmSizeDefault = "Standard_B2ms"
+    $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
     $config.sre.dsvm.osdisk = [ordered]@{
