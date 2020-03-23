@@ -31,13 +31,13 @@ Choose a domain according to the following rules:
   - Turing testing: a subdomain of the `dsgroupdev.co.uk` domain
   - Other safe havens: follow your organisation's guidance. This may require purchasing a dedicated domain
 
-### Management environment ID `<shmId>`
-Choose a short ID `<shmId>` to identify the management environment (e.g. `testa`).
+### Management environment ID `<SHM ID>`
+Choose a short ID `<SHM ID>` to identify the management environment (e.g. `testa`).
 
 ### Create configuration file
 
 The core properties for the Safe Haven Management (SHM) environment must be present in the `environment_configs/core` folder. These are also used when deploying an SRE environment.
-The following core SHM properties must be defined in a JSON file named `shm_<shmId>_core_config.json`. The `shm_testa_core_config.json` provides an example.
+The following core SHM properties must be defined in a JSON file named `shm_<SHM ID>_core_config.json`. The `shm_testa_core_config.json` provides an example.
 
 **NOTE:** The `netbiosName` must have a maximum length of 15 characters.
 
@@ -142,7 +142,7 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
     - Use this password to log into https://portal.azure.com as the user `admin@<SHM domain>`. You will either need to log out of your existing account or open an incognito/private browsing window.
     - When prompted to change your password on first login:
       - Look in the key vault under the `RG_SHM_SECRETS` resource group in the management subscription.
-      - There should be a secret there called `shm-<shmId>-aad-admin-password`
+      - There should be a secret there called `shm-<SHM ID>-aad-admin-password`
       - Use this as the new password
       - If you are prompted to associate a phone number and email address with the account - do so.
     - Once you have set your password and logged in you can administer the Azure Active Directory with this user by selecting `Azure Active Directory` in the left hand sidebar
@@ -248,16 +248,16 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<shm-id>`, where `<shm-id>` will be the one defined in the config file.
+1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
-3. Click on the certificate named `shm-<shmId>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
+3. Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
 
 **Make sure to securely delete the "\*.pfx" certificate file after you have installed it.**
 
 
 ### Configure a VPN connection to the Safe Haven Management VNet
-1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<shm-id>_GW`, where `<shm-id>` will be the one defined in the config file.
+1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
   ![certificate details](images/deploy_shm/certificate_details.png)
@@ -266,7 +266,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 **NOTES:**
 - **You do not need to install the `VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**
 - Use SSTP (Windows) or IKEv2 (OSX) for the VPN type
-- Name the VPN connection "Safe Haven Management Gateway (`<shm-id>`)", where `<shm-id>` will be the one defined in the config file.
+- Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` will be the one defined in the config file.
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
 - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
@@ -277,14 +277,14 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 ### Access the first Domain Controller (DC1) via Remote Desktop
 1. Open Microsoft Remote Desktop
 2. Click `Add Desktop`
-3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<shm-id>` virtual machine (VM).
+3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM).
 4. Copy the Private IP address and enter it in the `PC name` field on remote desktop. Click Add.
 5. Double click on the desktop that appears under `saved desktops`.
 6. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal as follows:
 rather than simply `<admin username>`)
-  - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<shm-id>-vm-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHMm domain>` rather than simply `<admin username>`.
-  - The password in the `shm-<shm-id>-domain-admin-password` secret.
+  - On the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+  - The username is the `shm-<SHM ID>-vm-admin-username` secret. Add your custom AD domain to the username so the login is `<admin username>@SHMm domain>` rather than simply `<admin username>`.
+  - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 7. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 
 ### Install Azure Active Directory Connect
@@ -321,14 +321,14 @@ rather than simply `<admin username>`)
       - Select `Use existing AD account`
       - Enter the details for the `localadsync` user.
         - Username: `localadsync@<SHM domain>` (e.g. localadsync)
-        - Password: use the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
+        - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
       - Click `OK`
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
           - In Server Manager click `Tools > Active Directory Users and Computers`
           - Expand the domain in the left hand panel
           - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<shm-id>-localadsync-password` secret in the management Key Vault.
+          - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
           - Leave the other settings as is and click `OK`
     - Click `Next`
   - On the `Azure AD sign-in configuration` screen:
@@ -418,7 +418,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - Last name: `ADUser`
     - User login name: `testaduser`
     - Click `Next`
-  - Password: use the `shm-<shm-id>-testaduser-password` secret in the management Key Vault.
+  - Password: use the `shm-<SHM ID>-testaduser-password` secret in the management Key Vault.
     - Untick `User must change password at next logon`
     - Tick `Password never expires`
     - Click `Next`
@@ -455,9 +455,9 @@ This step allows the locale (country code) to be pushed from the local AD to the
 1. Log in to the NPS Server VM using Microsoft Remote Desktop
   - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
   - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
-  - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<shm-id>` key vault and then select `secrets` on the left hand panel.
-  - The username is the `shm-<shm-id>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
-  - The password in the `shm-<shm-id>-domain-admin-password` secret.
+  - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
+  - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
+  - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to a local text file:
   - Select `NPS (Local) > Accounting` on the left-hand sidebar
@@ -528,7 +528,7 @@ During normal usage, you should not need to tear down the package mirrors, but i
 In order to tear down the SHM, use the following procedure:
 
 ### Disconnect from the Azure Active Directory
-1. Using Microsoft Remote Desktop, connect to the `DC1-SHM-<shm-id>` virtual machine (VM).
+1. Using Microsoft Remote Desktop, connect to the `DC1-SHM-<SHM ID>` virtual machine (VM).
 2. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
 3. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
 4. Open Powershell as an administrator
