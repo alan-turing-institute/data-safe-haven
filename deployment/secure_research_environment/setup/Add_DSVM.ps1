@@ -24,9 +24,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$subnetName = $config.sre.network.subnets.data.Name
 $vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
-$vnetName = $config.sre.network.vnet.Name
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
@@ -148,10 +146,10 @@ try {
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
-Add-LogMessage -Level Info "Looking for subnet network '$subnetName'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $subnetName }
+Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.Name)'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.Name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$subnetName' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.Name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
@@ -306,3 +304,8 @@ Write-Output $result.Value
 # ---------------------------------------
 $privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
 Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed from the RDS at $privateIpAddress"
+
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

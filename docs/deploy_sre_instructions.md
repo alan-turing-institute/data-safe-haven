@@ -8,9 +8,10 @@ The following instructions will walk you through deploying a Secure Research Env
 4. [Deploy Virtual Network and Remote Desktop](#4-deploy-virtual-network-and-remote-desktop)
 5. [Deploy Data Server](#5-deploy-data-server)
 6. [Deploy Web Application Servers (GitLab and HackMD)](#6-deploy-web-application-servers-gitlab-and-hackmd)
-7. [Deploy initial shared compute VM](#7-deploy-initial-shared-compute-vm)
+7. [Deploy initial shared data science VM](#7-deploy-initial-shared-data-science-vm)
 8. [Apply network configuration](#8-apply-network-configuration)
 9. [Run smoke tests on shared compute VM](#9-run-smoke-tests-on-shared-compute-vm)
+10. [Tearing down the SRE](#10-tearing-down-the-sre)
 
 ## 1. Prerequisites
 - An Azure subscription with sufficient credits to build the environment in
@@ -293,7 +294,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - **NOTE:** The other apps will not work until the other servers have been deployed.
 
 
-## 7. Deploy Data Server
+## 5. Deploy Data Server
 ### Create Dataserver VM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
@@ -301,7 +302,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Run the `./Setup_SRE_Data_Server.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 - The deployment will take around 20 minutes to complete
 
-## 8. Deploy Web Application Servers (Gitlab and HackMD)
+## 6. Deploy Web Application Servers (Gitlab and HackMD)
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -315,12 +316,12 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 ### Test HackMD Server
 - You can test HackMD from inside the RDS environment by clicking on the `HackMD` icon and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<SRE ID> Research Users` security group.
 
-## 9. Deploy initial shared compute VM
+## 7. Deploy initial shared data science VM
 ### [OPTIONAL] Create a custom cloud init file for the SRE if required
 - By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
 - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
-### Deploy a compute VM
+### Deploy a data science VM (DSVM)
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -332,7 +333,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a SRE or set of SREs)
 - The deployment will take around 10 minutes to complete
 
-### Troubleshooting Compute VM deployments
+### Troubleshooting DSVM deployments
 - Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 - Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
@@ -341,7 +342,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-sre-<SRE ID>.template.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
-## 10. Apply network configuration
+## 8. Apply network configuration
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -358,7 +359,7 @@ However, if you need to unpeer the mirror networks for some reason (e.g. while p
 - Run the `./Unpeer_Sre_And_Mirror_Networks.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 
-## 11. Run smoke tests on shared compute VM
+## 9. Run smoke tests on shared compute VM
 These tests should be run **after** the network lock down and peering the DSG and mirror VNets. They are automatically uploaded to the compute VM during the deployment step.
 
 To run the smoke tests:
@@ -369,21 +370,21 @@ To run the smoke tests:
 - Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
 - If all test results are expected you are done! Otherwise, contact Turing REG for help diagnosing test failures.
 
-## Server list
-- The following virtual machines are created as a result of these instructions:
-  - `DC-SRE-<SRE ID>` (domain controller)
-  - `DAT-SRE-<SRE ID>` (data server)
-  - `HACKMD-SRE-<SRE ID>` (HackMD server)
-  - `GITLAB-SRE-<SRE ID>` (GitLab server)
-  - `RDG-SRE-<SRE ID>` (Remote Desktop Gateway)
-  - `APP-SRE-<SRE ID>` (Remote Desktop app server)
-  - `DKP-SRE-<SRE ID>` (Remote Desktop desktop server)
-  - `SRE-<SRE ID>-160-DSVM-0-1-2019082900`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)
 
-## Tearing down the SRE
+## 10. Tearing down the SRE
 From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
 
 ```pwsh
 cd deployment/administration
 ./SRE_Teardown.ps1 -sreId <SRE ID>
 ```
+
+## Server list
+The following 7 virtual machines are created as a result of these instructions:
+- `DAT-SRE-<SRE ID>` (data server)
+- `HACKMD-SRE-<SRE ID>` (HackMD server)
+- `GITLAB-SRE-<SRE ID>` (GitLab server)
+- `RDG-SRE-<SRE ID>` (Remote Desktop Gateway)
+- `APP-SRE-<SRE ID>` (Remote Desktop app server)
+- `DKP-SRE-<SRE ID>` (Remote Desktop desktop server)
+- `SRE-<SRE ID>-160-DSVM-0-1-2019082900`  (initial shared compute VM at IP address `<data-subnet-prefix>.160`)

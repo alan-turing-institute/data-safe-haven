@@ -316,7 +316,7 @@ rather than simply `<admin username>`)
     - Approve the login with MFA if required
       - If you see a Windows Security Warning, check `Don't show this message again` and click `Yes`.
   - On the `Connect your directories` screen:
-    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`d
+    - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
     - On the `AD forest account` pop-up:
       - Select `Use existing AD account`
       - Enter the details for the `localadsync` user.
@@ -515,7 +515,6 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 - Deploy and configure the RDS VMs by running `./Create_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **around 30 minutes** to run.
 
-
 ### [Optional] Tearing down package mirrors
 During normal usage, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -544,3 +543,9 @@ In order to tear down the SHM, use the following procedure:
 - For each SRE that each attached to the SHM, do the following:
   - Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
 - Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+
+## Server list
+The following 3 virtual machines are created as a result of these instructions:
+- `DC1-SHM-TESTC` (primary domain controller)
+- `DC2-SHM-TESTC` (secondary domain controller)
+- `NPS-SHM-TESTC` (network policy server)
