@@ -88,7 +88,8 @@
         "nic": "[concat(parameters('Data_Server_Name'), '-', 'NIC')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
-        "datadisk": "[concat(parameters('Data_Server_Name'), '-DATA-DISK')]"
+        "inputdatadisk": "[concat(parameters('Data_Server_Name'), '-INPUT-DATA-DISK')]",
+        "outputdatadisk": "[concat(parameters('Data_Server_Name'), '-OUTPUT-DATA-DISK')]"
     },
     "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
@@ -118,17 +119,30 @@
                         },
                         "diskSizeGB": 128
                     },
-                    "dataDisks": [{
-                        "lun": 0,
-                        "name": "[variables('datadisk')]",
-                        "createOption": "Empty",
-                        "caching": "None",
-                        "writeAcceleratorEnabled": false,
-                        "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[variables('inputdatadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": 512
                         },
-                        "diskSizeGB": 512
-                    }]
+                        {
+                            "lun": 1,
+                            "name": "[variables('outputdatadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": 256
+                        }
+                    ]
                 },
                 "osProfile": {
                     "computerName": "[parameters('Data_Server_Name')]",

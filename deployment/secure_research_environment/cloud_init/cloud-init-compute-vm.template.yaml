@@ -13,7 +13,7 @@ write_files:
     permissions: "0600"
     content: |
       $LDAP_SECRET_PLAINTEXT
-  - path: "/etc/.smbcredentials"
+  - path: "/installation/.smbcredentials"
     permissions: "0600"
     content: |
       username=$DATA_MOUNT_USERNAME
@@ -148,8 +148,8 @@ write_files:
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
-      sed "/pam_unix/ a `$PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > common-session
-      mv common-session /etc/pam.d/common-session
+      sed "/pam_unix/ a `$PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
+      mv /tmp/common-session /etc/pam.d/common-session
       echo ">=== /etc/pam.d/common-session ===<"
       cat /etc/pam.d/common-session
       echo ">=== end of /etc/pam.d/common-session ===<"
@@ -160,7 +160,7 @@ write_files:
       index = $PYPI_MIRROR_URL
       index-url = $PYPI_MIRROR_URL/simple
       trusted-host = $PYPI_MIRROR_HOST
-  - path: "/Rprofile.site"
+  - path: "/installation/Rprofile.site"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
       local({
@@ -177,23 +177,27 @@ runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # Set default keyboard to en-GB
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
+  - cat /etc/default/keyboard
   # Copy CRAN mirror config to appropriate locations
   - echo ">=== Updating CRAN mirror config... ===<"
-  - cp /Rprofile.site /etc/R/Rprofile.site
-  - cp /Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
-  - cp /Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
-  - cp /Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+  - cp /installation/Rprofile.site /etc/R/Rprofile.site
+  - cp /installation/Rprofile.site /anaconda/envs/py27/lib/R/etc/Rprofile.site
+  - cp /installation/Rprofile.site /anaconda/envs/py36/lib/R/etc/Rprofile.site
+  - cp /installation/Rprofile.site /anaconda/envs/py37/lib/R/etc/Rprofile.site
+  - cat /installation/Rprofile.site
   # Make sure that sssd is running
   - echo ">=== Restarting sssd service... ===<"
   - service sssd restart
+  - service sssd status
   # Disable light-locker which can cause irritating error messages
   - echo ">=== Disabling screen lock... ===<"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
+  - cat /etc/xdg/autostart/light-locker.desktop
   # Set default session to xfce4
   - echo ">=== Setting default session to xfce4... ===<"
-  # - mv /startwm.sh /etc/xrdp/startwm.sh
   - chmod 0755 /etc/xrdp/startwm.sh
   - echo xfce4-session > ~$ADMIN_USERNAME/.xsession
+  - cat ~$ADMIN_USERNAME/.xsession
   # Set default terminal for xfce
   - echo ">=== Setting default xfce terminal... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
@@ -203,6 +207,7 @@ runcmd:
   # Restart xrdp to reflect changes made above
   - echo ">=== Restart xrdp... ===<"
   - service xrdp restart
+  - service xrdp status
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
@@ -226,6 +231,14 @@ runcmd:
   - rm /etc/resolv.conf
   - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  # Create data mount folder with read-only local access [remote access is controlled by SMB rules]
+  - echo ">=== Mount data folder using SMB... ===<"
+  - mkdir -p /data
+  - echo "//$DATASERVER_HOSTNAME/Data\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  # Create output mount folder with full local access [remote access is controlled by SMB rules]
+  - echo ">=== Mount output folder using SMB... ===<"
+  - mkdir -p /output
+  - echo "//$DATASERVER_HOSTNAME/Output\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
   - parted /dev/sdc mklabel gpt
@@ -237,25 +250,20 @@ runcmd:
   - mount /dev/sdc1 /tmp/home
   - chmod 755 /tmp/home
   - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
   - umount /tmp/home
-  # Create data mount folder and grant all users access
-  - echo ">=== Mount data folder using SMB... ===<"
-  - mkdir -p /data/input
-  - chmod go+rw /data/input
-  - echo "//$DATASERVER_HOSTNAME/Data\t/data/input\tcifs\tcredentials=/etc/.smbcredentials\t0\t0" >> /etc/fstab
-  # Create shared data folder and grant all users access
-  - echo ">=== Create shared data folder using data disk... ===<"
+  # Create scratch folder and grant all users access
+  - echo ">=== Create local scratch folder using data disk... ===<"
   - parted /dev/sdd mklabel gpt
   - parted /dev/sdd mkpart primary ext4 0% 100%
   - parted /dev/sdd print
   - sleep 5
   - mkfs -t ext4 /dev/sdd1
-  - mkdir -p /data/output
-  - mount /dev/sdd1 /data/output
-  - chmod go+rw /data/output
+  - mkdir -p /scratch
+  - mount /dev/sdd1 /scratch
+  - chmod go+rw /scratch
   - UUID=`$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
-  - echo "UUID=`${UUID}\t/data/output\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
+  - echo "UUID=`${UUID}\t/scratch\text4\tdefaults,nofail\t0\t3" >> /etc/fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
   - echo ">=== end of /etc/fstab ===<"
