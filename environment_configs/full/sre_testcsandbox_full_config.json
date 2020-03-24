@@ -279,7 +279,10 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-      "ip": "10.151.2.250"
+      "ip": "10.151.2.250",
+      "egressDiskGb": 64,
+      "ingressDiskGb": 512,
+      "sharedDiskGb": 256
     },
     "webapps": {
       "rg": "RG_SRE_WEBAPPS",

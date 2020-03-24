@@ -231,14 +231,18 @@ runcmd:
   - rm /etc/resolv.conf
   - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-  # Create data mount folder with read-only local access [remote access is controlled by SMB rules]
+  # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
-  - echo "//$DATASERVER_HOSTNAME/Data\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
-  # Create output mount folder with full local access [remote access is controlled by SMB rules]
+  - echo "//$DATASERVER_HOSTNAME/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  # Mount shared folder with full local access [remote access is controlled by SMB rules]
+  - echo ">=== Mount output folder using SMB... ===<"
+  - mkdir -p /shared
+  - echo "//$DATASERVER_HOSTNAME/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
-  - echo "//$DATASERVER_HOSTNAME/Output\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//$DATASERVER_HOSTNAME/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
   - parted /dev/sdc mklabel gpt

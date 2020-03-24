@@ -38,6 +38,24 @@
                 "description": "Enter name for DC Administrator"
             }
         },
+        "Disk_Size_Egress_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Egress disk size in GB"
+            }
+        },
+        "Disk_Size_Ingress_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Ingress disk size in GB"
+            }
+        },
+        "Disk_Size_Shared_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared disk size in GB"
+            }
+        },
         "Domain_Name": {
             "type": "string",
             "metadata": {
@@ -88,8 +106,9 @@
         "nic": "[concat(parameters('Data_Server_Name'), '-', 'NIC')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
-        "inputdatadisk": "[concat(parameters('Data_Server_Name'), '-INPUT-DATA-DISK')]",
-        "outputdatadisk": "[concat(parameters('Data_Server_Name'), '-OUTPUT-DATA-DISK')]"
+        "ingressdatadisk": "[concat(parameters('Data_Server_Name'), '-INGRESS-DATA-DISK')]",
+        "shareddatadisk": "[concat(parameters('Data_Server_Name'), '-SHARED-DATA-DISK')]",
+        "egressdatadisk": "[concat(parameters('Data_Server_Name'), '-EGRESS-DATA-DISK')]"
     },
     "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
@@ -122,25 +141,36 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[variables('inputdatadisk')]",
+                            "name": "[variables('ingressdatadisk')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 512
+                            "diskSizeGB": "[parameters('Disk_Size_Ingress_GB')]"
                         },
                         {
                             "lun": 1,
-                            "name": "[variables('outputdatadisk')]",
+                            "name": "[variables('shareddatadisk')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 256
+                            "diskSizeGB": "[parameters('Disk_Size_Shared_GB')]"
+                        },
+                        {
+                            "lun": 2,
+                            "name": "[variables('egressdatadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": "[parameters('Disk_Size_Egress_GB')]"
                         }
                     ]
                 },

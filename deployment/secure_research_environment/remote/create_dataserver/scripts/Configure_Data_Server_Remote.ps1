@@ -31,8 +31,9 @@ Start-Service ShellHWDetection
 # Setup disk shares
 # -----------------
 Write-Host "Configuring disk shares..."
-foreach ($namePathPair in (("Data", "F:\Data"),
-                           ("Output", "G:\Output"))) {
+foreach ($namePathPair in (("Ingress", "F:\Ingress"),
+                           ("Shared", "G:\Shared"),
+                           ("Egress", "H:\Egress"))) {
     $shareName, $sharePath = $namePathPair
     $dataMountDomainUser = "$shmNetbiosName\$dataMountUser"
     $researcherUserSg = "$shmNetbiosName\$researcherUserSgName"
@@ -55,30 +56,9 @@ foreach ($namePathPair in (("Data", "F:\Data"),
 }
 
 
-# $shareName = "Data"
-# $sharePath = (Join-Path "F:" $shareName)
-# $dataMountDomainUser = ($shmNetbiosName + "\" + $dataMountUser)
-# $researcherUserSg = ($shmNetbiosName + "\" + $researcherUserSgName)
-# $serverAdminSg = ($shmNetbiosName + "\" + $serverAdminSgName)
-# Write-Host " [ ] Creating SMB data share '$shareName'..."
-# if (Get-SmbShare | Where-Object {$_.Name -eq "$shareName"}) {
-#     Write-Host " [o] SMB share '$shareName' already exists"
-# } else {
-#     # Create share, being robust to case where share folder already exists
-#     if(!(Test-Path -Path $sharePath)) {
-#         $_ = New-Item -ItemType directory -Path $sharePath;
-#     }
-#     $_ = New-SmbShare -Path $sharePath -Name $shareName -ErrorAction:Continue;
-#     if ($?) {
-#         Write-Host " [o] Completed"
-#     } else {
-#         Write-Host " [x] Failed"
-#     }
-# }
-
 # Set SMB share access
 # --------------------
-foreach ($nameAccessPair in (("Data", "Change"), ("Output", "Full"))) {
+foreach ($nameAccessPair in (("Ingress", "Read"), ("Shared", "Change"), ("Egress", "Full"))) {
     $shareName, $accessRight = $nameAccessPair
     Write-Host "Setting SMB share access for '$shareName' share..."
     # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
@@ -97,9 +77,9 @@ foreach ($nameAccessPair in (("Data", "Change"), ("Output", "Full"))) {
 }
 
 
-# Set ACL rules
-# -------------
-foreach ($pathAccessPair in (("F:\Data", "Modify"), ("G:\Output", "Full"))) {
+# Set ACL rules using the rights listed here: https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesystemrights?view=netframework-4.8
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+foreach ($pathAccessPair in (("F:\Ingress", "Read"), ("G:\Shared", "Modify"), ("H:\Egress", "Full"))) {
     $sharePath, $accessRight = $pathAccessPair
     Write-Host "Setting ACL rules for folder '$sharePath'"
     # Remove all existing ACL rules on the dataserver folder backing the share

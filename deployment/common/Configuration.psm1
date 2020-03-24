@@ -432,6 +432,9 @@ function Add-SreConfig {
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = "$($config.sre.dataserver.hostname).$($config.shm.domain.fqdn)"
     $config.sre.dataserver.ip = "$($config.sre.network.subnets.data.prefix).250"
+    $config.sre.dataserver.egressDiskGb = 64
+    $config.sre.dataserver.ingressDiskGb = 512
+    $config.sre.dataserver.sharedDiskGb = 256
 
     # HackMD and Gitlab servers
     $config.sre.webapps = [ordered]@{
