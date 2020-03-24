@@ -10,7 +10,7 @@ param(
     [string]$netbiosName,
     [Parameter(Position = 1,HelpMessage = "LDAP users group")]
     [ValidateNotNullOrEmpty()]
-    [string]$ldapUsersGroup
+    [string]$ldapUsersSgName
 )
 
 Import-Module ActiveDirectory
@@ -19,7 +19,7 @@ Import-Module ActiveDirectory
 $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
 
 # Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
-dsacls $computersContainer /G "$netbiosname\$($ldapUsersGroup):GRGWCCDC"
+dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
 if ($?) {
     Write-Host " [o] Successfully delegated Active Directory permissions"
 } else {
