@@ -92,7 +92,7 @@ $params = @{
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
     dataMountUser = "`"$($config.sre.users.datamount.samAccountName)`""
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-    serverAdminSgName = "SG Safe Haven Server Administrators" #"`"$($config.sre.domain.securityGroups.serverAdmins.name)`""
+    serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
 Write-Output $result.Value

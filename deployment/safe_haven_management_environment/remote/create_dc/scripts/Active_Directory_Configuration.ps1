@@ -5,30 +5,30 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0,HelpMessage = "Enter Path to GPO backup files")]
+    [Parameter(Position = 7,HelpMessage = "ADSync account password as an encrypted string")]
     [ValidateNotNullOrEmpty()]
-    [string]$oubackuppath,
+    [string]$adsyncAccountPasswordEncrypted,
+    [Parameter(Position = 2,HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
+    [ValidateNotNullOrEmpty()]
+    [string]$domain,
     [Parameter(Position = 1,HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainou,
-    [Parameter(Position = 2,HelpMessage = "Domain (eg. TURINGSAFEHAVEN.ac.uk)")]
+    [Parameter(Position = 9, HelpMessage = "Name of the LDAP users group")]
     [ValidateNotNullOrEmpty()]
-    [string]$domain,
-    [Parameter(Position = 3,HelpMessage = "Identity subnet CIDR")]
+    [string]$ldapUsersSgName,
+    [Parameter(Position = 0,HelpMessage = "Enter Path to GPO backup files")]
     [ValidateNotNullOrEmpty()]
-    [string]$identitySubnetCidr,
-    [Parameter(Position = 4,HelpMessage = "Web subnet CIDR")]
-    [ValidateNotNullOrEmpty()]
-    [string]$webSubnetCidr,
-    [Parameter(Position = 5,HelpMessage = "Server name")]
-    [ValidateNotNullOrEmpty()]
-    [string]$serverName,
+    [string]$oubackuppath,
     [Parameter(Position = 6,HelpMessage = "Server admin name")]
     [ValidateNotNullOrEmpty()]
     [string]$serverAdminName,
-    [Parameter(Position = 7,HelpMessage = "ADSync account password as an encrypted string")]
+    [Parameter(Position = 8, HelpMessage = "Name of the server administrator group")]
     [ValidateNotNullOrEmpty()]
-    [string]$adsyncAccountPasswordEncrypted
+    [string]$serverAdminSgName,
+    [Parameter(Position = 5,HelpMessage = "Server name")]
+    [ValidateNotNullOrEmpty()]
+    [string]$serverName
 )
 
 # Convert encrypted string to secure string
@@ -91,7 +91,7 @@ foreach ($ouName in ("Safe Haven Research Users",
 
 # Create security groups
 Write-Host "Creating security groups..."
-foreach ($groupName in ("SG Safe Haven Server Administrators","SG Data Science LDAP Users")) {
+foreach ($groupName in ($serverAdminSgName, $ldapUsersSgName)) {
     $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
     if ("$groupExists" -ne "") {
         Write-Host " [o] Security group '$groupName' already exists"
@@ -133,17 +133,15 @@ if ("$userExists" -ne "") {
 # Add users to security groups
 Write-Host "Adding users to security groups..."
 # NB. As of build 1.4.###.# it is no longer supported to use an Enterprise Admin or a Domain Admin account as the AD DS Connector account.
-$adGroupName = "SG Safe Haven Server Administrators"
-$adUserName = $serverAdminName
-$membershipExists = $(Get-ADGroupMember -Identity "$adGroupName").Name | Select-String "$adUserName"
-if ("$membershipExists" -eq "$adUserName") {
-    Write-Host " [o] Account '$adUserName' is already in '$adGroupName'"
+$membershipExists = $(Get-ADGroupMember -Identity "$serverAdminSgName").Name | Select-String "$serverAdminName"
+if ("$membershipExists" -eq "$serverAdminName") {
+    Write-Host " [o] Account '$serverAdminName' is already in '$serverAdminSgName'"
 } else {
-    Add-ADGroupMember "$adGroupName" "$adUserName"
+    Add-ADGroupMember "$serverAdminSgName" "$serverAdminName"
     if ($?) {
-        Write-Host " [o] Account '$adUserName' added to '$adGroupName' group"
+        Write-Host " [o] Account '$serverAdminName' added to '$serverAdminSgName' group"
     } else {
-        Write-Host " [x] Account '$adUserName' could not be added to '$adGroupName' group!"
+        Write-Host " [x] Account '$serverAdminName' could not be added to '$serverAdminSgName' group!"
     }
 }
 
@@ -201,28 +199,3 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
         }
     }
 }
-
-# # Create Reverse Lookup Zones for SHM
-# Write-Host "Creating reverse lookup zones..."
-# foreach ($cidr in ($identitySubnetCidr,$webSubnetCidr)) {
-#     $oct1,$oct2,$oct3,$oct4 = $cidr.Split(".")
-#     $zoneName = "$oct3.$oct2.$oct1.in-addr.arpa"
-#     # Check for a match in existing zone
-#     $zoneExists = $false
-#     foreach ($zone in Get-DnsServerZone) {
-#         if (($zone.ZoneName -eq $zoneName) -and $zone.IsReverseLookupZone) {
-#             $zoneExists = $true
-#         }
-#     }
-#     # Create reverse lookup zone if it does not already exist
-#     if ($zoneExists) {
-#         Write-Host " [o] Reverse lookup zone for $cidr already exists"
-#     } else {
-#         Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "$cidr" -ReplicationScope Domain
-#         if ($?) {
-#             Write-Host " [o] Reverse lookup zone for $cidr created successfully"
-#         } else {
-#             Write-Host " [x] Reverse lookup zone for $cidr could not be created!"
-#         }
-#     }
-# }

@@ -28,7 +28,7 @@ function Get-ShmFullConfig {
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $shmPrefixOctets = $shmPrefix.Split('.')
-    $shmBasePrefix = $shmPrefixOctets[0] + "." + $shmPrefixOctets[1]
+    $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
 
     # --- Top-level config ---
@@ -52,15 +52,20 @@ function Get-ShmFullConfig {
     }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.Replace('.',',DC='))
-    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers," + $shm.domain.dn
-    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
-    $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
-    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
-    $groupName = "SG Data Science LDAP Users"
+    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers,$($shm.domain.dn)"
+    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts,$($shm.domain.dn)"
+    $shm.domain.userOuPath = "OU=Safe Haven Research Users,$($shm.domain.dn)"
+    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups,$($shm.domain.dn)"
+    $ldapUsersGroup = "SG Safe Haven LDAP Users"
+    $serverAdminsGroup = "SG Safe Haven Server Administrators"
     $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{
-            name = $groupName
-            description = $groupName
+            name = $ldapUsersGroup
+            description = $ldapUsersGroup
+        }
+        serverAdmins = [ordered]@{
+            name = $serverAdminsGroup
+            description = $serverAdminsGroup
         }
     }
 
@@ -330,43 +335,34 @@ function Add-SreConfig {
             hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
+            npsSecret = "$($config.sre.shortName)-nps-secret"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
         }
     }
-
-    # # --- Domain controller ---
-    # $config.sre.dc = [ordered]@{}
-    # $config.sre.dc.rg = "RG_SRE_DC"
-    # $config.sre.dc.nsg = "NSG_SRE_$($config.sre.id)_IDENTITY".ToUpper()
-    # $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-    # $config.sre.dc.vmSize = "Standard_DS2_v2"
-    # $config.sre.dc.hostname = $config.sre.dc.vmName
-    # # $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
-    # $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
 
     # --- Domain users ---
     $config.sre.users = [ordered]@{
         ldap = [ordered]@{
             gitlab = [ordered]@{
-                name = $config.sre.domain.netbiosName + " Gitlab LDAP"
+                name = "$($config.sre.domain.netbiosName) Gitlab LDAP"
                 samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             hackmd = [ordered]@{
-                name = $config.sre.domain.netbiosName + " HackMD LDAP"
+                name = "$($config.sre.domain.netbiosName) HackMD LDAP"
                 samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             dsvm = [ordered]@{
-                name = $config.sre.domain.netbiosName + " DSVM LDAP"
+                name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
         datamount = [ordered]@{
-            name = $config.sre.domain.netbiosName + " Data Mount"
+            name = "$($config.sre.domain.netbiosName) Data Mount"
             samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
         }
         researchers = [ordered]@{
             test = [ordered]@{
-                name = $config.sre.domain.netbiosName + " Test Researcher"
+                name = "$($config.sre.domain.netbiosName) Test Researcher"
                 samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
@@ -392,36 +388,24 @@ function Add-SreConfig {
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
     }
-    # $config.sre.rds.nsg = [ordered]@{
-    #     gateway = [ordered]@{}
-    #     session_hosts = [ordered]@{}
-    # }
-    # $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SERVER"
-    # $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SESSION_HOSTS"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
         if (@("3","4").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.240"
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
-            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.253"
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.allowedSources = "Internet"
             $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
         }
     } else {
-        # $config.sre.rds.nsg.gateway.allowedSources = $sreConfigBase.rdsAllowedSources
         $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.rdsAllowedSources
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsInternetAccess -eq "default") {
         if (@("2","3","4").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.outboundInternet = "Deny"
             $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.outboundInternet = "Allow"
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
@@ -429,14 +413,13 @@ function Add-SreConfig {
     }
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
     $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
-    $config.sre.rds.gateway.npsSecretName = "sre-$($config.sre.id)-nps-secret".ToLower()
+    $config.sre.rds.gateway.ip = "$($config.sre.network.subnets.rds.prefix).250"
     $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
     $config.sre.rds.sessionHost1.fqdn = "$($config.sre.rds.sessionHost1.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
+    $config.sre.rds.sessionHost1.ip = "$($config.sre.network.subnets.rds.prefix).249"
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
     $config.sre.rds.sessionHost2.fqdn = "$($config.sre.rds.sessionHost2.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.sessionHost2.ip = $config.sre.network.subnets.rds.prefix + ".248"
+    $config.sre.rds.sessionHost2.ip = "$($config.sre.network.subnets.rds.prefix).248"
 
     # --- Secure servers ---
 
@@ -448,7 +431,7 @@ function Add-SreConfig {
     $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = "$($config.sre.dataserver.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
+    $config.sre.dataserver.ip = "$($config.sre.network.subnets.data.prefix).250"
 
     # HackMD and Gitlab servers
     $config.sre.webapps = [ordered]@{
@@ -506,14 +489,14 @@ function Add-SreConfig {
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if (@("2","3").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
-        $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
-        $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
+        $config.sre.mirrors.pypi.ip = "10.20.$($config.sre.tier).20"
+        $config.sre.mirrors.cran.ip = "10.20.$($config.sre.tier).21"
     } elseif (@("0","1").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = $null
         $config.sre.mirrors.pypi.ip = $null
         $config.sre.mirrors.cran.ip = $null
     } else {
-        Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
+        Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
         return
     }
 

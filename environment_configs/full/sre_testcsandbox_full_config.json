@@ -21,8 +21,12 @@
       "securityOuPath": "OU=Safe Haven Security Groups,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
-          "name": "SG Data Science LDAP Users",
-          "description": "SG Data Science LDAP Users"
+          "name": "SG Safe Haven LDAP Users",
+          "description": "SG Safe Haven LDAP Users"
+        },
+        "serverAdmins": {
+          "name": "SG Safe Haven Server Administrators",
+          "description": "SG Safe Haven Server Administrators"
         }
       }
     },
@@ -207,6 +211,7 @@
         "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
+        "npsSecret": "sre-sandbox-nps-secret",
         "testResearcherPassword": "sre-sandbox-test-researcher-password"
       }
     },
@@ -248,8 +253,7 @@
         },
         "hostname": "RDG-SRE-SANDBOX",
         "fqdn": "RDG-SRE-SANDBOX.testc.dsgroupdev.co.uk",
-        "ip": "10.151.1.250",
-        "npsSecretName": "sre-sandbox-nps-secret"
+        "ip": "10.151.1.250"
       },
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
