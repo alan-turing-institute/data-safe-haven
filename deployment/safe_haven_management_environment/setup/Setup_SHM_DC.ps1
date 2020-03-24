@@ -223,6 +223,7 @@ $params = @{
     domain = "`"$($config.domain.fqdn)`""
     domainou = "`"$($config.domain.dn)`""
     ldapUsersSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
+    netbiosName = "`"$($config.domain.netbiosName)`""
     oubackuppath = "`"C:\Installation\GPOs`""
     serverAdminName = "`"$shmAdminUsername`""
     serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
@@ -230,14 +231,6 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
-
-
-# Set locale, install updates and reboot
-# --------------------------------------
-foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-    Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
-}
 
 
 # Configure group policies
@@ -251,29 +244,38 @@ $params = @{
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
 
+#
+#  NB. moved this into active directory configuration script, but haven't checked whether it works yet...
+#
+# # Active directory delegation
+# # ---------------------------
+# Add-LogMessage -Level Info "Enabling Active Directory delegation on: $($config.dc.vmName)..."
+# $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Delegation.ps1"
+# $params = @{
+#     netbiosName = "`"$($config.domain.netbiosName)`""
+#     ldapUsersSgName = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
+# }
+# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+# Write-Output $result.Value
 
-# Active directory delegation
-# ---------------------------
-Add-LogMessage -Level Info "Enabling Active Directory delegation on: $($config.dc.vmName)..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Delegation.ps1"
-$params = @{
-    netbiosName = "`"$($config.domain.netbiosName)`""
-    ldapUsersSgName = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-Write-Output $result.Value
 
+# # Restart the DCs
+# # ---------------
+# foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+#     Add-LogMessage -Level Info "Restarting $vmName..."
+#     Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
+#     if ($?) {
+#         Add-LogMessage -Level Success "Restarting DC $vmName succeeded"
+#     } else {
+#         Add-LogMessage -Level Fatal "Restarting DC $vmName failed!"
+#     }
+# }
 
-# Restart the DCs
-# ---------------
+# Set locale, install updates and reboot
+# --------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-    Add-LogMessage -Level Info "Restarting $vmName..."
-    Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
-    if ($?) {
-        Add-LogMessage -Level Success "Restarting DC $vmName succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Restarting DC $vmName failed!"
-    }
+    Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 }
 
 

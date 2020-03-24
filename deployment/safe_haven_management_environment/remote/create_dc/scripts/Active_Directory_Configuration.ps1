@@ -5,31 +5,37 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 7,HelpMessage = "ADSync account password as an encrypted string")]
+    [Parameter(Position = 0,HelpMessage = "ADSync account password as an encrypted string")]
     [ValidateNotNullOrEmpty()]
     [string]$adsyncAccountPasswordEncrypted,
-    [Parameter(Position = 2,HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
+    [Parameter(Position = 1,HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
     [ValidateNotNullOrEmpty()]
     [string]$domain,
-    [Parameter(Position = 1,HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
+    [Parameter(Position = 2,HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainou,
-    [Parameter(Position = 9, HelpMessage = "Name of the LDAP users group")]
+    [Parameter(Position = 3, HelpMessage = "Name of the LDAP users group")]
     [ValidateNotNullOrEmpty()]
     [string]$ldapUsersSgName,
-    [Parameter(Position = 0,HelpMessage = "Enter Path to GPO backup files")]
+    [Parameter(Position = 4,HelpMessage = "NetBios name")]
+    [ValidateNotNullOrEmpty()]
+    [string]$netbiosName,
+    [Parameter(Position = 5,HelpMessage = "Enter Path to GPO backup files")]
     [ValidateNotNullOrEmpty()]
     [string]$oubackuppath,
     [Parameter(Position = 6,HelpMessage = "Server admin name")]
     [ValidateNotNullOrEmpty()]
     [string]$serverAdminName,
-    [Parameter(Position = 8, HelpMessage = "Name of the server administrator group")]
+    [Parameter(Position = 7, HelpMessage = "Name of the server administrator group")]
     [ValidateNotNullOrEmpty()]
     [string]$serverAdminSgName,
-    [Parameter(Position = 5,HelpMessage = "Server name")]
+    [Parameter(Position = 8,HelpMessage = "Server name")]
     [ValidateNotNullOrEmpty()]
     [string]$serverName
 )
+
+Import-Module ActiveDirectory
+
 
 # Convert encrypted string to secure string
 $adsyncAccountPasswordSecureString = ConvertTo-SecureString -String $adsyncAccountPasswordEncrypted -Key (1..16)
@@ -199,3 +205,14 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
         }
     }
 }
+
+
+# Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
+$computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
+dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
+if ($?) {
+    Write-Host " [o] Successfully delegated Active Directory permissions"
+} else {
+    Write-Host " [x] Failed to delegate Active Directory permissions"
+}
+
