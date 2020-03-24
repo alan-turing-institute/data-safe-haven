@@ -208,6 +208,7 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
 
 
 # Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
+Write-Host "Delegating Active Directory registration permissions to the LDAP users group..."
 $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
 dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
 if ($?) {
