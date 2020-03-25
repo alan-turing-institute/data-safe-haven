@@ -1,0 +1,71 @@
+#cloud-config
+
+# Update package database on first boot (ie. run apt-get update)
+package_update: true
+
+# Upgrade installed packages on first boot (ie. run apt-get upgrade)
+package_upgrade: true
+
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    docker.list:
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
+      keyid: 8D81803C0EBFCD88
+
+
+write_files:
+  - path: "/installation/deprovision.log"
+    permissions: "0644"
+    content: |
+      # Deprovisioning log
+  - path: "/installation/deprovision_vm.sh"
+    permissions: "0744"
+    content: |
+      #! /bin/bash
+      # Deprovision this VM
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner on this VM"
+      waagent -deprovision+user -force 2>&1
+      # Fix internet connectivity that is broken by waagent deprovisioning (needed in older Ubuntu versions)
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Fixing internet connectivity"
+      if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
+      # Remove execute permissions from this file
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
+      chmod ugo-x /installation/deprovision_vm.sh
+      ls -alh /installation/deprovision_vm.sh
+  - path: "/src/guacamole/guacamole.env"
+    content: $ENV
+  - path: "/src/guacamole/docker-compose.yml"
+    content: $DOCKER_COMPOSE
+  - path: "/src/guacamole/dbinit.sql"
+    content: $DBINIT
+
+
+packages:
+  - docker-ce
+  - docker-compose
+
+runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Make a temporary directory (cloudinit recomends not using /tmp)
+  - mkdir /run/cloudinit
+
+  # Clean up installation - getting to this point takes approximately 30 mins
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt-get -y autoremove
+  - apt-get clean
+
+  - echo "Starting Guacamole"
+  - docker-compose -f /src/guacamole/docker-compose.yml up -d
+  - docker cp /src/guacamole/dbinit.sql $(docker-compose ps -q postgres):/dbinit.sql
+  - docker-compose exec postgres psql -Uguacamole -f /dbinit.sql
+
+final_message:
+  "System setup through cloud-init is finished. Configuration took $UPTIME seconds"

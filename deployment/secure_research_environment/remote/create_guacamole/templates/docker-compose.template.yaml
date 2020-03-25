@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+    postgres:
+        image: postgres:12.2
+        env_file: guacamole.env
+        environment:
+            POSTGRES_DB: guacamole
+            POSTGRES_USER: guacamole
+
+    guacd:
+        image: guacamole/guacd:1.1.0
+
+    guacamole:
+        image: guacamole/guacamole:1.1.0
+        env_file: guacamole.env
+        environment:
+            GUACD_HOSTNAME: guacd
+            POSTGRES_HOSTNAME: postgres
+            POSTGRES_DATABASE: guacamole
+            POSTGRES_USER: guacamole
+        ports:
+        - "8080:8080"
