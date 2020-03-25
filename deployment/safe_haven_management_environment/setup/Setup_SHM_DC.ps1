@@ -222,11 +222,11 @@ $params = @{
     adsyncAccountPasswordEncrypted = "`"$adsyncAccountPasswordEncrypted`""
     domain = "`"$($config.domain.fqdn)`""
     domainou = "`"$($config.domain.dn)`""
-    ldapUsersSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
+    ldapUsersSgName = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
     netbiosName = "`"$($config.domain.netbiosName)`""
     oubackuppath = "`"C:\Installation\GPOs`""
     serverAdminName = "`"$shmAdminUsername`""
-    serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
+    serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
     serverName = "`"$($config.dc.vmName)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
@@ -239,7 +239,7 @@ Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
     shmFqdn = "`"$($config.domain.fqdn)`""
-    serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
+    serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
