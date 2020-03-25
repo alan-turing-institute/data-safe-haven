@@ -18,8 +18,8 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 $vmName = $config.sre.guacamole.vmName
 $vmSize = $config.sre.guacamole.vmSize
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 $dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 # $bootDiagnosticsAccount = $config.sre.storage.bootdiagnostics.accountName
 # $vmNicName = "${vmName}-NIC"
 # $vmNic = Get-AzResource -Name $vmNicName
@@ -47,7 +47,7 @@ $dbInitTemplate = Get-Content $dbInitFilePath -Raw
 # $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
 # $LDAP_HOSTNAME = $AD_DC_NAME_UPPER.$DOMAIN_LOWER
 $LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
-$LDAP_PORT = 389
+$LDAP_PORT = 389 # or 636 for LDAP over SSL?
 $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
 # Set this to something so that we can use seeAlso when configuring connections, to point to existing groups
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
@@ -101,20 +101,25 @@ if ($null -eq $subnet) {
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
 
-# Deploy NIC and data disks
-# -------------------------
+# Common settings
+# ---------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $subnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
-# $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.datadisk.size_gb -Type $config.sre.dsvm.datadisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-# $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 $diskType = "Standard_LRS"
+
+
+# Deploy a NIC with a public IP address
+# -------------------------------------
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $subnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
+$publicIP = New-AzPublicIpAddress -Name "$vmName-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location
+$_ = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $subnet.Id -PublicIpAddressId $publicIP.Id | Set-AzNetworkInterface
+
 
 # Deploy the VM
 # -------------
 $params = @{
     Name = $vmName
     Size = $vmSize
-    AdminPassword = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
+    AdminPassword = $dcAdminPassword
     AdminUsername = $dcAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml = $cloudInitYaml
@@ -136,8 +141,18 @@ while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("P
     Start-Sleep 10
 }
 
-# Get private IP address for this machine
-# ---------------------------------------
-# $privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
-Add-LogMessage -Level Info "Deployment complete at $(Get-Date -UFormat '%d-%b-%Y %R')"
-# Add-LogMessage -Level Info "This new VM can be accessed with SSH or remote desktop at $privateIpAddress"
+# # VM must be off for us to switch NSG
+# # -----------------------------------
+# Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
+# Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
+
+
+# Restart after the NSG switch
+# ----------------------------
+Add-LogMessage -Level Info "Rebooting $vmName..."
+Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg
+if ($?) {
+    Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
+}
