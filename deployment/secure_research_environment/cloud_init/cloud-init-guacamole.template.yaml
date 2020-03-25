@@ -19,30 +19,39 @@ apt:
 
 
 write_files:
-  - path: "/installation/deprovision.log"
-    permissions: "0644"
-    content: |
-      # Deprovisioning log
-  - path: "/installation/deprovision_vm.sh"
-    permissions: "0744"
-    content: |
-      #! /bin/bash
-      # Deprovision this VM
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner on this VM"
-      waagent -deprovision+user -force 2>&1
-      # Fix internet connectivity that is broken by waagent deprovisioning (needed in older Ubuntu versions)
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Fixing internet connectivity"
-      if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
-      # Remove execute permissions from this file
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
-      chmod ugo-x /installation/deprovision_vm.sh
-      ls -alh /installation/deprovision_vm.sh
   - path: "/src/guacamole/guacamole.env"
-    content: $ENV
+    content: |
+      LDAP_HOSTNAME=$LDAP_HOSTNAME
+      LDAP_USER_BASE_DN=$LDAP_USER_BASE_DN
+      LDAP_GROUP_BASE_DN=$LDAP_GROUP_BASE_DN
+      POSTGRES_PASSWORD=$POSTGRES_PASSWORD
   - path: "/src/guacamole/docker-compose.yml"
-    content: $DOCKER_COMPOSE
+    content: |
+      version: '3.7'
+      services:
+          postgres:
+              image: postgres:12.2
+              env_file: guacamole.env
+              environment:
+                  POSTGRES_DB: guacamole
+                  POSTGRES_USER: guacamole
+
+          guacd:
+              image: guacamole/guacd:1.1.0
+
+          guacamole:
+              image: guacamole/guacamole:1.1.0
+              env_file: guacamole.env
+              environment:
+                  GUACD_HOSTNAME: guacd
+                  POSTGRES_HOSTNAME: postgres
+                  POSTGRES_DATABASE: guacamole
+                  POSTGRES_USER: guacamole
+              ports:
+              - "8080:8080"
   - path: "/src/guacamole/dbinit.sql"
-    content: $DBINIT
+    content: |
+$DBINIT
 
 
 packages:
@@ -64,8 +73,8 @@ runcmd:
 
   - echo "Starting Guacamole"
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
-  - docker cp /src/guacamole/dbinit.sql $(docker-compose ps -q postgres):/dbinit.sql
-  - docker-compose exec postgres psql -Uguacamole -f /dbinit.sql
+  - docker cp /src/guacamole/dbinit.sql `$(docker-compose ps -q postgres):/dbinit.sql
+  - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
 
 final_message:
-  "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
+  "System setup through cloud-init is finished. Configuration took `$UPTIME seconds"

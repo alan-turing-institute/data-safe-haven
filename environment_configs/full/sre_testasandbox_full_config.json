@@ -216,6 +216,8 @@
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
+        "guacamoleDBPassword": "sre-sandbox-guacamole-db-password",
+        "guacamoleAdminPassword": "sre-sandbox-guacamole-admin-password",
         "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
@@ -252,6 +254,11 @@
           "samAccountName": "testresrchsandbox"
         }
       }
+    },
+    "guacamole": {
+      "rg": "RG_SRE_GUACAMOLE",
+      "vmName": "GUACAMOLE-SRE-SANDBOX",
+      "vmSize": "Standard_D2s_v3"
     },
     "rds": {
       "rg": "RG_SRE_RDS",

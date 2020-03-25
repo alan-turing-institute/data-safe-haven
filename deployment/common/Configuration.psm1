@@ -384,6 +384,8 @@ function Add-SreConfig {
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
+            guacamoleDBPassword = "$($config.sre.shortName)-guacamole-db-password"
+            guacamoleAdminPassword = "$($config.sre.shortName)-guacamole-admin-password"
             hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
@@ -422,6 +424,13 @@ function Add-SreConfig {
                 samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
+    }
+
+    # --- Guacamole Servers ---
+    $config.sre.guacamole = [ordered]@{
+        rg = "RG_SRE_GUACAMOLE"
+        vmName = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
+        vmSize = "Standard_D2s_v3"
     }
 
     # --- RDS Servers ---

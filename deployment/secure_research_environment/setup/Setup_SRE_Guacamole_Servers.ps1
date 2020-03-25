@@ -4,10 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module $PSScriptRoot/../../../common_powershell/Configuration.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Logging.psm1 -Force
-Import-Module $PSScriptRoot/../../../common_powershell/Security.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -16,8 +16,8 @@ $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-$vmName = $config.sre.rds.gateway.vmName
-$vmSize = $config.sre.rds.gateway.vmSize
+$vmName = $config.sre.guacamole.vmName
+$vmSize = $config.sre.guacamole.vmSize
 $dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 $dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $bootDiagnosticsAccount = $config.sre.storage.bootdiagnostics.accountName
@@ -27,20 +27,19 @@ $diskType = "Standard_LRS"
 
 # Create RDS resource group if it does not exist
 # ----------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.location
+$_ = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.location
 
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 # Load cloud-init template
-$cloudInitFilePath = Join-Path $PSScriptRoot ".." "cloud-init" "cloud-init-guacamole.template.yaml"
+$cloudInitFilePath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml"
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
-$dockerComposeFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "docker-compose.template.yaml"
-$envFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "guacamole.template.env"
-$envTemplate = Get-Content $envFilePath -Raw
-$dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "dbinit.template.sql"
+# $dockerComposeFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "docker-compose.template.yaml"
+# $envFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "guacamole.template.env"
+# $envTemplate = Get-Content $envFilePath -Raw
+$dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
 $dbInitTemplate = Get-Content $dbInitFilePath -Raw
-
 # Set template expansion variables
 $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
 $AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
@@ -62,15 +61,18 @@ $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
 $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.Name + "," + $config.shm.domain.securityOuPath + "))"
 
 # Templates/files
-$ENV = $ExecutionContext.InvokeCommand.ExpandString($envTemplate)
+# $ENV = $ExecutionContext.InvokeCommand.ExpandString($envTemplate)
 $DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
-$DOCKER_COMPOSE = Get-Content $dockerComposeFilePath -Raw
+# $DOCKER_COMPOSE = Get-Content $dockerComposeFilePath -Raw
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
+
+
+
 
 # Notes
 # -------------
 #
-# You don't seem to be able to configure the connections this way. 
+# You don't seem to be able to configure the connections this way.
 # There are three main ways I can see to configure the connections.
 # 1. In user-mapping.xml, but that only lets you associate a connection with a single user, not to multiple users, and we don't know the users in advance
 # 2. In LDAP attributes (https://guacamole.apache.org/doc/gug/ldap-auth.html#ldap-auth-schema), but I can't see any way that you can set these through Azure AD
