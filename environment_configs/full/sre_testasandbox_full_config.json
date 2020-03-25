@@ -258,7 +258,8 @@
     "guacamole": {
       "rg": "RG_SRE_GUACAMOLE",
       "vmName": "GUACAMOLE-SRE-SANDBOX",
-      "vmSize": "Standard_D2s_v3"
+      "vmSize": "Standard_F8s_v2",
+      "ip": "10.150.1.100"
     },
     "rds": {
       "rg": "RG_SRE_RDS",

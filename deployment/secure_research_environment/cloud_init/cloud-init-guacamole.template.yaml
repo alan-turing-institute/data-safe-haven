@@ -17,39 +17,147 @@ apt:
       source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
       keyid: 8D81803C0EBFCD88
 
-
 write_files:
-  - path: "/src/guacamole/guacamole.env"
-    content: |
-      LDAP_HOSTNAME=$LDAP_HOSTNAME
-      LDAP_USER_BASE_DN=$LDAP_USER_BASE_DN
-      LDAP_GROUP_BASE_DN=$LDAP_GROUP_BASE_DN
-      POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+  # taken from boschkundendienst/guacamole-docker-compose
   - path: "/src/guacamole/docker-compose.yml"
     content: |
-      version: '3.7'
+      version: '3.4'
+      networks:
+        guacnetwork_compose:
+          driver: bridge
       services:
-          postgres:
-              image: postgres:12.2
-              env_file: guacamole.env
-              environment:
-                  POSTGRES_DB: guacamole
-                  POSTGRES_USER: guacamole
+        postgres:
+          container_name: postgres_guacamole_compose
+          image: postgres:12.2
+          networks:
+            guacnetwork_compose:
+          environment:
+            PGDATA: /var/lib/postgresql/data/guacamole
+            POSTGRES_DB: guacamole
+            POSTGRES_USER: guacamole
+            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+          restart: always
+          volumes:
+          - /src/guacamole/:/docker-entrypoint-initdb.d:ro
+          - /data:/var/lib/postgresql/data:rw
 
-          guacd:
-              image: guacamole/guacd:1.1.0
+        guacd:
+          container_name: guacd_compose
+          image: guacamole/guacd:1.1.0
+          networks:
+            guacnetwork_compose:
+          restart: always
 
-          guacamole:
-              image: guacamole/guacamole:1.1.0
-              env_file: guacamole.env
-              environment:
-                  GUACD_HOSTNAME: guacd
-                  POSTGRES_HOSTNAME: postgres
-                  POSTGRES_DATABASE: guacamole
-                  POSTGRES_USER: guacamole
-              ports:
-              - "8080:8080"
-  - path: "/src/guacamole/dbinit.sql"
+        guacamole:
+          container_name: guacamole_compose
+          image: guacamole/guacamole:1.1.0
+          networks:
+            guacnetwork_compose:
+          depends_on:
+          - guacd
+          - postgres
+          environment:
+            GUACD_HOSTNAME: guacd
+            LDAP_HOSTNAME: $LDAP_HOSTNAME
+            LDAP_USER_BASE_DN: $LDAP_USER_BASE_DN
+            LDAP_GROUP_BASE_DN: $LDAP_GROUP_BASE_DN
+            POSTGRES_HOSTNAME: postgres
+            POSTGRES_DATABASE: guacamole
+            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+            POSTGRES_USER: guacamole
+          ports:
+          - 8080/tcp
+          restart: always
+
+        nginx:
+          container_name: nginx_guacamole_compose
+          image: nginx
+          networks:
+            guacnetwork_compose:
+          volumes:
+          - /nginx/ssl/self.cert:/etc/nginx/ssl/self.cert:ro
+          - /nginx/ssl/self-ssl.key:/etc/nginx/ssl/self-ssl.key:ro
+          - /nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+          - /nginx/guacamole.template:/etc/nginx/conf.d/default.conf:ro
+          ports:
+          - 8443:443
+          links:
+          - guacamole
+          # run nginx
+          command: /bin/bash -c "nginx -g 'daemon off;'"
+          restart: always
+  - path: "/nginx/nginx.conf"
+    content: |
+      ### AAA
+      user  nginx;
+      worker_processes  1;
+
+      error_log  /var/log/nginx/error.log warn;
+      pid        /var/run/nginx.pid;
+
+
+      events {
+          worker_connections  1024;
+      }
+
+
+      http {
+          include       /etc/nginx/mime.types;
+          default_type  application/octet-stream;
+
+          log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for"';
+
+          access_log  /var/log/nginx/access.log  main;
+
+          sendfile        on;
+          #tcp_nopush     on;
+
+          keepalive_timeout  65;
+
+          #gzip  on;
+
+          include /etc/nginx/conf.d/*.conf;
+      }
+  - path: "/nginx/guacamole.template"
+    content: |
+      ### BBB
+      server {
+          listen       443 ssl http2;
+          server_name  localhost;
+              ssl_certificate /etc/nginx/ssl/self.cert;
+              ssl_certificate_key /etc/nginx/ssl/self-ssl.key;
+              ssl_protocols TLSv1.2 TLSv1.3;
+              ssl_prefer_server_ciphers on;
+              ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+              ssl_ecdh_curve secp384r1;
+              ssl_session_cache shared:SSL:10m;
+              ssl_session_tickets off;
+              ssl_stapling off;
+              ssl_stapling_verify off;
+          location / {
+              proxy_pass http://guacamole:8080/guacamole/;
+              proxy_buffering off;
+              proxy_http_version 1.1;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection $http_connection;
+              proxy_cookie_path /guacamole/ /;
+              access_log off;
+              # allow large uploads (default=1m)
+              # 4096m = 4GByte
+              client_max_body_size 4096m;
+          }
+          #error_page  404              /404.html;
+          # redirect server error pages to the static page /50x.html
+          #
+          error_page   500 502 503 504  /50x.html;
+          location = /50x.html {
+              root   /usr/share/nginx/html;
+          }
+      }
+  - path: "/src/guacamole/initdb.sql"
     content: |
 $DBINIT
 
@@ -63,8 +171,14 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Make a temporary directory (cloudinit recomends not using /tmp)
-  - mkdir /run/cloudinit
+  # # Make a temporary directory (cloudinit recomends not using /tmp)
+  - mkdir /data
+  - mkdir -p /nginx/ssl
+
+  # Create SSL certificates
+  # echo "You can use your own certificates by placing the private key in nginx/ssl/self-ssl.key and the cert in nginx/ssl/self.cert"
+  - echo "Creating SSL certificates"
+  - openssl req -nodes -newkey rsa:2048 -new -x509 -keyout /nginx/ssl/self-ssl.key -out /nginx/ssl/self.cert -subj '/C=DE/ST=BY/L=Hintertupfing/O=Dorfwirt/OU=Theke/CN=www.example.com/emailAddress=docker@example.com'
 
   # Clean up installation - getting to this point takes approximately 30 mins
   - echo ">=== Cleaning up apt-get packages... ===<"
@@ -73,8 +187,12 @@ runcmd:
 
   - echo "Starting Guacamole"
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
-  - docker cp /src/guacamole/dbinit.sql `$(docker-compose ps -q postgres):/dbinit.sql
-  - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
+  # - docker cp /src/guacamole/dbinit.sql `$(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
+  # - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
 
-final_message:
-  "System setup through cloud-init is finished. Configuration took `$UPTIME seconds"
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

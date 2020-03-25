@@ -431,6 +431,7 @@ function Add-SreConfig {
         rg = "RG_SRE_GUACAMOLE"
         vmName = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
         vmSize = "Standard_D2s_v3"
+        ip = $config.sre.network.subnets.rds.prefix + ".100"
     }
 
     # --- RDS Servers ---

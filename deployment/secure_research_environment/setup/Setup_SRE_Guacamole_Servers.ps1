@@ -20,10 +20,10 @@ $vmName = $config.sre.guacamole.vmName
 $vmSize = $config.sre.guacamole.vmSize
 $dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
 $dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$bootDiagnosticsAccount = $config.sre.storage.bootdiagnostics.accountName
-$vmNicName = "${vmName}-NIC"
-$vmNic = Get-AzResource -Name $vmNicName
-$diskType = "Standard_LRS"
+# $bootDiagnosticsAccount = $config.sre.storage.bootdiagnostics.accountName
+# $vmNicName = "${vmName}-NIC"
+# $vmNic = Get-AzResource -Name $vmNicName
+
 
 # Create RDS resource group if it does not exist
 # ----------------------------------------------
@@ -41,11 +41,12 @@ $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 $dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
 $dbInitTemplate = Get-Content $dbInitFilePath -Raw
 # Set template expansion variables
-$AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
-$AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
-$DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
-$DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
-$LDAP_HOST = $AD_DC_NAME_UPPER.$DOMAIN_LOWER
+# $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
+# $AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
+# $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
+# $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
+# $LDAP_HOSTNAME = $AD_DC_NAME_UPPER.$DOMAIN_LOWER
+$LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
 $LDAP_PORT = 389
 $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
 # Set this to something so that we can use seeAlso when configuring connections, to point to existing groups
@@ -81,6 +82,33 @@ $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate
 # You also need to associate each connection with a user explicitly.
 # The only way I can see that this could be automated, would be to insert the connection directly into the database when starting up, associated with the AD Group that I *think* all users are members of already.
 
+# Check that VNET and subnet exist
+# --------------------------------
+Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
+# $vnet = $null
+try {
+    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.Name -ErrorAction Stop
+} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
+    Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
+}
+Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
+$subnetName = $config.sre.network.subnets.rds.name
+Add-LogMessage -Level Info "Looking for subnet network '$subnetName'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $subnetName }
+if ($null -eq $subnet) {
+    Add-LogMessage -Level Fatal "Subnet '$subnetName' could not be found in virtual network '$($vnet.Name)'!"
+}
+Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
+
+
+# Deploy NIC and data disks
+# -------------------------
+$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $subnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
+# $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.datadisk.size_gb -Type $config.sre.dsvm.datadisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+# $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+$diskType = "Standard_LRS"
+
 # Deploy the VM
 # -------------
 $params = @{
@@ -93,23 +121,23 @@ $params = @{
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = $diskType
-    ResourceGroupName = $config.sre.rds.rg
+    ResourceGroupName = $config.sre.guacamole.rg
 }
 $_ = Deploy-UbuntuVirtualMachine @params
 
 # Poll VM to see whether it has finished running
 Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
+$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
 $progress = 0
 while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
-    $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
-    $progress += 1
+    $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg -Status).Statuses.Code
+    $progress = [math]::min(100, $progress + 1)
     Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
     Start-Sleep 10
 }
 
 # Get private IP address for this machine
 # ---------------------------------------
-$privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
+# $privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.guacamole.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
 Add-LogMessage -Level Info "Deployment complete at $(Get-Date -UFormat '%d-%b-%Y %R')"
-Add-LogMessage -Level Info "This new VM can be accessed with SSH or remote desktop at $privateIpAddress"
+# Add-LogMessage -Level Info "This new VM can be accessed with SSH or remote desktop at $privateIpAddress"
