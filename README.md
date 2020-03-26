@@ -29,7 +29,7 @@ You can set up a data safe haven yourself.
 
 [Create New Users](secure_research_environment/create-users/README.md) - Create and add new users to Data Safe Haven environments.
 
-[Data Ingress](docs/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
+[Data Ingress](docs/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
 
 [Data Egress](docs/processes/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
