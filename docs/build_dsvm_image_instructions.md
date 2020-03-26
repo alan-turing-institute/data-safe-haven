@@ -1,12 +1,43 @@
-# Data Safe Haven: Azure
-Create VM image with full analysis environment as detailed in the [analysis environment design](https://github.com/alan-turing-institute/data-safe-haven/wiki/AnalysisEnvironmentDesign) wiki.
+# Safe Haven VM Image Build Instructions
+These instructions will create a new VM image full analysis environment as detailed in the [analysis environment design](design/overview.md).
 
-## Pre-requisites
+## Contents
+1. [Prerequisites](#1-prerequisites)
+<!-- 2. [Safe Haven Management configuration](#2-safe-haven-management-configuration)
+3. [Configure DNS for the custom domain](#3-configure-dns-for-the-custom-domain)
+4. [Setup Azure Active Directory (AAD)](#4-setup-azure-active-directory-aad)
+5. [Deploy key vault for SHM secrets](#5-deploy-key-vault-for-shm-secrets)
+6. [Setup Safe Haven administrators](#6-setup-safe-haven-administrators)
+7. [Deploy and configure VNET and Domain Controllers](#7-deploy-and-configure-vnet-and-domain-controllers)
+8. [Deploy and configure Network Policy Server (NPS)](#8-deploy-and-configure-network-policy-server-nps)
+9. [Deploy package mirrors](#9-deploy-package-mirrors)
+10. [Tear down SHM](#10-tearing-down-the-shm) -->
+
+## 1. Prerequisites
+- An Azure subscription with sufficient credits to build the environment in
+- PowerShell for Azure
+  - Install [PowerShell v 6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
+  - Install the Azure [PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
+
+<!-- ## Pre-requisites
 In order to run `images_build_azure_compute_vm.sh` you will need to install the Azure Command Line tools on the machine you are using.
-See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for more details about how to do this.
+See the [Microsoft documentation](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) for more details about how to do this. -->
 
-## Running the build script
-Before running the build script, make sure you have setup the Azure cli with `az login`.
+## 2. Provision a VM with all configured software
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Deploy and configure the RDS VMs by running `./Provision_Compute_VM.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
+
+<!-- - This will take **around one hour** to run.
+- Once the script exits successfully you should see the following resource groups under the SHM subscription:
+   ![Resource groups](images/deploy_shm/resource_groups.png) -->
+
+
+
+
+
+<!-- Before running the build script, make sure you have setup the Azure cli with `az login`.
 You can then run `./images_build_azure_compute_vm.sh`.
 The available options for configuring the base image, resource group and name of the VM can be seen by running `./images_build_azure_compute_vm.sh -h`.
 The build (based on Ubuntu 18.04) takes approximately 3 hours
@@ -17,7 +48,7 @@ usage: ./images_build_azure_compute_vm.sh [-h] [-s subscription] [-r resource_gr
   -s subscription              specify subscription for building the VM. (defaults to 'Turing Safe Haven VM Images')
   -r resource_group            specify resource group - will be created if it does not already exist (defaults to 'RG_SH_BUILD_CANDIDATES')
   -z vm_size                   size of the VM to use for build (defaults to 'Standard_E16s_v3')
-```
+``` -->
 
 ### Build examples
 Build an image based off Ubuntu 18.04 called `CandidateComputeVM-Ubuntu1804Base-<date>`
