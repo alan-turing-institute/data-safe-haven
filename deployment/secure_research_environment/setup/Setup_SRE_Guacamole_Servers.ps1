@@ -46,10 +46,13 @@ $dbInitTemplate = Get-Content $dbInitFilePath -Raw
 # $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
 # $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
 # $LDAP_HOSTNAME = $AD_DC_NAME_UPPER.$DOMAIN_LOWER
+# The LDAP_* variables are passed through to the guacamole Docker container
+# They are not documented, but see https://github.com/apache/guacamole-client/blob/1.1.0/guacamole-docker/bin/start.sh (in `associate_ldap`) for a list of valid keys
+# They map to the properties listed in https://guacamole.apache.org/doc/gug/ldap-auth.html#guac-ldap-config
 $LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
 $LDAP_PORT = 389 # or 636 for LDAP over SSL?
 $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
-# Set this to something so that we can use seeAlso when configuring connections, to point to existing groups
+# Set this to something so that connection information can be picked up from group membership. Might only be needed when storing connection information in LDAP
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
 $LDAP_GROUP_BASE_DN = ''
 $POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
@@ -66,21 +69,6 @@ $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.security
 $DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
 # $DOCKER_COMPOSE = Get-Content $dockerComposeFilePath -Raw
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
-
-
-
-
-# Notes
-# -------------
-#
-# You don't seem to be able to configure the connections this way.
-# There are three main ways I can see to configure the connections.
-# 1. In user-mapping.xml, but that only lets you associate a connection with a single user, not to multiple users, and we don't know the users in advance
-# 2. In LDAP attributes (https://guacamole.apache.org/doc/gug/ldap-auth.html#ldap-auth-schema), but I can't see any way that you can set these through Azure AD
-# 3. In the database. That means we would need a database (as well as LDAP), which is then usually managed through the Guacamole GUI
-#
-# You also need to associate each connection with a user explicitly.
-# The only way I can see that this could be automated, would be to insert the connection directly into the database when starting up, associated with the AD Group that I *think* all users are members of already.
 
 # Check that VNET and subnet exist
 # --------------------------------
