@@ -47,6 +47,8 @@ write_files:
           networks:
             guacnetwork_compose:
           restart: always
+          environment:
+            GUACD_LOG_LEVEL: info
 
         guacamole:
           container_name: guacamole_compose
@@ -58,15 +60,16 @@ write_files:
           - postgres
           environment:
             GUACD_HOSTNAME: guacd
+            LOGBACK_LEVEL: info
             LDAP_HOSTNAME: $LDAP_HOSTNAME
-            LDAP_GROUP_BASE_DN: $LDAP_GROUP_BASE_DN
             LDAP_PORT: $LDAP_PORT
             LDAP_USER_BASE_DN: $LDAP_USER_BASE_DN
             LDAP_USERNAME_ATTRIBUTE: CN
+            LDAP_GROUP_BASE_DN: $LDAP_GROUP_BASE_DN
             POSTGRES_HOSTNAME: postgres
             POSTGRES_DATABASE: guacamole
-            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
             POSTGRES_USER: guacamole
+            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
           ports:
           - 8080/tcp
           restart: always
@@ -183,8 +186,9 @@ runcmd:
 
   - echo "Starting Guacamole"
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
-  # - docker cp /src/guacamole/dbinit.sql `$(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
-  # - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
+  - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
+  - docker cp /src/guacamole/dbinit.sql `$(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
+  - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

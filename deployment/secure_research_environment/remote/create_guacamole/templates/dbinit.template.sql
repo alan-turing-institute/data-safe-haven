@@ -790,22 +790,34 @@
       JOIN guacamole_entity affected ON permissions.affected_username = affected.name AND guacamole_entity.type = 'USER'
       JOIN guacamole_user            ON guacamole_user.entity_id = affected.entity_id;
 
-      INSERT INTO guacamole_entity (name, type) VALUES ('$LDAP_GROUP', 'USER_GROUP');
+      INSERT INTO guacamole_entity (name, type) VALUES ('$RESEARCHERS_LDAP_GROUP', 'USER_GROUP');
       INSERT INTO guacamole_user_group (entity_id)
       SELECT
           entity_id
-      FROM guacamole_entity WHERE name = '$LDAP_GROUP' AND guacamole_entity.type = 'USER_GROUP';
+      FROM guacamole_entity WHERE name = '$RESEARCHERS_LDAP_GROUP' AND guacamole_entity.type = 'USER_GROUP';
 
       INSERT INTO guacamole_connection (connection_name, protocol)
-      VALUES ('Main VM (Desktop)', 'rdp');
+      VALUES ('Main VM (Desktop)', 'rdp'),
+             ('Main VM (SSH)', 'rdp'),
+             ('Other VM (Desktop)', 'rdp'),
+             ('Other VM (SSH)', 'rdp');
 
       INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, parameter_value)
       SELECT guacamole_connection.connection_id, parameter_name, parameter_value
       FROM (
           VALUES
-              ('Main VM (Desktop)', 'hostname', '$VM1'),
-              ('Main VM (Desktop)', 'username', '`$`{GUAC_USERNAME`}'),
+              ('Main VM (Desktop)', 'hostname', '$SESSION_HOST_1'),
+              ('Main VM (Desktop)', 'username', '`$`{LDAP_USERPRINCIPALNAME}'),
               ('Main VM (Desktop)', 'password', '`$`{GUAC_PASSWORD`}')
+              ('Main VM (SSH)', 'hostname', '$SESSION_HOST_1'),
+              ('Main VM (SSH)', 'username', '`$`{LDAP_USERPRINCIPALNAME}'),
+              ('Main VM (SSH)', 'password', '`$`{GUAC_PASSWORD`}')
+              ('Other VM (Desktop)', 'hostname', '$SESSION_HOST_2'),
+              ('Other VM (Desktop)', 'username', '`$`{LDAP_USERPRINCIPALNAME}'),
+              ('Other VM (Desktop)', 'password', '`$`{GUAC_PASSWORD`}')
+              ('Other VM (SSH)', 'hostname', '$SESSION_HOST_2'),
+              ('Other VM (SSH)', 'username', '`$`{LDAP_USERPRINCIPALNAME}'),
+              ('Other VM (SSH)', 'password', '`$`{GUAC_PASSWORD`}')
       ) parameters (connection_name, parameter_name, parameter_value)
       JOIN guacamole_connection ON parameters.connection_name = guacamole_connection.connection_name;
 
@@ -817,7 +829,22 @@
               ('guacadmin', 'USER', 'Main VM (Desktop)', 'UPDATE'),
               ('guacadmin', 'USER', 'Main VM (Desktop)', 'DELETE'),
               ('guacadmin', 'USER', 'Main VM (Desktop)', 'ADMINISTER'),
-              ('$LDAP_GROUP', 'USER_GROUP', 'Main VM (Desktop)', 'READ')
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'READ'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'UPDATE'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'DELETE'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'ADMINISTER'),
+              ('guacadmin', 'USER', 'Main VM (Desktop)', 'READ'),
+              ('guacadmin', 'USER', 'Main VM (Desktop)', 'UPDATE'),
+              ('guacadmin', 'USER', 'Main VM (Desktop)', 'DELETE'),
+              ('guacadmin', 'USER', 'Main VM (Desktop)', 'ADMINISTER'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'READ'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'UPDATE'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'DELETE'),
+              ('guacadmin', 'USER', 'Other VM (SSH)', 'ADMINISTER'),
+              ('$RESEARCHERS_LDAP_GROUP', 'USER_GROUP', 'Main VM (Desktop)', 'READ')
+              ('$RESEARCHERS_LDAP_GROUP', 'USER_GROUP', 'Main VM (SSH)', 'READ')
+              ('$RESEARCHERS_LDAP_GROUP', 'USER_GROUP', 'Other VM (Desktop)', 'READ')
+              ('$RESEARCHERS_LDAP_GROUP', 'USER_GROUP', 'Other VM (SSH)', 'READ')
       ) permissions (username, entity_type, connection_name, permission)
       JOIN guacamole_entity     ON permissions.username = guacamole_entity.name AND guacamole_entity.type::text = permissions.entity_type
       JOIN guacamole_connection ON permissions.connection_name = guacamole_connection.connection_name;

@@ -32,20 +32,24 @@ $_ = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.l
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
+
+# Load db-init template
+$dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
+$dbInitTemplate = Get-Content $dbInitFilePath -Raw
+
+# Set template expansion variables
+$GUACAMOLE_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
+$RESEARCHERS_LDAP_GROUP = $config.sre.domain.securityGroups.researchUsers.Name
+$SESSION_HOST_1 = $config.sre.rds.sessionHost1.hostname
+$SESSION_HOST_2 = $config.sre.rds.sessionHost2.hostname
+
+$DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
+
 # Load cloud-init template
 $cloudInitFilePath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml"
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
-# $dockerComposeFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "docker-compose.template.yaml"
-# $envFilePath = Join-Path $PSScriptRoot ".." "remote" "create-guacamole" "templates" "guacamole.template.env"
-# $envTemplate = Get-Content $envFilePath -Raw
-$dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
-$dbInitTemplate = Get-Content $dbInitFilePath -Raw
+
 # Set template expansion variables
-# $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
-# $AD_DC_NAME_LOWER = $($AD_DC_NAME_UPPER).ToLower()
-# $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
-# $DOMAIN_LOWER = $($DOMAIN_UPPER).ToLower()
-# $LDAP_HOSTNAME = $AD_DC_NAME_UPPER.$DOMAIN_LOWER
 # The LDAP_* variables are passed through to the guacamole Docker container
 # They are not documented, but see https://github.com/apache/guacamole-client/blob/1.1.0/guacamole-docker/bin/start.sh (in `associate_ldap`) for a list of valid keys
 # They map to the properties listed in https://guacamole.apache.org/doc/gug/ldap-auth.html#guac-ldap-config
@@ -54,20 +58,10 @@ $LDAP_PORT = 389 # or 636 for LDAP over SSL?
 $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
 # Set this to something so that connection information can be picked up from group membership. Might only be needed when storing connection information in LDAP
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
-$LDAP_GROUP_BASE_DN = ''
+$LDAP_GROUP_BASE_DN = $config.shm.domain.securityOuPath
 $POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
-$GUACAMOLE_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
-$LDAP_GROUP = $config.sre.domain.securityGroups.researchUsers.Name
-$VM1 = $config.sre.rds.sessionHost1.vmName
-# These aren't used yet, not sure if they are applicable for Guacamole
-$LDAP_SEARCH_BIND_DN = "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath
-$LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
-$LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.Name + "," + $config.shm.domain.securityOuPath + "))"
 
 # Templates/files
-# $ENV = $ExecutionContext.InvokeCommand.ExpandString($envTemplate)
-$DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
-# $DOCKER_COMPOSE = Get-Content $dockerComposeFilePath -Raw
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
 
 # Check that VNET and subnet exist
