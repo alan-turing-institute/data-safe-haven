@@ -7,7 +7,7 @@ This is the repository for the Alan Turing Institute's [Data Safe Havens in the 
 
 Many of the important questions we want to answer for society require the use of sensitive data. In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
 
-In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to adress some of the above challenges. 
+In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to address some of the above challenges.
 
 We have developed:
 
@@ -44,5 +44,5 @@ We welcome contributions from anyone who is interested in the project. There are
 We are grateful for the following support for this project:
 
   - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1))
-  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)) 
+  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1))
   - Microsoft's generous donation of [$5 million in Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute
