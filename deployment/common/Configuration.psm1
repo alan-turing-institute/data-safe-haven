@@ -47,7 +47,6 @@ function Get-ShmFullConfig {
     # --- DSVM build images ---
     $shm.dsvmImage = [ordered]@{
         image_gallery = "SAFE_HAVEN_COMPUTE_IMAGES"
-        rg_images = "RG_SH_IMAGE_STORAGE"
         rg_gallery = "RG_SH_IMAGE_GALLERY"
         subscription = $shmConfigBase.computeVmImageSubscriptionName
         location = "westeurope" # currently have to build in West Europe in order to use Shared Image Gallery
@@ -60,6 +59,9 @@ function Get-ShmFullConfig {
             nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
             subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
             vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+        }
+        images = [ordered]@{
+            rg = "RG_SH_IMAGE_STORAGE"
         }
         keyVault = [ordered]@{
             rg = "RG_SH_SECRETS"

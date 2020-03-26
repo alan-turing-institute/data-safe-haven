@@ -24,15 +24,15 @@ $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 # --------------------------------------------
 if ($sourceImage -eq "Ubuntu1804") {
     $baseImageSku = "18.04-LTS"
-    $buildVmName = "DSVM-Ubuntu1804Base"
+    $buildVmName = "ComputeVM-Ubuntu1804Base"
 } elseif ($sourceImage -eq "Ubuntu1810") {
     Add-LogMessage -Level Fatal "Ubuntu 18.10 is no longer available on Azure!"
 } elseif ($sourceImage -eq "Ubuntu1904") {
     $baseImageSku = "19.04"
-    $buildVmName = "DSVM-Ubuntu1904Base"
+    $buildVmName = "ComputeVM-Ubuntu1904Base"
 } elseif ($sourceImage -eq "Ubuntu1910") {
     $baseImageSku = "19_10-daily-gen2"
-    $buildVmName = "DSVM-Ubuntu1910Base"
+    $buildVmName = "ComputeVM-Ubuntu1910Base"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
