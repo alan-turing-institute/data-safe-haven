@@ -12,7 +12,7 @@
 
 ## Creating new users without the web app
 
-- Make a new copy of the user details file `UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
+- Make a new copy of the user details template file in `/deployment/secure_research_environment/create-users/UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
 - Add the required details for each user
   - `SamAccountName`: Log in username **without** the @domain bit). Use `firstname.lastname` format
   - `GivenName`: User's first / given name
