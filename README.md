@@ -10,9 +10,9 @@ Welcome to the Data Safe Havens project. This repository contains the code neces
 Secure environments for analysis of sensitive datasets are essential for research. Data Safe Havens provide a way to build a secure environment for data analysis.
 
 
-[Overview](docs/processes/provider-overview.md) - Find out more about Data Safe Havens, and how to use our model.
+[Overview](docs/provider-overview.md) - Find out more about Data Safe Havens, and how to use our model.
 
-[Implementation on Azure](docs/processes/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
+[Implementation on Azure](docs/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
 
 
 ## Setting up a Data Safe Haven
