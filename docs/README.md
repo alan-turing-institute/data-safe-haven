@@ -34,6 +34,8 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
 
   - [Data Egress guide for Investigators](investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
+  - [Troubleshooting user issues](troubleshooting_user_issues.md) - Some commonly encountered problems users may experience and some potential solutions.
+
 
 ## Using the Data Safe Haven
 

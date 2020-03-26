@@ -6,7 +6,7 @@ Troubleshooting Compute VM deployments
 There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
 
 ### 1. Certificate expiry before getting to the environment
-![01_certificate_expiry](images/environment_access/01_certificate_expiry.png)
+![Certificate expiry error message](images/troubleshooting_user_issues/login_certificate_expiry.png)
 
 #### Possible problems and solutions
 The expired certificate can be ignored but login will not be possible.
@@ -19,15 +19,16 @@ The expired certificate can be ignored but login will not be possible.
 
 
 ### 2. Failure when logging into the environment via web browser
-![environment_access_02_password_login](images/environment_access/02_password_login.png)
+![Login screen](images/troubleshooting_user_issues/login_password_login.png)
 
 #### Possible problems and solutions
 1. User cannot progress pass this screen
 - Check user credentials, password may need to be reset.
 
 
-### 3. Failure when authenticating with the Shared VM or presentation server
-![environment_access_03_shared_vm](images/environment_access/03_shared_vm.png)
+### 3. Failure when opening a remote app
+Stuck at the "Opening remote port" message.
+![Stuck at opening remote port message](images/troubleshooting_user_issues/login_shared_vm.png)
 
 #### Possible problems and solutions
 1. User never gets the MFA prompt on their phone (app or phone call)
@@ -36,11 +37,11 @@ The expired certificate can be ignored but login will not be possible.
 ### 4. Failure when logging into the Shared VM
 If users can get to the login screen:
 
-![environment_access_04_compute_vm_login](images/environment_access/04_compute_vm_login.png)
+![Shared VM login screen](images/troubleshooting_user_issues/login_compute_vm_login.png)
 
 ... but then see this error message:
 
-![environment_access_04_compute_vm_login_failure.png](images/environment_access/04_compute_vm_login_failure.png)
+![Login failure message](images/troubleshooting_user_issues/login_compute_vm_login_failure.png)
 
 there are a couple of possible causes.
 
@@ -324,7 +325,7 @@ If it is not possible to install packages from the package mirrors then this may
 To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
 Check the packages directory (ie. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
-![package_mirrors_01_internal_mirror_packages.png](images/package_mirrors/01_internal_mirror_packages.png)
+![Package list](images/troubleshooting_user_issues/internal_mirror_packages.png)
 
 If this is missing the packages that you need, then try to [force a mirror update](#Forcing-a-mirror-update).
 
