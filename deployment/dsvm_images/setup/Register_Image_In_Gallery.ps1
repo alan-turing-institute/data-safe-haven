@@ -21,7 +21,7 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 # Other constants
-$supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-UbuntuTorch1804Base", "DSVM-Ubuntu1804Base")
+$supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-Ubuntu1810Base", "ComputeVM-Ubuntu1904Base", "ComputeVM-Ubuntu1910Base")
 $majorVersion = 0
 $minorVersion = 1
 

@@ -85,13 +85,13 @@ $image = Get-AzResource -ResourceType Microsoft.Compute/images -Name $imageName
 if ($image) {
     Add-LogMessage -Level Info "Removing residual artifacts of the build process from $($config.dsvmImage.build.rg)..."
     Add-LogMessage -Level Info "... virtual machine: $vmName"
-    $_ = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.images.rg -Force
+    $_ = Remove-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -Force
     Add-LogMessage -Level Info "... hard disk: $vmName-OS-DISK"
-    $_ = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.images.rg -Force
+    $_ = Remove-AzDisk -DiskName $vmName-OS-DISK -ResourceGroupName $config.dsvmImage.build.rg -Force
     Add-LogMessage -Level Info "... network card: $vmName-NIC"
-    $_ = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.images.rg -Force
+    $_ = Remove-AzNetworkInterface -Name $vmName-NIC -ResourceGroupName $config.dsvmImage.build.rg -Force
     Add-LogMessage -Level Info "... public IP address: $vmName-NIC-PIP"
-    $_ = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.images.rg -Force
+    $_ = Remove-AzPublicIpAddress -Name $vmName-NIC-PIP -ResourceGroupName $config.dsvmImage.build.rg -Force
 } else {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be found!"
 }
