@@ -432,10 +432,9 @@ runcmd:
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== Installing NVidia requirements for tensorflow ===<"
-  - apt-get install -y --no-install-recommends nvidia-driver-418
-  - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.6.2.24-1+cuda10.0 libcudnn7-dev=7.6.2.24-1+cuda10.0
-  - apt-get install -y --no-install-recommends libnvinfer5=5.1.5-1+cuda10.0
-  - apt-get install -y --no-install-recommends libnvinfer-dev=5.1.5-1+cuda10.0
+  - apt-get install -y --no-install-recommends nvidia-driver-430
+  - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
+  - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
   # Clean up installation - getting to this point takes approximately 30 mins
   - echo ">=== Cleaning up apt-get packages... ===<"
