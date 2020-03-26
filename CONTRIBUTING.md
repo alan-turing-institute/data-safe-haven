@@ -44,7 +44,7 @@ You can read more details [on wikipedia](https://en.wikipedia.org/wiki/Agile_sof
 >
 > That is, while there is value in the items on the right, we value the items on the left more.
 
-Specifically, we're following a [Scrum framework](https://en.wikipedia.org/wiki/Scrum_(software_development)) (a specific *type* of agile development).
+Specifically, we're following a [Scrum framework](https://en.wikipedia.org/wiki/Scrum_(software_development) (a specific *type* of agile development).
 
 ### Project workflow
 
@@ -157,7 +157,7 @@ Your work does not need to be perfect and we encourage you to remember the premi
 
 As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities! Therefore we're keeping the repository private until we're confident that our work is secure.
 
-Please note that the plan is to make the contents of this repository openly available by the end of 2018. Please be considerate of the content you add and use professional and inclusive language at all times.
+Please note that the plan is to make the contents of this repository openly available sometime in 2020. Please be considerate of the content you add and use professional and inclusive language at all times.
 
 As we're working in a private repository you may not be able to see the repository if you aren't signed in.
 So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
