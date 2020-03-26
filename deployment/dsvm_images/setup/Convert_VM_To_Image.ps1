@@ -34,9 +34,9 @@ $_ = Deploy-ResourceGroup -Name $config.dsvmImage.images.rg -Location $config.ds
 $vm = Get-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
     Add-LogMessage -Level Error "Could not find a machine called '$vmName' in resource group $($config.dsvmImage.build.rg)"
-    Add-LogMessage -Level Error "Available machines are:"
+    Add-LogMessage -Level Info "Available machines are:"
     foreach ($vm in Get-AzVM -ResourceGroupName $config.dsvmImage.build.rg) {
-        Add-LogMessage -Level Error "  $($vm.Name)"
+        Add-LogMessage -Level Info "  $($vm.Name)"
     }
     throw "Could not find a machine called '$vmName'!"
 }
@@ -96,3 +96,8 @@ if ($image) {
     Add-LogMessage -Level Fatal "Image '$imageName' could not be found!"
 }
 Add-LogMessage -Level Info "Finished creating image $imageName"
+
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

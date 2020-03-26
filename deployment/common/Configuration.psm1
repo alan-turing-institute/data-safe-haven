@@ -46,8 +46,6 @@ function Get-ShmFullConfig {
 
     # --- DSVM build images ---
     $shm.dsvmImage = [ordered]@{
-        image_gallery = "SAFE_HAVEN_COMPUTE_IMAGES"
-        rg_gallery = "RG_SH_IMAGE_GALLERY"
         subscription = $shmConfigBase.computeVmImageSubscriptionName
         location = "westeurope" # currently have to build in West Europe in order to use Shared Image Gallery
         bootdiagnostics = [ordered]@{
@@ -59,6 +57,10 @@ function Get-ShmFullConfig {
             nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
             subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
             vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+        }
+        gallery = [ordered]@{
+            rg = "RG_SH_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
         }
         images = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"
@@ -491,8 +493,8 @@ function Add-SreConfig {
     $config.sre.dsvm.nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
     $config.sre.dsvm.deploymentNsg = "NSG_SRE_$($config.sre.Id)_COMPUTE_DEPLOYMENT".ToUpper()
     $config.sre.dsvm.vmImageSubscription = $config.shm.dsvmImage.subscription
-    $config.sre.dsvm.vmImageResourceGroup = $config.shm.dsvmImage.rg_gallery
-    $config.sre.dsvm.vmImageGallery = $config.shm.dsvmImage.image_gallery
+    $config.sre.dsvm.vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
+    $config.sre.dsvm.vmImageGallery = $config.shm.dsvmImage.gallery.sig
     $config.shm.Remove("dsvmImage")
     $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
