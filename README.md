@@ -33,4 +33,4 @@ For detailed guidance on deploying, administering and using a Safe Haven, see th
 
 We worked together with the community to develop the policy, processes and design decisions for our Safe Haven, and we are keen to transition our implementation from being a Turing project to being a community owned platform which we work together with a range of other organisations to maintain and extend.
 
-We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
+We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
