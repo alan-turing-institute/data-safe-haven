@@ -55,8 +55,6 @@ Add-LogMessage -Level Info "NICs associated with $($nsgLinux.Name):"
 
 # Ensure VMs are bound to correct NSGs
 # ------------------------------------
-Add-LogMessage -Level Info "Ensure DC is bound to correct NSG..."
-Add-VmToNSG -VMName $config.sre.dc.vmName -NSGName $config.sre.dc.nsg
 Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
 Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
