@@ -19,11 +19,11 @@ We have developed:
 
 To get a good overview of the Safe Haven, see the poster and presentation below.
 
-[Safe Haven one-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
+  - [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
 
-[Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from a presentation about the Safe Haven giveng a more in-depth overview.
+  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from a presentation about the Safe Haven giveng a more in-depth overview.
 
-[Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
+  - [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
 
 
 ## Safe Haven documentation
