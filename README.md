@@ -28,7 +28,7 @@ To get a good overview of the Safe Haven, see the poster and presentation below.
 
 ## Safe Haven documentation
 
-For detailed guidance on deploying, administering and using a Safe Haven, see the `docs` folder.
+For detailed guidance on deploying, administering and using a Safe Haven, see our [documentation](/docs/README.md).
 
 
 ## Contributing
