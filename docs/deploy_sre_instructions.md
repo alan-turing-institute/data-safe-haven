@@ -37,9 +37,7 @@ The following instructions will walk you through deploying a Secure Research Env
 
 ### Configure a VPN connection to the Safe Haven Management VNet
 - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is defined in the config file. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
-
     ![Point-to-site connection](images/deploy_sre/vpn/point_to_site.png)
-
 - Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 - :warning: **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
 - :warning: **Windows:** do not rename the VPN client as this will break it
@@ -268,7 +266,12 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 
 3. Ensure that the account has MFA enabled
 - If you have just created the account, you will need to synchronise with Azure Active Directory
-- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
+- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md). In particular:
+  - The user's `Usage Location` must be set on Active Directory. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
+  - A licence must be assigned to the user. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled..
+  - MFA must be enabled for the user. To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
+  - The user must log in and set up MFA as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
+
 
 4. Test using the RDG web interface
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
@@ -284,11 +287,17 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Once you have logged in, click on the `Presentation server` app icon. You should receive an MFA request to your phone or authentication app.
     - **Troubleshooting** If you can log in to the initial webclient authentication but don't get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
         - Ensure that both the SHM NPS server and the RDS Gateway are running
+        - The RADIUS client shared secret might not be set correctly on the SHM NPS server. Try manually setting as follows:
+          - Ensure you are connected to the SHM VPN and connect to the SHM NPS server using Remote Desktop.
+          - Click `Tools` -> `Network Policy Server`
+          - In the left pane, under `NPS (Local)`, expand `RADIUS Clients and Servers` and click `RADIUS Clients`
+          - Double-click on `RDG-SRE-<SRE ID>-<safe haven domain>`
+          - Under `Settings` set `Shared secret` and `Confirm shared secret` to the value of the secret `sre-<SRE ID>-nps-secret` in the SRE key vault.
+        - Ensure the same shared secret from the `sre-<SRE ID>-nps-secret` in the SRE key vault is set on the SRE RDS Gateway in the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
         - Ensure that the [SHM NPS server RADIUS Client configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) is using the **private** IP address of the RDS Gateway and **not** its public one.
         - Use the Event viewer on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
         - Use the Event viewer on the SHM NPS server  (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
         - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful. This may indicate that the shared secret is different between the SHM and SRE.
-        - Ensure the same shared secret from the `sre-<SRE ID>-nps-secret` in the SRE key vault is used in **both** the SHM NPS server RADIUS Client configuration (you can set this manually by connecting to the Network Policy Server) and the [SRE RDS Gateway RD CAP Store configuration](sre_build_instructions.md#configure-rds-to-use-shm-nps-server-for-client-access-policies) (see previous sections for instructions).
         - Ensure that the `Windows Firewall` is set to `Domain Network` on both the SHM NPS server and the SRE RDS Gateway
     - **Troubleshooting** If you get a "We couldn't connect to the gateway because of an error" message, it's likely that the "Remote RADIUS Server" authentication timeouts have not been [increased as described in a previous section](sre_build_instructions.md#increase-the-authorisation-timeout-to-allow-for-mfa). It seems that these are reset everytime the "Central CAP store" shared RADIUS secret is changed.
     - **Troubleshooting** If you get multiple MFA requests with no change in the "Opening ports" message, it may be that the shared RADIUS secret does not match on the SHM server and SRE RDS Gateway. It is possible that this may occur if the password is too long. We previously experienced this issue with a 20 character shared secret and this error went away when we reduced the length of the secret to 12 characters. We then got a "We couldn't connect to the gateway because of an error" message, but were then able to connect successfully after again increasing the authorisation timeout for the remote RADIUS server on the RDS Gateway.
