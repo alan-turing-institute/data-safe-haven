@@ -1,6 +1,6 @@
 # The Turing Data Safe Haven
 
-Welcome to the Turing's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project. This repository contains the code necessary to deploy an instance of the Alan Turing Institute's Data Safe Haven, and instructions on how to use it.
+This is the repository for the Turing's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project, and contains the code and instrutions to to deploy, administer and use your own instance of the Turing's Data Safe Haven on Microsoft's Azure cloud platform.
 
 
 ## Introduction
@@ -37,3 +37,12 @@ For detailed guidance on deploying, administering and using a Safe Haven, see ou
 We worked together with the community to develop the policy, processes and design decisions for our Safe Haven, and we are keen to transition our implementation from being a Turing project to being a community owned platform which we work together with a range of other organisations to maintain and extend.
 
 We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
+
+
+## Acknowledgements
+
+We are grateful for the following support for this project:
+
+  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1))
+  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)) 
+  - Microsoft's generous donation of [$5 million in Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute
