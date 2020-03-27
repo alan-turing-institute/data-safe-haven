@@ -107,13 +107,13 @@ To deploy a compute VM you will need the following available on the machine you 
 - After deployment, copy everything from the `git fetch;...` command and its output to the command prompt returned after the VM deployment and paste this into the deployment log (e.g. a Github issue used to record VM deployments for a DSG or set of DSGs)
 
 ### Troubleshooting Compute VM deployments
-- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` respource group. It will have the last octet of it's IP address at the end of it's name.
+- Click on the VM in the DSG subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 - Scroll to the bottom of the VM menu on the left hand side of the VM information panel
 - Activate boot diagnostics on the VM and clik save. You need to stay on that screen until the activation is complete.
 - Go back to the VM panel and click on the "Serial console" item near the bottom of the VM menu on the left habnd side of the VM panel.
 - If you are not prompted with `login:`, hit enter until the prompt appears
 - Enter `atiadmin` for the username
-- Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` respource group of the SHM subscription.
+- Enter the password from the `dsgroup<dsg-id>-dsvm-admin-password` secret in the `dsg-mangement-<shm-id>` KeyVault in the `RG_DSG_SECRETS` resource group of the SHM subscription.
 - To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `new_dsg_environment/azure-vms/DSG_configs/cloud-init-compute-vm-DSG-<dsg-id>.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up. -->
 
@@ -220,7 +220,7 @@ usage: ./peer_mirrors_to_compute_vms.sh [-h] -s subscription_compute -t subscrip
 
 This script peers the DSG virtual network with the mirror virtual network in the management subscription so that the compute VMs can talk to the mirror servers.
 Note that the "inbound on-way airlock" for packages is enforced by the NSG rules for the external and internal mirrrors.
-The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and it's associated internal mirrors (for pushing to these mirror servers).
+The **external** mirror NSG rules do not allow **any inbound** communication, while permitting outbound communication to the internet (for pulling package updates from the public package servers) and its associated internal mirrors (for pushing to these mirror servers).
 The **internal** mirror NSG rules do not allow **any outbound** communication, while permitting inbound communication from their associated external mirrors (to receive pushed package updates) and from the DSGs that are peered with them (to serve packages to these DSGs).
 
 Example usage:

@@ -25,7 +25,7 @@ function Get-TargetResource
         $Site
     )
 
-    # Get the replication subnet filtered by it's name. If the subnet is not
+    # Get the replication subnet filtered by its name. If the subnet is not
     # present, the command will return $null.
     $replicationSubnet = Get-ADReplicationSubnet -Filter { Name -eq $Name }
 
@@ -101,7 +101,7 @@ function Set-TargetResource
         $Location = ''
     )
 
-    # Get the replication subnet filtered by it's name. If the subnet is not
+    # Get the replication subnet filtered by its name. If the subnet is not
     # present, the command will return $null.
     $replicationSubnet = Get-ADReplicationSubnet -Filter { Name -eq $Name }
 
