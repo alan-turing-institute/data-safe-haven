@@ -41,7 +41,8 @@ $params = @{
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
                              ("realm join", "rerun_realm_join.sh"),
-                             ("SSSD service", "restart_sssd_service.sh"))) {
+                             ("SSSD service", "restart_sssd_service.sh"),
+                             ("xrdp service", "restart_xrdp_service.sh"))) {
     $name, $diagnostic_script = $scriptNamePair
     $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" $diagnostic_script
     Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$($vm.Name)'"
