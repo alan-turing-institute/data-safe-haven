@@ -294,9 +294,32 @@ $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName
 Write-Output $result.Value
 
 
-# Restart after full configuration
-# --------------------------------
-Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
+# Run remote diagnostic scripts
+# -----------------------------
+Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
+$params = @{
+    TEST_HOST = $config.shm.dc.fqdn
+    LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
+    DOMAIN_LOWER = $config.shm.domain.fqdn
+    SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
+}
+foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
+                             ("name resolution", "restart_name_resolution_service.sh"),
+                             ("realm join", "rerun_realm_join.sh"),
+                             ("SSSD service", "restart_sssd_service.sh"),
+                             ("xrdp service", "restart_xrdp_service.sh"))) {
+    $name, $diagnostic_script = $scriptNamePair
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
+    Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$vmName'"
+    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    $success = $?
+    Write-Output $result.Value
+    if ($success) {
+        Add-LogMessage -Level Success "Configuring $name on $vmName was successful"
+    } else {
+        Add-LogMessage -Level Failure "Configuring $name on $vmName failed!"
+    }
+}
 
 
 # Get private IP address for this machine
