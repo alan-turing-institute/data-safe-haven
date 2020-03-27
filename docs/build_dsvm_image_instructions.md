@@ -22,7 +22,7 @@ These instructions will create a new VM image full analysis environment as detai
 - Open a Powershell terminal and navigate to the `deployment/dsvm_images/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Begin the provisioning and configuration of a new compute VM image using `./Provision_Compute_VM.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
-- The build (based on Ubuntu 18.04) takes approximately 7 hours of which 5 hours(!) is taken up with installing the Python 2.7 environment.
+- The build (based on Ubuntu 18.04) takes approximately 6 hours of which 4 hours(!) is taken up with installing the Python 2.7 environment.
 
 ## 3. Converting candidate VMs to images
 After running the build script, the build will take several hours to complete.
