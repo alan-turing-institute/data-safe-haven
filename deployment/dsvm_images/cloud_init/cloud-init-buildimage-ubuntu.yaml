@@ -525,11 +525,12 @@ runcmd:
   - cd /opt/julia
   - echo "Downloading package..."
   - JULIA_TARBALL="julia-1.4.0-linux-x86_64.tar.gz"
+  - JULIA_VERSION=$(echo $JULIA_TARBALL | cut -d'-' -f1-2)
   - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.4/${JULIA_TARBALL}
   - echo "Installing and cleaning up..."
   - tar -zxf ${JULIA_TARBALL}
   - rm -rf ${JULIA_TARBALL}
-  - PATH=$PATH:/opt/julia/julia-1.1.1/bin
+  - PATH=$PATH:/opt/julia/${JULIA_VERSION}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -553,18 +554,20 @@ runcmd:
   - mkdir -p /opt/spark
   - cd /opt/spark
   - SPARK_TARBALL="spark-2.4.5-bin-hadoop2.7.tgz"
-  - SPARK_VERSION=$(echo $SPARK_TARBALL | cut -d'.' -f1-4)
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.5/${SPARK_TARBALL}
+  - SPARK_VERSION=$(echo $SPARK_TARBALL | cut -d'-' -f1-2)
+  - SPARK_HADOOP_VERSION=$(echo $SPARK_TARBALL | cut -d'.' -f1-4)
+  - curl -O http://apache.mirror.anlx.net/spark/${SPARK_VERSION}/${SPARK_TARBALL}
   - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
   - tar -zxf ${SPARK_TARBALL}
   - rm -rf ${SPARK_TARBALL}
-  - PATH=$PATH:/opt/spark/${SPARK_VERSION}/bin
+  - PATH=$PATH:/opt/spark/${SPARK_HADOOP_VERSION}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install dbeaver
   - echo ">=== Installing dbeaver... ===<"
   - DBEAVER_DEB="dbeaver-ce_7.0.1_amd64.deb"
-  - curl -O https://dbeaver.io/files/7.0.1/${DBEAVER_DEB}
+  - DBEAVER_VERSION=$(echo $DBEAVER_DEB | cut -d'_' -f2)
+  - curl -O https://dbeaver.io/files/${DBEAVER_VERSION}/${DBEAVER_DEB}
   - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
   - dpkg -i $DBEAVER_DEB
   - rm $DBEAVER_DEB
