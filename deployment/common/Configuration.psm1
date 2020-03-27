@@ -33,21 +33,17 @@ function Get-ShmFullConfig {
 
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
-    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
     $shm.id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
     $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
-
-    # $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
-    # $shm.computeVmImageResourceGroupName = "RG_SH_IMAGE_GALLERY"
-    # $shm.computeVmImageImageGalleryName = "SAFE_HAVEN_COMPUTE_IMAGES"
+    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
 
     # --- DSVM build images ---
     $shm.dsvmImage = [ordered]@{
         subscription = $shmConfigBase.computeVmImageSubscriptionName
-        location = "westeurope" # currently have to build in West Europe in order to use Shared Image Gallery
+        location = "westeurope" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
@@ -61,6 +57,8 @@ function Get-ShmFullConfig {
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"
             sig = "SAFE_HAVEN_COMPUTE_IMAGES"
+            imageMajorVersion = 0
+            imageMinorVersion = 1
         }
         images = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"

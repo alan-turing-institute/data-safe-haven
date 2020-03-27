@@ -472,7 +472,7 @@ runcmd:
 
   # Create or update conda environments
   # Python 2.7
-  - /installation/create_or_update_conda_python_environment.sh py27 45 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py27 300 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   # Python 3.6
   - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   # Python 3.7
@@ -494,7 +494,6 @@ runcmd:
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
-  # - Rscript -e "installed.packages()[,'Package']"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
   - echo "Installing remaining CRAN packages..."
   - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($CRAN_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"

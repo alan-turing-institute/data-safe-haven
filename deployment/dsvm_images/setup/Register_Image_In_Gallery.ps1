@@ -20,10 +20,12 @@ $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
-# Other constants
+
+# Useful constants
+# ----------------
 $supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-Ubuntu1810Base", "ComputeVM-Ubuntu1904Base", "ComputeVM-Ubuntu1910Base")
-$majorVersion = 0
-$minorVersion = 1
+$majorVersion = $config.dsvmImage.gallery.imageMajorVersion
+$minorVersion = $config.dsvmImage.gallery.imageMinorVersion
 
 
 # Ensure that gallery resource group exists
@@ -33,10 +35,10 @@ $_ = Deploy-ResourceGroup -Name $config.dsvmImage.gallery.rg -Location $config.d
 
 # Ensure that image gallery exists
 # --------------------------------
-$gallery = Get-AzGallery -Name $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+$_ = Get-AzGallery -Name $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
     Add-LogMessage -Level Info "Creating image gallery $($config.dsvmImage.gallery.sig)..."
-    $gallery = New-AzGallery -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
+    $_ = New-AzGallery -GalleryName $config.dsvmImage.gallery.sig -ResourceGroupName $config.dsvmImage.gallery.rg -Location $config.dsvmImage.location
 }
 
 
@@ -118,7 +120,10 @@ while ($job.State -ne "Completed") {
 # Create the image as a new version of the appropriate existing registered version
 # --------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Result of replication..."
-Get-AzGalleryImageVersion -ResourceGroupName $config.dsvmImage.gallery.rg -GalleryName $config.dsvmImage.gallery.sig -GalleryImageDefinitionName $imageDefinition -Name "$imageVersion"
+foreach ($imageStatus in Get-AzGalleryImageVersion -ResourceGroupName $config.dsvmImage.gallery.rg -GalleryName $config.dsvmImage.gallery.sig -GalleryImageDefinitionName $imageDefinition -Name "$imageVersion") {
+    Add-LogMessage -Level Info ($imageStatus | Out-String)
+}
+
 
 
 # Switch back to original subscription
