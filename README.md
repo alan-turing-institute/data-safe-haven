@@ -17,7 +17,7 @@ We have developed:
 
 ## Safe Haven overview
 
-To get a good overview of the Safe Haven, see the poster and presentation below.
+To get a good overview of the Safe Haven, see the resources below.
 
   - [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
 
