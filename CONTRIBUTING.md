@@ -22,7 +22,6 @@ Jump to the following sections:
   * [Writing in markdown](#writing-in-markdown)
   * [Project management through issues](#project-management-through-issues)
   * [Issues as conversations](#issues-as-conversations)
-  * [Capturing knowledge in the GitHub wiki](#capturing-knowledge-in-the-github-wiki)
   * [Working in a private repository](#working-in-a-private-repository)
   * [Who's involved in the project](#Whos-involved-in-the-project)
   * [Make a change with a pull request](#making-a-change-with-a-pull-request)
@@ -135,20 +134,6 @@ Alternatively (and this is encouraged) you can use the issue to keep track of wh
 
 ![](docs/images/example-conversation-in-issue.jpg)
 
-
-<!-- ### Capturing knowledge in the GitHub wiki
-Contributing on GitHub can be a little intimidating (see [making a change with a pull request](#making-a-change-with-a-pull-request) below.
-What's great about the wiki is that you only need to be logged in to GitHub to edit it.
-
-Here's a useful [introduction to GitHub wikis][intro-github-wiki].
-
-To calm your nerves, the wiki is *itself* a git repository in the background and therefore it is versioned and (in that sense) backed up.
-**You can't totally erase anyone's work in the wiki** so please don't feel nervous about refining and adding your work to an already existing document.
-
-Your work does not need to be perfect and we encourage you to remember the premise behind the [Bus Factor][bus-factor]: a measurement of the risk resulting from information and capabilities not being shared among team members, from the phrase "in case they get hit by a bus".
-
-***If you have thought about something, reviewed some work, worried about a potential problem, or come up with a potential solution it should be WRITTEN DOWN IN THE WIKI to give the project resilience and to prevent us from reinventing the wheel.*** -->
-
 ### Working in a private repository
 As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities! Therefore we're keeping the repository private until we're confident that our work is secure.
 
@@ -156,38 +141,6 @@ Please note that the plan is to make the contents of this repository openly avai
 
 As we're working in a private repository you may not be able to see the repository if you aren't signed in.
 So if you see a 404 page and you're confident you have the correct url, go back to [github.com](https://github.com) to make sure that you're signed into your account.
-
-### Who's involved in the project
-The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do.
-(Another option for private repositories is to allow all members of the organisation but *not* public members to see all projects owned by the organisation.)
-Therefore it is sometimes nice to know **who** you're working with on the project (which is oddly difficult to do if you aren't an administrator on the project!)
-
-(Additionally some users have GitHub IDs that make it a little difficult to know who they are in real life! Hopefully this table will help you put names to faces and IDs :sparkles:)
-
-The following people have access to the project:
-
-| Name               | GitHub ID | Email |
-| ------------------ | --- | --- |
-| Diego Arenas       | [@darenasc](https://github.com/darenasc)| <darenasc@gmail.com> |
-| Jonathan Atkins    | [@jon-atkins](https://github.com/jon-atkins)| <jatkins@turing.ac.uk> |
-| Ayman Boustati     | [@aboustati](https://github.com/aboustati)| <aboustati@turing.ac.uk> |
-| Ian Carter         | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
-| Rob Clarke         | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
-| Giovanni Colavizza | [@Giovanni1085](https://github.com/Giovanni1085)| <gcolavizza@turing.ac.uk> |
-| Christine Foster   | [@ChristineFoster](https://github.com/ChristineFoster)| <cfoster@turing.ac.uk> |
-| Evelina Gabasova   | [@evelinag](https://github.com/evelinag)| <egabasova@turing.ac.uk> |
-| James Geddes       | [@triangle-man](https://github.com/triangle-man)| <jgeddes@turing.ac.uk> |
-| Andreas Grammenos  | [@andylamp](https://github.com/andylamp) | <axor@turing.ac.uk> |
-| Nicolas Guernion   | | <nguernion@turing.ac.uk> |
-| James Hetherington | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
-| Franz Kiraly       | [@fkiraly](https://github.com/fkiraly)| <fkiraly@turing.ac.uk> |
-| Catherine Lawrence | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
-| Martin O'Reilly    | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
-| Kenji Takeda       | [@ktakeda1](https://github.com/ktakeda1)| <ktakeda@turing.ac.uk> |
-| Sebastian Vollmer  | [@vollmersj](https://github.com/vollmersj)| <svollmer@turing.ac.uk> |
-| Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
-| James Robinson     | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
-
 
 ### Making a change with a pull request
 To contribute to the codebase you'll need to submit a **pull request**.
@@ -217,6 +170,39 @@ You can update your [fork][github-fork] of the data safe haven [repository][safe
 GitHub has a [nice introduction][github-flow] to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
 
+### Who's involved in the project
+The private repositories in the Alan Turing Institute [GitHub organisation](https://github.com/alan-turing-institute) are set such that only named collaborators can see the work we do.
+(Another option for private repositories is to allow all members of the organisation but *not* public members to see all projects owned by the organisation.)
+Therefore it is sometimes nice to know **who** you're working with on the project (which is oddly difficult to do if you aren't an administrator on the project!)
+
+(Additionally some users have GitHub IDs that make it a little difficult to know who they are in real life! Hopefully this table will help you put names to faces and IDs :sparkles:)
+
+The following people have access to the project:
+
+| Name               | GitHub ID | Email |
+| ------------------ | --- | --- |
+| Diego Arenas       | [@darenasc](https://github.com/darenasc)| <darenasc@gmail.com> |
+| Jonathan Atkins    | [@jon-atkins](https://github.com/jon-atkins)| <jatkins@turing.ac.uk> |
+| Ayman Boustati     | [@aboustati](https://github.com/aboustati)| <aboustati@turing.ac.uk> |
+| Ian Carter         | [@getcarter21](https://github.com/getcarter21)| <icarter@turing.ac.uk> |
+| Rob Clarke         | [@RobC-CTL](https://github.com/RobC-CTL)| <rob.clarke@coriniumtech.com> |
+| Giovanni Colavizza | [@Giovanni1085](https://github.com/Giovanni1085)| <gcolavizza@turing.ac.uk> |
+| Tom Doel           | [@tomdoel](https://github.com/tomdoel)| <tom.doel@codechoreography.co.uk> |
+| Christine Foster   | [@ChristineFoster](https://github.com/ChristineFoster)| <cfoster@turing.ac.uk> |
+| Evelina Gabasova   | [@evelinag](https://github.com/evelinag)| <egabasova@turing.ac.uk> |
+| James Geddes       | [@triangle-man](https://github.com/triangle-man)| <jgeddes@turing.ac.uk> |
+| Andreas Grammenos  | [@andylamp](https://github.com/andylamp) | <axor@turing.ac.uk> |
+| Nicolas Guernion   | | <nguernion@turing.ac.uk> |
+| James Hetherington | [@jamespjh](https://github.com/jamespjh) | <jhetherington@turing.ac.uk> |
+| Franz Kiraly       | [@fkiraly](https://github.com/fkiraly)| <fkiraly@turing.ac.uk> |
+| Catherine Lawrence | [@cathiest](https://github.com/cathiest) | <clawrence@turing.ac.uk> |
+| Martin O'Reilly    | [@martintoreilly](https://github.com/martintoreilly)| <moreilly@turing.ac.uk> |
+| James Robinson     | [@jemrobinson](https://github.com/jemrobinson) | <jrobinson@turing.ac.uk> |
+| Kenji Takeda       | [@ktakeda1](https://github.com/ktakeda1)| <ktakeda@turing.ac.uk> |
+| Sebastian Vollmer  | [@vollmersj](https://github.com/vollmersj)| <svollmer@turing.ac.uk> |
+| Kirstie Whitaker   | [@KirstieJane](https://github.com/KirstieJane)| <kwhitaker@turing.ac.uk> |
+
+
 ## Thank you!
 You're awesome. :wave::smiley:
 
@@ -225,7 +211,6 @@ You're awesome. :wave::smiley:
 *&mdash; Based on contributing guidelines from the [BIDS Starter Kit][bids-starterkit-repo] project. Reused under the CC-BY license.*
 
 [bids-starterkit-repo]: https://github.com/INCF/bids-starter-kit
-[bus-factor]: https://en.wikipedia.org/wiki/Bus_factor
 [dont-push-pull-request]: https://www.igvita.com/2011/12/19/dont-push-your-pull-requests
 [git]: https://git-scm.com
 [github]: https://github.com
@@ -240,19 +225,12 @@ You're awesome. :wave::smiley:
 [github-review]: https://help.github.com/articles/about-pull-request-reviews
 [github-syncfork]: https://help.github.com/articles/syncing-a-fork
 [intro-github-wiki]: https://help.github.com/articles/about-github-wikis
-[labels-sprint1]: https://github.com/alan-turing-institute/data-safe-haven/labels/Sprint1
-[labels-sprint2]: https://github.com/alan-turing-institute/data-safe-haven/labels/Sprint2
-[labels-sprint3]: https://github.com/alan-turing-institute/data-safe-haven/labels/Sprint3
 [labels-in-progress]: https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20in%20progress
 [labels-on-hold]: https://github.com/alan-turing-institute/data-safe-haven/labels/action:%20on%20hold
-[labels-sprint5]: https://github.com/alan-turing-institute/data-safe-haven/labels/Sprint5
 [jerry-maguire]: https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif
 [markdown]: https://daringfireball.net/projects/markdown
-[neurostars-forum]: https://neurostars.org/tags/bids
-[patrick-github]: https://github.com/Park-Patrick
 [rick-roll]: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 [safehaven-issues]: https://github.com/alan-turing-institute/data-safe-haven/issues
 [safehaven-labels]: https://github.com/alan-turing-institute/data-safe-haven/labels
 [safehaven-repo]: https://github.com/alan-turing-institute/data-safe-haven
 [safehaven-wiki]: https://github.com/alan-turing-institute/data-safe-haven/wiki
-[scrum-dailyscrum]: https://en.wikipedia.org/wiki/Scrum_(software_development)#Daily_Scrum
