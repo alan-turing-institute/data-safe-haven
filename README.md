@@ -1,8 +1,8 @@
-# Safe Haven
+# The Turing Data Safe Haven
 
-Welcome to the Turing Data Safe Haven project. This repository contains the code necessary to deploy an instance of the Alan Turing Institute's Data Safe Haven, and instructions on how to use it.
+Welcome to the Turing's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project. This repository contains the code necessary to deploy an instance of the Alan Turing Institute's Data Safe Haven, and instructions on how to use it.
 
-## What is the Safe Haven
+## What is a Data Safe Haven
 
 Many of the important questions we want to answer for society require the use of sensitive data. In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
 
