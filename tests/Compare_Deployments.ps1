@@ -266,10 +266,7 @@ foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
     }
     $benchmarkVMs += $VM
 }
-# Write-Host "benchmarkVMs: $($benchmarkVMs.Length)"
-# $benchmarkVMNames = $benchmarkVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
-# Write-Host $benchmarkVMNames
-# exit 1
+
 
 # Get VMs in test SHM
 # -------------------
