@@ -238,13 +238,7 @@ Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
 
 # Restart after the NSG switch
 # ----------------------------
-Add-LogMessage -Level Info "Rebooting $vmName..."
 Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-if ($?) {
-    Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
-}
 
 
 # Create Postgres roles
@@ -298,6 +292,11 @@ $params = @{
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
 $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 Write-Output $result.Value
+
+
+# Restart after full configuration
+# --------------------------------
+Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Get private IP address for this machine
