@@ -22,11 +22,11 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
 # Get NSGs
 $nsgGateway = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg
-if ($nsgGateway -eq $null) { throw "Could not load RDS gateway NSG" }
+if ($null -eq $nsgGateway) { throw "Could not load RDS gateway NSG" }
 $nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
-if ($nsgLinux -eq $null) { throw "Could not load Linux VMs NSG" }
+if ($null -eq $nsgLinux) { throw "Could not load Linux VMs NSG" }
 $nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
-if ($nsgSessionHosts -eq $null) { throw "Could not load RDS session hosts NSG" }
+if ($null -eq $nsgSessionHosts) { throw "Could not load RDS session hosts NSG" }
 
 
 # Ensure RDS session hosts and dataserver are bound to session hosts NSG
@@ -55,8 +55,6 @@ Add-LogMessage -Level Info "NICs associated with $($nsgLinux.Name):"
 
 # Ensure VMs are bound to correct NSGs
 # ------------------------------------
-Add-LogMessage -Level Info "Ensure DC is bound to correct NSG..."
-Add-VmToNSG -VMName $config.sre.dc.vmName -NSGName $config.sre.dc.nsg
 Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
 Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."

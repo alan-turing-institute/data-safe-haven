@@ -5,31 +5,37 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0,HelpMessage = "Enter Path to GPO backup files")]
+    [Parameter(Position = 0,HelpMessage = "ADSync account password as an encrypted string")]
     [ValidateNotNullOrEmpty()]
-    [string]$oubackuppath,
-    [Parameter(Position = 1,HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
-    [ValidateNotNullOrEmpty()]
-    [string]$domainou,
-    [Parameter(Position = 2,HelpMessage = "Domain (eg. TURINGSAFEHAVEN.ac.uk)")]
+    [string]$adsyncAccountPasswordEncrypted,
+    [Parameter(Position = 1,HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
     [ValidateNotNullOrEmpty()]
     [string]$domain,
-    [Parameter(Position = 3,HelpMessage = "Identity subnet CIDR")]
+    [Parameter(Position = 2,HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
-    [string]$identitySubnetCidr,
-    [Parameter(Position = 4,HelpMessage = "Web subnet CIDR")]
+    [string]$domainou,
+    [Parameter(Position = 3, HelpMessage = "Name of the LDAP users group")]
     [ValidateNotNullOrEmpty()]
-    [string]$webSubnetCidr,
-    [Parameter(Position = 5,HelpMessage = "Server name")]
+    [string]$ldapUsersSgName,
+    [Parameter(Position = 4,HelpMessage = "NetBios name")]
     [ValidateNotNullOrEmpty()]
-    [string]$serverName,
+    [string]$netbiosName,
+    [Parameter(Position = 5,HelpMessage = "Enter Path to GPO backup files")]
+    [ValidateNotNullOrEmpty()]
+    [string]$oubackuppath,
     [Parameter(Position = 6,HelpMessage = "Server admin name")]
     [ValidateNotNullOrEmpty()]
     [string]$serverAdminName,
-    [Parameter(Position = 7,HelpMessage = "ADSync account password as an encrypted string")]
+    [Parameter(Position = 7, HelpMessage = "Name of the server administrator group")]
     [ValidateNotNullOrEmpty()]
-    [string]$adsyncAccountPasswordEncrypted
+    [string]$serverAdminSgName,
+    [Parameter(Position = 8,HelpMessage = "Server name")]
+    [ValidateNotNullOrEmpty()]
+    [string]$serverName
 )
+
+Import-Module ActiveDirectory
+
 
 # Convert encrypted string to secure string
 $adsyncAccountPasswordSecureString = ConvertTo-SecureString -String $adsyncAccountPasswordEncrypted -Key (1..16)
@@ -68,7 +74,14 @@ if ($?) {
 
 # Ensure that OUs exist
 Write-Host "Creating management OUs..."
-foreach ($ouName in ("Safe Haven Research Users","Safe Haven Security Groups","Safe Haven Service Accounts","Safe Haven Service Servers")) {
+foreach ($ouName in ("Safe Haven Research Users",
+                     "Safe Haven Security Groups",
+                     "Safe Haven Service Accounts",
+                     "Safe Haven Service Servers",
+                     "Secure Research Environment Data Servers",
+                     "Secure Research Environment RDS Session Servers",
+                     "Secure Research Environment Service Servers")
+                     ) {
     $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
     if ("$ouExists" -ne "") {
         Write-Host " [o] OU '$ouName' already exists"
@@ -84,7 +97,7 @@ foreach ($ouName in ("Safe Haven Research Users","Safe Haven Security Groups","S
 
 # Create security groups
 Write-Host "Creating security groups..."
-foreach ($groupName in ("SG Safe Haven Server Administrators","SG Data Science LDAP Users")) {
+foreach ($groupName in ($serverAdminSgName, $ldapUsersSgName)) {
     $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
     if ("$groupExists" -ne "") {
         Write-Host " [o] Security group '$groupName' already exists"
@@ -126,17 +139,15 @@ if ("$userExists" -ne "") {
 # Add users to security groups
 Write-Host "Adding users to security groups..."
 # NB. As of build 1.4.###.# it is no longer supported to use an Enterprise Admin or a Domain Admin account as the AD DS Connector account.
-$adGroupName = "SG Safe Haven Server Administrators"
-$adUserName = $serverAdminName
-$membershipExists = $(Get-ADGroupMember -Identity "$adGroupName").Name | Select-String "$adUserName"
-if ("$membershipExists" -eq "$adUserName") {
-    Write-Host " [o] Account '$adUserName' is already in '$adGroupName'"
+$membershipExists = $(Get-ADGroupMember -Identity "$serverAdminSgName").Name | Select-String "$serverAdminName"
+if ("$membershipExists" -eq "$serverAdminName") {
+    Write-Host " [o] Account '$serverAdminName' is already in '$serverAdminSgName'"
 } else {
-    Add-ADGroupMember "$adGroupName" "$adUserName"
+    Add-ADGroupMember "$serverAdminSgName" "$serverAdminName"
     if ($?) {
-        Write-Host " [o] Account '$adUserName' added to '$adGroupName' group"
+        Write-Host " [o] Account '$serverAdminName' added to '$serverAdminSgName' group"
     } else {
-        Write-Host " [x] Account '$adUserName' could not be added to '$adGroupName' group!"
+        Write-Host " [x] Account '$serverAdminName' could not be added to '$serverAdminSgName' group!"
     }
 }
 
@@ -144,7 +155,8 @@ if ("$membershipExists" -eq "$adUserName") {
 Write-Host "Importing GPOs..."
 foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
                                ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
-                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"))) {
+                               ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
+                               ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
     $backup,$target = $backupTargetPair
     Import-GPO -BackupId "$backup" -TargetName "$target" -Path $oubackuppath -CreateIfNeeded
     if ($?) {
@@ -156,11 +168,21 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 
 # Link GPO with OUs
 Write-Host "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators","Safe Haven Service Servers"),
-        ("All Servers - Windows Services","Domain Controllers"),
-        ("All Servers - Windows Services","Safe Haven Service Servers"),
-        ("All Servers - Windows Update","Domain Controllers"),
-        ("All Servers - Windows Update","Safe Haven Service Servers"))) {
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment Data Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment RDS Session Servers"),
+                            ("All servers - Local Administrators", "Secure Research Environment Service Servers"),
+                            ("All Servers - Windows Services", "Domain Controllers"),
+                            ("All Servers - Windows Services", "Safe Haven Service Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment Data Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment RDS Session Servers"),
+                            ("All Servers - Windows Services", "Secure Research Environment Service Servers"),
+                            ("All Servers - Windows Update", "Domain Controllers"),
+                            ("All Servers - Windows Update", "Safe Haven Service Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment Data Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment RDS Session Servers"),
+                            ("All Servers - Windows Update", "Secure Research Environment Service Servers"),
+                            ("Session Servers - Remote Desktop Control", "Secure Research Environment RDS Session Servers"))) {
     $gpoName,$ouName = $gpoOuNamePair
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
@@ -184,27 +206,14 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators","Safe Haven Se
     }
 }
 
-# Create Reverse Lookup Zones for SHM
-Write-Host "Creating reverse lookup zones..."
-foreach ($cidr in ($identitySubnetCidr,$webSubnetCidr)) {
-    $oct1,$oct2,$oct3,$oct4 = $cidr.Split(".")
-    $zoneName = "$oct3.$oct2.$oct1.in-addr.arpa"
-    # Check for a match in existing zone
-    $zoneExists = $false
-    foreach ($zone in Get-DnsServerZone) {
-        if (($zone.ZoneName -eq $zoneName) -and $zone.IsReverseLookupZone) {
-            $zoneExists = $true
-        }
-    }
-    # Create reverse lookup zone if it does not already exist
-    if ($zoneExists) {
-        Write-Host " [o] Reverse lookup zone for $cidr already exists"
-    } else {
-        Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId "$cidr" -ReplicationScope Domain
-        if ($?) {
-            Write-Host " [o] Reverse lookup zone for $cidr created successfully"
-        } else {
-            Write-Host " [x] Reverse lookup zone for $cidr could not be created!"
-        }
-    }
+
+# Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
+Write-Host "Delegating Active Directory registration permissions to the LDAP users group..."
+$computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
+dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
+if ($?) {
+    Write-Host " [o] Successfully delegated Active Directory permissions"
+} else {
+    Write-Host " [x] Failed to delegate Active Directory permissions"
 }
+

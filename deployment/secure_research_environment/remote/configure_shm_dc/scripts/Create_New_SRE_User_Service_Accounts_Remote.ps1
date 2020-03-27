@@ -22,6 +22,9 @@ param(
     [String]$dsvmSamAccountName,
     [String]$dsvmName,
     [String]$dsvmPasswordEncrypted,
+    [String]$dataMountSamAccountName,
+    [String]$dataMountName,
+    [String]$dataMountPasswordEncrypted,
     [String]$testResearcherSamAccountName,
     [String]$testResearcherName,
     [String]$testResearcherPasswordEncrypted
@@ -70,6 +73,7 @@ function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
 $hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncrypted -Key (1..16)
 $gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
 $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
+$dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
 # Create SRE Security Group
@@ -79,6 +83,7 @@ New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -
 New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
 New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
 New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
+New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
 # Add Data Science LDAP users to SG Data Science LDAP Users security group

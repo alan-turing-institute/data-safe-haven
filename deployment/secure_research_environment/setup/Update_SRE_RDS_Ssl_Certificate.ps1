@@ -104,7 +104,6 @@ if ($requestCertificate) {
     # ------------------------
     Add-LogMessage -Level Info "Test that we can interact with DNS records..."
     $testDomain = "dnstest.$($baseFqdn)"
-
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
         AZAccessToken = $token
@@ -145,10 +144,6 @@ if ($requestCertificate) {
     # ---------------------------------
     Add-LogMessage -Level Info "Sending the CSR to be signed by Let's Encrypt..."
     Publish-DnsChallenge $baseFqdn -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
-    # $azParams = @{
-    #     AZSubscriptionId = $azureContext.Subscription.Id
-    #     AZAccessToken = $token
-    # }
     Add-LogMessage -Level Info "[ ] Creating certificate for $($baseFqdn)..."
     New-PACertificate -CSRPath $csrPath -AcceptTOS -Contact $emailAddress -DnsPlugin Azure -PluginArgs $params -Verbose
     if ($?) {

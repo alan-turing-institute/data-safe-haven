@@ -20,8 +20,8 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.webappAdminPassword
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword
 $gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword
 $gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
@@ -91,8 +91,8 @@ $_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.loc
 # --------------------------------------
 Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $dcAdminPassword -AsPlainText -Force)
-    Administrator_User = $dcAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
+    Administrator_User = $sreAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
     GitLab_IP_Address =  $config.sre.webapps.gitlab.ip

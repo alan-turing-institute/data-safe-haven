@@ -20,6 +20,18 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
+        "DC_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "DC_Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
         "Domain_Name": {
             "type": "string",
             "metadata": {
@@ -162,8 +174,7 @@
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('RDS_Gateway_Name')]",
             "apiVersion": "2018-06-01",
@@ -191,8 +202,7 @@
                         },
                         "diskSizeGB": 128
                     },
-                    "dataDisks": [
-                        {
+                    "dataDisks": [{
                             "lun": 0,
                             "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK-1')]",
                             "createOption": "Empty",
@@ -228,19 +238,17 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsnic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdsnic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -290,19 +298,17 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh1nic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh1nic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -352,19 +358,17 @@
                     "allowExtensionOperations": true
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('rdssh2nic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },
@@ -379,20 +383,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('RDS_Session_Host_Apps_IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -411,20 +413,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('RDS_Session_Host_Desktop_IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('RDS_Session_Host_Desktop_IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -443,23 +443,21 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdspip'))]"
-                            },
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('RDS_Gateway_IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('rdspip'))]"
+                        },
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -558,12 +556,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         },
@@ -583,12 +581,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         },
@@ -608,12 +606,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         }

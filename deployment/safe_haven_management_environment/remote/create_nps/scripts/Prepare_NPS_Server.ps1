@@ -1,4 +1,4 @@
-﻿# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
+# Don't make parameters mandatory as if there is any issue binding them, the script will prompt for them
 # and remote execution will stall waiting for the non-present user to enter the missing parameter on the
 # command line. This take up to 90 minutes to timeout, though you can try running resetState.cmd in
 # C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
@@ -65,13 +65,21 @@ if ($?) {
 }
 
 
-# Download the NPS Extension
-# --------------------------
-Write-Host "Downloading NPS Extension to '$remoteDir'..."
-Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe -OutFile $remoteDir\NpsExtnForAzureMfaInstaller.exe;
+# Download and install the NPS Extension
+# --------------------------------------
+Write-Host "Downloading NPS extension to '$remoteDir'..."
+$npsExtnPath = (Join-Path $remoteDir "NpsExtnForAzureMfaInstaller.exe")
+Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe -OutFile $npsExtnPath
 if ($?) {
     Write-Host " [o] Completed"
 } else {
     Write-Host " [x] Failed to download NPS extension"
 }
+Write-Host "Installing NPS extension..."
+Start-Process $npsExtnPath -ArgumentList '/install','/quiet'
 
+
+# # Import the NPS configuration
+# # ----------------------------
+# Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml")
+# Invoke-Expression 'cmd /c start powershell -Command { Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml") }'

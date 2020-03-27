@@ -40,15 +40,15 @@ Export-ModuleMember -Function New-AccountSasToken
 function New-ReadOnlyAccountSasToken {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter subscription name")]
-        [string]$subscriptionName,
+        [string]$SubscriptionName,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
-        [string]$resourceGroup,
+        [string]$ResourceGroup,
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
-        [string]$accountName
+        [string]$AccountName
     )
-    return New-AccountSasToken -subscriptionName "$subscriptionName" `
-                               -resourceGroup "$resourceGroup" `
-                               -AccountName "$accountName" `
+    return New-AccountSasToken -subscriptionName "$SubscriptionName" `
+                               -resourceGroup "$ResourceGroup" `
+                               -AccountName "$AccountName" `
                                -Service Blob,File `
                                -ResourceType Service,Container,Object `
                                -Permission "rl"

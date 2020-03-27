@@ -24,21 +24,20 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$subnetName = $config.sre.network.subnets.data.Name
 $vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
-$vnetName = $config.sre.network.vnet.Name
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
 $dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword
-$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $dsvmDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbAdminPassword
 $dsvmDbReaderPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbReaderPassword
 $dsvmDbWriterPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbWriterPassword
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
 
 
 # Get list of image versions
@@ -147,10 +146,10 @@ try {
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
-Add-LogMessage -Level Info "Looking for subnet network '$subnetName'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $subnetName }
+Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.Name)'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.Name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$subnetName' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.Name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
@@ -173,6 +172,7 @@ $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 # Set template expansion variables
+$DATASERVER_HOSTNAME = $config.sre.dataserver.hostname
 $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
 $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
 $DOMAIN_LOWER = $DOMAIN_UPPER.ToLower()
@@ -180,6 +180,8 @@ $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
 $AD_DC_NAME_LOWER = $AD_DC_NAME_UPPER.ToLower()
 $ADMIN_USERNAME = $dsvmAdminUsername
 $MACHINE_NAME = $vmName
+$DATA_MOUNT_USERNAME = $config.sre.users.datamount.samAccountName
+$DATA_MOUNT_PASSWORD = $dataMountPassword
 $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
 $LDAP_BASE_DN = $config.shm.domain.userOuPath
 $LDAP_BIND_DN = "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath
@@ -236,13 +238,7 @@ Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
 
 # Restart after the NSG switch
 # ----------------------------
-Add-LogMessage -Level Info "Rebooting $vmName..."
 Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
-if ($?) {
-    Add-LogMessage -Level Success "Rebooting '${vmName}' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
-}
 
 
 # Create Postgres roles
@@ -298,7 +294,40 @@ $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName
 Write-Output $result.Value
 
 
+# Run remote diagnostic scripts
+# -----------------------------
+Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
+$params = @{
+    TEST_HOST = $config.shm.dc.fqdn
+    LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
+    DOMAIN_LOWER = $config.shm.domain.fqdn
+    SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
+}
+foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
+                             ("name resolution", "restart_name_resolution_service.sh"),
+                             ("realm join", "rerun_realm_join.sh"),
+                             ("SSSD service", "restart_sssd_service.sh"),
+                             ("xrdp service", "restart_xrdp_service.sh"))) {
+    $name, $diagnostic_script = $scriptNamePair
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
+    Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$vmName'"
+    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
+    $success = $?
+    Write-Output $result.Value
+    if ($success) {
+        Add-LogMessage -Level Success "Configuring $name on $vmName was successful"
+    } else {
+        Add-LogMessage -Level Failure "Configuring $name on $vmName failed!"
+    }
+}
+
+
 # Get private IP address for this machine
 # ---------------------------------------
 $privateIpAddress = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg).Id } | ForEach-Object { $_.IpConfigurations.PrivateIpAddress }
 Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed from the RDS at $privateIpAddress"
+
+
+# Switch back to original subscription
+# ------------------------------------
+$_ = Set-AzContext -Context $originalContext

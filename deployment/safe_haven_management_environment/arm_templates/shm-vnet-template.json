@@ -5,7 +5,7 @@
         "P2S_VPN_Certificate": {
             "type": "string"
         },
-        "Shm_Id":{
+        "Shm_Id": {
             "type": "string"
         },
         "Subnet_Identity_Name": {
@@ -43,16 +43,14 @@
     "variables": {
         "nsgName": "[concat('NSG_SHM_', toUpper(parameters('Shm_Id')), '_SUBNET_IDENTITY')]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('nsgName')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "securityRules": [
-                    {
+                "securityRules": [{
                         "name": "RPC_endpoint_mapper",
                         "properties": {
                             "description": "Active Directory Rule",
@@ -381,8 +379,7 @@
                         }
                     }
                 ],
-                "defaultSecurityRules": [
-                    {
+                "defaultSecurityRules": [{
                         "name": "AllowVnetInBound",
                         "properties": {
                             "description": "Allow inbound traffic from all VMs in VNET",
@@ -519,20 +516,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "shmgwipconf",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('Virtual_Network_Name'),'_GW_PIP'))]"
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), parameters('Subnet_Gateway_Name'))]"
-                            }
+                "ipConfigurations": [{
+                    "name": "shmgwipconf",
+                    "properties": {
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('Virtual_Network_Name'),'_GW_PIP'))]"
+                        },
+                        "subnet": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual_Network_Name'), parameters('Subnet_Gateway_Name'))]"
                         }
                     }
-                ],
+                }],
                 "sku": {
                     "name": "VpnGw1",
                     "tier": "VpnGw1",
@@ -552,19 +547,16 @@
                         "IkeV2",
                         "SSTP"
                     ],
-                    "vpnClientRootCertificates": [
-                        {
-                            "name": "SafeHavenManagementP2SRootCert",
-                            "properties": {
-                                "publicCertData": "[parameters('P2S_VPN_Certificate')]"
-                            }
+                    "vpnClientRootCertificates": [{
+                        "name": "SafeHavenManagementP2SRootCert",
+                        "properties": {
+                            "publicCertData": "[parameters('P2S_VPN_Certificate')]"
                         }
-                    ],
+                    }],
                     "vpnClientRevokedCertificates": [],
                     "vpnClientIpsecPolicies": []
                 },
-                "bgpSettings": {
-                }
+                "bgpSettings": {}
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('Virtual_Network_Name'),'_GW_PIP'))]",
@@ -590,8 +582,7 @@
                         "8.8.8.8"
                     ]
                 },
-                "subnets": [
-                    {
+                "subnets": [{
                         "name": "[parameters('Subnet_Web_Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet_Web_CIDR')]",

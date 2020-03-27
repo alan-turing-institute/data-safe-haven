@@ -74,11 +74,16 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
+        sreId = "`"$($config.sre.id)`""
         testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
         gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
         hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
         sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+        rdsDataserverVMName = "`"$($config.sre.dataserver.vmName)`""
+        rdsGatewayVMName = "`"$($config.sre.rds.gateway.vmName)`""
+        rdsSessionHostAppsVMName = "`"$($config.sre.rds.sessionHost1.vmName)`""
+        rdsSessionHostDesktopVMName = "`"$($config.sre.rds.sessionHost2.vmName)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value

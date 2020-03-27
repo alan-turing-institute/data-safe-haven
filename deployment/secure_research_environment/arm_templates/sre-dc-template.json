@@ -56,7 +56,7 @@
                 "description": "Select size of VM"
             }
         },
-        "Domain_Name":{
+        "Domain_Name": {
             "type": "string",
             "metadata": {
                 "Description": "Enter the correct public domain name"
@@ -99,8 +99,7 @@
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
         "datadisk": "[concat(parameters('DC_VM_Name'),'-DATA-DISK')]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('DC_VM_Name')]",
             "apiVersion": "2018-06-01",
@@ -128,19 +127,17 @@
                         },
                         "diskSizeGB": 128
                     },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[variables('datadisk')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
-                            },
-                            "diskSizeGB": 20
-                        }
-                    ]
+                    "dataDisks": [{
+                        "lun": 0,
+                        "name": "[variables('datadisk')]",
+                        "createOption": "Empty",
+                        "caching": "None",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 20
+                    }]
                 },
                 "osProfile": {
                     "computerName": "[parameters('DC_VM_Name')]",
@@ -153,14 +150,12 @@
                     "secrets": []
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -172,40 +167,38 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]"
             ],
-            "resources": [
-                {
-                    "type": "extensions",
-                    "name": "CreateADForest",
-                    "apiVersion": "2018-06-01",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.Powershell",
-                        "type": "DSC",
-                        "typeHandlerVersion": "2.19",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "ModulesUrl": "[concat(parameters('Artifacts_Location'), parameters('Artifacts_Location_SAS_Token'))]",
-                            "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
-                            "Properties": {
-                                "DomainName": "[parameters('Domain_Name')]",
-                                "DomainNetBIOSName": "[parameters('Domain_NetBios_Name')]",
-                                "AdminCreds": {
-                                    "UserName": "[parameters('Administrator_User')]",
-                                    "Password": "PrivateSettingsRef:AdminPassword"
-                                }
+            "resources": [{
+                "type": "extensions",
+                "name": "CreateADForest",
+                "apiVersion": "2018-06-01",
+                "location": "[resourceGroup().location]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Compute/virtualMachines', parameters('DC_VM_Name'))]"
+                ],
+                "properties": {
+                    "publisher": "Microsoft.Powershell",
+                    "type": "DSC",
+                    "typeHandlerVersion": "2.19",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "ModulesUrl": "[concat(parameters('Artifacts_Location'), parameters('Artifacts_Location_SAS_Token'))]",
+                        "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
+                        "Properties": {
+                            "DomainName": "[parameters('Domain_Name')]",
+                            "DomainNetBIOSName": "[parameters('Domain_NetBios_Name')]",
+                            "AdminCreds": {
+                                "UserName": "[parameters('Administrator_User')]",
+                                "Password": "PrivateSettingsRef:AdminPassword"
                             }
-                        },
-                        "protectedSettings": {
-                            "Items": {
-                                "AdminPassword": "[parameters('Administrator_Password')]"
-                            }
+                        }
+                    },
+                    "protectedSettings": {
+                        "Items": {
+                            "AdminPassword": "[parameters('Administrator_Password')]"
                         }
                     }
                 }
-            ]
+            }]
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
@@ -214,20 +207,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('DC_IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('DC_IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
