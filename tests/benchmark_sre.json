@@ -1,5 +1,5 @@
 {
-    "DSG201912021337-160": {
+    "SRE-SREID-160-DSVM-VERSION": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"
@@ -153,7 +153,7 @@
             }
         ]
     },
-    "DATA-DSG11": {
+    "DAT-SRE-SREID": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"
@@ -307,7 +307,7 @@
             }
         ]
     },
-    "GITLAB-DSG11": {
+    "GITLAB-SRE-SREID": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"
@@ -461,7 +461,7 @@
             }
         ]
     },
-    "HACKMD-DSG11": {
+    "HACKMD-SRE-SREID": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"
@@ -615,7 +615,7 @@
             }
         ]
     },
-    "RDS-DSG11": {
+    "RDG-SRE-SREID": {
         "InternetFromPort": {
             "80": "Reachable",
             "443": "Reachable"
@@ -793,7 +793,7 @@
             }
         ]
     },
-    "RDSSH1-DSG11": {
+    "APP-SRE-SREID": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"
@@ -947,7 +947,7 @@
             }
         ]
     },
-    "RDSSH2-DSG11": {
+    "DKP-SRE-SREID": {
         "InternetFromPort": {
             "80": "Unreachable",
             "443": "Unreachable"

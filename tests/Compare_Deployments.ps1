@@ -17,7 +17,7 @@ if (-Not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Co
 # Import modules
 Import-Module Az
 Import-Module Communary.PASM
-Import-Module $PSScriptRoot/../common_powershell/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../deployment/common/Logging.psm1 -Force
 
 function Select-ClosestMatch {
     param (
@@ -266,7 +266,10 @@ foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
     }
     $benchmarkVMs += $VM
 }
-
+# Write-Host "benchmarkVMs: $($benchmarkVMs.Length)"
+# $benchmarkVMNames = $benchmarkVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
+# Write-Host $benchmarkVMNames
+# exit 1
 
 # Get VMs in test SHM
 # -------------------
@@ -283,19 +286,13 @@ foreach ($VM in $testVMs) {
 $vmHashTable = @{}
 foreach ($testVM in $testVMs) {
     $nameToCheck = $testVM.Name
-    # Override matches for names that would otherwise fail
-    if ($nameToCheck.StartsWith("CRAN-EXTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("CRAN-EXTERNAL-MIRROR", "CRAN-MIRROR-EXTERNAL") }
-    if ($nameToCheck.StartsWith("CRAN-INTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("CRAN-INTERNAL-MIRROR", "CRAN-MIRROR-INTERNAL") }
-    if ($nameToCheck.StartsWith("PYPI-EXTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("PYPI-EXTERNAL-MIRROR", "PYPI-MIRROR-EXTERNAL") }
-    if ($nameToCheck.StartsWith("PYPI-INTERNAL-MIRROR")) { $nameToCheck = $nameToCheck.Replace("PYPI-INTERNAL-MIRROR", "PYPI-MIRROR-INTERNAL") }
-    if ($nameToCheck.StartsWith("APP-SRE")) { $nameToCheck = $nameToCheck.Replace("APP-SRE", "RDSSH1") }
-    if ($nameToCheck.StartsWith("DKP-SRE")) { $nameToCheck = $nameToCheck.Replace("DKP-SRE", "RDSSH2") }
     # Only match against names that have not been matched yet
     $benchmarkVMNames = $benchmarkVMs | ForEach-Object { $_.Name } | Where-Object { ($vmHashTable.Values | ForEach-Object { $_.Name }) -NotContains $_ }
     $benchmarkVM = $benchmarkVMs | Where-Object { $_.Name -eq $(Select-ClosestMatch -Array $benchmarkVMNames -Value $nameToCheck) }
     $vmHashTable[$testVM] = $benchmarkVM
     Add-LogMessage -Level Info "matched $($testVM.Name) => $($benchmarkVM.Name)"
 }
+
 
 # Iterate over paired VMs checking their network settings
 # -------------------------------------------------------
