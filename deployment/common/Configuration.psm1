@@ -33,15 +33,44 @@ function Get-ShmFullConfig {
 
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
-    $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
-    $shm.computeVmImageResourceGroupName = "RG_SH_IMAGE_GALLERY"
-    $shm.computeVmImageImageGalleryName = "SAFE_HAVEN_COMPUTE_IMAGES"
-
     $shm.id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
     $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
+    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
+
+    # --- DSVM build images ---
+    $shm.dsvmImage = [ordered]@{
+        subscription = $shmConfigBase.computeVmImageSubscriptionName
+        location = "westeurope" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
+        bootdiagnostics = [ordered]@{
+            rg = "RG_SH_BOOT_DIAGNOSTICS"
+            accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
+        }
+        build = [ordered]@{
+            rg = "RG_SH_BUILD_CANDIDATES"
+            nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
+            subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
+            vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+        }
+        gallery = [ordered]@{
+            rg = "RG_SH_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
+            imageMajorVersion = 0
+            imageMinorVersion = 1
+        }
+        images = [ordered]@{
+            rg = "RG_SH_IMAGE_STORAGE"
+        }
+        keyVault = [ordered]@{
+            rg = "RG_SH_SECRETS"
+            name = "kv-shm-$($shm.id)-dsvm-images".ToLower()
+        }
+        network = [ordered]@{
+            rg = "RG_SH_NETWORKING"
+        }
+    }
 
     # --- Domain config ---
     $shm.domain = [ordered]@{}
@@ -121,7 +150,6 @@ function Get-ShmFullConfig {
 
     # --- Storage config --
     $storageRg = "RG_SHM_ARTIFACTS"
-    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
@@ -140,6 +168,8 @@ function Get-ShmFullConfig {
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+        buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
+        buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
         dcSafemodePassword = "shm-$($shm.id)-dc-safemode-password".ToLower()
         domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
         localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
@@ -460,15 +490,14 @@ function Add-SreConfig {
     $config.sre.dsvm.rg = "RG_SRE_COMPUTE"
     $config.sre.dsvm.nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
     $config.sre.dsvm.deploymentNsg = "NSG_SRE_$($config.sre.Id)_COMPUTE_DEPLOYMENT".ToUpper()
-    $config.sre.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
-    $config.shm.Remove("computeVmImageSubscriptionName")
-    $config.sre.dsvm.vmImageResourceGroup = $config.shm.computeVmImageResourceGroupName
-    $config.shm.Remove("computeVmImageResourceGroupName")
-    $config.sre.dsvm.vmImageGallery = $config.shm.computeVmImageImageGalleryName
-    $config.shm.Remove("computeVmImageImageGalleryName")
+    $config.sre.dsvm.vmImageSubscription = $config.shm.dsvmImage.subscription
+    $config.sre.dsvm.vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
+    $config.sre.dsvm.vmImageGallery = $config.shm.dsvmImage.gallery.sig
+    $config.shm.Remove("dsvmImage")
     $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
+
     $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "60"

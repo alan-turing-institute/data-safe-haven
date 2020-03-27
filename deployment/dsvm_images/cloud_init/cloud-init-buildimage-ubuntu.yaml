@@ -74,10 +74,10 @@ write_files:
       create extension if not exists earthdistance;
   - path: "/installation/spark_sha512.hash"
     content: |
-      72833745defba95262fbe67306a48c251dbbe17585d65f6095057fc3dc2812ea  spark-2.4.4-bin-hadoop2.7.tgz
+      020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81  spark-2.4.5-bin-hadoop2.7.tgz
   - path: "/installation/dbeaver_sha512.hash"
     content: |
-      d53195c0e8e2fc15cfa06746b3802cf77c39f4e5622f19de071dc3de997b636d  dbeaver-ce_6.1.0_amd64.deb
+      48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925  dbeaver-ce_7.0.1_amd64.deb
   - path: "/installation/deprovision.log"
     permissions: "0644"
     content: |
@@ -99,36 +99,36 @@ write_files:
   - path: "/installation/create_or_update_conda_python_environment.sh"
     permissions: "0744"
     content: |
-        #! /bin/bash
-        # Require four arguments: environment name; expected time; (quoted) list of conda packages; (quoted) list of pip packages
-        if [ $# -ne 4 ]; then
-          exit 1
-        fi
-        ENV_NAME=$1
-        EXPECTED=$2
-        CONDA_PACKAGES=$3
-        PIP_PACKAGES=$4
-        # Set version
-        VERSION=3.7
-        if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
-        if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
-        # Create environment
-        echo ">=== Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes... ===<"
-        START_TIME=$(date +%s)
-        echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-        echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
-        echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-        if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then conda create -y --verbose --name $ENV_NAME python=$VERSION $CONDA_PACKAGES; else conda install -y --verbose --name $ENV_NAME $CONDA_PACKAGES; fi
-        if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then echo "Could not build python $VERSION environment"; exit 1; fi
-        echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
-        echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-        /anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
-        ENV_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; which jupyter" | bash)
-        ENV_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; jupyter --version | grep core | cut -d':' -f2" | bash)
-        if [ "$ENV_JUPYTER_LOCATION" != "" ]; then echo "python $VERSION environment has jupyter (version $ENV_JUPYTER_VERSION) at $ENV_JUPYTER_LOCATION"; else echo "jupyter not found in python $VERSION environment!"; exit 1; fi
-        echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
-        ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-        echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
+      #! /bin/bash
+      # Require four arguments: environment name; expected time; (quoted) list of conda packages; (quoted) list of pip packages
+      if [ $# -ne 4 ]; then
+        exit 1
+      fi
+      ENV_NAME=$1
+      EXPECTED=$2
+      CONDA_PACKAGES=$3
+      PIP_PACKAGES=$4
+      # Set version
+      VERSION=3.7
+      if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
+      if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
+      # Create environment
+      echo ">=== Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes... ===<"
+      START_TIME=$(date +%s)
+      echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+      echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
+      echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then conda create -y --verbose --name $ENV_NAME python=$VERSION $CONDA_PACKAGES; else conda install -y --verbose --name $ENV_NAME $CONDA_PACKAGES; fi
+      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then echo "Could not build python $VERSION environment"; exit 1; fi
+      echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
+      echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+      /anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
+      ENV_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; which jupyter" | bash)
+      ENV_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; jupyter --version | grep core | cut -d':' -f2" | bash)
+      if [ "$ENV_JUPYTER_LOCATION" != "" ]; then echo "python $VERSION environment has jupyter (version $ENV_JUPYTER_VERSION) at $ENV_JUPYTER_LOCATION"; else echo "jupyter not found in python $VERSION environment!"; exit 1; fi
+      echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
+      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+      echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -190,9 +190,9 @@ packages:
   - p7zip
   - parallel
   - pgadmin3
-  - postgresql-11
-  - postgresql-11-pgrouting
-  - postgresql-11-postgis-2.5-scripts
+  - postgresql-12
+  - postgresql-12-pgrouting
+  - postgresql-12-postgis-3-scripts
   - postgresql-contrib
   - qgis
   - r-base
@@ -432,10 +432,9 @@ runcmd:
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== Installing NVidia requirements for tensorflow ===<"
-  - apt-get install -y --no-install-recommends nvidia-driver-418
-  - apt-get install -y --no-install-recommends cuda-10-0 libcudnn7=7.6.2.24-1+cuda10.0 libcudnn7-dev=7.6.2.24-1+cuda10.0
-  - apt-get install -y --no-install-recommends libnvinfer5=5.1.5-1+cuda10.0
-  - apt-get install -y --no-install-recommends libnvinfer-dev=5.1.5-1+cuda10.0
+  - apt-get install -y --no-install-recommends nvidia-driver-430
+  - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
+  - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
   # Clean up installation - getting to this point takes approximately 30 mins
   - echo ">=== Cleaning up apt-get packages... ===<"
@@ -459,8 +458,8 @@ runcmd:
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
-  - conda config --append channels pytorch # for pytorch, torchvision
-  - conda config --append channels ostrokach-forge # for graph-tool which cannot be installed with pip
+  # - conda config --append channels pytorch # for pytorch, torchvision
+  # - conda config --append channels ostrokach-forge # for graph-tool which cannot be installed with pip
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
   - conda config --set remote_max_retries 20
@@ -473,7 +472,7 @@ runcmd:
 
   # Create or update conda environments
   # Python 2.7
-  - /installation/create_or_update_conda_python_environment.sh py27 45 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py27 300 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   # Python 3.6
   - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   # Python 3.7
@@ -495,14 +494,14 @@ runcmd:
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   - echo "Previously installed CRAN packages:"
-  - Rscript -e "installed.packages()[,'Package']"
+  - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
   - echo "Installing remaining CRAN packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($CRANPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($CRAN_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
   # Bioconductor
   - echo "Previously installed BioConductor packages:"
-  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
   - echo "Installing remaining BioConductor packages..."
-  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($BIOCPACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($BIOCONDUCTOR_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
@@ -511,7 +510,7 @@ runcmd:
   # Ensure RStudio picks up system R rather than Conda R for all users
   - cd /run/cloudinit
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  - RSTUDIO_DEB="rstudio-1.2.1335-amd64.deb"
+  - RSTUDIO_DEB="rstudio-1.2.5033-amd64.deb"
   - wget https://download1.rstudio.org/desktop/bionic/amd64/${RSTUDIO_DEB}
   - gdebi --non-interactive ${RSTUDIO_DEB}
   - rm -f ${RSTUDIO_DEB}
@@ -525,12 +524,13 @@ runcmd:
   - mkdir -p /opt/julia
   - cd /opt/julia
   - echo "Downloading package..."
-  - JULIA_TARBALL="julia-1.1.1-linux-x86_64.tar.gz"
-  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.1/${JULIA_TARBALL}
+  - JULIA_TARBALL="julia-1.4.0-linux-x86_64.tar.gz"
+  - JULIA_VERSION=$(echo $JULIA_TARBALL | cut -d'-' -f1-2)
+  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.4/${JULIA_TARBALL}
   - echo "Installing and cleaning up..."
   - tar -zxf ${JULIA_TARBALL}
   - rm -rf ${JULIA_TARBALL}
-  - PATH=$PATH:/opt/julia/julia-1.1.1/bin
+  - PATH=$PATH:/opt/julia/${JULIA_VERSION}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
   # Install jupyter kernels
@@ -553,19 +553,24 @@ runcmd:
   - echo ">=== Installing spark... ===<"
   - mkdir -p /opt/spark
   - cd /opt/spark
-  - curl -O http://apache.mirror.anlx.net/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz
+  - SPARK_TARBALL="spark-2.4.5-bin-hadoop2.7.tgz"
+  - SPARK_VERSION=$(echo $SPARK_TARBALL | cut -d'-' -f1-2)
+  - SPARK_HADOOP_VERSION=$(echo $SPARK_TARBALL | cut -d'.' -f1-4)
+  - curl -O http://apache.mirror.anlx.net/spark/${SPARK_VERSION}/${SPARK_TARBALL}
   - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
-  - tar -zxf spark-2.4.3-bin-hadoop2.7.tgz
-  - rm -rf spark-2.4.3-bin-hadoop2.7.tgz
-  - PATH=$PATH:/opt/spark/spark-2.4.3-bin-hadoop2.7/bin
+  - tar -zxf ${SPARK_TARBALL}
+  - rm -rf ${SPARK_TARBALL}
+  - PATH=$PATH:/opt/spark/${SPARK_HADOOP_VERSION}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
 
   # Install dbeaver
   - echo ">=== Installing dbeaver... ===<"
-  - curl -O https://dbeaver.io/files/6.1.0/dbeaver-ce_6.1.0_amd64.deb
+  - DBEAVER_DEB="dbeaver-ce_7.0.1_amd64.deb"
+  - DBEAVER_VERSION=$(echo $DBEAVER_DEB | cut -d'_' -f2)
+  - curl -O https://dbeaver.io/files/${DBEAVER_VERSION}/${DBEAVER_DEB}
   - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
-  - dpkg -i dbeaver-ce_6.1.0_amd64.deb
-  - rm dbeaver-ce_6.1.0_amd64.deb
+  - dpkg -i $DBEAVER_DEB
+  - rm $DBEAVER_DEB
 
   # Install PostgreSQL extensions
   - echo ">=== Installing PostgreSQL extensions... ===<"
@@ -616,9 +621,9 @@ runcmd:
   - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
-  - Rscript -e "list.of.packages <- c($CRANPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
   - echo "Bioconductor packages that could not be installed:"
-  - Rscript -e "list.of.packages <- c($BIOCPACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
 
   # Set PATH to the current working version which contains all installed packages
   # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
