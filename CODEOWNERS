@@ -1,0 +1,13 @@
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+# For syntax and examples, see https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners#codeowners-syntax
+
+# No default rule set. We want to allow updates to documents with only usual peer review.
+
+# Set owners for code used to deploy Safe Haven
+# This is a protection to allow us to accept PRs from 
+# our early adopters but ensure strict review to start
+# We only plan to require code owner review for 
+# master and other branches that may be deployed from.
+# Note: /dir/ applies to directory and all subdirectories
+/deployment/      @martintoreilly @jemrobinson

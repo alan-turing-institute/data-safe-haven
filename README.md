@@ -1,93 +1,48 @@
-# Data Safe Haven
+# The Turing Data Safe Haven
+
+This is the repository for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project, and contains the code and instrutions to to deploy, administer and use your own instance of the Turing's Data Safe Haven on Microsoft's Azure cloud platform.
 
 
-Welcome to the Data Safe Havens project. This repository contains the code necessary to deploy an instance of the Alan Turing Institute's Data Safe Haven, and instructions on how to use it.
+## Introduction
+
+Many of the important questions we want to answer for society require the use of sensitive data. In order to effectively answer these questions, the right balance must be struck between ensuring the security of the data and enabling effective research using the data.
+
+In consultation with the community, we have been developing recommended policies and controls for performing productive research on sensitive data, as well as a cloud-based reference implementation in order to adress some of the above challenges. 
+
+We have developed:
+
+- A shared model for classifying data sets and projects into common sensitivity tiers, with recommended security measures for each tier and a web-based tool to support this process.
+- A cloud-based Safe Haven implementation using software defined infrastructure to support the reliable, efficient and safe deployment of project specific secure research environments tailored to the agreed sensitivity tier for the project.
+- A productive environment for curiosity-driven research, including access to a wide range of data science software packages and community provided code.
 
 
-## What is a Data Safe Haven
+## Overview
+
+To get a good overview of the Safe Haven, see the resources below.
+
+  - [One-page overview](https://doi.org/10.6084/m9.figshare.11815224): Poster with overview of our data classification approach, security measures, data management and technical architecture. This is the best one-page high-level overview of our systems and process.
+
+  - [Overview presentation](https://doi.org/10.6084/m9.figshare.11923644): Slides from a presentation about the Safe Haven giving a more in-depth overview.
+
+  - [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
 
 
-Secure environments for analysis of sensitive datasets are essential for research. Data Safe Havens provide a way to build a secure environment for data analysis.
+## Documentation
 
+For detailed guidance on deploying, administering and using the Safe Haven, see our [documentation](/docs/README.md).
 
-[Overview](docs/processes/provider-overview.md) - Find out more about Data Safe Havens, and how to use our model.
-
-[Implementation on Azure](docs/processes/provider-azure-implementation-details.md) - A technical overview of the Safe Haven architecture on Azure.
-
-
-## Setting up a Data Safe Haven
-
-
-You can set up a data safe haven yourself.
-
-
-[Safe Haven Management](docs/deploy_shm_instructions.md) - Instructions on how to build a Safe Haven Management environment in Azure.
-
-[Secure Research Environment](docs/deploy_sre_instructions.md) - Instructions on how to build a Secure Research Environment in Azure.
-
-[Azure VMs](vm_image_management/README.md) - Instructions on how to build the VM image that is used for data analysis in your secure environment.
-
-[Create New Users](secure_research_environment/create-users/README.md) - Create and add new users to Data Safe Haven environments.
-
-[Data Ingress](docs/processes/provider-data-ingress.md) - Instructions for data providers, on how to transfer data into a safe haven for secure analysis.
-
-[Data Egress](docs/processes/investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
-
-Before you go ahead to set up a Data Safe Haven, you'll need to have the following pre-requisites:
-- `Powershell`
-    - needed to deploy infrastructure
-- `bash`
-    - needed to deploy infrastructure
-- `Microsoft Azure` account
-    - target for infrastructure deployment
-
-
-[Design choices](docs/design/overview.md) - You can find out more about the design of Data Safe Havens here.
-
-
-## Using a Data Safe Haven
-
-
-Once a Safe Haven environment has been set up for a project, you can get access to it to carry out secure research.
-
-
-[Data Classification User Guide](docs/safe_haven_webapp_user_guide.md) - Step by Step instructions on classify project data using our classification WebApp.
-
-[Safe Havens Cheat Sheet](docs/safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
-
-[Safe Havens User Guide](docs/safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment.
-
-## The philosophy of our Safe Haven design
-
-We should ensure that all aspects of our data safe haven solution are deployable via scripts (i.e. our safe havens are defined by "infrastructure as code"). Many aspects of the security of our safe haven will depend on reliably reproducing one of a limited number of validated base configurations, with controlled and audited variations on these for specific instances (e.g. list of users, size and number of virtual machines, available storage etc). We should have a set of version controlled "master scripts" for deploying each base variation and also store the instance specific specification variations in version control. The goal is to have an executable record of each safe haven instance we deploy, for both reproducibility and audit purposes. Running validated parameterised scripts rather than ad-hoc commands will also minimise the risk of inadvertently compromising the security of a safe haven instance on initial deployment or post-deployment modification (e.g. ensuring that all new resources deployed have the appropriate access controls).
-
-### Available deployment tools
-We consider the following set of tools for deployment and configuration of computational infrastructure.
-
-- Ansible
-- Azure Resource Management (ARM) templates
-- Azure Powershell Command Line Interface (CLI) or Libraries
-- Azure Python Command Line Interface (CLI) or Libraries
-- Chef
-- Fabric
-- Puppet
-- SaltStack
-- Terraform
-
-### Considerations
-We would like our solution to have the following properties.
-
-#### Declarative rather than procedural
-- A **procedural** approach to infrastructure deployment defines a "recipe" of steps to follow to generate a desired infrastructure state from the current state.
-- A **declarative** approach to infrastructure deployment defines a "configuration" describing the desired infrastructure state **independent** of the current state.
-
-A declarative approach is preferred for the following reasons:
-- **Clarity** of infrastructure description: With a declarative approach, the latest deployed configuration clearly and completely describes the current state of the deployed infrastructure. With a procedural approach, the current state of the deployed infrastructure is the result of cumulatively applying a set of scripts adding, amending and deleting resources and can only be inferred by mentally running these update scripts.
-- **Consistency** of deployment: With a procedural approach, the steps required to reach a desired deployed configuration depend on the current state of the deployment. Unless all instances of a given infrastructure are updated in lockstep, each instance will require different subsets of update scripts to be applied to bring it up to date with the current configuration. Even just deploying a "fresh" instance requires running the initial deployment script plus all subsequent updates in order. In contrast, with a declarative approach, the latest configuration can simply be deployed against all instances and they will be updated to match it.
-
-#### A focus on infrastructure orchestration
-Many of the long-standing tools being considered have traditionally focused on setting up and updating the configuration of existing physical or virtual machines, with support for **orchestrating** the deployment of virtual infrastructure added later as a secondary provision. We plan to use virtual machine images and docker to manage the configuration of compute resources, so orchestration of virtual infrastructure should be first class functionality in our chosen solution.
 
 ## Contributing
 
-We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
+We worked together with the community to develop the policy, processes and design decisions for our Safe Haven, and we are keen to transition our implementation from being a Turing project to being a community owned platform which we work together with a range of other organisations to maintain and extend.
+
+We welcome contributions from anyone who is interested in the project. There are lots of ways to contribute, not just writing code. See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRIBUTING.md) to learn more about how you can contribute and how we work together as a community.
+
+
+## Acknowledgements
+
+We are grateful for the following support for this project:
+
+  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1))
+  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)) 
+  - Microsoft's generous donation of [$5 million in Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute

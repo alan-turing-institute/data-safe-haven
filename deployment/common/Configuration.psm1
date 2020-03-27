@@ -227,7 +227,6 @@ function Add-SreConfig {
     }
 
     # === SRE configuration parameters ===
-    $sre = [ordered]@{}
     # Import minimal SRE config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
     $srePrefix = $sreConfigBase.ipPrefix
@@ -241,7 +240,7 @@ function Add-SreConfig {
     $config.sre.subscriptionName = $sreConfigBase.subscriptionName
     $config.sre.id = $sreConfigBase.sreId
     if ($config.sre.id.length -gt 7) {
-        Write-Host "sreId should be 7 characters or fewer if possible. '$($config.sre.id)' is $($config.sre.id.length) characters long."
+        throw "sreId must be 7 characters or fewer. '$($config.sre.id)' is $($config.sre.id.length) characters long."
     }
     $config.sre.shortName = "sre-$($sreConfigBase.sreId)".ToLower()
     $config.sre.location = $config.shm.location
@@ -251,7 +250,7 @@ function Add-SreConfig {
     # -- Domain config ---
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
-        throw "Netbios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
+        throw "NetBios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
     }
     $config.sre.domain = [ordered]@{}
     $config.sre.domain.fqdn = $sreConfigBase.domain
