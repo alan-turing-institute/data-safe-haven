@@ -74,6 +74,7 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
+        sreId = "`"$($config.sre.id)`""
         testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
         gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""

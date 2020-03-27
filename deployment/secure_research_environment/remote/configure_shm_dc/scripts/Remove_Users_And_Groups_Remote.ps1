@@ -5,6 +5,7 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [String]$sreId,
     [String]$testResearcherSamAccountName,
     [String]$dsvmLdapSamAccountName,
     [String]$gitlabLdapSamAccountName,
@@ -67,11 +68,17 @@ Remove-SreUser $dsvmLdapSamAccountName
 Remove-SreUser $gitlabLdapSamAccountName
 Remove-SreUser $hackmdLdapSamAccountName
 
-# Remove computers
+# Remove service computers
 Remove-SreComputer $rdsDataserverVMName
 Remove-SreComputer $rdsGatewayVMName
 Remove-SreComputer $rdsSessionHostAppsVMName
 Remove-SreComputer $rdsSessionHostDesktopVMName
+
+# Remove DSVMs
+$dsvmPrefix = "SRE-$sreId".Replace(".","-").ToUpper()
+foreach ($dsvm in $(Get-ADComputer -Filter "Name -like '$dsvmPrefix*'")) {
+    Remove-SreComputer $dsvm.Name
+}
 
 # Remove groups
 Remove-SreGroup $sreResearchUserSG
