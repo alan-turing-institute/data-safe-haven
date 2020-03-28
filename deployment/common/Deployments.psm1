@@ -245,11 +245,11 @@ function Deploy-Subnet {
     )
     Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
     Add-LogMessage -Level Info "Ensuring that subnet '$Name' exists..."
-    $subnetConfig = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $_ = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        $subnetConfig = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
-        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+        Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork | Set-AzVirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
         } else {
@@ -274,7 +274,7 @@ function Deploy-StorageAccount {
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
-    Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists..."
+    Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
     $storageAccount = Get-AzStorageAccount -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating storage account '$Name'"
@@ -324,29 +324,33 @@ Export-ModuleMember -Function Deploy-StorageContainer
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Size of virtual machine to deploy")]
         $Size,
-        [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Administrator password")]
+        [Parameter(Mandatory = $true, HelpMessage = "Administrator password")]
         $AdminPassword,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Administrator username")]
+        [Parameter(Mandatory = $true, HelpMessage = "Administrator username")]
         $AdminUsername,
-        [Parameter(Position = 8, Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "ID of VM image to deploy")]
         $CloudInitYaml,
-        [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location,
-        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $NicId,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
+        [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
         $OsDiskType,
-        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 10, HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByImageId", HelpMessage = "ID of VM image to deploy")]
         $ImageId = $null,
-        [Parameter(Position = 11, HelpMessage = "IDs of data disks")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByImageSku", HelpMessage = "ID of VM image to deploy")]
+        $ImageSku = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
+        $OsDiskSizeGb = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "IDs of data disks")]
         $DataDiskIds = $null
     )
     Add-LogMessage -Level Info "Ensuring that virtual machine '$Name' exists..."
@@ -359,11 +363,16 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } else {
-            Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus 18.04-LTS -Version "latest"
+            # $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus 18.04-LTS -Version "latest"
+            $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
         $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $NicId -Primary
-        $vmConfig = Set-AzVMOSDisk -VM $vmConfig -StorageAccountType $OsDiskType -Name "$Name-OS-DISK" -CreateOption FromImage
+        if ($OsDiskSizeGb) {
+            $vmConfig = Set-AzVMOSDisk -VM $vmConfig -StorageAccountType $OsDiskType -Name "$Name-OS-DISK" -CreateOption FromImage -DiskSizeInGB $OsDiskSizeGb
+        } else {
+            $vmConfig = Set-AzVMOSDisk -VM $vmConfig -StorageAccountType $OsDiskType -Name "$Name-OS-DISK" -CreateOption FromImage
+        }
         $vmConfig = Set-AzVMBootDiagnostic -VM $vmConfig -Enable -ResourceGroupName $BootDiagnosticsAccount.ResourceGroupName -StorageAccountName $BootDiagnosticsAccount.StorageAccountName
         # Add optional data disks
         $lun = 0
@@ -390,22 +399,32 @@ Export-ModuleMember -Function Deploy-UbuntuVirtualMachine
 # ----------------------------
 function Deploy-VirtualMachineNIC {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM NIC to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet to attach this NIC to")]
         $Subnet,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Private IP address for this NIC")]
-        $PrivateIpAddress,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location,
+        [Parameter(Mandatory = $false, HelpMessage = "Public IP address for this NIC")]
+        [ValidateSet("Dynamic", "Static")]
+        $PublicIpAddressAllocation = $null,
+        [Parameter(Mandatory = $false, HelpMessage = "Private IP address for this NIC")]
+        $PrivateIpAddress = $null
     )
     Add-LogMessage -Level Info "Ensuring that VM network card '$Name' exists..."
     $vmNic = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating VM network card '$Name'"
-        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
+        $ipAddressParams = @{}
+        if ($PublicIpAddressAllocation) {
+            $PublicIpAddress = New-AzPublicIpAddress -Name "$Name-PIP" -ResourceGroupName $ResourceGroupName -AllocationMethod $PublicIpAddressAllocation -Location $Location
+            $ipAddressParams["PublicIpAddress"] = $PublicIpAddress
+        }
+        if ($PrivateIpAddress) { $ipAddressParams["PrivateIpAddress"] = $PrivateIpAddress }
+        # $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
+        $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Subnet $Subnet -IpConfigurationName "ipconfig-$Name" -Location $Location @ipAddressParams -Force
         if ($?) {
             Add-LogMessage -Level Success "Created VM network card '$Name'"
         } else {
@@ -524,11 +543,11 @@ function Invoke-RemoteScript {
         $commandId = "RunShellScript"
     }
     # Run the remote command
-    if ($Parameter -eq $null) {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
+    if ($Parameter) {
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
         $success = $?
     } else {
-        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath -Parameter $Parameter
+        $result = Invoke-AzVMRunCommand -Name $VMName -ResourceGroupName $ResourceGroupName -CommandId $commandId -ScriptPath $ScriptPath
         $success = $?
     }
     $success = $success -and ($result.Status -eq "Succeeded")

@@ -1,0 +1,638 @@
+#cloud-config
+
+# Update package database on first boot (ie. run apt-get update)
+package_update: true
+
+# Upgrade installed packages on first boot (ie. run apt-get upgrade)
+package_upgrade: true
+
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    atom.list:
+      source: "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main"
+      keyid: 4C6E74D6C0A35108
+
+    chronitis-jupyter.list:
+      source: "ppa:chronitis/jupyter"
+
+    marutter-c2d4u35.list:
+      source: "ppa:marutter/c2d4u3.5"
+
+    microsoft-prod.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main"
+      keyid: EB3E94ADBE1229CF
+
+    microsoft-azure-cli.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ bionic main"
+      keyid: EB3E94ADBE1229CF
+
+    postgresql.list:
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      keyid: 7FCC7D46ACCC4CF8
+
+    mono-project.list:
+      source: "deb https://download.mono-project.com/repo/ubuntu stable-bionic main"
+      keyid: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+
+    nvidia-cuda.list:
+      source: "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /"
+      keyid: F60F4B3D7FA2AF80
+
+    nvidia-ml.list:
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /"
+
+    rproject-cran35.list:
+      source: "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/"
+      keyid: 51716619E084DAB9
+
+    vscode.list:
+      source: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+      keyid: EB3E94ADBE1229CF
+
+
+write_files:
+  - path: "/installation/postgresql.install"
+    content: |
+      create schema if not exists postgis;
+      create extension if not exists postgis;
+      create extension if not exists postgis_topology;
+      create extension if not exists postgis_sfcgal;
+      create extension if not exists pgrouting;
+      create extension if not exists fuzzystrmatch;
+      create extension if not exists unaccent;
+      create extension if not exists pg_trgm;
+      create extension if not exists bloom;
+      create extension if not exists citext;
+      create extension if not exists cube;
+      create extension if not exists file_fdw;
+      create extension if not exists postgres_fdw;
+      create extension if not exists earthdistance;
+  - path: "/installation/spark_sha512.hash"
+    content: |
+      020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81  spark-2.4.5-bin-hadoop2.7.tgz
+  - path: "/installation/dbeaver_sha512.hash"
+    content: |
+      48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925  dbeaver-ce_7.0.1_amd64.deb
+  - path: "/installation/deprovision.log"
+    permissions: "0644"
+    content: |
+      # Deprovisioning log
+  - path: "/installation/deprovision_vm.sh"
+    permissions: "0744"
+    content: |
+      #! /bin/bash
+      # Deprovision this VM
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner on this VM"
+      waagent -deprovision+user -force 2>&1
+      # Fix internet connectivity that is broken by waagent deprovisioning (needed in older Ubuntu versions)
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Fixing internet connectivity"
+      if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
+      # Remove execute permissions from this file
+      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
+      chmod ugo-x /installation/deprovision_vm.sh
+      ls -alh /installation/deprovision_vm.sh
+  - path: "/installation/create_or_update_conda_python_environment.sh"
+    permissions: "0744"
+    content: |
+      #! /bin/bash
+      # Require four arguments: environment name; expected time; (quoted) list of conda packages; (quoted) list of pip packages
+      if [ $# -ne 4 ]; then
+        exit 1
+      fi
+      ENV_NAME=$1
+      EXPECTED=$2
+      CONDA_PACKAGES=$3
+      PIP_PACKAGES=$4
+      # Set version
+      VERSION=3.7
+      if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
+      if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
+      # Create environment
+      echo ">=== Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes... ===<"
+      START_TIME=$(date +%s)
+      echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+      echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
+      echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then conda create -y --verbose --name $ENV_NAME python=$VERSION $CONDA_PACKAGES; else conda install -y --verbose --name $ENV_NAME $CONDA_PACKAGES; fi
+      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then echo "Could not build python $VERSION environment"; exit 1; fi
+      echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
+      echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
+      /anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
+      ENV_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; which jupyter" | bash)
+      ENV_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; jupyter --version | grep core | cut -d':' -f2" | bash)
+      if [ "$ENV_JUPYTER_LOCATION" != "" ]; then echo "python $VERSION environment has jupyter (version $ENV_JUPYTER_VERSION) at $ENV_JUPYTER_LOCATION"; else echo "jupyter not found in python $VERSION environment!"; exit 1; fi
+      echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
+      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+      echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
+
+# List of packages to install with apt-get
+# NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
+packages:
+  - adcli
+  - apt-transport-https
+  - aspell
+  - atom
+  - attr
+  - azure-cli
+  - code
+  - default-jdk
+  - docker.io
+  - dotnet-sdk-2.1
+  - emacs
+  - firefox
+  - g++-6
+  - gcc-6
+  - gdebi-core
+  - git-core
+  - krb5-kdc
+  - ldap-utils
+  - libasound2
+  - libcanberra-gtk0
+  - libgconf-2-4
+  - libgdal-dev
+  - libgit2-dev
+  - libgl1-mesa-glx
+  - libglu1-mesa
+  - libgmp-dev
+  - libgnome-keyring0
+  - libgsl-dev
+  - libgtk-3-0
+  - libhdf5-serial-dev
+  - liblmdb-dev
+  - libmariadb-client-lgpl-dev
+  - libmpfr-dev
+  - libnss-ldap
+  - libnss-sss
+  - libnss3
+  - libopenmpi-dev
+  - libpam-ldap
+  - libpam-sss
+  - libpoppler-cpp-dev
+  - libpq-dev
+  - libreoffice
+  - librsvg2-dev
+  - libsensors4
+  - libssl-dev
+  - libudunits2-dev
+  - libxss1
+  - lyx
+  - mono-complete
+  - mono-devel
+  - octave
+  - oddjob
+  - oddjob-mkhomedir
+  - osm2pgsql
+  - p7zip
+  - parallel
+  - pgadmin3
+  - postgresql-12
+  - postgresql-12-pgrouting
+  - postgresql-12-postgis-3-scripts
+  - postgresql-contrib
+  - qgis
+  - r-base
+  - r-base-core
+  - r-base-dev
+  - r-bioc-biobase
+  - r-bioc-cummerbund
+  - r-bioc-deseq2
+  - r-bioc-ebseq
+  - r-bioc-graph
+  - r-bioc-gviz
+  - r-bioc-interactivedisplaybase
+  - r-bioc-limma
+  - r-bioc-metagenomeseq
+  - r-bioc-phyloseq
+  - r-bioc-rbgl
+  - r-cran-abind
+  - r-cran-ada
+  - r-cran-akima
+  - r-cran-ape
+  - r-cran-assertthat
+  - r-cran-backports
+  - r-cran-bbmisc
+  - r-cran-biocmanager
+  - r-cran-bitops
+  - r-cran-boot
+  - r-cran-brms
+  - r-cran-car
+  - r-cran-care
+  - r-cran-caret
+  - r-cran-checkmate
+  - r-cran-chron
+  - r-cran-class
+  - r-cran-cluster
+  - r-cran-coda
+  - r-cran-codetools
+  - r-cran-colorramps
+  - r-cran-colorspace
+  - r-cran-corrplot
+  - r-cran-cowplot
+  - r-cran-coxboost
+  - r-cran-crayon
+  - r-cran-cvst
+  - r-cran-cvtools
+  - r-cran-data.table
+  - r-cran-dbi
+  - r-cran-deepnet
+  - r-cran-devtools
+  - r-cran-diagrammer
+  - r-cran-dichromat
+  - r-cran-digest
+  - r-cran-directlabels
+  - r-cran-dlm
+  - r-cran-doby
+  - r-cran-doparallel
+  - r-cran-dplyr
+  - r-cran-dppackage
+  - r-cran-dt
+  - r-cran-dtw
+  - r-cran-dummies
+  - r-cran-dygraphs
+  - r-cran-e1071
+  - r-cran-emulator
+  - r-cran-evaluate
+  - r-cran-factominer
+  - r-cran-fda
+  - r-cran-fields
+  - r-cran-foreach
+  - r-cran-forecast
+  - r-cran-foreign
+  - r-cran-formula
+  - r-cran-gamlss
+  - r-cran-gamlss.dist
+  - r-cran-gamlss.mx
+  - r-cran-gbm
+  - r-cran-gdata
+  - r-cran-ggally
+  - r-cran-ggforce
+  - r-cran-ggmap
+  - r-cran-ggplot2
+  - r-cran-ggridges
+  - r-cran-ggvis
+  - r-cran-glmnet
+  - r-cran-googlevis
+  - r-cran-gplots
+  - r-cran-gridextra
+  - r-cran-gtable
+  - r-cran-highr
+  - r-cran-hmisc
+  - r-cran-htmltools
+  - r-cran-httpuv
+  - r-cran-httr
+  - r-cran-igraph
+  - r-cran-irace
+  - r-cran-iterators
+  - r-cran-jsonlite
+  - r-cran-kernlab
+  - r-cran-kernsmooth
+  - r-cran-kknn
+  - r-cran-kml
+  - r-cran-knitr
+  - r-cran-labeling
+  - r-cran-lattice
+  - r-cran-lazyeval
+  - r-cran-leaflet
+  - r-cran-lme4
+  - r-cran-loo
+  - r-cran-lubridate
+  - r-cran-magrittr
+  - r-cran-maps
+  - r-cran-maptools
+  - r-cran-markdown
+  - r-cran-mass
+  - r-cran-matrix
+  - r-cran-matrixstats
+  - r-cran-mboost
+  - r-cran-mclust
+  - r-cran-mcmcpack
+  - r-cran-mcspatial
+  - r-cran-mgcv
+  - r-cran-mime
+  - r-cran-mlbench
+  - r-cran-mlr
+  - r-cran-multcomp
+  - r-cran-munsell
+  - r-cran-ndtv
+  - r-cran-network
+  - r-cran-neuralnet
+  - r-cran-nlme
+  - r-cran-nnet
+  - r-cran-parallelmap
+  - r-cran-paramhelpers
+  - r-cran-party
+  - r-cran-pbdzmq
+  - r-cran-pls
+  - r-cran-plyr
+  - r-cran-polycor
+  - r-cran-pomp
+  - r-cran-pscl
+  - r-cran-purrr
+  - r-cran-pvclust
+  - r-cran-quanteda
+  - r-cran-quantmod
+  - r-cran-r6
+  - r-cran-randomforest
+  - r-cran-randomforestsrc
+  - r-cran-ranger
+  - r-cran-rcolorbrewer
+  - r-cran-rcpp
+  - r-cran-rcpparmadillo
+  - r-cran-rcppeigen
+  - r-cran-rcurl
+  - r-cran-readr
+  - r-cran-readxl
+  - r-cran-repr
+  - r-cran-reshape
+  - r-cran-reshape2
+  - r-cran-rgeos
+  - r-cran-rgl
+  - r-cran-rjava
+  - r-cran-rmarkdown
+  - r-cran-rmysql
+  - r-cran-rocr
+  - r-cran-roxygen2
+  - r-cran-rpart
+  - r-cran-rpostgresql
+  - r-cran-rpython
+  - r-cran-rsqlite
+  - r-cran-rstan
+  - r-cran-runjags
+  - r-cran-rweka
+  - r-cran-scales
+  - r-cran-shiny
+  - r-cran-slam
+  - r-cran-sna
+  - r-cran-snowballc
+  - r-cran-sourcetools
+  - r-cran-sp
+  - r-cran-spacyr
+  - r-cran-spatial
+  - r-cran-sqldf
+  - r-cran-stargazer
+  - r-cran-stm
+  - r-cran-stringi
+  - r-cran-stringr
+  - r-cran-surveillance
+  - r-cran-survival
+  - r-cran-synthpop
+  - r-cran-tcltk2
+  - r-cran-testthat
+  - r-cran-text2vec
+  - r-cran-tgp
+  - r-cran-threejs
+  - r-cran-tibble
+  - r-cran-tidyr
+  - r-cran-tidytext
+  - r-cran-tidyverse
+  - r-cran-topicmodels
+  - r-cran-urca
+  - r-cran-uuid
+  - r-cran-vars
+  - r-cran-vcd
+  - r-cran-vioplot
+  - r-cran-viridis
+  - r-cran-visnetwork
+  - r-cran-wavethresh
+  - r-cran-wordcloud
+  - r-cran-xgboost
+  - r-cran-xlsx
+  - r-cran-xml
+  - r-cran-xtable
+  - r-cran-xts
+  - r-cran-yaml
+  - r-cran-zoo
+  - r-recommended
+  - realmd
+  - ristretto
+  - scala
+  - sssd
+  - sssd-tools
+  - sysstat
+  - texlive-full
+  - unicode
+  - unzip
+  - xfce4
+  - xfce4-terminal
+  - xrdp
+  - xsltproc
+
+runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Make a temporary directory (cloudinit recomends not using /tmp)
+  - mkdir /run/cloudinit
+
+  # NVidia setup (following https://www.tensorflow.org/install/gpu)
+  - echo ">=== Installing NVidia requirements for tensorflow ===<"
+  - apt-get install -y --no-install-recommends nvidia-driver-430
+  - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
+  - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
+
+  # Clean up installation - getting to this point takes approximately 30 mins
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt-get -y autoremove
+  - apt-get clean
+
+  # Install latest anaconda version (download is ~640MB)
+  - echo ">=== Installing conda... ===<"
+  - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
+  - ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
+  - echo "Using installer from $ANACONDA_INSTALLER_URL"
+  - cd /run/cloudinit
+  - curl -O $ANACONDA_INSTALLER_URL
+  - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
+  - rm $ANACONDA_INSTALL_SCRIPT
+  # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
+  - . /anaconda/etc/profile.d/conda.sh
+  - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
+  # Update conda
+  - echo ">=== Updating conda installation... ===<"
+  - conda update -n base -c defaults conda
+  # Add channels (append puts them last in priority order)
+  - conda config --append channels conda-forge
+  # - conda config --append channels pytorch # for pytorch, torchvision
+  # - conda config --append channels ostrokach-forge # for graph-tool which cannot be installed with pip
+  # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
+  - conda config --set remote_connect_timeout_secs 60
+  - conda config --set remote_max_retries 20
+  - conda config --set remote_read_timeout_secs 180
+  # List initial environments
+  - echo ">=== Initial conda environments... ===<"
+  - conda env list
+
+  # === AUTOGENERATED ANACONDA PACKAGES START HERE ===
+
+  # Create or update conda environments
+  # Python 2.7
+  - /installation/create_or_update_conda_python_environment.sh py27 300 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  # Python 3.6
+  - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
+  # Python 3.7
+  - /installation/create_or_update_conda_python_environment.sh py37 10 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
+  # List environments
+  - echo ">=== Final conda environments... ===<"
+  - conda env list
+  # Set 'other' permissions on the anaconda directory to be equal to that of the owner
+  # We then remove write access so that site-packages can be used but not altered
+  - echo ">=== Updating /anaconda/ permissions... ===<"
+  - rm -rf /anaconda/.cph_tmp*
+  - chmod -R o=u,o-w /anaconda/
+  - ls -alh /anaconda/
+
+  # === AUTOGENERATED R PACKAGES START HERE ===
+
+  # CRAN
+  - echo ">=== Installing additional R packages. Will take approximately 20 minutes... ===<"
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo "Previously installed CRAN packages:"
+  - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - echo "Installing remaining CRAN packages..."
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($CRAN_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) install.packages(new.packages, repos='https://cran.rstudio.com/')"
+  # Bioconductor
+  - echo "Previously installed BioConductor packages:"
+  - Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
+  - echo "Installing remaining BioConductor packages..."
+  - Rscript -e "options('Ncpus' = parallel::detectCores()); list.of.packages <- c($BIOCONDUCTOR_PACKAGES); new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(new.packages); if(length(new.packages)) BiocManager::install(new.packages)"
+  # Install R packages from custom repos
+  - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
+  - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
+  # Install RStudio
+  - echo ">=== Installing RStudio... ===<"
+  # Ensure RStudio picks up system R rather than Conda R for all users
+  - cd /run/cloudinit
+  - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
+  - RSTUDIO_DEB="rstudio-1.2.5033-amd64.deb"
+  - wget https://download1.rstudio.org/desktop/bionic/amd64/${RSTUDIO_DEB}
+  - gdebi --non-interactive ${RSTUDIO_DEB}
+  - rm -f ${RSTUDIO_DEB}
+  - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
+
+  # Install latest julia version
+  - echo ">=== Installing Julia... ===<"
+  - echo "Preparing directory..."
+  - mkdir -p /opt/julia
+  - cd /opt/julia
+  - echo "Downloading package..."
+  - JULIA_TARBALL="julia-1.4.0-linux-x86_64.tar.gz"
+  - JULIA_VERSION=$(echo $JULIA_TARBALL | cut -d'-' -f1-2)
+  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.4/${JULIA_TARBALL}
+  - echo "Installing and cleaning up..."
+  - tar -zxf ${JULIA_TARBALL}
+  - rm -rf ${JULIA_TARBALL}
+  - PATH=$PATH:/opt/julia/${JULIA_VERSION}/bin
+  - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
+
+  # Install jupyter kernels
+  - echo ">=== Setting up R and Julia kernels for jupyter... ===<"
+  - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
+  # - Rscript -e "IRkernel::installspec(user = FALSE)"
+  #
+  # The command above would install the kernel from system R for jupyter but fails
+  # (since we're not in an environment with jupyter at this point) with the following error:
+  #
+  #   Error in IRkernel::installspec(user = FALSE) :
+  #     jupyter-client has to be installed but "jupyter kernelspec --version" exited with code 127.
+  #   In addition: Warning message:
+  #   In system2("jupyter", c("kernelspec", "--version"), FALSE, FALSE) :
+  #     error in running command
+  #   Execution halted
+  - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+
+  # Install spark
+  - echo ">=== Installing spark... ===<"
+  - mkdir -p /opt/spark
+  - cd /opt/spark
+  - SPARK_TARBALL="spark-2.4.5-bin-hadoop2.7.tgz"
+  - SPARK_VERSION=$(echo $SPARK_TARBALL | cut -d'-' -f1-2)
+  - SPARK_HADOOP_VERSION=$(echo $SPARK_TARBALL | cut -d'.' -f1-4)
+  - curl -O http://apache.mirror.anlx.net/spark/${SPARK_VERSION}/${SPARK_TARBALL}
+  - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
+  - tar -zxf ${SPARK_TARBALL}
+  - rm -rf ${SPARK_TARBALL}
+  - PATH=$PATH:/opt/spark/${SPARK_HADOOP_VERSION}/bin
+  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
+
+  # Install dbeaver
+  - echo ">=== Installing dbeaver... ===<"
+  - DBEAVER_DEB="dbeaver-ce_7.0.1_amd64.deb"
+  - DBEAVER_VERSION=$(echo $DBEAVER_DEB | cut -d'_' -f2)
+  - curl -O https://dbeaver.io/files/${DBEAVER_VERSION}/${DBEAVER_DEB}
+  - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
+  - dpkg -i $DBEAVER_DEB
+  - rm $DBEAVER_DEB
+
+  # Install PostgreSQL extensions
+  - echo ">=== Installing PostgreSQL extensions... ===<"
+  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/postgresql.install
+
+  # Install PyCharm
+  - echo ">=== Installing PyCharm... ===<"
+  - snap install pycharm-community --classic
+  - PATH=$PATH:/snap/bin
+
+  # Check for successful installations
+  - echo ">=== Checking for successful installation... ===<"
+  # :: Programming languages
+  - echo ">=== Programming languages... ===<"
+  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
+  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
+  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
+  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
+  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
+  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
+  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
+  # :: Editors
+  - echo ">=== Editors... ===<"
+  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
+  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
+  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  # :: Presentation tools
+  - echo ">=== Presentation tools... ===<"
+  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
+  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
+  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
+  # :: Development tools
+  - echo ">=== Development tools... ===<"
+  - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
+  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
+  - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
+  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
+  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
+  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
+  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
+  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
+  # Check for missing packages
+  - echo "CRAN packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+  - echo "Bioconductor packages that could not be installed:"
+  - Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
+
+  # Set PATH to the current working version which contains all installed packages
+  # Also add ~/.local/bin and ~/bin so that any executables that are installed there (eg. by pip) can be used
+  # We do this at the end of the script so that
+  #   (a) we know this is the PATH that worked when we checked for all the above packages
+  #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
+  - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
+  - echo "Setting PATH to '${PATH}'"
+  - echo "export PATH=${PATH}" >> /etc/bash.bashrc
+
+final_message:
+  "System setup through cloud-init is finished. Configuration took $UPTIME seconds"

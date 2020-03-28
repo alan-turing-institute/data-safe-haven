@@ -16,7 +16,7 @@ function Get-TargetResource
         $Name
     )
 
-    # Get the replication site filtered by it's name. If the site is not
+    # Get the replication site filtered by its name. If the site is not
     # present, the command will return $null.
     $replicationSite = Get-ADReplicationSite -Filter { Name -eq $Name }
 

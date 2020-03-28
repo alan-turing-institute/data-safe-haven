@@ -23,7 +23,37 @@
         "Data_Server_Name": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for DC VM i.e DSG2DC"
+                "description": "Enter name for data server VM"
+            }
+        },
+        "DC_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "DC_Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
+        "Disk_Size_Egress_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Egress disk size in GB"
+            }
+        },
+        "Disk_Size_Ingress_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Ingress disk size in GB"
+            }
+        },
+        "Disk_Size_Shared_GB": {
+            "type": "string",
+            "metadata": {
+                "description": "Shared disk size in GB"
             }
         },
         "Domain_Name": {
@@ -76,10 +106,11 @@
         "nic": "[concat(parameters('Data_Server_Name'), '-', 'NIC')]",
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]",
-        "datadisk": "[concat(parameters('Data_Server_Name'), '-DATA-DISK')]"
+        "ingressdatadisk": "[concat(parameters('Data_Server_Name'), '-INGRESS-DATA-DISK')]",
+        "shareddatadisk": "[concat(parameters('Data_Server_Name'), '-SHARED-DATA-DISK')]",
+        "egressdatadisk": "[concat(parameters('Data_Server_Name'), '-EGRESS-DATA-DISK')]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Data_Server_Name')]",
             "apiVersion": "2018-06-01",
@@ -110,14 +141,36 @@
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[variables('datadisk')]",
+                            "name": "[variables('ingressdatadisk')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 512
+                            "diskSizeGB": "[parameters('Disk_Size_Ingress_GB')]"
+                        },
+                        {
+                            "lun": 1,
+                            "name": "[variables('shareddatadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": "[parameters('Disk_Size_Shared_GB')]"
+                        },
+                        {
+                            "lun": 2,
+                            "name": "[variables('egressdatadisk')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                            },
+                            "diskSizeGB": "[parameters('Disk_Size_Egress_GB')]"
                         }
                     ]
                 },
@@ -132,14 +185,12 @@
                     "secrets": []
                 },
                 "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
-                            "properties": {
-                                "primary": true
-                            }
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nic'))]",
+                        "properties": {
+                            "primary": true
                         }
-                    ]
+                    }]
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
@@ -159,20 +210,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "[parameters('IP_Address')]",
-                            "privateIPAllocationMethod": "Static",
-                            "subnet": {
-                                "id": "[variables('subnet')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAddress": "[parameters('IP_Address')]",
+                        "privateIPAllocationMethod": "Static",
+                        "subnet": {
+                            "id": "[variables('subnet')]"
+                        },
+                        "primary": true,
+                        "privateIPAddressVersion": "IPv4"
                     }
-                ],
+                }],
                 "dnsSettings": {
                     "dnsServers": [],
                     "appliedDnsServers": []
@@ -216,12 +265,12 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Administrator_User'))]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Administrator_Password')]"
+                    "Password": "[parameters('DC_Administrator_Password')]"
                 }
             }
         }

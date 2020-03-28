@@ -16,35 +16,34 @@
         },
         "Subnet-RDS Address Prefix": {
             "type": "string"
-         },
+        },
         "Subnet-Data Address Prefix": {
             "type": "string"
         },
-         "GatewaySubnet Address Prefix": {
+        "GatewaySubnet Address Prefix": {
             "type": "string"
-         },
+        },
         "Subnet-Identity Name": {
             "type": "string"
         },
         "Subnet-RDS Name": {
             "type": "string"
-         },
+        },
         "Subnet-Data Name": {
             "type": "string"
         },
-         "GatewaySubnet Name": {
+        "GatewaySubnet Name": {
             "type": "string"
-         },
-         "DNS Server IP Address": {
-            "type": "string"
-         }
         },
+        "DNS Server IP Address": {
+            "type": "string"
+        }
+    },
     "variables": {
         "Gateway_Name": "[concat(parameters('Virtual Network Name'),'_GW')]",
         "Gateway_IP_Name": "[concat(parameters('Virtual Network Name'),'_GW_PIP')]"
     },
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.Network/publicIPAddresses",
             "sku": {
                 "name": "Basic",
@@ -68,20 +67,18 @@
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "sregwipconf",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]"
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
-                            }
+                "ipConfigurations": [{
+                    "name": "sregwipconf",
+                    "properties": {
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]"
+                        },
+                        "subnet": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
                         }
                     }
-                ],
+                }],
                 "sku": {
                     "name": "VpnGw1",
                     "tier": "VpnGw1",
@@ -101,14 +98,12 @@
                         "SSTP",
                         "IkeV2"
                     ],
-                    "vpnClientRootCertificates": [
-                        {
-                            "name": "SRE_P2S_RootCert.cer",
-                            "properties": {
-                                "publicCertData": "[parameters('P2S VPN Certificate')]"
-                            }
+                    "vpnClientRootCertificates": [{
+                        "name": "SRE_P2S_RootCert.cer",
+                        "properties": {
+                            "publicCertData": "[parameters('P2S VPN Certificate')]"
                         }
-                    ],
+                    }],
                     "vpnClientRevokedCertificates": [],
                     "vpnClientIpsecPolicies": []
                 }
@@ -136,8 +131,7 @@
                         "8.8.8.8"
                     ]
                 },
-                "subnets": [
-                    {
+                "subnets": [{
                         "name": "[parameters('Subnet-Identity Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",

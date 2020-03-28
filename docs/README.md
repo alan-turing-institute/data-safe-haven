@@ -9,15 +9,15 @@
 
 ## Deploying a Data Safe Haven
 
-We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository. 
+We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
 
-1. Build and publish our "batteries included" Data Science Compute virtual machine image.
-
-    - [Data Science virtual machine build instructions](../deployment/dsvm_images/README.md)
-
-2. Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
+1. Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
 
     - [Safe Haven Management (SHM) deployment guide](deploy_shm_instructions.md)
+
+2. Build and publish our "batteries included" Data Science Compute virtual machine image.
+
+    - [Data Science virtual machine build instructions](build_dsvm_image_instructions.md)
 
 3. Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
 
@@ -43,7 +43,7 @@ Once a Secure Research Environment has been set up for a project within a Safe H
 
   - [Safe Havens Cheat Sheet](safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
 
-  - [Safe Havens User Guide](safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing data study groups in mind. 
+  - [Safe Havens User Guide](safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing data study groups in mind.
 
 
 ## Coverting documentation to PDF

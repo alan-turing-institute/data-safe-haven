@@ -5,13 +5,17 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
+    [String]$sreId,
     [String]$testResearcherSamAccountName,
     [String]$dsvmLdapSamAccountName,
     [String]$gitlabLdapSamAccountName,
     [String]$hackmdLdapSamAccountName,
-    [String]$sreResearchUserSG
+    [String]$sreResearchUserSG,
+    [String]$rdsDataserverVMName,
+    [String]$rdsGatewayVMName,
+    [String]$rdsSessionHostAppsVMName,
+    [String]$rdsSessionHostDesktopVMName
 )
-
 
 function Remove-SreUser($samAccountName) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
@@ -25,6 +29,21 @@ function Remove-SreUser($samAccountName) {
         }
     } else {
         Write-Host "No user named '$samAccountName' exists"
+    }
+}
+
+function Remove-SreComputer($computerName) {
+    if (Get-ADComputer -Filter "Name -eq '$computerName'") {
+        Write-Host " [ ] Removing computer '$computerName'"
+        Get-ADComputer $computerName | Remove-ADObject -Recursive -Confirm:$False
+        if ($?) {
+            Write-Host " [o] Succeeded"
+        } else {
+            Write-Host " [x] Failed"
+            exit 1
+        }
+    } else {
+        Write-Host "No computer named '$computerName' exists"
     }
 }
 
@@ -43,12 +62,23 @@ function Remove-SreGroup($groupName) {
     }
 }
 
-
 # Remove users
 Remove-SreUser $testResearcherSamAccountName
 Remove-SreUser $dsvmLdapSamAccountName
 Remove-SreUser $gitlabLdapSamAccountName
 Remove-SreUser $hackmdLdapSamAccountName
+
+# Remove service computers
+Remove-SreComputer $rdsDataserverVMName
+Remove-SreComputer $rdsGatewayVMName
+Remove-SreComputer $rdsSessionHostAppsVMName
+Remove-SreComputer $rdsSessionHostDesktopVMName
+
+# Remove DSVMs
+$dsvmPrefix = "SRE-$sreId".Replace(".","-").ToUpper()
+foreach ($dsvm in $(Get-ADComputer -Filter "Name -like '$dsvmPrefix*'")) {
+    Remove-SreComputer $dsvm.Name
+}
 
 # Remove groups
 Remove-SreGroup $sreResearchUserSG

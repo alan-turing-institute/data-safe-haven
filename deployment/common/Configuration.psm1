@@ -28,20 +28,49 @@ function Get-ShmFullConfig {
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $shmPrefixOctets = $shmPrefix.Split('.')
-    $shmBasePrefix = $shmPrefixOctets[0] + "." + $shmPrefixOctets[1]
+    $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
 
     # --- Top-level config ---
     $shm.subscriptionName = $shmConfigBase.subscriptionName
-    $shm.computeVmImageSubscriptionName = $shmConfigBase.computeVmImageSubscriptionName
-    $shm.computeVmImageResourceGroupName = "RG_SH_IMAGE_GALLERY"
-    $shm.computeVmImageImageGalleryName = "SAFE_HAVEN_COMPUTE_IMAGES"
-
     $shm.id = $shmConfigBase.shmId
     $shm.name = $shmConfigBase.name
     $shm.organisation = $shmConfigBase.organisation
     $shm.location = $shmConfigBase.location
     $shm.adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
+    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
+
+    # --- DSVM build images ---
+    $shm.dsvmImage = [ordered]@{
+        subscription = $shmConfigBase.computeVmImageSubscriptionName
+        location = "westeurope" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
+        bootdiagnostics = [ordered]@{
+            rg = "RG_SH_BOOT_DIAGNOSTICS"
+            accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
+        }
+        build = [ordered]@{
+            rg = "RG_SH_BUILD_CANDIDATES"
+            nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
+            subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
+            vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+        }
+        gallery = [ordered]@{
+            rg = "RG_SH_IMAGE_GALLERY"
+            sig = "SAFE_HAVEN_COMPUTE_IMAGES"
+            imageMajorVersion = 0
+            imageMinorVersion = 1
+        }
+        images = [ordered]@{
+            rg = "RG_SH_IMAGE_STORAGE"
+        }
+        keyVault = [ordered]@{
+            rg = "RG_SH_SECRETS"
+            name = "kv-shm-$($shm.id)-dsvm-images".ToLower()
+        }
+        network = [ordered]@{
+            rg = "RG_SH_NETWORKING"
+        }
+    }
 
     # --- Domain config ---
     $shm.domain = [ordered]@{}
@@ -52,15 +81,20 @@ function Get-ShmFullConfig {
     }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
     $shm.domain.dn = "DC=" + ($shm.domain.fqdn.Replace('.',',DC='))
-    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers," + $shm.domain.dn
-    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts," + $shm.domain.dn
-    $shm.domain.userOuPath = "OU=Safe Haven Research Users," + $shm.domain.dn
-    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups," + $shm.domain.dn
-    $groupName = "SG Data Science LDAP Users"
+    $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers,$($shm.domain.dn)"
+    $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts,$($shm.domain.dn)"
+    $shm.domain.userOuPath = "OU=Safe Haven Research Users,$($shm.domain.dn)"
+    $shm.domain.securityOuPath = "OU=Safe Haven Security Groups,$($shm.domain.dn)"
+    $ldapUsersGroup = "SG Safe Haven LDAP Users"
+    $serverAdminsGroup = "SG Safe Haven Server Administrators"
     $shm.domain.securityGroups = [ordered]@{
         dsvmLdapUsers = [ordered]@{
-            name = $groupName
-            description = $groupName
+            name = $ldapUsersGroup
+            description = $ldapUsersGroup
+        }
+        serverAdmins = [ordered]@{
+            name = $serverAdminsGroup
+            description = $serverAdminsGroup
         }
     }
 
@@ -94,7 +128,7 @@ function Get-ShmFullConfig {
     $shm.dc = [ordered]@{}
     $shm.dc.rg = "RG_SHM_DC"
     $shm.dc.vmName = "DC1-SHM-$($shm.id)".ToUpper()
-    $shm.dc.vmSize = "Standard_DS2_v2"
+    $shm.dc.vmSize = "Standard_D2s_v3"
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
     $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
@@ -110,13 +144,12 @@ function Get-ShmFullConfig {
     $shm.nps = [ordered]@{}
     $shm.nps.rg = "RG_SHM_NPS"
     $shm.nps.vmName = "NPS-SHM-$($shm.id)".ToUpper()
-    $shm.nps.vmSize = "Standard_DS2_v2"
+    $shm.nps.vmSize = "Standard_D2s_v3"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
 
     # --- Storage config --
     $storageRg = "RG_SHM_ARTIFACTS"
-    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
@@ -135,15 +168,17 @@ function Get-ShmFullConfig {
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
-        dcNpsAdminUsername = "shm-$($shm.id)-dcnps-admin-username".ToLower()
-        dcNpsAdminPassword = "shm-$($shm.id)-dcnps-admin-password".ToLower()
+        buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
+        buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
         dcSafemodePassword = "shm-$($shm.id)-dc-safemode-password".ToLower()
-        mirrorAdminUsername = "shm-$($shm.id)-package-mirror-admin-username".ToLower()
+        domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
         localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
+        npsAdminPassword = "shm-$($shm.id)-nps-admin-password".ToLower()
         testAdUserPassword = "shm-$($shm.id)-testaduser-password".ToLower()
+        vmAdminUsername = "shm-$($shm.id)-vm-admin-username".ToLower()
         vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
-        vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
         vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
+        vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
         vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
         vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
     }
@@ -164,7 +199,7 @@ function Get-ShmFullConfig {
     # Please note that each mirror type must have a distinct ipOffset in the range 4-15
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
-        vmSize = "Standard_F4"
+        vmSize = "Standard_D2s_v3"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
             ipOffset = 4
@@ -222,7 +257,6 @@ function Add-SreConfig {
     }
 
     # === SRE configuration parameters ===
-    $sre = [ordered]@{}
     # Import minimal SRE config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
     $srePrefix = $sreConfigBase.ipPrefix
@@ -236,7 +270,7 @@ function Add-SreConfig {
     $config.sre.subscriptionName = $sreConfigBase.subscriptionName
     $config.sre.id = $sreConfigBase.sreId
     if ($config.sre.id.length -gt 7) {
-        Write-Host "sreId should be 7 characters or fewer if possible. '$($config.sre.id)' is $($config.sre.id.length) characters long."
+        throw "sreId must be 7 characters or fewer. '$($config.sre.id)' is $($config.sre.id.length) characters long."
     }
     $config.sre.shortName = "sre-$($sreConfigBase.sreId)".ToLower()
     $config.sre.location = $config.shm.location
@@ -246,7 +280,7 @@ function Add-SreConfig {
     # -- Domain config ---
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
-        throw "Netbios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
+        throw "NetBios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
     }
     $config.sre.domain = [ordered]@{}
     $config.sre.domain.fqdn = $sreConfigBase.domain
@@ -314,53 +348,50 @@ function Add-SreConfig {
         name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower()
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
-            dcAdminPassword = "$($config.sre.shortName)-dc-admin-password"
-            dcAdminUsername = "$($config.sre.shortName)-dc-admin-username"
+            adminUsername = "$($config.sre.shortName)-vm-admin-username"
+            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
             dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
-            dsvmAdminUsername = "$($config.sre.shortName)-dsvm-admin-username"
+            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
             dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
             dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
+            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
             hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
+            npsSecret = "$($config.sre.shortName)-nps-secret"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
         }
     }
-
-    # --- Domain controller ---
-    $config.sre.dc = [ordered]@{}
-    $config.sre.dc.rg = "RG_SRE_DC"
-    $config.sre.dc.nsg = "NSG_SRE_$($config.sre.id)_IDENTITY".ToUpper()
-    $config.sre.dc.vmName = "DC-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-    $config.sre.dc.vmSize = "Standard_DS2_v2"
-    $config.sre.dc.hostname = $config.sre.dc.vmName
-    $config.sre.dc.fqdn = "$($config.sre.dc.hostname).$($config.sre.domain.fqdn)"
-    $config.sre.dc.ip = "$($config.sre.network.subnets.identity.prefix).250"
 
     # --- Domain users ---
     $config.sre.users = [ordered]@{
         ldap = [ordered]@{
             gitlab = [ordered]@{
-                name = $config.sre.domain.netbiosName + " Gitlab LDAP"
+                name = "$($config.sre.domain.netbiosName) Gitlab LDAP"
                 samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             hackmd = [ordered]@{
-                name = $config.sre.domain.netbiosName + " HackMD LDAP"
+                name = "$($config.sre.domain.netbiosName) HackMD LDAP"
                 samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
             dsvm = [ordered]@{
-                name = $config.sre.domain.netbiosName + " DSVM LDAP"
+                name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
+        datamount = [ordered]@{
+            name = "$($config.sre.domain.netbiosName) Data Mount"
+            samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+        }
         researchers = [ordered]@{
             test = [ordered]@{
-                name = $config.sre.domain.netbiosName + " Test Researcher"
+                name = "$($config.sre.domain.netbiosName) Test Researcher"
                 samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
@@ -371,66 +402,53 @@ function Add-SreConfig {
         rg = "RG_SRE_RDS"
         gateway = [ordered]@{
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
         }
         sessionHost1 = [ordered]@{
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
-            vmSize = "Standard_D4s_v3"
+            vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
     }
-    # $config.sre.rds.nsg = [ordered]@{
-    #     gateway = [ordered]@{}
-    #     session_hosts = [ordered]@{}
-    # }
-    # $config.sre.rds.nsg.gateway.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SERVER"
-    # $config.sre.rds.nsg.session_hosts.name = "NSG_RDS_SRE_" + ($config.sre.id).ToUpper() + "_SESSION_HOSTS"
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
         if (@("3","4").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.240"
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
-            # $config.sre.rds.nsg.gateway.allowedSources = "193.60.220.253"
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.allowedSources = "Internet"
             $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
         }
     } else {
-        # $config.sre.rds.nsg.gateway.allowedSources = $sreConfigBase.rdsAllowedSources
         $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.rdsAllowedSources
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsInternetAccess -eq "default") {
         if (@("2","3","4").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.outboundInternet = "Deny"
             $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
         } elseif (@("0","1").Contains($config.sre.tier)) {
-            # $config.sre.rds.nsg.gateway.outboundInternet = "Allow"
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
         $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
-    $config.sre.rds.gateway.fqdn = $config.sre.rds.gateway.hostname + "." + $config.sre.domain.fqdn
-    $config.sre.rds.gateway.ip = $config.sre.network.subnets.rds.prefix + ".250"
-    $config.sre.rds.gateway.npsSecretName = "sre-$($config.sre.id)-nps-secret".ToLower()
+    $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.rds.gateway.ip = "$($config.sre.network.subnets.rds.prefix).250"
     $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
-    $config.sre.rds.sessionHost1.fqdn = $config.sre.rds.sessionHost1.hostname + "." + $config.sre.domain.fqdn
-    $config.sre.rds.sessionHost1.ip = $config.sre.network.subnets.rds.prefix + ".249"
+    $config.sre.rds.sessionHost1.fqdn = "$($config.sre.rds.sessionHost1.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.rds.sessionHost1.ip = "$($config.sre.network.subnets.rds.prefix).249"
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
-    $config.sre.rds.sessionHost2.fqdn = $config.sre.rds.sessionHost2.hostname + "." + $config.sre.domain.fqdn
-    $config.sre.rds.sessionHost2.ip = $config.sre.network.subnets.rds.prefix + ".248"
+    $config.sre.rds.sessionHost2.fqdn = "$($config.sre.rds.sessionHost2.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.rds.sessionHost2.ip = "$($config.sre.network.subnets.rds.prefix).248"
 
     # --- Secure servers ---
 
@@ -441,8 +459,11 @@ function Add-SreConfig {
     $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
     $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
-    $config.sre.dataserver.fqdn = $config.sre.dataserver.hostname + "." + $config.sre.domain.fqdn
-    $config.sre.dataserver.ip = $config.sre.network.subnets.data.prefix + ".250"
+    $config.sre.dataserver.fqdn = "$($config.sre.dataserver.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.dataserver.ip = "$($config.sre.network.subnets.data.prefix).250"
+    $config.sre.dataserver.egressDiskGb = 512
+    $config.sre.dataserver.ingressDiskGb = 512
+    $config.sre.dataserver.sharedDiskGb = 512
 
     # HackMD and Gitlab servers
     $config.sre.webapps = [ordered]@{
@@ -450,7 +471,7 @@ function Add-SreConfig {
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
-            vmSize = "Standard_DS3_v2"
+            vmSize = "Standard_D2s_v3"
         }
         hackmd = [ordered]@{
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
@@ -458,10 +479,10 @@ function Add-SreConfig {
         }
     }
     $config.sre.webapps.gitlab.hostname = $config.sre.webapps.gitlab.vmName
-    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.gitlab.ip = "$($config.sre.network.subnets.data.prefix).151"
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
-    $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.sre.domain.fqdn)"
+    $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
 
     # Compute VMs
@@ -469,15 +490,14 @@ function Add-SreConfig {
     $config.sre.dsvm.rg = "RG_SRE_COMPUTE"
     $config.sre.dsvm.nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
     $config.sre.dsvm.deploymentNsg = "NSG_SRE_$($config.sre.Id)_COMPUTE_DEPLOYMENT".ToUpper()
-    $config.sre.dsvm.vmImageSubscription = $config.shm.computeVmImageSubscriptionName
-    $config.shm.Remove("computeVmImageSubscriptionName")
-    $config.sre.dsvm.vmImageResourceGroup = $config.shm.computeVmImageResourceGroupName
-    $config.shm.Remove("computeVmImageResourceGroupName")
-    $config.sre.dsvm.vmImageGallery = $config.shm.computeVmImageImageGalleryName
-    $config.shm.Remove("computeVmImageImageGalleryName")
-    $config.sre.dsvm.vmSizeDefault = "Standard_B2ms"
+    $config.sre.dsvm.vmImageSubscription = $config.shm.dsvmImage.subscription
+    $config.sre.dsvm.vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
+    $config.sre.dsvm.vmImageGallery = $config.shm.dsvmImage.gallery.sig
+    $config.shm.Remove("dsvmImage")
+    $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
+
     $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "60"
@@ -500,14 +520,14 @@ function Add-SreConfig {
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
     if (@("2","3").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
-        $config.sre.mirrors.pypi.ip = "10.20." + $config.sre.tier + ".20"
-        $config.sre.mirrors.cran.ip = "10.20." + $config.sre.tier + ".21"
+        $config.sre.mirrors.pypi.ip = "10.20.$($config.sre.tier).20"
+        $config.sre.mirrors.cran.ip = "10.20.$($config.sre.tier).21"
     } elseif (@("0","1").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = $null
         $config.sre.mirrors.pypi.ip = $null
         $config.sre.mirrors.cran.ip = $null
     } else {
-        Write-Error ("Tier '" + $config.sre.tier + "' not supported (NOTE: Tier must be provided as a string in the core SRE config.)")
+        Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
         return
     }
 

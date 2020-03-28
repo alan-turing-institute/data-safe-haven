@@ -21,7 +21,7 @@ Write-Host -ForegroundColor Cyan "Creating user profile disk shares..."
 ForEach (`$sharePath in ("F:\AppFileShares", "G:\RDPFileShares")) {
     `$_ = New-Item -ItemType Directory -Force -Path `$sharePath
     if(`$(Get-SmbShare | Where-Object -Property Path -eq `$sharePath) -eq `$null) {
-        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$sreNetbiosName\$rdsGatewayVmName$","$sreNetbiosName\$rdsSh1VmName$","$sreNetbiosName\Domain Admins"
+        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$shmNetbiosName\$rdsGatewayVmName$","$shmNetbiosName\$rdsSh1VmName$","$shmNetbiosName\$rdsSh2VmName$","$shmNetbiosName\Domain Admins"
     }
 }
 
@@ -47,7 +47,6 @@ New-RDSessionDeployment -ConnectionBroker "$rdsGatewayVmFqdn" -WebAccessServer "
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-LICENSING -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDLicenseConfiguration -LicenseServer $rdsGatewayVmFqdn -Mode PerUser -ConnectionBroker $rdsGatewayVmFqdn -Force
 Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature
-# Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $rdsGatewayVmFqdn
 Add-RDServer -Server $rdsGatewayVmFqdn -Role RDS-GATEWAY -ConnectionBroker $rdsGatewayVmFqdn -GatewayExternalFqdn $sreFqdn
 
 
@@ -69,20 +68,20 @@ Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableU
 # Create applications
 # -------------------
 Write-Host -ForegroundColor Cyan "Creating applications..."
+New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "putty (1)" -DisplayName "DSVM Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "putty (2)" -DisplayName "DSVM Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias WinSCP -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (1)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.151" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (2)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.152:3000" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
-New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "Main VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
-New-RDRemoteApp -Alias "putty (1)" -DisplayName "Main VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
-New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "Other VM (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
-New-RDRemoteApp -Alias "putty (2)" -DisplayName "Other VM (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 
 
 # Update server configuration
 # ---------------------------
 Write-Host -ForegroundColor Cyan "Updating server configuration..."
-`$targetDirectoryLocal = "C:\Users\$dcAdminUsername\AppData\Roaming\Microsoft\Windows\ServerManager"
-`$targetDirectoryDomain = "C:\Users\$dcAdminUsername.$sreNetbiosName\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$targetDirectoryLocal = "C:\Users\$shmDcAdminUsername\AppData\Roaming\Microsoft\Windows\ServerManager"
+`$targetDirectoryDomain = "C:\Users\$shmDcAdminUsername.$shmNetbiosName\AppData\Roaming\Microsoft\Windows\ServerManager"
 `$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryLocal
 `$_ = New-Item -ItemType Directory -Force -Path `$targetDirectoryDomain
 Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force

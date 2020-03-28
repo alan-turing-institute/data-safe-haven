@@ -4,6 +4,12 @@
 # C:\Packages\Plugins\Microsoft.CPlat.Core.RunCommandWindows\1.1.0 on the remote VM to cancel a stalled
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
+param(
+    [Parameter(Position = 0, HelpMessage = "Path to GPO backup files")]
+    [string]$shmFqdn,
+    [Parameter(Position = 0, HelpMessage = "Name of the server administrator group")]
+    [string]$serverAdminSgName
+)
 
 Write-Host "Configuring group policies"
 
@@ -27,11 +33,23 @@ signature="`$CHICAGO`$"
 Revision=1
 [Group Membership]
 *${groupSID}__Memberof =
-*${groupSID}__Members = SG Safe Haven Server Administrators
+*${groupSID}__Members = ${serverAdminSgName}
 "@
 Set-Content -Path "F:\SYSVOL\domain\Policies\{$($gpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
 if ($?) {
     Write-Host " [o] Successfully set group policies for 'Local Administrators'"
 } else {
     Write-Host " [x] Failed to set group policies for 'Local Administrators'"
+}
+
+
+# Set the layout file for the Remote Desktop servers
+# --------------------------------------------------
+Write-Host "Setting the layout file for the Remote Desktop servers..."
+$_ = Set-GPRegistryValue -Name "Session Servers - Remote Desktop Control" -Type "ExpandString" -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
+                         -ValueName "StartLayoutFile" -Value "\\$shmFqdn\SYSVOL\$shmFqdn\scripts\ServerStartMenu\LayoutModification.xml"
+if ($?) {
+    Write-Host " [o] Succeeded"
+} else {
+    Write-Host " [x] Failed!"
 }

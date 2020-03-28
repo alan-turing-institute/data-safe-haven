@@ -5,20 +5,18 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-  [Parameter(Position=0, HelpMessage = "SRE DN")]
-  [string]$sreDn,
-  [Parameter(Position=1, HelpMessage = "SRE Netbios name")]
-  [string]$sreNetbiosName,
-  [Parameter(Position=2, HelpMessage = "RDS Gateway hostname")]
+  [Parameter(Position=0, HelpMessage = "SHM DN")]
+  [string]$shmDn,
+  [Parameter(Position=1, HelpMessage = "RDS Gateway hostname")]
   [string]$gatewayHostname,
-  [Parameter(Position=3, HelpMessage = "RDS Session Host 1 hostname")]
+  [Parameter(Position=2, HelpMessage = "RDS Session Host 1 hostname")]
   [string]$sh1Hostname,
-  [Parameter(Position=4, HelpMessage = "RDS Session Host 2 hostname")]
+  [Parameter(Position=3, HelpMessage = "RDS Session Host 2 hostname")]
   [string]$sh2Hostname
 )
 
-$gatewayTargetPath = "OU=$sreNetbiosName Service Servers,$sreDn"
-$shTargetPath = "OU=$sreNetbiosName RDS Session Servers,$sreDn"
+$gatewayTargetPath = "OU=Secure Research Environment Service Servers,$shmDn"
+$shTargetPath = "OU=Secure Research Environment RDS Session Servers,$shmDn"
 
 Write-Output " [ ] Moving '$gatewayHostname' to '$gatewayTargetPath'"
 Move-ADObject (Get-ADComputer -Identity $gatewayHostname) -TargetPath "$gatewayTargetPath"
