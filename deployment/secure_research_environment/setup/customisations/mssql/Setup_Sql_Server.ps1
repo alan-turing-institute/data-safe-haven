@@ -66,46 +66,29 @@ $params = @{
     IP_Address = $sqlServerIpAddress
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.subnets.data.name
+    Virtual_Network_Subnet = $config.sre.network.subnets.sql.name
     VM_Size = $sqlServerVmSize
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates/customisations/msssql" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
+$vmDeployment = Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "customisations" "msssql" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
+$internalFqdn = $vmDeployment.Outputs.Items("internalFqdn").Value
 
-
-# Move Data Server VM into correct OU
+# Move SQL Server VM into correct OU
 # -----------------------------------
-#$_ = Set-AzContext -Subscription $config.shm.subscriptionName
-#Add-LogMessage -Level Info "Adding sql server server VM to correct OUs on SHM DC..."
-#$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
-#$params = @{
-#    shmDn = "`"$($config.shm.domain.dn)`""
-#    dataServerHostname = "`"$($config.sre.dataserver.hostname)`""
-#}
-#$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-#Write-Output $result.Value
-#$_ = Set-AzContext -Subscription $config.sre.subscriptionName
-
+$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+Add-LogMessage -Level Info "Adding sql server server VM to correct OUs on SHM DC..."
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "customisations" "mssql" "create_sqlserver" "scripts" "Move_Sql_Server_VM_Into_OU.ps1"
+$params = @{
+    shmDn = "`"$($config.shm.domain.dn)`""
+    sqlServerHostname = "`"$internalFqdn`""
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
 # Set locale, install updates and reboot
 # --------------------------------------
-#Add-LogMessage -Level Info "Updating data server VM..."
-#Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
-
-
-# Configure data server
-# ---------------------
-#Add-LogMessage -Level Info "Configuring data server VM..."
-#$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Configure_Data_Server_Remote.ps1"
-#$params = @{
-#    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
-#    shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
-#    dataMountUser = "`"$($config.sre.users.datamount.samAccountName)`""
-#    researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-#    serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
-#}
-#$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
-#Write-Output $result.Value
-
+Add-LogMessage -Level Info "Updating sql server VM..."
+Invoke-WindowsConfigureAndUpdate -VMName $sqlServerName -ResourceGroupName $config.sre.sqlserver.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 
 # Switch back to original subscription
 # ------------------------------------

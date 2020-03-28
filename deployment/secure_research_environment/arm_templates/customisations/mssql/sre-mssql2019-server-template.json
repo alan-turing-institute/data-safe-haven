@@ -282,5 +282,11 @@
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]"
             ]
         }
-    ]
+    ],
+    "outputs": {
+        "internalFqdn": {
+            "type": "string",
+            "value": "reference(resourceId('Microsoft.Network/networkInterfaces', variables('nic'))(.dnsSettings.internalFqdn"
+        }
+    }
 }
