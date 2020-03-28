@@ -26,6 +26,12 @@
                 "description": "Enter name for SQL Server VM i.e DSG2DC"
             }
         },
+        "Sql_Server_Edition": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the SQL Server Edition to be installed i.e. enterprise"
+            }
+        },
         "Domain_Name": {
             "type": "string",
             "metadata": {
@@ -61,7 +67,8 @@
             "type": "string",
             "defaultValue": "Standard_GS1",
             "allowedValues": [
-                "Standard_GS1"
+                "Standard_GS1",
+                "Standard_GS2"
             ],
             "metadata": {
                 "description": "Select size of VM"
@@ -93,7 +100,7 @@
                     "imageReference": {
                         "publisher": "microsoftsqlserver",
                         "offer": "sql2019-ws2019",
-                        "sku": "sqldev",
+                        "sku": "[parameters('Sql_Server_Edition')]",
                         "version": "latest"
                     },
                     "osDisk": {
