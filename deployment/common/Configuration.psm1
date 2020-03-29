@@ -3,7 +3,7 @@ Import-Module $PSScriptRoot/Security.psm1 -Force
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-ConfigRootDir {
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent "environment_configs" -Resolve
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -ErrorAction Stop
     return $configRootDir
 }
 
