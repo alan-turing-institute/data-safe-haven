@@ -8,7 +8,9 @@ param(
   [Parameter(Position=3, Mandatory = $true, HelpMessage = "Enter the size of the VM e.g. Standard_GS1 or Standard_GS2")]
   [string]$sqlServerVmSize,
   [Parameter(Position=4, Mandatory = $true, HelpMessage = "Enter the IP address for the VM")]
-  [string]$sqlServerIpAddress
+  [string]$sqlServerIpAddress,
+  [Parameter(Position=5, Mandatory = $true, HelpMessage = "Enter whether SSIS should be disabled")]
+  [bool]$sqlServerSsisDisabled
 )
 
 Import-Module Az
@@ -84,6 +86,11 @@ $params = @{
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
 $_ = Set-AzContext -Subscription $config.sre.subscriptionName
+
+# Disable SSIS when not required
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "customisations" "mssql" "create_sqlserver" "scripts" "Disable_SSIS_Remote.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $sqlServerName -ResourceGroupName  $config.sre.sqlserver.rg
+Write-Output $result.Value
 
 # Set locale, install updates and reboot
 # --------------------------------------
