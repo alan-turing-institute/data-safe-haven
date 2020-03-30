@@ -726,6 +726,33 @@ function Set-KeyVaultPermissions {
 Export-ModuleMember -Function Set-KeyVaultPermissions
 
 
+# Attach a network security group to a subnet
+# -------------------------------------------
+function Set-SubnetNetworkSecurityGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet whose NSG will be set")]
+        $Subnet,
+        [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
+        $NetworkSecurityGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that the subnet belongs to")]
+        $VirtualNetwork
+    )
+    Add-LogMessage -Level Info "Ensuring that NSG '$($Nsg.Name)' is attached to subnet '$SubnetName'..."
+    $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
+    $VirtualNetwork | Set-AzVirtualNetwork
+    $success = $?
+    $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
+    if ($success) {
+        Add-LogMessage -Level Success "Set correct access policies"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+    }
+    return $updatedSubnet
+}
+Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
+
+
 # Update NSG rule to match a given configuration
 # ----------------------------------------------
 function Update-NetworkSecurityGroupRule {
