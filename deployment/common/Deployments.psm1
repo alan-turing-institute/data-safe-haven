@@ -368,7 +368,6 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } else {
-            # $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus 18.04-LTS -Version "latest"
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
