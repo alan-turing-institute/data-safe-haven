@@ -303,6 +303,7 @@ function Deploy-PackageMirror {
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
         if ($MirrorDirection -eq "Internal") {
+            Add-LogMessage -Level Info "Ensuring that '$VMName' can accept connections from the external mirror..."
             # Get public key for internal server
             $script = "
             #! /bin/bash
