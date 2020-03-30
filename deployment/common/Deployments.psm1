@@ -389,7 +389,7 @@ function Deploy-UbuntuVirtualMachine {
         if ($?) {
             Add-LogMessage -Level Success "Created virtual machine '$Name'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
