@@ -77,7 +77,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
 $destinationAddressPrefix = @($subnetInternal.AddressPrefix)
 $rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
 if ($rule) {
-    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Unique #| % { [string]$_ }
+    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Get-Unique
 }
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging `
                              -Name "RsyncToInternal" `
@@ -86,8 +86,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging 
                              -Direction Outbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
                              -DestinationAddressPrefix $destinationAddressPrefix -DestinationPortRange 22,873
-$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternal.AddressPrefix -NetworkSecurityGroup $nsgExternal | Set-AzVirtualNetwork
-$subnetExternal = Get-AzSubnet -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors
+$subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
 } else {
@@ -126,8 +125,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix * -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange *
-$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternal.AddressPrefix -NetworkSecurityGroup $nsgInternal | Set-AzVirtualNetwork
-$subnetInternal = Get-AzSubnet -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors
+$subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
 } else {
