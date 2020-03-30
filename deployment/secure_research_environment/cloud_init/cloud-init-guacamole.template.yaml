@@ -186,6 +186,7 @@ runcmd:
 
   - echo "Starting Guacamole"
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
+  # There isn't a corresponding environment variable in the Docker container image for this
   - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
   - docker cp /src/guacamole/dbinit.sql `$(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
   - docker-compose exec postgres psql -U guacamole -f /dbinit.sql

@@ -56,7 +56,7 @@ $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 $LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
 $LDAP_PORT = 389 # or 636 for LDAP over SSL?
 $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
-# Set this to something so that connection information can be picked up from group membership. Might only be needed when storing connection information in LDAP
+# Set this so that connection information can be picked up from group membership.
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
 $LDAP_GROUP_BASE_DN = $config.shm.domain.securityOuPath
 $POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
