@@ -253,8 +253,8 @@ function Deploy-Subnet {
     $_ = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
-        $VirtualNetwork | Set-AzVirtualNetwork
+        $_ = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
         } else {
@@ -511,7 +511,8 @@ function Get-AzSubnet {
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
         $VirtualNetwork
     )
-    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+    $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
+    return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
 
@@ -737,16 +738,16 @@ function Set-SubnetNetworkSecurityGroup {
         [Parameter(Mandatory = $true, HelpMessage = "Virtual network that the subnet belongs to")]
         $VirtualNetwork
     )
-    Add-LogMessage -Level Info "Ensuring that NSG '$($Nsg.Name)' is attached to subnet '$SubnetName'..."
+    Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
     $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
-    $VirtualNetwork | Set-AzVirtualNetwork
+    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
     $success = $?
     $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
     $success = $success -and $?
     if ($success) {
-        Add-LogMessage -Level Success "Set correct access policies"
+        Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
     } else {
-        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+        Add-LogMessage -Level Fatal "Failed to set network security group on '$($Subnet.Name)'!"
     }
     return $updatedSubnet
 }
