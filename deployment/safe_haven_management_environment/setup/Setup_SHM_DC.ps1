@@ -108,7 +108,7 @@ $success = $success -and $?
 # WinSCP
 $httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
 $filename = $httpContent.Links  | Where-Object { $_.href -like "*Setup.exe" } | % { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*$filename" } | % { $_.href }
+$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
