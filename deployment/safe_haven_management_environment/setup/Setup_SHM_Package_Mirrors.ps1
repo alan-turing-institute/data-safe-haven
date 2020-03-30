@@ -260,19 +260,22 @@ function Deploy-PackageMirror {
                                         -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
                                         -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 
+            $adminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $adminPasswordSecretName
+            
             # Deploy the VM
             $params = @{
                 Name = $vmName
                 Size = $config.mirrors.vmSize
                 OsDiskType = $config.mirrors.diskType
                 AdminUsername = $adminUsername
-                AdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $adminPasswordSecretName
+                AdminPassword = $adminPassword
                 CloudInitYaml = $cloudInitYaml
                 NicId = $vmNic.Id
                 ResourceGroupName = $config.mirrors.rg
                 BootDiagnosticsAccount = $bootDiagnosticsAccount
                 Location = $config.location
                 DataDiskIds = @($dataDisk.Id)
+                ImageSku = "18.04-LTS"
             }
             $_ = Deploy-UbuntuVirtualMachine @params
 
