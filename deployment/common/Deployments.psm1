@@ -100,9 +100,14 @@ function Deploy-ArmTemplate {
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @params -Verbose -DeploymentDebugLogLevel ResponseContent
+    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable azErr
     $result = $?
     Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
+    if ($azErr) {
+        foreach ( $errMsg in $azErr[0..2] ) {
+            Add-LogMessage -Level Failure "$errMsg"
+        }
+    }
     if ($result) {
         Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
