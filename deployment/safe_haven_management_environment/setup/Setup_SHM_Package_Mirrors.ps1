@@ -132,6 +132,7 @@ if ($?) {
     Add-LogMessage -Level Fatal "Configuring NSG '$nsgInternalName' failed!"
 }
 
+
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
