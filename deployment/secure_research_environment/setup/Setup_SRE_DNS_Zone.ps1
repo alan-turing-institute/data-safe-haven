@@ -1,8 +1,6 @@
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId,
-  [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Do not set NS records in parent DNS Zone")]
-  [switch]$DoNotSetParentNs = $false
+  [string]$sreId
 )
 
 Import-Module Az
@@ -24,7 +22,7 @@ $_ = Set-AzContext -Subscription $config.shm.dns.subscriptionName
 
 # Create the DNS Zone and set the parent NS records if required
 # -------------------------------------------------------------
-Set-DnsZoneAndParentNSRecords -DnsZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
+Set-DnsZoneAndParentNSRecords -DnsZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
 
 
 # Switch back to original subscription

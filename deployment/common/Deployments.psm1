@@ -893,9 +893,7 @@ function Set-DnsZoneAndParentNSRecords {
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
         $DnsZoneName,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
-        $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Do not set NS records in parent DNS Zone")]
-        [switch]$DoNotSetParentNs = $false        
+        $ResourceGroupName
     )
 
     $subdomain = $DnsZoneName.Split('.')[0]
@@ -905,22 +903,23 @@ function Set-DnsZoneAndParentNSRecords {
     # ---------------
     Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
     New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
-    
-    if($DoNotSetParentNs.IsPresent) {
-        Add-LogMessage -Level Info "Not adding NS records to parent DNS Zone because -DoNotSetParentNs set"
-    } else {
-        Add-LogMessage -Level Info "Adding NS records to parent DNS Zone"
 
-        # Get NS records from the new DNS Zone
-        # ------------------------------------
-        Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
-        $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName
-        
+    # Get NS records from the new DNS Zone
+    # ------------------------------------
+    Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
+    $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName        
+    
+    # Check if parent DNS Zone exists in same subscription and resource group
+    # -----------------------------------------------------------------------
+    Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
+        Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
+    } else {
         # Add NS records to the parent DNS Zone
         # -------------------------------------
         Add-LogMessage -Level Info "Add NS records to the parent DNS Zone..."
         Set-NSRecords -RecordSetName $subdomain -DnsZoneName $parentDnsZoneName -ResourceGroupName $ResourceGroupName -NsRecords $nsRecords
-    }    
-
+    }
 }
 Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords

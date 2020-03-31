@@ -1,8 +1,6 @@
 param(
   [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId,
-  [Parameter(Position = 1, Mandatory = $false, HelpMessage = "Do not set NS records in parent DNS Zone")]
-  [switch]$DoNotSetParentNs = $false
+  [string]$shmId
 )
 
 Import-Module Az
@@ -24,7 +22,7 @@ $_ = Set-AzContext -Subscription $config.dns.subscriptionName
 
 # Create the DNS Zone and set the parent NS records if required
 # -------------------------------------------------------------
-Set-DnsZoneAndParentNSRecordss -DnsZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
+Set-DnsZoneAndParentNSRecords -DnsZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg
 
 
 # Switch back to original subscription
