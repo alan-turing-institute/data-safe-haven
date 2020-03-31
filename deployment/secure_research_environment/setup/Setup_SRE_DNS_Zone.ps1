@@ -24,7 +24,7 @@ $_ = Set-AzContext -Subscription $config.shm.dns.subscriptionName
 
 # Create the DNS Zone and set the parent NS records if required
 # -------------------------------------------------------------
-CreateDnsZoneAndSetParentNSRecords -DnsZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
+Set-DnsZoneAndParentNSRecords -DnsZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
 
 
 # Switch back to original subscription

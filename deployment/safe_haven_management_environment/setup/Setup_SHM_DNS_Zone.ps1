@@ -24,7 +24,7 @@ $_ = Set-AzContext -Subscription $config.dns.subscriptionName
 
 # Create the DNS Zone and set the parent NS records if required
 # -------------------------------------------------------------
-CreateDnsZoneAndSetParentNSRecords -DnsZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
+Set-DnsZoneAndParentNSRecordss -DnsZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -DoNotSetParentNs:$DoNotSetParentNs
 
 
 # Switch back to original subscription

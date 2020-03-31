@@ -812,7 +812,7 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 
 # Create DNS Zone if it does not exist
 # ------------------------------------
-function Deploy-DNSZone {
+function New-DNSZone {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
         $Name,
@@ -833,7 +833,7 @@ function Deploy-DNSZone {
         Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
     }
 }
-Export-ModuleMember -Function Deploy-DNSZone
+Export-ModuleMember -Function New-DNSZone
 
 
 # Get NS Records
@@ -888,7 +888,7 @@ Export-ModuleMember -Function Set-NSRecords
 
 # Add NS Record Set to DNS Zone if it doesnot already exist
 # ---------------------------------------------------------
-function CreateDnsZoneAndSetParentNSRecords {
+function Set-DnsZoneAndParentNSRecords {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
         $DnsZoneName,
@@ -904,7 +904,7 @@ function CreateDnsZoneAndSetParentNSRecords {
     # Create DNS Zone
     # ---------------
     Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
-    Deploy-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
+    New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
     
     if($DoNotSetParentNs.IsPresent) {
         Add-LogMessage -Level Info "Not adding NS records to parent DNS Zone because -DoNotSetParentNs set"
@@ -923,4 +923,4 @@ function CreateDnsZoneAndSetParentNSRecords {
     }    
 
 }
-Export-ModuleMember -Function CreateDnsZoneAndSetParentNSRecords
+Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords
