@@ -578,8 +578,7 @@
                 "dhcpOptions": {
                     "dnsServers": [
                         "[parameters('VNET_DNS1')]",
-                        "[parameters('VNET_DNS2')]",
-                        "8.8.8.8"
+                        "[parameters('VNET_DNS2')]"
                     ]
                 },
                 "subnets": [{
