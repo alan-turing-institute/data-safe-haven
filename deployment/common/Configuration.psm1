@@ -305,9 +305,15 @@ function Add-SreConfig {
             identity = [ordered]@{}
             rds = [ordered]@{}
             data = [ordered]@{}
+            mssqldev = [ordered]@{}
+            mssqletl = [ordered]@{}
+            mssqldata = [ordered]@{}
         }
         nsg = [ordered]@{
             data = [ordered]@{}
+            mssqldev = [ordered]@{}
+            mssqletl = [ordered]@{}
+            mssqldata = [ordered]@{}
         }
     }
     $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
@@ -322,6 +328,21 @@ function Add-SreConfig {
     $config.sre.network.subnets.data.name = "SharedDataSubnet"
     $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
+
+    # Isolates MS SQL Server development infrastructure
+    $config.sre.network.subnets.mssqldev.name = "MsSqlDevSubnet"
+    $config.sre.network.subnets.mssqldev.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 3)
+    $config.sre.network.subnets.mssqldev.cidr = $config.sre.network.subnets.mssqldev.prefix + ".0/24"
+
+    # MS SQL Server infrastructure concerned with ETL
+    $config.sre.network.subnets.mssqletl.name = "MsSqlEtlSubnet"
+    $config.sre.network.subnets.mssqletl.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 4)
+    $config.sre.network.subnets.mssqletl.cidr = $config.sre.network.subnets.mssqletl.prefix + ".0/24"
+
+    # MS SQL Server infrastructure providing query access to researchers
+    $config.sre.network.subnets.mssqldata.name = "MsSqlDataSubnet"
+    $config.sre.network.subnets.mssqldata.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 5)
+    $config.sre.network.subnets.mssqldata.cidr = $config.sre.network.subnets.mssqldata.prefix + ".0/24"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -432,7 +453,7 @@ function Add-SreConfig {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
-        $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
+        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
     $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
@@ -478,6 +499,21 @@ function Add-SreConfig {
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
     $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
+
+    # MS SQL Development
+    $config.sre.mssqldev = [ordered]@{}
+    $config.sre.mssqldev.rg = "RG_SRE_MSSQLDEV"
+    $config.sre.mssqldev.nsg = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
+
+    # MS SQL ETL
+    $config.sre.mssqletl = [ordered]@{}
+    $config.sre.mssqletl.rg = "RG_SRE_MSSQLETL"
+    $config.sre.mssqletl.nsg = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
+
+    # MS SQL Data
+    $config.sre.mssqldata = [ordered]@{}
+    $config.sre.mssqldata.rg = "RG_SRE_MSSQLDATA"
+    $config.sre.mssqldata.nsg = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
 
     # Compute VMs
     $config.sre.dsvm = [ordered]@{}
