@@ -65,7 +65,7 @@ function Get-ShmFullConfig {
         }
         keyVault = [ordered]@{
             rg = "RG_SH_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-images".ToLower()
+            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower()
         }
         network = [ordered]@{
             rg = "RG_SH_NETWORKING"
@@ -185,7 +185,7 @@ function Get-ShmFullConfig {
 
     # --- DNS config ---
     $rgSuffix = ""
-    if ($shm.adminSecurityGroupName -like "*Production*") {
+    if (($shm.adminSecurityGroupName -like "*Production*") -or ($shm.adminSecurityGroupName -like "UHB*")) {
         $rgSuffix = "_PRODUCTION"
     } elseif ($shm.adminSecurityGroupName -like "*Test*") {
         $rgSuffix = "_TEST"
@@ -494,7 +494,7 @@ function Add-SreConfig {
     $config.sre.dsvm.vmImageResourceGroup = $config.shm.dsvmImage.gallery.rg
     $config.sre.dsvm.vmImageGallery = $config.shm.dsvmImage.gallery.sig
     $config.shm.Remove("dsvmImage")
-    $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
+    $config.sre.dsvm.vmSizeDefault = "Standard_E16s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
 
