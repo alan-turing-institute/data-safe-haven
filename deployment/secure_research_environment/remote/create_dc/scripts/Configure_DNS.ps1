@@ -72,7 +72,7 @@ if ($zoneExists) {
 # Create DNS Forwarders
 # ---------------------
 Write-Host " [ ] Adding DNS forwarding..."
-Add-DnsServerForwarder -IPAddress 168.63.129.16, 8.8.8.8 -PassThru
+Add-DnsServerForwarder -IPAddress 168.63.129.16 -PassThru
 if ($?) {
     Write-Host " [o] Successfully created/updated DNS forwarding"
 } else {
