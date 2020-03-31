@@ -137,18 +137,20 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Prepare SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-### Create DNS Zone and copy DNS records
 
-- If the SRE is using a subdomain of the SHM (e.g. `sandbox.testa.dsgroupdev.co.uk`):
-  - Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config. This will create a DNS Zone for the SRE and add its NS records to the SHM DNS Zone.
-- If the SRE is not using a subdomain of the SHM (e.g. the SRE has its own custom domain):
-  - Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID> -DoNotSetParentNs`, where the SRE ID is the one specified in the config.
-  - On the Azure portal, navigate to the new DNS Zone that has just been created. This will be in your DNS resource group (e.g. `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION`) with the Zone name as the FQDN of the SRE.
-  - Copy the 4 nameservers in the "NS" record to the domain's DNS record.
-  - Add these 4 nameservers as NS records to the DNS system of the parent domain
-    ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+### Create DNS Zone and copy DNS records
+
+- Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
+  - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
+  - Duplicate these records to the parent DNS system as follows:
+    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `sandbox`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk`, by creating a record set with name `sandbox`).
+     ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+    - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
 
 
+    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
+     ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
 ## 4. Deploy Virtual Network
 
 ### Create the virtual network
