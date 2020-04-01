@@ -51,7 +51,7 @@ Function Add-EtlSqlServer {
         subnetAddressPrefix = $config.sre.network.subnets.mssqletl.cidr
         resourceGroupName = $config.sre.mssqletl.rg
         sqlServerName = $SqlServerName
-        sqlServerEdition = "sqlent"
+        sqlServerEdition = "enterprise"
         sqlServerVmSize = "Standard_GS1"
         sqlServerIpAddress = $SqlServerIpAddress
         sqlServerSsisDisabled = 0
@@ -60,7 +60,7 @@ Function Add-EtlSqlServer {
     $_ = Add-SqlServer @params
 }
 
-Export-ModuleMember -Function Add-DataSqlServer
+Export-ModuleMember -Function Add-EtlSqlServer
 
 Function Add-DataSqlServer {
     param(
@@ -80,7 +80,7 @@ Function Add-DataSqlServer {
         subnetAddressPrefix = $config.sre.network.subnets.mssqldata.cidr
         resourceGroupName = $config.sre.mssqldata.rg
         sqlServerName = $SqlServerName
-        sqlServerEdition = "sqlent"
+        sqlServerEdition = "enterprise"
         sqlServerVmSize = "Standard_GS2"
         sqlServerIpAddress = $SqlServerIpAddress
         sqlServerSsisDisabled = 1
@@ -140,16 +140,10 @@ Function Add-SqlServer {
     # Create subnet if it does not exist
     # ------------------------------------------------------
     $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-    $_ = Deploy-Subnet -Name $subnetName -VirtualNetwork $virtualNetwork -AddressPrefix $subnetAddressPrefix
+    $subnet = Deploy-Subnet -Name $subnetName -VirtualNetwork $virtualNetwork -AddressPrefix $subnetAddressPrefix
 
-    # Derive Resource Id for the target subnet
-    # ------------------------------------------------------
-    $subscription = Get-AzSubscription -SubscriptionName $config.sre.subscriptionName
-    $subscriptionQualifiedResourceGroupName = "/subscriptions/" + $subscription.Id + "/resourceGroups/" + $virtualNetwork.ResourceGroupName;
-    $subnetResourceId = $subscriptionQualifiedResourceGroupName + "/providers/Microsoft.Network/virtualNetworks/" + $config.sre.network.vnet.name + "/subnets/" + $subnetName
-
-    Add-LogMessage -Level Info "SQL Server: '$($sqlServerName)' will join subnet: '$($subnetResourceId)'..."
-
+    Add-LogMessage -Level Info "SQL Server: '$($sqlServerName)' will join subnet: '$($subnet.Id)'..."
+   
     # Deploy SQL Server from template
     # --------------------------------
     Add-LogMessage -Level Info "Creating SQL Server: '$($sqlServerName)'' from template..."
@@ -164,7 +158,7 @@ Function Add-SqlServer {
         Sql_Server_Edition = $sqlServerEdition;      
         Domain_Name = $config.shm.domain.fqdn;
         IP_Address = $sqlServerIpAddress;
-        SubnetResourceId = $subnetResourceId;  
+        SubnetResourceId = $subnet.Id;  
         VM_Size = $sqlServerVmSize
     }
 
