@@ -43,7 +43,7 @@ function Get-ShmFullConfig {
     # --- DSVM build images ---
     $shm.dsvmImage = [ordered]@{
         subscription = $shmConfigBase.computeVmImageSubscriptionName
-        location = "westeurope" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
+        location = "uksouth" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
