@@ -169,7 +169,7 @@ $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscr
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
     Administrator_User = $shmAdminUsername
-    Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
+    Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
     DC1_Host_Name = $config.dc.hostname
@@ -181,7 +181,7 @@ $params = @{
     Domain_Name = $config.domain.fqdn
     Domain_NetBIOS_Name = $config.domain.netbiosName
     SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
-    Shm_Id = "$($config.id)".ToLower()
+    Shm_Id = $config.id
     Virtual_Network_Name = $config.network.vnet.Name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Virtual_Network_Subnet = $config.network.subnets.identity.Name
@@ -245,9 +245,15 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Set locale, install updates and reboot
-# --------------------------------------
+# Configure the domain controllers and set their DNS resolution
+# -------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    # Configure DNS to forward requests to the Azure service
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    Write-Output $result.Value
+
+    # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 }
