@@ -24,7 +24,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
+$vmIpAddress = $config.sre.network.subnets.mssqldata.prefix + "." + $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
@@ -147,9 +147,9 @@ try {
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
 Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.Name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.Name }
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.mssqldata.Name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.Name)' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.mssqldata.Name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
