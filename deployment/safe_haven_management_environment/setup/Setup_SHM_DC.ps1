@@ -253,6 +253,11 @@ foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
     Write-Output $result.Value
 
+    # Remove custom per-NIC DNS settings
+    $nic = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
+    $nic.DnsSettings.DnsServers.Clear()
+    $nic | Set-AzNetworkInterface
+
     # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")

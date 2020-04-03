@@ -7,4 +7,3 @@ if ($?) {
 } else {
     Write-Host " [x] Failed to create/update DNS forwarding!"
 }
-
