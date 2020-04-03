@@ -38,9 +38,12 @@ Import-Module ActiveDirectory
 
 
 # Convert encrypted string to secure string
+# -----------------------------------------
 $adsyncAccountPasswordSecureString = ConvertTo-SecureString -String $adsyncAccountPasswordEncrypted -Key (1..16)
 
+
 # Enable AD Recycle Bin
+# ---------------------
 Write-Host "Configuring AD recycle bin..."
 $featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $serverName).EnabledScopes | Select-String "$domainou"
 if ("$featureExists" -ne "") {
@@ -55,6 +58,7 @@ if ("$featureExists" -ne "") {
 }
 
 # Set admin user account password to never expire
+# -----------------------------------------------
 Write-Host "Setting admin account to never expire..."
 Set-ADUser -Identity $serverAdminName -PasswordNeverExpires $true
 if ($?) {
@@ -63,7 +67,9 @@ if ($?) {
     Write-Host " [x] Failed!"
 }
 
+
 # Set minumium password age to 0
+# ------------------------------
 Write-Host "Changing minimum password age to 0..."
 Set-ADDefaultDomainPasswordPolicy -Identity $domain -MinPasswordAge 0.0:0:0.0
 if ($?) {
@@ -72,7 +78,9 @@ if ($?) {
     Write-Host " [x] Failed!"
 }
 
+
 # Ensure that OUs exist
+# ---------------------
 Write-Host "Creating management OUs..."
 foreach ($ouName in ("Safe Haven Research Users",
                      "Safe Haven Security Groups",
@@ -96,6 +104,7 @@ foreach ($ouName in ("Safe Haven Research Users",
 }
 
 # Create security groups
+# ----------------------
 Write-Host "Creating security groups..."
 foreach ($groupName in ($serverAdminSgName, $ldapUsersSgName)) {
     $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
@@ -111,9 +120,10 @@ foreach ($groupName in ($serverAdminSgName, $ldapUsersSgName)) {
     }
 }
 
-# Creating global service accounts
+# Create active directory synchronisation service account
+# -------------------------------------------------------
 $adsyncAccountName = "localadsync"
-Write-Host "Creating AD Sync Service account ($adsyncAccountName)..." # - enter password for this account when prompted"
+Write-Host "Creating AD Sync Service account ($adsyncAccountName)..."
 $adsyncUserName = "Local AD Sync Administrator" # NB. name must be less than 20 characters
 $serviceOuPath = "OU=Safe Haven Service Accounts,$domainou"
 $userExists = $(Get-ADUser -Filter "Name -eq '$adsyncUserName'").Name
@@ -121,14 +131,14 @@ if ("$userExists" -ne "") {
     Write-Host " [o] Account '$adsyncUserName' already exists"
 } else {
     New-ADUser -Name "$adsyncUserName" `
-         -UserPrincipalName "$adsyncAccountName@$domain" `
-         -Path "$serviceOuPath" `
-         -SamAccountName $adsyncAccountName `
-         -DisplayName "$adsyncUserName" `
-         -Description "Azure AD Connect service account" `
-         -AccountPassword $adsyncAccountPasswordSecureString `
-         -Enabled $true `
-         -PasswordNeverExpires $true
+               -UserPrincipalName "$adsyncAccountName@$domain" `
+               -Path "$serviceOuPath" `
+               -SamAccountName $adsyncAccountName `
+               -DisplayName "$adsyncUserName" `
+               -Description "Azure AD Connect service account" `
+               -AccountPassword $adsyncAccountPasswordSecureString `
+               -Enabled $true `
+               -PasswordNeverExpires $true
     if ($?) {
         Write-Host " [o] AD Sync Service account '$adsyncUserName' created successfully"
     } else {
@@ -136,7 +146,59 @@ if ("$userExists" -ne "") {
     }
 }
 
+
+# Set AAD sync permissions for the localadsync account - without this self-service password reset will not work
+# -------------------------------------------------------------------------------------------------------------
+Write-Host "Setting AAD sync permissions for AD Sync Service account ($adsyncAccountName)..."
+$success = $true
+$originalPath = Get-Location
+$rootDse = Get-ADRootDSE
+$defaultNamingContext = $rootDse.DefaultNamingContext
+$configurationNamingContext = $rootDse.ConfigurationNamingContext
+$schemaNamingContext = $rootDse.SchemaNamingContext
+# Create a hashtables to store the GUID values of each schema class and attribute and each extended right in the forest
+$guidmap = @{}
+Get-ADObject -SearchBase $schemaNamingContext -LDAPFilter "(schemaidguid=*)" -Properties lDAPDisplayName,schemaIDGUID | ForEach-Object {$guidmap[$_.lDAPDisplayName] = [System.GUID]$_.schemaIDGUID }
+$extendedRightsMap = @{}
+Get-ADObject -SearchBase $configurationNamingContext -LDAPFilter "(&(objectclass=controlAccessRight)(rightsguid=*))" -Properties displayName,rightsGuid | ForEach-Object { $extendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
+# Get the SID for the localadsync account
+$adsyncSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADUser $adsyncAccountName).SID
+# Get a copy of the current ACL on the OU
+Set-Location AD:
+$acl = Get-ACL -Path $domainou
+$success = $success -and $?
+# Allow the localadsync account to reset and change passwords on all descendent user objects
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "ExtendedRight", "Allow", $extendedrightsmap["Reset Password"], "Descendents", $guidmap["user"]))
+$success = $success -and $?
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "ExtendedRight", "Allow", $extendedrightsmap["Change Password"], "Descendents",$guidmap["user"]))
+$success = $success -and $?
+# Allow the localadsync account to write lockoutTime and pwdLastSet extended property on all descendent user objects
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["lockoutTime"], "Descendents", $guidmap["user"]))
+$success = $success -and $?
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["pwdLastSet"], "Descendents", $guidmap["user"]))
+$success = $success -and $?
+# Set the ACL properties
+Set-ACL -ACLObject $acl -Path "AD:\${domainou}"
+$success = $success -and $?
+Set-Location $originalPath
+# Allow the localadsync account to replicate directory changes
+dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes"
+$success = $success -and $?
+dsacls "$configurationNamingContext" /G "$($UserPrincipal):CA;Replicating Directory Changes"
+$success = $success -and $?
+dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes All"
+$success = $success -and $?
+dsacls "$configurationNamingContext" /G "$($UserPrincipal):CA;Replicating Directory Changes All"
+$success = $success -and $?
+if ($success) {
+    Write-Host " [o] Successfully updated ACL permissions for AD Sync Service account '$adsyncUserName'"
+} else {
+    Write-Host " [x] Failed to update ACL permissions for AD Sync Service account '$adsyncUserName'!"
+}
+
+
 # Add users to security groups
+# ----------------------------
 Write-Host "Adding users to security groups..."
 # NB. As of build 1.4.###.# it is no longer supported to use an Enterprise Admin or a Domain Admin account as the AD DS Connector account.
 $membershipExists = $(Get-ADGroupMember -Identity "$serverAdminSgName").Name | Select-String "$serverAdminName"
@@ -166,7 +228,9 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
     }
 }
 
+
 # Link GPO with OUs
+# -----------------
 Write-Host "Linking GPOs to OUs..."
 foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
                             ("All servers - Local Administrators", "Secure Research Environment Data Servers"),
@@ -208,6 +272,7 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
 
 
 # Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
+# --------------------------------------------------------------------------------------------------------------------------------------
 Write-Host "Delegating Active Directory registration permissions to the LDAP users group..."
 $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
 dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"

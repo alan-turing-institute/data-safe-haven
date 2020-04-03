@@ -360,7 +360,7 @@ rather than simply `<admin username>`)
 
   - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the RDS and VPN and reconnect later before clicking `Retry`.
 
-### Set AAD sync permissions
+<!-- ### Set AAD sync permissions
 The `localadsync@<SHM domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
 - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
 - Click on the `View` menu item and make sure that `Advanced Features` is enabled
@@ -382,7 +382,7 @@ The `localadsync@<SHM domain>` account needs to be given permissions to change p
   - Enable the following under `Permissions`:
     - `Replicating Directory Changes`
     - `Replicating Directory Changes All`
-  - Click `OK` on all open dialog boxes
+  - Click `OK` on all open dialog boxes -->
 
 
 ### Additional AAD Connect Configuration
