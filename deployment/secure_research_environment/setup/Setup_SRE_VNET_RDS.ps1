@@ -448,6 +448,13 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
+# Add VMs to correct NSG
+# ----------------------
+Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
+
+
 # Reboot all the RDS VMs
 # ----------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -460,13 +467,6 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
         Add-LogMessage -Level Fatal "Rebooting the ${name} failed!"
     }
 }
-
-
-# Add VMs to correct NSG
-# ----------------------
-Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
 
 
 # Switch back to original subscription
