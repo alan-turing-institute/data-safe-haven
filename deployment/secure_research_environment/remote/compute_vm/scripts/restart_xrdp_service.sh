@@ -20,7 +20,7 @@ if [[ ("$XRDP_STATUS" != "") || ("$XRDP_SESMAN_STATUS" != "") ]]; then
     sudo systemctl restart xrdp
     sudo systemctl restart xrdp-sesman
 else
-    echo -e "${BLUE}xrdp services are working. No need to restart.${END}"
+    echo -e "${BLUE} [o] xrdp services are working. No need to restart.${END}"
     echo "XRDP STATUS RESULT:"
     sudo ${XRDP_CMD}
     sudo ${XRDP_SESMAN_CMD}
@@ -31,13 +31,13 @@ echo "Retesting xrdp status..."
 XRDP_STATUS=$(sudo ${XRDP_CMD} | grep 'Active: failed')
 XRDP_SESMAN_STATUS=$(sudo ${XRDP_SESMAN_CMD} | grep 'Active: failed')
 if [[ ("$XRDP_STATUS" != "") || ("$XRDP_SESMAN_STATUS" != "") ]]; then
-    echo -e "${RED}xrdp services are not working after restart.${END}"
+    echo -e "${RED} [x] xrdp services are not working after restart.${END}"
     echo "XRDP STATUS RESULT:"
     sudo ${XRDP_CMD}
     sudo ${XRDP_SESMAN_CMD}
     exit 1
 else
-    echo -e "${BLUE}xrdp services are working after restart.${END}"
+    echo -e "${BLUE} [o] xrdp services are working after restart.${END}"
     echo "XRDP STATUS RESULT:"
     sudo ${XRDP_CMD}
     sudo ${XRDP_SESMAN_CMD}
