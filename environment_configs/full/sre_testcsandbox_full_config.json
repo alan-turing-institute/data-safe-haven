@@ -9,7 +9,7 @@
       "stateCountyRegion": "London",
       "countryCode": "GB"
     },
-    "location": "uksouth",
+    "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "testc.dsgroupdev.co.uk",
@@ -133,7 +133,7 @@
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "uksouth",
+    "location": "centralus",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
