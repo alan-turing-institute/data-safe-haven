@@ -373,6 +373,8 @@ function Add-SreConfig {
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
             dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
             dataMountPassword = "$($config.sre.shortName)-datamount-password"
+            sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
+            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"

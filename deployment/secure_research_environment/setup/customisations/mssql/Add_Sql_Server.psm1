@@ -132,6 +132,8 @@ Function Add-SqlServer {
     $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
     $sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dataServerAdminPassword
     $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+    $sqlAuthUpdateUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUserPassword
+    $sqlAuthUpdateUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
 
     # Create resource group if it does not exist
     # ------------------------------------------------------
@@ -153,6 +155,8 @@ Function Add-SqlServer {
         Administrator_User = $sreAdminUsername;
         DC_Join_Password = $shmDcAdminPassword;
         DC_Join_User = $shmDcAdminUsername;
+        Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername;
+        Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword;
         BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName;
         Sql_Server_Name = $sqlServerName;
         Sql_Server_Edition = $sqlServerEdition;      
