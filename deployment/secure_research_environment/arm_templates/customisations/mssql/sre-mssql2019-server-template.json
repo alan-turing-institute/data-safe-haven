@@ -51,7 +51,7 @@
             }
         },
         "Sql_AuthUpdate_Password": {
-            "type": "securestring",
+            "type": "string",
             "metadata": {
                 "description": "Enter password for SQL AuthUpdate User"
             }
