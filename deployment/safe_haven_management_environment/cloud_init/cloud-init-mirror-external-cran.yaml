@@ -25,8 +25,14 @@ users:
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    permissions: "0600"
+    content:
+  - path: "/home/mirrordaemon/package_whitelist.txt"
+    permissions: "0600"
     content: |
+      # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       # rsync: make the destination look like the source
@@ -46,21 +52,27 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
       RSYNC_INCLUDES=""
       # DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
-      # IF_WHITELIST_ENABLED WHITELISTED_PACKAGES=
+      # IF_WHITELIST_ENABLED WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt)
       # IF_WHITELIST_ENABLED for RPACKAGE in $WHITELISTED_PACKAGES; do
       # IF_WHITELIST_ENABLED     RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
       # IF_WHITELIST_ENABLED done
-      # IF_WHITELIST_ENABLED RSYNC_INCLUDES='--include="*/" $RSYNC_INCLUDES --exclude="*"'
-      rsync -rtlv --delete --progress $RSYNC_INCLUDES cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      # IF_WHITELIST_ENABLED RSYNC_INCLUDES="--include='*/' $RSYNC_INCLUDES --exclude='*'"
+      if [ "$RSYNC_INCLUDES" != "" ]; then
+          rsync -rtlv --delete --progress --include='*/' $RSYNC_INCLUDES --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      else
+          rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh

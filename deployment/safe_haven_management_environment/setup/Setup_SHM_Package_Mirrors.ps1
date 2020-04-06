@@ -192,8 +192,12 @@ function Resolve-CloudInit {
     if ($MirrorType.ToLower() -eq "cran") {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-not $notExists) {
-            $packages = $whitelist.Replace("`n", " ")
-            $cloudInitYaml = $cloudInitYaml.Replace("WHITELISTED_PACKAGES=", "WHITELISTED_PACKAGES=$packages").Replace("# IF_WHITELIST_ENABLED ", "")
+            $packagesBefore = "      # PACKAGE_WHITELIST"
+            $packagesAfter  = ""
+            foreach ($package in $whitelist -split "`n") {
+                $packagesAfter += "      $package`n"
+            }
+            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("# IF_WHITELIST_ENABLED ", "")
         }
     }
 
