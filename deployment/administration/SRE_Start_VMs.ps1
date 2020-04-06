@@ -18,15 +18,12 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Start all VMs
 # -------------
-Add-LogMessage -Level Info "Starting AD DC..."
-Add-LogMessage -Level Info "Waiting for AD to start before starting other VMs to ensure domain joining works..."
-Enable-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName
 Add-LogMessage -Level Info "Starting RDS gateway..."
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName
 Add-LogMessage -Level Info "Starting RDS session hosts..."
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName
 Enable-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName
-Add-LogMessage -Level Info "Starting dataserver..."
+Add-LogMessage -Level Info "Starting data server..."
 Enable-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName
 Add-LogMessage -Level Info "Starting web app servers..."
 Enable-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName
