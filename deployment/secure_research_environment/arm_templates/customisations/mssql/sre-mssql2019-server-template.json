@@ -43,7 +43,19 @@
             "metadata": {
                 "description": "Enter password for DC Join User"
             }
-        },        
+        },
+        "Sql_AuthUpdate_UserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for SQL AuthUpdate User"
+            }
+        },
+        "Sql_AuthUpdate_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter password for SQL AuthUpdate User"
+            }
+        },         
         "BootDiagnostics_Account_Name": {
             "type": "string",
             "metadata": {
@@ -278,9 +290,9 @@
                 "ServerConfigurationsManagementSettings": {
                     "SQLConnectivityUpdateSettings": {
                         "ConnectivityType": "Private",
-                        "Port": "1433",
-                        "SQLAuthUpdateUserName": "",
-                        "SQLAuthUpdatePassword": ""
+                        "Port": "14330",
+                        "SQLAuthUpdateUserName": "[parameters('Sql_AuthUpdate_UserName')]",
+                        "SQLAuthUpdatePassword": "[parameters('Sql_AuthUpdate_Password')]"
                     },
                     "AdditionalFeaturesServerConfigurations": {
                         "IsRServicesEnabled": "false"
