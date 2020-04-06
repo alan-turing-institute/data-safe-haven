@@ -2,7 +2,7 @@
     "subscriptionName": "Safe Haven Management Test C",
     "domainSubscriptionName": "Turing Safe Haven Domains",
     "adminSecurityGroupName" : "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "Turing Safe Haven VM Images",
+    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "testc.dsgroupdev.co.uk",
     "netbiosName": "SAFEHAVENTESTC",
     "shmId": "testc",

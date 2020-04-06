@@ -100,7 +100,7 @@
       }
     },
     "dns": {
-      "subscriptionName": "Turing Safe Haven Domains",
+      "subscriptionName": "[Prod] Safe Haven Domains",
       "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
@@ -302,7 +302,7 @@
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
-      "vmImageSubscription": "Turing Safe Haven VM Images",
+      "vmImageSubscription": "[Prod] Safe Haven VM Images",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_B2ms",
