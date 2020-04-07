@@ -16,7 +16,7 @@ packages:
   - python3-venv
   - rsync
 
-# Add the atiadmin (default) and mirrordaemon users
+# Add the SHM admin (default) and mirrordaemon users
 # lock_passwd: Lock the password to disable password login
 users:
   - default
@@ -30,7 +30,6 @@ users:
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
-    content:
   - path: "/home/mirrordaemon/package_whitelist.txt"
     permissions: "0600"
     content: |
@@ -43,13 +42,14 @@ write_files:
       with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
           for line in f_bandersnatch.read().splitlines():
               lines.append(line)
-              if line == "        packages =":
+              if line == "packages =":
                   break
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
           for package in f_whitelist.read().splitlines():
-              lines.append("            {}".format(package))
+              lines.append("    {}".format(package))
       with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
           [f_bandersnatch.write(line + "\n") for line in lines]
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     permissions: "0744"
     content: |
@@ -86,6 +86,7 @@ write_files:
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
   - path: "/etc/bandersnatch.conf"
+    permissions: "0644"
     content: |
       [mirror]
       ; The directory where the mirror data will be stored.
@@ -139,13 +140,6 @@ write_files:
       ; IF_WHITELIST_ENABLED [whitelist]
       ; IF_WHITELIST_ENABLED packages =
 
-# ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
-# ; IF_WHITELIST_ENABLED [blacklist]
-# ; IF_WHITELIST_ENABLED plugins =
-# ; IF_WHITELIST_ENABLED     whitelist_project
-# ; IF_WHITELIST_ENABLED [whitelist]
-# ; IF_WHITELIST_ENABLED packages =
-
 runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
@@ -184,6 +178,9 @@ runcmd:
   - python3 -m venv bandersnatch
   - bandersnatch/bin/pip install wheel
   - bandersnatch/bin/pip install bandersnatch
+
+  # Initialise whitelist if appropriate
+  # IF_WHITELIST_ENABLED - python3 /home/mirrordaemon/update_whitelist.py
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh

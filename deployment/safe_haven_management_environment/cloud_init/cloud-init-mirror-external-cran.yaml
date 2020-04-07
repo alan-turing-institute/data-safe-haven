@@ -12,7 +12,7 @@ packages:
   - openssh-server
   - rsync
 
-# Add the atiadmin (default) and mirrordaemon users
+# Add the SHM admin (default) and mirrordaemon users
 # lock_passwd: Lock the password to disable password login
 users:
   - default
@@ -26,7 +26,6 @@ users:
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
-    content:
   - path: "/home/mirrordaemon/package_whitelist.txt"
     permissions: "0600"
     content: |

@@ -1,11 +1,11 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
-  [ValidateSet("2", "3")]
-  [string]$tier,
-  [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
-  [string]$internalMirrorName = "Internal"
+    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [ValidateSet("2", "3")]
+    [string]$tier,
+    [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
+    [string]$internalMirrorName = "Internal"
 )
 
 Import-Module Az
@@ -36,6 +36,7 @@ $subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
 $subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $vnetIpTriplet = "10.20.$tier"
 $vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+$mirrorTypes = @("PyPI", "CRAN")
 
 
 # Set up the VNet with subnets for internal and external package mirrors
@@ -179,12 +180,12 @@ function Resolve-CloudInit {
     if ($MirrorType.ToLower() -eq "pypi") {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-Not $notExists) {
-            $packagesBefore = "      # PACKAGE_WHITELIST"
+            $packagesBefore = "        # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
                 $packagesAfter += "      $package`n"
             }
-            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("; IF_WHITELIST_ENABLED ", "")
+            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("; IF_WHITELIST_ENABLED ", "").Replace("# IF_WHITELIST_ENABLED ", "")
         }
     }
 
@@ -192,7 +193,7 @@ function Resolve-CloudInit {
     if ($MirrorType.ToLower() -eq "cran") {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-Not $notExists) {
-            $packagesBefore = "      # PACKAGE_WHITELIST"
+            $packagesBefore = "        # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
                 $packagesAfter += "      $package`n"
@@ -217,8 +218,8 @@ function Deploy-PackageMirror {
     )
     # Load cloud-init file
     # --------------------
-    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($MirrorType).ToLower()).yaml"
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($MirrorType).ToLower())_whitelist.list"
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "tier${tier}_${MirrorType}_whitelist.list".ToLower()
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror
@@ -286,7 +287,7 @@ function Deploy-PackageMirror {
             $progress = 0
             while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
                 $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-                $progress += 1
+                $progress = [math]::min(100, $progress + 1)
                 Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
                 Start-Sleep 10
             }
@@ -347,7 +348,7 @@ function Deploy-PackageMirror {
 
 # Set up package mirror
 # ---------------------
-foreach ($mirrorType in ("PyPI", "CRAN")) {
+foreach ($mirrorType in $mirrorTypes) {
     foreach ($mirrorDirection in ("External", "Internal")) {
         Deploy-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
     }
