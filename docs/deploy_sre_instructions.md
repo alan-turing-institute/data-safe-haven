@@ -243,11 +243,14 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 ### Test RDS deployment
 - Disconnect from any SRE VMs and connect to the SHM VPN
 - Connect to the **SHM Domain Controller** via the Remote Desktop client
+- The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SHM_DC -> DC1-SHM-<SRE ID>`)
 - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under "SECRETS".
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
-- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly.**
+- **NB. The next steps ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly. The automatically-created test researcher should already be in the correct group.**
+
+#### Set up a non-privileged user account
 
 1. Ensuring that a non-privileged user account exists
 - In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
@@ -272,6 +275,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - MFA must be enabled for the user. To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
   - The user must log in and set up MFA as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
 
+#### Test the RDS using a non-privileged user account
 
 4. Test using the RDG web interface
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
@@ -304,7 +308,6 @@ Each SRE must be assigned its own unique IP address space, and it is very import
     - **Troubleshooting** If you are able to log into the webclient with a username and password but cannot connect to the presentation server (as no MFA prompt is given), please look at [this documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)). In particular, ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`).
 - Once you have approved the sign in, you should see a remote Windows desktop.
 - **NOTE:** The other apps will not work until the other servers have been deployed.
-
 
 ## 5. Deploy Data Server
 ### Create Dataserver VM
