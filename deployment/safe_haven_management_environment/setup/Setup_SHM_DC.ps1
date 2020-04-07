@@ -244,32 +244,6 @@ $params = @{
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
 
-#
-#  NB. moved this into active directory configuration script, but haven't checked whether it works yet...
-#
-# # Active directory delegation
-# # ---------------------------
-# Add-LogMessage -Level Info "Enabling Active Directory delegation on: $($config.dc.vmName)..."
-# $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Delegation.ps1"
-# $params = @{
-#     netbiosName = "`"$($config.domain.netbiosName)`""
-#     ldapUsersSgName = "`"$($config.domain.securityGroups.dsvmLdapUsers.name)`""
-# }
-# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
-# Write-Output $result.Value
-
-
-# # Restart the DCs
-# # ---------------
-# foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-#     Add-LogMessage -Level Info "Restarting $vmName..."
-#     Enable-AzVM -Name $vmName -ResourceGroupName $config.dc.rg
-#     if ($?) {
-#         Add-LogMessage -Level Success "Restarting DC $vmName succeeded"
-#     } else {
-#         Add-LogMessage -Level Fatal "Restarting DC $vmName failed!"
-#     }
-# }
 
 # Set locale, install updates and reboot
 # --------------------------------------
