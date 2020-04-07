@@ -269,11 +269,11 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 
 3. Ensure that the account has MFA enabled
 - If you have just created the account, you will need to synchronise with Azure Active Directory
-- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md). In particular:
+- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md). In particular:
   - The user's `Usage Location` must be set on Active Directory. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
   - A licence must be assigned to the user. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled..
   - MFA must be enabled for the user. To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
-  - The user must log in and set up MFA as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
+  - The user must log in and set up MFA as [detailed in the user guide](safe_haven_user_guide.md)
 
 #### Test the RDS using a non-privileged user account
 
