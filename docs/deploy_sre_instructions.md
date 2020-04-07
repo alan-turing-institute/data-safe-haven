@@ -252,12 +252,12 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 
 #### Set up a non-privileged user account
 
-1. Ensuring that a non-privileged user account exists
+1. **Ensuring that a non-privileged user account exists**
 - In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Research Users` OU
 - Ensure that the non-privileged user account that you want to use is listed here, or if it is not then create it.
 
-2. Ensure that the user account is in the correct Security Group
+2. **Ensure that the user account is in the correct Security Group**
 - Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
 - Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 - Click on the `Members` tab.
@@ -267,7 +267,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - Select the correct username and click `Ok`
   - Click `Ok` again to exit the add users dialogue
 
-3. Ensure that the account has MFA enabled
+3. **Ensure that the account has MFA enabled**
 - If you have just created the account, you will need to synchronise with Azure Active Directory
 - Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md). In particular:
   - The user's `Usage Location` must be set on Active Directory. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
@@ -276,8 +276,6 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - The user must log in and set up MFA as [detailed in the user guide](safe_haven_user_guide.md)
 
 #### Test the RDS using a non-privileged user account
-
-4. Test using the RDG web interface
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
