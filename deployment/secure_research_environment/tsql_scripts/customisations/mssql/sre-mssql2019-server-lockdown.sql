@@ -1,4 +1,4 @@
-PRINT "2.1 - Ensure 'Ad Hoc Distributed Queries' Server Configuration Option is set to '0'"
+PRINT '2.1 - Ensure Ad Hoc Distributed Queries Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'Ad Hoc Distributed Queries', 0;
@@ -9,17 +9,20 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.2 - Ensure 'CLR Enabled' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.2 - Ensure CLR Enabled Server Configuration Option is set to 0'
 EXECUTE sp_configure 'clr enabled', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.3 - Ensure 'Cross DB Ownership Chaining' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.3 - Ensure Cross DB Ownership Chaining Server Configuration Option is set to 0'
 EXECUTE sp_configure 'cross db ownership chaining', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.4 - Ensure 'Database Mail XPs' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.4 - Ensure Database Mail XPs Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'Database Mail XPs', 0;
@@ -30,7 +33,8 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.5 - Ensure 'Ole Automation Procedures' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.5 - Ensure Ole Automation Procedures Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'Ole Automation Procedures', 0;
@@ -41,7 +45,8 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.6 - Ensure 'Remote Access' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.6 - Ensure Remote Access Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'remote access', 0;
@@ -52,12 +57,14 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.7 - Ensure 'Remote Admin Connections' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.7 - Ensure Remote Admin Connections Server Configuration Option is set to 0'
 EXECUTE sp_configure 'remote admin connections', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.8 - Ensure 'Scan For Startup Procs' Server Configuration Option is set to '0'"
+PRINT ''
+PRINT '2.8 - Ensure Scan For Startup Procs Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'scan for startup procs', 0;
@@ -68,23 +75,23 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "2.9 - Ensure 'Trustworthy' Database Property is set to 'Off'"
-ALTER DATABASE 'master' SET TRUSTWORTHY OFF;
+PRINT ''
+PRINT '2.9 - Ensure Trustworthy Database Property is set to Off'
+ALTER DATABASE master SET TRUSTWORTHY OFF;
 GO
 
-PRINT "2.12 - Ensure 'Hide Instance' option is set to 'Yes' for Production SQL Server instances"
+PRINT ''
+PRINT '2.12 - Ensure Hide Instance option is set to Yes for Production SQL Server instances'
 EXEC master.sys.xp_instance_regwrite @rootkey = N'HKEY_LOCAL_MACHINE', @key = N'SOFTWARE\Microsoft\Microsoft SQL Server\MSSQLServer\SuperSocketNetLib', @value_name = N'HideInstance', @type = N'REG_DWORD', @value = 1;
 GO
 
-PRINT "2.15 - Ensure 'AUTO_CLOSE' is set to 'OFF' on contained databases"
-ALTER DATABASE 'master' SET AUTO_CLOSE OFF;
-GO
-
-PRINT "5.1 - Ensure 'Maximum number of error log files' is set to greater than or equal to '12'"
+PRINT ''
+PRINT '5.1 - Ensure Maximum number of error log files is set to greater than or equal to 12'
 EXEC master.sys.xp_instance_regwrite N'HKEY_LOCAL_MACHINE', N'Software\Microsoft\MSSQLServer\MSSQLServer', N'NumErrorLogs', REG_DWORD, 14;
 GO
 
-PRINT "5.2 - Ensure 'Default Trace Enabled' Server Configuration Option is set to '1'"
+PRINT ''
+PRINT '5.2 - Ensure Default Trace Enabled Server Configuration Option is set to 1'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
 EXECUTE sp_configure 'default trace enabled', 1;
@@ -95,29 +102,7 @@ EXECUTE sp_configure 'show advanced options', 0;
 RECONFIGURE;
 GO
 
-PRINT "5.3 - Ensure 'Login Auditing' is set to 'failed logins'"
+PRINT ''
+PRINT '5.3 - Ensure Login Auditing is set to failed logins'
 EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', N'Software\Microsoft\MSSQLServer\MSSQLServer', N'AuditLevel', REG_DWORD, 2
 GO
-
-PRINT "5.4 - Ensure 'SQL Server Audit' is set to capture both 'failed' and 'successful logins'"
-CREATE SERVER AUDIT TrackLogins
-TO APPLICATION_LOG;
-GO
-
-CREATE SERVER AUDIT SPECIFICATION TrackAllLogins
-FOR SERVER AUDIT TrackLogins
-ADD (FAILED_LOGIN_GROUP),
-ADD (SUCCESSFUL_LOGIN_GROUP),
-ADD (AUDIT_CHANGE_GROUP)
-WITH (STATE = ON);
-GO
-
-ALTER SERVER AUDIT TrackLogins
-WITH (STATE = ON);
-GO
-
-
-
-
-
-

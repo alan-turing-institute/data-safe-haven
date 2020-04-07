@@ -192,14 +192,13 @@ Function Add-SqlAdminsDomainGroupToSqlServer {
     # Get config
     # ------------------------------------------------------------
     $config = Get-SreConfig $sreId
-    
+  
     # Build up parameters
     # ------------------------------------------------------------
-    $secureSqlAuthUpdateUserPassword = ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText
-    $sqlAdminCredentials = New-Object System.Management.Automation.PSCredential ($sqlAuthUpdateUsername, $secureSqlAuthUpdateUserPassword)
+    $sqlAdminCredentials = Get-SqlAdminCredentials -sqlAuthUpdateUsername $sqlAuthUpdateUsername -sqlAuthUpdateUserPassword $sqlAuthUpdateUserPassword
     $sqlLoginName = $config.shm.domain.netbiosName + "\" + $config.shm.domain.securityGroups.sqlAdmins.name
-    $connectionTimeoutInSeconds = 5
-    $serverInstance = $sqlServerIpAddress + ",14330"
+    $connectionTimeoutInSeconds = Get-SqlConnectionTimeout
+    $serverInstance = Get-SqlServerInstanceAddress -sqlServerIpAddress $sqlServerIpAddress
 
     Add-LogMessage -Level Info "Domain Group: '$($sqlLoginName)' will be added as a SQL Login on: '$($serverInstance)'..."
     $sqlLogin = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverInstance -LoginName $sqlLoginName -LoginType "WindowsGroup" -Credential $sqlAdminCredentials
@@ -209,7 +208,62 @@ Function Add-SqlAdminsDomainGroupToSqlServer {
     $tSqlCommand = "exec sp_addsrvrolemember '$($sqlLogin.Name)', 'sysadmin'"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $tSqlCommand
     Add-LogMessage -Level Info "'$($sqlLogin.Name)' now has sysadmin role on: '$($serverInstance)'..."
-
 }
 
 Export-ModuleMember -Function Add-SqlAdminsDomainGroupToSqlServer
+
+Function Protect-SqlServer {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter the IP address for the SQL Server")]
+        [string]$sqlServerIpAddress,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Username for the SQL Server")]
+        [string]$sqlAuthUpdateUsername,
+        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Password for the SQL Server")]
+        [string]$sqlAuthUpdateUserPassword
+    )
+
+    # Build up parameters
+    # ------------------------------------------------------------
+    $sqlAdminCredentials = Get-SqlAdminCredentials -sqlAuthUpdateUsername $sqlAuthUpdateUsername -sqlAuthUpdateUserPassword $sqlAuthUpdateUserPassword
+    $connectionTimeoutInSeconds = Get-SqlConnectionTimeout
+    $serverInstance = Get-SqlServerInstanceAddress -sqlServerIpAddress $sqlServerIpAddress
+
+    $scriptFile = (Join-Path $PSScriptRoot ".." ".." ".." "tsql_scripts" "customisations" "mssql" "sre-mssql2019-server-lockdown.sql")
+
+    Add-LogMessage -Level Info "T-SQL lockdown will be run on: '$($serverInstance)'..."  
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -InputFile $scriptFile
+    Add-LogMessage -Level Info "T-SQL lockdown completed on: '$($serverInstance)'..."  
+}
+
+Export-ModuleMember -Function Protect-SqlServer
+
+Function Get-SqlAdminCredentials {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Username for the SQL Server")]
+        [string]$sqlAuthUpdateUsername,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Password for the SQL Server")]
+        [string]$sqlAuthUpdateUserPassword
+    )
+
+    $secureSqlAuthUpdateUserPassword = ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText
+    $sqlAdminCredentials = New-Object System.Management.Automation.PSCredential ($sqlAuthUpdateUsername, $secureSqlAuthUpdateUserPassword)
+
+    Return $sqlAdminCredentials
+}
+
+Function Get-SqlServerInstanceAddress {
+    param(
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the IP address for the SQL Server")]
+        [string]$sqlServerIpAddress
+    )
+
+    $serverInstanceAddress = $sqlServerIpAddress + ",14330"
+
+    Return $serverInstanceAddress
+}
+
+Function Get-SqlConnectionTimeout {
+    $connectionTimeoutInSeconds = 5
+
+    Return $connectionTimeoutInSeconds
+}
