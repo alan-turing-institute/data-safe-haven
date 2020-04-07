@@ -65,7 +65,7 @@ function Get-ShmFullConfig {
         }
         keyVault = [ordered]@{
             rg = "RG_SH_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-images".ToLower()
+            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | TrimToLength 24
         }
         network = [ordered]@{
             rg = "RG_SH_NETWORKING"
@@ -164,7 +164,7 @@ function Get-ShmFullConfig {
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{
         rg = "RG_SHM_SECRETS"
-        name = "kv-shm-" + "$($shm.id)".ToLower()
+        name = "kv-shm-$($shm.id)".ToLower() | TrimToLength 24
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
@@ -184,10 +184,8 @@ function Get-ShmFullConfig {
     }
 
     # --- DNS config ---
-    $rgSuffix = ""
-    if ($shm.adminSecurityGroupName -like "*Production*") {
-        $rgSuffix = "_PRODUCTION"
-    } elseif ($shm.adminSecurityGroupName -like "*Test*") {
+    $rgSuffix = "_PRODUCTION"
+    if ($($shm.adminSecurityGroupName).ToLower() -like "*test*") {
         $rgSuffix = "_TEST"
     }
     $shm.dns = [ordered]@{
@@ -345,7 +343,7 @@ function Add-SreConfig {
 
     # --- Secrets ---
     $config.sre.keyVault = [ordered]@{
-        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower()
+        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | TrimToLength 24
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
