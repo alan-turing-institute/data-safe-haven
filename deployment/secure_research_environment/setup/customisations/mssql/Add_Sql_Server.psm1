@@ -1,4 +1,5 @@
 Import-Module Az
+Import-Module SqlServer
 Import-Module $PSScriptRoot/../../../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../../../common/Logging.psm1 -Force
@@ -175,3 +176,40 @@ Function Add-SqlServer {
 }
 
 Export-ModuleMember -Function Add-SqlServer
+
+Function Add-SqlAdminsDomainGroupToSqlServer {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+        [string]$sreId,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the IP address for the SQL Server")]
+        [string]$sqlServerIpAddress,
+        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Username for the SQL Server")]
+        [string]$sqlAuthUpdateUsername,
+        [Parameter(Position=3, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Password for the SQL Server")]
+        [string]$sqlAuthUpdateUserPassword
+    )
+
+    # Get config
+    # ------------------------------------------------------------
+    $config = Get-SreConfig $sreId
+    
+    # Build up parameters
+    # ------------------------------------------------------------
+    $secureSqlAuthUpdateUserPassword = ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText
+    $sqlAdminCredentials = New-Object System.Management.Automation.PSCredential ($sqlAuthUpdateUsername, $secureSqlAuthUpdateUserPassword)
+    $sqlLoginName = $config.shm.domain.netbiosName + "\" + $config.shm.domain.securityGroups.sqlAdmins.name
+    $connectionTimeoutInSeconds = 5
+    $serverInstance = $sqlServerIpAddress + ",14330"
+
+    Add-LogMessage -Level Info "Domain Group: '$($sqlLoginName)' will be added as a SQL Login on: '$($serverInstance)'..."
+    $sqlLogin = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverInstance -LoginName $sqlLoginName -LoginType "WindowsGroup" -Credential $sqlAdminCredentials
+    Add-LogMessage -Level Info "Domain Group: '$($sqlLoginName)' added as a SQL Login on: '$($serverInstance)'..."
+
+    Add-LogMessage -Level Info "'$($sqlLogin.Name)' will be given sysadmin role on: '$($serverInstance)'..."  
+    $tSqlCommand = "exec sp_addsrvrolemember '$($sqlLogin.Name)', 'sysadmin'"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $tSqlCommand
+    Add-LogMessage -Level Info "'$($sqlLogin.Name)' now has sysadmin role on: '$($serverInstance)'..."
+
+}
+
+Export-ModuleMember -Function Add-SqlAdminsDomainGroupToSqlServer

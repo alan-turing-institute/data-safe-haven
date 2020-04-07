@@ -275,7 +275,7 @@ function Add-SreConfig {
     $config.sre.location = $config.shm.location
     $config.sre.tier = $sreConfigBase.tier
     $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
-
+   
     # -- Domain config ---
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
@@ -286,11 +286,16 @@ function Add-SreConfig {
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
+    $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
             description = $serverAdminsGroup
+        }
+        sqlAdmins = [ordered]@{
+            name = $sqlAdminsGroup
+            description = $sqlAdminsGroup
         }
         researchUsers = [ordered]@{
             name = $researchUsersGroup
