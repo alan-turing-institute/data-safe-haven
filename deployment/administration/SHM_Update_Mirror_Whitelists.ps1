@@ -1,6 +1,8 @@
 param(
-    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
-    [string]$shmId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing whitelist files (default: '<repo root>/environment_configs/package_lists')")]
+    [string]$whitelistDirectory = $null
 )
 
 Import-Module Az
@@ -20,13 +22,13 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 # ---------------------
 $mirrorTypes = @("PyPI", "CRAN")
 $tier = "3"  # currently only Tier-3 mirrors have whitelists
+if (-Not $whiteList) { $whitelistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
 
 
 # Update all external package mirrors
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier${tier}_${mirrorType}_whitelist.list".ToLower() -Resolve
-    $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $whiteList = Get-Content (Join-Path $whitelistDirectory "tier${tier}_${mirrorType}_whitelist.list".ToLower() -Resolve) -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Failure "Could not find whitelist $whitelistPath"
     } else {
