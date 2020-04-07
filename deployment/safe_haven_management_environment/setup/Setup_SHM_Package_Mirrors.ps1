@@ -156,7 +156,7 @@ function Resolve-CloudInit {
     )
 
     $cloudInitYaml = Get-Content $CloudInitPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if($notExists) {
+    if ($notExists) {
         Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!"
     }
 
@@ -178,11 +178,11 @@ function Resolve-CloudInit {
     # PyPI
     if ($MirrorType.ToLower() -eq "pypi") {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-not $notExists) {
-            $packagesBefore = "; IF_WHITELIST_ENABLED packages ="
-            $packagesAfter  = $packagesBefore
+        if (-Not $notExists) {
+            $packagesBefore = "      # PACKAGE_WHITELIST"
+            $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
-                $packagesAfter += "`n            $package"
+                $packagesAfter += "      $package`n"
             }
             $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("; IF_WHITELIST_ENABLED ", "")
         }
@@ -191,7 +191,7 @@ function Resolve-CloudInit {
     # CRAN
     if ($MirrorType.ToLower() -eq "cran") {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-not $notExists) {
+        if (-Not $notExists) {
             $packagesBefore = "      # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
@@ -218,7 +218,7 @@ function Deploy-PackageMirror {
     # Load cloud-init file
     # --------------------
     $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($MirrorType).ToLower()).yaml"
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($MirrorType).ToLower())_whitelist.list"
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($MirrorType).ToLower())_whitelist.list"
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror

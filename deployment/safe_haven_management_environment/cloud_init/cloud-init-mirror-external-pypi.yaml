@@ -29,8 +29,29 @@ users:
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    permissions: "0600"
+    content:
+  - path: "/home/mirrordaemon/package_whitelist.txt"
+    permissions: "0600"
     content: |
+        # PACKAGE_WHITELIST
+  - path: "/home/mirrordaemon/update_whitelist.py"
+    permissions: "0744"
+    content: |
+      #! /usr/bin/env python3
+      lines = []
+      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
+          for line in f_bandersnatch.read().splitlines():
+              lines.append(line)
+              if line == "        packages =":
+                  break
+      with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
+          for package in f_whitelist.read().splitlines():
+              lines.append("            {}".format(package))
+      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
+          [f_bandersnatch.write(line + "\n") for line in lines]
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       # rsync: make the destination look like the source
@@ -50,6 +71,7 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
@@ -58,57 +80,71 @@ write_files:
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
+    permissions: "0744"
     content: |
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
   - path: "/etc/bandersnatch.conf"
     content: |
-        [mirror]
-        ; The directory where the mirror data will be stored.
-        directory = /datadrive/mirrordaemon/pypi
+      [mirror]
+      ; The directory where the mirror data will be stored.
+      directory = /datadrive/mirrordaemon/pypi
 
-        ; Save JSON metadata into the web tree
-        ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
-        json = false
+      ; Save JSON metadata into the web tree
+      ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
+      json = false
 
-        ; The PyPI server which will be mirrored.
-        master = https://pypi.org
+      ; The PyPI server which will be mirrored.
+      master = https://pypi.org
 
-        ; The network socket timeout to use for all connections. This is set to a
-        ; somewhat aggressively low value - rather fail quickly temporarily and re-run
-        ; the client soon instead of having a process hang infinitely and have TCP not
-        ; catching up for ages.
-        timeout = 10
+      ; The network socket timeout to use for all connections. This is set to a
+      ; somewhat aggressively low value - rather fail quickly temporarily and re-run
+      ; the client soon instead of having a process hang infinitely and have TCP not
+      ; catching up for ages.
+      timeout = 10
 
-        ; Whether to hash package indexes
-        ; Note that package index directory hashing is incompatible with pip
-        ; Recommended - the default of false for full pip/pypi compatibility.
-        hash-index = false
+      ; Whether to hash package indexes
+      ; Note that package index directory hashing is incompatible with pip
+      ; Recommended - the default of false for full pip/pypi compatibility.
+      hash-index = false
 
-        ; Number of worker threads to use for parallel downloads.
-        ; Recommendations for worker thread setting
-        ; - leave the default of 3 to avoid overloading the pypi master
-        ; - official servers located in data centers could run 10 workers
-        ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
-        workers = 10
+      ; Number of worker threads to use for parallel downloads.
+      ; Recommendations for worker thread setting
+      ; - leave the default of 3 to avoid overloading the pypi master
+      ; - official servers located in data centers could run 10 workers
+      ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
+      workers = 10
 
-        ; Whether to stop a sync quickly after an error is found or whether to continue
-        ; syncing but not marking the sync as successful. Value should be "true" or
-        ; "false".
-        stop-on-error = false
+      ; Whether to stop a sync quickly after an error is found or whether to continue
+      ; syncing but not marking the sync as successful. Value should be "true" or
+      ; "false".
+      stop-on-error = false
 
-        ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
-        delete-packages = true
+      ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
+      delete-packages = true
 
-        ; DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
-        ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
-        ; IF_WHITELIST_ENABLED [blacklist]
-        ; IF_WHITELIST_ENABLED plugins =
-        ; IF_WHITELIST_ENABLED     whitelist_project
+      ; DO NOT CHANGE LINES CONTAINING 'IF_WHITELIST_ENABLED'. THEY ARE ENABLED/DISABLED PROGRAMATICALLY
+      [plugins]
+      enabled =
+          exclude_platform
+      ; IF_WHITELIST_ENABLED     whitelist_project
 
-        ; IF_WHITELIST_ENABLED [whitelist]
-        ; IF_WHITELIST_ENABLED packages =
+      [blacklist]
+      platforms =
+          windows
+          macos
+          freebsd
+
+      ; IF_WHITELIST_ENABLED [whitelist]
+      ; IF_WHITELIST_ENABLED packages =
+
+# ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
+# ; IF_WHITELIST_ENABLED [blacklist]
+# ; IF_WHITELIST_ENABLED plugins =
+# ; IF_WHITELIST_ENABLED     whitelist_project
+# ; IF_WHITELIST_ENABLED [whitelist]
+# ; IF_WHITELIST_ENABLED packages =
 
 runcmd:
   # Suppress apt prompts and warning messages
