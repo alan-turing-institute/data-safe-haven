@@ -22,22 +22,25 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 # ---------------------
 $mirrorTypes = @("PyPI", "CRAN")
 $tier = "3"  # currently only Tier-3 mirrors have whitelists
-if (-Not $whiteList) { $whitelistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
+if (-Not $whitelistDirectory) { $whitelistDirectory = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" }
 
 
 # Update all external package mirrors
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
-    $whiteList = Get-Content (Join-Path $whitelistDirectory "tier${tier}_${mirrorType}_whitelist.list".ToLower() -Resolve) -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $whitelistPath = Join-Path $whitelistDirectory "tier${tier}_${mirrorType}_whitelist.list".ToLower() -Resolve
+    $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
-        Add-LogMessage -Level Failure "Could not find whitelist $whitelistPath"
+        Add-LogMessage -Level Failure "Could not find whitelist at '$whitelistPath'"
     } else {
         # Update the whitelist with the new set of packages
+        Add-LogMessage -Level Info "Using whitelist from '$whitelistPath'"
         $script = "#! /bin/bash`n"
-        $script += "echo '' > /home/mirrordaemon/package_whitelist.txt`n"
+        $script += ": > /home/mirrordaemon/package_whitelist.txt`n"  # ':' is the shell no-op command
         foreach ($package in $whiteList -split "`n") {
             $script += "echo $package >> /home/mirrordaemon/package_whitelist.txt`n"
         }
+        $script += "sed -i '/^$/d' /home/mirrordaemon/package_whitelist.txt`n"  # remove empty lines
         $script += "echo `"There are `$(wc -l /home/mirrordaemon/package_whitelist.txt | cut -d' ' -f1)`" packages on the whitelist`n"
 
         # PyPI also needs us to run the script which updates /etc/bandersnatch.conf
