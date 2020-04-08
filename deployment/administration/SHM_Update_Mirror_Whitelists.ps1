@@ -42,7 +42,7 @@ foreach ($mirrorType in $mirrorTypes) {
 
         # PyPI also needs us to run the script which updates /etc/bandersnatch.conf
         if ($MirrorType.ToLower() -eq "pypi") {
-            $script += "python3 /home/mirrordaemon/apply_whitelist_if_defined.py`n"
+            $script += "python3 /home/mirrordaemon/update_bandersnatch_config.py`n"
         }
 
         # Run the script on the mirror VM

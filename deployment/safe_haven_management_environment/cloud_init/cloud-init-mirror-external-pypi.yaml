@@ -34,7 +34,7 @@ write_files:
     permissions: "0600"
     content: |
         # PACKAGE_WHITELIST
-  - path: "/home/mirrordaemon/apply_whitelist_if_defined.py"
+  - path: "/home/mirrordaemon/update_bandersnatch_config.py"
     permissions: "0700"
     content: |
       #! /usr/bin/env python3
@@ -195,7 +195,7 @@ runcmd:
   - bandersnatch/bin/pip install bandersnatch
 
   # Initialise whitelist if appropriate
-  - python3 /home/mirrordaemon/apply_whitelist_if_defined.py
+  - python3 /home/mirrordaemon/update_bandersnatch_config.py
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
