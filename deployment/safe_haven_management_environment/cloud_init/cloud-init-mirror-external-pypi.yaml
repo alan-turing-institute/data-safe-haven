@@ -123,7 +123,7 @@ write_files:
 
       ; Save JSON metadata into the web tree
       ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
-      json = false
+      json = true
 
       ; The PyPI server which will be mirrored.
       master = https://pypi.org
