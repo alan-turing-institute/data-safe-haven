@@ -101,6 +101,10 @@ write_files:
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
+      installed_packages=$(ls /datadrive/mirrordaemon/pypi/web/packages/*/*/*/*.tar.gz | rev | cut -d'/' -f1 | cut -d'-' -f2-10 | rev | sort | uniq)
+      packages_to_delete=$(for package in $installed_packages; do if [ "$(grep $package /home/mirrordaemon/package_whitelist.txt)" = "" ]; then echo $package; fi; done)
+      /bandersnatch/bin/bandersnatch delete $packages_to_delete 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      rm /datadrive/mirrordaemon/pypi/status
       /bandersnatch/bin/bandersnatch mirror 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
