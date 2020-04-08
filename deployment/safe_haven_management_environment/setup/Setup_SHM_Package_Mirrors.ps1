@@ -181,7 +181,7 @@ function Resolve-CloudInit {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-Not $notExists) {
             # Populate initial package whitelist file defined in cloud init YAML
-            $packagesBefore = "        # PACKAGE_WHITELIST"
+            $packagesBefore = "      # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
                 $packagesAfter += "      $package`n"
@@ -203,7 +203,7 @@ function Resolve-CloudInit {
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-Not $notExists) {
             # Populate initial package whitelist file defined in cloud init YAML
-            $packagesBefore = "        # PACKAGE_WHITELIST"
+            $packagesBefore = "      # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
                 $packagesAfter += "      $package`n"

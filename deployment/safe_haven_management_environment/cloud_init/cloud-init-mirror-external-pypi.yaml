@@ -33,7 +33,7 @@ write_files:
   - path: "/home/mirrordaemon/package_whitelist.txt"
     permissions: "0600"
     content: |
-        # PACKAGE_WHITELIST
+      # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
     permissions: "0444"
     content: |
