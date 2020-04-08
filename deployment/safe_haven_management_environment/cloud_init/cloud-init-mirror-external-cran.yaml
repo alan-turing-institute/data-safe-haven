@@ -57,13 +57,12 @@ write_files:
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
       RSYNC_INCLUDES=""
-      # DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
-      # IF_WHITELIST_ENABLED WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt)
-      # IF_WHITELIST_ENABLED for RPACKAGE in $WHITELISTED_PACKAGES; do
-      # IF_WHITELIST_ENABLED     RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
-      # IF_WHITELIST_ENABLED done
-      # IF_WHITELIST_ENABLED RSYNC_INCLUDES="--include='*/' $RSYNC_INCLUDES --exclude='*'"
+      WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt | grep -v "^#")
+      for RPACKAGE in $WHITELISTED_PACKAGES; do
+          RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
+      done
       if [ "$RSYNC_INCLUDES" != "" ]; then
+          RSYNC_INCLUDES="--include='*/' $RSYNC_INCLUDES --exclude='*'"
           rsync -rtlv --delete --progress --include='*/' $RSYNC_INCLUDES --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       else
           rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
