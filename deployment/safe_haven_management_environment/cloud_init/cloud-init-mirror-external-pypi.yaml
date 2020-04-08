@@ -46,6 +46,7 @@ write_files:
       # Load packages from whitelist
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
           packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
+
       # Parse bandersnatch configuration into sections
       with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
           for line in f_bandersnatch.read().splitlines():
@@ -57,6 +58,7 @@ write_files:
       # If there is already a whitelist section then start by emptying it
       if "whitelist" in config_sections.keys():
           config_sections["whitelist"] = ["[whitelist]", "packages ="]
+
           # Ensure the that whitelist_project plugin is enabled
           if not any(["whitelist_project" in l for l in config_sections["plugins"]]):
               config_sections["plugins"].append("    whitelist_project")
@@ -126,7 +128,7 @@ write_files:
       ; somewhat aggressively low value - rather fail quickly temporarily and re-run
       ; the client soon instead of having a process hang infinitely and have TCP not
       ; catching up for ages.
-      timeout = 10
+      timeout = 30
 
       ; Whether to hash package indexes
       ; Note that package index directory hashing is incompatible with pip
@@ -138,7 +140,7 @@ write_files:
       ; - leave the default of 3 to avoid overloading the pypi master
       ; - official servers located in data centers could run 10 workers
       ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
-      workers = 10
+      workers = 6
 
       ; Whether to stop a sync quickly after an error is found or whether to continue
       ; syncing but not marking the sync as successful. Value should be "true" or
