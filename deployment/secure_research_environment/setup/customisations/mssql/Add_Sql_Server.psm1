@@ -177,6 +177,32 @@ Function Add-SqlServer {
 
 Export-ModuleMember -Function Add-SqlServer
 
+Function Revoke-SqlServerSysAdminRoleFromSqlLogin {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter the IP address for the SQL Server")]
+        [string]$sqlServerIpAddress,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Username for the SQL Server")]
+        [string]$sqlAuthUpdateUsername,
+        [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Password for the SQL Server")]
+        [string]$sqlAuthUpdateUserPassword,
+        [Parameter(Position=3, Mandatory = $true, HelpMessage = "Enter the name of the SQL Login to revoke the sysadmin role from")]
+        [string]$sqlLoginName
+    )
+
+     # Build up parameters
+    # ------------------------------------------------------------
+    $sqlAdminCredentials = Get-SqlAdminCredentials -sqlAuthUpdateUsername $sqlAuthUpdateUsername -sqlAuthUpdateUserPassword $sqlAuthUpdateUserPassword
+    $connectionTimeoutInSeconds = Get-SqlConnectionTimeout
+    $serverInstance = Get-SqlServerInstanceAddress -sqlServerIpAddress $sqlServerIpAddress
+
+    Add-LogMessage -Level Info "The sysadmin role will be revoked for '$($sqlLoginName)' on: '$($serverInstance)'..."  
+    $tSqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $($sqlLoginName)"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $tSqlCommand
+    Add-LogMessage -Level Info "The sysadmin role has been revoked for '$($sqlLoginName)' on: '$($serverInstance)'..."
+}
+
+Export-ModuleMember -Function Revoke-SqlServerSysAdminRoleFromSqlLogin
+
 Function Add-SqlAdminsDomainGroupToSqlServer {
     param(
         [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
