@@ -187,10 +187,8 @@ function Resolve-CloudInit {
                 $packagesAfter += "      $package`n"
             }
             $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
-            # Uncomment lines in Bandersnatch confog that only make sense when a whitelist is  defined
+            # Uncomment lines in Bandersnatch config that only make sense when a whitelist is defined
             $cloudInitYaml = $cloudInitYaml.Replace("; IF_WHITELIST_ENABLED ", "")
-            # Uncomment lines in cloud init YAML or Bash files that only make sense when a whitelist is defined
-            $cloudInitYaml = $cloudInitYaml..Replace("# IF_WHITELIST_ENABLED ", "")
         }
     }
 

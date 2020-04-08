@@ -34,19 +34,19 @@ write_files:
     permissions: "0600"
     content: |
         # PACKAGE_WHITELIST
-  - path: "/home/mirrordaemon/update_whitelist.py"
+  - path: "/home/mirrordaemon/apply_whitelist_if_defined.py"
     permissions: "0700"
     content: |
       #! /usr/bin/env python3
       lines = []
-      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
-          for line in f_bandersnatch.read().splitlines():
-              lines.append(line)
-              if line == "packages =":
-                  break
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
-          packages = f_whitelist.read().splitlines():
-      if "# PACKAGE_WHITELIST" not in packages:
+          packages = [p for p in f_whitelist.read().splitlines() if not p.startswith("#")]
+      if packages:
+          with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
+              for line in f_bandersnatch.read().splitlines():
+                  lines.append(line)
+                  if line == "packages =":
+                      break
           with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
               [f_bandersnatch.write(line + "\n") for line in lines]
               [f_bandersnatch.write("    {}".format(package)) for package in packages]
@@ -181,7 +181,7 @@ runcmd:
   - bandersnatch/bin/pip install bandersnatch
 
   # Initialise whitelist if appropriate
-  # IF_WHITELIST_ENABLED - python3 /home/mirrordaemon/update_whitelist.py
+  - python3 /home/mirrordaemon/apply_whitelist_if_defined.py
 
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
