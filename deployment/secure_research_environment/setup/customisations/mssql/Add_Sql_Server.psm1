@@ -219,7 +219,11 @@ Function Protect-SqlServer {
         [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Username for the SQL Server")]
         [string]$sqlAuthUpdateUsername,
         [Parameter(Position=2, Mandatory = $true, HelpMessage = "Enter the SQL Auth Update Password for the SQL Server")]
-        [string]$sqlAuthUpdateUserPassword
+        [string]$sqlAuthUpdateUserPassword,
+        [Parameter(Position=3, Mandatory = $true, HelpMessage = "Enter name of the resource group that will contain the SQL Server")]
+        [string]$resourceGroupName,
+        [Parameter(Position=4, Mandatory = $true, HelpMessage = "Enter a name for the SQL Server VM")]
+        [string]$sqlServerName
     )
 
     # Build up parameters
@@ -230,12 +234,41 @@ Function Protect-SqlServer {
 
     $scriptFile = (Join-Path $PSScriptRoot ".." ".." ".." "tsql_scripts" "customisations" "mssql" "sre-mssql2019-server-lockdown.sql")
 
-    Add-LogMessage -Level Info "T-SQL lockdown will be run on: '$($serverInstance)'..."  
+    Add-LogMessage -Level Info "T-SQL lockdown script will be run on: '$($serverInstance)'..."  
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -InputFile $scriptFile
-    Add-LogMessage -Level Info "T-SQL lockdown completed on: '$($serverInstance)'..."  
+    Add-LogMessage -Level Info "T-SQL lockdown script completed on: '$($serverInstance)'..."
+
+    Add-LogMessage -Level Info "Unused SQL Server services will be disabled on: '$($sqlServerName) [$($sqlServerIpAddress)]'..."
+    
+    # Run remote script
+    $scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "remote" "customisations" "mssql" "Disable_UnUsed_Sql_Server_Services.ps1" -Resolve
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $sqlServerName -ResourceGroupName $resourceGroupName
+    Write-Output $result.Value
+    
+    Add-LogMessage -Level Info "Unused SQL Server services disabled on: '$($sqlServerName) [$($sqlServerIpAddress)]'..."
 }
 
 Export-ModuleMember -Function Protect-SqlServer
+
+Function Disable-SSIS {
+    param(
+        [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter name of the resource group that will contain the SQL Server")]
+        [string]$resourceGroupName,
+        [Parameter(Position=1, Mandatory = $true, HelpMessage = "Enter a name for the SQL Server VM")]
+        [string]$sqlServerName
+    )
+
+    Add-LogMessage -Level Info "SSIS will be disabled on: '$($sqlServerName)'..."
+    
+    # Run remote script
+    $scriptPath = Join-Path $PSScriptRoot ".." ".." ".." "remote" "customisations" "mssql" "Disable_SSIS_Sql_Server_Services.ps1" -Resolve
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $sqlServerName -ResourceGroupName $resourceGroupName
+    Write-Output $result.Value
+    
+    Add-LogMessage -Level Info "SSIS disabled on: '$($sqlServerName)'..."
+}
+
+Export-ModuleMember -Function Disable-SSIS
 
 Function Get-SqlAdminCredentials {
     param(

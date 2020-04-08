@@ -1,0 +1,1 @@
+Get-Service SSISTELEMETRY150, MsDtsServer150 | Stop-Service -PassThru | Set-Service -StartupType disabled
