@@ -178,17 +178,8 @@ function Resolve-CloudInit {
 
     # PyPI
     if ($MirrorType.ToLower() -eq "pypi") {
-        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-Not $notExists) {
-            # Populate initial package whitelist file defined in cloud init YAML
-            $packagesBefore = "      # PACKAGE_WHITELIST"
-            $packagesAfter  = ""
-            foreach ($package in $whitelist -split "`n") {
-                $packagesAfter += "      $package`n"
-            }
-            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
-
-            # Enable the whitelist plugin - this is the key difference between Tier-2 and Tier-3
+        # Enable the whitelist plugin for a Tier-3 external mirror. This is the key difference between Tier-2 and Tier-3
+        if (($tier -eq "3") -and ($MirrorDirection -eq "External")) {
             $pluginsBefore = "exclude_platform"
             $pluginsAfter = $pluginsBefore + `
                             "`n          whitelist_project" + `
@@ -196,13 +187,24 @@ function Resolve-CloudInit {
                             "`n      packages ="
             $cloudInitYaml = $cloudInitYaml.Replace($pluginsBefore, $pluginsAfter)
         }
+
+        # Populate initial package whitelist file defined in cloud init YAML
+        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+        if (-Not $notExists) {
+            $packagesBefore = "      # PACKAGE_WHITELIST"
+            $packagesAfter  = ""
+            foreach ($package in $whitelist -split "`n") {
+                $packagesAfter += "      $package`n"
+            }
+            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
+        }
     }
 
     # CRAN
     if ($MirrorType.ToLower() -eq "cran") {
+        # Populate initial package whitelist file defined in cloud init YAML
         $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
         if (-Not $notExists) {
-            # Populate initial package whitelist file defined in cloud init YAML
             $packagesBefore = "      # PACKAGE_WHITELIST"
             $packagesAfter  = ""
             foreach ($package in $whitelist -split "`n") {
