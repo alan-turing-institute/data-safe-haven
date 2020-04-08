@@ -46,7 +46,7 @@ write_files:
       # Load packages from whitelist
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
           packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
-      # Parse bandersnach configuration into sections
+      # Parse bandersnatch configuration into sections
       with open("bandersnatch.conf", "r") as f_bandersnatch:
           for line in f_bandersnatch.read().splitlines():
               if line.startswith("[") and line.endswith("]"):
