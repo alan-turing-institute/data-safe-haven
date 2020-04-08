@@ -45,11 +45,12 @@ write_files:
               if line == "packages =":
                   break
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
-          for package in f_whitelist.read().splitlines():
-              lines.append("    {}".format(package))
-      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
-          [f_bandersnatch.write(line + "\n") for line in lines]
-      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
+          packages = f_whitelist.read().splitlines():
+      if "# PACKAGE_WHITELIST" not in packages:
+          with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
+              [f_bandersnatch.write(line + "\n") for line in lines]
+              [f_bandersnatch.write("    {}".format(package)) for package in packages]
+          print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     permissions: "0700"
     content: |
