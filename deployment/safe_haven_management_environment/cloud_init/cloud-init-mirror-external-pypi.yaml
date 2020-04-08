@@ -35,7 +35,7 @@ write_files:
     content: |
         # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
-    permissions: "0700"
+    permissions: "0444"
     content: |
       #! /usr/bin/env python3
       from collections import defaultdict
@@ -47,7 +47,7 @@ write_files:
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
           packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
       # Parse bandersnatch configuration into sections
-      with open("bandersnatch.conf", "r") as f_bandersnatch:
+      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
           for line in f_bandersnatch.read().splitlines():
               if line.startswith("[") and line.endswith("]"):
                   section = line[1:-1]
@@ -62,10 +62,13 @@ write_files:
               config_sections["plugins"].append("    whitelist_project")
 
           # Add any whitelisted packages to this section
+          # Note that we need at least one package for whitelisting to work. 'six' is minimal and safe.
+          if not packages:
+              packages = ["six"]
           [config_sections["whitelist"].append("    {}".format(package)) for package in packages]
 
       # Write the output bandersnatch configuration
-      with open("bandersnatch.conf", "w") as f_bandersnatch:
+      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
           for section in config_sections.keys():
               [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
               f_bandersnatch.write("\n")
