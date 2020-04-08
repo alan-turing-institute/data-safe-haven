@@ -38,19 +38,38 @@ write_files:
     permissions: "0700"
     content: |
       #! /usr/bin/env python3
-      lines = []
+      from collections import defaultdict
+
+      config_sections = defaultdict(list)
+      section = "main"
+
+      # Load packages from whitelist
       with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
-          packages = [p for p in f_whitelist.read().splitlines() if not p.startswith("#")]
-      if packages:
-          with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
-              for line in f_bandersnatch.read().splitlines():
-                  lines.append(line)
-                  if line == "packages =":
-                      break
-          with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
-              [f_bandersnatch.write(line + "\n") for line in lines]
-              [f_bandersnatch.write("    {}".format(package)) for package in packages]
-          print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
+          packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
+      # Parse bandersnach configuration into sections
+      with open("bandersnatch.conf", "r") as f_bandersnatch:
+          for line in f_bandersnatch.read().splitlines():
+              if line.startswith("[") and line.endswith("]"):
+                  section = line[1:-1]
+              if line:
+                  config_sections[section].append(line)
+
+      # If there is already a whitelist section then start by emptying it
+      if "whitelist" in config_sections.keys():
+          config_sections["whitelist"] = ["[whitelist]", "packages ="]
+          # Ensure the that whitelist_project plugin is enabled
+          if not any(["whitelist_project" in l for l in config_sections["plugins"]]):
+              config_sections["plugins"].append("    whitelist_project")
+
+          # Add any whitelisted packages to this section
+          [config_sections["whitelist"].append("    {}".format(package)) for package in packages]
+
+      # Write the output bandersnatch configuration
+      with open("bandersnatch.conf", "w") as f_bandersnatch:
+          for section in config_sections.keys():
+              [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
+              f_bandersnatch.write("\n")
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
     permissions: "0700"
     content: |
@@ -126,20 +145,15 @@ write_files:
       ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
       delete-packages = true
 
-      ; DO NOT CHANGE LINES CONTAINING 'IF_WHITELIST_ENABLED'. THEY ARE ENABLED/DISABLED PROGRAMATICALLY
       [plugins]
       enabled =
           exclude_platform
-      ; IF_WHITELIST_ENABLED     whitelist_project
 
       [blacklist]
       platforms =
           windows
           macos
           freebsd
-
-      ; IF_WHITELIST_ENABLED [whitelist]
-      ; IF_WHITELIST_ENABLED packages =
 
 runcmd:
   # Suppress apt prompts and warning messages

@@ -187,8 +187,14 @@ function Resolve-CloudInit {
                 $packagesAfter += "      $package`n"
             }
             $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
-            # Uncomment lines in Bandersnatch config that only make sense when a whitelist is defined
-            $cloudInitYaml = $cloudInitYaml.Replace("; IF_WHITELIST_ENABLED ", "")
+
+            # Enable the whitelist plugin - this is the key difference between Tier-2 and Tier-3
+            $pluginsBefore = "exclude_platform"
+            $pluginsAfter = $pluginsBefore + `
+                            "`n          whitelist_project" + `
+                            "`n      [whitelist]" + `
+                            "`n      packages ="
+            $cloudInitYaml = $cloudInitYaml.Replace($pluginsBefore, $pluginsAfter)
         }
     }
 
