@@ -31,7 +31,7 @@ write_files:
     content: |
       # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
-    permissions: "0744"
+    permissions: "0700"
     content: |
       #! /bin/bash
       # rsync: make the destination look like the source
@@ -51,7 +51,7 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
-    permissions: "0744"
+    permissions: "0700"
     content: |
       #! /bin/bash
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
@@ -71,7 +71,7 @@ write_files:
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
-    permissions: "0744"
+    permissions: "0700"
     content: |
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
