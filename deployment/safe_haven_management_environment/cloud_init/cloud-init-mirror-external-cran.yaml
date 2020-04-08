@@ -63,7 +63,7 @@ write_files:
       done
       if [ "$RSYNC_INCLUDES" != "" ]; then
           RSYNC_INCLUDES="--include='*/' $RSYNC_INCLUDES --exclude='*'"
-          rsync -rtlv --delete --progress --include='*/' $RSYNC_INCLUDES --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          rsync -rtlv --delete --delete-excluded --progress --include='*/' $RSYNC_INCLUDES --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       else
           rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       fi
