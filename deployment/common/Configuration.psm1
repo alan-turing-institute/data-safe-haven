@@ -3,7 +3,7 @@ Import-Module $PSScriptRoot/Security.psm1 -Force
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-ConfigRootDir {
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -ErrorAction Stop
+    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -Resolve -ErrorAction Stop
     return $configRootDir
 }
 
@@ -43,7 +43,7 @@ function Get-ShmFullConfig {
     # --- DSVM build images ---
     $shm.dsvmImage = [ordered]@{
         subscription = $shmConfigBase.computeVmImageSubscriptionName
-        location = "uksouth" # formerly we had to build in West Europe to acces the Shared Image Gallery preview and now our infrastructure is there
+        location = "uksouth"
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
             accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
@@ -80,7 +80,7 @@ function Get-ShmFullConfig {
         throw "Netbios name must be no more than 15 characters long. '$($shmConfigBase.netbiosName)' is $($shmConfigBase.netbiosName.length) characters long."
     }
     $shm.domain.netbiosName = $shmConfigBase.netbiosName
-    $shm.domain.dn = "DC=" + ($shm.domain.fqdn.Replace('.',',DC='))
+    $shm.domain.dn = "DC=$($shm.domain.fqdn.Replace('.',',DC='))"
     $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers,$($shm.domain.dn)"
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts,$($shm.domain.dn)"
     $shm.domain.userOuPath = "OU=Safe Haven Research Users,$($shm.domain.dn)"
@@ -103,25 +103,26 @@ function Get-ShmFullConfig {
         vnet = [ordered]@{
             rg = "RG_SHM_NETWORKING"
             name = "VNET_SHM_$($shm.id)".ToUpper()
-            cidr = $shmBasePrefix + "." + $shmThirdOctet + ".0/21"
+            cidr = "${shmBasePrefix}.${shmThirdOctet}.0/21"
         }
         subnets = [ordered]@{}
     }
     # --- Identity subnet
     $shm.network.subnets.identity = [ordered]@{}
-    $shm.network.subnets.identity.name = "IdentitySubnet" # Name to match required format of GatewaySubnet
-    $shm.network.subnets.identity.prefix = $shmBasePrefix + "." + $shmThirdOctet
-    $shm.network.subnets.identity.cidr = $shm.network.subnets.identity.prefix + ".0/24"
+    $shm.network.subnets.identity.name = "IdentitySubnet"
+    $shm.network.subnets.identity.prefix = "${shmBasePrefix}.${shmThirdOctet}"
+    $shm.network.subnets.identity.cidr = "$($shm.network.subnets.identity.prefix).0/24"
     # --- Web subnet
     $shm.network.subnets.web = [ordered]@{}
-    $shm.network.subnets.web.name = "WebSubnet" # Name to match required format of GatewaySubnet
-    $shm.network.subnets.web.prefix = $shmBasePrefix + "." + ([int]$shmThirdOctet + 1)
-    $shm.network.subnets.web.cidr = $shm.network.subnets.web.prefix + ".0/24"
+    $shm.network.subnets.web.name = "WebSubnet"
+    $shm.network.subnets.web.prefix = "${shmBasePrefix}.$([int]$shmThirdOctet + 1)"
+    $shm.network.subnets.web.cidr = "$($shm.network.subnets.web.prefix).0/24"
     # --- Gateway subnet
+    # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $shm.network.subnets.gateway = [ordered]@{}
-    $shm.network.subnets.gateway.name = "GatewaySubnet" # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
-    $shm.network.subnets.gateway.prefix = $shmBasePrefix + "." + ([int]$shmThirdOctet + 7)
-    $shm.network.subnets.gateway.cidr = $shm.network.subnets.gateway.prefix + ".0/24"
+    $shm.network.subnets.gateway.name = "GatewaySubnet"
+    $shm.network.subnets.gateway.prefix = "${shmBasePrefix}.$([int]$shmThirdOctet + 7)"
+    $shm.network.subnets.gateway.cidr = "$($shm.network.subnets.gateway.prefix).0/24"
 
 
     # --- Domain controller config ---
@@ -130,15 +131,15 @@ function Get-ShmFullConfig {
     $shm.dc.vmName = "DC1-SHM-$($shm.id)".ToUpper()
     $shm.dc.vmSize = "Standard_D2s_v3"
     $shm.dc.hostname = $shm.dc.vmName
-    $shm.dc.fqdn = $shm.dc.hostname + "." + $shm.domain.fqdn
-    $shm.dc.ip = $shm.network.subnets.identity.prefix + ".250"
+    $shm.dc.fqdn = "$($shm.dc.hostname).$($shm.domain.fqdn)"
+    $shm.dc.ip = "$($shm.network.subnets.identity.prefix).250"
 
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
     $shm.dcb.vmName = "DC2-SHM-$($shm.id)".ToUpper()
     $shm.dcb.hostname = $shm.dcb.vmName
-    $shm.dcb.fqdn = $shm.dcb.hostname + "." + $shm.domain.fqdn
-    $shm.dcb.ip = $shm.network.subnets.identity.prefix + ".249"
+    $shm.dcb.fqdn = "$($shm.dcb.hostname).$($shm.domain.fqdn)"
+    $shm.dcb.ip = "$($shm.network.subnets.identity.prefix).249"
 
     # --- NPS config ---
     $shm.nps = [ordered]@{}
@@ -146,7 +147,7 @@ function Get-ShmFullConfig {
     $shm.nps.vmName = "NPS-SHM-$($shm.id)".ToUpper()
     $shm.nps.vmSize = "Standard_D2s_v3"
     $shm.nps.hostname = $shm.nps.vmName
-    $shm.nps.ip = $shm.network.subnets.identity.prefix + ".248"
+    $shm.nps.ip = "$($shm.network.subnets.identity.prefix).248"
 
     # --- Storage config --
     $storageRg = "RG_SHM_ARTIFACTS"
@@ -190,7 +191,7 @@ function Get-ShmFullConfig {
     }
     $shm.dns = [ordered]@{
         subscriptionName = $shmConfigBase.domainSubscriptionName
-        rg = "RG_SHM_DNS" + $rgSuffix
+        rg = "RG_SHM_DNS$rgSuffix"
     }
 
     # --- Package mirror config ---
@@ -261,7 +262,7 @@ function Add-SreConfig {
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $srePrefixOctets = $srePrefix.Split('.')
-    $sreBasePrefix = $srePrefixOctets[0] + "." + $srePrefixOctets[1]
+    $sreBasePrefix = "$($srePrefixOctets[0]).$($srePrefixOctets[1])"
     $sreThirdOctet = $srePrefixOctets[2]
 
     # --- Top-level config ---
@@ -283,7 +284,7 @@ function Add-SreConfig {
     $config.sre.domain = [ordered]@{}
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
-    $config.sre.domain.dn = "DC=" + ($config.sre.domain.fqdn.Replace('.',',DC='))
+    $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
@@ -311,21 +312,20 @@ function Add-SreConfig {
         }
     }
     $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.sre.network.vnet.name = "VNET_SRE_" + $($config.sre.id).ToUpper()
-    $config.sre.network.vnet.cidr = $sreBasePrefix + "." + $sreThirdOctet + ".0/21"
+    $config.sre.network.vnet.name = "VNET_SRE_$($config.sre.id)".ToUpper()
+    $config.sre.network.vnet.cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
     $config.sre.network.subnets.identity.name = "IdentitySubnet"
-    $config.sre.network.subnets.identity.prefix = $sreBasePrefix + "." + $sreThirdOctet
-    $config.sre.network.subnets.identity.cidr = $config.sre.network.subnets.identity.prefix + ".0/24"
+    $config.sre.network.subnets.identity.prefix = "${sreBasePrefix}.${sreThirdOctet}"
+    $config.sre.network.subnets.identity.cidr = "$($config.sre.network.subnets.identity.prefix).0/24"
     $config.sre.network.subnets.rds.name = "RDSSubnet"
-    $config.sre.network.subnets.rds.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 1)
-    $config.sre.network.subnets.rds.cidr = $config.sre.network.subnets.rds.prefix + ".0/24"
+    $config.sre.network.subnets.rds.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 1)"
+    $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
     $config.sre.network.subnets.data.name = "SharedDataSubnet"
-    $config.sre.network.subnets.data.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 2)
-    $config.sre.network.subnets.data.cidr = $config.sre.network.subnets.data.prefix + ".0/24"
-    # The Gateway subnet MUST be named 'GatewaySubnet' - see https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
+    $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
     $config.sre.network.subnets.gateway.name = "GatewaySubnet"
-    $config.sre.network.subnets.gateway.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 7)
-    $config.sre.network.subnets.gateway.cidr = $config.sre.network.subnets.gateway.prefix + ".0/27"
+    $config.sre.network.subnets.gateway.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 7)"
+    $config.sre.network.subnets.gateway.cidr = "$($config.sre.network.subnets.gateway.prefix).0/27"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -418,11 +418,11 @@ function Add-SreConfig {
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsAllowedSources -eq "default") {
-        if (@("3","4").Contains($config.sre.tier)) {
+        if (@("3", "4").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.253"
-        } elseif (@("0","1").Contains($config.sre.tier)) {
+        } elseif (@("0", "1").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
         }
     } else {
@@ -430,9 +430,9 @@ function Add-SreConfig {
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.rdsInternetAccess -eq "default") {
-        if (@("2","3","4").Contains($config.sre.tier)) {
+        if (@("2", "3", "4").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
-        } elseif (@("0","1").Contains($config.sre.tier)) {
+        } elseif (@("0", "1").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
@@ -516,11 +516,11 @@ function Add-SreConfig {
         pypi = [ordered]@{}
     }
     # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if (@("2","3").Contains($config.sre.tier)) {
+    if (@("2", "3").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
         $config.sre.mirrors.pypi.ip = "10.20.$($config.sre.tier).20"
         $config.sre.mirrors.cran.ip = "10.20.$($config.sre.tier).21"
-    } elseif (@("0","1").Contains($config.sre.tier)) {
+    } elseif (@("0", "1").Contains($config.sre.tier)) {
         $config.sre.mirrors.vnet.name = $null
         $config.sre.mirrors.pypi.ip = $null
         $config.sre.mirrors.cran.ip = $null
