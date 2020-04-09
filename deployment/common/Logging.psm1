@@ -45,10 +45,12 @@ Export-ModuleMember -Function Add-LogMessage
 # ------------------------
 function Add-DeploymentLogMessages {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of deployment to track")]
-        $DeploymentName
+        [Parameter(Mandatory = $true, HelpMessage = "Name of deployment to track")]
+        $DeploymentName,
+        [Parameter(Mandatory = $true, HelpMessage = "Error messages from template deployment")]
+        $ErrorDetails
     )
     $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
     foreach ($operation in $operations) {
@@ -60,6 +62,11 @@ function Add-DeploymentLogMessages {
         foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
             Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
             Write-Host $substatus.message
+        }
+    }
+    if ($ErrorDetails) {
+        foreach ($message in $ErrorDetails[0..2] ) {
+            Add-LogMessage -Level Failure "$message"
         }
     }
 }

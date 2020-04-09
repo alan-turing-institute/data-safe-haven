@@ -100,19 +100,14 @@ function Deploy-ArmTemplate {
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable azErr
+    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable templateErrors
     $result = $?
-    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
-    if ($azErr) {
-        foreach ( $errMsg in $azErr[0..2] ) {
-            Add-LogMessage -Level Failure "$errMsg"
-        }
-    }
+    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
     if ($result) {
         Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
         Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
-        throw "Template deployment has failed for '$templateName'. Please check the error message above before re-running this script."
+        throw "Template deployment has failed for '$templateName'. Please check the error message(s) above before re-running this script."
     }
 }
 Export-ModuleMember -Function Deploy-ArmTemplate
