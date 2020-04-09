@@ -45,8 +45,8 @@ $vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $conf
 # External subnet
 $subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
 # Internal subnet
-$existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | % { $_.AddressPrefix }
-$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | % { "$vnetIpTriplet.$_/28" } | Where { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
+$existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | ForEach-Object { $_.AddressPrefix }
+$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | ForEach-Object { "$vnetIpTriplet.$_/28" } | Where-Object { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
 $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
 
 
@@ -78,7 +78,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
 $destinationAddressPrefix = @($subnetInternal.AddressPrefix)
 $rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
 if ($rule) {
-    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Unique #| % { [string]$_ }
+    $destinationAddressPrefix = ($rule.DestinationAddressPrefix + $destinationAddressPrefix) | Sort | Get-Unique
 }
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging `
                              -Name "RsyncToInternal" `
@@ -304,7 +304,7 @@ function Deploy-PackageMirror {
             "
             $result = Invoke-RemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             Write-Output $result.Value
-            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
+            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
             $script = "
