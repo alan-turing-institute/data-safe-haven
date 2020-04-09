@@ -143,8 +143,8 @@ $params = @{
     Subnet_Web_Name = $config.network.subnets.web.Name
     Virtual_Network_Name = $config.network.vnet.Name
     VNET_CIDR = $config.network.vnet.cidr
-    VNET_DNS1 = $config.dc.ip
-    VNET_DNS2 = $config.dcb.ip
+    VNET_DNS_DC1 = $config.dc.ip
+    VNET_DNS_DC2 = $config.dcb.ip
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 

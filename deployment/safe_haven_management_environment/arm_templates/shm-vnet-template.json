@@ -32,10 +32,10 @@
         "VNET_CIDR": {
             "type": "string"
         },
-        "VNET_DNS1": {
+        "VNET_DNS_DC1": {
             "type": "string"
         },
-        "VNET_DNS2": {
+        "VNET_DNS_DC2": {
             "type": "string"
         }
 
@@ -577,8 +577,8 @@
                 },
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[parameters('VNET_DNS1')]",
-                        "[parameters('VNET_DNS2')]"
+                        "[parameters('VNET_DNS_DC1')]",
+                        "[parameters('VNET_DNS_DC2')]"
                     ]
                 },
                 "subnets": [{
