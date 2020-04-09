@@ -734,8 +734,9 @@ function Set-SubnetNetworkSecurityGroup {
     )
     Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
     $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
-    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
     $success = $?
+    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
     $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
     $success = $success -and $?
     if ($success) {
