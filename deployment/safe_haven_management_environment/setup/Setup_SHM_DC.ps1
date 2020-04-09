@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
@@ -95,19 +95,19 @@ $success = $success -and $?
 # LibreOffice
 $baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
 $httpContent = Invoke-WebRequest -URI $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | % { $_.href }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
 $httpContent = Invoke-WebRequest -URI $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | % { $_.href }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # WinSCP
 $httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
-$filename = $httpContent.Links  | Where-Object { $_.href -like "*Setup.exe" } | % { ($_.href -split "/")[-1] }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
 $absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
