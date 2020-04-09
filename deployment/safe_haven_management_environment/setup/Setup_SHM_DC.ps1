@@ -180,6 +180,7 @@ $params = @{
     DC2_VM_Name = $config.dcb.vmName
     Domain_Name = $config.domain.fqdn
     Domain_NetBIOS_Name = $config.domain.netbiosName
+    External_DNS_Resolver = $config.dc.external_dns_resolver
     SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
     Shm_Id = $config.id
     Virtual_Network_Name = $config.network.vnet.Name
@@ -248,9 +249,12 @@ Write-Output $result.Value
 # Configure the domain controllers and set their DNS resolution
 # -------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
-    # Configure DNS to forward requests to the Azure service
+    # Configure DNS to forward requests to the Azure DNS resolver
+    $params = @{
+        externalDnsResolver = "`"$($config.dc.external_dns_resolver)`""
+    }
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
     Write-Output $result.Value
 
     # Remove custom per-NIC DNS settings

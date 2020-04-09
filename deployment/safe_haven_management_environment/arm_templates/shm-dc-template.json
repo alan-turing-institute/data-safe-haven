@@ -62,6 +62,12 @@
                 "Description": "Enter the correct NetBIOS name"
             }
         },
+        "External_DNS_Resolver": {
+            "type": "string",
+            "metadata": {
+                "Description": "IP address for the external (Azure) DNS resolver"
+            }
+        },
         "SafeMode_Password": {
             "type": "securestring",
             "metadata": {
@@ -259,7 +265,7 @@
                     }
                 ],
                 "dnsSettings": {
-                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "168.63.129.16"]
+                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "[parameters('External_DNS_Resolver')]"]
                 },
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
@@ -426,7 +432,7 @@
                     }
                 ],
                 "dnsSettings": {
-                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "168.63.129.16"]
+                    "dnsServers": ["[parameters('DC1_IP_Address')]", "[parameters('DC2_IP_Address')]", "[parameters('External_DNS_Resolver')]"]
                 },
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,

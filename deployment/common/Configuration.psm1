@@ -133,6 +133,7 @@ function Get-ShmFullConfig {
     $shm.dc.hostname = $shm.dc.vmName
     $shm.dc.fqdn = "$($shm.dc.hostname).$($shm.domain.fqdn)"
     $shm.dc.ip = "$($shm.network.subnets.identity.prefix).250"
+    $shm.dc.external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
 
     # Backup AD DC details
     $shm.dcb = [ordered]@{}
