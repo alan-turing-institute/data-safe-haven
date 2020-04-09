@@ -54,17 +54,20 @@ write_files:
     permissions: "0700"
     content: |
       #! /bin/bash
+      TIER=PLACEHOLDER
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
-      RSYNC_INCLUDES=""
-      WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt | grep -v "^#")
-      for RPACKAGE in $WHITELISTED_PACKAGES; do
-          RSYNC_INCLUDES="${RSYNC_INCLUDES} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
-      done
-      if [ "$RSYNC_INCLUDES" != "" ]; then
-          rsync -rtlv --delete --delete-excluded --progress --include='*/' $RSYNC_INCLUDES --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
-      else
+      if [ "$TIER" == "2" ]; then
+          # Download all files
           rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+      else
+          # Download all whitelisted packages (which might be none)
+          INCLUDE_DIRS=""
+          WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt | grep -v "^#")
+          for RPACKAGE in $WHITELISTED_PACKAGES; do
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=bin/linux/ubuntu/*/${RPACKAGE}* --include=src/contrib/${RPACKAGE}* --include src/contrib/Archive/${RPACKAGE}/* --include web/packages/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
+          done
+          rsync -rtlv --delete --delete-excluded --progress --include='*/' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log

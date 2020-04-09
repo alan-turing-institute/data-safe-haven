@@ -156,6 +156,7 @@ function Resolve-CloudInit {
         $WhitelistPath
     )
 
+    # Load template cloud-init file
     $cloudInitYaml = Get-Content $CloudInitPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!"
@@ -175,43 +176,18 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
     }
 
+    # Set the appropriate tier for this mirror
+    $cloudInitYaml = $cloudInitYaml.Replace("TIER=PLACEHOLDER", "TIER=$tier")
 
-    # PyPI
-    if ($MirrorType.ToLower() -eq "pypi") {
-        # Enable the whitelist plugin for a Tier-3 external mirror. This is the key difference between Tier-2 and Tier-3
-        if (($tier -eq "3") -and ($MirrorDirection -eq "External")) {
-            $pluginsBefore = "exclude_platform"
-            $pluginsAfter = $pluginsBefore + `
-                            "`n          whitelist_project" + `
-                            "`n      [whitelist]" + `
-                            "`n      packages ="
-            $cloudInitYaml = $cloudInitYaml.Replace($pluginsBefore, $pluginsAfter)
+    # Populate initial package whitelist file defined in cloud init YAML
+    $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if (-Not $notExists) {
+        $packagesBefore = "      # PACKAGE_WHITELIST"
+        $packagesAfter  = ""
+        foreach ($package in $whitelist -split "`n") {
+            $packagesAfter += "      $package`n"
         }
-
-        # Populate initial package whitelist file defined in cloud init YAML
-        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-Not $notExists) {
-            $packagesBefore = "      # PACKAGE_WHITELIST"
-            $packagesAfter  = ""
-            foreach ($package in $whitelist -split "`n") {
-                $packagesAfter += "      $package`n"
-            }
-            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
-        }
-    }
-
-    # CRAN
-    if ($MirrorType.ToLower() -eq "cran") {
-        # Populate initial package whitelist file defined in cloud init YAML
-        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-Not $notExists) {
-            $packagesBefore = "      # PACKAGE_WHITELIST"
-            $packagesAfter  = ""
-            foreach ($package in $whitelist -split "`n") {
-                $packagesAfter += "      $package`n"
-            }
-            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
-        }
+        $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
     return $cloudInitYaml

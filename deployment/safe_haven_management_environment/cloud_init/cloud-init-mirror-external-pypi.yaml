@@ -40,6 +40,7 @@ write_files:
       #! /usr/bin/env python3
       from collections import defaultdict
 
+      TIER=PLACEHOLDER
       config_sections = defaultdict(list)
       section = "main"
 
@@ -55,13 +56,17 @@ write_files:
               if line:
                   config_sections[section].append(line)
 
-      # If there is already a whitelist section then start by emptying it
-      if "whitelist" in config_sections.keys():
+      # Enable/disable whitelist depending on tier
+      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "whitelist_project" in p]
+      if int(TIER) == 2:
+          # Tier 2 mirrors should not have a whitelist section
+          config_sections.pop("whitelist", [])
+      else:
+          # If there is already a whitelist section then start by emptying it
           config_sections["whitelist"] = ["[whitelist]", "packages ="]
 
           # Ensure the that whitelist_project plugin is enabled
-          if not any(["whitelist_project" in l for l in config_sections["plugins"]]):
-              config_sections["plugins"].append("    whitelist_project")
+          config_sections["plugins"].append("    whitelist_project")
 
           # Add any whitelisted packages to this section
           # Note that we need at least one package for whitelisting to work. 'six' is minimal and safe.
