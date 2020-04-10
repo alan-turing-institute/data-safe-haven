@@ -134,6 +134,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Prepare SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
+## 4. Deploy virtual network and remote desktop
 
 ### Create DNS Zone and copy DNS records
 
@@ -148,9 +149,8 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 
     - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
      ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
-## 4. Deploy Virtual Network
 
-### Create the virtual network
+### Deploy the virtual network and RDS servers
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -164,22 +164,6 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - Download the VPN client from the "Point to Site configuration" menu
     ![VPN client](images/deploy_sre/vpn_client.png)
   - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
-
-<!-- ## 5. Deploy SRE Domain Controller
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Setup_SRE_DC.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
-- The deployment will normally take around 30 minutes. Most of this is running the setup scripts after creating the VM. However it may take longer if many Windows updates need to be performed.
-- **Troubleshooting:** If you see errors such as `Installing Windows updates failed` you should try re-running the script (you do not need to destroy existing resources as the script is idempotent). -->
-
-<!-- ## 6. Deploy Remote Desktop Service Environment
-### Create RDS VMs and perform initial configuration
-- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Deploy and configure the RDS VMs by running `./Setup_SRE_RDS_Servers.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-- The deployment will take around 40 minutes to complete. -->
 
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
@@ -242,18 +226,21 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 ### Test RDS deployment
 - Disconnect from any SRE VMs and connect to the SHM VPN
 - Connect to the **SHM Domain Controller** via the Remote Desktop client
+- The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SHM_DC -> DC1-SHM-<SRE ID>`)
 - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under "SECRETS".
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
-- **NB. Before performing the remaining steps, ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly.**
+- **NB. The next steps ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly. The automatically-created test researcher should already be in the correct group.**
 
-1. Ensuring that a non-privileged user account exists
+#### Set up a non-privileged user account
+
+1. **Ensuring that a non-privileged user account exists**
 - In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Research Users` OU
 - Ensure that the non-privileged user account that you want to use is listed here, or if it is not then create it.
 
-2. Ensure that the user account is in the correct Security Group
+2. **Ensure that the user account is in the correct Security Group**
 - Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
 - Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 - Click on the `Members` tab.
@@ -263,16 +250,15 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - Select the correct username and click `Ok`
   - Click `Ok` again to exit the add users dialogue
 
-3. Ensure that the account has MFA enabled
+3. **Ensure that the account has MFA enabled**
 - If you have just created the account, you will need to synchronise with Azure Active Directory
-- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](../../docs/safe_haven_user_guide.md). In particular:
+- Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md). In particular:
   - The user's `Usage Location` must be set on Active Directory. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
   - A licence must be assigned to the user. To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled..
   - MFA must be enabled for the user. To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
-  - The user must log in and set up MFA as [detailed in the user guide](../../docs/safe_haven_user_guide.md)
+  - The user must log in and set up MFA as [detailed in the user guide](safe_haven_user_guide.md)
 
-
-4. Test using the RDG web interface
+#### Test the RDS using a non-privileged user account
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
@@ -303,7 +289,6 @@ Each SRE must be assigned its own unique IP address space, and it is very import
     - **Troubleshooting** If you are able to log into the webclient with a username and password but cannot connect to the presentation server (as no MFA prompt is given), please look at [this documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)). In particular, ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`).
 - Once you have approved the sign in, you should see a remote Windows desktop.
 - **NOTE:** The other apps will not work until the other servers have been deployed.
-
 
 ## 5. Deploy Data Server
 ### Create Dataserver VM
@@ -377,7 +362,7 @@ To run the smoke tests:
 - Connect to a **remote desktop** on the Main VM (e.g. `https://sandbox.dsgroupdev.co.uk/`) using the "Main VM (Desktop)" app
 - Open a terminal session
 - Copy the tests folder using `cp -R ~<sre-admin>/smoke_tests ~/smoke_tests`
-- Enter the test directory using `cd ~/smoke_tests/test`
+- Enter the test directory using `cd ~/smoke_tests/tests`
 - Run `source run_all_tests.sh`. Check `README.md` if anything is unclear.
 - If all test results are expected you are done! Otherwise, contact Turing REG for help diagnosing test failures.
 
