@@ -35,7 +35,10 @@
         "GatewaySubnet Name": {
             "type": "string"
         },
-        "DNS Server IP Address": {
+        "VNET_DNS_DC1": {
+            "type": "string"
+        },
+        "VNET_DNS_DC2": {
             "type": "string"
         }
     },
@@ -127,8 +130,8 @@
                 },
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[parameters('DNS Server IP Address')]",
-                        "8.8.8.8"
+                        "[parameters('VNET_DNS_DC1')]",                        
+                        "[parameters('VNET_DNS_DC2')]"
                     ]
                 },
                 "subnets": [{
