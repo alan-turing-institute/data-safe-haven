@@ -1,0 +1,18 @@
+{
+    "subscriptionName": "Safe Haven Management Test A",
+    "domainSubscriptionName": "[Prod] Safe Haven Domains",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "domain": "cw20.dsgroupdev.co.uk",
+    "netbiosName": "SAFEHAVENCW20",
+    "shmId": "cw20",
+    "name": "Turing Development Safe Haven CW20",
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB"
+    },
+    "location": "centralus",
+    "ipPrefix": "10.0.0"
+}
