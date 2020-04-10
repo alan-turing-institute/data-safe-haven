@@ -5,9 +5,6 @@
         "Virtual Network Name": {
             "type": "string"
         },
-        "P2S VPN Certificate": {
-            "type": "securestring"
-        },
         "Virtual Network Address Space": {
             "type": "string"
         },
@@ -20,9 +17,6 @@
         "Subnet-Data Address Prefix": {
             "type": "string"
         },
-        "GatewaySubnet Address Prefix": {
-            "type": "string"
-        },
         "Subnet-Identity Name": {
             "type": "string"
         },
@@ -32,9 +26,6 @@
         "Subnet-Data Name": {
             "type": "string"
         },
-        "GatewaySubnet Name": {
-            "type": "string"
-        },
         "VNET_DNS_DC1": {
             "type": "string"
         },
@@ -42,80 +33,7 @@
             "type": "string"
         }
     },
-    "variables": {
-        "Gateway_Name": "[concat(parameters('Virtual Network Name'),'_GW')]",
-        "Gateway_IP_Name": "[concat(parameters('Virtual Network Name'),'_GW_PIP')]"
-    },
-    "resources": [{
-            "type": "Microsoft.Network/publicIPAddresses",
-            "sku": {
-                "name": "Basic",
-                "tier": "Regional"
-            },
-            "name": "[variables('Gateway_IP_Name')]",
-            "apiVersion": "2018-10-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "ipTags": []
-            },
-            "dependsOn": []
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworkGateways",
-            "name": "[variables('Gateway_Name')]",
-            "apiVersion": "2018-10-01",
-            "location": "[resourceGroup().location]",
-            "scale": null,
-            "properties": {
-                "ipConfigurations": [{
-                    "name": "sregwipconf",
-                    "properties": {
-                        "privateIPAllocationMethod": "Dynamic",
-                        "publicIPAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]"
-                        },
-                        "subnet": {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
-                        }
-                    }
-                }],
-                "sku": {
-                    "name": "VpnGw1",
-                    "tier": "VpnGw1",
-                    "capacity": 2
-                },
-                "gatewayType": "Vpn",
-                "vpnType": "RouteBased",
-                "enableBgp": false,
-                "activeActive": false,
-                "vpnClientConfiguration": {
-                    "vpnClientAddressPool": {
-                        "addressPrefixes": [
-                            "172.16.201.0/24"
-                        ]
-                    },
-                    "vpnClientProtocols": [
-                        "SSTP",
-                        "IkeV2"
-                    ],
-                    "vpnClientRootCertificates": [{
-                        "name": "SRE_P2S_RootCert.cer",
-                        "properties": {
-                            "publicCertData": "[parameters('P2S VPN Certificate')]"
-                        }
-                    }],
-                    "vpnClientRevokedCertificates": [],
-                    "vpnClientIpsecPolicies": []
-                }
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('Gateway_IP_Name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Virtual Network Name'), parameters('GatewaySubnet Name'))]"
-            ]
-        },
+    "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('Virtual Network Name')]",
@@ -154,14 +72,6 @@
                         "name": "[parameters('Subnet-Data Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
-                            "serviceEndpoints": [],
-                            "delegations": []
-                        }
-                    },
-                    {
-                        "name": "[parameters('GatewaySubnet Name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('GatewaySubnet Address Prefix')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
@@ -207,20 +117,6 @@
             "scale": null,
             "properties": {
                 "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
-                "serviceEndpoints": [],
-                "delegations": []
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('GatewaySubnet Name'))]",
-            "apiVersion": "2018-10-01",
-            "scale": null,
-            "properties": {
-                "addressPrefix": "[parameters('GatewaySubnet Address Prefix')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },

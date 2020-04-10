@@ -28,16 +28,13 @@ $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sr
 Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
 $params = @{
     "Virtual Network Name" = $config.sre.network.vnet.Name
-    "P2S VPN Certificate" = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.vpnCaCertificatePlain -VaultName $config.shm.keyVault.Name).SecretValue
     "Virtual Network Address Space" = $config.sre.network.vnet.cidr
     "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
     "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
     "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
-    "GatewaySubnet Address Prefix" = $config.sre.network.subnets.gateway.cidr
     "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
-    "GatewaySubnet Name" = $config.sre.network.subnets.gateway.Name
     "VNET_DNS1" = $config.shm.dc.ip
     "VNET_DNS2" = $config.shm.dcb.ip
 }
