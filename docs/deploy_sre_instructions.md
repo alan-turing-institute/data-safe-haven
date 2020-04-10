@@ -149,7 +149,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Prepare SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-## 4. Deploy the virtual network and remote desktop
+## 4. Deploy virtual network and remote desktop
 
 ### Create the virtual network
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
