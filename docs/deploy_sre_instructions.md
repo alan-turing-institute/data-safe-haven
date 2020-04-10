@@ -14,8 +14,10 @@ The following instructions will walk you through deploying a Secure Research Env
 10. [Tearing down the SRE](#10-tearing-down-the-sre)
 
 ## 1. Prerequisites
-- An Azure subscription with sufficient credits to build the environment in
-  - If deploying at Turing, you will need to be a member of the relevant Azure Security Group: `Safe Haven Test Admins` for testing/development or `Safe Haven Production Admins` for production deployment. This will give you the administrative access to:
+- An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<SHM ID>)`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the ID of the SHM deployment this SRE will be deplyed against, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
+  - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
+  - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
+  - You will need to be a member of the relevant security group. This will give you the administrative access to:
     - the relevant Safe Haven Management Azure subscription
     - the relevant Safe Haven Management Active Directory Domain
     - the relevant Safe Haven Management VMs
@@ -47,25 +49,8 @@ The following instructions will walk you through deploying a Secure Research Env
   ![OSX Catalina_authentication](images/deploy_sre/vpn/catalina_authentication.png)
 - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is defined in the config file.
 
-### Ensure the required SRE resources can be accessed
-- Access to a new Azure subscription which the SRE will be deployed to
-  - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<SHM ID>)`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file.
-  - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-  - Give the relevant "Safe Haven `<SHM ID>` Admins" Security Group **Owner** role on the new SRE subscription
-- Access to a public routable domain name for the SRE and its name servers
-  - This can be a top-level domain (eg. `dsgroup100.co.uk`) or a subdomain (eg. `sandbox.dsgroupdev.co.uk` or `sandbox.testb.dsgroupdev.co.uk`)
-  - A DNS for this domain must exist in the `Safe Haven Domains` subscription, in the `RG_SHM_DNS_TEST` or `RG_SHM_DNS_PRODUCTION` resource group.
-  - To create a new DNS zone:
-    - From within the resource group click `"+" Add -> DNS Zone` and click "create"
-    - Set the **Name** field to the SRE domain (eg. `sandbox.dsgroupdev.co.uk`)
-    - Click "Review + create"
-    - Once deployment is finished, click "Go to resource" to view the new Azure DNS zone
-    - Copy the 4 nameservers in the "NS" record to the domain's DNS record
-        - if this is a top-level domain, contact whoever registered the domain
-        - if this is a subdomain of an existing Azure domain (eg. `sandbox.dsgroupdev.co.uk` then:
-            - go to the DNS zone for the top-level domain in Azure
-            - add a new NS record using the 4 nameservers you copied down above
-            ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+### Access to a public routable domain name for the SRE and its name servers
+  - This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk`, or a top-level domain (eg. `dsgroup100.co.uk`))
 
 ### Deploying multiple SREs in parallel
 **NOTE:** You can only deploy to **one SRE at a time** from a given computer as both the `Az` CLI and the `Az` Powershell module can only work within one Azure subscription at a time. For convenience we recommend using one of the Safe Haven deployment VMs on Azure for all production deploys. This will also let you deploy compute VMs in parallel to as many SREs as you have deployment VMs. See the [parallel deployment guide](../azure-vms/README-parallel-deploy-using-azure-vms.md) for details.
@@ -149,9 +134,23 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Prepare SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
-## 4. Deploy the virtual network and remote desktop
+## 4. Deploy virtual network and remote desktop
 
-### Create the virtual network
+### Create DNS Zone and copy DNS records
+
+- Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
+  - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
+  - Duplicate these records to the parent DNS system as follows:
+    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `sandbox`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `sandbox.testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `sandbox.testa.dsgroupdev.co.uk` to the Azure DNS Zone for `testa.dsgroupdev.co.uk`, by creating a record set with name `sandbox`).
+     ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+    - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+
+
+    - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
+     ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+
+### Deploy the virtual network and RDS servers
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
