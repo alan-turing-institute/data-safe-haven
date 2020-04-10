@@ -59,7 +59,7 @@ write_files:
       START_TIME=$(date +%s)
       if [ "$TIER" == "2" ]; then
           # Download all files
-          rsync -rtlv --delete --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          rsync -rtlv --delete --delete-excluded --exclude=bin/windows/* --exclude=bin/macos*/* --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       else
           # Download all whitelisted packages (which might be none)
           INCLUDE_DIRS=""
