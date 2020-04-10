@@ -14,7 +14,10 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 10. [Tear down SHM](#10-tearing-down-the-shm)
 
 ## 1. Prerequisites
-- An Azure subscription with sufficient credits to build the environment in
+- An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Safe Haven Management <SHM ID>`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
+  - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
+  - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
+  - You will need to be a member of the relevant security group.
 - PowerShell for Azure
   - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
   - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
@@ -61,7 +64,6 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
 }
 ```
-
 
 
 ## 3. Configure DNS for the custom domain
