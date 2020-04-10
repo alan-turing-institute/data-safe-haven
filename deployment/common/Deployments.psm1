@@ -886,7 +886,7 @@ function Set-NSRecords {
 Export-ModuleMember -Function Set-NSRecords
 
 
-# Add NS Record Set to DNS Zone if it doesnot already exist
+# Add NS Record Set to DNS Zone if it does not already exist
 # ---------------------------------------------------------
 function Set-DnsZoneAndParentNSRecords {
     param(
