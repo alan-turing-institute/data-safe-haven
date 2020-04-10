@@ -14,8 +14,10 @@ The following instructions will walk you through deploying a Secure Research Env
 10. [Tearing down the SRE](#10-tearing-down-the-sre)
 
 ## 1. Prerequisites
-- An Azure subscription with sufficient credits to build the environment in
-  - If deploying at Turing, you will need to be a member of the relevant Azure Security Group: `Safe Haven Test Admins` for testing/development or `Safe Haven Production Admins` for production deployment. This will give you the administrative access to:
+- An Azure subscription with sufficient credits to build the environment in. If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<SHM ID>)`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the ID of the SHM deployment this SRE will be deplyed against, prefixing the subscription name with `[prod] ` or `[dev] ` to indicate whether it is a production or development environment.
+  - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
+  - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
+  - You will need to be a member of the relevant security group. This will give you the administrative access to:
     - the relevant Safe Haven Management Azure subscription
     - the relevant Safe Haven Management Active Directory Domain
     - the relevant Safe Haven Management VMs
@@ -46,11 +48,6 @@ The following instructions will walk you through deploying a Secure Research Env
 - :pencil: **OSX** on Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
   ![OSX Catalina_authentication](images/deploy_sre/vpn/catalina_authentication.png)
 - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is defined in the config file.
-
-### Access to a new Azure subscription which the SRE will be deployed to
-  - If a subscription does not exist, create one with the name `Secure Research Environment <SRE ID> (<SHM ID>)`, picking an SRE ID that is not yet in use and setting `<SHM ID>` to the value given in the config file.
-  - Add an initial $3,000 for test and production sandbox environments and the project specific budget for production project environments
-  - Give the relevant Safe Haven Administrator Security Group **Owner** role on the new SRE subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
 
 ### Access to a public routable domain name for the SRE and its name servers
   - This can be a subdomain of the Safe Haven Management domain, e.g, `sandbox.testb.dsgroupdev.co.uk`, or a top-level domain (eg. `dsgroup100.co.uk`))
