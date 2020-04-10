@@ -130,7 +130,7 @@
     }
   },
   "sre": {
-    "subscriptionName": "Research Engineering",
+    "subscriptionName": "Martin O",
     "id": "mortest",
     "shortName": "sre-mortest",
     "location": "centralus",
@@ -181,11 +181,11 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sreartifactsnmbeyzfxcows"
+        "accountName": "sreartifactskjpboufxdths"
       },
       "bootdiagnostics": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "srebootdiagsnmbeyzfxcows"
+        "accountName": "srebootdiagskjpboufxdths"
       }
     },
     "keyVault": {
