@@ -155,7 +155,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_VNET_RDS.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-- The deployment will take around 60 minutes. Around one third of this is deploying the virtual network gateway.
+- The deployment will take around 50 minutes.
 - The VNet peerings may take a few minutes to provision after the script completes.
 
 ### Set up a VPN connection to the SRE
