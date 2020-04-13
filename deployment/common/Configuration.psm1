@@ -305,7 +305,6 @@ function Add-SreConfig {
             identity = [ordered]@{}
             rds = [ordered]@{}
             data = [ordered]@{}
-            gateway = [ordered]@{}
         }
         nsg = [ordered]@{
             data = [ordered]@{}
@@ -323,9 +322,6 @@ function Add-SreConfig {
     $config.sre.network.subnets.data.name = "SharedDataSubnet"
     $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
-    $config.sre.network.subnets.gateway.name = "GatewaySubnet"
-    $config.sre.network.subnets.gateway.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 7)"
-    $config.sre.network.subnets.gateway.cidr = "$($config.sre.network.subnets.gateway.prefix).0/27"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"

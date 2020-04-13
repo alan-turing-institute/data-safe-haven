@@ -28,18 +28,15 @@ $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sr
 Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
 $params = @{
     "Virtual Network Name" = $config.sre.network.vnet.Name
-    "P2S VPN Certificate" = (Get-AzKeyVaultSecret -Name $config.shm.keyVault.secretNames.vpnCaCertificatePlain -VaultName $config.shm.keyVault.Name).SecretValue
     "Virtual Network Address Space" = $config.sre.network.vnet.cidr
     "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
     "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
     "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
-    "GatewaySubnet Address Prefix" = $config.sre.network.subnets.gateway.cidr
     "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
-    "GatewaySubnet Name" = $config.sre.network.subnets.gateway.Name
-    "VNET_DNS1" = $config.shm.dc.ip
-    "VNET_DNS2" = $config.shm.dcb.ip
+    "VNET_DNS_DC1" = $config.shm.dc.ip
+    "VNET_DNS_DC2" = $config.shm.dcb.ip
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
@@ -83,7 +80,7 @@ if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.nam
 # -----------------------
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-$_ = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id #-BlockVirtualNetworkAccess $false -AllowForwardedTraffic $false -AllowGatewayTransit $false -UseRemoteGateways $false
+$_ = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit
 if ($?) {
     Add-LogMessage -Level Success "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' succeeded"
 } else {
@@ -95,7 +92,7 @@ if ($?) {
 # -----------------------
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-$_ = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id #-BlockVirtualNetworkAccess $false -AllowForwardedTraffic $false -AllowGatewayTransit $false -UseRemoteGateways $false
+$_ = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways
 if ($?) {
     Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)' succeeded"
 } else {

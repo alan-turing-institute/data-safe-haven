@@ -155,18 +155,11 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_VNET_RDS.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
-- The deployment will take around 60 minutes. Around one third of this is deploying the virtual network gateway.
+- The deployment will take around 50 minutes.
 - The VNet peerings may take a few minutes to provision after the script completes.
 
-### Set up a VPN connection to the SRE
-- In the **SRE subscription** open `Resource Groups -> RG_SRE_NETWORKING -> VNET_SRE_<SRE ID>_GW`
-  - Select "**Point to Site Configuration**" from the left-hand navigation
-  - Download the VPN client from the "Point to Site configuration" menu
-    ![VPN client](images/deploy_sre/vpn_client.png)
-  - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
-
 ### Install and configure RDS Environment and webclient
-- Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
+- Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
 - The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>`)
 
 - Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets`. as follows:
@@ -260,6 +253,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - The user must log in and set up MFA as [detailed in the user guide](safe_haven_user_guide.md)
 
 #### Test the RDS using a non-privileged user account
+On your **deployment machine**.
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
     - **Troubleshooting** If you get a "404 resource not found" error when accessing the webclient URL, it is likely that you missed the step of installing the RDS webclient.
         - Go back to the previous section and run the webclient installation step.
