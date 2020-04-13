@@ -112,6 +112,7 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 Each SRE must be assigned its own unique IP address space, and it is very important that address spaces do not overlap in the environment as this will cause network faults. The address spaces use a private class A range and use a 21-bit subnet mask. This provides ample addresses for a SRE and capacity to add additional subnets should that be required in the future.
 
 ### Generate full configuration for SRE
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
@@ -121,17 +122,20 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Commit this new full configuration file to the Safe Haven repository
 
 ## 3. Prepare Safe Haven Management (SHM) environment
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 
 ### [Optional] Clear out any remaining SRE data from previous deployments
+On your **deployment machine**.
 :warning: If you are redeploying an SRE in the same subscription and did not use the `./SRE_Teardown.ps1` script to clean up the previous deployment, then there may be residual SRE data in the SHM.
 :pencil: If the subscription is not empty, confirm that it is not being used before deleting any resources in it.
 - Clear any remaining SRE data from the SHM by running `./Remove_SRE_Data_From_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
 ### Register service accounts with the SHM and set up a key vault
+On your **deployment machine**.
 - Register service accounts with the SHM by running `./Add_SRE_Data_To_SHM.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
@@ -162,10 +166,10 @@ On your **deployment machine**.
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
 - The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SRE_RDS -> RDG-SRE-<SRE ID>`)
-
 - Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets`. as follows:
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
+On the **SRE RDS Gateway**.
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
@@ -198,7 +202,7 @@ On your **deployment machine**.
 - **NB. The next steps ensure that you have created a non-privileged user account that you can use for testing. This user should be created in the local Active Directory and must have been synchronised to the Azure Active Directory. You must ensure that you have assigned a licence to this user so that MFA will work correctly. The automatically-created test researcher should already be in the correct group.**
 
 #### Set up a non-privileged user account
-
+On the **SHM Domain Controller**.
 1. **Ensuring that a non-privileged user account exists**
 - In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
 - Open the `Safe Haven Research Users` OU
@@ -259,6 +263,7 @@ On your **deployment machine**.
 
 ## 5. Deploy Data Server
 ### Create Dataserver VM
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -267,6 +272,7 @@ On your **deployment machine**.
 - The deployment will take around 20 minutes to complete
 
 ## 6. Deploy Web Application Servers (Gitlab and HackMD)
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -282,11 +288,13 @@ On your **deployment machine**.
 - You can test HackMD from inside the RDS environment by clicking on the `HackMD` icon and logging in with the full `username@<shm-domain-fqdn>` of a user in the `SG DSGROUP<SRE ID> Research Users` security group.
 
 ## 7. Deploy initial shared data science VM
+On your **deployment machine**.
 ### [OPTIONAL] Create a custom cloud init file for the SRE if required
 - By default, compute VM deployments will use the `cloud-init-compute-vm.template.yaml` configuration file in the `deployment/secure_research_environment/cloud_init/` folder. This does all the necessary steps to configure the VM to work with LDAP.
 - If you require additional steps to be taken at deploy time while the VM still has access to the internet (e.g. to install some additional project-specific software), copy the default cloud init file to a file named `cloud-init-compute-vm-sre-<SRE ID>.template.yaml` in the same folder and add any additional required steps in the `SRE-SPECIFIC COMMANDS` block marked with comments.
 
 ### Deploy a data science VM (DSVM)
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -309,6 +317,7 @@ On your **deployment machine**.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## 8. Apply network configuration
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
@@ -316,6 +325,7 @@ On your **deployment machine**.
 - Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 ### Unpeering package mirrors
+On your **deployment machine**.
 The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
 However, if you need to unpeer the mirror networks for some reason (e.g. while preparing an SRE subscription for re-use), you can run the unpeering script separately as described below.
 
@@ -332,6 +342,7 @@ These tests should be run **after** the network lock down and peering the DSG an
 
 To run the smoke tests:
 - Connect to a **remote desktop** on the Main VM (e.g. `https://sandbox.dsgroupdev.co.uk/`) using the "Main VM (Desktop)" app
+On the **Main VM**.
 - Open a terminal session
 - Copy the tests folder using `cp -R ~<sre-admin>/smoke_tests ~/smoke_tests`
 - Enter the test directory using `cd ~/smoke_tests/tests`
@@ -340,12 +351,12 @@ To run the smoke tests:
 
 
 ## 10. Tearing down the SRE
-From a clone of the data-safe-haven repository, run the following commands, where `<SRE ID>` is the one defined in the config file.
-
-```pwsh
-cd deployment/administration
-./SRE_Teardown.ps1 -sreId <SRE ID>
-```
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+  - Run the `./SRE_Teardown.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
 
 ## Server list
 The following 7 virtual machines are created as a result of these instructions:
