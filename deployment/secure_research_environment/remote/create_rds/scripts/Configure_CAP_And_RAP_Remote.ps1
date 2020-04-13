@@ -56,10 +56,17 @@ Foreach ($npsServerAddress in $npsServerAddresses ) {
 }
 # Add SHM NPS server
 $_ = netsh nps add remoteserver remoteservergroup = $remoteServerGroup address = $shmNpsIp authsharedsecret =  $sreNpsSecret priority = $shmNpsPriority timeout = $shmNpsTimeout blackout = $shmNpsBlackout
+# Check that the change has actually been made (the netsh nps command always returns "ok")
+$success = $true
 [array]$npsServerAddresses = Get-NpsServerAddresses
 $numNpsServers = $npsServerAddresses.Length
-$firstNpsServerAddress = $npsServerAddresses[0]
-$success = (($numNpsServers -eq 1) -And ($firstNpsServerAddress -eq $shmNpsIp))
+if($numNpsServers -ne 1){
+    $success = $false
+}
+else {
+    $firstNpsServerAddress = $npsServerAddresses[0]
+    $success = ($success -And ($firstNpsServerAddress -eq $shmNpsIp))
+}
 if($success) {
     Write-Host -ForegroundColor DarkGreen " [o] Successfully configured '$firstNpsServerAddress' as the only remote NPS server."
 } else {
