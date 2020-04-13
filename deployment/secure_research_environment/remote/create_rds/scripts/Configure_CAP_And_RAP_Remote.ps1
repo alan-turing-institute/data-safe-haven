@@ -66,3 +66,13 @@ if($success) {
     Write-Host -ForegroundColor DarkRed " [x] Failed to configure '$firstNpsServerAddress' as the only remote NPS server!"
 }
 
+# Set RDS Gateway to use remote NPS server
+# ----------------------------------------
+$_ = Set-Item RDS:\GatewayServer\CentralCAPEnabled\ -Value 1 -ErrorAction SilentlyContinue
+$success = $?
+if($success) {
+    Write-Host -ForegroundColor DarkGreen " [o] Successfully set remote NPS server as RD CAP store."
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Failed to set remote NPS server as RD CAP store!"
+}
+
