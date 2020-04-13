@@ -46,7 +46,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_
 $params = @{
     rdsGatewayIp = "`"$($config.sre.rds.gateway.ip)`""
     rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
-    npsSecret = "`"$npsSecret`""
+    npsSecret = "$npsSecret"
     sreId = "`"$($config.sre.id)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
