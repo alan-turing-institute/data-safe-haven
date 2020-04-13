@@ -386,10 +386,14 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - Ensure that `Password never expires` is not ticked
     - Click `Next`
   - Click `Finish`
-2. Force a sync to the Azure Active Directory
+2. Set the correct region
+  - The user you have just created should now appear in the list of `Safe Haven Research Users` (if not, then right click and select `Refresh`)
+  - Right click on this user and select `Properties`
+  - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
+3. Force a sync to the Azure Active Directory
   - Open Powershell as an administrator
   - Run `C:\Installation\Run_ADSync.ps1`
-3. Go to the Azure Active Directory in `portal.azure.com`
+4. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
