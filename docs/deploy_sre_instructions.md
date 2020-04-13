@@ -174,11 +174,13 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
 #### Install RDS environment and webclient
+On the **RDS Gateway**.
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 
 #### Configure RDS to use SHM NPS server for client access policies
+On the **RDS Gateway**.
 - In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
   ![Remote Desktop Gateway Manager](images/deploy_sre/rd_gateway_manager_01.png)
 - In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<SRE ID> (Local)` object and select "Properties"
@@ -190,23 +192,8 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   ![RD CAP store](images/deploy_sre/rd_gateway_manager_03.png)
 - Click `OK` to close the dialogue box.
 
-#### Set the security groups for access to session hosts
-- Expand the `RDG-SRE-<SRE ID> (Local)` server object and select `Policies -> Resource Authorization Policies`
-- Right click on `RDG_AllDomainComputers` and select "Properties`
-  ![Session host security groups](images/deploy_sre/rd_gateway_session_hosts_01.png)
-- On the `User Groups` tab click `Add`
-- Click `Locations` and select the management domain (e.g. `testa.dsgroupdev.co.uk`) and click `OK`
-- Enter `SG` into the `Enter the object names to select` box and click on `Check Names`
-- Select the `SG <SRE ID> Research Users`security group from the list.
-  ![Session host security groups](images/deploy_sre/rd_gateway_session_hosts_02.png)
-- Click `OK` and the group will be added to the "User Groups" screen
-  ![Session host security groups](images/deploy_sre/rd_gateway_session_hosts_03.png)
-- Click `OK` to exit the dialogue box
-- Right click on `RDG_RDConnectionBrokers` policy and select `Properties`
-  ![Session host security groups](images/deploy_sre/rd_gateway_session_hosts_04.png)
-- Repeat the process you did for the `RDG_AllDomainComputers` policy, again adding the `SG <SRE ID> Research Users` security group from the list.
-
 #### Increase the authorisation timeout to allow for MFA
+On the **RDS Gateway**.
 - In "Server Manager", select `Tools -> Network Policy Server`
 - Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Server Groups` and double click on `TS GATEWAY SERVER GROUP`
   ![Remote RADIUS server](images/deploy_sre/media/rds_local_nps_remote_server_selection.png)
@@ -215,7 +202,15 @@ Each SRE must be assigned its own unique IP address space, and it is very import
   ![Load balancing](images/deploy_sre/media/rds_local_nps_remote_server_timeouts.png)
 - Click `OK` twice and close `Network Policy Server` MMC
 
+#### Set the security groups for access to session hosts
+On your **deployment machine**
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Run `./Configure_CAP_And_RAP.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+
 ### Configuration of SSL on RDS Gateway
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
