@@ -37,6 +37,23 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
+# Configure SHM NPS for SRE RDS RADIUS client
+# -------------------------------------------
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
+# Run remote script
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
+$params = @{
+    rdsGatewayIp = "`"$($config.sre.rds.gateway.ip)`""
+    rdsGatewayFqdn = "`"$($config.sre.rds.gateway.fqdn)`""
+    npsSecret = "`"$npsSecret`""
+    sreId = "`"$($config.sre.id)`""
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
+Write-Output $result.Value
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext;
