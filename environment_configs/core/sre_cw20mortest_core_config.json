@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Martin O",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "sreId": "mortest",
+    "shmId": "cw20",
+    "tier": "2",
+    "domain": "mortest.cw20.dsgroupdev.co.uk",
+    "netbiosName": "MORTEST",
+    "ipPrefix": "10.150.0",
+    "rdsAllowedSources": "Internet",
+    "rdsInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2020032700"
+}

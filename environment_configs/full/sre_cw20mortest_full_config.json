@@ -1,0 +1,342 @@
+{
+  "shm": {
+    "subscriptionName": "Safe Haven Management Test A",
+    "id": "cw20",
+    "name": "Turing Development Safe Haven CW20",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
+    "location": "centralus",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "domain": {
+      "fqdn": "cw20.dsgroupdev.co.uk",
+      "netbiosName": "SAFEHAVENCW20",
+      "dn": "DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Safe Haven LDAP Users",
+          "description": "SG Safe Haven LDAP Users"
+        },
+        "serverAdmins": {
+          "name": "SG Safe Haven Server Administrators",
+          "description": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_NETWORKING",
+        "name": "VNET_SHM_CW20",
+        "cidr": "10.0.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "IdentitySubnet",
+          "prefix": "10.0.0",
+          "cidr": "10.0.0.0/24"
+        },
+        "web": {
+          "name": "WebSubnet",
+          "prefix": "10.0.1",
+          "cidr": "10.0.1.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.0.7",
+          "cidr": "10.0.7.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_DC",
+      "vmName": "DC1-SHM-CW20",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "DC1-SHM-CW20",
+      "fqdn": "DC1-SHM-CW20.cw20.dsgroupdev.co.uk",
+      "ip": "10.0.0.250"
+    },
+    "dcb": {
+      "vmName": "DC2-SHM-CW20",
+      "hostname": "DC2-SHM-CW20",
+      "fqdn": "DC2-SHM-CW20.cw20.dsgroupdev.co.uk",
+      "ip": "10.0.0.249"
+    },
+    "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-CW20",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "NPS-SHM-CW20",
+      "ip": "10.0.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmcw20artifactsvkdrsluo"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmcw20bootdiagsvkdrsluo"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-cw20",
+      "secretNames": {
+        "aadAdminPassword": "shm-cw20-aad-admin-password",
+        "buildImageAdminUsername": "shm-cw20-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-cw20-buildimage-admin-password",
+        "dcSafemodePassword": "shm-cw20-dc-safemode-password",
+        "domainAdminPassword": "shm-cw20-domain-admin-password",
+        "localAdsyncPassword": "shm-cw20-localadsync-password",
+        "npsAdminPassword": "shm-cw20-nps-admin-password",
+        "testAdUserPassword": "shm-cw20-testaduser-password",
+        "vmAdminUsername": "shm-cw20-vm-admin-username",
+        "vpnCaCertificate": "shm-cw20-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-cw20-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-cw20-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-cw20-vpn-client-cert",
+        "vpnClientCertPassword": "shm-cw20-vpn-client-cert-password"
+      }
+    },
+    "dns": {
+      "subscriptionName": "[Prod] Safe Haven Domains",
+      "rg": "RG_SHM_DNS_TEST"
+    },
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "vmSize": "Standard_D2s_v3",
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "ipOffset": 4,
+        "diskSize": {
+          "tier2": 16384,
+          "tier3": 512
+        }
+      },
+      "cran": {
+        "ipOffset": 5,
+        "diskSize": {
+          "tier2": 512,
+          "tier3": 256
+        }
+      }
+    }
+  },
+  "sre": {
+    "subscriptionName": "Martin O",
+    "id": "mortest",
+    "shortName": "sre-mortest",
+    "location": "centralus",
+    "tier": "2",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "domain": {
+      "fqdn": "mortest.cw20.dsgroupdev.co.uk",
+      "netbiosName": "MORTEST",
+      "dn": "DC=mortest,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "securityGroups": {
+        "serverAdmins": {
+          "name": "SG MORTEST Server Administrators",
+          "description": "SG MORTEST Server Administrators"
+        },
+        "researchUsers": {
+          "name": "SG MORTEST Research Users",
+          "description": "SG MORTEST Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SRE_NETWORKING",
+        "name": "VNET_SRE_MORTEST",
+        "cidr": "10.150.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "IdentitySubnet",
+          "prefix": "10.150.0",
+          "cidr": "10.150.0.0/24"
+        },
+        "rds": {
+          "name": "RDSSubnet",
+          "prefix": "10.150.1",
+          "cidr": "10.150.1.0/24"
+        },
+        "data": {
+          "name": "SharedDataSubnet",
+          "prefix": "10.150.2",
+          "cidr": "10.150.2.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.150.7",
+          "cidr": "10.150.7.0/27"
+        }
+      },
+      "nsg": {
+        "data": {}
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "sreartifactskjpboufxdths"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "srebootdiagskjpboufxdths"
+      }
+    },
+    "keyVault": {
+      "name": "kv-cw20-sre-mortest",
+      "rg": "RG_SRE_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-mortest-vm-admin-username",
+        "rdsAdminPassword": "sre-mortest-rdsvm-admin-password",
+        "dataServerAdminPassword": "sre-mortest-dataservervm-admin-password",
+        "dsvmAdminPassword": "sre-mortest-dsvm-admin-password",
+        "webappAdminPassword": "sre-mortest-webappvm-admin-password",
+        "dsvmDbAdminPassword": "sre-mortest-dsvm-pgdb-admin-password",
+        "dsvmDbReaderPassword": "sre-mortest-dsvm-pgdb-reader-password",
+        "dsvmDbWriterPassword": "sre-mortest-dsvm-pgdb-writer-password",
+        "dsvmLdapPassword": "sre-mortest-dsvm-ldap-password",
+        "dataMountPassword": "sre-mortest-datamount-password",
+        "gitlabLdapPassword": "sre-mortest-gitlab-ldap-password",
+        "gitlabRootPassword": "sre-mortest-gitlab-root-password",
+        "gitlabUserPassword": "sre-mortest-gitlab-user-password",
+        "hackmdLdapPassword": "sre-mortest-hackmd-ldap-password",
+        "hackmdUserPassword": "sre-mortest-hackmd-user-password",
+        "letsEncryptCertificate": "sre-mortest-lets-encrypt-certificate",
+        "npsSecret": "sre-mortest-nps-secret",
+        "testResearcherPassword": "sre-mortest-test-researcher-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "MORTEST Gitlab LDAP",
+          "samAccountName": "gitlabldapmortest"
+        },
+        "hackmd": {
+          "name": "MORTEST HackMD LDAP",
+          "samAccountName": "hackmdldapmortest"
+        },
+        "dsvm": {
+          "name": "MORTEST DSVM LDAP",
+          "samAccountName": "dsvmldapmortest"
+        }
+      },
+      "datamount": {
+        "name": "MORTEST Data Mount",
+        "samAccountName": "datamountmortest"
+      },
+      "researchers": {
+        "test": {
+          "name": "MORTEST Test Researcher",
+          "samAccountName": "testresrchmortest"
+        }
+      }
+    },
+    "rds": {
+      "rg": "RG_SRE_RDS",
+      "gateway": {
+        "vmName": "RDG-SRE-MORTEST",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MORTEST_RDS_SERVER",
+        "networkRules": {
+          "allowedSources": "Internet",
+          "outboundInternet": "Deny"
+        },
+        "hostname": "RDG-SRE-MORTEST",
+        "fqdn": "RDG-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.1.250"
+      },
+      "sessionHost1": {
+        "vmName": "APP-SRE-MORTEST",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MORTEST_RDS_SESSION_HOSTS",
+        "hostname": "APP-SRE-MORTEST",
+        "fqdn": "APP-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.1.249"
+      },
+      "sessionHost2": {
+        "vmName": "DKP-SRE-MORTEST",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MORTEST_RDS_SESSION_HOSTS",
+        "hostname": "DKP-SRE-MORTEST",
+        "fqdn": "DKP-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.1.248"
+      }
+    },
+    "dataserver": {
+      "rg": "RG_SRE_DATA",
+      "nsg": "NSG_SRE_MORTEST_DATA",
+      "vmName": "DAT-SRE-MORTEST",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "DAT-SRE-MORTEST",
+      "fqdn": "DAT-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+      "ip": "10.150.2.250",
+      "egressDiskGb": 512,
+      "ingressDiskGb": 512,
+      "sharedDiskGb": 512
+    },
+    "webapps": {
+      "rg": "RG_SRE_WEBAPPS",
+      "nsg": "NSG_SRE_MORTEST_WEBAPPS",
+      "gitlab": {
+        "vmName": "GITLAB-SRE-MORTEST",
+        "vmSize": "Standard_D2s_v3",
+        "hostname": "GITLAB-SRE-MORTEST",
+        "fqdn": "GITLAB-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.2.151"
+      },
+      "hackmd": {
+        "vmName": "HACKMD-SRE-MORTEST",
+        "vmSize": "Standard_D2s_v3",
+        "hostname": "HACKMD-SRE-MORTEST",
+        "fqdn": "HACKMD-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.2.152"
+      }
+    },
+    "dsvm": {
+      "rg": "RG_SRE_COMPUTE",
+      "nsg": "NSG_SRE_MORTEST_COMPUTE",
+      "deploymentNsg": "NSG_SRE_MORTEST_COMPUTE_DEPLOYMENT",
+      "vmImageSubscription": "[Prod] Safe Haven VM Images",
+      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
+      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+      "vmSizeDefault": "Standard_D2s_v3",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.1.2020032700",
+      "osdisk": {
+        "type": "Standard_LRS",
+        "size_gb": "60"
+      },
+      "datadisk": {
+        "type": "Standard_LRS",
+        "size_gb": "512"
+      },
+      "homedisk": {
+        "type": "Standard_LRS",
+        "size_gb": "128"
+      }
+    },
+    "mirrors": {
+      "vnet": {
+        "name": "VNET_SHM_CW20_PACKAGE_MIRRORS_TIER2"
+      },
+      "cran": {
+        "ip": "10.20.2.21"
+      },
+      "pypi": {
+        "ip": "10.20.2.20"
+      }
+    }
+  }
+}
