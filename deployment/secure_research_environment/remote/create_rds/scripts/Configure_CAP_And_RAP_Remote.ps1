@@ -6,11 +6,21 @@
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
   $sreResearchUserSecurityGroup,
-  $shmNetbiosName
+  $shmNetbiosName,
+  $shmNpsIp,
+  $shmNpsPriority,
+  $shmNpsTimeout,
+  $shmNpsBlackout,
+  $sreNpsSecret
 )
 
 Import-Module NPS
 Import-Module RemoteDesktopServices
+
+function Get-NpsServerAddresses {
+    $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | ForEach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }
+    return $npserverAddresses
+}
 
 # Set RAP user groups
 # -------------------
@@ -26,13 +36,33 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
         $success = ($success -And $?)
     }
     # Remove all other user groups from RAP
-    $_ = Get-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") | Get-ChildItem | Where-Object { $_.Name -ne "$sreResearchUserSecurityGroupWithDomain" } | Remove-Item  -ErrorAction SilentlyContinue
+    $_ = Get-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") | Get-ChildItem | Where-Object { $_.Name -ne "$sreResearchUserSecurityGroupWithDomain" } | Remove-Item -ErrorAction SilentlyContinue
     $success = ($success -And $?)
     # Report success / failure
     if ($success) {
-        Write-Host -ForegroundColor DarkGreen " [o] Successfully restricted $rapName User Groups to $sreResearchUserSecurityGroupWithDomain."
+        Write-Host -ForegroundColor DarkGreen " [o] Successfully restricted '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'."
     } else {
-        Write-Host -ForegroundColor DarkRed " [x] Failed to restrict $rapName User Groups to $sreResearchUserSecurityGroupWithDomain!"
+        Write-Host -ForegroundColor DarkRed " [x] Failed to restrict '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'!"
     }
+}
+
+# Configure remote NPS server
+# ---------------------------
+$remoteServerGroup = "TS GATEWAY SERVER GROUP"
+# Remove all existing remote NPS servers
+$npsServerAddresses = Get-NpsServerAddresses
+Foreach ($npsServerAddress in $npsServerAddresses ) {
+    $_ = netsh nps delete remoteserver remoteservergroup = "`"$remoteServerGroup`"" address = "`"$npsServerAddress`""
+}
+# Add SHM NPS server
+$_ = netsh nps add remoteserver remoteservergroup = $remoteServerGroup address = $shmNpsIp authsharedsecret =  $sreNpsSecret priority = $shmNpsPriority timeout = $shmNpsTimeout blackout = $shmNpsBlackout
+[array]$npsServerAddresses = Get-NpsServerAddresses
+$numNpsServers = $npsServerAddresses.Length
+$firstNpsServerAddress = $npsServerAddresses[0]
+$success = (($numNpsServers -eq 1) -And ($firstNpsServerAddress -eq $shmNpsIp))
+if($success) {
+    Write-Host -ForegroundColor DarkGreen " [o] Successfully configured '$firstNpsServerAddress' as the only remote NPS server."
+} else {
+    Write-Host -ForegroundColor DarkRed " [x] Failed to configure '$firstNpsServerAddress' as the only remote NPS server!"
 }
 
