@@ -151,7 +151,6 @@ if ("$userExists" -ne "") {
 # -------------------------------------------------------------------------------------------------------------
 Write-Host "Setting AAD sync permissions for AD Sync Service account ($adsyncAccountName)..."
 $success = $true
-$originalPath = Get-Location
 $rootDse = Get-ADRootDSE
 $defaultNamingContext = $rootDse.DefaultNamingContext
 $configurationNamingContext = $rootDse.ConfigurationNamingContext
@@ -164,8 +163,7 @@ Get-ADObject -SearchBase $configurationNamingContext -LDAPFilter "(&(objectclass
 # Get the SID for the localadsync account
 $adsyncSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADUser $adsyncAccountName).SID
 # Get a copy of the current ACL on the OU
-Set-Location AD:
-$acl = Get-ACL -Path $domainou
+$acl = Get-ACL -Path "AD:\${domainou}"
 $success = $success -and $?
 # Allow the localadsync account to reset and change passwords on all descendent user objects
 $acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "ExtendedRight", "Allow", $extendedrightsmap["Reset Password"], "Descendents", $guidmap["user"]))
@@ -180,7 +178,6 @@ $success = $success -and $?
 # Set the ACL properties
 Set-ACL -ACLObject $acl -Path "AD:\${domainou}"
 $success = $success -and $?
-Set-Location $originalPath
 # Allow the localadsync account to replicate directory changes
 dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes"
 $success = $success -and $?
