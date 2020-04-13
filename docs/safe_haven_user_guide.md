@@ -238,6 +238,7 @@ This additional security verification is to make it harder for people to imperso
      - :robot: Android: `https://bit.ly/androidauthenticator`
      - :checkered_flag: Windows mobile: `https://bit.ly/windowsauthenticator`
 
+
    > ⚠️ You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
    
    Open the Microsoft Authenticator app on your phone:
@@ -277,10 +278,10 @@ This additional security verification is to make it harder for people to imperso
 Sometimes setting up MFA can be problematic.
 You may find the following tips helpful:
 
-> - Make sure you allow notifications on your authenticator app.
-> - Check you don't have *Do not Disturb* mode on.
-> - You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
-> - Sometimes just going through the steps again solves the problem 🤷‍♀
+- Make sure you allow notifications on your authenticator app.
+- Check you don't have *Do not Disturb* mode on.
+- You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
+- Sometimes just going through the steps again solves the problem 🤷‍♀
 
 ## 🚪 Access the Secure Research Environment
 
@@ -293,7 +294,7 @@ After going through the account setup procedure, you should have access to:
 - The SRE domain name
 - Multifactor authentication
 
-> 👉 If you aren't sure about any of these then please return to the [**Set up your account**](#set-up-your-account) section above.
+> 👉 If you aren't sure about any of these then please return to the [**Set up your account**](#-set-up-your-account) section above.
 
 ### 🏠 Log into the research environment
 
@@ -309,7 +310,7 @@ After going through the account setup procedure, you should have access to:
 3. You should arrive at a login page that looks like this.
 
    <p align="center">
-      <img src="images/user_guide/logon_environment.png" width="80%" title="logon_environment">
+      <img src="images/user_guide/logon_environment.PNG" width="80%" title="logon_environment">
    </p>
 
    Enter your username (either as `username` or as `username@<Safe Haven domain>`) and password here, then click `Sign in`.
@@ -406,7 +407,7 @@ Installed applications include `RStudio`, `Atom`, `jupyter notebook`, `VSCode`, 
 `LaTeX` is installed for technical writing.
 
 > 👉 This desktop is your interface to a "virtual machine".
-> You may have access to [additional virtual machines](#access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
+> You may have access to [additional virtual machines](#-access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
 
 ### Keyboard mapping
 
