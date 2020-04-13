@@ -100,14 +100,14 @@ function Deploy-ArmTemplate {
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @params -Verbose -DeploymentDebugLogLevel ResponseContent
+    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable templateErrors
     $result = $?
-    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
+    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
     if ($result) {
         Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
         Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
-        throw "Template deployment has failed for '$templateName'. Please check the error message above before re-running this script."
+        throw "Template deployment has failed for '$templateName'. Please check the error message(s) above before re-running this script."
     }
 }
 Export-ModuleMember -Function Deploy-ArmTemplate
@@ -248,8 +248,8 @@ function Deploy-Subnet {
     $_ = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
-        $VirtualNetwork | Set-AzVirtualNetwork
+        $_ = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
         } else {
@@ -363,7 +363,6 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } else {
-            # $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus 18.04-LTS -Version "latest"
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
@@ -385,7 +384,7 @@ function Deploy-UbuntuVirtualMachine {
         if ($?) {
             Add-LogMessage -Level Success "Created virtual machine '$Name'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
@@ -506,7 +505,8 @@ function Get-AzSubnet {
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
         $VirtualNetwork
     )
-    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+    $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
+    return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
 
@@ -596,16 +596,6 @@ function Invoke-WindowsConfigureAndUpdate {
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
     # Reboot the VM
-    Add-LogMessage -Level Info "[ ] Rebooting VM '$VMName'"
-    # $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
-    # # The following syntax is preferred in future, but does not yet work
-    # # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
-    # # Restart-AzVM -Id $vmID
-    # if ($?) {
-    #     Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
-    # } else {
-    #     Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
-    # }
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
@@ -719,6 +709,34 @@ function Set-KeyVaultPermissions {
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions
+
+
+# Attach a network security group to a subnet
+# -------------------------------------------
+function Set-SubnetNetworkSecurityGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet whose NSG will be set")]
+        $Subnet,
+        [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
+        $NetworkSecurityGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that the subnet belongs to")]
+        $VirtualNetwork
+    )
+    Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
+    $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
+    $success = $?
+    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
+    $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
+    if ($success) {
+        Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set network security group on '$($Subnet.Name)'!"
+    }
+    return $updatedSubnet
+}
+Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
 
 
 # Update NSG rule to match a given configuration

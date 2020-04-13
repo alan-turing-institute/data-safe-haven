@@ -76,12 +76,6 @@ $params = @{
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
 
 
-# Set locale, install updates and reboot
-# --------------------------------------
-Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
-
-
 # Run configuration script remotely
 # ---------------------------------
 Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
@@ -108,6 +102,12 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 Write-Output $result.Value
+
+
+# Set locale, install updates and reboot
+# --------------------------------------
+Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
+Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 
 
 # Switch back to original subscription

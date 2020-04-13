@@ -38,7 +38,8 @@ $params = @{
     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
     "GatewaySubnet Name" = $config.sre.network.subnets.gateway.Name
-    "DNS Server IP Address" = $config.shm.dc.ip
+    "VNET_DNS1" = $config.shm.dc.ip
+    "VNET_DNS2" = $config.shm.dcb.ip
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
