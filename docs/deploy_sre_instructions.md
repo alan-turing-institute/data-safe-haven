@@ -176,7 +176,7 @@ On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Configure_CAP_And_RAP.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 
 ### Configuration of SSL on RDS Gateway
 On your **deployment machine**.
