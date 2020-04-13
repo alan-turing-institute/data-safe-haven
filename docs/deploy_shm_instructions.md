@@ -369,18 +369,21 @@ This step allows the locale (country code) to be pushed from the local AD to the
 
 
 ### Validation of AD sync
-1. Add a test Active Directory user:
+1. Add yourself as a new Active Directory user:
   - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
-    - First name: `Test`
-    - Last name: `ADUser`
-    - User login name: `testaduser`
+    - First name: `<your first name>`
+    - Last name: `<your last name>`
+    - User login name: `<your first name>.<your last name>`
     - Click `Next`
-  - Password: use the `shm-<SHM ID>-testaduser-password` secret in the management Key Vault.
-    - Untick `User must change password at next logon`
-    - Tick `Password never expires`
+  - Password:
+    - Choose something that is
+      - At least 6 characters
+      - Contains uppercase, lowercase and digits
+    - Ensure that `User must change password at next logon` is ticked
+    - Ensure that `Password never expires` is not ticked
     - Click `Next`
   - Click `Finish`
 2. Force a sync to the Azure Active Directory
