@@ -48,7 +48,7 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
 
 # Configure remote NPS server
 # ---------------------------
-$remoteServerGroup = "TS GATEWAY SERVER GROUP"
+$remoteServerGroup = "TS GATEWAY SERVER GROUP" # Hardcoded group exists on fresh RDS deployment
 # Remove all existing remote NPS servers
 $npsServerAddresses = Get-NpsServerAddresses
 Foreach ($npsServerAddress in $npsServerAddresses ) {
