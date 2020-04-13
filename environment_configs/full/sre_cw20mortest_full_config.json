@@ -60,7 +60,8 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-CW20",
       "fqdn": "DC1-SHM-CW20.cw20.dsgroupdev.co.uk",
-      "ip": "10.0.0.250"
+      "ip": "10.0.0.250",
+      "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
       "vmName": "DC2-SHM-CW20",
@@ -96,7 +97,6 @@
         "domainAdminPassword": "shm-cw20-domain-admin-password",
         "localAdsyncPassword": "shm-cw20-localadsync-password",
         "npsAdminPassword": "shm-cw20-nps-admin-password",
-        "testAdUserPassword": "shm-cw20-testaduser-password",
         "vmAdminUsername": "shm-cw20-vm-admin-username",
         "vpnCaCertificate": "shm-cw20-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-cw20-vpn-ca-cert-plain",
@@ -266,6 +266,7 @@
         "nsg": "NSG_SRE_MORTEST_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-MORTEST",
         "fqdn": "DKP-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.9.248"
       }
     },
     "dataserver": {
@@ -275,6 +276,7 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-MORTEST",
       "fqdn": "DAT-SRE-MORTEST.cw20.dsgroupdev.co.uk",
+      "ip": "10.150.10.250",
       "egressDiskGb": 512,
       "ingressDiskGb": 512,
       "sharedDiskGb": 512
