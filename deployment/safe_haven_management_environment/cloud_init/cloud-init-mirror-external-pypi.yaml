@@ -108,11 +108,12 @@ write_files:
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
       if [ "$TIER" != "2" ]; then
-        installed_packages=$(ls /datadrive/mirrordaemon/pypi/web/packages/*/*/*/*.tar.gz | rev | cut -d'/' -f1 | cut -d'-' -f2-10 | rev | sort | uniq)
-        packages_to_delete=$(for package in $installed_packages; do if [ "$(grep $package /home/mirrordaemon/package_whitelist.txt)" = "" ]; then echo $package; fi; done)
-        /bandersnatch/bin/bandersnatch delete $packages_to_delete 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
+          cat /home/mirrordaemon/package_whitelist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/whitelisted_packages
+          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/whitelisted_packages)" = "" ]; then echo $package; fi; done)
+          /bandersnatch/bin/bandersnatch delete $packages_to_delete 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          rm /tmp/whitelisted_packages 2> /dev/null
       fi
-      rm /datadrive/mirrordaemon/pypi/status
       /bandersnatch/bin/bandersnatch mirror 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
@@ -136,11 +137,11 @@ write_files:
       ; The PyPI server which will be mirrored.
       master = https://pypi.org
 
-      ; The network socket timeout to use for all connections. This is set to a
-      ; somewhat aggressively low value - rather fail quickly temporarily and re-run
-      ; the client soon instead of having a process hang infinitely and have TCP not
-      ; catching up for ages.
-      timeout = 30
+      ; The network socket timeout to use for all connections. The default of 10s is
+      ; deliberately low so the client will fail quickly and move on to the next package
+      ; instead of having the process hang. For this use-case we want to maximise the
+      ; number of packages that succeed.
+      timeout = 60
 
       ; Whether to hash package indexes
       ; Note that package index directory hashing is incompatible with pip
@@ -159,7 +160,7 @@ write_files:
       ; "false".
       stop-on-error = false
 
-      ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
+      ; Whether or not files that have been deleted on the master should be deleted here.
       delete-packages = true
 
       [plugins]

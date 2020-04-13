@@ -211,7 +211,7 @@ function Get-ShmFullConfig {
         cran = [ordered]@{
             ipOffset = 5
             diskSize = [ordered]@{
-                tier2 = 512
+                tier2 = 128
                 tier3 = 256
             }
         }
