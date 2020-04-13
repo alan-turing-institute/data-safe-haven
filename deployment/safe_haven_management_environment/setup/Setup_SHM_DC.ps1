@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 
@@ -95,20 +95,20 @@ $success = $success -and $?
 # LibreOffice
 $baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
 $httpContent = Invoke-WebRequest -URI $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | % { $_.href }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
 $httpContent = Invoke-WebRequest -URI $baseUri
-$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | % { $_.href }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # WinSCP
 $httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
-$filename = $httpContent.Links  | Where-Object { $_.href -like "*Setup.exe" } | % { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*$filename" } | % { $_.href }
+$filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
+$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
@@ -143,8 +143,8 @@ $params = @{
     Subnet_Web_Name = $config.network.subnets.web.Name
     Virtual_Network_Name = $config.network.vnet.Name
     VNET_CIDR = $config.network.vnet.cidr
-    VNET_DNS1 = $config.dc.ip
-    VNET_DNS2 = $config.dcb.ip
+    VNET_DNS_DC1 = $config.dc.ip
+    VNET_DNS_DC2 = $config.dcb.ip
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 
@@ -169,7 +169,7 @@ $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscr
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
     Administrator_User = $shmAdminUsername
-    Artifacts_Location = "https://" + $config.storage.artifacts.accountName + ".blob.core.windows.net"
+    Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
     DC1_Host_Name = $config.dc.hostname
@@ -180,8 +180,9 @@ $params = @{
     DC2_VM_Name = $config.dcb.vmName
     Domain_Name = $config.domain.fqdn
     Domain_NetBIOS_Name = $config.domain.netbiosName
+    External_DNS_Resolver = $config.dc.external_dns_resolver
     SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
-    Shm_Id = "$($config.id)".ToLower()
+    Shm_Id = $config.id
     Virtual_Network_Name = $config.network.vnet.Name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Virtual_Network_Subnet = $config.network.subnets.identity.Name
@@ -245,9 +246,23 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Set locale, install updates and reboot
-# --------------------------------------
+# Configure the domain controllers and set their DNS resolution
+# -------------------------------------------------------------
 foreach ($vmName in ($config.dc.vmName, $config.dcb.vmName)) {
+    # Configure DNS to forward requests to the Azure DNS resolver
+    $params = @{
+        externalDnsResolver = "`"$($config.dc.external_dns_resolver)`""
+    }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_DNS.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.dc.rg -Parameter $params
+    Write-Output $result.Value
+
+    # Remove custom per-NIC DNS settings
+    $nic = Get-AzNetworkInterface -ResourceGroupName $config.dc.rg -Name "${vmName}-NIC"
+    $nic.DnsSettings.DnsServers.Clear()
+    $nic | Set-AzNetworkInterface
+
+    # Set locale, install updates and reboot
     Add-LogMessage -Level Info "Updating DC VM '$vmName'..."
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.dc.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
 }

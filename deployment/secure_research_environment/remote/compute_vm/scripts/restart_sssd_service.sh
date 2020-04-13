@@ -23,7 +23,7 @@ if [ "$(echo $STATUS | grep 'Active: failed')" != "" ]; then
     sudo rm /var/lib/sss/db/*.ldb
     sudo systemctl restart sssd.service
 else
-    echo -e "${BLUE}SSSD service is working. No need to restart.${END}"
+    echo -e "${BLUE} [o] SSSD service is working. No need to restart.${END}"
     echo "SSSD STATUS RESULT:"
     echo "$STATUS"
     exit 0
@@ -32,12 +32,12 @@ fi
 echo "Retesting sssd status..."
 STATUS=$(${STATUS_CMD})
 if [ "$(echo $STATUS | grep 'Active: failed')" != "" ]; then
-    echo -e "${RED}SSSD service not working after restart.${END}"
+    echo -e "${RED} [x] SSSD service not working after restart.${END}"
     echo "SSSD STATUS RESULT:"
     echo "$STATUS"
     exit 1
 else
-    echo -e "${BLUE}SSSD service is working after restart.${END}"
+    echo -e "${BLUE} [o] SSSD service is working after restart.${END}"
     echo "SSSD STATUS RESULT:"
     echo "$STATUS"
     exit 0
