@@ -137,7 +137,7 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 ## 4. Deploy virtual network and remote desktop
 
 ### Create DNS Zone and copy DNS records
-
+On your **deployment machine**.
 - Run `./Setup_SRE_DNS_Zone.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
   - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with SRE's domain. The NS record will list 4 Azure name servers.
@@ -151,19 +151,13 @@ Each SRE must be assigned its own unique IP address space, and it is very import
      ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
 
 ### Deploy the virtual network and RDS servers
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
 - Run `./Setup_SRE_VNET_RDS.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
 - The deployment will take around 60 minutes. Around one third of this is deploying the virtual network gateway.
 - The VNet peerings may take a few minutes to provision after the script completes.
-
-### Set up a VPN connection to the SRE
-- In the **SRE subscription** open `Resource Groups -> RG_SRE_NETWORKING -> VNET_SRE_<SRE ID>_GW`
-  - Select "**Point to Site Configuration**" from the left-hand navigation
-  - Download the VPN client from the "Point to Site configuration" menu
-    ![VPN client](images/deploy_sre/vpn_client.png)
-  - Install the VPN on your PC and test. See the [Configure a VPN connection to the Safe Haven Management VNet](#Configure-a-VPN-connection-to-the-Safe-Haven-Management-VNet) section in the [Prerequisites](#Prerequisites) list above for instructions. You can re-use the same client certificate as used for the VPN to the management VNet gateway.
 
 ### Install and configure RDS Environment and webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SRE VPN connection
@@ -172,38 +166,12 @@ Each SRE must be assigned its own unique IP address space, and it is very import
 - Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets`. as follows:
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
-
-#### Install RDS environment and webclient
-On the **RDS Gateway**.
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
 - This script will take about 20 minutes to run (this cannot be done remotely, as it needs to be run as a domain user but remote Powershell uses a local user)
 
-#### Configure RDS to use SHM NPS server for client access policies
-On the **RDS Gateway**.
-- In "Server Manager", open `Tools -> Remote Desktop Services -> Remote Desktop Gateway Manager`
-  ![Remote Desktop Gateway Manager](images/deploy_sre/rd_gateway_manager_01.png)
-- In the left pane, underneath "RD Gateway Manager", right click on the `RDG-SRE-<SRE ID> (Local)` object and select "Properties"
-  ![RDS server properties](images/deploy_sre/rd_gateway_manager_02.png)
-- Select `RD CAP Store` tab
-- Select the `Central Server Running NPS`
-- Enter the IP address of the NPS within the management domain (this will be `10.<something>.0.248`, you can see it from the Azure portal (`Resource Groups -> RG_SHM_NPS -> NPS-SHM-<SHM ID>`)
-- Set the "Shared Secret" to the value of the `sre-<SRE ID>-nps-secret` in the SRE Key Vault (`Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`).
-  ![RD CAP store](images/deploy_sre/rd_gateway_manager_03.png)
-- Click `OK` to close the dialogue box.
-
-#### Increase the authorisation timeout to allow for MFA
-On the **RDS Gateway**.
-- In "Server Manager", select `Tools -> Network Policy Server`
-- Expand `NPS (Local) -> RADIUS Clients and Servers -> Remote RADIUS Server Groups` and double click on `TS GATEWAY SERVER GROUP`
-  ![Remote RADIUS server](images/deploy_sre/media/rds_local_nps_remote_server_selection.png)
-- Highlight the server shown in the `RADIUS Server` column and click `Edit`
-- Change to the `Load Balancing` tab and change the parameters to match the screen below
-  ![Load balancing](images/deploy_sre/media/rds_local_nps_remote_server_timeouts.png)
-- Click `OK` twice and close `Network Policy Server` MMC
-
-#### Set the security groups for access to session hosts
-On your **deployment machine**
+### Configure RDS CAP and RAP settings
+On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
