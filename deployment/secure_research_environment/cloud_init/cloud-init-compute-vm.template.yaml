@@ -46,7 +46,7 @@ write_files:
     content: |
       [libdefaults]
         default_realm = $DOMAIN_UPPER
-
+        rdns = false
         # The following krb5.conf variables are only for MIT Kerberos.
         krb4_config = /etc/krb.conf
         krb4_realms = /etc/krb.realms
@@ -54,7 +54,6 @@ write_files:
         ccache_type = 4
         forwardable = true
         proxiable = true
-
         # The following libdefaults parameters are only for Heimdal Kerberos.
         v4_instance_resolve = false
         v4_name_convert = {

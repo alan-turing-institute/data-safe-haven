@@ -100,14 +100,14 @@ function Deploy-ArmTemplate {
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
-    New-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @params -Verbose -DeploymentDebugLogLevel ResponseContent
+    New-AzResourceGroupDeployment -Name $templateName -ResourceGroupName $ResourceGroupName -TemplateFile $TemplatePath @Params -Verbose -DeploymentDebugLogLevel ResponseContent -ErrorVariable templateErrors
     $result = $?
-    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName
+    Add-DeploymentLogMessages -ResourceGroupName $ResourceGroupName -DeploymentName $templateName -ErrorDetails $templateErrors
     if ($result) {
         Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
         Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
-        throw "Template deployment has failed for '$templateName'. Please check the error message above before re-running this script."
+        throw "Template deployment has failed for '$templateName'. Please check the error message(s) above before re-running this script."
     }
 }
 Export-ModuleMember -Function Deploy-ArmTemplate
@@ -248,8 +248,8 @@ function Deploy-Subnet {
     $_ = Get-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating subnet '$Name'"
-        Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
-        $VirtualNetwork | Set-AzVirtualNetwork
+        $_ = Add-AzVirtualNetworkSubnetConfig -Name $Name -VirtualNetwork $VirtualNetwork -AddressPrefix $AddressPrefix
+        $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
         if ($?) {
             Add-LogMessage -Level Success "Created subnet '$Name'"
         } else {
@@ -363,7 +363,6 @@ function Deploy-UbuntuVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } else {
-            # $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus 18.04-LTS -Version "latest"
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
@@ -385,7 +384,7 @@ function Deploy-UbuntuVirtualMachine {
         if ($?) {
             Add-LogMessage -Level Success "Created virtual machine '$Name'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create virtual machine '$Name'! Check that your desired image is available in this region."
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Virtual machine '$Name' already exists"
@@ -506,7 +505,8 @@ function Get-AzSubnet {
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
         $VirtualNetwork
     )
-    return ($VirtualNetwork.Subnets | Where-Object { $_.Name -eq $Name })[0]
+    $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
+    return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
 
@@ -596,16 +596,6 @@ function Invoke-WindowsConfigureAndUpdate {
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
     # Reboot the VM
-    Add-LogMessage -Level Info "[ ] Rebooting VM '$VMName'"
-    # $_ = Restart-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
-    # # The following syntax is preferred in future, but does not yet work
-    # # $vmID = (Get-AzVM -ResourceGroupName $config.sre.rds.gateway.vmName -Name $config.sre.rds.rg).Id
-    # # Restart-AzVM -Id $vmID
-    # if ($?) {
-    #     Add-LogMessage -Level Success "Rebooting VM '$VMName' succeeded"
-    # } else {
-    #     Add-LogMessage -Level Fatal "Rebooting VM '$VMName' failed!"
-    # }
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
@@ -721,6 +711,34 @@ function Set-KeyVaultPermissions {
 Export-ModuleMember -Function Set-KeyVaultPermissions
 
 
+# Attach a network security group to a subnet
+# -------------------------------------------
+function Set-SubnetNetworkSecurityGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Subnet whose NSG will be set")]
+        $Subnet,
+        [Parameter(Mandatory = $true, HelpMessage = "Network security group to attach")]
+        $NetworkSecurityGroup,
+        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that the subnet belongs to")]
+        $VirtualNetwork
+    )
+    Add-LogMessage -Level Info "Ensuring that NSG '$($NetworkSecurityGroup.Name)' is attached to subnet '$($Subnet.Name)'..."
+    $_ = Set-AzVirtualNetworkSubnetConfig -Name $Subnet.Name -VirtualNetwork $VirtualNetwork -AddressPrefix $Subnet.AddressPrefix -NetworkSecurityGroup $NetworkSecurityGroup
+    $success = $?
+    $VirtualNetwork = Set-AzVirtualNetwork -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
+    $updatedSubnet = Get-AzSubnet -Name $Subnet.Name -VirtualNetwork $VirtualNetwork
+    $success = $success -and $?
+    if ($success) {
+        Add-LogMessage -Level Success "Set network security group on '$($Subnet.Name)'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to set network security group on '$($Subnet.Name)'!"
+    }
+    return $updatedSubnet
+}
+Export-ModuleMember -Function Set-SubnetNetworkSecurityGroup
+
+
 # Update NSG rule to match a given configuration
 # ----------------------------------------------
 function Update-NetworkSecurityGroupRule {
@@ -808,3 +826,118 @@ function Update-NetworkSecurityGroupRule {
     }
 }
 Export-ModuleMember -Function Update-NetworkSecurityGroupRule
+
+
+# Create DNS Zone if it does not exist
+# ------------------------------------
+function New-DNSZone {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
+        $Name,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
+    Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
+        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
+        if ($?) {
+            Add-LogMessage -Level Success "Created DNS Zone '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create DNS Zone '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
+    }
+}
+Export-ModuleMember -Function New-DNSZone
+
+
+# Get NS Records
+# --------------
+function Get-NSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        $RecordSetName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $DnsZoneName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+
+    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNZ Zone '$($DnsZoneName)'..."
+    
+    $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
+    return $recordSet.Records
+}
+Export-ModuleMember -Function Get-NSRecords
+
+
+# Add NS Record Set to DNS Zone if it doesnot already exist
+# ---------------------------------------------------------
+function Set-NSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        $RecordSetName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $DnsZoneName,
+        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "NS records to add")]
+        $NsRecords
+    )
+    $_ = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "Creating new Record Set '$($RecordSetName)' in DNS Zone '$($DnsZoneName)' with NS records '$($nsRecords)' to ..."
+        $_ = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
+        if ($?) {
+            Add-LogMessage -Level Success "Created DNS Record Set '$RecordSetName'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create DNS Record Set '$RecordSetName'!"
+        }
+    } else {
+        # It's not straightforward to modify existing record sets idempotently so if the set already exists we do nothing
+        Add-LogMessage -Level InfoSuccess "DNS record set '$RecordSetName' already exists. Will not update!"
+    }
+}
+Export-ModuleMember -Function Set-NSRecords
+
+
+# Add NS Record Set to DNS Zone if it does not already exist
+# ---------------------------------------------------------
+function Set-DnsZoneAndParentNSRecords {
+    param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
+        $DnsZoneName,
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
+        $ResourceGroupName
+    )
+
+    $subdomain = $DnsZoneName.Split('.')[0]
+    $parentDnsZoneName = $DnsZoneName -replace "$subdomain.",""
+    
+    # Create DNS Zone
+    # ---------------
+    Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
+    New-DNSZone -Name $DnsZoneName -ResourceGroupName $ResourceGroupName
+
+    # Get NS records from the new DNS Zone
+    # ------------------------------------
+    Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
+    $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName        
+    
+    # Check if parent DNS Zone exists in same subscription and resource group
+    # -----------------------------------------------------------------------
+    Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
+        Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
+    } else {
+        # Add NS records to the parent DNS Zone
+        # -------------------------------------
+        Add-LogMessage -Level Info "Add NS records to the parent DNS Zone..."
+        Set-NSRecords -RecordSetName $subdomain -DnsZoneName $parentDnsZoneName -ResourceGroupName $ResourceGroupName -NsRecords $nsRecords
+    }
+}
+Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords
