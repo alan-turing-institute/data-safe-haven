@@ -62,13 +62,15 @@ if ($success) {
 }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "CreateUsers.ps1") -Force
+$success = $success -and $?
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "GPOs.zip") -Force
 $success = $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "StartMenuLayoutModification.xml") -Force
-$success = $success -and $?
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Run_ADSync.ps1") -Force
 $success = $success -and $?
-$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "CreateUsers.ps1") -Force
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "StartMenuLayoutModification.xml") -Force
+$success = $success -and $?
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "UpdateAADSyncRule.ps1") -Force
 $success = $success -and $?
 # Expand the AD disconnection template before uploading
 $adScriptLocalFilePath = (New-TemporaryFile).FullName
@@ -122,7 +124,6 @@ if ($success) {
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/E/9/5E9B18CC-8FD5-467E-B5BF-BADE39C51F73/SQLServer2017-SSEI-Expr.exe" -DestShareName "sqlserver" -DestFilePath "SQLServer2017-SSEI-Expr.exe" -DestContext $storageAccount.Context -Force
 # # URI to Azure File copy does not support 302 redirect, so get the latest working endpoint redirected from "https://go.microsoft.com/fwlink/?linkid=2088649"
 # Start-AzStorageFileCopy -AbsoluteUri "https://download.microsoft.com/download/5/4/E/54EC1AD8-042C-4CA3-85AB-BA307CF73710/SSMS-Setup-ENU.exe" -DestShareName "sqlserver" -DestFilePath "SSMS-Setup-ENU.exe" -DestContext $storageAccount.Context -Force
-
 
 # Create VNet resource group if it does not exist
 # -----------------------------------------------

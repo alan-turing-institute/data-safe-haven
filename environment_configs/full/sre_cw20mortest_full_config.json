@@ -155,28 +155,23 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_MORTEST",
-        "cidr": "10.150.0.0/21"
+        "cidr": "10.150.8.0/21"
       },
       "subnets": {
         "identity": {
           "name": "IdentitySubnet",
-          "prefix": "10.150.0",
-          "cidr": "10.150.0.0/24"
+          "prefix": "10.150.8",
+          "cidr": "10.150.8.0/24"
         },
         "rds": {
           "name": "RDSSubnet",
-          "prefix": "10.150.1",
-          "cidr": "10.150.1.0/24"
+          "prefix": "10.150.9",
+          "cidr": "10.150.9.0/24"
         },
         "data": {
           "name": "SharedDataSubnet",
-          "prefix": "10.150.2",
-          "cidr": "10.150.2.0/24"
-        },
-        "gateway": {
-          "name": "GatewaySubnet",
-          "prefix": "10.150.7",
-          "cidr": "10.150.7.0/27"
+          "prefix": "10.150.10",
+          "cidr": "10.150.10.0/24"
         }
       },
       "nsg": {
@@ -255,7 +250,7 @@
         },
         "hostname": "RDG-SRE-MORTEST",
         "fqdn": "RDG-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.250"
+        "ip": "10.150.9.250"
       },
       "sessionHost1": {
         "vmName": "APP-SRE-MORTEST",
@@ -263,7 +258,7 @@
         "nsg": "NSG_SRE_MORTEST_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-MORTEST",
         "fqdn": "APP-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.249"
+        "ip": "10.150.9.249"
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-MORTEST",
@@ -271,7 +266,6 @@
         "nsg": "NSG_SRE_MORTEST_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-MORTEST",
         "fqdn": "DKP-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.248"
       }
     },
     "dataserver": {
@@ -281,7 +275,6 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-MORTEST",
       "fqdn": "DAT-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-      "ip": "10.150.2.250",
       "egressDiskGb": 512,
       "ingressDiskGb": 512,
       "sharedDiskGb": 512
@@ -294,14 +287,14 @@
         "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-MORTEST",
         "fqdn": "GITLAB-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.2.151"
+        "ip": "10.150.10.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-MORTEST",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-MORTEST",
         "fqdn": "HACKMD-SRE-MORTEST.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.2.152"
+        "ip": "10.150.10.152"
       }
     },
     "dsvm": {

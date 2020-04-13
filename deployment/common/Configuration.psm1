@@ -176,7 +176,6 @@ function Get-ShmFullConfig {
         domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
         localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
         npsAdminPassword = "shm-$($shm.id)-nps-admin-password".ToLower()
-        testAdUserPassword = "shm-$($shm.id)-testaduser-password".ToLower()
         vmAdminUsername = "shm-$($shm.id)-vm-admin-username".ToLower()
         vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
         vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
@@ -306,7 +305,6 @@ function Add-SreConfig {
             identity = [ordered]@{}
             rds = [ordered]@{}
             data = [ordered]@{}
-            gateway = [ordered]@{}
         }
         nsg = [ordered]@{
             data = [ordered]@{}
@@ -324,9 +322,6 @@ function Add-SreConfig {
     $config.sre.network.subnets.data.name = "SharedDataSubnet"
     $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
-    $config.sre.network.subnets.gateway.name = "GatewaySubnet"
-    $config.sre.network.subnets.gateway.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 7)"
-    $config.sre.network.subnets.gateway.cidr = "$($config.sre.network.subnets.gateway.prefix).0/27"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
