@@ -60,7 +60,8 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-CW20",
       "fqdn": "DC1-SHM-CW20.cw20.dsgroupdev.co.uk",
-      "ip": "10.0.0.250"
+      "ip": "10.0.0.250",
+      "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
       "vmName": "DC2-SHM-CW20",
@@ -106,7 +107,7 @@
       }
     },
     "dns": {
-      "subscriptionName": "[Prod] Safe Haven Domains",
+      "subscriptionName": "Turing Safe Haven Domains",
       "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
@@ -123,7 +124,7 @@
       "cran": {
         "ipOffset": 5,
         "diskSize": {
-          "tier2": 512,
+          "tier2": 128,
           "tier3": 256
         }
       }
@@ -173,21 +174,6 @@
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
-        "mssqldev": {
-          "name": "MsSqlDevSubnet",
-          "prefix": "10.150.3",
-          "cidr": "10.150.3.0/24"
-        },
-        "mssqletl": {
-          "name": "MsSqlEtlSubnet",
-          "prefix": "10.150.4",
-          "cidr": "10.150.4.0/24"
-        },
-        "mssqldata": {
-          "name": "MsSqlDataSubnet",
-          "prefix": "10.150.5",
-          "cidr": "10.150.5.0/24"
-        },
         "gateway": {
           "name": "GatewaySubnet",
           "prefix": "10.150.7",
@@ -195,10 +181,7 @@
         }
       },
       "nsg": {
-        "data": {},
-        "mssqldev": {},
-        "mssqletl": {},
-        "mssqldata": {}
+        "data": {}
       }
     },
     "storage": {
@@ -322,26 +305,14 @@
         "ip": "10.150.2.152"
       }
     },
-    "mssqldev": {
-      "rg": "RG_SRE_MSSQLDEV",
-      "nsg": "NSG_SRE_SANDBOX_MSSQLDEV"
-    },
-    "mssqletl": {
-      "rg": "RG_SRE_MSSQLETL",
-      "nsg": "NSG_SRE_SANDBOX_MSSQLETL"
-    },
-    "mssqldata": {
-      "rg": "RG_SRE_MSSQLDATA",
-      "nsg": "NSG_SRE_SANDBOX_MSSQLDATA"
-    },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
-      "vmImageSubscription": "[Prod] Safe Haven VM Images",
+      "vmImageSubscription": "Turing Safe Haven VM Images",
       "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmSizeDefault": "Standard_E16s_v3",
+      "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2020032700",
       "osdisk": {

@@ -87,8 +87,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging 
                              -Direction Outbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
                              -DestinationAddressPrefix $destinationAddressPrefix -DestinationPortRange 22,873
-$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetExternal.AddressPrefix -NetworkSecurityGroup $nsgExternal | Set-AzVirtualNetwork
-$subnetExternal = Get-AzSubnet -Name $subnetExternal.Name -VirtualNetwork $vnetPkgMirrors
+$subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
 } else {
@@ -127,13 +126,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix * -SourcePortRange * `
                              -DestinationAddressPrefix * -DestinationPortRange *
-$vnetPkgMirrors = Set-AzVirtualNetworkSubnetConfig -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $subnetInternal.AddressPrefix -NetworkSecurityGroup $nsgInternal | Set-AzVirtualNetwork
-$subnetInternal = Get-AzSubnet -Name $subnetInternal.Name -VirtualNetwork $vnetPkgMirrors
+$subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
 } else {
     Add-LogMessage -Level Fatal "Configuring NSG '$nsgInternalName' failed!"
 }
+
 
 # Get common objects
 # ------------------
@@ -297,6 +296,7 @@ function Deploy-PackageMirror {
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
         if ($MirrorDirection -eq "Internal") {
+            Add-LogMessage -Level Info "Ensuring that '$VMName' can accept connections from the external mirror..."
             # Get public key for internal server
             $script = "
             #! /bin/bash
