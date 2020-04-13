@@ -79,23 +79,6 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# # Add SRE DNS entries to SHM
-# # --------------------------
-# Add-LogMessage -Level Info "[ ] Adding SRE DNS records to SHM..."
-# $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Add_New_SRE_To_DNS_Remote.ps1"
-# $params = @{
-#     shmFqdn = "`"$($config.shm.domain.fqdn)`""
-#     sreFqdn = "`"$($config.sre.domain.fqdn)`""
-#     sreDcIp = "`"$($config.sre.dc.ip)`""
-#     sreDcName = "`"$($config.sre.dc.hostname)`""
-#     identitySubnetCidr = "`"$($config.sre.network.subnets.identity.cidr)`""
-#     rdsSubnetCidr = "`"$($config.sre.network.subnets.rds.cidr)`""
-#     dataSubnetCidr = "`"$($config.sre.network.subnets.data.cidr)`""
-# }
-# $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-# Write-Output $result.Value
-
-
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext;

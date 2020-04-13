@@ -351,78 +351,40 @@ rather than simply `<admin username>`)
 
   - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the RDS and VPN and reconnect later before clicking `Retry`.
 
-### Set AAD sync permissions
-The `localadsync@<SHM domain>` account needs to be given permissions to change passwords or self-service password reset will not work.
-- In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
-- Click on the `View` menu item and make sure that `Advanced Features` is enabled
-- Right click on the root domain (eg. `dsgroupdev.co.uk`) in the left-hand window and select `Properties`
-  ![AD permissions properties](images/deploy_shm/aad_permissions_properties.png)
-- In the pop-up window, go to the `Security` tab and click on the `Advanced` button
-  ![AD permissions security](images/deploy_shm/aad_permissions_security.png)
-- In the pop-up window, click on the `Add` button
-  - Click on `Select a principal` and then select the `localadsync@<SHM domain>` by typing the first few letters into the search box and clicking on `Check Names`. When the `localadsync@<SHM domain>` principal is selected, click `OK` to return to the `Permissions Entry for <SHM domain>` window.
-  - In the `Applies to` section, select `Descendant User objects`
-  - Under `Permissions`, ensure that the following options are checked:
-    - `Reset password`
-    - `Change password`
-  - Under `Properties`, ensure that the following options are checked (NB. there are a lot of properties, so this might take some scrolling. _The properties are listed in alphabetical order of the main part of the property name excluding the initial prefix Read/Write etc)_:
-    - `Write lockoutTime`
-    - `Write pwdLastSet`
-  - Click `OK`
-- Now go through the same procedure, this time selecting `This object and all descendant objects` in the `Applies to` section
-  - Enable the following under `Permissions`:
-    - `Replicating Directory Changes`
-    - `Replicating Directory Changes All`
-  - Click `OK` on all open dialog boxes
-
-
 ### Additional AAD Connect Configuration
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
-1. Open `Azure AD Connect > Synchronization Rules Editor` from the start menu
-  ![synchronisation rules](images/deploy_shm/synchronisation_rules.png)
-2. Change the `Direction` drop down to `Outbound`
-3. Select the `Out to AAD - User Join` rule.
-  - Click `Disable`.
-  - Click `Edit`.
-  - In the `Edit Reserved Rule Confirmation` dialog box click `Yes`
-4. In the editing view set `precedence` to 1.
-  - Select `Transformations` from the sidebar and locate the rule with its `Target Attribute` set to `usageLocation`
-    - Change the `FlowType` column from `Expression` to `Direct`
-    - On the `Source` column click the drop-down menu and select `c`
-    - Click `Save` (in the `Warning` dialog box click `OK`)
-5. You will now see a cloned version of the `Out to AAD - User Join`.
-  - Delete the original.
-  - In the `Warning` dialog box click `OK`
-6. Edit the cloned version.
-  - Change `Precedence` to 115
-  - Edit the name to `Out to AAD - User Join`.
-  - Click "Save" (in the "Warning" dialog box click "OK").
-7. Click `Enable` on the `Out to AAD - User Join` rule that you have just edited
-8. Click the `X` to close the `Synchronization Rules Editor` window
-9. Open Powershell as an administrator
-  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
+1. Update the AAD rules
+  - Open Powershell as an administrator
+  - Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
 ### Validation of AD sync
-1. Add a research user:
+1. Add yourself as a new Active Directory user:
   - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
   - Create a new user:
-    - First name: `Test`
-    - Last name: `ADUser`
-    - User login name: `testaduser`
+    - First name: `<your first name>`
+    - Last name: `<your last name>`
+    - User login name: `<your first name>.<your last name>`
     - Click `Next`
-  - Password: use the `shm-<SHM ID>-testaduser-password` secret in the management Key Vault.
-    - Untick `User must change password at next logon`
-    - Tick `Password never expires`
+  - Password:
+    - Choose something that is
+      - At least 6 characters
+      - Contains uppercase, lowercase and digits
+    - Ensure that `User must change password at next logon` is ticked
+    - Ensure that `Password never expires` is not ticked
     - Click `Next`
   - Click `Finish`
-2. Force a sync to the Azure Active Directory
+2. Set the correct region
+  - The user you have just created should now appear in the list of `Safe Haven Research Users` (if not, then right click and select `Refresh`)
+  - Right click on this user and select `Properties`
+  - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
+3. Force a sync to the Azure Active Directory
   - Open Powershell as an administrator
   - Run `C:\Installation\Run_ADSync.ps1`
-3. Go to the Azure Active Directory in `portal.azure.com`
+4. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
 

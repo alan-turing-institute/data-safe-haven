@@ -176,7 +176,6 @@ function Get-ShmFullConfig {
         domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
         localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
         npsAdminPassword = "shm-$($shm.id)-nps-admin-password".ToLower()
-        testAdUserPassword = "shm-$($shm.id)-testaduser-password".ToLower()
         vmAdminUsername = "shm-$($shm.id)-vm-admin-username".ToLower()
         vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
         vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()

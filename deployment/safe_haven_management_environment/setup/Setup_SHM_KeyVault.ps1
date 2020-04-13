@@ -71,14 +71,6 @@ if ($?) {
     Add-LogMessage -Level Fatal "Failed to create AD sync password!"
 }
 
-# :: AD test user password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.testAdUserPassword
-if ($?) {
-    Add-LogMessage -Level Success "Test user password exists"
-} else {
-    Add-LogMessage -Level Fatal "Failed to create test user password!"
-}
-
 
 # Ensure that certificates exist
 # ------------------------------
