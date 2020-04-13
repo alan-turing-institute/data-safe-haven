@@ -1,98 +1,182 @@
 # Safe Haven User Documentation
 
-## :mailbox_with_mail: Table of contents:
+## 📬 Table of contents
 
-* [**Introduction:** The Turing Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#introduction-the-turing-safe-haven)
-* [**Section 1:** Setting up](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-1-setting-up)
-* [**Section 2:** Logging in for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time)
-* [**Section 3:** Accessing the Safe Haven for the first time](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-3-accessing-the-safe-haven-for-the-first-time)
-* [**Section 4:** Using the Safe Haven](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-4-using-the-safe-haven)
-* [**Section 5:** Fixing bugs](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-5-fixing-bugs)
-* [**Appendix A:** Migrating to a new data science VM post package update](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-a-migrating-to-a-new-data-science-vm-post-package-update)
-* [**Appendix B:**  Gitlab tutorial notes](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-b-gitlab-tutorial-notes)
-* [**Appendix C:** Troubleshooting](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-c-troubleshooting)
-* [**Appendix D:** Safe Haven setup](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#appendix-d-safe-haven-setup)
+- [🔰 Introduction: The Turing Safe Haven](#%f0%9f%94%b0-introduction-the-turing-safe-haven)
+- [🚀 Set up your account](#%f0%9f%9a%80-set-up-your-account)
+  - [🌱 Prerequisites](#%f0%9f%8c%b1-prerequisites)
+  - [🔐 Set a password](#%f0%9f%94%90-set-a-password)
+  - [☎️ Set up multi-factor authentication (MFA)](#%e2%98%8e%ef%b8%8f-set-up-multi-factor-authentication-mfa)
+- [🚪 Access the Secure Research Environment](#%f0%9f%9a%aa-access-the-secure-research-environment)
+  - [🌱 Prerequisites](#%f0%9f%8c%b1-prerequisites-1)
+  - [🏠 Log into the research environment](#%f0%9f%8f%a0-log-into-the-research-environment)
+  - [🐧 Log into the Linux Data Science desktop](#%f0%9f%90%a7-log-into-the-linux-data-science-desktop)
+- [🖥 Develop analyses via the Linux Data Science desktop](#%f0%9f%96%a5-develop-analyses-via-the-linux-data-science-desktop)
+  - [Overview](#overview)
+  - [Keyboard mapping](#keyboard-mapping)
+  - [Access applications](#access-applications)
+  - [Initiate the correct version of R or python](#initiate-the-correct-version-of-r-or-python)
+  - [Install R and python packages](#install-r-and-python-packages)
+- [🔗 Share files with collaborators](#%f0%9f%94%97-share-files-with-collaborators)
+  - [Shared directories within the SRE](#shared-directories-within-the-sre)
+  - [Bring in new files to the SRE](#bring-in-new-files-to-the-sre)
+- [🤝 Collaborate on code using GitLab](#%f0%9f%a4%9d-collaborate-on-code-using-gitlab)
+  - [Overview](#overview-1)
+  - [Support for GitLab use](#support-for-gitlab-use)
+  - [Maintaining an archive of the project](#maintaining-an-archive-of-the-project)
+  - [Access GitLab](#access-gitlab)
+  - [Public repositories within the SRE](#public-repositories-within-the-sre)
+- [📖 Collaborate on documents using HackMD](#%f0%9f%93%96-collaborate-on-documents-using-hackmd)
+  - [Overview](#overview-2)
+  - [Access HackMD](#access-hackmd)
+  - [Editing other people's documents within the SRE](#editing-other-peoples-documents-within-the-sre)
+  - [Data Study Group reports](#data-study-group-reports)
+  - [Troubleshooting HackMD](#troubleshooting-hackmd)
+- [⭐️ Access additional virtual machines](#%e2%ad%90%ef%b8%8f-access-additional-virtual-machines)
+- [🐛 Report a bug](#%f0%9f%90%9b-report-a-bug)
+  - [Help us help you](#help-us-help-you)
+- [🙏 Acknowledgments](#%f0%9f%99%8f-acknowledgments)
+- [Appendix A: Gitlab tutorial notes](#appendix-a-gitlab-tutorial-notes)
+- [Appendix B: Troubleshooting](#appendix-b-troubleshooting)
+  - [Error: No applications available](#error-no-applications-available)
+  - [Error: Unexpected certificate error](#error-unexpected-certificate-error)
 
+## 🔰 Introduction: The Turing Safe Haven
 
-## :beginner: Introduction: The Turing Safe Haven
 Welcome to the Turing Safe Haven!
+
 Secure research environments (SREs) for analysis of sensitive datasets are essential to give data providers confidence that their datasets will be kept secure over the course of a project.
-Here at the Turing, we've developed a tool that allows you to set up secure research environments for your projects at scale, to allow you to work on sensitive / confidential datasets.
-To maintain security of the data and challenge insights, we are legally required to work on some of the challenges within data safe havens, hosted by the Turing Institute.
+Here at the Turing, we've developed a tool that allows groups of researchers to work together on projects that involve sensitive or confidential datasets at scale.
+Our goal is to ensure that you are able to implement the most cutting edge data science techniques while maintaining all ethical and legal responsibilities of information governance and access.
 
-The data will have been classified into one of five sensitivity tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4 (you can read more about this in our policy paper, available here: https://arxiv.org/abs/1908.08737).
-While working in a data safe haven secure environment, you won’t be able to use the internet and you won't be able to copy-and-paste between the secure environment and other windows on your computer.
-All the tools you’ll need for carrying out data science research, as well as the data you’ll be working on, will be ingressed into the safe haven upon its creation.
+The data you are working on will have been classified into one of five sensitivity tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4.
+The tiers are defined by the most sensitive data in your project, and may be increased if the combination of data is deemed to be require additional levels of security.
+You can read more about this process in our policy paper: Arenas et al, 2019, arXiv:[1908.08737](https://arxiv.org/abs/1908.08737).
 
+The level of sensitivity of your data determines whether you have access to the internet within the safe haven SRE and whether you are allowed to copy and paste between the secure research environment and other windows on your computer.
+This means you may be limited in which data science tools you are allowed to install.
+You will find that many software packages are already available, and the administrator of the safe haven SRE will ingress - bring into the environment - as many additional resources as possible.
 
-## :seedling: Prerequisites
+**Please read this user guide carefully and remember to refer back to it when you have questions.**
+In many cases the answer is already here, but if you think this resource could be clearer, please let us know so we can improve the documentation for future users.
 
-### Network access
-Each SRE can only be accessed from a specific set of IP addresses.
+## 🚀 Set up your account
+
+This section of the user guide will help you set up your new account on the Turing safe haven SRE.
+
+### 🌱 Prerequisites
+
+Make sure you have all of the following in front of you when connecting to the safe haven SRE.
+
+* 📧 The email from your SRE administrator with your account details.
+* 💁 Your [username](#username), defined in the email from your SRE administrator.
+* 🏣 The [domain name](#domain-names) for the safe haven SRE, defined in the email from your SRE administrator.
+* 💻 Your computer.
+* 📡 [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
+* 📱 Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
+
+#### Username
+
+Your username will usually be in the format `firstname.lastname`
+
+In some places, you will need to enter it in the form `username@<Safe Haven domain>` (eg. `firstname.lastname@apr20.turingsafehaven.ac.uk`).
+
+> 👉 You can find your username in the email you received from the SRE administrator.
+
+> 📝 If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may not follow the same pattern of `firstname.lastname`.
+> Please check with the SRE administrator if you are unsure about your username.
+
+In this document we will use Ada Lovelace as our example user.
+Her username is `ada.lovelace`.
+
+#### Network access
+
+The Turing safe haven SRE may be configured to allow access only from a specific set of IP addresses.
 This may involve be connected to a specific wired or wireless network or using a VPN.
 You also may be required to connect from a specific, secure location.
 You will be told what these requirements are for your particular environment.
 
+> 👉 Make sure you know the networks from which you must connect to the SRE.
+> This information will be available in the email you received with your connection information.
 
-### Multi-Factor Authentication
+#### Your phone for multi-factor authentication
+
 Multi-factor authentication (MFA) is one of the most powerful ways of verifying user identity online.
 We therefore use MFA to protect the challenge data - specifically, we will use your phone number.
 
-:pencil: You may encounter some connectivity challenges if your phone network has poor connectivity.
+> 👉 Make sure to have your phone with you and that you have good signal connectivity when you are connecting to the SRE.
 
-### Domain names
+> 📝 You may encounter some connectivity challenges if your phone network has poor connectivity.
+> The safe haven is not set up to allow you to authenticate through other methods.
+
+#### Domain names
+
 > **Safe Haven Domain** The Safe Haven will have a dedicated domain name (for example `apr20.turingsafehaven.ac.uk`) which we will call `<Safe Haven domain>` in the rest of this document
 >
 > **SRE Domain** The SRE will also have a dedicated domain name (for example `sandbox.apr20.turingsafehaven.ac.uk`) which we will call `<SRE domain>` in the rest of this document
 
+In this document Ada Lovelace - our example user - will be participating in a Turing Data Study Group held in April 2020.
+The example domain name is `apr20.turingsafehaven.ac.uk`.
 
-## :rocket: Getting your account set up
-When you originally registered for access, you should have provided some personal information, including your name, email address and phone number.
-This information will have been used to create an account for you on the SRE.
+### 🔐 Set a password
 
-### Username
-- Your username will usually be in the format `firstname.lastname`
-- In some places, you will need to enter it in the form `username@<Safe Haven domain>` (eg. `firstname.lastname@apr20.turingsafehaven.ac.uk`).
-- :pencil: If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may be different.
-
-### Setting a password
 For security reasons, you must reset your password before you log in for the first time.
+Please follow these steps carefully.
 
-1. Open a private/incognito browser session on your laptop (this will avoid picking up any existing Azure / Microsoft accounts you have).
+1. Open a private/incognito browser session on your laptop.
 
-2. Copy and paste the following URL into the private browser address bar: `https://aka.ms/mfasetup`
+    > ⚠️ One of the most common problems that users have in connecting to the Turing SRE is automatic completion of usernames and passwords from other accounts that you use on your computer.
+    > It is quite confusing, particularly if you are used to logging into Microsoft services for work or personal use.
+    >
+    > 👀 Try to notice when usernames or passwords are automatically completed, and replace those from your other accounts with information specifically allocated for accessing the Turing SRE.
 
-3. At the login prompt enter `username@<Safe Haven domain>` and confirm/proceed. (Remember that your username will be in the format `firstname.lastname`.)
+2. Copy and paste the following URL into the private browser address bar: `https://aka.ms/mfasetup`.
 
-4. There will then be a password prompt. The first time you log in you need to click **“Forgotten my password”**
+   This short link starts the process of logging into your account.
+
+3. At the login prompt enter `username@<Safe Haven domain>` and confirm/proceed.
+   
+   > Your username will be likely be in the format `firstname.lastname`.
+   > Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would enter `ada.lovelace@apr20.turingsafehaven.ac.uk`
+
+4. There will then be a password prompt.
+The first time you log in you need to click **"Forgotten my password"**.
 
    <p align="center">
       <img src="images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password">
    </p>
 
+   > 📝 **Warning**: If you reset your password during the week, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
 
-   **NOTE:** If you do reset your password during the week, wait 5-10 mins before logging in again, to allow the user management to sync up with the new password.
-
-5. Fill out the requested CAPTCHA (your username should be pre-filled)
+5. Fill out the requested CAPTCHA (your username should be pre-filled).
 
    <p align="center">
       <img src="images/user_guide/resetpassword_2.png" width="80%" title="CAPTCHA">
    </p>
 
-6. Confirm your phone number
+6. Confirm your phone number, which was provided to the SRE administrator when you registered for access to the safe haven environment.
 
    <p align="center">
       <img src="images/user_guide/resetpassword_3.png" width="80%" title="resetpassword_3">
    </p>
 
-7. Enter your new password
-   - :warning: Do **not** use special characters or symbols in your password. If you do, you may be unable to type them in the virtual keyboard to access the secure environment.
-   - :pencil: You will need an alphanumeric password with minimum length of 12 characters, with at least one of each:
-   - :capital_abcd: uppercase character
-      - :abcd: lowercase character
-      - :1234: number
-   - :information_source: You can use this [Secure Password Generator](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1) to create a password that meets these requirements.
-   - :pencil: If you feel you may struggle to remember your password, try using a mnemonic device or making a note of it on a **separate, password protected** device.
+7. Select a password.
+
+   > 👉 Your password must comply with the following requirements:
+   > * alphanumeric
+   > * minimum 12 characters
+   > * at least one each of
+   >   * 🔠 uppercase character
+   >   * 🔡 lowercase character
+   >   * 🔢 number
+
+   We recommend this [Secure Password Generator](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1) to create a password that meets these requirements.
+   
+   We recommend using a password manager (for example [BitWarden](https://bitwarden.com)) to store your password.
+   Alternatively you can write down your password on a piece of paper and keep it securely on your person, or store the password on a separate machine.
+
+   > ⚠️ Do not use special characters or symbols in your password.
+   > The virtual keyboard inside the SRE may not be the same as your physical keyboard and we have found passwords containing symbols can be difficult to type in the secure environment.
 
 8. Enter your password into the `Enter new password` and `Confirm new password` fields.
 
@@ -112,8 +196,12 @@ For security reasons, you must reset your password before you log in for the fir
       <img src="images/user_guide/more_information_required.png" width="80%" title="more_information_required">
    </p>
 
-### Setting up MFA
-1. Set up multi-factor authentication following the instructions on screen.
+### ☎️ Set up multi-factor authentication (MFA)
+
+The next step in setting up your account is to authenticate your account from your phone.
+This additional security verification is to make it harder for people to impersonate you and connect to the environment without permission.
+
+1. Choose how you would like to be contacted for the additional security verification.
 
    <p align="center">
       <img src="images/user_guide/additional_security_verification.png" width="80%" title="additional_security_verification">
@@ -123,80 +211,102 @@ For security reasons, you must reset your password before you log in for the fir
    - If you select app verification, go to step 3.
 
 
-2. :telephone_receiver: **Phone option**:
-   - If you choose to set up the authentication by phone call you will receive a call straight away.
+2. 📞 **Phone option**:
+   
+   If you choose to set up the authentication by phone call you will receive a call straight away.
 
    <p align="center">
       <img src="images/user_guide/setup_mfa_phone_1.png" width="80%" title="setup_mfa_phone_1">
    </p>
 
-   - :pencil: Note that some people get a call that says, *press the pound key* and others receive *press the hash key* – both mean hit the `#` button.
+   > 📝 Note that some people get a call that says, *press the pound key* and others receive *press the hash key* – both mean hit the `#` button.
 
    <p align="center">
       <img src="images/user_guide/setup_mfa_phone_2.png" width="80%" title="setup_mfa_phone_2">
    </p>
 
-   - When you click `close` the page will switch to your dashboard.
+   When you click `close` the page will switch to your dashboard.
 
-3. :iphone: **App option**:
-   - Select the `Receive notifications for verification` radio button
-   - Click on `Set up`
-   - Download the Microsoft Authenticator app via one of these links:
-      - :apple: iOS: `https://bit.ly/iosauthenticator`
-      - :robot: Android: `https://bit.ly/androidauthenticator`
-      - :checkered_flag: Windows mobile: `https://bit.ly/windowsauthenticator`
-   - Open your Microsoft Authenticator app on your phone:
-      - Select `Add an account`
-      - Select `Work or School account`
-      - Scan the QR code on the screen
+3. 📱 **App option**:
+   
+   Select the `Receive notifications for verification` radio button.
+
+   Click `Set up`.
+   
+   Download the Microsoft Authenticator app via one of these links:
+     - :apple: iOS: `https://bit.ly/iosauthenticator`
+     - :robot: Android: `https://bit.ly/androidauthenticator`
+     - :checkered_flag: Windows mobile: `https://bit.ly/windowsauthenticator`
+
+   > ⚠️ You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
+   
+   Open the Microsoft Authenticator app on your phone:
+  
+   - Select `Add an account`
+   - Select `Work or School account`
+   - Scan the QR code on the screen
 
       <p align="center">
          <img src="images/user_guide/setup_mfa_app_1.png" width="80%" title="setup_mfa_app_1">
       </p>
 
-      - Click `Next` to start verification
+    - Click `Next` to start verification
 
       <p align="center">
          <img src="images/user_guide/setup_mfa_app_2.png" width="80%" title="setup_mfa_app_2">
       </p>
 
-      - Click `Next` again to test the app, you will get a verification on your app.
+    - Click `Next` again to test the app, you will get a verification on your app.
 
       <p align="center">
          <img src="images/user_guide/setup_mfa_app_3.png" width="80%" title="setup_mfa_app_3">
       </p>
 
+4. Check that your MFA is completed.
 
-4. When confirmed you can close the browser.
+    > ⚠️ It is confusing that the "save" button is not available to click, but if your phone or app appears on this screen you *are* set up for MFA.
 
    <p align="center">
       <img src="images/user_guide/setup_mfa_app_4.png" width="80%" title="setup_mfa_app_4">
    </p>
 
-5. Troubleshooting
+   Close the browser once MFA is confirmed.
+
+#### Troubleshooting MFA
+
 Sometimes setting up MFA can be problematic.
 You may find the following tips helpful:
-- Make sure you allow notifications on your authenticator app.
-- Check you don’t have *Do not Disturb* mode on.
-- You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
-- Sometimes just going through the steps again solves the problem
 
+> - Make sure you allow notifications on your authenticator app.
+> - Check you don't have *Do not Disturb* mode on.
+> - You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
+> - Sometimes just going through the steps again solves the problem 🤷‍♀
 
-## :door: Accessing the Secure Research Environment
+## 🚪 Access the Secure Research Environment
 
-### :seedling: Prerequisites
-After going through the account setup procedure, you should have set up the following:
+### 🌱 Prerequisites
+
+After going through the account setup procedure, you should have access to:
 
 - Your `username`
 - Your `password`
+- The SRE domain name
 - Multifactor authentication
 
-### :house: Logging into the research environment
-1. Open a private/incognito browser session, so that you don't pick up any existing Microsoft logins
-2. The URL for the Safe Haven will look like the following: `https://<SRE domain>` (eg. `https://sandbox.apr20.turingsafehaven.ac.uk`)
-   - :warning: The **https://** is important - it won't work without this
+> 👉 If you aren't sure about any of these then please return to the [**Set up your account**](#set-up-your-account) section above.
 
-3. You should get a login page that looks like this.
+### 🏠 Log into the research environment
+
+1. Open a private/incognito browser session, so that you don't pick up any existing Microsoft logins
+
+2. The URL for the Safe Haven is defined in your email from the SRE administrator.
+
+   > Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would navigate to `https://sandbox.apr20.turingsafehaven.ac.uk`.
+
+   > ⚠️ Don't forget the **https://**!
+   > You will not be able to login without it at the start of the URL.
+
+3. You should arrive at a login page that looks like this.
 
    <p align="center">
       <img src="images/user_guide/logon_environment.png" width="80%" title="logon_environment">
@@ -204,29 +314,37 @@ After going through the account setup procedure, you should have set up the foll
 
    Enter your username (either as `username` or as `username@<Safe Haven domain>`) and password here, then click `Sign in`.
 
+   > Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would enter `ada.lovelace` in the User name box, enter her password and then click `Sign in`.
+
 4. If you are successful, you'll see the a screen with icons for the available apps.
 
    <p align="center">
       <img src="images/user_guide/RDS_app_selection_options.png" width="80%" title="RDS_app_selection_options">
    </p>
 
-   Welcome to the Turing Data Safe Haven!
+   👋 Welcome to the Turing Data Safe Haven!
 
+### 🐧 Log into the Linux Data Science desktop
 
-### :penguin: Logging into the Data Science desktop
 The primary method of performing data analysis in the SRE is using the Linux data science desktop.
+
 This is a virtual machine (VM) with many different applications and programming languages pre-installed on it.
 Once connected to it, you can carry out data science research while remaining completely isolated from the internet.
 
 1. Click on the `DSVM Main (Desktop)` app to start running the desktop.
+
    You will now **receive a call or mobile app notification** to authenticate using MFA.
-   For the call, you may have to move to an area with good reception and/or press the hash (`#`) key multiple times in-call.
+   
+   📞 For the call, you may have to move to an area with good reception and/or press the hash (`#`) key multiple times in-call.
+
+   📱 For the app you will see a notification saying _"You have received a sign in verification request"_.
+   Go to the app to approve the request.
 
    <p align="center">
       <img src="images/user_guide/dsvm_connection_screen.png" width="80%" title="dsvm_connection_screen">
    </p>
 
-   If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
+   > ⚠️ If you don't respond to the MFA request quickly enough, or if it fails, you will likely get an error that looks like this:
 
    <p align="center">
       <img src="images/user_guide/dsvm_connection_failure.png" width="80%" title="dsvm_connection_failure">
@@ -238,135 +356,118 @@ Once connected to it, you can carry out data science research while remaining co
       <img src="images/user_guide/dsvm_security_fingerprint.png" width="80%" title="dsvm_security_fingerprint">
    </p>
 
-3. Insert your credentials as per the example below:
+3. Insert your username and password.
+
+    > Our example user, Ada Lovelace, would enter `ada.lovelace` and her password.
 
    <p align="center">
       <img src="images/user_guide/dsvm_login_screen.png" width="80%" title="dsvm_login_screen">
    </p>
 
-   If you get a warning like the following:
+   
+   If you enter your username and / or password incorrect you will see a warning:
 
    <p align="center">
       <img src="images/user_guide/dsvm_login_failure.png" width="80%" title="dsvm_login_failure">
    </p>
 
-   Then it is likely that you have entered your credentials incorrectly. Please try again, entering your username and password carefully.
-   :warning: If you have special characters in your password, your keyboard mapping may be incorrect. Try entering these special characters into the username field, so that you can see if they're displaying correctly.
+   > 👉 Please try again, entering your username and password carefully.
+   >
+   > ⚠️ If you have special characters in your password, your keyboard mapping may be incorrect.
+   > 
+   > We recommend _not_ including these characters in your password.
+   > You can re-set your password using the steps defined in the [**Set your password**](#set-your-password) section above.
+   >
+   > To check that the characters you are typing are being interpreted correctly, try entering these special characters into the username field, so that you can read them as you enter them.
 
 4. You should now be greeted by a Linux desktop.
-   :warning: When you get to this screen it is **important** that you select the `Use default config` option or you will end up without a desktop menu bar!
+
+   > ⚠️ When you get to this screen it is **important** that you select the `Use default config` option or you will end up without a desktop menu bar!
 
    <p align="center">
       <img src="images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial">
    </p>
 
-### :handshake: Collaborating on code using GitLab
-GitLab is an open source version of GitHub, working as a code hosting platform for version control and collaboration. It lets you and others work together on projects.
-It also allows you to version control all the code that you write for any of the Data Study Group challenges.
-There is a local GitLab installation available inside the SRE.
+You are now inside the Turing safe haven secure research environment! 
+Welcome 👋 
 
-If you have not used GitLab before:
-- There is a small tutorial available as an Appendix to this guidance
-- You can find the official documentation [in the GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html)
-- Ask your group colleagues for help
-- Ask in the Slack channel for help.
+## 🖥 Develop analyses via the Linux Data Science desktop
 
-Everything that is not stored in a GitLab repository or on the shared `/output` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
-Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment. Small processed data can also be stored in Gitlab. Larger processed datasets should be transferred to the shared `/output` drive.
+###  Overview
 
-#### Accessing GitLab
-You can access GitLab from the `GitLab` icon on the Work Resources page.
+You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
 
-Login with username `firstname.lastname` (the domain is not needed) and `password`.
-
-   <p align="center">
-      <img src="images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login">
-   </p>
-
-:sparkles: You may find it helpful to make your repositories public so that they are easy to share within your group.
-
-:pencil: Note that they are not really public as the server is only available inside your SRE.
-
-
-### :open_book: Collaborating on documents using HackMD (CodiMD)
-HackMD is a locally installed tool (our version is called CodiMD) that allows you to collaboratively write the data study group challenge report.
-It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
-
-You can find a really great markdown cheat sheet at [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
-
-#### Accessing HackMD
-You can access HackMD from the `HackMD` icon on the Work Resources page.
-
-Login with your full username `firstname.lastname@<Safe Haven domain>` (the domain is required) and `password`.
-
-   <p align="center">
-      <img src="images/user_guide/hackmd_logon.png" width="80%" title="hackmd_logon">
-   </p>
-
-We have provided some example report templates for you which outline a structure we recommend.
-
-:sparkles: You may find it helpful to make your documents public so that they are easy to share within your group.
-
-:pencil: Note that they are not really public as the server is only available inside your SRE.
-
-:sparkles: We recommend that one person start the document, then let everyone know the URL text after the `/`.
-
-> TOP TIP: The URL for sharing a report is rather long.
-> We recommend that you publish the link and share that one (the published link will be much shorter).
-> Anyone who has it can now click the little blue pen to go back to the editable version.
-
-> TOP TIP: a lower case `L` and an upper case `I` will look the same!
-> ( `I /= l` )
-> Try the one you didn’t try first time round if you don't get to the right place.
-
-   <p align="center">
-      <img src="images/user_guide/hackmd_screenshot.png" width="80%" title="hackmd_screenshot">
-   </p>
-
-
-### :desktop_computer: Using the Data Science desktop
-You can use this secure environment to carry out data science research on the data that has been made available to you.
 You can work with any of the pre-installed applications and programming languages.
-Installed applications include `RStudio`, `Atom`, `jupyter notebook`, `VSCode`, `PyCharm` and `Spyder`, while installed languages include `python`, `R`, `julia`, `C` and `C++`.
 
-#### Keyboard mapping
-:warning: As there are several different computers between the one that you're physically using and the desktop you're interacting with, you may find that your keyboard mapping is incorrect.
-You can right click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
-We recommend opening a text editor (eg. `Atom`) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+Installed applications include `RStudio`, `Atom`, `jupyter notebook`, `VSCode`, `PyCharm` and `Spyder`, and installed languages include `python`, `R`, `julia`, `C` and `C++`.
 
-#### Accessing applications
-Applications can be accessed through Terminal or right click on desktop (top left) and:
+`Libre Office` is installed and can be used to creating presentation slides.
+
+`LaTeX` is installed for technical writing.
+
+> 👉 This desktop is your interface to a "virtual machine".
+> You may have access to [additional virtual machines](#access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
+
+### Keyboard mapping
+
+When you access the Data Science desktop you are actually connecting through "the cloud" to another computer - a server - via a few intermediate computers / servers that monitor the security of the safe haven environment.
+
+> :warning: You may find that the keyboard mapping on your computer is not the same as the one in the SRE.
+
+Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
+
+> ⌨️ We recommend opening a text editor (such as `Atom`, by typing `atom` in the terminal, see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+
+### Access applications
+
+You can access applications from the desktop in two ways: the terminal or via a drop down menu.
+
+Applications can be accessed from the dropdown menu.
+For example:
 
 - `Applications`->`Development`->`RStudio`
 - `Applications`->`Development`->`Atom`
-- Open Terminal here -> `jupyter notebook &` if you want to use python within a jupyter notebook.
-- Open Terminal here -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
 
-#### Using R and python
+Applications can be accessed from a terminal.
+For example:
+
+- Open Terminal -> `jupyter notebook &` if you want to use python within a jupyter notebook.
+- Open Terminal -> `spyder &` if you want to use python within the Spyder IDE (integrated development environment) which is quite similar to RStudio.
+
+<p align="center">
+  <img src="images/user_guide/access-applications.png" width="80%" title="screen capture to show how to access applications from the desktop">
+</p>
+
+### Initiate the correct version of R or python
+
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
-There are three versions of `python` which must be explicitly selected (none of them is enabled by default)
+
+There are three versions of `python` installed.
+None are enabled by default, so the first step is to explicitly select your preferred version.
+
 To enable a `python` version type `conda activate <name>` on the command line, where `<name>` is one of:
+
 - `py27` (python 2.7)
 - `py36` (python 3.6)
 - `py37` (python 3.7)
-:warning: Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
-If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
 
-#### Installing R and python packages
-There are local copies of the `PyPI` and `CRAN` package repositories available from the Data Science VM.
+> ⚠️ Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
+> If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
+
+### Install R and python packages
+
+There are local copies of the `PyPI` and `CRAN` package repositories available within the Turing SRE.
+
 You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
 
-Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory.
-For `CRAN`, you will be prompted to make a user package directory when you install your first package.
-For `PyPI`, you will need to run `pip install` with the `--user` flag.
+> ⚠️ Note that you will not have access to install packages system-wide and will therefore need to install packages in a user directory.
 
-In `python`, run this in a shell:
+* For `CRAN`, you will be prompted to make a user package directory when you install your first package.
+* For `PyPI`, you will need to run `pip install` with the `--user` flag.
 
-```
-pip install --user <package-name>
-```
+#### R packages
 
-In `R`, you can install them from inside `R` (or `RStudio`):
+You can install `R` packages from inside `R` (or `RStudio`):
 
 ```
 > install.packages(<package-name>)
@@ -375,8 +476,8 @@ In `R`, you can install them from inside `R` (or `RStudio`):
 You will see:
 
 ```
-Installing package into ‘/usr/local/lib/R/site-library’
-(as ‘lib’ is unspecified)
+Installing package into '/usr/local/lib/R/site-library'
+(as 'lib' is unspecified)
 Warning in install.packages("cluster") :
   'lib = "/usr/local/lib/R/site-library"' is not writable
 Would you like to use a personal library instead? (yes/No/cancel)
@@ -386,7 +487,7 @@ Enter `yes`, which prompts you to confirm the name of the library:
 
 ```
 Would you like to create a personal library
-‘~/R/x86_64-pc-linux-gnu-library/3.5’
+'~/R/x86_64-pc-linux-gnu-library/3.5'
 to install packages into? (yes/No/cancel)
 ```
 
@@ -396,18 +497,189 @@ Enter `yes`, which then installs the packages:
 trying URL 'http://10.1.0.21/src/contrib/cluster_2.0.7-1.tar.gz'
 ```
 
-Tier-2 environments will have full mirrors of `PyPI` and `CRAN` available.
-Tier-3 environments will only have pre-authorised "whitelisted" packages available.
-If you need to use a package that is not on the approved whitelist, please contact the facilitator for your project.
+#### Python packages
 
-#### Bringing code into the environment
-If you'd like to ingress additional code or data, such as for a new tool, you'll need to talk to the facilitator for your project.
-They will need to discuss the request with the project's principal investigator and the data provider, who will need to go through the data classification procedure.
-Please give them as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
+You can install `python` packages from a terminal.
 
+```
+pip install --user <package-name>
+```
 
-#### Accessing GitLab and HackMD from the VM instead of via work resources app
-The data science VM can also be used to directly access `GitLab` and `HackMD`, via the broswer within the VM.
+> ⚠️ Don't forget the `--user` flag as you do not have permission to install packages for all users.
+
+#### Package availability
+
+Tier-2 environments have full mirrors of `PyPI` and `CRAN` available.
+
+Tier-3 environments only have pre-authorised "whitelisted" packages available.
+
+If you need to use a package that is not on the approved whitelist see the section on how to [Bring in software or data to the environment](#bring-in-software-or-data-to-the-environment) below.
+
+## 🔗 Share files with collaborators
+
+### Shared directories within the SRE
+
+There are several shared areas on the data science machine that all collaborators within a research project team can see and access:
+
+* [input data](#input-data-data): `/data`
+* [shared space](#shared-space-shared): `/shared`
+* [output resources](#output-resources-output): `/output`
+
+#### Input data: `/data`
+
+Data that has been "ingressed" - approved and brought into the secure research environment - can be found in the `/data` folder.
+
+Everyone in your group will be able to access it, but it is **read-only**.
+
+> 👉 You will not be able to change any of the files in `/data`.
+> If you want to make derived datasets, for example cleaned and reformatted data, please add those to the `/shared` or `/output` directories.
+
+The contents of `/data` will be **identical** on all virtual machines in your SRE.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/data` folder.
+
+> 👉 If you are participating in a Turing Data Study Group you will find example slides and document templates in the `/data` drive.
+
+#### Shared space: /shared
+
+The `/shared` folder should be used for any work that you want to share with your group.
+
+Everyone in your group will be able to access it, and will have **read-and-write access**.
+
+The contents of `/shared` will be **different** on different VMs in your SRE.
+For example, if your group requests a GPU-enabled machine, this will have its own `/shared` folder.
+
+#### Output resources: /output
+
+Any outputs that you want to extract from the secure environment should be placed in the `/output` folder on the data science linux desktop.
+
+Everyone in your group will be able to access it, and will have **read-and-write access**.
+
+Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
+
+> 👉 You may want to consider having subfolders of `/output` to make the reivew of this directory easier.
+> 
+> For example for the Turing Data Study Groups, we recommend the following categories:
+>
+> - Presentation
+> - Transformed data/derived data
+> - Report
+> - Code
+> - Images
+
+### Bring in new files to the SRE
+
+Bringing software into a secure research environment may constitute a security risk.
+Bringing new data into the SRE may mean that the environment needs to be updated to a more secure tier.
+
+The review of the "ingress" of new code or data will be coordinated by the SRE administrator, in collaboration with the project's principle investigator and data provider.
+
+If you need to use a package that is not already available in the SRE, please contact your project's SRE administrator, or the designated contact (for example your Data Study Group facilitator) as described in the email with information about your account.
+
+> 👉 You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
+
+## 🤝 Collaborate on code using GitLab
+
+### Overview
+
+GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
+It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
+
+As GitLab make all their source code publicly available for reuse, anyone can host their own version of GitLab.
+So while there is a central service run by the GitLab organisation at https://gitlab.com, an organisation can run their own version - which looks exactly the same - at their own web address.
+
+The GitLab instance within the Turing safe haven SRE can contain code, documentation and results from you and your team's analyses.
+You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
+
+### Support for GitLab use
+
+If you have not used GitLab before:
+
+- There is a small tutorial available as an [Appendix](#appendix-a-gitlab-tutorial-notes) to this user guide.
+- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html).
+- Ask your team mates for help.
+- Ask the SRE administrator if there is a designated support person.
+  For example during Turing Data Study Groups the facilitators can help, or you can ask in the Slack channel.
+
+### Maintaining an archive of the project
+
+The Turing safe haven is built on virtual machines hosted by Microsoft Azure.
+One of the benefits of having cloud based infastructure is that it can be deleted for ever when the project is over.
+Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
+
+For some events, such as the Turing Data Study Groups, it is only the information in the GitLab repository that is archived beyond the 5 days of the event.
+
+> ⚠️ If you are participating in a Data Study Group, everything that is not stored in a GitLab repository or on the shared `/output` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
+> 
+> Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment.
+> Small processed data can also be stored in Gitlab.
+> Larger processed datasets should be transferred to the shared `/output` drive.
+
+### Access GitLab
+
+You can access GitLab from the `GitLab` icon on the Work Resources page.
+
+Login with username `firstname.lastname` (the domain is not needed) and `password`.
+
+   > Our example user, Ada Lovelace would enter `ada.lovelace` in the `LDAP Username` box, enter her password and then click `Sign in`.
+
+   <p align="center">
+      <img src="images/user_guide/gitlab_screenshot_login.png" width="80%" title="gitlab_screenshot_login">
+   </p>
+
+  > ⚠️ Do not use your username and password from a pre-existing GitLab account.
+  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the safe haven SRE.
+
+You can also access GitLab from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access GitLab from the Work Resources page.
+
+> 👉 Accessing GitLab from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
+> You do not have to return to the "All Resources" tab ever time you want to launch GitLab (although you can do if that's easiest!)
+
+1. Point Firefox to the url provided by the resource dashboard for GitLab/HackMD.
+2. If you have read and write access you will be able to copy the repository URL via the clipboard icon highlighted in the screenshot below:
+
+   <p align="center">
+      <img src="images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot">
+   </p>
+
+### Public repositories within the SRE
+
+The GitLab instance inside the secure research environment is entirely contained *inside* the SRE.
+
+When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the safe haven environment.
+A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
+
+> 👭 We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
+
+## 📖 Collaborate on documents using HackMD 
+
+### Overview
+
+HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
+It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
+
+> 🌍 Although we colloquially refer to this tool as HackMD, it is actually an installation of CodiMD: a fully open source version of the HackMD software.
+>
+> This information doesn't matter at all for how you use HackMD within the SRE, but we do want to thank the community for maintaining free and open source software for us to use and reuse.
+> You can read more about CodiMD at [their GitHub repository](https://github.com/hackmdio/codimd#codimd---the-open-source-hackmd).
+
+We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+
+### Access HackMD
+
+You can access HackMD from the `HackMD` icon on the Work Resources page.
+
+Login with your full username `firstname.lastname@<Safe Haven domain>` (the domain is required) and `password`.
+
+   > Our example user, Ada Lovelace would enter `ada.lovelace@DOMAINNAME` in the `Username` box, enter her password and then click `Sign in`.
+
+   <p align="center">
+      <img src="images/user_guide/hackmd_logon.png" width="80%" title="hackmd_logon">
+   </p>
+
+You can also access HackMD from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access HackMD from the Work Resources page.
+
+> 👉 Accessing HackMD from the browser on the Linux Data Science Desktop is an easy way to switch between analysis work and documenting the process or results.
+> You do not have to return to the "All Resources" tab ever time you want to launch HackMD.
 
 1. Point Firefox to the url provided by the resource dashboard for GitLab/HackMD
 2. Read and write access – the repository URL can be copied using via the clipboard icon highlighted in the screenshot below.
@@ -416,83 +688,131 @@ The data science VM can also be used to directly access `GitLab` and `HackMD`, v
       <img src="images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot">
    </p>
 
-### Accessing the data and exporting outputs
-There are several shared areas on the data science machine that everyone can see
+### Editing other people's documents within the SRE
 
-#### Input data: /data
-The data can be found in the `/data` folder on the data science VM.
-Everyone in your group will be able to access it, but it is read-only.
-The contents of `/data` will be **identical** on all VMs in your SRE - for example, if your group requests a GPU-enabled machine, this will contain an identical `/data` folder.
+The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
-#### Shared space: /shared
-The `/shared` folder should be used for any work that you want to share with your group.
-Everyone in your group will be able to access it, and will have read-and-write access.
-The contents of `/shared` will be **different** on different VMs in your SRE - for example, if your group requests a GPU-enabled machine, this will have its own `/shared` folder.
+When you make a markdown document inside the SRE "editable" your collaborators who also have access to the safe haven environment can access it via the URL at the top of the page.
+They will have the right to change the file if they are signed into the HackMD instance.
 
-#### Output data: /output
-Any outputs that you want to extract from the secure environment should be placed in the `/output` folder on the data science VM.
-Everyone in your group will be able to access it, and will have read-and-write access.
-Anything placed in here will be considered for data egress by your principal investigator together with the data provider.
+The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
 
-You may want to consider having subfolders of `/output` for the following categories:
-- Presentation
-- Transformed data/derived data
-- Report
-- Code
-- Images
+   <p align="center">
+      <img src="images/user_guide/hackmd_access_options.png" width="80%" title="hackmd_logon">
+   </p>
 
-#### Documenting your work
-The data science VM has `Libre Office` installed for creating slides.
-It also has `LaTeX` installed for report writing.
-Example slide and document templates should be available in the `/data` drive.
+> 👭 We recommend that you make your documents **editable** to facilitate collaboration within the secure research environment.
+> Alternatively, the **locked** option allows others to read but not edit the document.
 
+The default URL is quite long and difficult to share with your collaborators.
+A **published** document has a shorter URL which is easier to share with others.
 
-## :star: Using additional VMs
+Click the `Publish` button to publish the document and generate the short URL.
+Click the pen button (shown in the image below) to return to the editable markdown view.
+
+   <p align="center">
+      <img src="images/user_guide/hackmd_screenshot.png" width="80%" title="hackmd_screenshot">
+   </p>
+
+> 📝 We recommend **publishing** the document to get a much shorter URL to share with your team.
+> 
+> Remember that the document is not published to the internet, it is only available to others within the SRE.
+
+### Data Study Group reports
+
+If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
+
+We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
+
+> 👉 If you are attending a Turing Data Study Group, you will find some example report templates that outline the recommended structure.
+
+### Troubleshooting HackMD
+
+We have noticed that a lower case `L` and an upper case `I` look the same and often trip up users in the SRE.
+
+> 👉 Double check the characters in the URL, and if there are ambiguous ones try the one you haven't tried yet!
+
+Rather than proliferate lots of documents, we recommend that one person is tasked with creating the file and sharing the URL with other team members.
+
+> 👉 You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
+
+## ⭐️ Access additional virtual machines
+
 Your project might make use of additional virtual machines apart from the main shared desktop.
-Usually this is because of a requirement for a different type of computing resource, like access to one or more GPUs.
+Usually this is because of a requirement for a different type of computing resource, such ass access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, but by using the `DSVM Other (Desktop)` icon inside of the usual `DSVM Main (Desktop)` icon.
-You will need to know the IP address of the new machine, which you will be told by your project facilitator.
+You will need to know the IP address of the new machine, which you will be told by the SRE administrator or a designated contact such as your project facilitator during a Turing Data Study Group.
 
-1. When you click on the `DSVM Other (Desktop)` icon you will see a screen like the following, where you have to enter the IP address.
+1. When you click on the `DSVM Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
+  
+  Enter the IP address of the additional virtual machine.
 
    <p align="center">
       <img src="images/user_guide/dsvm_rdc_screen.png" width="80%" title="dsvm_rdc_screen">
    </p>
 
-2. After entering the IP address, you will get the normal login screen, where you use the same `username` and `password` credential as before.
+2. After entering the IP address, you will get the normal login screen, where you use the same `username` and `password` credentials as before.
 
 3. Any local files that you have created in the `/output` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
 
+## 🐛 Report a bug
 
-## :bug: Reporting bugs
-Although we try to make the user experience as smooth as possible there are bound to be bugs in a project as complicated as this.
-If you find problems with the IT infrastructure, contact the appropriate IT support person through your normal channels of communication (eg. through your project's facilitator).
+The Turing safe haven secure research environment has been developed in close collaboration with our users: you!
+
+We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from event participants and researchers going through the process for the first time.
+We are constantly working to improve the SRE and we really appreciate your input and support as we develop the infrastructure.
+
+> 👉 If you find problems with the IT infrastructure, please contact the designated support person as defined in your welcome email.
+> It is likely to be your SRE administrator unless someone else has been named as a point of contact (for example your project facilitator during a Turing Data Study Group event).
+
+### Help us help you
 
 To help us fix your issues please do the following:
 
-1. Make sure you have **read this document** and checked if it answers your query. Please do not log an issue before you have read all of the sections in this document.
+1. Make sure you have **read this document** and checked if it answers your query.
+  Please do not log an issue before you have read all of the sections in this document.
 
-2. Log out and log back in again (to the safe haven or data science environment) at least once. Re-attempt the process leading to the bug/error at least twice.
+2. Log out and log back in again (to the Turing safe haven SRE or the Linux data science desktop) at least once.
+   Re-attempt the process leading to the bug/error at least twice.
+   
    We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
 
-3. Let your project's facilitator know about the issue. Please help your facilitator with a comprehensive summary of the issue - this will make it easier to pin down what the problem is. If you are reporting a bug, please include:
-   - Your client machine’s operating system and operating system version.
-   - Precise condition under which the bug occurs. How to reproduce it.
-   - Precise description of the bug. What happens? What would you expect to happen instead if there were no bug?
-   - Any workarounds/fixes you have found
+   The multi-factor authentication step in particular is known to have quite a few gremlins.
+   If you are getting frustrated, log out of everything, turn off your computer, take a 15 minute coffee break, and then start the process from the beginning.
 
+3. Write down a comprehensive summary of the issue.
+  A really good bug report makes it much easier to pin down what the problem is.
+  
+  Please include:
 
-## Acknowledgments
-Based on an initial document written March/April 2018 by Kirstie Whitaker.
+   - Your computer's operating system and operating system version.
+   - Precise condition under which the error occurs.
+     What steps would someone need to take to get the exact same error?
+   - A precise description of the problem.
+     What happens? What would you expect to happen if there were no error?
+   - Any workarounds/fixes you have found.
+
+> 🦆 We very strongly recommend "rubber ducking" this process before you contact your project facilitator or SRE administrator.
+>
+> Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
+> 
+> It is amazing what saying the steps out loud can do to fix them.
+
+4. Send the bug report to your project facilitator (if you are attending a Turing Data Study Group) or designated SRE administrator.
+
+## 🙏 Acknowledgments
+
+This user guide is based on an initial document written in March/April 2018 by Kirstie Whitaker.
+
 Updates:
-- December 2018 by Catherine Lawrence, Franz Király, Martin O’Reilly, and Sebastian Vollmer.
+- December 2018 by Catherine Lawrence, Franz Király, Martin O'Reilly, and Sebastian Vollmer.
 - March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
 - November 2019 by Ben Walden, James Robinson and Daisy Parry.
-- April 2020 by James Robinson.
-
+- April 2020 by James Robinson and Kirstie Whitaker.
 
 ## Appendix A: Gitlab tutorial notes
+
 Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as
 
  - Project wiki - exactly what it says
@@ -509,6 +829,7 @@ A repository is usually used to organize a single project. Repositories can cont
 During the Data Study Group Week, you will be accessing and adding files to the same project repository.
 
 ### Add your Git username and set your email
+
 It is important to configure your Git username and email address, since every Git commit will use this information to identify you as the author.
 
 On your shell, type the following command to add your username:
@@ -531,9 +852,10 @@ To verify that you entered your email correctly, type:
 git config --global user.email
 ```
 
-You’ll need to do this only once, since you are using the `--global` option. It tells Git to always use this information for anything you do on that system. If you want to override this with a different username or email address for specific projects, you can run the command without the `--global` option when you’re in that project.
+You'll need to do this only once, since you are using the `--global` option. It tells Git to always use this information for anything you do on that system. If you want to override this with a different username or email address for specific projects, you can run the command without the `--global` option when you’re in that project.
 
 ### Cloning projects
+
 In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
@@ -689,9 +1011,10 @@ Your merge request will be ready to be approved and merged.
 
 ## Appendix B: Troubleshooting
 
-### No applications available
+### Error: No applications available
 
 #### Symptom
+
 - You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
 - You do not see any available apps
 
@@ -700,14 +1023,17 @@ Your merge request will be ready to be approved and merged.
    </p>
 
 #### Cause
+
 You have not yet set up your two factor authentication.
 
 #### Solution
+
 Follow the two factor authentication section from the [logging in section](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time) of the user guide.
 
-### Unexpected certificate error
+### Error: Unexpected certificate error
 
 #### Symptom
+
 - You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
 - When you try and launch an app, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
 - When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
@@ -716,12 +1042,14 @@ Follow the two factor authentication section from the [logging in section](https
       <img src="images/user_guide/unexpected_certificate_error.png" width="80%" title="unexpected_certificate_error">
    </p>
 
-### Cause
+#### Cause
+
 The SSL certificate protecting your connection to the RDS webclient expires every three months and is renewed every two months.
 The new SSL certificate is seamlessly picked up by your browser when connecting to `https://rds.dsgroupX.co.uk/RDWeb/weblient`.
 However, the webclient downloads a separate copy of the certificate for its own use to validate connections to the apps it serves.
 This downloaded certificate is cached by your browser, which means that the old certificate will continue to be used by the web app when the browser is allowed to load things from its cache.
 
-### Solution
+#### Solution
+
 Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://rds.dsgroupX.co.uk/RDWeb/weblient` (instructions vary by browser and operating system).
 This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
