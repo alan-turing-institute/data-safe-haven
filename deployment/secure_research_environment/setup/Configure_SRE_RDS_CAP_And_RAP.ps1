@@ -54,6 +54,18 @@ Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
+# Restart SHM NPS server
+# ----------------------
+# We restart the SHM NPS server because we get login failures with an "Event 13" error -
+# "A RADIUS message was received from the invalid RADIUS client IP address 10.150.9.250"
+# The two reliable ways we have found to fix this are:
+# 1. Log into the SHM NPS and reset the RADIUS shared secret via the GUI
+# 2. Restart the NPS server
+# We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
+Add-LogMessage -Level Info "Restarting NPS Server..."
+Enable-AzVM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg
+
+
 # Switch back to original subscription
 # ------------------------------------
 $_ = Set-AzContext -Context $originalContext;
