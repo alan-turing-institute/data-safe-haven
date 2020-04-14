@@ -91,7 +91,7 @@ Her username is `ada.lovelace`.
 #### Network access
 
 The Turing safe haven SRE may be configured to allow access only from a specific set of IP addresses.
-This may involve be connected to a specific wired or wireless network or using a VPN.
+This may involve being connected to a specific wired or wireless network or using a VPN.
 You also may be required to connect from a specific, secure location.
 You will be told what these requirements are for your particular environment.
 
@@ -101,7 +101,7 @@ You will be told what these requirements are for your particular environment.
 #### Your phone for multi-factor authentication
 
 Multi-factor authentication (MFA) is one of the most powerful ways of verifying user identity online.
-We therefore use MFA to protect the challenge data - specifically, we will use your phone number.
+We therefore use MFA to protect the project data - specifically, we will use your phone number.
 
 > 👉 Make sure to have your phone with you and that you have good signal connectivity when you are connecting to the SRE.
 
@@ -122,7 +122,7 @@ The example domain name is `apr20.turingsafehaven.ac.uk`.
 For security reasons, you must reset your password before you log in for the first time.
 Please follow these steps carefully.
 
-1. Open a private/incognito browser session on your laptop.
+1. Open a private/incognito browser session on your computer.
 
     > ⚠️ One of the most common problems that users have in connecting to the Turing SRE is automatic completion of usernames and passwords from other accounts that you use on your computer.
     > It is quite confusing, particularly if you are used to logging into Microsoft services for work or personal use.
@@ -145,7 +145,7 @@ The first time you log in you need to click **"Forgotten my password"**.
       <img src="images/user_guide/resetpassword_1.png" width="80%" title="Forgotten my password">
    </p>
 
-   > 📝 **Warning**: If you reset your password during the week, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
+   > 📝 **Warning**: If you reset your password, you will need to wait 5-10 mins before logging in again, to allow the user management system to sync up with the new password.
 
 5. Fill out the requested CAPTCHA (your username should be pre-filled).
 
@@ -655,7 +655,7 @@ If you have not used GitLab before:
 
 ### 🌍 Overview
 
-HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
+HackMD is a locally installed tool that allows you to collaboratively write reports.
 It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
 
 > 🌍 Although we colloquially refer to this tool as HackMD, it is actually an installation of CodiMD: a fully open source version of the HackMD software.
@@ -719,7 +719,8 @@ Click the pen button (shown in the image below) to return to the editable markdo
 >
 > Remember that the document is not published to the internet, it is only available to others within the SRE.
 
-> 👉 If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
+> 👉 If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event. 
+> Store a copy of the HackMD url in a text file in the outputs folder.
 > You will find some example report templates that outline the recommended structure.
 > We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
 
@@ -807,7 +808,7 @@ Updates:
 - December 2018 by Catherine Lawrence, Franz Király, Martin O'Reilly, and Sebastian Vollmer.
 - March/April 2019 by Miguel Morin, Catherine Lawrence, Alvaro Cabrejas Egea, Kirstie Whitaker, James Robinson and Martin O'Reilly.
 - November 2019 by Ben Walden, James Robinson and Daisy Parry.
-- April 2020 by James Robinson and Kirstie Whitaker.
+- April 2020 by Jules Manser, James Robinson and Kirstie Whitaker.
 
 ## 📓 Appendix A: Gitlab tutorial notes
 
@@ -1043,11 +1044,11 @@ Follow the two factor authentication section from the [logging in section](https
 #### Cause
 
 The SSL certificate protecting your connection to the RDS webclient expires every three months and is renewed every two months.
-The new SSL certificate is seamlessly picked up by your browser when connecting to `https://rds.dsgroupX.co.uk/RDWeb/weblient`.
+The new SSL certificate is seamlessly picked up by your browser when connecting to `https://sandbox.apr20.turingsafehaven.ac.uk`.
 However, the webclient downloads a separate copy of the certificate for its own use to validate connections to the apps it serves.
 This downloaded certificate is cached by your browser, which means that the old certificate will continue to be used by the web app when the browser is allowed to load things from its cache.
 
 #### Solution
 
-Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://rds.dsgroupX.co.uk/RDWeb/weblient` (instructions vary by browser and operating system).
+Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://sandbox.apr20.turingsafehaven.ac.uk` (instructions vary by browser and operating system).
 This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
