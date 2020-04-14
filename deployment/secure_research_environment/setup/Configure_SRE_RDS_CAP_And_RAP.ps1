@@ -72,6 +72,8 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Restarting NPS Server..."
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
 $_ = Set-AzContext -Context $prevContext
+# Wait 2 minutes for NPS to complete post-restart boot and start NPS services
+Start-Sleep 120
 
 # Switch back to original subscription
 # ------------------------------------
