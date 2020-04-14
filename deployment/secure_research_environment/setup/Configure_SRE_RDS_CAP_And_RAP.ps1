@@ -65,9 +65,13 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # 1. Log into the SHM NPS and reset the RADIUS shared secret via the GUI
 # 2. Restart the NPS server
 # We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
+
+
+$prevContext = Get-AzContext
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Restarting NPS Server..."
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
-
+$_ = Set-AzContext -SubscriptionId $prevContext
 
 # Switch back to original subscription
 # ------------------------------------
