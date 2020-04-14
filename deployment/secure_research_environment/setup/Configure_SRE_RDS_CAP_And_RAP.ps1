@@ -64,7 +64,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # 2. Restart the NPS server
 # We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
 Add-LogMessage -Level Info "Restarting NPS Server..."
-Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.nps.rg
+Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
 
 
 # Switch back to original subscription
