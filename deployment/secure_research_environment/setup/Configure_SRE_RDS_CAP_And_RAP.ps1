@@ -66,12 +66,11 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # 2. Restart the NPS server
 # We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
 
-
-$prevContext = Get-AzContext
+# SWitch to SHM subscription
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Restarting NPS Server..."
+# Restart SHM NPS
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
-$_ = Set-AzContext -Context $prevContext
 # Wait 2 minutes for NPS to complete post-restart boot and start NPS services
 Start-Sleep 120
 
