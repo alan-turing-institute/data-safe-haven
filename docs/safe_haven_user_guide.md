@@ -2,45 +2,45 @@
 
 ## :mailbox_with_mail: Table of contents
 
-- [:beginner: Introduction: The Turing Safe Haven](#-introduction-the-turing-safe-haven)
-  - [:mag_right: Definitions](#-definitions)
-- [:rocket: Set up your account](#-set-up-your-account)
-  - [:seedling: Prerequisites](#-prerequisites)
-  - [:closed_lock_with_key: Set a password](#-set-a-password)
-  - [:door: Set up multi-factor authentication](#-set-up-multi-factor-authentication)
-- [:unlock: Access the Secure Research Environment](#-access-the-secure-research-environment)
-  - [:seedling: Prerequisites](#-prerequisites-1)
-  - [:house: Log into the research environment](#-log-into-the-research-environment)
-  - [:penguin: Log into the Linux Data Science desktop](#-log-into-the-linux-data-science-desktop)
-- [:desktop_computer: Develop analyses via the Linux Data Science desktop](#-develop-analyses-via-the-linux-data-science-desktop)
-  - [:earth_africa: Overview](#-overview)
-  - [:musical_keyboard: Keyboard mapping](#-keyboard-mapping)
-  - [:unlock: Access applications](#-access-applications)
-  - [:snake: Initiate the correct version of R or python](#-initiate-the-correct-version-of-r-or-python)
-  - [:package: Install R and python packages](#-install-r-and-python-packages)
-- [:link: Share files with collaborators](#-share-files-with-collaborators)
-  - [:open_file_folder: Shared directories within the SRE](#-shared-directories-within-the-sre)
-  - [:newspaper: Bring in new files to the SRE](#-bring-in-new-files-to-the-sre)
-- [:man_scientist: Collaborate on code using GitLab](#-collaborate-on-code-using-gitlab)
-  - [:earth_africa: Overview](#-overview-1)
-  - [:card_file_box: Maintaining an archive of the project](#-maintaining-an-archive-of-the-project)
-  - [:unlock: Access GitLab](#-access-gitlab)
-  - [:open_hands: Public repositories within the SRE](#-public-repositories-within-the-sre)
-  - [:construction_worker_woman: Support for GitLab use](#-support-for-gitlab-use)
-- [:book: Collaborate on documents using HackMD](#-collaborate-on-documents-using-hackmd)
-  - [:earth_africa: Overview](#-overview-2)
-  - [:unlock: Access HackMD](#-access-hackmd)
-  - [:busts_in_silhouette: Editing other people's documents](#-editing-other-peoples-documents)
-  - [:x: Troubleshooting HackMD](#-troubleshooting-hackmd)
-- [:unlock: Access additional virtual machines](#-access-additional-virtual-machines)
-- [:bug: Report a bug](#-report-a-bug)
-  - [:woman_mechanic: Help us to help you](#-help-us-to-help-you)
-- [:pray: Acknowledgments](#-acknowledgments)
-- [:passport_control: Appendix A: Command line basics](#-appendix-a-command-line-basics)
-- [:notebook: Appendix B: Gitlab tutorial notes](#-appendix-b-gitlab-tutorial-notes)
-- [:x: Appendix C: Troubleshooting](#-appendix-c-troubleshooting)
-  - [:exclamation: No applications available](#-no-applications-available)
-  - [:exclamation: Unexpected certificate error](#-unexpected-certificate-error)
+- [:beginner: Introduction: The Turing Safe Haven](#beginner-introduction-the-turing-safe-haven)
+  - [:mag_right: Definitions](#mag_right-definitions)
+- [:rocket: Set up your account](#rocket-set-up-your-account)
+  - [:seedling: Prerequisites](#seedling-prerequisites)
+  - [:closed_lock_with_key: Set a password](#closed_lock_with_key-set-a-password)
+  - [:door: Set up multi-factor authentication](#door-set-up-multi-factor-authentication)
+- [:unlock: Access the Secure Research Environment](#unlock-access-the-secure-research-environment)
+  - [:seedling: Prerequisites](#seedling-prerequisites-1)
+  - [:house: Log into the research environment](#house-log-into-the-research-environment)
+  - [:penguin: Log into the Linux Data Science desktop](#penguin-log-into-the-linux-data-science-desktop)
+- [:desktop_computer: Develop analyses via the Linux Data Science desktop](#desktop_computer-develop-analyses-via-the-linux-data-science-desktop)
+  - [:earth_africa: Overview](#earth_africa-overview)
+  - [:musical_keyboard: Keyboard mapping](#musical_keyboard-keyboard-mapping)
+  - [:unlock: Access applications](#unlock-access-applications)
+  - [:snake: Initiate the correct version of R or python](#snake-initiate-the-correct-version-of-r-or-python)
+  - [:package: Install R and python packages](#package-install-r-and-python-packages)
+- [:link: Share files with collaborators](#link-share-files-with-collaborators)
+  - [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
+  - [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
+- [:man_scientist: Collaborate on code using GitLab](#man_scientist-collaborate-on-code-using-gitlab)
+  - [:earth_africa: Overview](#earth_africa-overview-1)
+  - [:card_file_box: Maintaining an archive of the project](#card_file_box-maintaining-an-archive-of-the-project)
+  - [:unlock: Access GitLab](#unlock-access-gitlab)
+  - [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
+  - [:construction_worker_woman: Support for GitLab use](#construction_worker_woman-support-for-gitlab-use)
+- [:book: Collaborate on documents using HackMD](#book-collaborate-on-documents-using-hackmd)
+  - [:earth_africa: Overview](#earth_africa-overview-2)
+  - [:unlock: Access HackMD](#unlock-access-hackmd)
+  - [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
+  - [:x: Troubleshooting HackMD](#x-troubleshooting-hackmd)
+- [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
+- [:bug: Report a bug](#bug-report-a-bug)
+  - [:woman_mechanic: Help us to help you](#woman_mechanic-help-us-to-help-you)
+- [:pray: Acknowledgments](#pray-acknowledgments)
+- [:passport_control: Appendix A: Command line basics](#passport_control-appendix-a-command-line-basics)
+- [:notebook: Appendix B: Gitlab tutorial notes](#notebook-appendix-b-gitlab-tutorial-notes)
+- [:x: Appendix C: Troubleshooting](#x-appendix-c-troubleshooting)
+  - [:exclamation: No applications available](#exclamation-no-applications-available)
+  - [:exclamation: Unexpected certificate error](#exclamation-unexpected-certificate-error)
 
 ## :beginner: Introduction: The Turing Safe Haven
 Welcome to the Turing Safe Haven!
@@ -64,10 +64,13 @@ In many cases the answer is already here, but if you think this resource could b
 ### :mag_right: Definitions
 The following definitions might be useful during the rest of this guide
 
-> **Turing Safe Haven** The overall project detailing the creation and management of one or more SREs.
-> **Secure Research Environment (SRE)** The environment that you will be using to access the sensitive data.
-> **Username domain** The domain (for example `apr20.turingsafehaven.ac.uk`) which your user account will belong to. Multiple SREs can share the same domain for managing users in common. We we will call this `<username domain>` in the rest of this document
-> **SRE URL** Each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this `<SRE URL>` in the rest of this document
+> **Secure Research Environment (SRE)**: the environment that you will be using to access the sensitive data.
+
+> **Turing Safe Haven**: the overall project that details how to create and manage one or more SREs.
+
+> **Username domain**: the domain (for example `apr20.turingsafehaven.ac.uk`) which your user account will belong to. Multiple SREs can share the same domain for managing users in common. We we will call this `<username domain>` in the rest of this document
+
+> **SRE URL**: each SRE has a dedicated URL (for example `sandbox.apr20.turingsafehaven.ac.uk`) which is used to access the data. We will call this `<SRE URL>` in the rest of this document
 
 
 ## :rocket: Set up your account
@@ -85,6 +88,12 @@ Make sure you have all of the following in front of you when connecting to the S
 * :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
 * :iphone: Your [phone](#your-phone-for-multi-factor-authentication), with good signal connectivity.
 
+You should also know who the **designated contact** for your SRE is.
+This might be an administrator or one of the people working on the project with you.
+They will be your primary point of contact if you have any issues in connecting to or using the SRE.
+
+> :writing_hand: For example, during the Turing Data Study Groups, the facilitator of each SRE is the designated contact
+
 #### Username
 
 Your username will usually be in the format `firstname.lastname`
@@ -94,7 +103,7 @@ In some places, you will need to enter it in the form `username@<username domain
 > :point_right: You can find your username in the email you received from the SRE administrator.
 
 > :pencil2: If you have a hyphenated last name, or multiple surnames, or a long family name, your assigned username may not follow the same pattern of `firstname.lastname`.
-> Please check with the SRE administrator if you are unsure about your username.
+> Please check with the designated contact for your SRE if you are unsure about your username.
 
 > :writing_hand: In this document we will use Ada Lovelace as our example user.
 > Her username is `ada.lovelace`.
@@ -166,7 +175,7 @@ The first time you log in you need to click **"Forgotten my password"**.
       <img src="images/user_guide/resetpassword_2.png" width="80%" title="CAPTCHA">
    </p>
 
-6. Confirm your phone number, which was provided to the SRE administrator when you registered for access to the environment.
+6. Confirm your phone number, which you provided to the SRE administrator when you registered for access to the environment.
 
    <p align="center">
       <img src="images/user_guide/resetpassword_3.png" width="80%" title="resetpassword_3">
@@ -240,7 +249,7 @@ This additional security verification is to make it harder for people to imperso
 
    When you click `close` the page will switch to your dashboard.
 
-3. 📱 **App option**:
+3. :iphone: **App option**:
 
    Select the `Receive notifications for verification` radio button.
 
@@ -335,7 +344,7 @@ After going through the account setup procedure, you should have access to:
       <img src="images/user_guide/RDS_app_selection_options.png" width="80%" title="RDS_app_selection_options">
    </p>
 
-   :wave: Welcome to the Turing Safe Haven!
+   :wave: Welcome to the Turing Safe Haven SRE!
 
 ### :penguin: Log into the Linux Data Science desktop
 
@@ -436,7 +445,7 @@ You can work with any of the pre-installed applications and programming language
    - `git`
    - `psql`
 
-If you need anything that is not already installed, please discuss this with the administrators of your SRE.
+If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
 > :point_right: This desktop is your interface to a "virtual machine".
 > You may have access to [additional virtual machines](#-access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
@@ -570,7 +579,7 @@ Everyone in your group will be able to access it, but it is **read-only**.
 The contents of `/data` will be **identical** on all virtual machines in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/data` folder.
 
-> :point_right: If you are participating in a Turing Data Study Group you will find example slides and document templates in the `/data` drive.
+> :pencil2: If you are participating in a Turing Data Study Group you will find example slides and document templates in the `/data` drive.
 
 #### Shared space: /shared
 
@@ -590,8 +599,8 @@ Everyone in your group will be able to access it, and will have **read-and-write
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 > :point_right: You may want to consider having subfolders of `/output` to make the reivew of this directory easier.
->
-> For example for the Turing Data Study Groups, we recommend the following categories:
+
+> :pencil2: For the Turing Data Study Groups, we recommend the following categories:
 >
 > - Presentation
 > - Transformed data/derived data
@@ -604,9 +613,8 @@ Anything placed in here will be considered for data egress - removal from the se
 Bringing software into a secure research environment may constitute a security risk.
 Bringing new data into the SRE may mean that the environment needs to be updated to a more secure tier.
 
-The review of the "ingress" of new code or data will be coordinated by the SRE administrator, in collaboration with the project's principle investigator and data provider.
-
-If you need to use a package that is not already available in the SRE, please contact your project's SRE administrator, or the designated contact (for example your Data Study Group facilitator) as described in the email with information about your account.
+The review of the "ingress" of new code or data will be coordinated by the designated contact for your SRE.
+They will have to discuss whether this is an acceptable risk to the data security with the project's principle investigator and data provider and the decision might be "no".
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
@@ -625,7 +633,7 @@ You do not need to worry about the security of the information you upload there 
 
 ### :card_file_box: Maintaining an archive of the project
 
-The Turing Safe Haven uses virtual machines hosted on the Microsoft Azure cloud platform.
+The Turing Safe Haven SRE uses virtual machines hosted on the Microsoft Azure cloud platform.
 One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 
@@ -650,7 +658,7 @@ Login with username `firstname.lastname` (the domain is not needed) and `passwor
    </p>
 
   > :warning: Do not use your username and password from a pre-existing GitLab account.
-  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the safe haven SRE.
+  > The GitLab instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
 
 You can also access GitLab from an internet browser from the Linux Data cience Desktop by navigating to the same URL as when you access GitLab from the Work Resources page.
 
@@ -668,7 +676,7 @@ You can also access GitLab from an internet browser from the Linux Data cience D
 
 The GitLab instance inside the secure research environment is entirely contained *inside* the SRE.
 
-When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the safe haven environment.
+When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE.
 A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
 
 > :handshake: We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
@@ -680,8 +688,8 @@ If you have not used GitLab before:
 - There is a small tutorial available as an [Appendix](#-appendix-a-gitlab-tutorial-notes) to this user guide.
 - You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html).
 - Ask your team mates for help.
-- Ask the SRE administrator if there is a designated support person.
-  For example during Turing Data Study Groups the facilitators can help, or you can ask in the Slack channel.
+- Ask the designated contact for your SRE.
+- There may be a dedicated discussion channel, for example during Turing Data Study Groups you can ask in the Slack channel.
 
 
 ## :book: Collaborate on documents using HackMD
@@ -726,7 +734,7 @@ You can also access HackMD from an internet browser from the Linux Data cience D
 
 The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
-When you make a markdown document inside the SRE "editable" your collaborators who also have access to the safe haven environment can access it via the URL at the top of the page.
+When you make a markdown document inside the SRE "editable" your collaborators who also have access to the SRE can access it via the URL at the top of the page.
 They will have the right to change the file if they are signed into the HackMD instance.
 
 The link will only work for people who have the same data access approval, it is not open to the general public via the internet.
@@ -774,7 +782,7 @@ Your project might make use of additional virtual machines apart from the main s
 Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, but by using the `DSVM Other (Desktop)` icon inside of the usual `DSVM Main (Desktop)` icon.
-You will need to know the IP address of the new machine, which you will be told by the SRE administrator or a designated contact such as your project facilitator during a Turing Data Study Group.
+You will need to know the IP address of the new machine, which you will be told by the designated contact for your SRE.
 
 1. When you click on the `DSVM Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
 
@@ -790,13 +798,12 @@ You will need to know the IP address of the new machine, which you will be told 
 
 ## :bug: Report a bug
 
-The Turing safe haven secure research environment has been developed in close collaboration with our users: you!
+The Turing Safe Haven SRE has been developed in close collaboration with our users: you!
 
 We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from event participants and researchers going through the process for the first time.
 We are constantly working to improve the SRE and we really appreciate your input and support as we develop the infrastructure.
 
-> :point_right: If you find problems with the IT infrastructure, please contact the designated support person as defined in your welcome email.
-> It is likely to be your SRE administrator unless someone else has been named as a point of contact (for example your project facilitator during a Turing Data Study Group event).
+> :point_right: If you find problems with the IT infrastructure, please contact the designated contact for your SRE.
 
 ### :woman_mechanic: Help us to help you
 
@@ -805,7 +812,7 @@ To help us fix your issues please do the following:
 1. Make sure you have **read this document** and checked if it answers your query.
   Please do not log an issue before you have read all of the sections in this document.
 
-2. Log out and log back in again (to the Turing safe haven SRE or the Linux data science desktop) at least once.
+2. Log out and log back in again (whether this is to the Turing Safe Haven SRE or the Linux data science desktop) at least once.
    Re-attempt the process leading to the bug/error at least twice.
 
    We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
@@ -825,13 +832,13 @@ To help us fix your issues please do the following:
      What happens? What would you expect to happen if there were no error?
    - Any workarounds/fixes you have found.
 
-> :duck: We very strongly recommend "rubber ducking" this process before you contact your project facilitator or SRE administrator.
+> :duck: We very strongly recommend "rubber ducking" this process before you talk to the designated contact for your SRE.
 >
 > Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
 >
 > It is amazing what saying the steps out loud can do to fix them.
 
-4. Send the bug report to your project facilitator (if you are attending a Turing Data Study Group) or designated SRE administrator.
+4. Send the bug report to the designated contact for your SRE.
 
 ## :pray: Acknowledgments
 
@@ -907,10 +914,12 @@ Some teams design their entire workflows around these things.
 A comparison in terms of features can be found [here](https://usersnap.com/blog/gitlab-github/).
 
 ### Getting started with Git
+
 If you have never used Git before, you might want to take a look at an introductory guide.
 There are multiple git cheat sheets such as [interactive](http://ndpsoftware.com/git-cheatsheet.html#loc=stash;) and [this one](https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet).
 
 ### Repositories
+
 A repository is usually used to organize a single project.
 Repositories can contain folders and files, images, videos, spreadsheets, and data sets – anything your project needs.
 We recommend including a README, or a file with information about your project.
@@ -944,7 +953,7 @@ You'll need to do this only once, since you are using the `--global` option. It 
 
 ### Cloning projects
 
-In Git, when you copy a project you say you “clone” it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
+In Git, when you copy a project you say you "clone" it. To work on a git project locally (from your own computer), you will need to clone it. To do this, sign in to GitLab.
 
 When you are on your Dashboard, click on the project that you’d like to clone. To work in the project, you can copy a link to the Git repository through a SSH or a HTTPS protocol. SSH is easier to use after it’s been set up, [you can find the details here](https://docs.gitlab.com/ee/gitlab-basics/create-your-ssh-keys.html). While you are at the Project tab, select HTTPS or SSH from the dropdown menu and copy the link using the Copy URL to clipboard button (you’ll have to paste it on your shell in the next step).
 
@@ -975,28 +984,34 @@ Work on an existing branch:
 git checkout NAME-OF-BRANCH
 ```
 
-To merge created branch with master branch you need to be in the created branch.
+To merge the master branch into a created branch you need to be on the created branch.
 ```
 git checkout NAME-OF-BRANCH
 git merge master
 ```
 
-To merge master branch with created branch you need to be in the master branch.
+To merge a created branch into the master branch you need to be on the created branch.
 ```
 git checkout master
 git merge NAME-OF-BRANCH
 ```
 
 ### Downloading the latest changes in a project
-This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches. You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project. Later, you can push your local commits to the remote repositories.
+This is for you to work on an up-to-date copy (it is important to do this every time you start working on a project), while you set up tracking branches.
+You pull from remote repositories to get all the changes made by users since the last time you cloned or pulled the project.
+Later, you can push your local commits to the remote repositories.
 ```
 git pull REMOTE NAME-OF-BRANCH
 ```
 
-When you first clone a repository, REMOTE is typically “origin”. This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server. NAME-OF-BRANCH is usually “master”, but it may be any existing branch.
+When you first clone a repository, REMOTE is typically "origin".
+This is where the repository came from, and it indicates the SSH or HTTPS URL of the repository on the remote server.
+NAME-OF-BRANCH is usually "master", but it may be any existing branch.
 
 ### Add and commit local changes
-You’ll see your local changes in red when you type git status. These changes may be new, modified, or deleted files/folders. Use git add to stage a local file/folder for committing. Then use git commit to commit the staged files:
+You’ll see your local changes in red when you type git status. These changes may be new, modified, or deleted files/folders.
+Use git add to stage a local file/folder for committing.
+Then use git commit to commit the staged files:
 ```
 git add FILE OR FOLDER
 git commit -m "COMMENT TO DESCRIBE THE INTENTION OF THE COMMIT"
@@ -1025,25 +1040,29 @@ git checkout .
 __Note:__ The . character typically means all in Git.
 
 ### How to create a Merge Request
-Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches. This is a brief guide on how to create a merge request. For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
+Merge requests are useful to integrate separate changes that you’ve made to a project, on different branches.
+This is a brief guide on how to create a merge request.
+For more information, check the [merge requests documentation](https://docs.gitlab.com/ee/user/project/merge_requests/index.html).
 
 1. Before you start, you should have already created a branch and pushed your changes to GitLab.
 2. Go to the project where you’d like to merge your changes and click on the Merge requests tab.
 3. Click on New merge request on the right side of the screen.
-4. From there on, you have the option to select the source branch and the target branch you’d like to compare to. The default target project is the upstream repository, but you can choose to compare across any of its forks.
+4. From there on, you have the option to select the source branch and the target branch you’d like to compare to.
+   The default target project is the upstream repository, but you can choose to compare across any of its forks.
 
    <p align="center">
       <img src="images/user_guide/merge1.png" width="80%" title="merge1">
    </p>
 
 5. When ready, click on the Compare branches and continue button.
-6. At a minimum, add a title and a description to your merge request. Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
+6. At a minimum, add a title and a description to your merge request.
+   Optionally, select a user to review your merge request and to accept or close it. You may also select a milestone and labels.
 
    <p align="center">
       <img src="images/user_guide/merge2.png" width="80%" title="merge2">
    </p>
 
-7. When ready, click on the Submit merge request button.
+7. When ready, click on the `Submit merge request` button.
 Your merge request will be ready to be approved and merged.
 
 ## :x: Appendix C: Troubleshooting
@@ -1052,7 +1071,9 @@ Your merge request will be ready to be approved and merged.
 
 #### Symptom
 
-- You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
+- You can successfully log into the remote desktop web interface
+> :writing_hand: for our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
+
 - You do not see any available apps
 
    <p align="center">
@@ -1065,14 +1086,16 @@ You have not yet set up your two factor authentication.
 
 #### Solution
 
-Follow the two factor authentication section from the [logging in section](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time) of the user guide.
+Follow the two factor authentication section from the [logging in section](#house-log-into-the-research-environment) of the user guide.
 
 ### :exclamation: Unexpected certificate error
 
 #### Symptom
 
-- You can successfully log into the RDS webclient at `https://rds.dsgroupX.co.uk/RDWeb/weblient`
-- When you try and launch an app, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
+- You can successfully log into the remote desktop web interface
+> :writing_hand: for our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
+
+- You can see several apps, but when you try to launch one of them, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
 - When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
 
    <p align="center">
@@ -1082,11 +1105,11 @@ Follow the two factor authentication section from the [logging in section](https
 #### Cause
 
 The SSL certificate protecting your connection to the RDS webclient expires every three months and is renewed every two months.
-The new SSL certificate is seamlessly picked up by your browser when connecting to `https://sandbox.apr20.turingsafehaven.ac.uk`.
+The new SSL certificate is seamlessly picked up by your browser when connecting to the web page.
 However, the webclient downloads a separate copy of the certificate for its own use to validate connections to the apps it serves.
 This downloaded certificate is cached by your browser, which means that the old certificate will continue to be used by the web app when the browser is allowed to load things from its cache.
 
 #### Solution
 
-Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page at `https://sandbox.apr20.turingsafehaven.ac.uk` (instructions vary by browser and operating system).
+Get your browser to do a [hard reload](https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/) of the page (instructions vary by browser and operating system).
 This hard reload will reload items in the cache and so retrieve a copy of the new certificate.
