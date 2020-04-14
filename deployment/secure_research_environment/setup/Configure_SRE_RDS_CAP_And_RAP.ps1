@@ -72,6 +72,7 @@ Add-LogMessage -Level Info "Restarting NPS Server..."
 # Restart SHM NPS
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
 # Wait 2 minutes for NPS to complete post-restart boot and start NPS services
+Add-LogMessage -Level Info "Waiting 2 minutes for NPS services to start..."
 Start-Sleep 120
 
 # Switch back to original subscription
