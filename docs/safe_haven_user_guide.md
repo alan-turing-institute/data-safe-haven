@@ -1061,7 +1061,7 @@ Your merge request will be ready to be approved and merged.
 - You do not see any available apps
 
    <p align="center">
-      <img src="images/user_guide/No_folders_present.png" width="80%" title="No_folders_present">
+      <img src="images/user_guide/no_folders_present.png" width="80%" title="no_folders_present">
    </p>
 
 #### Cause
