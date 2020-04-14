@@ -30,7 +30,9 @@ Jump to the following sections:
 For the Data Safe Haven project, we follow a DevOps development philosophy.
 This means different things to different people, but the definition that we're using is [best summed up here](https://www.guru99.com/agile-vs-devops.html).
 
-![Taken from https://www.guru99.com/agile-vs-devops.html](docs/images/contributing/devops_gap.png)
+   <p align="center">
+      <img src="docs/images/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
+   </p>
 
 This is a software development method which focuses on:
 
@@ -132,7 +134,9 @@ For example, `@KirstieJane` will send a notification to Kirstie Whitaker so she 
 
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
-![](docs/images/example-conversation-in-issue.jpg)
+   <p align="center">
+      <img src="docs/images/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
+   </p>
 
 ### Working in a private repository
 As one of the goals of this project is to build a secure infrastructure for data storage and analysis, our project will very likely include some code with security vulnerabilities! Therefore we're keeping the repository private until we're confident that our work is secure.
