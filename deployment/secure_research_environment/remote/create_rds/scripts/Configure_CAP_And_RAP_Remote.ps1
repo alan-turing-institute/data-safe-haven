@@ -12,6 +12,8 @@ param(
   $remoteNpsTimeout,
   $remoteNpsBlackout,
   $remoteNpsSecret,
+  $remoteNpsRequireAuthAttrib,
+  $remoteNpsAcctSharedSecret,
   $remoteNpsServerGroup
 )
 
@@ -55,7 +57,7 @@ Foreach ($npsServerAddress in $npsServerAddresses ) {
     $_ = netsh nps delete remoteserver remoteservergroup = "`"$remoteNpsServerGroup`"" address = "`"$npsServerAddress`""
 }
 # Add SHM NPS server
-$_ = netsh nps add remoteserver remoteServerGroup = "`"$remoteNpsServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$remoteNpsSecret`"" priority = $remoteNpsPriority timeout = $remoteNpsTimeout blackout = $remoteNpsBlackout
+$_ = netsh nps add remoteserver remoteServerGroup = "`"$remoteNpsServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$remoteNpsSecret`"" requireauthattrib = $remoteNpsRequireAuthAttrib acctsharedsecret = $remoteNpsAcctSharedSecret priority = $remoteNpsPriority timeout = $remoteNpsTimeout blackout = $remoteNpsBlackout
 # Check that the change has actually been made (the netsh nps command always returns "ok")
 $success = $true
 [array]$npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)
