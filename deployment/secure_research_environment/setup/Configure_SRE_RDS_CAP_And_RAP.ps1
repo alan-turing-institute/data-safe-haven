@@ -28,11 +28,11 @@ $params = @{
     sreResearchUserSecurityGroup = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     shmNetbiosName = "$($config.shm.domain.netbiosName)"
     shmNpsIp = "$($config.shm.nps.ip)"
-    shmNpsPriority = 1
-    shmNpsTimeout = 60
-    shmNpsBlackout = 60
-    sreNpsSecret = "$npsSecret"
-    sreRemoteServerGroup = "`"TS GATEWAY SERVER GROUP`"" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
+    remoteNpsPriority = 1
+    remoteNpsTimeout = 60
+    remoteNpsBlackout = 60
+    remoteNpsSecret = "$npsSecret"
+    remoteNpsServerGroup = "`"TS GATEWAY SERVER GROUP`"" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value

@@ -8,11 +8,11 @@ param(
   $sreResearchUserSecurityGroup,
   $shmNetbiosName,
   $shmNpsIp,
-  $shmNpsPriority,
-  $shmNpsTimeout,
-  $shmNpsBlackout,
-  $sreNpsSecret,
-  $sreRemoteServerGroup
+  $remoteNpsPriority,
+  $remoteNpsTimeout,
+  $remoteNpsBlackout,
+  $remoteNpsSecret,
+  $remoteNpsServerGroup
 )
 
 Import-Module NPS
@@ -50,15 +50,15 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
 # Configure remote NPS server
 # ---------------------------
 # Remove all existing remote NPS servers
-$npsServerAddresses = (Get-NpsServerAddresses $sreRemoteServerGroup)
+$npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)
 Foreach ($npsServerAddress in $npsServerAddresses ) {
-    $_ = netsh nps delete remoteserver remoteservergroup = "`"$sreRemoteServerGroup`"" address = "`"$npsServerAddress`""
+    $_ = netsh nps delete remoteserver remoteservergroup = "`"$remoteNpsServerGroup`"" address = "`"$npsServerAddress`""
 }
 # Add SHM NPS server
-$_ = netsh nps add remoteserver remoteServerGroup = "`"$sreRemoteServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$sreNpsSecret`"" priority = $shmNpsPriority timeout = $shmNpsTimeout blackout = $shmNpsBlackout
+$_ = netsh nps add remoteserver remoteServerGroup = "`"$remoteNpsServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$remoteNpsSecret`"" priority = $remoteNpsPriority timeout = $remoteNpsTimeout blackout = $remoteNpsBlackout
 # Check that the change has actually been made (the netsh nps command always returns "ok")
 $success = $true
-[array]$npsServerAddresses = (Get-NpsServerAddresses $sreRemoteServerGroup)
+[array]$npsServerAddresses = (Get-NpsServerAddresses $remoteNpsServerGroup)
 $numNpsServers = $npsServerAddresses.Length
 if($numNpsServers -ne 1){
     $success = $false
