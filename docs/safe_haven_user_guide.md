@@ -12,34 +12,33 @@
   - [🏠 Log into the research environment](#-log-into-the-research-environment)
   - [🐧 Log into the Linux Data Science desktop](#-log-into-the-linux-data-science-desktop)
 - [🖥 Develop analyses via the Linux Data Science desktop](#-develop-analyses-via-the-linux-data-science-desktop)
-  - [Overview](#overview)
-  - [Keyboard mapping](#keyboard-mapping)
-  - [Access applications](#access-applications)
-  - [Initiate the correct version of R or python](#initiate-the-correct-version-of-r-or-python)
-  - [Install R and python packages](#install-r-and-python-packages)
+  - [🌍 Overview](#-overview)
+  - [🎹 Keyboard mapping](#-keyboard-mapping)
+  - [🔓 Access applications](#-access-applications)
+  - [🐍 Initiate the correct version of R or python](#-initiate-the-correct-version-of-r-or-python)
+  - [📦 Install R and python packages](#-install-r-and-python-packages)
 - [🔗 Share files with collaborators](#-share-files-with-collaborators)
-  - [Shared directories within the SRE](#shared-directories-within-the-sre)
-  - [Bring in new files to the SRE](#bring-in-new-files-to-the-sre)
+  - [📂 Shared directories within the SRE](#-shared-directories-within-the-sre)
+  - [📰 Bring in new files to the SRE](#-bring-in-new-files-to-the-sre)
 - [🤝 Collaborate on code using GitLab](#-collaborate-on-code-using-gitlab)
-  - [Overview](#overview-1)
-  - [Support for GitLab use](#support-for-gitlab-use)
-  - [Maintaining an archive of the project](#maintaining-an-archive-of-the-project)
-  - [Access GitLab](#access-gitlab)
-  - [Public repositories within the SRE](#public-repositories-within-the-sre)
+  - [🌍 Overview](#-overview-1)
+  - [📇 Maintaining an archive of the project](#-maintaining-an-archive-of-the-project)
+  - [🔓 Access GitLab](#-access-gitlab)
+  - [👐 Public repositories within the SRE](#-public-repositories-within-the-sre)
+  - [👷 Support for GitLab use](#-support-for-gitlab-use)
 - [📖 Collaborate on documents using HackMD](#-collaborate-on-documents-using-hackmd)
-  - [Overview](#overview-2)
-  - [Access HackMD](#access-hackmd)
-  - [Editing other people's documents within the SRE](#editing-other-peoples-documents-within-the-sre)
-  - [Data Study Group reports](#data-study-group-reports)
-  - [Troubleshooting HackMD](#troubleshooting-hackmd)
-- [⭐️ Access additional virtual machines](#-access-additional-virtual-machines)
+  - [🌍 Overview](#-overview-2)
+  - [🔓 Access HackMD](#-access-hackmd)
+  - [✒️ Editing other people's documents within the SRE](#-editing-other-peoples-documents-within-the-sre)
+  - [⁉️ Troubleshooting HackMD](#-troubleshooting-hackmd)
+- [🔓 Access additional virtual machines](#-access-additional-virtual-machines)
 - [🐛 Report a bug](#-report-a-bug)
-  - [Help us help you](#help-us-help-you)
+  - [💁 Help us to help you](#-help-us-to-help-you)
 - [🙏 Acknowledgments](#-acknowledgments)
-- [Appendix A: Gitlab tutorial notes](#appendix-a-gitlab-tutorial-notes)
-- [Appendix B: Troubleshooting](#appendix-b-troubleshooting)
-  - [Error: No applications available](#error-no-applications-available)
-  - [Error: Unexpected certificate error](#error-unexpected-certificate-error)
+- [📓Appendix A: Gitlab tutorial notes](#-appendix-a-gitlab-tutorial-notes)
+- [⁉️ Appendix B: Troubleshooting](#-appendix-b-troubleshooting)
+  - [❗ No applications available](#-error-no-applications-available)
+  - [❗ Unexpected certificate error](#-error-unexpected-certificate-error)
 
 ## 🔰 Introduction: The Turing Safe Haven
 
@@ -51,7 +50,7 @@ Our goal is to ensure that you are able to implement the most cutting edge data 
 
 The data you are working on will have been classified into one of five sensitivity tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4.
 The tiers are defined by the most sensitive data in your project, and may be increased if the combination of data is deemed to be require additional levels of security.
-You can read more about this process in our policy paper: Arenas et al, 2019, arXiv:[1908.08737](https://arxiv.org/abs/1908.08737).
+You can read more about this process in our policy paper: *Arenas et al, 2019*, [`arXiv:1908.08737`](https://arxiv.org/abs/1908.08737).
 
 The level of sensitivity of your data determines whether you have access to the internet within the safe haven SRE and whether you are allowed to copy and paste between the secure research environment and other windows on your computer.
 This means you may be limited in which data science tools you are allowed to install.
@@ -135,7 +134,7 @@ Please follow these steps carefully.
    This short link starts the process of logging into your account.
 
 3. At the login prompt enter `username@<Safe Haven domain>` and confirm/proceed.
-   
+
    > Your username will be likely be in the format `firstname.lastname`.
    > Our example user, Ada Lovelace, participating in the April 2020 Data Study Group, would enter `ada.lovelace@apr20.turingsafehaven.ac.uk`
 
@@ -171,7 +170,7 @@ The first time you log in you need to click **"Forgotten my password"**.
    >   * 🔢 number
 
    We recommend this [Secure Password Generator](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1) to create a password that meets these requirements.
-   
+
    We recommend using a password manager (for example [BitWarden](https://bitwarden.com)) to store your password.
    Alternatively you can write down your password on a piece of paper and keep it securely on your person, or store the password on a separate machine.
 
@@ -212,7 +211,7 @@ This additional security verification is to make it harder for people to imperso
 
 
 2. 📞 **Phone option**:
-   
+
    If you choose to set up the authentication by phone call you will receive a call straight away.
 
    <p align="center">
@@ -228,11 +227,11 @@ This additional security verification is to make it harder for people to imperso
    When you click `close` the page will switch to your dashboard.
 
 3. 📱 **App option**:
-   
+
    Select the `Receive notifications for verification` radio button.
 
    Click `Set up`.
-   
+
    Download the Microsoft Authenticator app via one of these links:
      - :apple: iOS: `https://bit.ly/iosauthenticator`
      - :robot: Android: `https://bit.ly/androidauthenticator`
@@ -240,9 +239,9 @@ This additional security verification is to make it harder for people to imperso
 
 
    > ⚠️ You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
-   
+
    Open the Microsoft Authenticator app on your phone:
-  
+
    - Select `Add an account`
    - Select `Work or School account`
    - Scan the QR code on the screen
@@ -283,7 +282,7 @@ You may find the following tips helpful:
 - You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
 - Sometimes just going through the steps again solves the problem 🤷‍♀
 
-## 🚪 Access the Secure Research Environment
+## 🔓 Access the Secure Research Environment
 
 ### 🌱 Prerequisites
 
@@ -335,7 +334,7 @@ Once connected to it, you can carry out data science research while remaining co
 1. Click on the `DSVM Main (Desktop)` app to start running the desktop.
 
    You will now **receive a call or mobile app notification** to authenticate using MFA.
-   
+
    📞 For the call, you may have to move to an area with good reception and/or press the hash (`#`) key multiple times in-call.
 
    📱 For the app you will see a notification saying _"You have received a sign in verification request"_.
@@ -365,7 +364,7 @@ Once connected to it, you can carry out data science research while remaining co
       <img src="images/user_guide/dsvm_login_screen.png" width="80%" title="dsvm_login_screen">
    </p>
 
-   
+
    If you enter your username and / or password incorrect you will see a warning:
 
    <p align="center">
@@ -375,7 +374,7 @@ Once connected to it, you can carry out data science research while remaining co
    > 👉 Please try again, entering your username and password carefully.
    >
    > ⚠️ If you have special characters in your password, your keyboard mapping may be incorrect.
-   > 
+   >
    > We recommend _not_ including these characters in your password.
    > You can re-set your password using the steps defined in the [**Set your password**](#set-your-password) section above.
    >
@@ -389,12 +388,12 @@ Once connected to it, you can carry out data science research while remaining co
       <img src="images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial">
    </p>
 
-You are now inside the Turing safe haven secure research environment! 
-Welcome 👋 
+You are now inside the Turing safe haven secure research environment!
+Welcome 👋
 
 ## 🖥 Develop analyses via the Linux Data Science desktop
 
-###  Overview
+### 🌍 Overview
 
 You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
 
@@ -409,7 +408,7 @@ Installed applications include `RStudio`, `Atom`, `jupyter notebook`, `VSCode`, 
 > 👉 This desktop is your interface to a "virtual machine".
 > You may have access to [additional virtual machines](#-access-additional-virtual-machines) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
 
-### Keyboard mapping
+### 🎹 Keyboard mapping
 
 When you access the Data Science desktop you are actually connecting through "the cloud" to another computer - a server - via a few intermediate computers / servers that monitor the security of the safe haven environment.
 
@@ -417,9 +416,9 @@ When you access the Data Science desktop you are actually connecting through "th
 
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
 
-> ⌨️ We recommend opening a text editor (such as `Atom`, by typing `atom` in the terminal, see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+> ⌨️ We recommend opening a text editor (such as `Atom`, see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
 
-### Access applications
+### 🔓 Access applications
 
 You can access applications from the desktop in two ways: the terminal or via a drop down menu.
 
@@ -439,7 +438,7 @@ For example:
   <img src="images/user_guide/access-applications.png" width="80%" title="screen capture to show how to access applications from the desktop">
 </p>
 
-### Initiate the correct version of R or python
+### 🐍 Initiate the correct version of R or python
 
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.
 
@@ -455,7 +454,7 @@ To enable a `python` version type `conda activate <name>` on the command line, w
 > ⚠️ Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
 > If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
 
-### Install R and python packages
+### 📦 Install R and python packages
 
 There are local copies of the `PyPI` and `CRAN` package repositories available within the Turing SRE.
 
@@ -518,7 +517,7 @@ If you need to use a package that is not on the approved whitelist see the secti
 
 ## 🔗 Share files with collaborators
 
-### Shared directories within the SRE
+### 📂 Shared directories within the SRE
 
 There are several shared areas on the data science machine that all collaborators within a research project team can see and access:
 
@@ -558,7 +557,7 @@ Everyone in your group will be able to access it, and will have **read-and-write
 Anything placed in here will be considered for data egress - removal from the secure research environment - by the project's principal investigator together with the data provider.
 
 > 👉 You may want to consider having subfolders of `/output` to make the reivew of this directory easier.
-> 
+>
 > For example for the Turing Data Study Groups, we recommend the following categories:
 >
 > - Presentation
@@ -567,7 +566,7 @@ Anything placed in here will be considered for data egress - removal from the se
 > - Code
 > - Images
 
-### Bring in new files to the SRE
+### 📰 Bring in new files to the SRE
 
 Bringing software into a secure research environment may constitute a security risk.
 Bringing new data into the SRE may mean that the environment needs to be updated to a more secure tier.
@@ -580,7 +579,7 @@ If you need to use a package that is not already available in the SRE, please co
 
 ## 🤝 Collaborate on code using GitLab
 
-### Overview
+### 🌍 Overview
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
 It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
@@ -591,17 +590,7 @@ So while there is a central service run by the GitLab organisation at https://gi
 The GitLab instance within the Turing safe haven SRE can contain code, documentation and results from you and your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
 
-### Support for GitLab use
-
-If you have not used GitLab before:
-
-- There is a small tutorial available as an [Appendix](#appendix-a-gitlab-tutorial-notes) to this user guide.
-- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html).
-- Ask your team mates for help.
-- Ask the SRE administrator if there is a designated support person.
-  For example during Turing Data Study Groups the facilitators can help, or you can ask in the Slack channel.
-
-### Maintaining an archive of the project
+### 📇 Maintaining an archive of the project
 
 The Turing safe haven is built on virtual machines hosted by Microsoft Azure.
 One of the benefits of having cloud based infastructure is that it can be deleted for ever when the project is over.
@@ -610,12 +599,12 @@ Deleting the infrastructure ensures that neither sensitive data nor insights der
 For some events, such as the Turing Data Study Groups, it is only the information in the GitLab repository that is archived beyond the 5 days of the event.
 
 > ⚠️ If you are participating in a Data Study Group, everything that is not stored in a GitLab repository or on the shared `/output` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
-> 
+>
 > Make sure that every piece of code you think might be at all useful is stored in a GitLab repository within the secure environment.
 > Small processed data can also be stored in Gitlab.
 > Larger processed datasets should be transferred to the shared `/output` drive.
 
-### Access GitLab
+### 🔓 Access GitLab
 
 You can access GitLab from the `GitLab` icon on the Work Resources page.
 
@@ -642,7 +631,7 @@ You can also access GitLab from an internet browser from the Linux Data cience D
       <img src="images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot">
    </p>
 
-### Public repositories within the SRE
+### 👐 Public repositories within the SRE
 
 The GitLab instance inside the secure research environment is entirely contained *inside* the SRE.
 
@@ -651,9 +640,20 @@ A "public" repository within the SRE is only visible to others with the same dat
 
 > 👭 We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
 
-## 📖 Collaborate on documents using HackMD 
+### 👷 Support for GitLab use
 
-### Overview
+If you have not used GitLab before:
+
+- There is a small tutorial available as an [Appendix](#-appendix-a-gitlab-tutorial-notes) to this user guide.
+- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/README.html).
+- Ask your team mates for help.
+- Ask the SRE administrator if there is a designated support person.
+  For example during Turing Data Study Groups the facilitators can help, or you can ask in the Slack channel.
+
+
+## 📖 Collaborate on documents using HackMD
+
+### 🌍 Overview
 
 HackMD is a locally installed tool that allows you to collaboratively write the data study group challenge report.
 It uses Markdown which is a simple way to format your text so that it renders nicely in full html.
@@ -665,7 +665,7 @@ It uses Markdown which is a simple way to format your text so that it renders ni
 
 We recommend this markdown cheat sheet by Adam Pritchard: [https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 
-### Access HackMD
+### 🔓 Access HackMD
 
 You can access HackMD from the `HackMD` icon on the Work Resources page.
 
@@ -689,7 +689,7 @@ You can also access HackMD from an internet browser from the Linux Data cience D
       <img src="images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot">
    </p>
 
-### Editing other people's documents within the SRE
+### ✒️ Editing other people's documents within the SRE
 
 The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
@@ -716,18 +716,15 @@ Click the pen button (shown in the image below) to return to the editable markdo
    </p>
 
 > 📝 We recommend **publishing** the document to get a much shorter URL to share with your team.
-> 
+>
 > Remember that the document is not published to the internet, it is only available to others within the SRE.
 
-### Data Study Group reports
+> 👉 If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
+> You will find some example report templates that outline the recommended structure.
+> We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
 
-If you are attending a Turing Data Study Group you will be asked to write a report describing the work your team undertook over the five days of the event.
 
-We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
-
-> 👉 If you are attending a Turing Data Study Group, you will find some example report templates that outline the recommended structure.
-
-### Troubleshooting HackMD
+### ⁉️ Troubleshooting HackMD
 
 We have noticed that a lower case `L` and an upper case `I` look the same and often trip up users in the SRE.
 
@@ -737,16 +734,16 @@ Rather than proliferate lots of documents, we recommend that one person is taske
 
 > 👉 You could use the GitLab wiki or `README` file to share links to collaboratively written documents.
 
-## ⭐️ Access additional virtual machines
+## 🔓 Access additional virtual machines
 
 Your project might make use of additional virtual machines apart from the main shared desktop.
-Usually this is because of a requirement for a different type of computing resource, such ass access to one or more GPUs (graphics processing units).
+Usually this is because of a requirement for a different type of computing resource, such as access to one or more GPUs (graphics processing units).
 
 You will access this machine in a similar way to the main shared desktop, but by using the `DSVM Other (Desktop)` icon inside of the usual `DSVM Main (Desktop)` icon.
 You will need to know the IP address of the new machine, which you will be told by the SRE administrator or a designated contact such as your project facilitator during a Turing Data Study Group.
 
 1. When you click on the `DSVM Other (Desktop)` icon you will see a screen asking you to identify the computer you wish to connect to.
-  
+
   Enter the IP address of the additional virtual machine.
 
    <p align="center">
@@ -767,7 +764,7 @@ We are constantly working to improve the SRE and we really appreciate your input
 > 👉 If you find problems with the IT infrastructure, please contact the designated support person as defined in your welcome email.
 > It is likely to be your SRE administrator unless someone else has been named as a point of contact (for example your project facilitator during a Turing Data Study Group event).
 
-### Help us help you
+### 💁 Help us to help you
 
 To help us fix your issues please do the following:
 
@@ -776,7 +773,7 @@ To help us fix your issues please do the following:
 
 2. Log out and log back in again (to the Turing safe haven SRE or the Linux data science desktop) at least once.
    Re-attempt the process leading to the bug/error at least twice.
-   
+
    We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
 
    The multi-factor authentication step in particular is known to have quite a few gremlins.
@@ -784,7 +781,7 @@ To help us fix your issues please do the following:
 
 3. Write down a comprehensive summary of the issue.
   A really good bug report makes it much easier to pin down what the problem is.
-  
+
   Please include:
 
    - Your computer's operating system and operating system version.
@@ -797,7 +794,7 @@ To help us fix your issues please do the following:
 > 🦆 We very strongly recommend "rubber ducking" this process before you contact your project facilitator or SRE administrator.
 >
 > Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
-> 
+>
 > It is amazing what saying the steps out loud can do to fix them.
 
 4. Send the bug report to your project facilitator (if you are attending a Turing Data Study Group) or designated SRE administrator.
@@ -812,7 +809,7 @@ Updates:
 - November 2019 by Ben Walden, James Robinson and Daisy Parry.
 - April 2020 by James Robinson and Kirstie Whitaker.
 
-## Appendix A: Gitlab tutorial notes
+## 📓 Appendix A: Gitlab tutorial notes
 
 Gitlab can be thought of as a local version of github from different company - that is a git server along with useful features such as
 
@@ -1010,9 +1007,9 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
 
-## Appendix B: Troubleshooting
+## ⁉️ Appendix B: Troubleshooting
 
-### Error: No applications available
+### ❗ No applications available
 
 #### Symptom
 
@@ -1031,7 +1028,7 @@ You have not yet set up your two factor authentication.
 
 Follow the two factor authentication section from the [logging in section](https://github.com/alan-turing-institute/data-safe-haven/blob/master/docs/safe_haven_user_guide.md#section-2-logging-in-for-the-first-time) of the user guide.
 
-### Error: Unexpected certificate error
+### ❗ Unexpected certificate error
 
 #### Symptom
 
