@@ -71,7 +71,7 @@ $prevContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Restarting NPS Server..."
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
-$_ = Set-AzContext -SubscriptionId $prevContext
+$_ = Set-AzContext -Context $prevContext
 
 # Switch back to original subscription
 # ------------------------------------
