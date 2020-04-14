@@ -3,11 +3,12 @@
 ## 📬 Table of contents
 
 - [🔰 Introduction: The Turing Safe Haven](#-introduction-the-turing-safe-haven)
+  - [🔎 Definitions](#-definitions)
 - [🚀 Set up your account](#-set-up-your-account)
   - [🌱 Prerequisites](#-prerequisites)
   - [🔐 Set a password](#-set-a-password)
-  - [☎️ Set up multi-factor authentication (MFA)](#-set-up-multi-factor-authentication-mfa)
-- [🚪 Access the Secure Research Environment](#-access-the-secure-research-environment)
+  - [☎️ Set up multi-factor authentication](#-set-up-multi-factor-authentication)
+- [🔓 Access the Secure Research Environment](#-access-the-secure-research-environment)
   - [🌱 Prerequisites](#-prerequisites-1)
   - [🏠 Log into the research environment](#-log-into-the-research-environment)
   - [🐧 Log into the Linux Data Science desktop](#-log-into-the-linux-data-science-desktop)
@@ -29,35 +30,39 @@
 - [📖 Collaborate on documents using HackMD](#-collaborate-on-documents-using-hackmd)
   - [🌍 Overview](#-overview-2)
   - [🔓 Access HackMD](#-access-hackmd)
-  - [✒️ Editing other people's documents within the SRE](#-editing-other-peoples-documents-within-the-sre)
-  - [⁉️ Troubleshooting HackMD](#-troubleshooting-hackmd)
+  - [👥 Editing other people's documents](#-editing-other-peoples-documents)
+  - [❌ Troubleshooting HackMD](#-troubleshooting-hackmd)
 - [🔓 Access additional virtual machines](#-access-additional-virtual-machines)
 - [🐛 Report a bug](#-report-a-bug)
   - [💁 Help us to help you](#-help-us-to-help-you)
 - [🙏 Acknowledgments](#-acknowledgments)
 - [📓Appendix A: Gitlab tutorial notes](#-appendix-a-gitlab-tutorial-notes)
-- [⁉️ Appendix B: Troubleshooting](#-appendix-b-troubleshooting)
-  - [❗ No applications available](#-error-no-applications-available)
-  - [❗ Unexpected certificate error](#-error-unexpected-certificate-error)
+- [❌ Appendix B: Troubleshooting](#-appendix-b-troubleshooting)
+  - [❗ No applications available](#-no-applications-available)
+  - [❗ Unexpected certificate error](#-unexpected-certificate-error)
 
 ## 🔰 Introduction: The Turing Safe Haven
-
 Welcome to the Turing Safe Haven!
 
 Secure research environments (SREs) for analysis of sensitive datasets are essential to give data providers confidence that their datasets will be kept secure over the course of a project.
-Here at the Turing, we've developed a tool that allows groups of researchers to work together on projects that involve sensitive or confidential datasets at scale.
+Here at the Alan Turing Institute, we've developed the Safe Haven - this is tool that allows groups of researchers to work together on projects that involve sensitive or confidential datasets at scale.
 Our goal is to ensure that you are able to implement the most cutting edge data science techniques while maintaining all ethical and legal responsibilities of information governance and access.
 
 The data you are working on will have been classified into one of five sensitivity tiers, ranging from open data at Tier 0, to highly sensitive and high risk data at Tier 4.
 The tiers are defined by the most sensitive data in your project, and may be increased if the combination of data is deemed to be require additional levels of security.
 You can read more about this process in our policy paper: *Arenas et al, 2019*, [`arXiv:1908.08737`](https://arxiv.org/abs/1908.08737).
 
-The level of sensitivity of your data determines whether you have access to the internet within the safe haven SRE and whether you are allowed to copy and paste between the secure research environment and other windows on your computer.
+The level of sensitivity of your data determines whether you have access to the internet within the Turing safe haven SRE and whether you are allowed to copy and paste between the secure research environment and other windows on your computer.
 This means you may be limited in which data science tools you are allowed to install.
 You will find that many software packages are already available, and the administrator of the safe haven SRE will ingress - bring into the environment - as many additional resources as possible.
 
 **Please read this user guide carefully and remember to refer back to it when you have questions.**
 In many cases the answer is already here, but if you think this resource could be clearer, please let us know so we can improve the documentation for future users.
+
+### 🔎 Definitions
+The following definitions might be useful during the rest of this guide
+
+
 
 ## 🚀 Set up your account
 
@@ -195,9 +200,10 @@ The first time you log in you need to click **"Forgotten my password"**.
       <img src="images/user_guide/more_information_required.png" width="80%" title="more_information_required">
    </p>
 
-### ☎️ Set up multi-factor authentication (MFA)
+### ☎️ Set up multi-factor authentication
 
 The next step in setting up your account is to authenticate your account from your phone.
+This is known as multi-factor authentication or MFA.
 This additional security verification is to make it harder for people to impersonate you and connect to the environment without permission.
 
 1. Choose how you would like to be contacted for the additional security verification.
@@ -689,7 +695,7 @@ You can also access HackMD from an internet browser from the Linux Data cience D
       <img src="images/user_guide/gitlab_screenshot.png" width="80%" title="gitlab_screenshot">
    </p>
 
-### ✒️ Editing other people's documents within the SRE
+### 👥 Editing other people's documents
 
 The HackMD instance inside the secure research environment is entirely contained *inside* the SRE.
 
@@ -725,7 +731,7 @@ Click the pen button (shown in the image below) to return to the editable markdo
 > We recommend writing the report in HackMD - rather than GitLab - so that everyone can edit and contribute quickly.
 
 
-### ⁉️ Troubleshooting HackMD
+### ❌ Troubleshooting HackMD
 
 We have noticed that a lower case `L` and an upper case `I` look the same and often trip up users in the SRE.
 
@@ -1008,7 +1014,7 @@ Merge requests are useful to integrate separate changes that you’ve made to a 
 7. When ready, click on the Submit merge request button.
 Your merge request will be ready to be approved and merged.
 
-## ⁉️ Appendix B: Troubleshooting
+## ❌ Appendix B: Troubleshooting
 
 ### ❗ No applications available
 
