@@ -11,18 +11,14 @@ param(
   $shmNpsPriority,
   $shmNpsTimeout,
   $shmNpsBlackout,
-  $sreNpsSecret
+  $sreNpsSecret,
+  $sreRemoteServerGroup
 )
 
 Import-Module NPS
 Import-Module RemoteDesktopServices
 
-
-# NOTE: "TS GATEWAY SERVER GROUP" is the group name created when manually 
-# configuring an RDS Gateway to use a remote NPS server
-$remoteServerGroup = "TS GATEWAY SERVER GROUP"
-
-function Get-NpsServerAddresses {
+function Get-NpsServerAddresses ($remoteServerGroup){
     $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | ForEach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }
     return $npserverAddresses
 }
@@ -54,15 +50,15 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
 # Configure remote NPS server
 # ---------------------------
 # Remove all existing remote NPS servers
-$npsServerAddresses = Get-NpsServerAddresses
+$npsServerAddresses = (Get-NpsServerAddresses $sreRemoteServerGroup)
 Foreach ($npsServerAddress in $npsServerAddresses ) {
-    $_ = netsh nps delete remoteserver remoteservergroup = "`"$remoteServerGroup`"" address = "`"$npsServerAddress`""
+    $_ = netsh nps delete remoteserver remoteservergroup = "`"$sreRemoteServerGroup`"" address = "`"$npsServerAddress`""
 }
 # Add SHM NPS server
-$_ = netsh nps add remoteserver remoteservergroup = $remoteServerGroup address = $shmNpsIp authsharedsecret =  $sreNpsSecret priority = $shmNpsPriority timeout = $shmNpsTimeout blackout = $shmNpsBlackout
+$_ = netsh nps add remoteserver remoteServerGroup = "`"$sreRemoteServerGroup`"" address = "`"$shmNpsIp`"" authsharedsecret = "`"$sreNpsSecret`"" priority = $shmNpsPriority timeout = $shmNpsTimeout blackout = $shmNpsBlackout
 # Check that the change has actually been made (the netsh nps command always returns "ok")
 $success = $true
-[array]$npsServerAddresses = Get-NpsServerAddresses
+[array]$npsServerAddresses = (Get-NpsServerAddresses $sreRemoteServerGroup)
 $numNpsServers = $npsServerAddresses.Length
 if($numNpsServers -ne 1){
     $success = $false

@@ -32,6 +32,7 @@ $params = @{
     shmNpsTimeout = 60
     shmNpsBlackout = 60
     sreNpsSecret = "$npsSecret"
+    sreRemoteServerGroup = "`"TS GATEWAY SERVER GROUP`"" # "TS GATEWAY SERVER GROUP" is the group name created when manually configuring an RDS Gateway to use a remote NPS server
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
