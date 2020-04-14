@@ -17,6 +17,11 @@ param(
 Import-Module NPS
 Import-Module RemoteDesktopServices
 
+
+# NOTE: "TS GATEWAY SERVER GROUP" is the group name created when manually 
+# configuring an RDS Gateway to use a remote NPS server
+$remoteServerGroup = "TS GATEWAY SERVER GROUP"
+
 function Get-NpsServerAddresses {
     $npserverAddresses = netsh nps show remoteserver "$remoteServerGroup" | Select-String "Address + =" | ForEach-Object { ($_.ToString() -replace '(Address + = )(.*)', '$2').Trim() }
     return $npserverAddresses
@@ -48,9 +53,6 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
 
 # Configure remote NPS server
 # ---------------------------
-# NOTE: "TS GATEWAY SERVER GROUP" is the group name created when manually 
-# configuring an RDS Gateway to use a remote NPS server
-$remoteServerGroup = "TS GATEWAY SERVER GROUP"
 # Remove all existing remote NPS servers
 $npsServerAddresses = Get-NpsServerAddresses
 Foreach ($npsServerAddress in $npsServerAddresses ) {
