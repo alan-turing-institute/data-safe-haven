@@ -60,7 +60,8 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-CW20",
       "fqdn": "DC1-SHM-CW20.cw20.dsgroupdev.co.uk",
-      "ip": "10.0.0.250"
+      "ip": "10.0.0.250",
+      "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
       "vmName": "DC2-SHM-CW20",
@@ -96,7 +97,6 @@
         "domainAdminPassword": "shm-cw20-domain-admin-password",
         "localAdsyncPassword": "shm-cw20-localadsync-password",
         "npsAdminPassword": "shm-cw20-nps-admin-password",
-        "testAdUserPassword": "shm-cw20-testaduser-password",
         "vmAdminUsername": "shm-cw20-vm-admin-username",
         "vpnCaCertificate": "shm-cw20-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-cw20-vpn-ca-cert-plain",

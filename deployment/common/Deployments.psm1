@@ -477,7 +477,7 @@ function Enable-AzVM {
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         $ResourceGroupName
     )
-    Add-LogMessage -Level Info "[ ] Ensuring that '$Name' is running"
+    Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name'"
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
     if ($powerState -eq "PowerState/running") {
         $_ = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
