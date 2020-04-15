@@ -275,7 +275,7 @@ function Add-SreConfig {
     $config.sre.location = $config.shm.location
     $config.sre.tier = $sreConfigBase.tier
     $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
-   
+
     # -- Domain config ---
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
@@ -336,18 +336,18 @@ function Add-SreConfig {
 
     # Isolates MS SQL Server development infrastructure
     $config.sre.network.subnets.mssqldev.name = "MsSqlDevSubnet"
-    $config.sre.network.subnets.mssqldev.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 3)
-    $config.sre.network.subnets.mssqldev.cidr = $config.sre.network.subnets.mssqldev.prefix + ".0/24"
+    $config.sre.network.subnets.mssqldev.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
+    $config.sre.network.subnets.mssqldev.cidr = "$($config.sre.network.subnets.mssqldev.prefix).0/24"
 
     # MS SQL Server infrastructure concerned with ETL
     $config.sre.network.subnets.mssqletl.name = "MsSqlEtlSubnet"
-    $config.sre.network.subnets.mssqletl.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 4)
-    $config.sre.network.subnets.mssqletl.cidr = $config.sre.network.subnets.mssqletl.prefix + ".0/24"
+    $config.sre.network.subnets.mssqletl.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 4)"
+    $config.sre.network.subnets.mssqletl.cidr = "$($config.sre.network.subnets.mssqletl.prefix).0/24"
 
     # MS SQL Server infrastructure providing query access to researchers
     $config.sre.network.subnets.mssqldata.name = "MsSqlDataSubnet"
-    $config.sre.network.subnets.mssqldata.prefix = $sreBasePrefix + "." + ([int]$sreThirdOctet + 5)
-    $config.sre.network.subnets.mssqldata.cidr = $config.sre.network.subnets.mssqldata.prefix + ".0/24"
+    $config.sre.network.subnets.mssqldata.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 5)"
+    $config.sre.network.subnets.mssqldata.cidr = "$($config.sre.network.subnets.mssqldata.prefix).0/24"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
