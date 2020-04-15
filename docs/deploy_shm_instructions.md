@@ -18,12 +18,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
   - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
   - You will need to be a member of the relevant security group.
-- PowerShell for Azure
-  - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
-  - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
-- Microsoft Remote Desktop
+- `PowerShell` with support for Azure
+  - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+  - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+- `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
-- OpenSSL
+- `OpenSSL`
   - Install using your package manager of choice
 
 ## 2. Safe Haven Management configuration
