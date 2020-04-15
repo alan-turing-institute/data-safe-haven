@@ -198,20 +198,20 @@ function Get-ShmFullConfig {
     # Please note that each mirror type must have a distinct ipOffset in the range 4-15
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_PKG_MIRRORS"
-        vmSize = "Standard_D2s_v3"
+        vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
             ipOffset = 4
             diskSize = [ordered]@{
-                tier2 = 16384
-                tier3 = 512
+                tier2 = 8191
+                tier3 = 511
             }
         }
         cran = [ordered]@{
             ipOffset = 5
             diskSize = [ordered]@{
-                tier2 = 512
-                tier3 = 256
+                tier2 = 127
+                tier3 = 31
             }
         }
     }

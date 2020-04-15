@@ -1,11 +1,11 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
-  [ValidateSet("2", "3")]
-  [string]$tier,
-  [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
-  [string]$internalMirrorName = "Internal"
+    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [ValidateSet("2", "3")]
+    [string]$tier,
+    [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
+    [string]$internalMirrorName = "Internal"
 )
 
 Import-Module Az
@@ -36,6 +36,7 @@ $subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
 $subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
 $vnetIpTriplet = "10.20.$tier"
 $vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+$mirrorTypes = @("PyPI", "CRAN")
 
 
 # Set up the VNet with subnets for internal and external package mirrors
@@ -44,8 +45,8 @@ $vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $conf
 # External subnet
 $subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
 # Internal subnet
-$existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | % { $_.AddressPrefix }
-$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | % { "$vnetIpTriplet.$_/28" } | Where { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
+$existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | ForEach-Object { $_.AddressPrefix }
+$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | ForEach-Object { "$vnetIpTriplet.$_/28" } | Where-Object { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
 $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
 
 
@@ -154,8 +155,9 @@ function Resolve-CloudInit {
         $WhitelistPath
     )
 
+    # Load template cloud-init file
     $cloudInitYaml = Get-Content $CloudInitPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if($notExists) {
+    if ($notExists) {
         Add-LogMessage -Level Fatal "Failed to load cloud init file '$CloudInitPath'!"
     }
 
@@ -173,27 +175,18 @@ function Resolve-CloudInit {
         $cloudInitYaml = $cloudInitYaml.Replace("EXTERNAL_PUBLIC_SSH_KEY", $externalPublicSshKey)
     }
 
+    # Set the appropriate tier for this mirror
+    $cloudInitYaml = $cloudInitYaml.Replace("TIER=PLACEHOLDER", "TIER=$tier")
 
-    # PyPI
-    if ($MirrorType.ToLower() -eq "pypi") {
-        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-not $notExists) {
-            $packagesBefore = "; IF_WHITELIST_ENABLED packages ="
-            $packagesAfter  = $packagesBefore
-            foreach ($package in $whitelist -split "`n") {
-                $packagesAfter += "`n            $package"
-            }
-            $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter).Replace("; IF_WHITELIST_ENABLED ", "")
+    # Populate initial package whitelist file defined in cloud init YAML
+    $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if (-Not $notExists) {
+        $packagesBefore = "      # PACKAGE_WHITELIST"
+        $packagesAfter  = ""
+        foreach ($package in $whitelist -split "`n") {
+            $packagesAfter += "      $package`n"
         }
-    }
-
-    # CRAN
-    if ($MirrorType.ToLower() -eq "cran") {
-        $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
-        if (-not $notExists) {
-            $packages = $whitelist.Replace("`n", " ")
-            $cloudInitYaml = $cloudInitYaml.Replace("WHITELISTED_PACKAGES=", "WHITELISTED_PACKAGES=$packages").Replace("# IF_WHITELIST_ENABLED ", "")
-        }
+        $cloudInitYaml = $cloudInitYaml.Replace($packagesBefore, $packagesAfter)
     }
 
     return $cloudInitYaml
@@ -212,8 +205,8 @@ function Deploy-PackageMirror {
     )
     # Load cloud-init file
     # --------------------
-    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-$($($mirrorDirection).ToLower())-$($($MirrorType).ToLower()).yaml"
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "tier$($tier)_$($($MirrorType).ToLower())_whitelist.list"
+    $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "tier${tier}_${MirrorType}_whitelist.list".ToLower()
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror
@@ -281,7 +274,7 @@ function Deploy-PackageMirror {
             $progress = 0
             while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
                 $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-                $progress += 1
+                $progress = [math]::min(100, $progress + 1)
                 Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
                 Start-Sleep 10
             }
@@ -311,7 +304,7 @@ function Deploy-PackageMirror {
             "
             $result = Invoke-RemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             Write-Output $result.Value
-            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | % { $_ -replace "127.0.0.1", "$privateIpAddress" }
+            $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
             $script = "
@@ -343,7 +336,7 @@ function Deploy-PackageMirror {
 
 # Set up package mirror
 # ---------------------
-foreach ($mirrorType in ("PyPI", "CRAN")) {
+foreach ($mirrorType in $mirrorTypes) {
     foreach ($mirrorDirection in ("External", "Internal")) {
         Deploy-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
     }

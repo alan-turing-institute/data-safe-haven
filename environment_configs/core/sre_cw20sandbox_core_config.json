@@ -3,7 +3,7 @@
     "adminSecurityGroupName" : "Safe Haven Test Admins",
     "sreId": "sandbox",
     "shmId": "cw20",
-    "tier": "2",
+    "tier": "3",
     "domain": "sandbox.cw20.dsgroupdev.co.uk",
     "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",

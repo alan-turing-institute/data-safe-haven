@@ -16,7 +16,7 @@ packages:
   - python3-venv
   - rsync
 
-# Add the atiadmin (default) and mirrordaemon users
+# Add the SHM admin (default) and mirrordaemon users
 # lock_passwd: Lock the password to disable password login
 users:
   - default
@@ -29,8 +29,59 @@ users:
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    permissions: "0600"
+  - path: "/home/mirrordaemon/package_whitelist.txt"
+    permissions: "0600"
     content: |
+      # PACKAGE_WHITELIST
+  - path: "/home/mirrordaemon/update_bandersnatch_config.py"
+    permissions: "0444"
+    content: |
+      #! /usr/bin/env python3
+      from collections import defaultdict
+
+      TIER=PLACEHOLDER
+      config_sections = defaultdict(list)
+      section = "main"
+
+      # Load packages from whitelist
+      with open("/home/mirrordaemon/package_whitelist.txt", "r") as f_whitelist:
+          packages = [p for p in f_whitelist.read().splitlines() if p and not p.startswith("#")]
+
+      # Parse bandersnatch configuration into sections
+      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
+          for line in f_bandersnatch.read().splitlines():
+              if line.startswith("[") and line.endswith("]"):
+                  section = line[1:-1]
+              if line:
+                  config_sections[section].append(line)
+
+      # Enable/disable whitelist depending on tier
+      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "whitelist_project" in p]
+      if int(TIER) == 2:
+          # Tier 2 mirrors should not have a whitelist section
+          config_sections.pop("whitelist", [])
+      else:
+          # If there is already a whitelist section then start by emptying it
+          config_sections["whitelist"] = ["[whitelist]", "packages ="]
+
+          # Ensure the that whitelist_project plugin is enabled
+          config_sections["plugins"].append("    whitelist_project")
+
+          # Add any whitelisted packages to this section
+          # Note that we need at least one package for whitelisting to work. 'six' is minimal and safe.
+          if not packages:
+              packages = ["six"]
+          [config_sections["whitelist"].append("    {}".format(package)) for package in packages]
+
+      # Write the output bandersnatch configuration
+      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
+          for section in config_sections.keys():
+              [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
+              f_bandersnatch.write("\n")
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    permissions: "0700"
     content: |
       #! /bin/bash
       # rsync: make the destination look like the source
@@ -50,65 +101,77 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
+    permissions: "0700"
     content: |
       #! /bin/bash
+      TIER=PLACEHOLDER
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Started pulling from the internet..." | tee -a /datadrive/mirrordaemon/mirrorserver.log
       START_TIME=$(date +%s)
+      if [ "$TIER" != "2" ]; then
+          installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
+          cat /home/mirrordaemon/package_whitelist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/whitelisted_packages
+          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/whitelisted_packages)" = "" ]; then echo $package; fi; done)
+          /bandersnatch/bin/bandersnatch delete $packages_to_delete 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          rm /tmp/whitelisted_packages 2> /dev/null
+      fi
       /bandersnatch/bin/bandersnatch mirror 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
+    permissions: "0700"
     content: |
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
   - path: "/etc/bandersnatch.conf"
+    permissions: "0644"
     content: |
-        [mirror]
-        ; The directory where the mirror data will be stored.
-        directory = /datadrive/mirrordaemon/pypi
+      [mirror]
+      ; The directory where the mirror data will be stored.
+      directory = /datadrive/mirrordaemon/pypi
 
-        ; Save JSON metadata into the web tree
-        ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
-        json = false
+      ; Save JSON metadata into the web tree
+      ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
+      json = true
 
-        ; The PyPI server which will be mirrored.
-        master = https://pypi.org
+      ; The PyPI server which will be mirrored.
+      master = https://pypi.org
 
-        ; The network socket timeout to use for all connections. This is set to a
-        ; somewhat aggressively low value - rather fail quickly temporarily and re-run
-        ; the client soon instead of having a process hang infinitely and have TCP not
-        ; catching up for ages.
-        timeout = 10
+      ; The network socket timeout to use for all connections. The default of 10s is
+      ; deliberately low so the client will fail quickly and move on to the next package
+      ; instead of having the process hang. For this use-case we want to maximise the
+      ; number of packages that succeed.
+      timeout = 60
 
-        ; Whether to hash package indexes
-        ; Note that package index directory hashing is incompatible with pip
-        ; Recommended - the default of false for full pip/pypi compatibility.
-        hash-index = false
+      ; Whether to hash package indexes
+      ; Note that package index directory hashing is incompatible with pip
+      ; Recommended - the default of false for full pip/pypi compatibility.
+      hash-index = false
 
-        ; Number of worker threads to use for parallel downloads.
-        ; Recommendations for worker thread setting
-        ; - leave the default of 3 to avoid overloading the pypi master
-        ; - official servers located in data centers could run 10 workers
-        ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
-        workers = 10
+      ; Number of worker threads to use for parallel downloads.
+      ; Recommendations for worker thread setting
+      ; - leave the default of 3 to avoid overloading the pypi master
+      ; - official servers located in data centers could run 10 workers
+      ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
+      workers = 6
 
-        ; Whether to stop a sync quickly after an error is found or whether to continue
-        ; syncing but not marking the sync as successful. Value should be "true" or
-        ; "false".
-        stop-on-error = false
+      ; Whether to stop a sync quickly after an error is found or whether to continue
+      ; syncing but not marking the sync as successful. Value should be "true" or
+      ; "false".
+      stop-on-error = false
 
-        ; Whether or not files that have been deleted on the master should be deleted on the mirror, too.
-        delete-packages = true
+      ; Whether or not files that have been deleted on the master should be deleted here.
+      delete-packages = true
 
-        ; DO NOT CHANGE THESE LINES - THEY ARE ENABLED/DISABLED PROGRAMATICALLY
-        ; To enable whitelisting both the [blacklist] and [whitelist] sections are needed
-        ; IF_WHITELIST_ENABLED [blacklist]
-        ; IF_WHITELIST_ENABLED plugins =
-        ; IF_WHITELIST_ENABLED     whitelist_project
+      [plugins]
+      enabled =
+          exclude_platform
 
-        ; IF_WHITELIST_ENABLED [whitelist]
-        ; IF_WHITELIST_ENABLED packages =
+      [blacklist]
+      platforms =
+          windows
+          macos
+          freebsd
 
 runcmd:
   # Suppress apt prompts and warning messages
@@ -149,19 +212,22 @@ runcmd:
   - bandersnatch/bin/pip install wheel
   - bandersnatch/bin/pip install bandersnatch
 
+  # Initialise whitelist if appropriate
+  - python3 /home/mirrordaemon/update_bandersnatch_config.py
+
   # Set up mirroring
   - chmod u+x ~mirrordaemon/*.sh
-  - echo "*** Adding external update (rsync) job to crontab (3am on 15th of each month)... ***"
-  - echo "0 3 15 * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
-  - echo "*** Adding internal mirror update job to crontab (3am on 1st of each month)... ***"
-  - echo "0 3 1 * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+  - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
+  - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+  - echo "*** Adding external update (bandersnatch from PyPI) job to crontab (every 6 hours)... ***"
+  - echo "0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
   - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Schedule initial update for next boot
-  - echo "*** Scheduling mirror update jobs for next boot... ***"
+  - echo "*** Scheduling full mirror update jobs for each boot... ***"
   - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
 
   # Print out some diagnostic information
