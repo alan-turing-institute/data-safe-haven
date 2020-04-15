@@ -28,7 +28,7 @@ function Get-NpsServerAddresses ($remoteServerGroup){
 # Set RAP user groups
 # -------------------
 # Format user group as <security-group>@<netbios-domain>
-$sreResearchUserSecurityGroupWithDomain = $("$sreResearchUserSecurityGroup@$shmNetbiosName")
+$sreResearchUserSecurityGroupWithDomain = "${sreResearchUserSecurityGroup}@${shmNetbiosName}"
 ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
     $success = $true
     # NOTE: Need to add SRE Researcher user group / ensure it exists prior to removing existing
