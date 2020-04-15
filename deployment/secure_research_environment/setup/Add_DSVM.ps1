@@ -28,22 +28,32 @@ $vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
-# Retrieve passwords from the keyvault
-# ------------------------------------
-Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
-$dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword
-$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dsvmDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbAdminPassword
-$dsvmDbReaderPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbReaderPassword
-$dsvmDbWriterPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbWriterPassword
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+# Check whether this IP address has been used.
+# If it has, check whether the NIC is attached to a VM
+# ----------------------------------------------------
+$existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
+if ($existingNic) {
+    Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+    $existingVmId = $existingNic.VirtualMachine.Id
+    if ($existingNic.VirtualMachine.Id) {
+        Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
+        $_ = Set-AzContext -Context $originalContext
+        exit 0
+    } else {
+        Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
+        $_ = $existingNic | Remove-AzNetworkInterface -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Network card removal succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Network card removal failed!"
+        }
+    }
+}
 
 
 # Get list of image versions
 # --------------------------
 Add-LogMessage -Level Info "Getting image type from gallery..."
-$_ = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
 if ($config.sre.dsvm.vmImageType -eq "Ubuntu") {
     $imageDefinition = "ComputeVM-Ubuntu1804Base"
 } elseif ($config.sre.dsvm.vmImageType -eq "UbuntuTorch") {
@@ -60,6 +70,7 @@ Add-LogMessage -Level Success "Using image type $imageDefinition"
 
 # Check that this is a valid version and then get the image ID
 # ------------------------------------------------------------
+$_ = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
 $imageVersion = $config.sre.dsvm.vmImageVersion
 Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
 try {
@@ -76,18 +87,36 @@ try {
 }
 $imageVersion = $image.Name
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
+$_ = Set-AzContext -Subscription $config.sre.subscriptionName
+
 
 # Set VM name including the image version.
 # As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
-$vmName = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM-${imageVersion}".Replace(".","-").ToUpper()
+# -----------------------------------------------------------------------------------------------------
+$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
+$vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
+
+
+# Check for any orphaned disks
+# ----------------------------
+$orphanedDisks = Get-AzDisk | Where-Object { $_.DiskState -eq "Unattached" } | Where-Object { $_.Name -Like "${$vmNamePrefix}*" }
+if ($orphanedDisks) {
+    Add-LogMessage -Level Info "Removing $($orphanedDisks.Length) orphaned disks"
+    $_ = $orphanedDisks | Remove-AzDisk -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Orphaned disk removal succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Orphaned disk removal failed!"
+    }
+}
+
 
 # Create DSVM resource group if it does not exist
 # ----------------------------------------------
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
 $_ = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
-# Set up the NSG for the webapps
+# Ensure that runtime NSG exists
 # ------------------------------
 $secureNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
@@ -99,8 +128,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
-# Check that deployment NSG exists
-# --------------------------------
+# Ensure that deployment NSG exists
+# ---------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $shmIdentitySubnetIpRange = $config.shm.network.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
@@ -163,6 +192,18 @@ Add-LogMessage -Level Success "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 
 
+# Retrieve passwords from the keyvault
+# ------------------------------------
+Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
+$dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword
+$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dsvmDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbAdminPassword
+$dsvmDbReaderPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbReaderPassword
+$dsvmDbWriterPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbWriterPassword
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+
+
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -198,6 +239,7 @@ $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdi
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.datadisk.size_gb -Type $config.sre.dsvm.datadisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+
 
 # Deploy the VM
 # -------------

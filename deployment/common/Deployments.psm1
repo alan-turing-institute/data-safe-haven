@@ -569,6 +569,8 @@ function Invoke-RemoteScript {
         Add-LogMessage -Level Failure "Script output:`n$($result | Out-String)"
         throw "Remote script execution has failed. Please check the error message above before re-running this script."
     }
+    # Wait 10s to allow the run command extension to register as completed
+    Start-Sleep 10
     return $result
 }
 Export-ModuleMember -Function Invoke-RemoteScript
@@ -867,7 +869,7 @@ function Get-NSRecords {
     )
 
     Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNZ Zone '$($DnsZoneName)'..."
-    
+
     $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
     return $recordSet.Records
 }
@@ -916,7 +918,7 @@ function Set-DnsZoneAndParentNSRecords {
 
     $subdomain = $DnsZoneName.Split('.')[0]
     $parentDnsZoneName = $DnsZoneName -replace "$subdomain.",""
-    
+
     # Create DNS Zone
     # ---------------
     Add-LogMessage -Level Info "Ensuring that DNS Zone exists..."
@@ -925,8 +927,8 @@ function Set-DnsZoneAndParentNSRecords {
     # Get NS records from the new DNS Zone
     # ------------------------------------
     Add-LogMessage -Level Info "Get NS records from the new DNS Zone..."
-    $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName        
-    
+    $nsRecords = Get-NSRecords -RecordSetName "@" -DnsZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName
+
     # Check if parent DNS Zone exists in same subscription and resource group
     # -----------------------------------------------------------------------
     Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
