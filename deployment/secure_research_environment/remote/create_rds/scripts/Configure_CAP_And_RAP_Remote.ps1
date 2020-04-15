@@ -34,11 +34,14 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
     # NOTE: Need to add SRE Researcher user group / ensure it exists prior to removing existing
     #       user groups as there must always be at least one user group assigned for each RAP
     # Ensure SRE Researcher user group is assigned to RAP
-    if((Get-Item RDS:\GatewayServer\RAP\$rapName\UserGroups\ | Get-ChildItem | Where-Object { $_.Name -eq  $sreResearchUserSecurityGroupWithDomain  }).Length -eq 0) {
+    
+    if(Get-Item RDS:\GatewayServer\RAP\$rapName\UserGroups\ | Get-ChildItem | Where-Object { $_.Name -eq  $sreResearchUserSecurityGroupWithDomain  }) {
         $_ = New-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") -Name "$sreResearchUserSecurityGroupWithDomain" -ErrorAction SilentlyContinue
         $success = ($success -And $?)
     }
     # Remove all other user groups from RAP
+    # If the SRE Researcher group is not in the RAP User Group list (e.g. if the `New-Item` command above failed)
+    # this command to remove all other groups will fail, as there must always be at least one User Group.
     $_ = Get-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") | Get-ChildItem | Where-Object { $_.Name -ne "$sreResearchUserSecurityGroupWithDomain" } | Remove-Item -ErrorAction SilentlyContinue
     $success = ($success -And $?)
     # Report success / failure
