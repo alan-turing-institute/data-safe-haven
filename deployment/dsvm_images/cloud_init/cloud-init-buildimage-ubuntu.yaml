@@ -591,8 +591,8 @@ runcmd:
   - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
   - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
   - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "julia not found!"; exit 1; fi
-  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
   - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
   # :: Editors
   - echo ">=== Editors... ===<"
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
@@ -618,7 +618,7 @@ runcmd:
   - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
