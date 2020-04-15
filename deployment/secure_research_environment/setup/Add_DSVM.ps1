@@ -361,6 +361,7 @@ foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
     } else {
         Add-LogMessage -Level Failure "Configuring $name on $vmName failed!"
     }
+    Start-Sleep 10  # allow the run command extension to register as completed
 }
 
 
