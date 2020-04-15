@@ -219,8 +219,8 @@ runcmd:
   - chmod u+x ~mirrordaemon/*.sh
   - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
-  - echo "*** Adding external update (bandersnatch from PyPI) job to crontab (3am each day)... ***"
-  - echo "0 3 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "*** Adding external update (bandersnatch from PyPI) job to crontab (every 6 hours)... ***"
+  - echo "0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon

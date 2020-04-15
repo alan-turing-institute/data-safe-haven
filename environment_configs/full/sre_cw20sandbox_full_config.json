@@ -112,20 +112,20 @@
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
-      "vmSize": "Standard_D2s_v3",
+      "vmSize": "Standard_B2ms",
       "diskType": "Standard_LRS",
       "pypi": {
         "ipOffset": 4,
         "diskSize": {
-          "tier2": 16384,
-          "tier3": 512
+          "tier2": 8191,
+          "tier3": 511
         }
       },
       "cran": {
         "ipOffset": 5,
         "diskSize": {
-          "tier2": 128,
-          "tier3": 256
+          "tier2": 127,
+          "tier3": 31
         }
       }
     }
