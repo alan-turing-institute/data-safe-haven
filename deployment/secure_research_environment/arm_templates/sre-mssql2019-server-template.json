@@ -13,13 +13,14 @@
             "type": "string",
             "defaultValue": "Standard_GS1",
             "allowedValues": [
+                "Standard_DS2_v2",
                 "Standard_GS1",
                 "Standard_GS2"
             ],
             "metadata": {
                 "description": "Select size of VM"
             }
-        },       
+        },
         "Administrator_User": {
             "type": "string",
             "metadata": {
@@ -55,7 +56,7 @@
             "metadata": {
                 "description": "Enter password for SQL AuthUpdate User"
             }
-        },         
+        },
         "BootDiagnostics_Account_Name": {
             "type": "string",
             "metadata": {
@@ -80,7 +81,7 @@
             "metadata": {
                 "description": "Enter Domain Name"
             }
-        },        
+        },
         "Sql_Server_Name": {
             "type": "string",
             "metadata": {
@@ -97,11 +98,11 @@
             "metadata": {
                 "description": "Enter the SQL Server Edition to be installed i.e. enterprise"
             }
-        }                        
+        }
     },
     "variables": {
-        "nic": "[concat(parameters('Sql_Server_Name'), '-', 'NIC')]",        
-        "datadisk": "[concat(parameters('Sql_Server_Name'), '-DATA-DISK')]",      
+        "nic": "[concat(parameters('Sql_Server_Name'), '-', 'NIC')]",
+        "datadisk": "[concat(parameters('Sql_Server_Name'), '-DATA-DISK')]",
         "sqlDisksLUNs": [
             "0"
         ]
@@ -131,7 +132,7 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
+                            "storageAccountType": "Standard_LRS"
                         },
                         "diskSizeGB": 128
                     },
@@ -143,7 +144,7 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
+                                "storageAccountType": "Standard_LRS"
                             },
                             "diskSizeGB": 2048
                         }

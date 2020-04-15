@@ -507,20 +507,31 @@ function Add-SreConfig {
     $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
 
-    # MS SQL Development
-    $config.sre.mssqldev = [ordered]@{}
-    $config.sre.mssqldev.rg = "RG_SRE_MSSQLDEV"
-    $config.sre.mssqldev.nsg = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
-
-    # MS SQL ETL
-    $config.sre.mssqletl = [ordered]@{}
-    $config.sre.mssqletl.rg = "RG_SRE_MSSQLETL"
-    $config.sre.mssqletl.nsg = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
-
-    # MS SQL Data
-    $config.sre.mssqldata = [ordered]@{}
-    $config.sre.mssqldata.rg = "RG_SRE_MSSQLDATA"
-    $config.sre.mssqldata.nsg = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
+    # Databases
+    $config.sre.databases = [ordered]@{
+        rg = "RG_SRE_DATA"
+        # MS SQL Development
+        mssqldev = [ordered]@{
+            name = "MSSQL-DEV"
+            ip = "$($config.sre.network.subnets.mssqldev.prefix).4"
+            nsg = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
+            vmSize = "Standard_DS2_v2"
+        }
+        # MS SQL ETL
+        mssqletl = [ordered]@{
+            name = "MSSQL-ETL"
+            ip = "$($config.sre.network.subnets.mssqletl.prefix).4"
+            nsg = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
+            vmSize = "Standard_DS2_v2"
+        }
+        # MS SQL Data
+        mssqldata = [ordered]@{
+            name = "MSSQL-DATA"
+            ip = "$($config.sre.network.subnets.mssqldata.prefix).4"
+            nsg = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
+            vmSize = "Standard_DS2_v2"
+        }
+    }
 
     # Compute VMs
     $config.sre.dsvm = [ordered]@{}
