@@ -1,0 +1,33 @@
+{
+    "type": [
+        "pdf"
+    ],
+    "breaks": false,
+    "displayHeaderFooter": true,
+    "emoji": true,
+    "executablePath": "",
+    "footerTemplate": "<div style=\"font-size: 9px; margin: 0 auto;\"> <span class='pageNumber'></span> / <span class='totalPages'></span></div>",
+    "format": "A4",
+    "headerTemplate": "<div></div>",
+    "height": "",
+    "highlight": true,
+    "highlightStyle": "",
+    "includeDefaultStyles": true,
+    "margin": {
+        "top": "2cm",
+        "bottom": "2cm",
+        "right": "1cm",
+        "left": "1cm"
+    },
+    "omitBackground": false,
+    "orientation": "portrait",
+    "outputDirectory": "",
+    "outputDirectoryRelativePathFile": false,
+    "pageRanges": "",
+    "printBackground": true,
+    "quality": 100,
+    "scale": 1,
+    "styles": [],
+    "stylesRelativePathFile": false,
+    "width": ""
+}
