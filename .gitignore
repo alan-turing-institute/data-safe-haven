@@ -7,3 +7,6 @@ deployment/secure_research_environment/remote/compute_vm/tests/logistic.csv
 secrets/
 temp/
 .vscode
+
+# PDF versions of our Markdown documents
+docs/*.pdf

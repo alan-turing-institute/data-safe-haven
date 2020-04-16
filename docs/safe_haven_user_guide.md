@@ -12,26 +12,26 @@
   - [:seedling: Prerequisites](#seedling-prerequisites-1)
   - [:house: Log into the research environment](#house-log-into-the-research-environment)
   - [:penguin: Log into the Linux Data Science desktop](#penguin-log-into-the-linux-data-science-desktop)
-- [:desktop_computer: Develop analyses via the Linux Data Science desktop](#desktop_computer-develop-analyses-via-the-linux-data-science-desktop)
+- [:computer: Develop analyses via the Linux Data Science desktop](#computer-develop-analyses-via-the-linux-data-science-desktop)
   - [:musical_keyboard: Keyboard mapping](#musical_keyboard-keyboard-mapping)
   - [:unlock: Access applications](#unlock-access-applications)
   - [:snake: Initiate the correct version of R or python](#snake-initiate-the-correct-version-of-r-or-python)
-  - [:package: Install R and python packages](#package-install-r-and-python-packages)
+  - [:gift: Install R and python packages](#gift-install-r-and-python-packages)
 - [:link: Share files with collaborators](#link-share-files-with-collaborators)
   - [:open_file_folder: Shared directories within the SRE](#open_file_folder-shared-directories-within-the-sre)
   - [:newspaper: Bring in new files to the SRE](#newspaper-bring-in-new-files-to-the-sre)
-- [:man_scientist: Collaborate on code using GitLab](#man_scientist-collaborate-on-code-using-gitlab)
-  - [:card_file_box: Maintaining an archive of the project](#card_file_box-maintaining-an-archive-of-the-project)
+- [:couple: Collaborate on code using GitLab](#couple-collaborate-on-code-using-gitlab)
+  - [:books: Maintaining an archive of the project](#books-maintaining-an-archive-of-the-project)
   - [:unlock: Access GitLab](#unlock-access-gitlab)
   - [:open_hands: Public repositories within the SRE](#open_hands-public-repositories-within-the-sre)
-  - [:construction_worker_woman: Support for GitLab use](#construction_worker_woman-support-for-gitlab-use)
+  - [:construction_worker: Support for GitLab use](#construction_worker-support-for-gitlab-use)
 - [:book: Collaborate on documents using HackMD](#book-collaborate-on-documents-using-hackmd)
   - [:unlock: Access HackMD](#unlock-access-hackmd)
   - [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
   - [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
 - [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
 - [:bug: Report a bug](#bug-report-a-bug)
-  - [:woman_mechanic: Help us to help you](#woman_mechanic-help-us-to-help-you)
+  - [:wrench: Help us to help you](#wrench-help-us-to-help-you)
 - [:pray: Acknowledgments](#pray-acknowledgments)
 - [:passport_control: Appendix A: Command line basics](#passport_control-appendix-a-command-line-basics)
 - [:notebook: Appendix B: Gitlab tutorial notes](#notebook-appendix-b-gitlab-tutorial-notes)
@@ -79,7 +79,7 @@ This section of the user guide will help you set up your new account on the SRE 
 Make sure you have all of the following in front of you when connecting to the SRE.
 
 * :e-mail: The email from your SRE administrator with your account details.
-* :woman_mechanic: Your [username](#username), given in an email from your SRE administrator.
+* :wrench: Your [username](#username), given in an email from your SRE administrator.
 * :european_castle: The [domain name and URL](#domain-names) for the SRE, given in an email from your SRE administrator.
 * :computer: Your computer.
 * :satellite: [Access](#network-access) to the specific wired or wireless network detailed in the email from your SRE administrator.
@@ -251,7 +251,7 @@ This additional security verification is to make it harder for people to imperso
 
    Download the Microsoft Authenticator app via one of these links:
      - :apple: iOS: `https://bit.ly/iosauthenticator`
-     - :robot: Android: `https://bit.ly/androidauthenticator`
+     - :bust_in_silhouette: Android: `https://bit.ly/androidauthenticator`
      - :checkered_flag: Windows mobile: `https://bit.ly/windowsauthenticator`
 
    > :warning: You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
@@ -296,7 +296,7 @@ You may find the following tips helpful:
 - :inbox_tray: Make sure you allow notifications on your authenticator app.
 - :sleeping: Check you don't have *Do not Disturb* mode on.
 - :zap: You have to be SUPER FAST at acknowledging the notification on your app, since the access codes update every 30 seconds.
-- :woman_shrugging: Sometimes just going through the steps again solves the problem
+- :confused: Sometimes just going through the steps again solves the problem
 
 ## :unlock: Access the Secure Research Environment
 
@@ -403,7 +403,7 @@ Once connected to it, you can carry out data science research while remaining co
 You are now inside the Turing Safe Haven SRE!
 Welcome :wave:
 
-## :desktop_computer: Develop analyses via the Linux Data Science desktop
+## :computer: Develop analyses via the Linux Data Science desktop
 
 You can use the Linux Data Science desktop to carry out data science research on the data that has been made available to you.
 You can work with any of the pre-installed applications and programming languages.
@@ -487,7 +487,7 @@ To enable a `python` version type `conda activate <name>` on the command line, w
 > :warning: Note that enabling one of these `python` environments will change the version of `R` away from system `R`.
 > If you want to use `R` after enabling a `python` environment, please remember to type `conda deactivate` first.
 
-### :package: Install R and python packages
+### :gift: Install R and python packages
 
 There are local copies of the `PyPI` and `CRAN` package repositories available within the Turing SRE.
 
@@ -556,6 +556,7 @@ There are several shared areas on the data science machine that all collaborator
 
 * [input data](#input-data-data): `/data/`
 * [shared space](#shared-space-shared): `/shared/`
+* [scratch space](#scratch-space-scratch): `/scratch/`
 * [output resources](#output-resources-output): `/output/`
 
 #### Input data: `/data/`
@@ -578,8 +579,17 @@ The `/shared/` folder should be used for any work that you want to share with yo
 
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
-The contents of `/shared/` will be **different** on different VMs in your SRE.
-For example, if your group requests a GPU-enabled machine, this will have its own `/shared/` folder.
+The contents of `/shared/` will be **identical** on all virtual machines in your SRE.
+For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
+
+#### Scratch space: `/scratch/`
+
+The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
+
+Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
+
+The contents of `/scratch/` will be **different** on different VMs in your SRE.
+For example, if your group requests a GPU-enabled machine, this will have its own `/scratch/` folder.
 
 #### Output resources: `/output/`
 
@@ -609,7 +619,7 @@ They will have to discuss whether this is an acceptable risk to the data securit
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
-## :man_scientist: Collaborate on code using GitLab
+## :couple: Collaborate on code using GitLab
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
 It lets you and others work together on projects, using git to **version control** your work, coordinating tasks using GitLab **issues** and reviewing work using GitLab **merge requests**.
@@ -620,16 +630,17 @@ So while there is a central service run by the GitLab organisation at https://gi
 The GitLab instance within the SRE can contain code, documentation and results from you and your team's analyses.
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and / or external servers.
 
-### :card_file_box: Maintaining an archive of the project
+### :books: Maintaining an archive of the project
 
 The Turing Safe Haven SRE uses virtual machines hosted on the Microsoft Azure cloud platform.
 One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 
 Make sure that every piece of code you think might be useful is stored in a GitLab repository within the secure environment.
-Images and other outputs (including processed datasets) should be transferred to the shared `/output/` drive.
+Any other work should be transferred to the shared `/shared/` drive.
+Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
 
-> :warning: If you are participating in a Turing Data Study Group, everything that is not stored in a GitLab repository or on the shared `/output/` drive by Friday lunchtime will be **DESTROYED FOR EVER**.
+> :warning: If you are participating in a Turing Data Study Group, everything that is not stored in a GitLab repository or on the shared `/shared/` or `/output/` drives by Friday lunchtime will be **DESTROYED FOR EVER**.
 
 ### :unlock: Access GitLab
 
@@ -665,9 +676,9 @@ The GitLab instance inside the secure research environment is entirely contained
 When you make a repository inside the SRE "public" it is visible to your collaborators who also have access to the SRE.
 A "public" repository within the SRE is only visible to others with the same data access approval, it is not open to the general public via the internet.
 
-> :handshake: We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
+> :point_right: We recommend that you make your repositories public to facilitate collaboration within the secure research environment.
 
-### :construction_worker_woman: Support for GitLab use
+### :construction_worker: Support for GitLab use
 
 If you have not used GitLab before:
 
@@ -789,7 +800,7 @@ We are constantly working to improve the SRE and we really appreciate your input
 
 > :point_right: If you find problems with the IT infrastructure, please contact the designated contact for your SRE.
 
-### :woman_mechanic: Help us to help you
+### :wrench: Help us to help you
 
 To help us fix your issues please do the following:
 
@@ -816,7 +827,7 @@ To help us fix your issues please do the following:
      What happens? What would you expect to happen if there were no error?
    - Any workarounds/fixes you have found.
 
-> :duck: We very strongly recommend "rubber ducking" this process before you talk to the designated contact for your SRE.
+> :bird: We very strongly recommend "rubber ducking" this process before you talk to the designated contact for your SRE.
 >
 > Either talk through to your imaginary rubber duck, or find a team member to describe the error to, as you write down the steps you have taken.
 >
@@ -1056,7 +1067,7 @@ Your merge request will be ready to be approved and merged.
 #### Symptom
 
 - You can successfully log into the remote desktop web interface
-> :information_source: for our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
+> :information_source: For our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
 
 - You do not see any available apps
 
@@ -1077,7 +1088,7 @@ Follow the two factor authentication section from the [logging in section](#hous
 #### Symptom
 
 - You can successfully log into the remote desktop web interface
-> :information_source: for our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
+> :information_source: For our example user, Ada Lovelace, this would be `https://sandbox.apr20.turingsafehaven.ac.uk`.
 
 - You can see several apps, but when you try to launch one of them, you receive an error saying "Your session ended because an unexpected server authentication certificate was received from the remote PC."
 - When you click on the padlock icon in the address bar and view the SSL certificate, the "SHA-1 Fingerprint" in the certificate matches the "SHA-1 Thumbprint" in the error message.
