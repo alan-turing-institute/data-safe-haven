@@ -35,7 +35,7 @@ ForEach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
     #       user groups as there must always be at least one user group assigned for each RAP
     # Ensure SRE Researcher user group is assigned to RAP
     
-    if(Get-Item RDS:\GatewayServer\RAP\$rapName\UserGroups\ | Get-ChildItem | Where-Object { $_.Name -eq  $sreResearchUserSecurityGroupWithDomain  }) {
+    if( -Not (Get-Item RDS:\GatewayServer\RAP\$rapName\UserGroups\ | Get-ChildItem | Where-Object { $_.Name -eq  $sreResearchUserSecurityGroupWithDomain  })) {
         $_ = New-Item $("RDS:\GatewayServer\RAP\$rapName\UserGroups\") -Name "$sreResearchUserSecurityGroupWithDomain" -ErrorAction SilentlyContinue
         $success = ($success -And $?)
     }
