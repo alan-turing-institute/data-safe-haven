@@ -101,16 +101,3 @@ function Resolve-KeyVaultSecret {
     return $secret.SecretValueText
 }
 Export-ModuleMember -Function Resolve-KeyVaultSecret
-
-
-# # Strip non-Base64 characters from text
-# # -------------------------------------
-# function Format-AsBase64String {
-#     [CmdletBinding()]
-#     param(
-#         [Parameter(ValueFromPipeline, Mandatory = $true)]
-#         $InputText
-#     )
-#     return [string]($InputText) -replace '[^A-Za-z0-9+/=`n]', ''
-# }
-# Export-ModuleMember -Function Format-AsBase64String
