@@ -588,20 +588,18 @@ function Invoke-WindowsConfigureAndUpdate {
         [Parameter(Mandatory = $false, HelpMessage = "Path to common_powershell directory")]
         [string]$CommonPowershellPath = $null
     )
-    # # Install package providers
-    # Add-LogMessage -Level Info "[ ] Installing package providers on '$VMName'"
-    # $PackageProvidersScriptPath = Join-Path $PSScriptRoot "remote" "Install_Package_Providers.ps1"
-    # $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $PackageProvidersScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
-    # Write-Output $result.Value
-    # Install Powershell modules
-    Add-LogMessage -Level Info "[ ] Installing required Powershell modules on '$VMName'"
-    $powershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Powershell_Modules.ps1"
-    $optional = @{}
-    if ($AdditionalPowershellModules) {
-        $optional["Parameter"] = @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|")}
-    }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $powershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName @optional
+    # Install core Powershell modules
+    Add-LogMessage -Level Info "[ ] Installing core Powershell modules on '$VMName'"
+    $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
+    # Install additional Powershell modules
+    if ($AdditionalPowershellModules) {
+        Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
+        $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|")}
+        Write-Output $result.Value
+    }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
     $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"

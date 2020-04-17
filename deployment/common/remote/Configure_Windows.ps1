@@ -21,8 +21,12 @@ if ($success) {
 
 # Install Windows updates
 # -----------------------
-Write-Host " [ ] Installing Windows updates..."
-Get-WindowsUpdate -MicrosoftUpdate | % { $_.Title }
+$existingUpdateTitles = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") } | ForEach-Object { $_.Title }
+$updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
+Write-Host "`nInstalling $($updatesToInstall.Count) Windows updates:"
+foreach ($update in $updatesToInstall) {
+    Write-Host " ... $($update.Title)"
+}
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
 if ($?) {
     Write-Host " [o] Installing Windows updates succeeded."
@@ -31,7 +35,10 @@ if ($?) {
 }
 
 
-# Report any updates that were installed today
-# --------------------------------------------
-Write-Host " [ ] Installed updates are as follows:"
-Get-WUHistory | Where-Object { ($_.Date.Date -eq (Get-Date).Date) -and ($_.Result -eq "Succeeded") } | % { $_.Title }
+# Report any updates that were installed
+# --------------------------------------
+Write-Host "`nNewly installed Windows updates:"
+$installedUpdates = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") -And ($_.Title -NotIn $existingUpdateTitles) }
+foreach ($update in $installedUpdates) {
+    Write-Host " ... $($update.Title)"
+}
