@@ -4,12 +4,10 @@ param(
 )
 
 Import-Module Az
-Import-Module SqlServer
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
-# Import-Module $PSScriptRoot/../../common/SqlServers.psm1 -Force
 
 
 # Get config and original context before changing subscription
@@ -36,78 +34,65 @@ $sqlAuthUpdateUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.
 $_ = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
 
 
-# Create subnets if they do not exist
-# -----------------------------------
+# Ensure that VNet exists
+# -----------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
-$mssqldevSubnet = Deploy-Subnet -Name $config.sre.network.subnets.mssqldev.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.sre.network.subnets.mssqldev.cidr
-$mssqletlSubnet = Deploy-Subnet -Name $config.sre.network.subnets.mssqletl.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.sre.network.subnets.mssqletl.cidr
-$mssqldataSubnet = Deploy-Subnet -Name $config.sre.network.subnets.mssqldata.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.sre.network.subnets.mssqldata.cidr
 
 
-# Create development SQL server from template
-# -------------------------------------------
-Add-LogMessage -Level Info "Creating the development SQL server from template..."
-$params = @{
-    Location = $config.sre.location
-    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-    Administrator_User = $sreAdminUsername
-    DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
-    DC_Join_User = $shmDcAdminUsername
-    Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
-    Sql_AuthUpdate_Password = (ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Sql_Server_Name = $config.sre.databases.mssqldev.name
-    Sql_Server_Edition = "sqldev"
-    Domain_Name = $config.shm.domain.fqdn
-    IP_Address = $config.sre.databases.mssqldev.ip
-    SubnetResourceId = $mssqldevSubnet.Id
-    VM_Size = $config.sre.databases.mssqldev.vmSize
+# Create each database defined in the config file
+# -----------------------------------------------
+foreach ($dbConfig in $config.sre.databases.psobject.Members) {
+    if ($dbConfig.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    $databaseCfg = $dbConfig.Value
+    $subnetCfg = $config.sre.network.subnets.($dbConfig.Name)
+
+    # Ensure that subnet exists
+    # -------------------------
+    $subnet = Deploy-Subnet -Name $subnetCfg.name -VirtualNetwork $virtualNetwork -AddressPrefix $subnetCfg.cidr
+
+    # Create SQL server from template
+    # -------------------------------
+    Add-LogMessage -Level Info "Creating $($databaseCfg.name) from template..."
+    $params = @{
+        Location = $config.sre.location
+        Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
+        Administrator_User = $sreAdminUsername
+        DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
+        DC_Join_User = $shmDcAdminUsername
+        Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
+        Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
+        BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
+        Sql_Server_Name = $databaseCfg.name
+        Sql_Server_Edition = "sqldev"
+        Domain_Name = $config.shm.domain.fqdn
+        IP_Address = $databaseCfg.ip
+        SubnetResourceId = $subnet.Id
+        VM_Size = $databaseCfg.vmSize
+    }
+    Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
+
+
+    # Set locale, install updates and reboot
+    # --------------------------------------
+    Add-LogMessage -Level Info "Updating $($databaseCfg.name)..." # NB. this takes around 20 minutes due to a large SQL server update
+    Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
+
+
+    # Lockdown SQL server
+    # -------------------
+    Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.name)..."
+    $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
+    $params = @{
+        EnableSSIS = $databaseCfg.enableSSIS
+        SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.sqlAdmins.name)"
+        SqlAuthUpdateUsername = $sqlAuthUpdateUsername
+        SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
+        B64ServerLockdownCommand = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
+    }
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -Parameter $params
+    Write-Output $result.Value
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
-
-
-# Create ETL SQL server from template
-# -----------------------------------
-Add-LogMessage -Level Info "Creating the ETL SQL server from template..."
-$params = @{
-    Location = $config.sre.location
-    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-    Administrator_User = $sreAdminUsername
-    DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
-    DC_Join_User = $shmDcAdminUsername
-    Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
-    Sql_AuthUpdate_Password = (ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Sql_Server_Name = $config.sre.databases.mssqletl.name
-    Sql_Server_Edition = "sqldev"
-    Domain_Name = $config.shm.domain.fqdn
-    IP_Address = $config.sre.databases.mssqletl.ip
-    SubnetResourceId = $mssqletlSubnet.Id
-    VM_Size = $config.sre.databases.mssqletl.vmSize
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
-
-
-# Create data SQL server from template
-# ------------------------------------
-Add-LogMessage -Level Info "Creating the data SQL server from template..."
-$params = @{
-    Location = $config.sre.location
-    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-    Administrator_User = $sreAdminUsername
-    DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
-    DC_Join_User = $shmDcAdminUsername
-    Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
-    Sql_AuthUpdate_Password = (ConvertTo-SecureString $sqlAuthUpdateUserPassword -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Sql_Server_Name = $config.sre.databases.mssqldata.name
-    Sql_Server_Edition = "sqldev"
-    Domain_Name = $config.shm.domain.fqdn
-    IP_Address = $config.sre.databases.mssqldata.ip
-    SubnetResourceId = $mssqldataSubnet.Id
-    VM_Size = $config.sre.databases.mssqldata.vmSize
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 
 
 # Switch back to original subscription

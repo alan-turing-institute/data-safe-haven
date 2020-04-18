@@ -327,18 +327,21 @@
       "rg": "RG_SRE_DATABASES",
       "mssqldev": {
         "name": "SQL-DEV-SANDBOX",
+        "enableSSIS": true,
         "ip": "10.150.3.4",
         "nsg": "NSG_SRE_SANDBOX_MSSQLDEV",
         "vmSize": "Standard_DS2_v2"
       },
       "mssqletl": {
         "name": "SQL-ETL-SANDBOX",
+        "enableSSIS": true,
         "ip": "10.150.4.4",
         "nsg": "NSG_SRE_SANDBOX_MSSQLETL",
         "vmSize": "Standard_DS2_v2"
       },
       "mssqldata": {
         "name": "SQL-DAT-SANDBOX",
+        "enableSSIS": true,
         "ip": "10.150.5.4",
         "nsg": "NSG_SRE_SANDBOX_MSSQLDATA",
         "vmSize": "Standard_DS2_v2"

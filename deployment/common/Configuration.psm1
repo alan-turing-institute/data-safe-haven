@@ -514,24 +514,24 @@ function Add-SreConfig {
         rg = "RG_SRE_DATABASES"
         # MS SQL Development
         mssqldev = [ordered]@{
-            # name = "MSSQL-DEV"
             name = "SQL-DEV-$($config.sre.id)".ToUpper() | TrimToLength 15
+            enableSSIS = $true
             ip = "$($config.sre.network.subnets.mssqldev.prefix).4"
             nsg = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
             vmSize = "Standard_DS2_v2"
         }
         # MS SQL ETL
         mssqletl = [ordered]@{
-            # name = "MSSQL-ETL"
             name = "SQL-ETL-$($config.sre.id)".ToUpper() | TrimToLength 15
+            enableSSIS = $true
             ip = "$($config.sre.network.subnets.mssqletl.prefix).4"
             nsg = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
             vmSize = "Standard_DS2_v2"
         }
         # MS SQL Data
         mssqldata = [ordered]@{
-            # name = "MSSQL-DATA"
             name = "SQL-DAT-$($config.sre.id)".ToUpper() | TrimToLength 15
+            enableSSIS = $true
             ip = "$($config.sre.network.subnets.mssqldata.prefix).4"
             nsg = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
             vmSize = "Standard_DS2_v2"
