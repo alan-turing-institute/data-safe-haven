@@ -87,7 +87,7 @@ if ($?) {
 # --------------------------------------------------------------------------------------
 Write-Host "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
 $dropAdminCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $($sqlLoginName)"
-# Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $dropAdminCommand -ErrorAction Stop
+Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $dropAdminCommand -ErrorAction Stop
 if ($?) {
     Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
 } else {
