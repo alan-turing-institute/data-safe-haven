@@ -9,6 +9,8 @@ param(
     [String]$shmFqdn,
     [String]$researchUserSgName,
     [String]$researchUserSgDescription,
+    [String]$sqlAdminSgName,
+    [String]$sqlAdminSgDescription,
     [String]$ldapUserSgName,
     [String]$securityOuPath,
     [String]$serviceOuPath,
@@ -76,8 +78,9 @@ $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypte
 $dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
-# Create SRE Security Group
+# Create SRE Security Groups
 New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
 # Create Service Accounts for SRE
 New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
