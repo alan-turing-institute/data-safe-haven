@@ -33,7 +33,7 @@ foreach ($moduleName in $PipeSeparatedModules.Split("|")) {
 # Report any modules that were installed
 # --------------------------------------
 Write-Host "`nNewly installed modules:"
-$installedModules = Get-Module -ListAvailable | Where-Object { $_.Name -NotIn $existingModuleNames }
+$installedModules = Invoke-Command -ScriptBlock { Get-Module -ListAvailable | Where-Object { $_.Name -NotIn $existingModuleNames } }
 foreach ($module in $installedModules) {
     Write-Host " ... $($module.Name)"
 }
