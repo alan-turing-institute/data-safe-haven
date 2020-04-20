@@ -30,6 +30,9 @@
   - [:busts_in_silhouette: Editing other people's documents](#busts_in_silhouette-editing-other-peoples-documents)
   - [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
 - [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
+- [:green_book: Access input databases](#green_book-access-input-databases)
+  - [:art: Connecting with Azure Data Studio](#art-connecting-with-azure-data-studio)
+  - [:snake: Connecting with Python](#snake-connecting-with-python)
 - [:bug: Report a bug](#bug-report-a-bug)
   - [:wrench: Help us to help you](#wrench-help-us-to-help-you)
 - [:pray: Acknowledgments](#pray-acknowledgments)
@@ -790,6 +793,38 @@ You will need to know the IP address of the new machine, which you will be told 
 3. After entering the IP address, you will get the normal login screen, where you use the same `username` and `password` credentials as before.
 
 4. Any local files that you have created in the `/output/` folder on other VMs (e.g. analysis scripts, notes, derived data) will be automatically available in the new VM.
+
+## :green_book: Access input databases
+
+Your project might use a database for holding the input data.
+If this is the case, you can access it using the following details
+
+> Server name: <provided by your SRE administrator>.<username domain>
+> Database name: <provided by your SRE administrator>
+> Port: 14330
+
+Examples are given below for connecting using Azure Data Studio and Python.
+The instructions for using other graphical interfaces or programming languages will be similar.
+
+### :art: Connecting with Azure Data Studio
+> :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using Azure Data Studio as follows
+
+   <p align="center">
+      <img src="images/user_guide/db_AzureDataStudio.png" width="80%" title="db_AzureDataStudio">
+   </p>
+
+> :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database
+
+### :snake: Connecting with Python
+```python
+import pyodbc
+server = "SQL-ING-SANDBOX"
+username_domain = "apr20.turingsafehaven.ac.uk"
+db_name = "master"
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "." + username_domain + ",14330;DATABASE=" + db_name + ";Trusted_Connection=yes;")
+cnxn.execute(... your command here ...)
+```
+
 
 ## :bug: Report a bug
 

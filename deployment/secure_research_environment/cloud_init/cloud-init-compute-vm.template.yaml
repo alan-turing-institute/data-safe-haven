@@ -226,6 +226,11 @@ runcmd:
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
   - cd -
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
+  # Install Azure Data Studio
+  - AZURE_DATA_STUDIO_VERSION="1.16.1"
+  - wget https://azuredatastudiobuilds.blob.core.windows.net/releases/${AZURE_DATA_STUDIO_VERSION}/azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
+  - dpkg -i azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
+  - rm azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
