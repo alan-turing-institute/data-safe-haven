@@ -177,35 +177,17 @@
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
-        "mssqldev": {
-          "nsg": "mssqldev",
-          "name": "MsSqlDevSubnet",
+        "dbingress": {
+          "name": "DbIngressSubnet",
           "prefix": "10.150.3",
+          "nsg": "dbingress",
           "cidr": "10.150.3.0/24"
-        },
-        "mssqletl": {
-          "nsg": "mssqletl",
-          "name": "MsSqlEtlSubnet",
-          "prefix": "10.150.4",
-          "cidr": "10.150.4.0/24"
-        },
-        "mssqldata": {
-          "nsg": "mssqldata",
-          "name": "MsSqlDataSubnet",
-          "prefix": "10.150.5",
-          "cidr": "10.150.5.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "mssqldev": {
-          "name": "NSG_SRE_SANDBOX_MSSQLDEV"
-        },
-        "mssqletl": {
-          "name": "NSG_SRE_SANDBOX_MSSQLETL"
-        },
-        "mssqldata": {
-          "name": "NSG_SRE_SANDBOX_MSSQLDATA"
+        "dbingress": {
+          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
         }
       }
     },
@@ -235,6 +217,8 @@
         "dataMountPassword": "sre-sandbox-datamount-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "sqlInputReaderPassword": "sre-sandbox-inputdb-reader-username",
+        "sqlInputReaderUsername": "sre-sandbox-inputdb-sql-reader-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
@@ -334,25 +318,11 @@
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "mssqldev": {
-        "name": "SQL-DEV-SANDBOX",
+      "dbmssqlingress": {
+        "name": "SQL-ING-SANDBOX",
         "enableSSIS": true,
         "ipLastOctet": "4",
-        "subnet": "mssqldev",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "mssqletl": {
-        "name": "SQL-ETL-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
-        "subnet": "mssqletl",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "mssqldata": {
-        "name": "SQL-DAT-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
-        "subnet": "mssqldata",
+        "subnet": "dbingress",
         "vmSize": "Standard_DS2_v2"
       }
     },

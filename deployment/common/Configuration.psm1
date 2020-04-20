@@ -307,62 +307,42 @@ function Add-SreConfig {
 
     # --- Network config ---
     $config.sre.network = [ordered]@{
-        vnet = [ordered]@{}
+        vnet = [ordered]@{
+            rg = "RG_SRE_NETWORKING"
+            name = "VNET_SRE_$($config.sre.id)".ToUpper()
+            cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
+        }
         subnets = [ordered]@{
-            identity = [ordered]@{}
-            rds = [ordered]@{}
-            data = [ordered]@{}
-            mssqldev = [ordered]@{
-                nsg = "mssqldev"
+            identity = [ordered]@{
+                name = "IdentitySubnet"
+                prefix = "${sreBasePrefix}.${sreThirdOctet}"
             }
-            mssqletl = [ordered]@{
-                nsg = "mssqletl"
+            rds = [ordered]@{
+                name = "RDSSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 1)"
             }
-            mssqldata = [ordered]@{
-                nsg = "mssqldata"
+            data = [ordered]@{
+                name = "SharedDataSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
+            }
+            dbingress = [ordered]@{
+                name = "DbIngressSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
+                nsg = "dbingress"
             }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
-            mssqldev = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
-            }
-            mssqletl = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
-
-            }
-            mssqldata = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
+            dbingress = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
             }
         }
     }
-    $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.sre.network.vnet.name = "VNET_SRE_$($config.sre.id)".ToUpper()
-    $config.sre.network.vnet.cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
-    $config.sre.network.subnets.identity.name = "IdentitySubnet"
-    $config.sre.network.subnets.identity.prefix = "${sreBasePrefix}.${sreThirdOctet}"
+    # Construct the CIDR for each subnet based on the prefix
     $config.sre.network.subnets.identity.cidr = "$($config.sre.network.subnets.identity.prefix).0/24"
-    $config.sre.network.subnets.rds.name = "RDSSubnet"
-    $config.sre.network.subnets.rds.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 1)"
     $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
-    $config.sre.network.subnets.data.name = "SharedDataSubnet"
-    $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
-
-    # Isolates MS SQL Server development infrastructure
-    $config.sre.network.subnets.mssqldev.name = "MsSqlDevSubnet"
-    $config.sre.network.subnets.mssqldev.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
-    $config.sre.network.subnets.mssqldev.cidr = "$($config.sre.network.subnets.mssqldev.prefix).0/24"
-
-    # MS SQL Server infrastructure concerned with ETL
-    $config.sre.network.subnets.mssqletl.name = "MsSqlEtlSubnet"
-    $config.sre.network.subnets.mssqletl.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 4)"
-    $config.sre.network.subnets.mssqletl.cidr = "$($config.sre.network.subnets.mssqletl.prefix).0/24"
-
-    # MS SQL Server infrastructure providing query access to researchers
-    $config.sre.network.subnets.mssqldata.name = "MsSqlDataSubnet"
-    $config.sre.network.subnets.mssqldata.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 5)"
-    $config.sre.network.subnets.mssqldata.cidr = "$($config.sre.network.subnets.mssqldata.prefix).0/24"
+    $config.sre.network.subnets.dbingress.cidr = "$($config.sre.network.subnets.dbingress.prefix).0/24"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -395,6 +375,8 @@ function Add-SreConfig {
             dataMountPassword = "$($config.sre.shortName)-datamount-password"
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
+            sqlInputReaderPassword = "$($config.sre.shortName)-inputdb-reader-username"
+            sqlInputReaderUsername = "$($config.sre.shortName)-inputdb-sql-reader-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
@@ -525,28 +507,12 @@ function Add-SreConfig {
     # Databases
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_DATABASES"
-        # MS SQL Development
-        mssqldev = [ordered]@{
-            name = "SQL-DEV-$($config.sre.id)".ToUpper() | TrimToLength 15
+        # MS SQL data ingress
+        dbmssqlingress = [ordered]@{
+            name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
             enableSSIS = $true
             ipLastOctet = "4"
-            subnet = "mssqldev"
-            vmSize = "Standard_DS2_v2"
-        }
-        # MS SQL ETL
-        mssqletl = [ordered]@{
-            name = "SQL-ETL-$($config.sre.id)".ToUpper() | TrimToLength 15
-            enableSSIS = $true
-            ipLastOctet = "4"
-            subnet = "mssqletl"
-            vmSize = "Standard_DS2_v2"
-        }
-        # MS SQL Data
-        mssqldata = [ordered]@{
-            name = "SQL-DAT-$($config.sre.id)".ToUpper() | TrimToLength 15
-            enableSSIS = $true
-            ipLastOctet = "4"
-            subnet = "mssqldata"
+            subnet = "dbingress"
             vmSize = "Standard_DS2_v2"
         }
     }
