@@ -312,15 +312,28 @@ function Add-SreConfig {
             identity = [ordered]@{}
             rds = [ordered]@{}
             data = [ordered]@{}
-            mssqldev = [ordered]@{}
-            mssqletl = [ordered]@{}
-            mssqldata = [ordered]@{}
+            mssqldev = [ordered]@{
+                nsg = "mssqldev"
+            }
+            mssqletl = [ordered]@{
+                nsg = "mssqletl"
+            }
+            mssqldata = [ordered]@{
+                nsg = "mssqldata"
+            }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
-            mssqldev = [ordered]@{}
-            mssqletl = [ordered]@{}
-            mssqldata = [ordered]@{}
+            mssqldev = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
+            }
+            mssqletl = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
+
+            }
+            mssqldata = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
+            }
         }
     }
     $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
@@ -516,24 +529,24 @@ function Add-SreConfig {
         mssqldev = [ordered]@{
             name = "SQL-DEV-$($config.sre.id)".ToUpper() | TrimToLength 15
             enableSSIS = $true
-            ip = "$($config.sre.network.subnets.mssqldev.prefix).4"
-            nsg = "NSG_SRE_$($config.sre.id)_MSSQLDEV".ToUpper()
+            ipLastOctet = "4"
+            subnet = "mssqldev"
             vmSize = "Standard_DS2_v2"
         }
         # MS SQL ETL
         mssqletl = [ordered]@{
             name = "SQL-ETL-$($config.sre.id)".ToUpper() | TrimToLength 15
             enableSSIS = $true
-            ip = "$($config.sre.network.subnets.mssqletl.prefix).4"
-            nsg = "NSG_SRE_$($config.sre.id)_MSSQLETL".ToUpper()
+            ipLastOctet = "4"
+            subnet = "mssqletl"
             vmSize = "Standard_DS2_v2"
         }
         # MS SQL Data
         mssqldata = [ordered]@{
             name = "SQL-DAT-$($config.sre.id)".ToUpper() | TrimToLength 15
             enableSSIS = $true
-            ip = "$($config.sre.network.subnets.mssqldata.prefix).4"
-            nsg = "NSG_SRE_$($config.sre.id)_MSSQLDATA".ToUpper()
+            ipLastOctet = "4"
+            subnet = "mssqldata"
             vmSize = "Standard_DS2_v2"
         }
     }

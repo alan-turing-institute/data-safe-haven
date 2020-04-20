@@ -178,16 +178,19 @@
           "cidr": "10.150.2.0/24"
         },
         "mssqldev": {
+          "nsg": "mssqldev",
           "name": "MsSqlDevSubnet",
           "prefix": "10.150.3",
           "cidr": "10.150.3.0/24"
         },
         "mssqletl": {
+          "nsg": "mssqletl",
           "name": "MsSqlEtlSubnet",
           "prefix": "10.150.4",
           "cidr": "10.150.4.0/24"
         },
         "mssqldata": {
+          "nsg": "mssqldata",
           "name": "MsSqlDataSubnet",
           "prefix": "10.150.5",
           "cidr": "10.150.5.0/24"
@@ -195,9 +198,15 @@
       },
       "nsg": {
         "data": {},
-        "mssqldev": {},
-        "mssqletl": {},
-        "mssqldata": {}
+        "mssqldev": {
+          "name": "NSG_SRE_SANDBOX_MSSQLDEV"
+        },
+        "mssqletl": {
+          "name": "NSG_SRE_SANDBOX_MSSQLETL"
+        },
+        "mssqldata": {
+          "name": "NSG_SRE_SANDBOX_MSSQLDATA"
+        }
       }
     },
     "storage": {
@@ -328,22 +337,22 @@
       "mssqldev": {
         "name": "SQL-DEV-SANDBOX",
         "enableSSIS": true,
-        "ip": "10.150.3.4",
-        "nsg": "NSG_SRE_SANDBOX_MSSQLDEV",
+        "ipLastOctet": "4",
+        "subnet": "mssqldev",
         "vmSize": "Standard_DS2_v2"
       },
       "mssqletl": {
         "name": "SQL-ETL-SANDBOX",
         "enableSSIS": true,
-        "ip": "10.150.4.4",
-        "nsg": "NSG_SRE_SANDBOX_MSSQLETL",
+        "ipLastOctet": "4",
+        "subnet": "mssqletl",
         "vmSize": "Standard_DS2_v2"
       },
       "mssqldata": {
         "name": "SQL-DAT-SANDBOX",
         "enableSSIS": true,
-        "ip": "10.150.5.4",
-        "nsg": "NSG_SRE_SANDBOX_MSSQLDATA",
+        "ipLastOctet": "4",
+        "subnet": "mssqldata",
         "vmSize": "Standard_DS2_v2"
       }
     },
