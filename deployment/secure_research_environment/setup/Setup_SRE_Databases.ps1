@@ -61,7 +61,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                  -Description "Inbound allow SRE VNet" `
                                  -Priority 3000 `
                                  -Direction Inbound -Access Allow -Protocol * `
-                                 -SourceAddressPrefix $config.sre.network.vnet.cidr -SourcePortRange * `
+                                 -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                                  -DestinationAddressPrefix $subnetCfg.cidr -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "InboundDenyAll" `
@@ -89,12 +89,12 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         # -----------------------------------------------------
         $privateIpAddress = "$($subnetCfg.prefix).$($databaseCfg.ipLastOctet)"
         Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                    -Name "OutboundAllowInternetTemporary" `
-                                    -Description "Outbound allow internet" `
-                                    -Priority 100 `
-                                    -Direction Outbound -Access Allow -Protocol * `
-                                    -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
-                                    -DestinationAddressPrefix Internet -DestinationPortRange *
+                                     -Name "OutboundAllowInternetTemporary" `
+                                     -Description "Outbound allow internet" `
+                                     -Priority 100 `
+                                     -Direction Outbound -Access Allow -Protocol * `
+                                     -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
+                                     -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
         # Create SQL server from template

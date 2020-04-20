@@ -41,39 +41,9 @@ if ($?) {
 }
 
 
-# Give the configured domain group the sysadmin role on the SQL Server
-# --------------------------------------------------------------------
-Write-Host "Ensuring that adminstrators domain group has SQL login access to: '$serverName'..."
-if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $SqlAdminGroup } ) {
-    Write-Host " [o] Adminstrators domain group already has SQL login access to: '$serverName'"
-} else {
-    Write-Host "Giving adminstrators domain group SQL login access to: '$serverName'..."
-    $_ = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $SqlAdminGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction Stop
-    if ($?) {
-        Write-Output " [o] Successfully gave domain group '$SqlAdminGroup' SQL login access to: '$serverName'"
-    } else {
-        Write-Output " [x] Failed to give domain group '$SqlAdminGroup' SQL login access to: '$serverName'!"
-        exit 1
-    }
-}
-
-
-# Run the scripted SQL Server lockdown
-# ------------------------------------
-Write-Host "Running T-SQL lockdown script on: '$serverName'..."
-$ServerLockdownCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($B64ServerLockdownCommand))
-Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $ServerLockdownCommand -ErrorAction Stop
-if ($?) {
-    Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"
-} else {
-    Write-Output " [x] Failed to run T-SQL lockdown script on: '$serverName'!"
-    exit 1
-}
-
-
 # Disable unused SQL Server services
 # ----------------------------------
-Write-Host "Disable unused SQL server services on: '$serverName'..."
+Write-Output "Disable unused SQL server services on: '$serverName'..."
 Get-Service SSASTELEMETRY, MSSQLServerOlapService, SQLBrowser | Stop-Service -PassThru | Set-Service -StartupType disabled
 if ($?) {
     Write-Output " [o] Successfully disabled unused SQL server services on: '$serverName'"
@@ -83,14 +53,72 @@ if ($?) {
 }
 
 
-# Revoke the sysadmin role from the SQL AuthUpdateUser used when building the SQL Server
-# --------------------------------------------------------------------------------------
-Write-Host "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
-$dropAdminCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $($sqlLoginName)"
-Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $dropAdminCommand -ErrorAction Stop
-if ($?) {
-    Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
-} else {
-    Write-Output " [x] Failed to revoke sysadmin role on: '$serverName'!"
+# Check whether the auth update user exists and has admin rights
+# --------------------------------------------------------------
+Write-Output "Checking that the $SqlAuthUpdateUsername user has admin permissions on: '$serverName'..."
+$loginExists = Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed | Where-Object { $_.Name -eq $SqlAuthUpdateUsername }
+$isAdmin = (New-Object Microsoft.SqlServer.Management.Smo.Server $serverName).Roles | Where-Object { $_.Name -Like "*admin*" } | Where-Object { $_.EnumServerRoleMembers() -Contains $SqlAuthUpdateUsername }
+
+if ($operationFailed -Or (-Not $loginExists)) {
+    Write-Output " [x] $SqlAuthUpdateUsername does not exist on: '$serverName'!"
     exit 1
+
+} elseif (-Not $isAdmin) {
+    Write-Output " [o] $SqlAuthUpdateUsername is not an admin on: '$serverName'. Have you already locked this server down?"
+
+} else {
+    # Give the configured domain group the sysadmin role on the SQL Server
+    # --------------------------------------------------------------------
+    Write-Output "Ensuring that adminstrators domain group has SQL login access to: '$serverName'..."
+    if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $SqlAdminGroup } ) {
+        Write-Output " [o] Adminstrators domain group already has SQL login access to: '$serverName'"
+    } else {
+        Write-Output "Giving adminstrators domain group SQL login access to: '$serverName'..."
+        $_ = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $SqlAdminGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+        if ($? -And -Not $operationFailed) {
+            Write-Output " [o] Successfully gave domain group '$SqlAdminGroup' SQL login access to: '$serverName'"
+        } else {
+            Write-Output " [x] Failed to give domain group '$SqlAdminGroup' SQL login access to: '$serverName'!"
+            exit 1
+        }
+    }
+
+
+    # Run the scripted SQL Server lockdown
+    # ------------------------------------
+    Write-Output "Running T-SQL lockdown script on: '$serverName'..."
+    $ServerLockdownCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($B64ServerLockdownCommand))
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $ServerLockdownCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+    if ($? -And -Not $operationFailed) {
+        Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"
+    } else {
+        Write-Output " [x] Failed to run T-SQL lockdown script on: '$serverName'!"
+        exit 1
+    }
+
+
+    # Add a user with read-only permissions
+    # -------------------------------------
+    Write-Output "Adding : '$serverName'..."
+    $ServerLockdownCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($B64ServerLockdownCommand))
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $ServerLockdownCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+    if ($? -And -Not $operationFailed) {
+        Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"
+    } else {
+        Write-Output " [x] Failed to run T-SQL lockdown script on: '$serverName'!"
+        exit 1
+    }
+
+
+    # Revoke the sysadmin role from the SQL AuthUpdateUser used when building the SQL Server
+    # --------------------------------------------------------------------------------------
+    Write-Output "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
+    $dropAdminCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $dropAdminCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+    if ($? -And -Not $operationFailed) {
+        Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
+    } else {
+        Write-Output " [x] Failed to revoke sysadmin role on: '$serverName'!"
+        exit 1
+    }
 }
