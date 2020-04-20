@@ -219,18 +219,27 @@ runcmd:
   - echo ">=== Restart xrdp... ===<"
   - service xrdp restart
   - service xrdp status
-  # Install DBeaver drivers
+  # Install DBeaver drivers: TODO move this into image build
   - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
   - cd -
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
-  # Install Azure Data Studio
+  # Install Microsoft ODBC drivers: TODO move this into image build
+  - sudo ACCEPT_EULA=Y apt-get install msodbcsql17
+  - ACCEPT_EULA=Y apt-get install mssql-tools
+  - apt-get install mssql-cli
+  - echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> /etc/bash.bashrc
+  # Install Azure Data Studio: TODO move this into image build
   - AZURE_DATA_STUDIO_VERSION="1.16.1"
   - wget https://azuredatastudiobuilds.blob.core.windows.net/releases/${AZURE_DATA_STUDIO_VERSION}/azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
   - dpkg -i azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
   - rm azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
+  # Install pyodbc: TODO move this into image build
+  - conda install -y --verbose --name py27 pyodbc
+  - conda install -y --verbose --name py36 pyodbc
+  - conda install -y --verbose --name py37 pyodbc
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
