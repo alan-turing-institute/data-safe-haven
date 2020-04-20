@@ -28,7 +28,6 @@ $sqlAuthUpdateUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVa
 $sqlAuthUpdateUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
 
 
-
 # Create database resource group if it does not exist
 # ---------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
@@ -131,10 +130,11 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
             EnableSSIS = $databaseCfg.enableSSIS
+            ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
             SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.sqlAdmins.name)"
-            SqlAuthUpdateUsername = $sqlAuthUpdateUsername
             SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
-            B64ServerLockdownCommand = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
+            SqlAuthUpdateUsername = $sqlAuthUpdateUsername
+            SreResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
         }
         $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
         $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -Parameter $params
