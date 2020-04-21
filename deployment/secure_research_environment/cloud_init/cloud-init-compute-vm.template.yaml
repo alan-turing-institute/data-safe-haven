@@ -225,7 +225,7 @@ runcmd:
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
-  - cd -
+  - cd - 2> /dev/null
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - ls /usr/share/dbeaver/drivers/maven/maven-central/*
   # Install Microsoft ODBC drivers: TODO move this into image build
@@ -235,15 +235,16 @@ runcmd:
   - which mssql-cli
   # Install Azure Data Studio: TODO move this into image build
   - echo ">=== Azure Data Studio... ===<"
-  - AZURE_DATA_STUDIO_VERSION="1.16.1"
-  - wget https://azuredatastudiobuilds.blob.core.windows.net/releases/${AZURE_DATA_STUDIO_VERSION}/azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
-  - dpkg -i azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
-  - rm azuredatastudio-linux-${AZURE_DATA_STUDIO_VERSION}.deb
+  - wget https://azuredatastudiobuilds.blob.core.windows.net/releases/1.16.1/azuredatastudio-linux-1.16.1.deb -P /installation/
+  - ls -alh /installation/*.deb
+  - dpkg -i /installation/azuredatastudio-linux-1.16.1.deb
+  - rm /installation/azuredatastudio-linux-1.16.1.deb
   - which azuredatastudio
   # Install pyodbc: TODO move this into image build
-  - conda install -y --verbose --name py27 pyodbc
-  - conda install -y --verbose --name py36 pyodbc
-  - conda install -y --verbose --name py37 pyodbc
+  - echo ">=== Installing pyodbc... ===<"
+  - /anaconda/bin/conda install -y --verbose --name py27 pyodbc
+  - /anaconda/bin/conda install -y --verbose --name py36 pyodbc
+  - /anaconda/bin/conda install -y --verbose --name py37 pyodbc
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
@@ -267,18 +268,22 @@ runcmd:
   - rm /etc/resolv.conf
   - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  - ls -alh /etc/resolv.conf
   # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
   - echo "//$DATASERVER_HOSTNAME/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  - tail -n 1 /etc/fstab
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
   - echo "//$DATASERVER_HOSTNAME/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - tail -n 1 /etc/fstab
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
   - echo "//$DATASERVER_HOSTNAME/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - tail -n 1 /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
   - parted /dev/sdc mklabel gpt
@@ -292,6 +297,7 @@ runcmd:
   - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
   - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
   - umount /tmp/home
+  - tail -n 1 /etc/fstab
   # Create scratch folder and grant all users access
   - echo ">=== Create local scratch folder using data disk... ===<"
   - parted /dev/sdd mklabel gpt
