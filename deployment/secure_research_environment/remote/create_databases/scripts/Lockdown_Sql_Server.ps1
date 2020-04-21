@@ -98,29 +98,29 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
     }
 
-    # Give the SqlAdmin domain group the sysadmin role on the SQL Server
-    # ------------------------------------------------------------------
-    Write-Output "Giving the '$SqlAdminGroup' domain group sysadmin role on: '$serverName'..."
-    $createAdminCommand = "exec sp_addsrvrolemember '$SqlAdminGroup', 'sysadmin'"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $createAdminCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
-    if ($? -And -Not $operationFailed) {
-        Write-Output " [o] Successfully gave '$SqlAdminGroup' sysadmin role on: '$serverName'"
-    } else {
-        Write-Output " [x] Failed to give '$SqlAdminGroup' sysadmin role on: '$serverName'!"
-        exit 1
-    }
 
-
-    # Give the SRE research users domain group the db_datareader role on the SQL Server
-    # ---------------------------------------------------------------------------------
-    Write-Output "Giving the '$SreResearchUsersGroup' domain group sysadmin role on: '$serverName'..."
-    $createDbReaderCommand = "exec sp_addrolemember 'db_datareader', '$SqlAdminGroup'"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $createDbReaderCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
-    if ($? -And -Not $operationFailed) {
-        Write-Output " [o] Successfully gave '$SreResearchUsersGroup' db_datareader role on: '$serverName'"
-    } else {
-        Write-Output " [x] Failed to give '$SreResearchUsersGroup' db_datareader role on: '$serverName'!"
-        exit 1
+    # Give domain groups appropriate roles on the SQL Server
+    # ------------------------------------------------------
+    foreach($groupRoleTuple in @(($SqlAdminGroup, "sysadmin"), ($SreResearchUsersGroup, "db_datareader"))) {
+        $domainGroup, $role = $groupRoleTuple
+        Write-Output "Giving '$domainGroup' the $role role on: '$serverName'..."
+        # For admin roles we need 'sp_addsrvrolemember' but for other roles we need 'sp_addrolemember'
+        # These two commands use the opposite ordering for group and role for some reason
+        # NB. Powershell versions lower than 7 have no ternary operator so we need this awkward syntax
+        $sqlCommand = $(
+            if ($role -Like "*admin*") {
+                "exec sp_addsrvrolemember '$group', '$role'"
+            } else {
+                "exec sp_addrolemember '$role', '$group'"
+            }
+        )
+        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+        if ($? -And -Not $operationFailed) {
+            Write-Output " [o] Successfully gave '$domainGroup' the $role role on: '$serverName'"
+        } else {
+            Write-Output " [x] Failed to give '$domainGroup' the $role role on: '$serverName'!"
+            exit 1
+        }
     }
 
 
