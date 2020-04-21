@@ -79,6 +79,8 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
 # ... otherwise we continue with the server lockdown
 } else {
+    Write-Output " [o] $SqlAuthUpdateUsername has admin privileges on: '$serverName'"
+
     # Give the configured domain groups login access to the SQL Server
     # ----------------------------------------------------------------
     foreach ($domainGroup in @($SqlAdminGroup, $SreResearchUsersGroup)) {
@@ -86,7 +88,6 @@ if ($operationFailed -Or (-Not $loginExists)) {
         if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $domainGroup } ) {
             Write-Output " [o] '$domainGroup' already has SQL login access to: '$serverName'"
         } else {
-            Write-Output "Giving adminstrators domain group SQL login access to: '$serverName'..."
             $_ = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $domainGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
             if ($? -And -Not $operationFailed) {
                 Write-Output " [o] Successfully gave '$domainGroup' SQL login access to: '$serverName'"
