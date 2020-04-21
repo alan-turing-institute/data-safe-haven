@@ -69,8 +69,8 @@ write_files:
 
       [realms]
         $DOMAIN_UPPER = {
-          kdc = $AD_DC_NAME_UPPER.$DOMAIN_UPPER:88
-          admin_server = $AD_DC_NAME_UPPER.$DOMAIN_UPPER
+          kdc = ${AD_DC_NAME_UPPER}.${DOMAIN_UPPER}:88
+          admin_server = ${AD_DC_NAME_UPPER}.${DOMAIN_UPPER}
           default_domain = $DOMAIN_UPPER
         }
 
@@ -96,8 +96,8 @@ write_files:
       echo ">=== /etc/hostname ===<"
       cat /etc/hostname
       echo ">=== end of /etc/hostname ===<"
-      echo "Adding $MACHINE_NAME [`$(hostname -I)] to /etc/hosts"
-      HOST_INFORMATION="`$(hostname -I) $MACHINE_NAME $MACHINE_NAME.$DOMAIN_LOWER"
+      echo "Adding $MACHINE_NAME [`$(hostname -i)] to /etc/hosts"
+      HOST_INFORMATION="`$(hostname -i) $MACHINE_NAME $MACHINE_NAME.$DOMAIN_LOWER"
       sed -i "/127.0.0.1/ a `$HOST_INFORMATION" /etc/hosts
       echo ">=== /etc/hosts ===<"
       cat /etc/hosts

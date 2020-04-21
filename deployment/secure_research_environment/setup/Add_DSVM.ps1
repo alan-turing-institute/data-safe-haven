@@ -226,8 +226,8 @@ try {
     $DATA_MOUNT_PASSWORD = $dataMountPassword
     $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
     $LDAP_BASE_DN = $config.shm.domain.userOuPath
-    $LDAP_BIND_DN = "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath
-    $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.Name + "," + $config.shm.domain.securityOuPath + "))"
+    $LDAP_BIND_DN = "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)"
+    $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))"
     $CRAN_MIRROR_URL = $addresses.cran.url
     $PYPI_MIRROR_URL = $addresses.pypi.url
     $PYPI_MIRROR_HOST = $addresses.pypi.host
