@@ -46,21 +46,21 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 ```json
 {
-    "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
-    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
-    "domain": "The fully qualified domain name for the management environment",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
-    "shmId": "A short ID to identify the management environment",
-    "name": "Safe Haven deployment name",
+    "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
+    "domainSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
+    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
+    "domain": "The fully qualified domain name for the management environment.",
+    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or fewer.",
+    "shmId": "A short ID to identify the management environment.",
+    "name": "Safe Haven deployment name.",
     "organisation": {
-        "name": "Organisation name",
-        "townCity": "Location",
-        "stateCountyRegion": "Location",
+        "name": "Organisation name.",
+        "townCity": "Location.",
+        "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed",
+    "location": "The Azure location in which the management environment VMs are deployed.",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
 }
 ```
