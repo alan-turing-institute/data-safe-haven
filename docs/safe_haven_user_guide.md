@@ -31,8 +31,9 @@
   - [:microscope: Troubleshooting HackMD](#microscope-troubleshooting-hackmd)
 - [:unlock: Access additional virtual machines](#unlock-access-additional-virtual-machines)
 - [:green_book: Access input databases](#green_book-access-input-databases)
-  - [:art: Connecting with Azure Data Studio](#art-connecting-with-azure-data-studio)
-  - [:snake: Connecting with Python](#snake-connecting-with-python)
+  - [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
+  - [:bear: Connecting using DBeaver](#bear-connecting-using-dbeaver)
+  - [:snake: Connecting using Python](#snake-connecting-using-python)
 - [:bug: Report a bug](#bug-report-a-bug)
   - [:wrench: Help us to help you](#wrench-help-us-to-help-you)
 - [:pray: Acknowledgments](#pray-acknowledgments)
@@ -806,7 +807,7 @@ If this is the case, you can access it using the following details
 Examples are given below for connecting using Azure Data Studio and Python.
 The instructions for using other graphical interfaces or programming languages will be similar.
 
-### :art: Connecting with Azure Data Studio
+### :art: Connecting using Azure Data Studio
 > :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using Azure Data Studio as follows
 
    <p align="center">
@@ -815,7 +816,20 @@ The instructions for using other graphical interfaces or programming languages w
 
 > :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database
 
-### :snake: Connecting with Python
+### :bear: Connecting using DBeaver
+- Click on the `New database connection` button (which looks a bit like an electrical plug with a plus sign next to it)
+- Select `SQL Server` as the database type
+- Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Kerberos`
+
+> :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using DBeaver as follows
+
+   <p align="center">
+      <img src="images/user_guide/db_dbeaver.png" width="80%" title="db_dbeaver">
+   </p>
+
+> :point_right: it is important to use `Kerberos` authentication so that your username and password will be passed through to the database
+
+### :snake: Connecting using Python
 ```python
 import pyodbc
 server = "SQL-ING-SANDBOX"
