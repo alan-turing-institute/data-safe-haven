@@ -236,8 +236,6 @@ try {
     Add-LogMessage -Level Fatal "Failed to construct cloud-init from template!"
 }
 
-Write-Host $cloudInitYaml
-
 
 # Deploy NIC and data disks
 # -------------------------
