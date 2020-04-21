@@ -320,16 +320,17 @@
         "name": "SQL-ING-SANDBOX",
         "enableSSIS": true,
         "ipLastOctet": "4",
+        "port": "14330",
+        "sku": "sqldev",
         "subnet": "dbingress",
         "vmSize": "Standard_DS2_v2",
-        "sku": "sqldev",
-        "osdisk": {
-          "type": "Standard_LRS",
-          "size_gb": "128"
-        },
         "datadisk": {
-          "type": "Standard_LRS",
-          "size_gb": "2048"
+          "size_gb": "2048",
+          "type": "Standard_LRS"
+        },
+        "osdisk": {
+          "size_gb": "128",
+          "type": "Standard_LRS"
         }
       }
     },

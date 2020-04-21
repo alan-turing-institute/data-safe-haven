@@ -88,6 +88,12 @@
                 "description": "Username for SQL AuthUpdate User"
             }
         },
+        "Sql_Connection_Port": {
+            "type": "string",
+            "metadata": {
+                "description": "Which port to use for connections"
+            }
+        },
         "Sql_Server_Name": {
             "type": "string",
             "metadata": {
@@ -315,7 +321,7 @@
                 "ServerConfigurationsManagementSettings": {
                     "SQLConnectivityUpdateSettings": {
                         "ConnectivityType": "Private",
-                        "Port": "14330",
+                        "Port": "[parameters('Sql_Connection_Port')]",
                         "SQLAuthUpdateUserName": "[parameters('Sql_AuthUpdate_UserName')]",
                         "SQLAuthUpdatePassword": "[parameters('Sql_AuthUpdate_Password')]"
                     },

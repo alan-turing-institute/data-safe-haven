@@ -510,16 +510,17 @@ function Add-SreConfig {
             name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
             enableSSIS = $true
             ipLastOctet = "4"
+            port = "14330"
+            sku = "sqldev"
             subnet = "dbingress"
             vmSize = "Standard_DS2_v2"
-            sku = "sqldev"
-            osdisk = [ordered]@{
-                type = "Standard_LRS"
-                size_gb = "128"
-            }
             datadisk = [ordered]@{
-                type = "Standard_LRS"
                 size_gb = "2048"
+                type = "Standard_LRS"
+            }
+            osdisk = [ordered]@{
+                size_gb = "128"
+                type = "Standard_LRS"
             }
         }
     }

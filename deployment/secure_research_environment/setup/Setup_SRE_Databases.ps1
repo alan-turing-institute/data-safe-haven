@@ -116,6 +116,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             OS_Disk_Type = $databaseCfg.osdisk.type
             Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
             Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
+            Sql_Connection_Port = $databaseCfg.port
             Sql_Server_Name = $databaseCfg.name
             Sql_Server_Edition = $databaseCfg.sku
             SubnetResourceId = $subnet.Id
