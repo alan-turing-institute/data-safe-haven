@@ -5,7 +5,7 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be disabled")]
+    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
     [string]$EnableSSIS,  # it is not possible to pass a bool through the Invoke-RemoteScript interface
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
     [string]$ServerLockdownCommandB64,
@@ -31,16 +31,16 @@ $EnableSSIS = [System.Convert]::ToBoolean($EnableSSIS)
 # Ensure that SSIS is enabled/disabled as requested
 # -------------------------------------------------
 if ($EnableSSIS) {
-    Write-Output "Ensuring that SSIS is enabled on: '$serverName'"
+    Write-Output "Ensuring that SSIS services (SSISTELEMETRY150, MsDtsServer150) are enabled on: '$serverName'"
     Get-Service SSISTELEMETRY150, MsDtsServer150 | Start-Service -PassThru | Set-Service -StartupType Automatic
 } else {
-    Write-Output "Ensuring that SSIS is disabled on: '$serverName'"
+    Write-Output "Ensuring that SSIS services (SSISTELEMETRY150, MsDtsServer150) are disabled on: '$serverName'"
     Get-Service SSISTELEMETRY150, MsDtsServer150 | Stop-Service -PassThru | Set-Service -StartupType Disabled
 }
 if ($?) {
-    Write-Output " [o] Successfully set SSIS state on: '$serverName'"
+    Write-Output " [o] Successfully updated SSIS services state on: '$serverName'"
 } else {
-    Write-Output " [x] Failed to set SSIS state on: '$serverName'!"
+    Write-Output " [x] Failed to updated SSIS services state on: '$serverName'!"
     exit 1
 }
 
@@ -50,7 +50,7 @@ if ($?) {
 Write-Output "Disable unused SQL server services on: '$serverName'..."
 Get-Service SSASTELEMETRY, MSSQLServerOlapService, SQLBrowser | Stop-Service -PassThru | Set-Service -StartupType disabled
 if ($?) {
-    Write-Output " [o] Successfully disabled unused SQL server services on: '$serverName'"
+    Write-Output " [o] Successfully disabled unused services (SSASTELEMETRY, MSSQLServerOlapService, SQLBrowser) on: '$serverName'"
 } else {
     Write-Output " [x] Failed to disable unused SQL server services on: '$serverName'!"
     exit 1
