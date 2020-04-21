@@ -217,8 +217,6 @@
         "dataMountPassword": "sre-sandbox-datamount-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
-        "sqlInputReaderPassword": "sre-sandbox-inputdb-reader-username",
-        "sqlInputReaderUsername": "sre-sandbox-inputdb-sql-reader-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
