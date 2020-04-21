@@ -321,7 +321,16 @@
         "enableSSIS": true,
         "ipLastOctet": "4",
         "subnet": "dbingress",
-        "vmSize": "Standard_DS2_v2"
+        "vmSize": "Standard_DS2_v2",
+        "sku": "sqldev",
+        "osdisk": {
+          "type": "Standard_LRS",
+          "size_gb": "128"
+        },
+        "datadisk": {
+          "type": "Standard_LRS",
+          "size_gb": "2048"
+        }
       }
     },
     "dsvm": {

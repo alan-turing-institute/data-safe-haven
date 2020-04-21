@@ -2,11 +2,113 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for VM Administrator"
+            }
+        },
+        "Administrator_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for VM Administrator"
+            }
+        },
+        "BootDiagnostics_Account_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage account used for boot diagnostics"
+            }
+        },
+        "Data_Disk_Size": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of data disk in GB"
+            }
+        },
+        "Data_Disk_Type": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of data disk"
+            }
+        },
+        "DC_Join_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for DC Join User"
+            }
+        },
+        "DC_Join_User": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for DC Join User"
+            }
+        },
+        "Domain_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter Domain Name"
+            }
+        },
+        "IP_Address": {
+            "type": "string",
+            "defaultValue": "10.x.x.x",
+            "metadata": {
+                "description": "IP Address for VM"
+            }
+        },
         "Location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
             "metadata": {
-                "description": "Enter Azure Region"
+                "description": "Azure location"
+            }
+        },
+        "OS_Disk_Size": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of OS disk in GB"
+            }
+        },
+        "OS_Disk_Type": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of OS disk"
+            }
+        },
+        "Sql_AuthUpdate_Password": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for SQL AuthUpdate User"
+            }
+        },
+        "Sql_AuthUpdate_UserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for SQL AuthUpdate User"
+            }
+        },
+        "Sql_Server_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name for SQL Server VM"
+            }
+        },
+        "Sql_Server_Edition": {
+            "type": "string",
+             "defaultValue": "sqldev",
+             "allowedValues": [
+                "sqldev",
+                "enterprise"
+            ],
+            "metadata": {
+                "description": "SQL Server Edition to be installed"
+            }
+        },
+        "SubnetResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "ResourceId of subnet the VM will join"
             }
         },
         "VM_Size": {
@@ -18,85 +120,7 @@
                 "Standard_GS2"
             ],
             "metadata": {
-                "description": "Select size of VM"
-            }
-        },
-        "Administrator_User": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for VM Administrator"
-            }
-        },
-        "Administrator_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter password for VM Administrator"
-            }
-        },
-        "DC_Join_User": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for DC Join User"
-            }
-        },
-        "DC_Join_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter password for DC Join User"
-            }
-        },
-        "Sql_AuthUpdate_UserName": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for SQL AuthUpdate User"
-            }
-        },
-        "Sql_AuthUpdate_Password": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter password for SQL AuthUpdate User"
-            }
-        },
-        "BootDiagnostics_Account_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name of storage account used for boot diagnostics"
-            }
-        },
-        "IP_Address": {
-            "type": "string",
-            "defaultValue": "10.x.x.x",
-            "metadata": {
-                "description": "Enter IP_Address for VM"
-            }
-        },
-        "SubnetResourceId": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter ResourceId of subnet the VM will join"
-            }
-        },
-        "Domain_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter Domain Name"
-            }
-        },
-        "Sql_Server_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name for SQL Server VM i.e DSG2DC"
-            }
-        },
-        "Sql_Server_Edition": {
-            "type": "string",
-             "defaultValue": "sqldev",
-             "allowedValues": [
-                "sqldev",
-                "enterprise"
-            ],
-            "metadata": {
-                "description": "Enter the SQL Server Edition to be installed i.e. enterprise"
+                "description": "Size of VM"
             }
         }
     },
@@ -132,9 +156,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('OS_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('OS_Disk_Size')]"
                     },
                     "dataDisks": [
                         {
@@ -144,9 +168,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('Data_Disk_Type')]"
                             },
-                            "diskSizeGB": 2048
+                            "diskSizeGB": "[parameters('Data_Disk_Size')]"
                         }
                     ]
                 },
@@ -173,7 +197,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net/')]"
                     }
                 }
             },

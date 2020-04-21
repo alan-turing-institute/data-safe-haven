@@ -512,6 +512,15 @@ function Add-SreConfig {
             ipLastOctet = "4"
             subnet = "dbingress"
             vmSize = "Standard_DS2_v2"
+            sku = "sqldev"
+            osdisk = [ordered]@{
+                type = "Standard_LRS"
+                size_gb = "128"
+            }
+            datadisk = [ordered]@{
+                type = "Standard_LRS"
+                size_gb = "2048"
+            }
         }
     }
 

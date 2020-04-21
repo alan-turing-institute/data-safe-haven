@@ -100,18 +100,22 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         # -------------------------------
         Add-LogMessage -Level Info "Creating $($databaseCfg.name) from template..."
         $params = @{
-            Location = $config.sre.location
             Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
             Administrator_User = $sreAdminUsername
+            BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
+            Data_Disk_Size = $databaseCfg.datadisk.size_gb
+            Data_Disk_Type = $databaseCfg.datadisk.type
             DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
             DC_Join_User = $shmDcAdminUsername
-            Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
-            Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
-            BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-            Sql_Server_Name = $databaseCfg.name
-            Sql_Server_Edition = "sqldev"
             Domain_Name = $config.shm.domain.fqdn
             IP_Address = $privateIpAddress
+            Location = $config.sre.location
+            OS_Disk_Size = $databaseCfg.osdisk.size_gb
+            OS_Disk_Type = $databaseCfg.osdisk.type
+            Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
+            Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
+            Sql_Server_Name = $databaseCfg.name
+            Sql_Server_Edition = $databaseCfg.sku
             SubnetResourceId = $subnet.Id
             VM_Size = $databaseCfg.vmSize
         }
