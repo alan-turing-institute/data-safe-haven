@@ -1,3 +1,8 @@
+/*
+N.M numberings above each lockdown command reference recommendations in
+the "CIS Microsoft SQL Server 2019 Benchmark v1.0.0" available from 
+https://downloads.cisecurity.org/.
+*/
 PRINT '2.1 - Ensure Ad Hoc Distributed Queries Server Configuration Option is set to 0'
 EXECUTE sp_configure 'show advanced options', 1;
 RECONFIGURE;
