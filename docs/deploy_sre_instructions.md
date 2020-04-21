@@ -85,7 +85,7 @@ This is done using the VPN which should have been deployed when setting up the S
   - :pencil: **OSX** on Catalina you may have to drag the certificate into your personal KeyChain as the default is to install system-wide
   - :pencil: **OSX** on Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
     <p align="center">
-      <img src="images/deploy_sre/vpn/catalina_authentication.png" width="80%" title="catalina_authentication">
+      <img src="images/deploy_sre/catalina_authentication.png" width="80%" title="catalina_authentication">
     </p>
 
   - Continue to follow the set up instructions from the link above, using SSTP (Windows) or IKEv2 (OSX) for the VPN type and naming the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` is defined in the config file.
