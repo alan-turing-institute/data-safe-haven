@@ -109,16 +109,18 @@ if ($operationFailed -Or (-Not $loginExists)) {
         # NB. Powershell versions lower than 7 have no ternary operator so we need this awkward syntax
         $sqlCommand = $(
             if ($role -Like "*admin*") {
-                "exec sp_addsrvrolemember '$group', '$role'"
+                "exec sp_addsrvrolemember '$domainGroup', '$role'"
             } else {
-                "exec sp_addrolemember '$role', '$group'"
+                "exec sp_addrolemember '$role', '$domainGroup'"
             }
         )
         Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
         if ($? -And -Not $operationFailed) {
             Write-Output " [o] Successfully gave '$domainGroup' the $role role on: '$serverName'"
+            Start-Sleep -s 10  # allow time for the database action to complete
         } else {
             Write-Output " [x] Failed to give '$domainGroup' the $role role on: '$serverName'!"
+            Write-Output "Failed SQL command was: $sqlCommand"
             exit 1
         }
     }
