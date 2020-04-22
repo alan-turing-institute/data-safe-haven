@@ -100,7 +100,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
         # Create a DB user for each login group
         Write-Output "Ensuring that an SQL user exists for '$domainGroup' on: '$serverName'..."
-        $sqlCommand = "IF NOT EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$domainGroup') CREATE USER [$domainGroup] FOR LOGIN [$domainGroup];"
+        $sqlCommand = "IF NOT EXISTS(SELECT * FROM sys.database_principals WHERE name = '$domainGroup') CREATE USER [$domainGroup] FOR LOGIN [$domainGroup];"
         Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Ensured that '$domainGroup' user exists on: '$serverName'"
@@ -161,7 +161,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # -----------------------------------------------------
     $windowsAdmin = "${serverName}\${LocalAdminUser}"
     Write-Output "Removing database access for $windowsAdmin on: '$serverName'..."
-    $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin];"
+    $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully removed database access for $windowsAdmin on: '$serverName'"
