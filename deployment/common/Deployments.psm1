@@ -1,5 +1,5 @@
 Import-Module Az
-Import-Module $PSScriptRoot/Logging.psm1 -Force
+Import-Module $PSScriptRoot/Logging.psm1
 
 
 # Create network security group rule if it does not exist
@@ -106,8 +106,7 @@ function Deploy-ArmTemplate {
     if ($result) {
         Add-LogMessage -Level Success "Template deployment '$templateName' succeeded"
     } else {
-        Add-LogMessage -Level Failure "Template deployment '$templateName' failed!"
-        throw "Template deployment has failed for '$templateName'. Please check the error message(s) above before re-running this script."
+        Add-LogMessage -Level Fatal "Template deployment '$templateName' failed!"
     }
 }
 Export-ModuleMember -Function Deploy-ArmTemplate
@@ -554,7 +553,7 @@ function Invoke-RemoteScript {
     foreach ($outputStream in $result.Value) {
         # Check for 'ComponentStatus/<stream name>/succeeded' as a signal of success
         $success = $success -and (($outputStream.Code -split "/")[-1] -eq "succeeded")
-        # Check for '[x]' in the output stream as a signal of failure
+        # Check for ' [x] ' in the output stream as a signal of failure
         if ($outputStream.Message -ne "") {
             $success = $success -and ([string]($outputStream.Message) -NotLike '* `[x`] *')
         }
@@ -581,20 +580,29 @@ Export-ModuleMember -Function Invoke-RemoteScript
 function Invoke-WindowsConfigureAndUpdate {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
-        $VMName,
+        [string]$VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Path to common_powershell directory")]
-        $CommonPowershellPath
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "Additional Powershell modules")]
+        [string[]]$AdditionalPowershellModules = @(),
+        [Parameter(Mandatory = $false, HelpMessage = "Path to common_powershell directory")]
+        [string]$CommonPowershellPath = $null
     )
-    # Install Powershell modules
-    Add-LogMessage -Level Info "[ ] Installing required Powershell modules on '$VMName'"
-    $powershellScriptPath = Join-Path $CommonPowershellPath "remote" "Install_Powershell_Modules.ps1"
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $powershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
+    # Install core Powershell modules
+    Add-LogMessage -Level Info "[ ] Installing core Powershell modules on '$VMName'"
+    $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
+    # Install additional Powershell modules
+    if ($AdditionalPowershellModules) {
+        Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"
+        $additionalPowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Additional_Powershell_Modules.ps1"
+        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $additionalPowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName -Parameter @{"PipeSeparatedModules" = ($AdditionalPowershellModules -join "|")}
+        Write-Output $result.Value
+    }
     # Set locale and run update script
     Add-LogMessage -Level Info "[ ] Setting OS locale and installing updates on '$VMName'"
-    $InstallationScriptPath = Join-Path $CommonPowershellPath "remote" "Configure_Windows.ps1"
+    $InstallationScriptPath = Join-Path $PSScriptRoot "remote" "Configure_Windows.ps1"
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $InstallationScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
     # Reboot the VM

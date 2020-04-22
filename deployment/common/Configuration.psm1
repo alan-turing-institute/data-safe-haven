@@ -1,4 +1,5 @@
-Import-Module $PSScriptRoot/Security.psm1 -Force
+Import-Module $PSScriptRoot/Security.psm1
+
 
 # Get root directory for configuration files
 # ------------------------------------------
@@ -6,6 +7,7 @@ function Get-ConfigRootDir {
     $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -Resolve -ErrorAction Stop
     return $configRootDir
 }
+
 
 # Get SHM configuration
 # ---------------------
@@ -286,11 +288,16 @@ function Add-SreConfig {
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
+    $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
             description = $serverAdminsGroup
+        }
+        sqlAdmins = [ordered]@{
+            name = $sqlAdminsGroup
+            description = $sqlAdminsGroup
         }
         researchUsers = [ordered]@{
             name = $researchUsersGroup
@@ -300,28 +307,42 @@ function Add-SreConfig {
 
     # --- Network config ---
     $config.sre.network = [ordered]@{
-        vnet = [ordered]@{}
+        vnet = [ordered]@{
+            rg = "RG_SRE_NETWORKING"
+            name = "VNET_SRE_$($config.sre.id)".ToUpper()
+            cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
+        }
         subnets = [ordered]@{
-            identity = [ordered]@{}
-            rds = [ordered]@{}
-            data = [ordered]@{}
+            identity = [ordered]@{
+                name = "IdentitySubnet"
+                prefix = "${sreBasePrefix}.${sreThirdOctet}"
+            }
+            rds = [ordered]@{
+                name = "RDSSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 1)"
+            }
+            data = [ordered]@{
+                name = "SharedDataSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
+            }
+            dbingress = [ordered]@{
+                name = "DbIngressSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
+                nsg = "dbingress"
+            }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
+            dbingress = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
+            }
         }
     }
-    $config.sre.network.vnet.rg = "RG_SRE_NETWORKING"
-    $config.sre.network.vnet.name = "VNET_SRE_$($config.sre.id)".ToUpper()
-    $config.sre.network.vnet.cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
-    $config.sre.network.subnets.identity.name = "IdentitySubnet"
-    $config.sre.network.subnets.identity.prefix = "${sreBasePrefix}.${sreThirdOctet}"
+    # Construct the CIDR for each subnet based on the prefix
     $config.sre.network.subnets.identity.cidr = "$($config.sre.network.subnets.identity.prefix).0/24"
-    $config.sre.network.subnets.rds.name = "RDSSubnet"
-    $config.sre.network.subnets.rds.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 1)"
     $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
-    $config.sre.network.subnets.data.name = "SharedDataSubnet"
-    $config.sre.network.subnets.data.prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
+    $config.sre.network.subnets.dbingress.cidr = "$($config.sre.network.subnets.dbingress.prefix).0/24"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -343,15 +364,13 @@ function Add-SreConfig {
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
             dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
-            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
             dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
             dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
-            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
@@ -359,7 +378,11 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
+            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
+            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
+            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
         }
     }
 
@@ -432,7 +455,7 @@ function Add-SreConfig {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
     } else {
-        $config.sre.rds.nsg.gateway.outboundInternet = $sreConfigBase.rdsInternetAccess
+        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
     $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
     $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
@@ -478,6 +501,29 @@ function Add-SreConfig {
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
     $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
+
+    # Databases
+    $config.sre.databases = [ordered]@{
+        rg = "RG_SRE_DATABASES"
+        # MS SQL data ingress
+        dbmssqlingress = [ordered]@{
+            name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
+            enableSSIS = $true
+            ipLastOctet = "4"
+            port = "14330"
+            sku = "sqldev"
+            subnet = "dbingress"
+            vmSize = "Standard_DS2_v2"
+            datadisk = [ordered]@{
+                size_gb = "2048"
+                type = "Standard_LRS"
+            }
+            osdisk = [ordered]@{
+                size_gb = "128"
+                type = "Standard_LRS"
+            }
+        }
+    }
 
     # Compute VMs
     $config.sre.dsvm = [ordered]@{}

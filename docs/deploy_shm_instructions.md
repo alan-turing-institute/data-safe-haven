@@ -18,12 +18,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
   - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
   - You will need to be a member of the relevant security group.
-- PowerShell for Azure
-  - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
-  - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
-- Microsoft Remote Desktop
+- `PowerShell` with support for Azure
+  - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+  - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+- `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
-- OpenSSL
+- `OpenSSL`
   - Install using your package manager of choice
 
 ## 2. Safe Haven Management configuration
@@ -46,21 +46,21 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 ```json
 {
-    "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
-    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
-    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
-    "domain": "The fully qualified domain name for the management environment",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
-    "shmId": "A short ID to identify the management environment",
-    "name": "Safe Haven deployment name",
+    "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
+    "domainSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
+    "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
+    "domain": "The fully qualified domain name for the management environment.",
+    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or fewer.",
+    "shmId": "A short ID to identify the management environment.",
+    "name": "Safe Haven deployment name.",
     "organisation": {
-        "name": "Organisation name",
-        "townCity": "Location",
-        "stateCountyRegion": "Location",
+        "name": "Organisation name.",
+        "townCity": "Location.",
+        "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed",
+    "location": "The Azure location in which the management environment VMs are deployed.",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
 }
 ```

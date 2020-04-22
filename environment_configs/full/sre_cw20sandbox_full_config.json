@@ -145,6 +145,10 @@
           "name": "SG SANDBOX Server Administrators",
           "description": "SG SANDBOX Server Administrators"
         },
+        "sqlAdmins": {
+          "name": "SG SANDBOX SQL Server Administrators",
+          "description": "SG SANDBOX SQL Server Administrators"
+        },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
           "description": "SG SANDBOX Research Users"
@@ -172,10 +176,19 @@
           "name": "SharedDataSubnet",
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
+        },
+        "dbingress": {
+          "name": "DbIngressSubnet",
+          "prefix": "10.150.3",
+          "nsg": "dbingress",
+          "cidr": "10.150.3.0/24"
         }
       },
       "nsg": {
-        "data": {}
+        "data": {},
+        "dbingress": {
+          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        }
       }
     },
     "storage": {
@@ -202,6 +215,8 @@
         "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
         "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
         "dataMountPassword": "sre-sandbox-datamount-password",
+        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
+        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
@@ -297,6 +312,26 @@
         "hostname": "HACKMD-SRE-SANDBOX",
         "fqdn": "HACKMD-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
         "ip": "10.150.2.152"
+      }
+    },
+    "databases": {
+      "rg": "RG_SRE_DATABASES",
+      "dbmssqlingress": {
+        "name": "SQL-ING-SANDBOX",
+        "enableSSIS": true,
+        "ipLastOctet": "4",
+        "port": "14330",
+        "sku": "sqldev",
+        "subnet": "dbingress",
+        "vmSize": "Standard_DS2_v2",
+        "datadisk": {
+          "size_gb": "2048",
+          "type": "Standard_LRS"
+        },
+        "osdisk": {
+          "size_gb": "128",
+          "type": "Standard_LRS"
+        }
       }
     },
     "dsvm": {
