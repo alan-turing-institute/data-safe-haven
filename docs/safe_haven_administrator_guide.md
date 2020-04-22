@@ -1,102 +1,102 @@
-# Creating new users (Project Investigator or Programme Manager)
+# Safe Haven Administrator Documentation
 
-## Creating new users using the web app
+## :mailbox_with_mail: Table of contents
 
+- [:seedling: Prerequisites](#seedling-prerequisites)
+- [:beginner: Creating new users](#beginner-creating-new-users)
+  - [:scroll: Generating CSV file using data classification app](#scroll-generating-csv-file-using-data-classification-app)
+  - [:scroll: Generating CSV file manually](#scroll-generating-csv-file-manually)
+  - [:fast_forward: Optional: Add group name](#fast_forward-optional-add-group-name)
+  - [:arrows_counterclockwise: Create and synchronise users](#arrows_counterclockwise-create-and-synchronise-users)
+  - [:microscope: Troubleshooting: Account already exists](#microscope-troubleshooting-account-already-exists)
+  - [:calling: Assign an MFA licence](#calling-assign-an-mfa-licence)
+  - [:running: User activation](#running-user-activation)
+
+## :seedling: Prerequisites
+This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](deploy_sre_instructions.md) that are linked to it.
+
+- You will need VPN access to the SHM as described in the deployment instructions
+
+
+# :beginner: Creating new users
+
+Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
+A helper script for doing this is already uploaded to the domain controller - you will need to prepare a CSV file in the appropriate format for it.
+
+## :scroll: Generating CSV file using data classification app
 - Follow the [instructions in the webapp repository](https://github.com/alan-turing-institute/data-safe-haven-webapp/blob/master/runbooks/create-users/create-users.md) to create users.
-  - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details  
+  - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
   - Users can also be created individually by selecting `Create User > Create Single User`
 - After creating users, export the `UserCreate.csv` file
   - To export all users, select `Users > Export UserCreate.csv`
   - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
-- Send the file to IT
 
-## Creating new users without the web app
-
-- Make a new copy of the user details template file in `/deployment/secure_research_environment/create-users/UserCreate.csv`, naming it `YYYYDDMM-HHMM_UserCreate.csv`
+## :scroll: Generating CSV file manually
+- Make a new copy of the user details template file from `deployment/safe_haven_management_environment/user_details.csv`
+  - :pencil: we suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
 - Add the required details for each user
-  - `SamAccountName`: Log in username **without** the @domain bit). Use `firstname.lastname` format
+  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
   - `GivenName`: User's first / given name
   - `Surname`: User's last name / surname
-  - `Mobile`: Phone number to use for initial password reset. This must include country code in the format `+<country-code> <local number>`. Include a space between the country code and local number parts and include the leading `0` in the country code if present. This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA. They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
-   - `SecondaryEmail`: An existing organisational email address for the user. Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation emails with the right usernames to the right email addresses.
- - Send the file to IT
+  - `Mobile`: Phone number to use for initial password reset.
+    This must include country code in the format `+<country-code> <local number>`.
+    Include a space between the country code and local number parts but no other spaces.
+    Remove the leading `0` from local number if present.
+    This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
+    They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+  - `SecondaryEmail`: An existing organisational email address for the user.
+    Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
 
-## User creation (Domain Admin - IT)
-- Log into the Active Directory Domain Controller (DC)
-- Run Powershell
-- Navigate to `C:\Installation`
-- Run `.\CreateUsers.ps1 -UserFilePath "<path_to_user_details_file>" -shmId <shm-id>`, where `<shm-id>` is "test" for the test SHM and "prod" for the production SHM
-- The `CreateUsers.ps1` script will trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
+## :fast_forward: Optional: Add group name
+If you know which groups each user will be added to, you can also include the following column:
+  - `GroupName`: The name of the Azure security group that the users should be added (eg. `SG SANDBOX Research Users`)
 
-### Troubleshooting
-#### User exists with that name
-First check if that user actually already exists!
+## :arrows_counterclockwise: Create and synchronise users
+Upload the user details CSV file to a sensible location on the SHM domain controller (eg. `C:\Installation`).
+On the **SHM domain controller (DC1)**.
+- Open a PowerShell command window with elevated privileges.
+- Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
+- This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
 
-If the new user should definitely be a different user, then the following fields need to be unique for all users in the Active Directory. If they are not you will may get a "Name already in use" error.
-- `SamAccountName`: Specified explicitly in the CSV file, so update to `firstname.middle.initials.lastname`
-- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. `DisplayName` is `<GivenName> <Surname>` so change this to `<GivenName> <Middle> <Initials> <Surname>`.
+### :microscope: Troubleshooting: Account already exists
+If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
+- `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
 
-## Azure Portal
-- Login into Azure Portal and connect to the correct AAD subscription
-- Open "Azure Active Directory"
-- Location "Licenses" under "Manage" section
-- Open "All Products" under "Manage"
-- Click "Azure Active Directory Premium P1"
-- Click "Assign"
-- Click "Users and groups"
-- Select the users you have recently created and click "Select"
-- Click "Assign" to complete the process
-- Return to "Azure Active Directory" pane
-- Click "Users" from "Manage" section
-- Click "Multi-Factor Authentication" button
+## :calling: Assign an MFA licence
+- Login into the Azure Portal and connect to the correct AAD subscription
+- Open `Azure Active Directory`
+- Location `Licenses` under `Manage` section
+- Open `All Products` under `Manage`
+- Click `Azure Active Directory Premium P1`
+- Click `Assign`
+- Click `Users and groups`
+- Select the users you have recently created and click `Select`
+- Click `Assign` to complete the process
+- Return to `Azure Active Directory` pane
+- Click `Users` from `Manage` section
+- Click `Multi-Factor Authentication` button
 - Check the box for the users you want to apply MFA to
-- Click the "Enable" link in the "Quick steps" block on the right and confirm in the pop-up
+- Click the `Enable` link in the `Quick steps` block on the right and confirm in the pop-up
 - Close MFA console
 - Users are now ready to reset password and set up MFA
 
-## User activation
-- Research Co-ordinator to email users their user ID and instructions. We can securely email users their user ID as they also need access to the phone number they provided us in order to reset their password and we don't provide this in the email.
+## :running: User activation
+We need to contact the users to tell them their user ID and.
+We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
+We should also send them a copy of the [Safe Haven User Guide](safe_haven_user_guide.md) at this point.
 
-### User activation instructions
-These are a summary. The user should be sent a delegate pack / guide that has fuller instructions with screenshots. Kirstie's previous guide is being updated by Ian in issue #96.
+A sample email might look like the following
 
-#### Reset password
-For security we do not store your initial password, so you must reset it before you can log in.
-1. Open a private/incognito browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
-2. Paste the following UR into the private/incognito browser address bar - https://aka.ms/ssprsetup
-3. At the login prompt enter your username (provided in the welcome email)
-4. At password prompt click "Forgotten password"
-5. Complete the requested information (captcha and the phone number you provided on registration).
-6. Generate a new password using the [Secure Password
-Generator we set up](https://passwordsgenerator.net/?length=20&symbols=0&numbers=1&lowercase=1&uppercase=1&similar=1&ambiguous=0&client=1&autoselect=1).
-7. Reset your password
-
-**Note**: Do **not** use special characters or symbols in your password if you
-prefer to pass on using the Secure Password Generator. If you include symbols,
-you may be unable to type them in the virtual keyboard to access the secure
-environment. Choose an alphanumeric password with minimum length of 12
-characters, with at least one of each:
-
-- uppercase character
-- lowercase character
-- number
-
-**Note**: During this process, you will need to provide a phone number for
-account recovery. This is **not** MFA. You still need to set up MFA in the next
-section, otherwise you will be unable to launch any apps.
-
-#### Set up MFA
-Before you can access the secure environment, you need to setup your multifactor authentication.  The authentication method can be either via a call to a mobile phone or the Microsoft Authenticator app (recommended).
-
-##### Step 1 (if using the Microsoft authenticator app): download the app on your mobile device
-The links to download the app for iOS, Android and Window mobile are:
--	iOS: http://bit.ly/iosauthenticator 
--	Android: http://bit.ly/androidauthenticator 
--	Windows mobile: http://bit.ly/windowsauthenticator
-
-##### Step 2: Configure the multifactor authentication
-1.	Open a private browser session on your laptop to avoid picking up any existing Azure / Microsoft accounts you have
-2.	Enter https://aka.ms/MFASetup into the private browser address bar
-3.	Login with the username provided in your welcome email and the new password you chose when you reset your password.
-4.	Click “Set it up now” when prompted
-5.	On the “Additional security verification” screen you have three options on how the system will contact you for verification.  Click the drop down next under “Step 1” and select the option you wish to use.
+> Dear \<participant name\>,
+>
+> Welcome to \<event name\>! You've been given access to a data Safe Haven running on Turing infrastructure.
+> Please find a PDF version of our user guide attached.
+> You should start by following the instructions about setting up your account and enabling multi-factor authentication (MFA).
+>
+> Your username is: \<username@domain\>
+> Your Safe Haven is hosted at: \<URL\>
+>
+> The Safe Haven is only accessible from certain networks and may also involve physical location restrictions.
+> <details about network and location/VPN restrictions here>
