@@ -11,20 +11,14 @@
 
 We provide deployment scripts and detailed deployment guides to allow you to deploy your own independent instance of our Safe Haven on your own Azure tenant. Code is in the `deployment` folder of this repository.
 
-1. Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
+  - [Safe Haven Management (SHM) deployment guide](deploy_shm_instructions.md) - Deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
 
-  - [Safe Haven Management (SHM) deployment guide](deploy_shm_instructions.md)
+  - [Data Science virtual machine build instructions](build_dsvm_image_instructions.md) - Build and publish our "batteries included" Data Science Compute virtual machine image.
 
-2. Build and publish our "batteries included" Data Science Compute virtual machine image.
-
-  - [Data Science virtual machine build instructions](build_dsvm_image_instructions.md)
-
-3. Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
-
-  - [Secure Research Environment (SRE) deployment guide](deploy_sre_instructions.md)
+  - [Secure Research Environment (SRE) deployment guide](deploy_sre_instructions.md) - Deploy one Secure Research Environment (SRE) for each project you want to have its own independent, isolated analysis environment.
 
 
-## Administer a Data Safe Haven
+## Administering a Data Safe Haven
 
   - [Safe Haven Administrator guide](safe_haven_administrator_guide.md) - Instructions for administrators of a Safe Haven. Includes how create and add new users to a Safe Haven environment and potential solutions for some common problems users may experience.
 
@@ -35,13 +29,13 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
   - [Data Egress guide for Investigators](investigator-data-egress.md) - Instructions for lead investigators, on how to transfer data out of a safe haven once you've completed with secure data research for a project.
 
 
-## Using the Data Safe Haven
+## Using a Data Safe Haven
 
-Once a Secure Research Environment has been set up for a project within a Safe Haven, users can get access to it to carry out secure research.
+Once an SRE has been set up for a project within a Safe Haven, users need to know how to access it in order to carry out their research.
+
+  - [Safe Havens User Guide](safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing Data Study Groups in mind.
 
   - [Safe Havens Cheat Sheet](safe-haven-user-cheat-sheet.md) - Quick instructions on how to get set up on a Safe Haven environment.
-
-  - [Safe Havens User Guide](safe_haven_user_guide.md) - Step by Step instructions on how to get set up on a Safe Haven environment. The guide has been written with Turing data study groups in mind.
 
 
 ## Converting documentation to PDF
