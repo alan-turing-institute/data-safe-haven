@@ -103,18 +103,6 @@ if ($sreResources -or $sreResourceGroups) {
     Write-Output $result.Value
 
 
-    # Remove SRE AD Trust from SHM DC
-    # -------------------------------
-    Add-LogMessage -Level Info "Removing SRE AD Trust from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_AD_Trust_Remote.ps1" -Resolve
-    $params = @{
-        shmFqdn = "`"$($config.shm.domain.fqdn)`""
-        sreFqdn = "`"$($config.sre.domain.fqdn)`""
-    }
-    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-    Write-Output $result.Value
-
-
     # Remove RDS Gateway RADIUS Client from SHM NPS
     # ---------------------------------------------
     Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
