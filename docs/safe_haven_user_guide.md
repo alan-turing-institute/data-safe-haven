@@ -814,7 +814,8 @@ The instructions for using other graphical interfaces or programming languages w
       <img src="images/user_guide/db_AzureDataStudio.png" width="80%" title="db_AzureDataStudio">
    </p>
 
-> :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database
+> :point_right: it is important to select `Windows authentication` here so that your username and password will be passed through to the database.
+> :point_right: Safe Haven databases use a non-standard port (`14330`), so you will also need to click the `Advanced` button and set the `Port` setting to `14330` under the `General` section of the advanced settings.
 
 ### :bear: Connecting using DBeaver
 - Click on the `New database connection` button (which looks a bit like an electrical plug with a plus sign next to it)
