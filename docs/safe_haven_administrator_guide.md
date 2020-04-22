@@ -1,57 +1,181 @@
-Troubleshooting Compute VM deployments
-======================================
+# Safe Haven Administrator Documentation
 
-## Login failures
+## :mailbox_with_mail: Table of contents
 
-There are several different ways in which logging into the environment can fail. Here we go through the login procedure and discuss possible problems at each step
+- [:seedling: Prerequisites](#seedling-prerequisites)
+- [:beginner: Creating new users](#beginner-creating-new-users)
+  - [:scroll: Generating CSV file using data classification app](#scroll-generating-csv-file-using-data-classification-app)
+  - [:scroll: Generating CSV file manually](#scroll-generating-csv-file-manually)
+  - [:fast_forward: Optional: Add group name](#fast_forward-optional-add-group-name)
+  - [:arrows_counterclockwise: Create and synchronise users](#arrows_counterclockwise-create-and-synchronise-users)
+  - [:microscope: Troubleshooting: Account already exists](#microscope-troubleshooting-account-already-exists)
+  - [:calling: Assign an MFA licence](#calling-assign-an-mfa-licence)
+  - [:running: User activation](#running-user-activation)
+- [:construction_worker: Common user problems](#construction_worker-common-user-problems)
+  - [:waning_crescent_moon: Expired webclient certificate](#waning_crescent_moon-expired-webclient-certificate)
+  - [:red_circle: Unable to log into remote desktop gateway](#red_circle-unable-to-log-into-remote-desktop-gateway)
+  - [:train: Unable to open any remote apps](#train-unable-to-open-any-remote-apps)
+  - [:interrobang: xrdp login failure on the DSVM](#interrobang-xrdp-login-failure-on-the-dsvm)
+  - [:cloud: Unable to install from package mirrors](#cloud-unable-to-install-from-package-mirrors)
 
-### 1. Certificate expiry before getting to the environment
-![Certificate expiry error message](images/troubleshooting_user_issues/login_certificate_expiry.png)
+## :seedling: Prerequisites
+This document assumes that you have already deployed a [Safe Haven Management (SHM) environment](deploy_shm_instructions.md) and one or more [Secure Research Environments (SRE)](deploy_sre_instructions.md) that are linked to it.
 
-#### Possible problems and solutions
-The expired certificate can be ignored but login will not be possible.
+- You will need VPN access to the SHM as described in the deployment instructions
 
-#### Replace the SSL certificate with a new one
+
+# :beginner: Creating new users
+
+Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
+A helper script for doing this is already uploaded to the domain controller - you will need to prepare a CSV file in the appropriate format for it.
+
+## :scroll: Generating CSV file using data classification app
+- Follow the [instructions in the webapp repository](https://github.com/alan-turing-institute/data-safe-haven-webapp/blob/master/runbooks/create-users/create-users.md) to create users.
+  - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
+  - Users can also be created individually by selecting `Create User > Create Single User`
+- After creating users, export the `UserCreate.csv` file
+  - To export all users, select `Users > Export UserCreate.csv`
+  - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
+
+## :scroll: Generating CSV file manually
+- Make a new copy of the user details template file from `deployment/safe_haven_management_environment/user_details.csv`
+  - :pencil: we suggest naming this `YYYYDDMM-HHMM_user_details.csv` but this is up to you
+- Add the required details for each user
+  - `SamAccountName`: Log in username **without** the @domain bit. Use `firstname.lastname` format. Maximum length is 20 characters.
+  - `GivenName`: User's first / given name
+  - `Surname`: User's last name / surname
+  - `Mobile`: Phone number to use for initial password reset.
+    This must include country code in the format `+<country-code> <local number>`.
+    Include a space between the country code and local number parts but no other spaces.
+    Remove the leading `0` from local number if present.
+    This can be a landline or or mobile but must be accessible to the user when resetting their password and setting up MFA.
+    They can add the authenticator app and / or another phone number during MFA setup and at least one MFA method must work when at the Turing.
+  - `SecondaryEmail`: An existing organisational email address for the user.
+    Not uploaded to their Safe Haven user account but needs to be added here so we reliably send the account activation
+
+## :fast_forward: Optional: Add group name
+If you know which groups each user will be added to, you can also include the following column:
+  - `GroupName`: The name of the Azure security group(s) that the users should be added (eg. `SG SANDBOX Research Users`).
+    If the user needs to be added to multiple groups, separate them with a pipe-character (`|`).
+
+## :arrows_counterclockwise: Create and synchronise users
+Upload the user details CSV file to a sensible location on the SHM domain controller (eg. `C:\Installation`).
+On the **SHM domain controller (DC1)**.
+- Open a PowerShell command window with elevated privileges.
+- Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
+- This script will add the users and trigger a sync with Azure Active Directory, but it will still take around 5 minutes for the changes to propagate.
+
+### :microscope: Troubleshooting: Account already exists
+If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
+Once you're certain that you're adding a new user, make sure that the following fields are unique across all users in the Active Directory.
+- `SamAccountName`: Specified explicitly in the CSV file. If this is already in use, consider something like `firstname.middle.initials.lastname`
+- `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
+
+## :calling: Assign an MFA licence
+- Login into the Azure Portal and connect to the correct AAD subscription
+- Open `Azure Active Directory`
+- Location `Licenses` under `Manage` section
+- Open `All Products` under `Manage`
+- Click `Azure Active Directory Premium P1`
+- Click `Assign`
+- Click `Users and groups`
+- Select the users you have recently created and click `Select`
+- Click `Assign` to complete the process
+- Return to `Azure Active Directory` pane
+- Click `Users` from `Manage` section
+- Click `Multi-Factor Authentication` button
+- Check the box for the users you want to apply MFA to
+- Click the `Enable` link in the `Quick steps` block on the right and confirm in the pop-up
+- Close MFA console
+- Users are now ready to reset password and set up MFA
+
+## :running: User activation
+We need to contact the users to tell them their user ID and.
+We can securely email users their user ID as they do not know their account password and they need access to the phone number they provided in order to reset this.
+We should also send them a copy of the [Safe Haven User Guide](safe_haven_user_guide.md) at this point.
+
+A sample email might look like the following
+
+> Dear \<participant name\>,
+>
+> Welcome to \<event name\>! You've been given access to a data Safe Haven running on Turing infrastructure.
+> Please find a PDF version of our user guide attached.
+> You should start by following the instructions about setting up your account and enabling multi-factor authentication (MFA).
+>
+> Your username is: \<username@domain\>
+> Your Safe Haven is hosted at: \<URL\>
+>
+> The Safe Haven is only accessible from certain networks and may also involve physical location restrictions.
+> <details about network and location/VPN restrictions here>
+
+
+
+## :construction_worker: Common user problems
+
+One of the most common user issues is that they are unable to log in to the environment.
+Here we go through the login procedure and discuss possible problems at each step
+
+### :waning_crescent_moon: Expired webclient certificate
+If the certificate for the SRE domain has expired, users will not be able to login.
+
+<p align="center">
+  <img src="images/administrator_guide/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
+</p>
+
+**Solution**:
+Replace the SSL certificate with a new one
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into the Azure within PowerShell using the command: `Connect-AzAccount`
-- Run the `./CreateUpdate_Signed_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
+- Run `./Update_SRE_RDS_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config.
 
 
-### 2. Failure when logging into the environment via web browser
-![Login screen](images/troubleshooting_user_issues/login_password_login.png)
+### :red_circle: Unable to log into remote desktop gateway
+If users give the wrong username or password they will not be able to progress past the login screen.
 
-#### Possible problems and solutions
-1. User cannot progress pass this screen
-- Check user credentials, password may need to be reset.
+<p align="center">
+  <img src="images/administrator_guide/login_password_login.png" width="80%" title="login_password_login">
+</p>
+
+**Solution**:
+Check user credentials, password may need to be reset.
 
 
-### 3. Failure when opening a remote app
-Stuck at the "Opening remote port" message.
-![Stuck at opening remote port message](images/troubleshooting_user_issues/login_shared_vm.png)
+### :train: Unable to open any remote apps
+Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
 
-#### Possible problems and solutions
-1. User never gets the MFA prompt on their phone (app or phone call)
-- Check that the user phone number is correctly specified (Microsoft expects the format to be +44 07891234567)
+<p align="center">
+  <img src="images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
+</p>
 
-### 4. Failure when logging into the Shared VM
+**Solution**:
+- Ensure that the user has been assigned a license in Azure Active Directory
+- Check that the user has set up MFA (at `aka.ms/mfasetup`) and is using the phone-call or app authentication method
+
+
+### :interrobang: xrdp login failure on the DSVM
 If users can get to the login screen:
 
-![Shared VM login screen](images/troubleshooting_user_issues/login_compute_vm_login.png)
+<p align="center">
+  <img src="images/administrator_guide/login_compute_vm_login.png" width="80%" title="Shared VM login screen">
+</p>
 
-... but then see this error message:
+but then see this error message:
 
-![Login failure message](images/troubleshooting_user_issues/login_compute_vm_login_failure.png)
+<p align="center">
+  <img src="images/administrator_guide/login_compute_vm_login_failure.png" width="80%" title="Login failure message">
+</p>
 
 there are a couple of possible causes.
 
-#### Possible problems and solutions
-1. the username or password was incorrectly entered
+**Problem**: the username or password was incorrectly entered
+**Solution**
 - Confirm that the username and password have been correctly typed
 - Confirm that there are no unsupported special characters in the password
 - Reset the account if there is no other solution
 
-2. the computer is unable to communicate with the login server
+**Problem**: the computer is unable to communicate with the login server
+**Solution**
 - This can happen for a variety of reasons (DNS problems, broken services on the compute VM etc.)
 - Run the script under `deployment/administration/SRE_DSVM_Remote_Diagnostics.ps1`, providing the group and last IP octet of the problematic compute VM
 - You should see output like the following:
@@ -318,22 +442,33 @@ Time          :
 Safe Haven Managment (1814d074-10fe-4... jrobinson@turing.ac.uk                            Safe Haven Managment                             AzureCloud                                       4395f4a7-e455-4f95-8a9f-1fbaef6384f9
 ```
 
-## Package installation from package mirrors not possible
+### :cloud: Unable to install from package mirrors
 If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
 
-### 1. Internal mirror does not have the required package
+**Problem**: Mirror VNet is not correctly peered
+**Solution**
+Re-run the network configuration script.
+On your **deployment machine**.
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+- Run the `./Apply_Network_Configuration.ps1 -sreId <SRE ID>` script, where the SRE ID is the one specified in the config
+
+
+**Problem**: Internal mirror does not have the required package
+**Solution**
 To diagnose this, log into the `Internal` mirror using the Serial Console through the `Azure` portal.
-Check the packages directory (ie. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
+Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
-![Package list](images/troubleshooting_user_issues/internal_mirror_packages.png)
+<p align="center">
+  <img src="images/administrator_guide/internal_mirror_packages.png" width="80%" title="Package list">
+</p>
 
-If this is missing the packages that you need, then try to [force a mirror update](#Forcing-a-mirror-update).
-
-
-### Forcing a mirror update
-Rebooting the `External` mirrors will trigger the following actions:
+If the requested is expected to be available (i.e. it is on the appropriate whitelist), then you can force a mirror update by rebooting the `EXTERNAL` mirrors.
+This will trigger the following actions:
 
 1. Synchronisation of the external mirror with the remote, internet repository (a `pull` update)
 2. Synchronisation of the internal mirror with the external mirror (a `push` update)
 
-If the problem has been caused by missing packages on the internal mirror, this should solve it.
+This may take an hour or two but should solve the missing package problem.
