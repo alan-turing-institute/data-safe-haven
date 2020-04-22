@@ -372,10 +372,8 @@
       {
         "subscriptionName": "Living with Machines",
         "resourceName": "privateendpointtest-postgresserver",
+        "PrivateLinkServiceConnectionGroupId": "postgresqlServer",
         "privateEndpointName": "privateendpointtest-privateendpoint"
-      },
-      {
-        "subscriptionName": "Living with Machines Secure"
       }
     ]
   }

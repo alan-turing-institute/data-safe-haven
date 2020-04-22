@@ -23,30 +23,34 @@ Foreach ($pe in $config.sre.privateEndpoints) {
   # Temp test:
   # Write-Output $pe.subscriptionName
 
-  # Switch to the subscription containing target resource to get the resource
-  # -------------------------------------------------------------------------
+  # Switch to the subscription containing the target resource
+  # ---------------------------------------------------------
   $_ = Set-AzContext -Subscription $pe.subscriptionName
   $resource = Get-AzResource -Name $pe.resourceName
 
+  # Switch to the SRE subscription
+  # ------------------------------
+  $_ = Set-AzContext -Subscription $config.sre.subscriptionName
+
   # Create the private endpoint
   # ---------------------------
-  Add-LogMessage -Level Info "Creating private endpoint '$($pe.privateEndpointName)'"
+  Add-LogMessage -Level Info "Creating private endpoint '$($pe.privateEndpointName)' to resource '$($pe.resourceName)'"
 
-  $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "myConnection" `
-    -PrivateLinkServiceId $sqlServer.ResourceId `
-    -GroupId "sqlServer"
+  $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($pe.privateEndpointName)ServiceConnection" `
+    -PrivateLinkServiceId $resource.ResourceId `
+    -GroupId $pe.PrivateLinkServiceConnectionGroupId
 
-  # TODO FROM HERE.
-  # $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName  "myResourceGroup" -Name "MyVirtualNetwork"
-  #
-  # $subnet = $virtualNetwork `
-  #   | Select -ExpandProperty subnets `
-  #   | Where-Object  {$_.Name -eq 'mysubnet'}
-  #
-  # $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName "myResourceGroup" `
-  #   -Name "myPrivateEndpoint" `
-  #   -Location "westcentralus" `
-  #   -Subnet  $subnet`
-  #   -PrivateLinkServiceConnection $privateEndpointConnection
+  $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName  $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
 
+  $subnet = $virtualNetwork `
+    | Select -ExpandProperty subnets `
+    | Where-Object  {$_.Name -eq $config.sre.network.subnets.data.name}
+
+  # Write-Output $subnet.Name
+
+  $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
+    -Name $pe.privateEndpointName `
+    -Location $config.sre.Location `
+    -Subnet $subnet `
+    -PrivateLinkServiceConnection $privateEndpointConnection
 }
