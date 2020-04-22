@@ -26,7 +26,7 @@ We provide deployment scripts and detailed deployment guides to allow you to dep
 
 ## Administer a Data Safe Haven
 
-  - [Create New Users](create_users.md) - Instructions for administrators to create and add new users to Data Safe Haven environments.
+  - [Safe Haven Administrator guide guide](safe_haven_administrator_guide.md)
 
   - [Data Classification User Guide](safe_haven_webapp_user_guide.md) - Step by Step instructions for Data Providers, Investigators and Referees to classify project data using our web application. This application will guide you through our [classification process](tiersflowchart.pdf) for determining the classification tier for a work package.
 
