@@ -55,7 +55,8 @@ A helper script for doing this is already uploaded to the domain controller - yo
 
 ## :fast_forward: Optional: Add group name
 If you know which groups each user will be added to, you can also include the following column:
-  - `GroupName`: The name of the Azure security group that the users should be added (eg. `SG SANDBOX Research Users`)
+  - `GroupName`: The name of the Azure security group(s) that the users should be added (eg. `SG SANDBOX Research Users`).
+    If the user needs to be added to multiple groups, separate them with a pipe-character (`|`).
 
 ## :arrows_counterclockwise: Create and synchronise users
 Upload the user details CSV file to a sensible location on the SHM domain controller (eg. `C:\Installation`).

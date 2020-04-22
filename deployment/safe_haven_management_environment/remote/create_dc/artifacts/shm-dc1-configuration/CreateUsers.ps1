@@ -1,7 +1,7 @@
 param (
-     [Parameter(Mandatory = $true, HelpMessage = "Path to the CSV file of users")]
-     [ValidateNotNullOrEmpty()]
-     [string]$userFilePath
+    [Parameter(Mandatory = $true, HelpMessage = "Path to the CSV file of users")]
+    [ValidateNotNullOrEmpty()]
+    [string]$userFilePath
 )
 
 $domain = (Get-ADForest -Current LocalComputer).Domains
@@ -11,37 +11,39 @@ Add-Type -AssemblyName System.Web
 $Description = "Research User"
 
 Import-Csv $userFilePath | ForEach-Object {
-     Write-Host $_
+    Write-Host $_
 
-     $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
-     Write-Host "UserPrincipalName = " $UserPrincipalName
-     $password = [System.Web.Security.Membership]::GeneratePassword(12, 3)
-     $props = @{
-          SamAccountName       = $_.SamAccountName
-          UserPrincipalName    = $UserPrincipalName
-          Name                 = "$($_.GivenName) $($_.Surname)"
-          DisplayName          = "$($_.GivenName) $($_.Surname)"
-          GivenName            = $_.GivenName
-          SurName              = $_.Surname
-          Department           = $Department
-          Description          = $Description
-          Path                 = "$userOuPath"
-          Enabled              = $True
-          AccountPassword      = (ConvertTo-SecureString $Password -AsPlainText -force)
-          PasswordNeverExpires = $False
-          Mobile               = $_.Mobile
-          Email                = $UserPrincipalName
-          Country              = "GB"
-     }
+    $UserPrincipalName = $_.SamAccountName + "@" + "$domain"
+    Write-Host "UserPrincipalName = " $UserPrincipalName
+    $password = [System.Web.Security.Membership]::GeneratePassword(12, 3)
+    $props = @{
+        SamAccountName       = $_.SamAccountNames
+        UserPrincipalName    = $UserPrincipalName
+        Name                 = "$($_.GivenName) $($_.Surname)"
+        DisplayName          = "$($_.GivenName) $($_.Surname)"
+        GivenName            = $_.GivenName
+        SurName              = $_.Surname
+        Department           = $Department
+        Description          = $Description
+        Path                 = "$userOuPath"
+        Enabled              = $True
+        AccountPassword      = (ConvertTo-SecureString $Password -AsPlainText -force)
+        PasswordNeverExpires = $False
+        Mobile               = $_.Mobile
+        Email                = $UserPrincipalName
+        Country              = "GB"
+    }
 
-     Write-Host @props
+    Write-Host @props
 
-     New-ADUser @props -PassThru
+    New-ADUser @props -PassThru
 
-     if ($_.GroupName) {
-          Write-Host "Adding user to group '$($_.GroupName)'"
-          Add-ADGroupMember "$($_.GroupName)" $props.SamAccountName
-     }
+    if ($_.GroupName) {
+        foreach ($group in $($_.GroupName.Split("|"))) {
+            Write-Host "Adding user to group '$group'"
+            Add-ADGroupMember "$group" $props.SamAccountName
+        }
+    }
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
