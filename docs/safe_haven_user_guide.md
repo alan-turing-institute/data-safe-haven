@@ -800,8 +800,8 @@ You will need to know the IP address of the new machine, which you will be told 
 Your project might use a database for holding the input data.
 If this is the case, you can access it using the following details
 
-> Server name: <provided by your SRE administrator>.<username domain>
-> Database name: <provided by your SRE administrator>
+> Server name: \<provided by your SRE administrator>.\<username domain>
+> Database name: \<provided by your SRE administrator>
 > Port: 14330
 
 Examples are given below for connecting using Azure Data Studio and Python.
