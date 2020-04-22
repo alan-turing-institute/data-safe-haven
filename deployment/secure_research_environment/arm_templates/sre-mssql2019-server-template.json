@@ -120,11 +120,6 @@
         "VM_Size": {
             "type": "string",
             "defaultValue": "Standard_GS1",
-            "allowedValues": [
-                "Standard_DS2_v2",
-                "Standard_GS1",
-                "Standard_GS2"
-            ],
             "metadata": {
                 "description": "Size of VM"
             }
