@@ -7,6 +7,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
     [string]$EnableSSIS,  # it is not possible to pass a bool through the Invoke-RemoteScript interface
+    [Parameter(Mandatory = $true, HelpMessage = "Name of local admin user on this machine")]
+    [string]$LocalAdminUser,
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
     [string]$ServerLockdownCommandB64,
     [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SQL admin group")]
@@ -84,7 +86,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Give the configured domain groups login access to the SQL Server
     # ----------------------------------------------------------------
     foreach ($domainGroup in @($SqlAdminGroup, $SreResearchUsersGroup)) {
-        Write-Output "Ensuring that '$domainGroup' domain group has SQL login access to: '$serverName'..."
+        Write-Output "Ensuring that '$domainGroup' has SQL login access to: '$serverName'..."
         if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $domainGroup } ) {
             Write-Output " [o] '$domainGroup' already has SQL login access to: '$serverName'"
         } else {
@@ -96,6 +98,19 @@ if ($operationFailed -Or (-Not $loginExists)) {
                 exit 1
             }
         }
+        # Create a DB user for each login group
+        Write-Output "Ensuring that an SQL user exists for '$domainGroup' on: '$serverName'..."
+        $sqlCommand = "IF NOT EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$domainGroup') CREATE USER [$domainGroup] FOR LOGIN [$domainGroup];"
+        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        if ($? -And -Not $sqlErrorMessage) {
+            Write-Output " [o] Ensured that '$domainGroup' user exists on: '$serverName'"
+            Start-Sleep -s 10  # allow time for the database action to complete
+        } else {
+            Write-Output " [x] Failed to ensure that '$domainGroup' user exists on: '$serverName'!"
+            Write-Output "Failed SQL command was: $sqlCommand"
+            Write-Output "Error message: $sqlErrorMessage"
+            exit 1
+        }
     }
 
 
@@ -104,23 +119,24 @@ if ($operationFailed -Or (-Not $loginExists)) {
     foreach($groupRoleTuple in @(($SqlAdminGroup, "sysadmin"), ($SreResearchUsersGroup, "db_datareader"))) {
         $domainGroup, $role = $groupRoleTuple
         Write-Output "Giving '$domainGroup' the $role role on: '$serverName'..."
-        # For admin roles we need 'sp_addsrvrolemember' but for other roles we need 'sp_addrolemember'
-        # These two commands use the opposite ordering for group and role for some reason
-        # NB. Powershell versions lower than 7 have no ternary operator so we need this awkward syntax
+        # For admin roles we can set the role at a server level.
+        # For non-admin roles we rely on the earlier code which ensured that a DB user exists for each login
+        # NB. Powershell versions lower than 7 have no ternary operator so we need this awkward syntax.
         $sqlCommand = $(
             if ($role -Like "*admin*") {
-                "exec sp_addsrvrolemember '$domainGroup', '$role'"
+                "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
             } else {
-                "exec sp_addrolemember '$role', '$domainGroup'"
+                "ALTER ROLE [$role] ADD MEMBER [$domainGroup];"
             }
         )
-        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
-        if ($? -And -Not $operationFailed) {
+        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Successfully gave '$domainGroup' the $role role on: '$serverName'"
             Start-Sleep -s 10  # allow time for the database action to complete
         } else {
             Write-Output " [x] Failed to give '$domainGroup' the $role role on: '$serverName'!"
             Write-Output "Failed SQL command was: $sqlCommand"
+            Write-Output "Error message: $sqlErrorMessage"
             exit 1
         }
     }
@@ -129,25 +145,47 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Run the scripted SQL Server lockdown
     # ------------------------------------
     Write-Output "Running T-SQL lockdown script on: '$serverName'..."
-    $ServerLockdownCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($ServerLockdownCommandB64))
-    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $ServerLockdownCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
-    if ($? -And -Not $operationFailed) {
+    $sqlCommand = [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($ServerLockdownCommandB64))
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"
     } else {
         Write-Output " [x] Failed to run T-SQL lockdown script on: '$serverName'!"
+        Write-Output "Failed SQL command was: $sqlCommand"
+        Write-Output "Error message: $sqlErrorMessage"
         exit 1
     }
 
 
-    # Revoke the sysadmin role from the SQL AuthUpdateUser used when building the SQL Server
-    # --------------------------------------------------------------------------------------
+    # Removing database access from the local Windows admin
+    # -----------------------------------------------------
+    $windowsAdmin = "${serverName}\${LocalAdminUser}"
+    Write-Output "Removing database access for $windowsAdmin on: '$serverName'..."
+    $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin];"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    if ($? -And -Not $sqlErrorMessage) {
+        Write-Output " [o] Successfully removed database access for $windowsAdmin on: '$serverName'"
+        Start-Sleep -s 10  # allow time for the database action to complete
+    } else {
+        Write-Output " [x] Failed to remove database access for $windowsAdmin on: '$serverName'!"
+        Write-Output "Failed SQL command was: $sqlCommand"
+        Write-Output "Error message: $sqlErrorMessage"
+        exit 1
+    }
+
+
+    # Revoke the sysadmin role from the SQL AuthUpdateUser used to build the SQL Server
+    # ---------------------------------------------------------------------------------
     Write-Output "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
-    $dropAdminCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $dropAdminCommand -ErrorAction SilentlyContinue -ErrorVariable operationFailed
-    if ($? -And -Not $operationFailed) {
+    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
+        Start-Sleep -s 10  # allow time for the database action to complete
     } else {
         Write-Output " [x] Failed to revoke sysadmin role on: '$serverName'!"
+        Write-Output "Failed SQL command was: $sqlCommand"
+        Write-Output "Error message: $sqlErrorMessage"
         exit 1
     }
 }

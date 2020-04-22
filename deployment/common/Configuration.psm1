@@ -364,17 +364,13 @@ function Add-SreConfig {
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
             dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
-            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
             dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
             dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
-            dataMountPassword = "$($config.sre.shortName)-datamount-password"
-            sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
-            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
@@ -382,7 +378,11 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
+            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
+            sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
+            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
+            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
         }
     }
 

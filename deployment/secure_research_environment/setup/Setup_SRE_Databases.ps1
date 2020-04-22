@@ -137,6 +137,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
         $params = @{
             EnableSSIS = $databaseCfg.enableSSIS
+            LocalAdminUser = $sreAdminUsername
             ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
             SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.sqlAdmins.name)"
             SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
