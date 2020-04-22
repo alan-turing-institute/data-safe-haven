@@ -835,9 +835,13 @@ The instructions for using other graphical interfaces or programming languages w
 import pyodbc
 server = "SQL-ING-SANDBOX"
 username_domain = "apr20.turingsafehaven.ac.uk"
+port = 14330
 db_name = "master"
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "." + username_domain + ",14330;DATABASE=" + db_name + ";Trusted_Connection=yes;")
-cnxn.execute(... your command here ...)
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "." + username_domain + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
+cnxn.cursor()
+cursor.execute("SELECT table_catalog, table_schema, table_name FROM information_schema.tables")
+for row in cursor:
+    print(f"{row.table_catalog} | {row.table_schema} | {row.table_name}")
 ```
 
 
