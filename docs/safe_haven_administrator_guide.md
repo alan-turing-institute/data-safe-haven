@@ -118,7 +118,7 @@ Here we go through the login procedure and discuss possible problems at each ste
 If the certificate for the SRE domain has expired, users will not be able to login.
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
+  <img src="images/administrator_guide/login_certificate_expiry.png" width="80%" title="login_certificate_expiry">
 </p>
 
 **Solution**:
@@ -133,7 +133,7 @@ Replace the SSL certificate with a new one
 If users give the wrong username or password they will not be able to progress past the login screen.
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/login_password_login.png" width="80%" title="login_password_login">
+  <img src="images/administrator_guide/login_password_login.png" width="80%" title="login_password_login">
 </p>
 
 **Solution**:
@@ -144,7 +144,7 @@ Check user credentials, password may need to be reset.
 Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/login_shared_vm.png" width="80%" title="login_shared_vm">
+  <img src="images/administrator_guide/login_shared_vm.png" width="80%" title="login_shared_vm">
 </p>
 
 **Solution**:
@@ -156,13 +156,13 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 If users can get to the login screen:
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/login_compute_vm_login.png" width="80%" title="Shared VM login screen">
+  <img src="images/administrator_guide/login_compute_vm_login.png" width="80%" title="Shared VM login screen">
 </p>
 
 but then see this error message:
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/login_compute_vm_login_failure.png" width="80%" title="Login failure message">
+  <img src="images/administrator_guide/login_compute_vm_login_failure.png" width="80%" title="Login failure message">
 </p>
 
 there are a couple of possible causes.
@@ -461,7 +461,7 @@ To diagnose this, log into the `Internal` mirror using the Serial Console throug
 Check the packages directory (i.e. `/datadrive/mirrordaemon/pypi/web/packages` for PyPI or `/datadrive/mirrordaemon/www/cran` for CRAN)
 
 <p align="center">
-  <img src="images/troubleshooting_user_issues/internal_mirror_packages.png" width="80%" title="Package list">
+  <img src="images/administrator_guide/internal_mirror_packages.png" width="80%" title="Package list">
 </p>
 
 If the requested is expected to be available (i.e. it is on the appropriate whitelist), then you can force a mirror update by rebooting the `EXTERNAL` mirrors.
