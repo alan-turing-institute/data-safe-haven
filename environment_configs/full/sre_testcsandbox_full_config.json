@@ -367,6 +367,16 @@
       "pypi": {
         "ip": "10.20.2.20"
       }
-    }
+    },
+    "privateEndpoints":[
+      {
+        "subscriptionName": "Living with Machines",
+        "resourceName": "privateendpointtest-postgresserver",
+        "privateEndpointName": "privateendpointtest-privateendpoint"
+      },
+      {
+        "subscriptionName": "Living with Machines Secure"
+      }
+    ]
   }
 }
