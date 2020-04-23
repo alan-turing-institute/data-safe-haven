@@ -238,6 +238,16 @@ write_files:
                   </library>
               </driver>
           </provider>
+          <provider id="postgresql">
+              <driver id="postgres-jdbc" categories="sql" custom="false" embedded="false" name="PostgreSQL" class="org.postgresql.Driver" url="jdbc:postgresql://{host}[:{port}]/[{database}]" port="5432" description="PostgreSQL standard driver">
+                  <library type="jar" path="maven:/org.postgresql:postgresql:RELEASE" custom="false" version="42.2.5">
+                      <file id="org.postgresql:postgresql" version="42.2.5" path="/usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/postgresql-42.2.5.jar"/>
+                  </library>
+                  <library type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE" custom="false" version="2.2.1">
+                      <file id="net.postgis:postgis-jdbc" version="2.2.1" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-jdbc-2.2.1.jar"/>
+                </library>
+              </driver>
+          </provider>
       </drivers>
 
 # List of packages to install with apt-get
@@ -671,6 +681,13 @@ runcmd:
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
+  - cd - 2> /dev/null
+  - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/
+  - cd /usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/
+  - wget https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/1.1.5/pgjdbc-core-parent-1.1.5.pom
+  - wget https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/1.1.5/pgjdbc-versions-1.1.5.pom
+  - wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.jar
+  - wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.pom
   - cd - 2> /dev/null
   # Add driver configuration file
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
