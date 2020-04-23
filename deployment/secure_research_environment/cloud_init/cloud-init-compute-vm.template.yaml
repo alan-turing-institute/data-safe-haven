@@ -228,11 +228,6 @@ runcmd:
   - cd - 2> /dev/null
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - ls /usr/share/dbeaver/drivers/maven/maven-central/*
-  # Install Microsoft ODBC drivers: TODO move this into image build
-  - echo ">=== Install Microsoft ODBC drivers... ===<"
-  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools mssql-cli
-  - echo 'export PATH="`$PATH:/opt/mssql-tools/bin"' >> /etc/bash.bashrc
-  - which mssql-cli
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
