@@ -72,12 +72,12 @@ write_files:
       create extension if not exists file_fdw;
       create extension if not exists postgres_fdw;
       create extension if not exists earthdistance;
-  - path: "/installation/spark_sha512.hash"
-    content: |
-      020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81  spark-2.4.5-bin-hadoop2.7.tgz
   - path: "/installation/dbeaver_sha512.hash"
     content: |
       48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925  dbeaver-ce_7.0.1_amd64.deb
+  - path: "/installation/spark_sha512.hash"
+    content: |
+      020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81  spark-2.4.5-bin-hadoop2.7.tgz
   - path: "/installation/deprovision.log"
     permissions: "0644"
     content: |
@@ -126,6 +126,10 @@ write_files:
       ENV_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; which jupyter" | bash)
       ENV_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; jupyter --version | grep core | cut -d':' -f2" | bash)
       if [ "$ENV_JUPYTER_LOCATION" != "" ]; then echo "python $VERSION environment has jupyter (version $ENV_JUPYTER_VERSION) at $ENV_JUPYTER_LOCATION"; else echo "jupyter not found in python $VERSION environment!"; exit 1; fi
+      # Set the kernel name to the full Python version name and store it as $ENV_NAME so that different python3 versions show up separately
+      PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
+      sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
+      ln -s /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3] /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/${ENV_NAME}
       echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
@@ -149,6 +153,7 @@ packages:
   - gcc-6
   - gdebi-core
   - git-core
+  - jupyter
   - krb5-kdc
   - ldap-utils
   - libasound2
@@ -533,21 +538,34 @@ runcmd:
   - PATH=$PATH:/opt/julia/${JULIA_VERSION}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
 
-  # Install jupyter kernels
-  - echo ">=== Setting up R and Julia kernels for jupyter... ===<"
+  # Install Julia packages.
+  # Packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
+  # We therefore install and build the packages before moving them into a common area
+  - export CONDA_JL_HOME="/anaconda/envs/py37/"
+  - JULIA_DEPOT_PATH="/opt/julia/${JULIA_VERSION}/depot/"
+  - mkdir -p ${JULIA_DEPOT_PATH}
+  - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> /opt/julia/${JULIA_VERSION}/etc/julia/startup.jl
+  - JULIA_PACKAGES='["ArgCheck", "ArgParse", "BenchmarkTools", "CSV", "Clustering", "Conda", "CuArrays", "DSP", "DataFrames", "DataStructures", "Dates", "Debugger", "DecisionTree", "DifferentialEquations", "Distributions", "Flux", "Formatting", "GLM", "GR", "HypothesisTests", "IJulia", "Images", "Interact", "JDBC", "JLD2", "JSON", "KernelDensity", "LaTeXStrings", "LightGraphs", "LightXML", "MLBase", "Metalhead", "NearestNeighbors", "Nettle", "OnlineStats", "Optim", "Parameters", "Plots", "ProtoBuf", "PyCall", "PyPlot", "Rebugger", "Roots", "ScikitLearn", "StaticArrays", "StatsBase", "StatsFuns", "TensorFlow", "Zygote"]'
+  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
+  - mv ~/.julia/* $JULIA_DEPOT_PATH
+
+  # Configure jupyter kernels
+  - echo ">=== Configuring Julia, Python and R kernels for jupyter... ===<"
+  # Add the Julia kernel
+  - mv ~/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
+  # Add the anaconda kernels
+  - jupyter kernelspec install /anaconda/envs/py27/share/jupyter/kernels/py27
+  - jupyter kernelspec install /anaconda/envs/py36/share/jupyter/kernels/py36
+  - jupyter kernelspec install /anaconda/envs/py37/share/jupyter/kernels/py37
+  # Install and add the R kernel
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
-  # - Rscript -e "IRkernel::installspec(user = FALSE)"
-  #
-  # The command above would install the kernel from system R for jupyter but fails
-  # (since we're not in an environment with jupyter at this point) with the following error:
-  #
-  #   Error in IRkernel::installspec(user = FALSE) :
-  #     jupyter-client has to be installed but "jupyter kernelspec --version" exited with code 127.
-  #   In addition: Warning message:
-  #   In system2("jupyter", c("kernelspec", "--version"), FALSE, FALSE) :
-  #     error in running command
-  #   Execution halted
-  - julia -e 'using Pkg; Pkg.add("IJulia"); Pkg.build("IJulia")'
+  - R_VERSION=$(R --version | head -n1 | cut -d' ' -f3)
+  - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R-${R_VERSION}
+  - |
+    sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\"|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
+  - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R-${R_VERSION}
+  # Log the output kernels
+  - echo "Jupyter kernels are:"
 
   # Install spark
   - echo ">=== Installing spark... ===<"
