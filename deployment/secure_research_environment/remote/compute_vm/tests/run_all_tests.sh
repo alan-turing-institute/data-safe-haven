@@ -8,14 +8,10 @@ R_packages () {
     # Suppress a known spurious warning about database connections from BiocManager
     OUTPUT=$(Rscript test_R_package_installation.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()")
     echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    KNOWN_ISSUES=("BiocManager" "clusterProfiler" "flowUtils" "GOSemSim" "graphite" "rgl" "tmap")
     PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
     OUTCOME=0
     for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
-        if [ "$PROBLEMATIC_PACKAGE" == "" ]; then
-            continue
-        fi
-        if [[ ! " ${KNOWN_ISSUES[@]} " =~ " ${PROBLEMATIC_PACKAGE} " ]]; then
+        if [ "$PROBLEMATIC_PACKAGE" != "" ]; then
             echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
             OUTCOME=1
         fi
