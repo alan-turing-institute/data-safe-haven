@@ -57,6 +57,7 @@ apt:
 
 write_files:
   - path: "/installation/postgresql.install"
+    permissions: "0400"
     content: |
       create schema if not exists postgis;
       create extension if not exists postgis;
@@ -73,24 +74,28 @@ write_files:
       create extension if not exists postgres_fdw;
       create extension if not exists earthdistance;
   - path: "/installation/debinfo_azuredatastudio.yaml"
+    permissions: "0400"
     content: |
       hash: 34e6c2c04cce11a52affb17678e05a1a3e4f526948dee80cdbccd3754ed88e6e
       version: 1.16.1
       debfile: azuredatastudio-linux-|VERSION|.deb
       remote: https://azuredatastudiobuilds.blob.core.windows.net/releases/|VERSION|/|DEBFILE|
   - path: "/installation/debinfo_dbeaver.yaml"
+    permissions: "0400"
     content: |
       hash: 48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925
       version: 7.0.3
       debfile: dbeaver-ce_|VERSION|_amd64.deb
       remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
   - path: "/installation/debinfo_rstudio.yaml"
+    permissions: "0400"
     content: |
       hash: 99e0f57b7426aa180db1b08163eba7a1a2e1ab033f2a632f6b852d7b23ca0f98
       version: 1.2.5042
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
   - path: "/installation/tarinfo_julia.yaml"
+    permissions: "0400"
     content: |
       hash: fd6d8cadaed678174c3caefb92207a3b0e8da9f926af6703fb4d1e4e4f50610a
       version_major: 1.4
@@ -100,6 +105,7 @@ write_files:
       remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
       executable: julia
   - path: "/installation/tarinfo_spark.yaml"
+    permissions: "0400"
     content: |
       hash: 020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81
       version: 2.4.5
@@ -108,11 +114,11 @@ write_files:
       remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
       executable: spark-shell
   - path: "/installation/deprovision.log"
-    permissions: "0644"
+    permissions: "0600"
     content: |
       # Deprovisioning log
   - path: "/installation/deprovision_vm.sh"
-    permissions: "0744"
+    permissions: "0500"
     content: |
       #! /bin/bash
       # Deprovision this VM
@@ -126,7 +132,7 @@ write_files:
       chmod ugo-x /installation/deprovision_vm.sh
       ls -alh /installation/deprovision_vm.sh
   - path: "/installation/create_or_update_conda_python_environment.sh"
-    permissions: "0744"
+    permissions: "0500"
     content: |
       #! /bin/bash
       # Require four arguments: environment name; expected time; (quoted) list of conda packages; (quoted) list of pip packages
@@ -160,7 +166,7 @@ write_files:
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
   - path: "/installation/download_and_install_deb.sh"
-    permissions: "0744"
+    permissions: "0500"
     content: |
       #! /bin/bash
       # Require one arguments: config file identifier
@@ -191,7 +197,7 @@ write_files:
       # Check whether the installation was successful
       if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_EXECUTABLE}"; exit 1; fi
   - path: "/installation/download_and_install_tar.sh"
-    permissions: "0744"
+    permissions: "0500"
     content: |
       #! /bin/bash
       # Require one arguments: config file identifier
@@ -228,6 +234,7 @@ write_files:
       # Check whether the installation was successful
       if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_NAME}"; exit 1; fi
   - path: "/installation/dbeaver_drivers_config.xml"
+    permissions: "0444"
     content: |
       <?xml version="1.0" encoding="UTF-8"?>
       <drivers>
