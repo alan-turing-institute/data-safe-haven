@@ -35,9 +35,8 @@ if (0 == length(warning_list) & 0 == length(error_list)) {
   print(paste("All ", length(packages), " package(s) OK!"))
 } else {
   if (0 < length(warning_list)) {
-    print("The following packages gave a warning:")
+    print(paste("The following", length(warning_list), "packages gave a warning:", sep = " "))
     cat(warning_list, sep = "\n")
-    print("All the packages above gave a warning!")
   }
 
   if (0 < length(error_list)) {
