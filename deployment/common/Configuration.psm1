@@ -53,8 +53,15 @@ function Get-ShmFullConfig {
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
             nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
-            subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
-            vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+            vnet = [ordered]@{
+                name = "VNET_IMAGE_BUILD"
+                cidr = "10.48.0.0/16"
+            }
+            subnet = [ordered]@{
+                name = "ImageBuildSubnet"
+                cidr = "10.48.0.0/24"
+            }
+            vmSize = "Standard_D4_v3"
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"

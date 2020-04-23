@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
@@ -53,22 +53,10 @@ $_ = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $c
 Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.adminSecurityGroupName
 
 
-# Check that VNET and subnet exist
-# --------------------------------
-Add-LogMessage -Level Info "Looking for virtual network '$($config.dsvmImage.network.vnet.name)'..."
-try {
-    $vnet = Get-AzVirtualNetwork -Name $config.dsvmImage.build.vnet.name -ResourceGroupName $config.dsvmImage.network.rg -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
-    Add-LogMessage -Level Fatal "Virtual network '$($config.dsvmImage.build.vnet.name)' could not be found!"
-}
-Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
-# Subnet
-Add-LogMessage -Level Info "Looking for subnet network '$($config.dsvmImage.build.subnet.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.dsvmImage.build.subnet.name }
-if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.dsvmImage.build.subnet.name)' could not be found in virtual network '$($vnet.Name)'!"
-}
-Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
+# Ensure that VNET and subnet exist
+# ---------------------------------
+$vnet = Deploy-VirtualNetwork -Name $config.dsvmImage.build.vnet.name -ResourceGroupName $config.dsvmImage.network.rg -AddressPrefix $config.dsvmImage.build.vnet.cidr -Location $config.dsvmImage.location
+$subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwork $vnet -AddressPrefix $config.dsvmImage.build.subnet.cidr
 
 
 # Set up the build NSG
@@ -131,7 +119,7 @@ $buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyV
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
-$buildVmSize = "Standard_E16s_v3"
+$buildVmSize = $config.dsvmImage.build.vmSize
 
 
 # Deploy the VM
