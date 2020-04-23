@@ -182,12 +182,21 @@
           "prefix": "10.150.11",
           "nsg": "dbingress",
           "cidr": "10.150.11.0/24"
+        },
+        "airlock": {
+          "name": "AirlockSubnet",
+          "prefix": "10.150.12",
+          "nsg": "airlock",
+          "cidr": "10.150.12.0/24"
         }
       },
       "nsg": {
         "data": {},
         "dbingress": {
           "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        },
+        "airlock": {
+          "name": "NSG_SRE_SANDBOX_AIRLOCK"
         }
       }
     },
@@ -300,11 +309,20 @@
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
-        "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
-        "ip": "10.150.10.151"
+        "internal": {
+          "vmName": "GITLAB-INTERNAL-SRE-SANDBOX",
+          "vmSize": "Standard_D2s_v3",
+          "hostname": "GITLAB-INTERNAL-SRE-SANDBOX",
+          "fqdn": "GITLAB-INTERNAL-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+          "ip": "10.150.10.151"
+        },
+        "external": {
+          "vmName": "GITLAB-EXTERNAL-SRE-SANDBOX",
+          "vmSize": "Standard_D2s_v3",
+          "hostname": "GITLAB-EXTERNAL-SRE-SANDBOX",
+          "fqdn": "GITLAB-EXTERNAL-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+          "ip": "10.150.12.151"
+        }
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",

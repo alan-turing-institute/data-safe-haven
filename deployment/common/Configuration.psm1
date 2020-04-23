@@ -340,11 +340,19 @@ function Add-SreConfig {
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
                 nsg = "dbingress"
             }
+            airlock = [ordered]@{
+                name = "AirlockSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 4)"
+                nsg = "airlock"
+            }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
             dbingress = [ordered]@{
                 name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
+            }
+            airlock = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_AIRLOCK".ToUpper()
             }
         }
     }
@@ -353,6 +361,7 @@ function Add-SreConfig {
     $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
     $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
     $config.sre.network.subnets.dbingress.cidr = "$($config.sre.network.subnets.dbingress.prefix).0/24"
+    $config.sre.network.subnets.airlock.cidr = "$($config.sre.network.subnets.airlock.prefix).0/24"
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -497,17 +506,26 @@ function Add-SreConfig {
         rg = "RG_SRE_WEBAPPS"
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
-            vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
-            vmSize = "Standard_D2s_v3"
+            internal = [ordered]@{
+                vmName = "GITLAB-INTERNAL-SRE-$($config.sre.id)".ToUpper()
+                vmSize = "Standard_D2s_v3"
+            }
+            external = [ordered]@{
+                vmName = "GITLAB-EXTERNAL-SRE-$($config.sre.id)".ToUpper()
+                vmSize = "Standard_D2s_v3"
+            }
         }
         hackmd = [ordered]@{
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
         }
     }
-    $config.sre.webapps.gitlab.hostname = $config.sre.webapps.gitlab.vmName
-    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.webapps.gitlab.ip = "$($config.sre.network.subnets.data.prefix).151"
+    $config.sre.webapps.gitlab.internal.hostname = $config.sre.webapps.gitlab.internal.vmName
+    $config.sre.webapps.gitlab.internal.fqdn = "$($config.sre.webapps.gitlab.internal.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.webapps.gitlab.internal.ip = "$($config.sre.network.subnets.data.prefix).151"
+    $config.sre.webapps.gitlab.external.hostname = $config.sre.webapps.gitlab.external.vmName
+    $config.sre.webapps.gitlab.external.fqdn = "$($config.sre.webapps.gitlab.external.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.webapps.gitlab.external.ip = "$($config.sre.network.subnets.airlock.prefix).151"
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
     $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"

@@ -31,8 +31,8 @@ $hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 
 # Set up the NSG for the webapps
 # ------------------------------
-$nsg = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
+$nsgGitlabInternal = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabInternal `
                              -Name "OutboundDenyInternet" `
                              -Description "Outbound deny internet" `
                              -Priority 4000 `
@@ -40,11 +40,22 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix Internet -DestinationPortRange *
 
+$nsgGitlabExternal = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+
+
+# Check that VNET and subnet exist
+# --------------------------------
+
+$vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
+$subnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.Name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
+
+Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsgGitlabExternal -VirtualNetwork $vnet
+
 
 # Expand GitLab cloudinit
 # -----------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
-$gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
+$gitlabFqdn = $config.sre.webapps.gitlab.internal.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
@@ -53,8 +64,8 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
                                             Replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
                                             Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
-                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
-                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
+                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.internal.ip).
+                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.internal.hostname).
                                             Replace('<gitlab-fqdn>',$gitlabFqdn).
                                             Replace('<gitlab-root-password>',$gitlabRootPassword).
                                             Replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
@@ -87,6 +98,36 @@ $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 $_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
 
 
+# Deploy NIC and data disks for gitlab.external
+# ---------------------------------------------
+
+$vmName = $config.sre.webapps.gitlab.external.vmName
+$vmIpAddress = $config.sre.webapps.gitlab.external.ip
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+
+
+# Deploy the VM
+# -------------
+
+$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+$cloudInitYaml = ""
+
+$params = @{
+    Name = $vmName
+    Size = $config.sre.webapps.gitlab.external.vmSize
+    AdminPassword = $sreAdminPassword
+    AdminUsername = $sreAdminUsername
+    BootDiagnosticsAccount = $bootDiagnosticsAccount
+    CloudInitYaml = $cloudInitYaml
+    location = $config.sre.location
+    NicId = $vmNic.Id
+    OsDiskType = "Standard_LRS"
+    ResourceGroupName = $config.sre.webapps.rg
+    ImageSku = "18.04-LTS"
+}
+$_ = Deploy-UbuntuVirtualMachine @params
+
+
 # Deploy GitLab/HackMD VMs from template
 # --------------------------------------
 Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
@@ -95,9 +136,9 @@ $params = @{
     Administrator_User = $sreAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
-    GitLab_IP_Address =  $config.sre.webapps.gitlab.ip
-    GitLab_Server_Name = $config.sre.webapps.gitlab.vmName
-    GitLab_VM_Size = $config.sre.webapps.gitlab.vmSize
+    GitLab_IP_Address =  $config.sre.webapps.gitlab.internal.ip
+    GitLab_Server_Name = $config.sre.webapps.gitlab.internal.vmName
+    GitLab_VM_Size = $config.sre.webapps.gitlab.internal.vmSize
     HackMD_Cloud_Init = $hackmdCloudInitEncoded
     HackMD_IP_Address = $config.sre.webapps.hackmd.ip
     HackMD_Server_Name = $config.sre.webapps.hackmd.vmName
@@ -113,32 +154,31 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # -----------------------------------------------
 Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
 $progress = 0
-$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.internal.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitlabStatuses.Contains("PowerState/stopped") -and
              $hackmdStatuses.Contains("ProvisioningState/succeeded") -and $hackmdStatuses.Contains("PowerState/stopped"))) {
     $progress = [math]::min(100, $progress + 1)
-    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.internal.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
     $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
-    Write-Progress -Activity "Deployment status:" -Status "GitLab [$($gitlabStatuses[0]) $($gitlabStatuses[1])], HackMD [$($hackmdStatuses[0]) $($hackmdStatuses[1])]" -PercentComplete $progress
+    Write-Progress -Activity "Deployment status:" -Status "GitLab Internal [$($gitlabStatuses[0]) $($gitlabStatuses[1])], HackMD [$($hackmdStatuses[0]) $($hackmdStatuses[1])]" -PercentComplete $progress
     Start-Sleep 10
 }
-
 
 # While webapp servers are off, ensure they are bound to correct NSG
 # ------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
-foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.vmName)) {
-    Add-VmToNSG -VMName $vmName -NSGName $nsg.Name
+foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.internal.vmName)) {
+    Add-VmToNSG -VMName $vmName -NSGName $nsgGitlabInternal.Name
 }
 Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"
-@($nsg.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgGitlabInternal.Name)' NSG"
+@($nsgGitlabInternal.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
 # Finally, reboot the webapp servers
 # ----------------------------------
-foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
+foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.internal.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
     Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
