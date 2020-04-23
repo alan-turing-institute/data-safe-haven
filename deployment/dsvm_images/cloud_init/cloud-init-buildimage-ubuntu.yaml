@@ -72,12 +72,41 @@ write_files:
       create extension if not exists file_fdw;
       create extension if not exists postgres_fdw;
       create extension if not exists earthdistance;
-  - path: "/installation/dbeaver_sha512.hash"
+  - path: "/installation/debinfo_azuredatastudio.yaml"
     content: |
-      48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925  dbeaver-ce_7.0.1_amd64.deb
-  - path: "/installation/spark_sha512.hash"
+      hash: 34e6c2c04cce11a52affb17678e05a1a3e4f526948dee80cdbccd3754ed88e6e
+      version: 1.16.1
+      debfile: azuredatastudio-linux-|VERSION|.deb
+      remote: https://azuredatastudiobuilds.blob.core.windows.net/releases/|VERSION|/|DEBFILE|
+  - path: "/installation/debinfo_dbeaver.yaml"
     content: |
-      020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81  spark-2.4.5-bin-hadoop2.7.tgz
+      hash: 48f8994cf3d297023bba958aeb3ef64091683b3f1f32f48faf4718abbdc72925
+      version: 7.0.3
+      debfile: dbeaver-ce_|VERSION|_amd64.deb
+      remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
+  - path: "/installation/debinfo_rstudio.yaml"
+    content: |
+      hash: 99e0f57b7426aa180db1b08163eba7a1a2e1ab033f2a632f6b852d7b23ca0f98
+      version: 1.2.5042
+      debfile: rstudio-|VERSION|-amd64.deb
+      remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
+  - path: "/installation/tarinfo_julia.yaml"
+    content: |
+      hash: fd6d8cadaed678174c3caefb92207a3b0e8da9f926af6703fb4d1e4e4f50610a
+      version_major: 1.4
+      version: |VERSION_MAJOR|.1
+      pathdir: julia-|VERSION|
+      tarfile: julia-|VERSION|-linux-x86_64.tar.gz
+      remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
+      executable: julia
+  - path: "/installation/tarinfo_spark.yaml"
+    content: |
+      hash: 020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81
+      version: 2.4.5
+      pathdir: spark-|VERSION|-bin-hadoop2.7
+      tarfile: |PATHDIR|.tgz
+      remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
+      executable: spark-shell
   - path: "/installation/deprovision.log"
     permissions: "0644"
     content: |
@@ -133,6 +162,75 @@ write_files:
       echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
+  - path: "/installation/download_and_install_deb.sh"
+    permissions: "0744"
+    content: |
+      #! /bin/bash
+      # Require one arguments: config file identifier
+      if [ $# -ne 1 ]; then
+        exit 1
+      fi
+      PACKAGE_EXECUTABLE=$1
+      # Ensure that the config file exists
+      CONFIG_FILE="/installation/debinfo_${PACKAGE_EXECUTABLE}.yaml"
+      if [ ! -e $CONFIG_FILE ]; then
+        exit 2
+      fi
+      # Parse the config file
+      PACKAGE_HASH=$(grep "hash:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
+      PACKAGE_VERSION=$(grep "version:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
+      PACKAGE_DEBFILE=$(grep "debfile:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/")
+      PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|DEBFILE|/$PACKAGE_DEBFILE/")
+      # Download and verify the .deb file
+      echo "Downloading and verifying deb file..."
+      wget $PACKAGE_REMOTE -P /run/cloudinit/
+      ls -alh /run/cloudinit/${PACKAGE_DEBFILE}
+      echo "$PACKAGE_HASH /run/cloudinit/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_EXECUTABLE}_sha512.hash
+      if [ "$(sha256sum -c /tmp/${PACKAGE_EXECUTABLE}_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for $PACKAGE_EXECUTABLE"; exit 1; fi
+      # Install and cleanup
+      echo "Installing deb file..."
+      gdebi --non-interactive /run/cloudinit/${PACKAGE_DEBFILE}
+      rm /run/cloudinit/${PACKAGE_DEBFILE}
+      # Check whether the installation was successful
+      if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_EXECUTABLE}"; exit 1; fi
+  - path: "/installation/download_and_install_tar.sh"
+    permissions: "0744"
+    content: |
+      #! /bin/bash
+      # Require one arguments: config file identifier
+      if [ $# -ne 1 ]; then
+        exit 1
+      fi
+      PACKAGE_NAME=$1
+      # Ensure that the config file exists
+      CONFIG_FILE="/installation/tarinfo_${PACKAGE_NAME}.yaml"
+      if [ ! -e $CONFIG_FILE ]; then
+        exit 2
+      fi
+      # Parse the config file
+      PACKAGE_HASH=$(grep "hash:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
+      PACKAGE_VERSION_MAJOR=$(grep "version_major:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
+      PACKAGE_VERSION=$(grep "version:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION_MAJOR|/$PACKAGE_VERSION_MAJOR/")
+      PACKAGE_PATHDIR=$(grep "pathdir:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/")
+      PACKAGE_TARFILE=$(grep "tarfile:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|PATHDIR|/$PACKAGE_PATHDIR/")
+      PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION_MAJOR|/$PACKAGE_VERSION_MAJOR/" | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|TARFILE|/$PACKAGE_TARFILE/")
+      PACKAGE_EXECUTABLE=$(grep "executable:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
+      # Download and verify the .deb file
+      echo "Downloading and verifying tar file..."
+      mkdir -p /opt/${PACKAGE_NAME}
+      wget $PACKAGE_REMOTE -P /opt/${PACKAGE_NAME}
+      ls -alh /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}
+      echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
+      if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for $PACKAGE_NAME"; exit 1; fi
+      # Install and cleanup
+      echo "Installing tar file..."
+      cd/opt/${PACKAGE_NAME}
+      tar -zxf ${PACKAGE_TARFILE}
+      rm -rf ${PACKAGE_TARFILE}
+      PATH=$PATH:/opt/${PACKAGE_NAME}/${PACKAGE_PATHDIR}/bin
+      # Check whether the installation was successful
+      if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_NAME}"; exit 1; fi
+
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -463,8 +561,6 @@ runcmd:
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
-  # - conda config --append channels pytorch # for pytorch, torchvision
-  # - conda config --append channels ostrokach-forge # for graph-tool which cannot be installed with pip
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
   - conda config --set remote_max_retries 20
@@ -510,37 +606,22 @@ runcmd:
   # Install R packages from custom repos
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
-  # Install RStudio
+  # Install RStudio, ensuring that all users will pick up system R when running
   - echo ">=== Installing RStudio... ===<"
-  # Ensure RStudio picks up system R rather than Conda R for all users
-  - cd /run/cloudinit
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  - RSTUDIO_DEB="rstudio-1.2.5033-amd64.deb"
-  - wget https://download1.rstudio.org/desktop/bionic/amd64/${RSTUDIO_DEB}
-  - gdebi --non-interactive ${RSTUDIO_DEB}
-  - rm -f ${RSTUDIO_DEB}
-  - if [ ! -e "/usr/bin/rstudio" ]; then echo "Could not install RStudio"; exit 1; fi
+  - /installation/download_and_install_deb.sh rstudio || exit 1
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
 
-  # Install latest julia version
+  # Install Julia
   - echo ">=== Installing Julia... ===<"
-  - echo "Preparing directory..."
-  - mkdir -p /opt/julia
-  - cd /opt/julia
-  - echo "Downloading package..."
-  - JULIA_TARBALL="julia-1.4.0-linux-x86_64.tar.gz"
-  - JULIA_VERSION=$(echo $JULIA_TARBALL | cut -d'-' -f1-2)
-  - curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.4/${JULIA_TARBALL}
-  - echo "Installing and cleaning up..."
-  - tar -zxf ${JULIA_TARBALL}
-  - rm -rf ${JULIA_TARBALL}
-  - PATH=$PATH:/opt/julia/${JULIA_VERSION}/bin
-  - if [ "$(which julia)" = "" ]; then echo "Could not install Julia"; exit 1; fi
-
-  # Install Julia packages.
-  # Packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
-  # We therefore install and build the packages before moving them into a common area
+  - START_TIME=$(date +%s)
+  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - /installation/download_and_install_tar.sh julia
+  # Install Julia packages:
+  # - packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
+  # - we therefore install and build the packages before moving them into a common area
+  - echo ">=== Installing Julia packages ... ===<"
   - export CONDA_JL_HOME="/anaconda/envs/py37/"
   - JULIA_DEPOT_PATH="/opt/julia/${JULIA_VERSION}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
@@ -548,6 +629,8 @@ runcmd:
   - JULIA_PACKAGES='["ArgCheck", "ArgParse", "BenchmarkTools", "CSV", "Clustering", "Conda", "CuArrays", "DSP", "DataFrames", "DataStructures", "Dates", "Debugger", "DecisionTree", "DifferentialEquations", "Distributions", "Flux", "Formatting", "GLM", "GR", "HypothesisTests", "IJulia", "Images", "Interact", "JDBC", "JLD2", "JSON", "KernelDensity", "LaTeXStrings", "LightGraphs", "LightXML", "MLBase", "Metalhead", "NearestNeighbors", "Nettle", "OnlineStats", "Optim", "Parameters", "Plots", "ProtoBuf", "PyCall", "PyPlot", "Rebugger", "Roots", "ScikitLearn", "StaticArrays", "StatsBase", "StatsFuns", "TensorFlow", "Zygote"]'
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   - mv ~/.julia/* $JULIA_DEPOT_PATH
+  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  - echo ">=== Installing Julia and packages took $ELAPSED ===<"
 
   # Configure jupyter kernels
   - echo ">=== Configuring Julia, Python and R kernels for jupyter... ===<"
@@ -565,30 +648,16 @@ runcmd:
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\"|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
   - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R-${R_VERSION}
   # Log the output kernels
-  - echo "Jupyter kernels are:"
+  - echo "Available Jupyter kernels are:"
+  - jupyter kernelspec list
 
-  # Install spark
-  - echo ">=== Installing spark... ===<"
-  - mkdir -p /opt/spark
-  - cd /opt/spark
-  - SPARK_TARBALL="spark-2.4.5-bin-hadoop2.7.tgz"
-  - SPARK_VERSION=$(echo $SPARK_TARBALL | cut -d'-' -f1-2)
-  - SPARK_HADOOP_VERSION=$(echo $SPARK_TARBALL | cut -d'.' -f1-4)
-  - curl -O http://apache.mirror.anlx.net/spark/${SPARK_VERSION}/${SPARK_TARBALL}
-  - if [ "$(sha256sum -c /installation/spark_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for spark"; exit 1; fi
-  - tar -zxf ${SPARK_TARBALL}
-  - rm -rf ${SPARK_TARBALL}
-  - PATH=$PATH:/opt/spark/${SPARK_HADOOP_VERSION}/bin
-  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install spark"; exit 1; fi
+  # Install Azure Data Studio
+  - echo ">=== Installing Azure Data Studio... ===<"
+  - /installation/download_and_install_deb.sh azuredatastudio || exit 1
 
   # Install dbeaver
   - echo ">=== Installing dbeaver... ===<"
-  - DBEAVER_DEB="dbeaver-ce_7.0.1_amd64.deb"
-  - DBEAVER_VERSION=$(echo $DBEAVER_DEB | cut -d'_' -f2)
-  - curl -O https://dbeaver.io/files/${DBEAVER_VERSION}/${DBEAVER_DEB}
-  - if [ "$(sha256sum -c /installation/dbeaver_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for dbeaver"; exit 1; fi
-  - dpkg -i $DBEAVER_DEB
-  - rm $DBEAVER_DEB
+  - /installation/download_and_install_deb.sh dbeaver || exit 1
 
   # Install PostgreSQL extensions
   - echo ">=== Installing PostgreSQL extensions... ===<"
@@ -598,6 +667,10 @@ runcmd:
   - echo ">=== Installing PyCharm... ===<"
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
+
+  # Install spark
+  - echo ">=== Installing spark... ===<"
+  - /installation/download_and_install_tar.sh spark
 
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
