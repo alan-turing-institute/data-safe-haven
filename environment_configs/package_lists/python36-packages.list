@@ -82,6 +82,7 @@ pyLDAvis
 pylint
 pymc3
 pyod
+pyodbc
 pyopengl
 pyopengl-accelerate
 pystan

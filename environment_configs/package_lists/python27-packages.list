@@ -73,6 +73,7 @@ pyLDAvis
 pylint
 pymc3
 pyod
+pyodbc
 pystan
 pytables
 pytest

@@ -239,6 +239,7 @@ pylint
 pymc3
 pymongo
 pyod
+pyodbc
 PyOpenGL
 PyOpenGL-accelerate
 pyOpenSSL
