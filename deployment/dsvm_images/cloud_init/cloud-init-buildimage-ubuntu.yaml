@@ -227,7 +227,18 @@ write_files:
       PATH=$PATH:/opt/${PACKAGE_NAME}/${PACKAGE_PATHDIR}/bin
       # Check whether the installation was successful
       if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_NAME}"; exit 1; fi
-
+  - path: "/installation/dbeaver_drivers_config.xml"
+    content: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <drivers>
+          <provider id="sqlserver">
+              <driver id="microsoft" category="MS SQL Server" categories="sql" custom="false" embedded="false" name="SQL Server" class="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]" port="1433" description="Microsoft JDBC Driver for SQL Server (MSSQL)">
+                  <library type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE" custom="false" version="7.4.1.jre8">
+                      <file id="com.microsoft.sqlserver:mssql-jdbc" version="7.4.1.jre8" path="/usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/mssql-jdbc-7.4.1.jre8.jar"/>
+                  </library>
+              </driver>
+          </provider>
+      </drivers>
 
 # List of packages to install with apt-get
 # NB. as of 11/03/2019 `nvidia-cuda-toolkit` is broken so we do not install it
@@ -651,9 +662,20 @@ runcmd:
   - echo ">=== Installing Azure Data Studio... ===<"
   - /installation/download_and_install_deb.sh azuredatastudio || exit 1
 
-  # Install dbeaver
-  - echo ">=== Installing dbeaver... ===<"
+  # Install DBeaver
+  - echo ">=== Installing DBeaver... ===<"
   - /installation/download_and_install_deb.sh dbeaver || exit 1
+  # Install DBeaver drivers
+  - echo ">=== Install DBeaver drivers... ===<"
+  - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
+  - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
+  - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
+  - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
+  - cd - 2> /dev/null
+  # Add driver configuration file
+  - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
+  - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
+  - ls -alh /usr/share/dbeaver/drivers/maven/maven-central/*
 
   # Install Microsoft ODBC drivers
   - echo ">=== Install Microsoft ODBC tools... ===<"

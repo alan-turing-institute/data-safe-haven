@@ -167,18 +167,6 @@ write_files:
           r["CRAN"] <- "$CRAN_MIRROR_URL"
           options(repos = r)
       })
-  - path: "/usr/share/dbeaver/drivers-config.xml"
-    content: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <drivers>
-          <provider id="sqlserver">
-              <driver id="microsoft" category="MS SQL Server" categories="sql" custom="false" embedded="false" name="SQL Server" class="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]" port="1433" description="Microsoft JDBC Driver for SQL Server (MSSQL)">
-                  <library type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE" custom="false" version="7.4.1.jre8">
-                      <file id="com.microsoft.sqlserver:mssql-jdbc" version="7.4.1.jre8" path="/usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/mssql-jdbc-7.4.1.jre8.jar"/>
-                  </library>
-              </driver>
-          </provider>
-      </drivers>
 
 runcmd:
   # ==========================================
@@ -219,15 +207,6 @@ runcmd:
   - echo ">=== Restart xrdp... ===<"
   - service xrdp restart
   - service xrdp status
-  # Install DBeaver drivers: TODO move this into image build
-  - echo ">=== Install DBeaver drivers... ===<"
-  - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
-  - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
-  - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
-  - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
-  - cd - 2> /dev/null
-  - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
-  - ls /usr/share/dbeaver/drivers/maven/maven-central/*
   # Add execute permission to the Active Directory set up scripts
   - echo ">=== Initialise Active Directory configuration... ===<"
   - chmod +x /active_directory_step01_pre
