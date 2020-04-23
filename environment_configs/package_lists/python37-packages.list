@@ -3,7 +3,7 @@ aero-calc
 appdirs
 astor
 astropy
-atari-py
+atari_py
 atomicwrites
 automat
 backports
@@ -15,7 +15,6 @@ blaze
 bokeh
 boto3
 bottleneck
-box2d-py
 catboost
 cloudpickle
 colorama
@@ -30,6 +29,7 @@ distributed
 dtw
 ephem
 fbprophet
+flair
 flask
 folium
 gast
@@ -37,6 +37,7 @@ gensim
 geopandas
 gmplot
 gmpy2
+gpyopt
 graph-tool
 grpcio
 gym
@@ -77,6 +78,7 @@ pint
 plotly
 protobuf
 psycopg2
+pybox2d
 pycodestyle
 pycosat
 pyglet
