@@ -240,7 +240,6 @@ packages:
   - aspell
   - atom
   - attr
-  - azure-cli
   - code
   - default-jdk
   - docker.io
@@ -701,7 +700,6 @@ runcmd:
   - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
   # :: Development tools
   - echo ">=== Development tools... ===<"
-  - if [ "$(which az)" != "" ]; then echo "az $(which az)"; echo "$(az --version)"; else echo "az not found!"; exit 1; fi
   - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
   - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
