@@ -44,12 +44,6 @@ heapdict
 holidays
 html5lib
 ipykernel
-jupyter
-jupyter_client
-jupyterhub
-jupyterhub-ldapauthenticator
-jupyterlab
-jupytext
 keras
 lightgbm
 lunardate
@@ -103,9 +97,7 @@ python-geohash
 python-louvain
 pytorch
 pyyaml
-r-irkernel
 regex
-rpy2
 scikit-image
 scikit-learn
 scipy

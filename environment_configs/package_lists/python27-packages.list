@@ -36,10 +36,6 @@ graph-tool
 heapdict
 html5lib
 ipykernel
-jupyter
-jupyter_client
-jupyterlab
-jupytext
 keras
 lightgbm
 lxml
@@ -86,9 +82,7 @@ python-geohash
 python-louvain
 pytorch
 pyyaml
-r-irkernel
 regex
-rpy2
 scikit-image
 scikit-learn
 scipy

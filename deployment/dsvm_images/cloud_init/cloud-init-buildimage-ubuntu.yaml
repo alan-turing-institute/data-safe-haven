@@ -152,9 +152,6 @@ write_files:
       echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
       echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
       /anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
-      ENV_JUPYTER_LOCATION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; which jupyter" | bash)
-      ENV_JUPYTER_VERSION=$(echo "source /anaconda/bin/activate ${ENV_NAME}; jupyter --version | grep core | cut -d':' -f2" | bash)
-      if [ "$ENV_JUPYTER_LOCATION" != "" ]; then echo "python $VERSION environment has jupyter (version $ENV_JUPYTER_VERSION) at $ENV_JUPYTER_LOCATION"; else echo "jupyter not found in python $VERSION environment!"; exit 1; fi
       # Set the kernel name to the full Python version name and store it as $ENV_NAME so that different python3 versions show up separately
       PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
       sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
@@ -700,6 +697,7 @@ runcmd:
   - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
   # :: Development tools
   - echo ">=== Development tools... ===<"
+  - if [ "$(which azuredatastudio)" != "" ]; then echo "azuredatastudio $(which azuredatastudio)"; else echo "azuredatastudio not found!"; exit 1; fi
   - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
   - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
   - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
