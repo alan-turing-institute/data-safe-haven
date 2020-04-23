@@ -53,13 +53,11 @@ markdown
 matplotlib
 mock
 mpi4py
-nb_conda_kernels
 NavPy
 networkx
 nltk
 nltk_data
 nose
-notebook
 numba
 numpy
 numpy-base
