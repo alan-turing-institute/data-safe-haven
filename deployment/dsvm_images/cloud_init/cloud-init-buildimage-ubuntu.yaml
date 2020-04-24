@@ -143,14 +143,17 @@ runcmd:
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
-  # Install Azure Data Studio
-  - echo ">=== $(date +%s) Installing Azure Data Studio ===<"
+  # Install additional deb/snap packages
+  - echo ">=== $(date +%s) Installing deb/snap packages ===<"
+
+  # Azure Data Studio
+  - echo "Installing Azure Data Studio"
   - /installation/download_and_install_deb.sh azuredatastudio || exit 1
 
-  # Install DBeaver and drivers
-  - echo ">=== $(date +%s) Installing DBeaver ===<"
+  # DBeaver and drivers
+  - echo "Installing DBeaver"
   - /installation/download_and_install_deb.sh dbeaver || exit 1
-  # Install DBeaver drivers
+  # Install drivers
   - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
@@ -163,32 +166,32 @@ runcmd:
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.jar
   - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.pom
   - cd - 2> /dev/null
-  # Add driver configuration file
+  # Create driver configuration file
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh /usr/share/dbeaver/drivers/maven/maven-central/*
 
-  # Install Microsoft ODBC drivers
-  - echo ">=== $(date +%s) Install Microsoft ODBC tools ===<"
+  # Microsoft ODBC tools
+  - echo "Installing Microsoft ODBC tools"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
   - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools"; exit 1; fi
 
   # Install PyCharm
-  - echo ">=== $(date +%s) Installing PyCharm ===<"
+  - echo "Installing PyCharm"
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
   - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; fi
 
   # Install spark
-  - echo ">=== $(date +%s) Installing spark ===<"
+  - echo "Installing spark"
   - /installation/download_and_install_tar.sh spark || exit 1
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" != "" ]; then echo "spark-shell $(which spark-shell)"; else echo "Could not install spark-shell!"; exit 1; fi
 
   # Check for successful installations
-  - echo ">=== $(date +%s) Checking apt/snap/deb package installation ===<"
+  - echo "Checking apt/snap/deb package installation"
   # Programming languages
   - echo -e "\n... Programming languages:\n"
   - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
