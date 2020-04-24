@@ -100,542 +100,38 @@ write_files:
     permissions: "0600"
     content: |
       # Deprovisioning log
-  - path: "/installation/deprovision_vm.sh"
-    permissions: "0500"
-    content: |
-      #! /bin/bash
-      # Deprovision this VM
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Calling deprovisioner on this VM"
-      waagent -deprovision+user -force 2>&1
-      # Fix internet connectivity that is broken by waagent deprovisioning (needed in older Ubuntu versions)
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Fixing internet connectivity"
-      if [ ! -e /etc/resolv.conf ]; then ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf; fi
-      # Remove execute permissions from this file
-      echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
-      chmod ugo-x /installation/deprovision_vm.sh
-      ls -alh /installation/deprovision_vm.sh
-  - path: "/installation/postgresql.install"
-    permissions: "0400"
-    content: |
-      create schema if not exists postgis;
-      create extension if not exists postgis;
-      create extension if not exists postgis_topology;
-      create extension if not exists postgis_sfcgal;
-      create extension if not exists pgrouting;
-      create extension if not exists fuzzystrmatch;
-      create extension if not exists unaccent;
-      create extension if not exists pg_trgm;
-      create extension if not exists bloom;
-      create extension if not exists citext;
-      create extension if not exists cube;
-      create extension if not exists file_fdw;
-      create extension if not exists postgres_fdw;
-      create extension if not exists earthdistance;
-  - path: "/installation/create_or_update_conda_python_environment.sh"
-    permissions: "0500"
-    content: |
-      #! /bin/bash
-      # Require three arguments: environment name; (quoted) list of conda packages; (quoted) list of pip packages
-      if [ $# -ne 3 ]; then
-          exit 1
-      fi
-      ENV_NAME=$1
-      CONDA_PACKAGES=$2
-      PIP_PACKAGES=$3
-      # Set version
-      VERSION=3.7
-      if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
-      if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
-      # Create environment
-      START_TIME=$(date +%s)
-      echo ">=== ${START_TIME} Configuring $ENV_NAME conda environment ===<"
-      echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-      echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
-      echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then conda create -y --verbose --name $ENV_NAME python=$VERSION $CONDA_PACKAGES; else conda install -y --verbose --name $ENV_NAME $CONDA_PACKAGES; fi
-      if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then echo "Could not build python $VERSION environment"; exit 1; fi
-      echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
-      echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-      /anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
-      # Set the kernel name to the full Python version name and store it as $ENV_NAME so that different python3 versions show up separately
-      PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
-      sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
-      ln -s /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3] /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/${ENV_NAME}
-      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-      echo "Finished at $(date +'%Y-%m-%d %H:%M:%S') after $ELAPSED"
-  - path: "/installation/download_and_install_deb.sh"
-    permissions: "0500"
-    content: |
-      #! /bin/bash
-      # Require one arguments: config file identifier
-      if [ $# -ne 1 ]; then
-        exit 1
-      fi
-      PACKAGE_EXECUTABLE=$1
-      # Ensure that the config file exists
-      CONFIG_FILE="/installation/debinfo_${PACKAGE_EXECUTABLE}.yaml"
-      if [ ! -e $CONFIG_FILE ]; then
-        exit 2
-      fi
-      # Parse the config file
-      PACKAGE_HASH=$(grep "hash:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
-      PACKAGE_VERSION=$(grep "version:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
-      PACKAGE_DEBFILE=$(grep "debfile:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/")
-      PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|DEBFILE|/$PACKAGE_DEBFILE/")
-      # Download and verify the .deb file
-      echo "Downloading and verifying deb file..."
-      wget $PACKAGE_REMOTE -P /run/cloudinit/
-      ls -alh /run/cloudinit/${PACKAGE_DEBFILE}
-      echo "$PACKAGE_HASH /run/cloudinit/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_EXECUTABLE}_sha512.hash
-      if [ "$(sha256sum -c /tmp/${PACKAGE_EXECUTABLE}_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for $PACKAGE_EXECUTABLE"; exit 1; fi
-      # Install and cleanup
-      echo "Installing deb file..."
-      gdebi --non-interactive /run/cloudinit/${PACKAGE_DEBFILE}
-      rm /run/cloudinit/${PACKAGE_DEBFILE}
-      # Check whether the installation was successful
-      if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_EXECUTABLE}"; exit 1; fi
-  - path: "/installation/download_and_install_tar.sh"
-    permissions: "0500"
-    content: |
-      #! /bin/bash
-      # Require one arguments: config file identifier
-      if [ $# -ne 1 ]; then
-        exit 1
-      fi
-      PACKAGE_NAME=$1
-      # Ensure that the config file exists
-      CONFIG_FILE="/installation/tarinfo_${PACKAGE_NAME}.yaml"
-      if [ ! -e $CONFIG_FILE ]; then
-        exit 2
-      fi
-      # Parse the config file
-      PACKAGE_HASH=$(grep "hash:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
-      PACKAGE_VERSION_MAJOR=$(grep "version_major:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
-      PACKAGE_VERSION=$(grep "version:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION_MAJOR|/$PACKAGE_VERSION_MAJOR/")
-      PACKAGE_PATHDIR=$(grep "pathdir:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/")
-      PACKAGE_TARFILE=$(grep "tarfile:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|PATHDIR|/$PACKAGE_PATHDIR/")
-      PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION_MAJOR|/$PACKAGE_VERSION_MAJOR/" | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|TARFILE|/$PACKAGE_TARFILE/")
-      PACKAGE_EXECUTABLE=$(grep "executable:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||')
-      # Download and verify the .deb file
-      echo "Downloading and verifying tar file..."
-      mkdir -p /opt/${PACKAGE_NAME}
-      wget $PACKAGE_REMOTE -P /opt/${PACKAGE_NAME}
-      ls -alh /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}
-      echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
-      if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for $PACKAGE_NAME"; exit 1; fi
-      # Install and cleanup
-      echo "Installing tar file..."
-      cd /opt/${PACKAGE_NAME}
-      tar -zxf ${PACKAGE_TARFILE}
-      rm -rf ${PACKAGE_TARFILE}
-      PATH=$PATH:/opt/${PACKAGE_NAME}/${PACKAGE_PATHDIR}/bin
-      # Check whether the installation was successful
-      if [ "$(which ${PACKAGE_EXECUTABLE})" = "" ]; then echo "Could not install ${PACKAGE_NAME}"; exit 1; fi
-  - path: "/installation/dbeaver_drivers_config.xml"
-    permissions: "0444"
-    content: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <drivers>
-          <provider id="sqlserver">
-              <driver id="microsoft" category="MS SQL Server" categories="sql" custom="false" embedded="false" name="SQL Server" class="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]" port="1433" description="Microsoft JDBC Driver for SQL Server (MSSQL)">
-                  <library type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE" custom="false" version="7.4.1.jre8">
-                      <file id="com.microsoft.sqlserver:mssql-jdbc" version="7.4.1.jre8" path="/usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/mssql-jdbc-7.4.1.jre8.jar"/>
-                  </library>
-              </driver>
-          </provider>
-          <provider id="postgresql">
-              <driver id="postgres-jdbc" categories="sql" custom="false" embedded="false" name="PostgreSQL" class="org.postgresql.Driver" url="jdbc:postgresql://{host}[:{port}]/[{database}]" port="5432" description="PostgreSQL standard driver">
-                  <library type="jar" path="maven:/org.postgresql:postgresql:RELEASE" custom="false" version="42.2.5">
-                      <file id="org.postgresql:postgresql" version="42.2.5" path="/usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/postgresql-42.2.5.jar"/>
-                  </library>
-                  <library type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE" custom="false" version="2.2.1">
-                      <file id="net.postgis:postgis-jdbc" version="2.2.1" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-jdbc-2.2.1.jar"/>
-                </library>
-              </driver>
-          </provider>
-      </drivers>
   - path: "/installation/analyse_build.py"
     permissions: "0755"
     content: |
-      #! /usr/bin/env python3
-      from contextlib import suppress
-      from datetime import datetime
-      import json
-      import subprocess
-
-      def human_readable(timedelta):
-          seconds = int(timedelta.total_seconds())
-          days, seconds = divmod(seconds, 86400)
-          hours, seconds = divmod(seconds, 3600)
-          minutes, seconds = divmod(seconds, 60)
-          if days > 0:
-              return f"{days:d}d{hours:d}h{minutes:d}m{seconds:d}s"
-          if hours > 0:
-              return f"{hours:d}h{minutes:d}m{seconds:d}s"
-          if minutes > 0:
-              return f"{minutes:d}m{seconds:d}s"
-          return f"{seconds:d}s"
-
-      # Load events from cloud init dump
-      # --------------------------------
-      events = []
-      sp = subprocess.run(["/bin/bash", "-c", "cloud-init analyze dump"], stdout=subprocess.PIPE)
-      cloud_init_log_events = json.loads(sp.stdout.decode("utf8"))
-
-      # Get build start time
-      initial_timestamp = min([entry["timestamp"] for entry in cloud_init_log_events])
-      events.append({"timestamp": datetime.fromtimestamp(initial_timestamp), "level": "INFO", "message": "Started build"})
-
-      # Get initial cloud-init setup time
-      with suppress(IndexError):
-          entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "azure-ds/write_files", cloud_init_log_events))[0]
-          events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "File creation"})
-
-      # Get initial cloud-init setup time
-      with suppress(IndexError):
-          entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-config", cloud_init_log_events))[0]
-          events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Cloud-init initial setup"})
-
-      # Get package install/update time
-      with suppress(IndexError):
-          entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))[0]
-          events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Installing/updating Ubuntu packages"})
-
-      # Get total time
-      build_end_status = None
-      with suppress(IndexError):
-          entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final", cloud_init_log_events))[0]
-          events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Finished build"})
-          if entry["result"]:
-              build_end_status = (datetime.fromtimestamp(entry["timestamp"] - 1), entry["result"])
-
-
-      # Load events from runcmd echo statements
-      # ---------------------------------------
-      runcmd_log_events = []
-      sp = subprocess.run(["grep", ">===", "/var/log/cloud-init-output.log"], stdout=subprocess.PIPE)
-      for event in sp.stdout.decode("utf8").split("\n"):
-          with suppress(IndexError):
-              start_time = event.split(" ")[1]
-              message = event.split(start_time)[1].replace("===<", "").strip()
-              runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
-      for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
-          events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
-
-      # Add in progress task
-      if runcmd_log_events:
-          current_task = runcmd_log_events[-1]["message"]
-          if build_end_status:
-              events.append({"timestamp": build_end_status[0], "level": build_end_status[1], "message": current_task})
-          else:
-              events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": current_task})
-
-      # Log all events
-      # --------------
-      events.sort(key=lambda x: x["timestamp"])
-      last_event_time = None
-      for event in events:
-          time_elapsed = ""
-          if last_event_time:
-              if event["message"] == "Finished build":
-                  time_elapsed = event["timestamp"] - datetime.fromtimestamp(initial_timestamp)
-              else:
-                  time_elapsed = event["timestamp"] - last_event_time
-          if time_elapsed:
-              time_elapsed = ": {}".format(human_readable(time_elapsed))
-          print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
-          last_event_time = event["timestamp"]
+      <analyse_build.py>
+  - path: "/installation/create_or_update_conda_python_environment.sh"
+    permissions: "0500"
+    content: |
+      <create_or_update_conda_python_environment.sh>
+  - path: "/installation/dbeaver_drivers_config.xml"
+    permissions: "0444"
+    content: |
+      <dbeaver_drivers_config.xml>
+  - path: "/installation/deprovision_vm.sh"
+    permissions: "0500"
+    content: |
+      <deprovision_vm.sh>
+  - path: "/installation/download_and_install_deb.sh"
+    permissions: "0500"
+    content: |
+      <download_and_install_deb.sh>
+  - path: "/installation/download_and_install_tar.sh"
+    permissions: "0500"
+    content: |
+      <download_and_install_tar.sh>
+  - path: "/installation/install_postgres_extensions.sql"
+    permissions: "0400"
+    content: |
+      <install_postgres_extensions.sql>
 
 # List of packages to install with apt-get
 packages:
-  - adcli
-  - apt-transport-https
-  - aspell
-  - atom
-  - attr
-  - code
-  - default-jdk
-  - docker.io
-  - dotnet-sdk-2.1
-  - emacs
-  - firefox
-  - g++-6
-  - gcc-6
-  - gdebi-core
-  - git-core
-  - jupyter
-  - krb5-kdc
-  - ldap-utils
-  - libasound2
-  - libcanberra-gtk0
-  - libgconf-2-4
-  - libgdal-dev
-  - libgit2-dev
-  - libgl1-mesa-glx
-  - libglu1-mesa
-  - libgmp-dev
-  - libgnome-keyring0
-  - libgsl-dev
-  - libgtk-3-0
-  - libhdf5-serial-dev
-  - liblmdb-dev
-  - libmariadb-client-lgpl-dev
-  - libmpfr-dev
-  - libnss-ldap
-  - libnss-sss
-  - libnss3
-  - libopenmpi-dev
-  - libpam-ldap
-  - libpam-sss
-  - libpoppler-cpp-dev
-  - libpq-dev
-  - libreoffice
-  - librsvg2-dev
-  - libsensors4
-  - libssl-dev
-  - libudunits2-dev
-  - libxss1
-  - lyx
-  - mono-complete
-  - mono-devel
-  - octave
-  - oddjob
-  - oddjob-mkhomedir
-  - osm2pgsql
-  - p7zip
-  - parallel
-  - pgadmin3
-  - postgresql-12
-  - postgresql-12-pgrouting
-  - postgresql-12-postgis-3-scripts
-  - postgresql-contrib
-  - qgis
-  - r-base
-  - r-base-core
-  - r-base-dev
-  - r-bioc-biobase
-  - r-bioc-cummerbund
-  - r-bioc-deseq2
-  - r-bioc-ebseq
-  - r-bioc-graph
-  - r-bioc-gviz
-  - r-bioc-interactivedisplaybase
-  - r-bioc-limma
-  - r-bioc-metagenomeseq
-  - r-bioc-phyloseq
-  - r-bioc-rbgl
-  - r-cran-abind
-  - r-cran-ada
-  - r-cran-akima
-  - r-cran-ape
-  - r-cran-assertthat
-  - r-cran-backports
-  - r-cran-bbmisc
-  - r-cran-biocmanager
-  - r-cran-bitops
-  - r-cran-boot
-  - r-cran-brms
-  - r-cran-car
-  - r-cran-care
-  - r-cran-caret
-  - r-cran-checkmate
-  - r-cran-chron
-  - r-cran-class
-  - r-cran-cluster
-  - r-cran-coda
-  - r-cran-codetools
-  - r-cran-colorramps
-  - r-cran-colorspace
-  - r-cran-corrplot
-  - r-cran-cowplot
-  - r-cran-coxboost
-  - r-cran-crayon
-  - r-cran-cvst
-  - r-cran-cvtools
-  - r-cran-data.table
-  - r-cran-dbi
-  - r-cran-deepnet
-  - r-cran-devtools
-  - r-cran-diagrammer
-  - r-cran-dichromat
-  - r-cran-digest
-  - r-cran-directlabels
-  - r-cran-dlm
-  - r-cran-doby
-  - r-cran-doparallel
-  - r-cran-dplyr
-  - r-cran-dppackage
-  - r-cran-dt
-  - r-cran-dtw
-  - r-cran-dummies
-  - r-cran-dygraphs
-  - r-cran-e1071
-  - r-cran-emulator
-  - r-cran-evaluate
-  - r-cran-factominer
-  - r-cran-fda
-  - r-cran-fields
-  - r-cran-foreach
-  - r-cran-forecast
-  - r-cran-foreign
-  - r-cran-formula
-  - r-cran-gamlss
-  - r-cran-gamlss.dist
-  - r-cran-gamlss.mx
-  - r-cran-gbm
-  - r-cran-gdata
-  - r-cran-ggally
-  - r-cran-ggforce
-  - r-cran-ggmap
-  - r-cran-ggplot2
-  - r-cran-ggridges
-  - r-cran-ggvis
-  - r-cran-glmnet
-  - r-cran-googlevis
-  - r-cran-gplots
-  - r-cran-gridextra
-  - r-cran-gtable
-  - r-cran-highr
-  - r-cran-hmisc
-  - r-cran-htmltools
-  - r-cran-httpuv
-  - r-cran-httr
-  - r-cran-igraph
-  - r-cran-irace
-  - r-cran-iterators
-  - r-cran-jsonlite
-  - r-cran-kernlab
-  - r-cran-kernsmooth
-  - r-cran-kknn
-  - r-cran-kml
-  - r-cran-knitr
-  - r-cran-labeling
-  - r-cran-lattice
-  - r-cran-lazyeval
-  - r-cran-leaflet
-  - r-cran-lme4
-  - r-cran-loo
-  - r-cran-lubridate
-  - r-cran-magrittr
-  - r-cran-maps
-  - r-cran-maptools
-  - r-cran-markdown
-  - r-cran-mass
-  - r-cran-matrix
-  - r-cran-matrixstats
-  - r-cran-mboost
-  - r-cran-mclust
-  - r-cran-mcmcpack
-  - r-cran-mcspatial
-  - r-cran-mgcv
-  - r-cran-mime
-  - r-cran-mlbench
-  - r-cran-mlr
-  - r-cran-multcomp
-  - r-cran-munsell
-  - r-cran-ndtv
-  - r-cran-network
-  - r-cran-neuralnet
-  - r-cran-nlme
-  - r-cran-nnet
-  - r-cran-parallelmap
-  - r-cran-paramhelpers
-  - r-cran-party
-  - r-cran-pbdzmq
-  - r-cran-pls
-  - r-cran-plyr
-  - r-cran-polycor
-  - r-cran-pomp
-  - r-cran-pscl
-  - r-cran-purrr
-  - r-cran-pvclust
-  - r-cran-quanteda
-  - r-cran-quantmod
-  - r-cran-r6
-  - r-cran-randomforest
-  - r-cran-randomforestsrc
-  - r-cran-ranger
-  - r-cran-rcolorbrewer
-  - r-cran-rcpp
-  - r-cran-rcpparmadillo
-  - r-cran-rcppeigen
-  - r-cran-rcurl
-  - r-cran-readr
-  - r-cran-readxl
-  - r-cran-repr
-  - r-cran-reshape
-  - r-cran-reshape2
-  - r-cran-rgeos
-  - r-cran-rgl
-  - r-cran-rjava
-  - r-cran-rmarkdown
-  - r-cran-rmysql
-  - r-cran-rocr
-  - r-cran-roxygen2
-  - r-cran-rpart
-  - r-cran-rpostgresql
-  - r-cran-rpython
-  - r-cran-rsqlite
-  - r-cran-rstan
-  - r-cran-runjags
-  - r-cran-rweka
-  - r-cran-scales
-  - r-cran-shiny
-  - r-cran-slam
-  - r-cran-sna
-  - r-cran-snowballc
-  - r-cran-sourcetools
-  - r-cran-sp
-  - r-cran-spacyr
-  - r-cran-spatial
-  - r-cran-sqldf
-  - r-cran-stargazer
-  - r-cran-stm
-  - r-cran-stringi
-  - r-cran-stringr
-  - r-cran-surveillance
-  - r-cran-survival
-  - r-cran-synthpop
-  - r-cran-tcltk2
-  - r-cran-testthat
-  - r-cran-text2vec
-  - r-cran-tgp
-  - r-cran-threejs
-  - r-cran-tibble
-  - r-cran-tidyr
-  - r-cran-tidytext
-  - r-cran-tidyverse
-  - r-cran-topicmodels
-  - r-cran-urca
-  - r-cran-uuid
-  - r-cran-vars
-  - r-cran-vcd
-  - r-cran-vioplot
-  - r-cran-viridis
-  - r-cran-visnetwork
-  - r-cran-wavethresh
-  - r-cran-wordcloud
-  - r-cran-xgboost
-  - r-cran-xlsx
-  - r-cran-xml
-  - r-cran-xtable
-  - r-cran-xts
-  - r-cran-yaml
-  - r-cran-zoo
-  - r-recommended
-  - realmd
-  - ristretto
-  - scala
-  - sssd
-  - sssd-tools
-  - sysstat
-  - texlive-full
-  - unicode
-  - unzip
-  - xfce4
-  - xfce4-terminal
-  - xrdp
-  - xsltproc
+  - <apt_packages.list>
 
 runcmd:
   # Make a temporary directory (cloudinit recomends not using /tmp)
@@ -668,9 +164,8 @@ runcmd:
   # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
-  # Update conda
+  # Update conda and add conda-forge (append puts it last in priority order)
   - conda update -n base -c defaults conda
-  # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
@@ -681,7 +176,7 @@ runcmd:
   - conda env list
 
   # Create or update conda environments
-  # === AUTOGENERATED ANACONDA PACKAGES GO HERE ===
+  # <Python package list>
   # Python 2.7 (6hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
   - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
@@ -698,7 +193,7 @@ runcmd:
 
   # Install R, RStudio and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing additional R packages ===<"
-  # === AUTOGENERATED R PACKAGES START HERE ===
+  # <R package list>
   # CRAN
   - echo "Previously installed CRAN packages:"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
@@ -723,7 +218,7 @@ runcmd:
   - /installation/download_and_install_tar.sh julia || exit 1
   # - packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
   # - we therefore install and build the packages before moving them into a common area
-  # === AUTOGENERATED JULIA PACKAGES GO HERE ===
+  # <Julia package list>
   - export CONDA_JL_HOME="/anaconda/envs/py37/"
   - JULIA_DEPOT_PATH="/opt/julia/${JULIA_VERSION}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
@@ -786,7 +281,7 @@ runcmd:
 
   # Install PostgreSQL extensions
   - echo ">=== $(date +%s) Installing PostgreSQL extensions ===<"
-  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/postgresql.install
+  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/install_postgres_extensions.sql
 
   # Install PyCharm
   - echo ">=== $(date +%s) Installing PyCharm ===<"
