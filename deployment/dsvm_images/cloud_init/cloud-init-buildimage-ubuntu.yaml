@@ -585,7 +585,6 @@ runcmd:
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
-  - conda config --set channel_priority strict
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
   - conda config --set remote_max_retries 20
