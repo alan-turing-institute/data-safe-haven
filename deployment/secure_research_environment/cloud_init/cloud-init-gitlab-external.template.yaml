@@ -1,0 +1,18 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+# Install LDAP tools for debugging LDAP issues
+packages:
+  - git
+
+runcmd:
+  # Configure server
+  - echo "Configuring server"
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

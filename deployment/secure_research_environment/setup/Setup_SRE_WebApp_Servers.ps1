@@ -58,7 +58,7 @@ $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 $gitlabFqdn = $config.sre.webapps.gitlab.internal.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-internal.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
                                             Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
@@ -106,11 +106,15 @@ $vmIpAddress = $config.sre.webapps.gitlab.external.ip
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 
 
-# Deploy the VM
-# -------------
+# Deploy the GitLab external VM
+# ------------------------------
 
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-$cloudInitYaml = ""
+$gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabExternalCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabExternalCloudInitTemplate))
+
+Write-Host "CHECKING:"
+Write-Host $gitlabExternalCloudInitTemplate
 
 $params = @{
     Name = $vmName
@@ -118,7 +122,7 @@ $params = @{
     AdminPassword = $sreAdminPassword
     AdminUsername = $sreAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitYaml
+    CloudInitYaml = $gitlabExternalCloudInitTemplate
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = "Standard_LRS"
@@ -126,6 +130,19 @@ $params = @{
     ImageSku = "18.04-LTS"
 }
 $_ = Deploy-UbuntuVirtualMachine @params
+
+Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
+$progress = 0
+$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.external.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitlabStatuses.Contains("PowerState/stopped"))) {
+    $progress = [math]::min(100, $progress + 1)
+    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.external.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    Write-Progress -Activity "Deployment status:" -Status "GitLab External [$($gitlabStatuses[0]) $($gitlabStatuses[1])]" -PercentComplete $progress
+    Start-Sleep 10
+}
+
+Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
+Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
 
 
 # Deploy GitLab/HackMD VMs from template
@@ -188,7 +205,6 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
         Add-LogMessage -Level Fatal "Rebooting the $name VM ($vmName) failed!"
     }
 }
-
 
 # Switch back to original subscription
 # ------------------------------------
