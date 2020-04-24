@@ -61,7 +61,7 @@ function Get-ShmFullConfig {
                 name = "ImageBuildSubnet"
                 cidr = "10.48.0.0/24"
             }
-            vmSize = "Standard_D4_v3"
+            vmSize = "Standard_E8_v3"
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"
