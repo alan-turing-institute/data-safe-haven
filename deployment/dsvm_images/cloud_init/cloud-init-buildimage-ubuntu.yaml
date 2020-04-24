@@ -56,23 +56,6 @@ apt:
 
 
 write_files:
-  - path: "/installation/postgresql.install"
-    permissions: "0400"
-    content: |
-      create schema if not exists postgis;
-      create extension if not exists postgis;
-      create extension if not exists postgis_topology;
-      create extension if not exists postgis_sfcgal;
-      create extension if not exists pgrouting;
-      create extension if not exists fuzzystrmatch;
-      create extension if not exists unaccent;
-      create extension if not exists pg_trgm;
-      create extension if not exists bloom;
-      create extension if not exists citext;
-      create extension if not exists cube;
-      create extension if not exists file_fdw;
-      create extension if not exists postgres_fdw;
-      create extension if not exists earthdistance;
   - path: "/installation/debinfo_azuredatastudio.yaml"
     permissions: "0400"
     content: |
@@ -131,6 +114,23 @@ write_files:
       echo -e "\n$(date +'%Y-%m-%d %H:%M:%S'): Removing execute permissions from this script"
       chmod ugo-x /installation/deprovision_vm.sh
       ls -alh /installation/deprovision_vm.sh
+  - path: "/installation/postgresql.install"
+    permissions: "0400"
+    content: |
+      create schema if not exists postgis;
+      create extension if not exists postgis;
+      create extension if not exists postgis_topology;
+      create extension if not exists postgis_sfcgal;
+      create extension if not exists pgrouting;
+      create extension if not exists fuzzystrmatch;
+      create extension if not exists unaccent;
+      create extension if not exists pg_trgm;
+      create extension if not exists bloom;
+      create extension if not exists citext;
+      create extension if not exists cube;
+      create extension if not exists file_fdw;
+      create extension if not exists postgres_fdw;
+      create extension if not exists earthdistance;
   - path: "/installation/create_or_update_conda_python_environment.sh"
     permissions: "0500"
     content: |
@@ -148,8 +148,8 @@ write_files:
       if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
       if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
       # Create environment
-      echo ">=== Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes... ===<"
       START_TIME=$(date +%s)
+      echo ">=== ${START_TIME} Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes... ===<"
       echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
       echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
       echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
@@ -162,9 +162,8 @@ write_files:
       PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
       sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
       ln -s /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3] /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/${ENV_NAME}
-      echo "Finished at $(date +'%Y-%m-%d %H:%M:%S')"
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-      echo ">=== Building $ENV_NAME environment took $ELAPSED ===<"
+      echo "Finished at $(date +'%Y-%m-%d %H:%M:%S') after $ELAPSED"
   - path: "/installation/download_and_install_deb.sh"
     permissions: "0500"
     content: |
@@ -550,26 +549,29 @@ packages:
   - xsltproc
 
 runcmd:
+  # Make a temporary directory (cloudinit recomends not using /tmp)
+  - mkdir /run/cloudinit
+
   # Suppress apt prompts and warning messages
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Make a temporary directory (cloudinit recomends not using /tmp)
-  - mkdir /run/cloudinit
-
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
-  - echo ">=== Installing NVidia requirements for tensorflow ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing NVidia requirements for tensorflow ===<"
   - apt-get install -y --no-install-recommends nvidia-driver-430
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
   # Clean up installation - getting to this point takes approximately 30 mins
-  - echo ">=== Cleaning up apt-get packages... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Cleaning up unneeded packages... ===<"
   - apt-get -y autoremove
   - apt-get clean
 
   # Install latest anaconda version (download is ~640MB)
-  - echo ">=== Installing conda... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing conda... ===<"
   - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "Using installer from $ANACONDA_INSTALLER_URL"
@@ -581,7 +583,8 @@ runcmd:
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda
-  - echo ">=== Updating conda installation... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Updating conda installation... ===<"
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
@@ -590,7 +593,7 @@ runcmd:
   - conda config --set remote_max_retries 20
   - conda config --set remote_read_timeout_secs 180
   # List initial environments
-  - echo ">=== Initial conda environments... ===<"
+  - echo "Initial conda environments:"
   - conda env list
 
   # Create or update conda environments
@@ -599,20 +602,20 @@ runcmd:
   - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   - /installation/create_or_update_conda_python_environment.sh py37 10 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
   # List environments
-  - echo ">=== Final conda environments... ===<"
+  - echo "Final conda environments:"
   - conda env list
   # Set 'other' permissions on the anaconda directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
-  - echo ">=== Updating /anaconda/ permissions... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Updating /anaconda/ permissions... ===<"
   - rm -rf /anaconda/.cph_tmp*
   - chmod -R o=u,o-w /anaconda/
   - ls -alh /anaconda/
 
   # Install R, RStudio and packages
-  - echo ">=== Installing additional R packages. Will take approximately 20 minutes... ===<"
   - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing additional R packages. Will take approximately 20 minutes... ===<"
   # === AUTOGENERATED R PACKAGES START HERE ===
-  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
   # CRAN
   - echo "Previously installed CRAN packages:"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
@@ -628,22 +631,20 @@ runcmd:
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
   # Install RStudio, ensuring that all users will pick up system R when running
-  - echo ">=== Installing RStudio... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing RStudio... ===<"
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   - /installation/download_and_install_deb.sh rstudio || exit 1
-  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
+  # - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  # - echo ">=== Installing R packages and RStudio took $ELAPSED ===<"
 
-  # Install Julia
-  - echo ">=== Installing Julia... ===<"
+  # Install Julia and packages
   - START_TIME=$(date +%s)
-  - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
+  - echo ">=== ${START_TIME} Installing Julia and packages... ===<"
   - /installation/download_and_install_tar.sh julia || exit 1
-  # Install Julia packages:
   # - packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
   # - we therefore install and build the packages before moving them into a common area
   # === AUTOGENERATED JULIA PACKAGES GO HERE ===
-  - echo ">=== Installing Julia packages ... ===<"
   - export CONDA_JL_HOME="/anaconda/envs/py37/"
   - JULIA_DEPOT_PATH="/opt/julia/${JULIA_VERSION}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
@@ -651,11 +652,12 @@ runcmd:
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   - mv ~/.julia/* $JULIA_DEPOT_PATH
   - echo "export JULIA_DEPOT_PATH=${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
-  - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-  - echo ">=== Installing Julia and packages took $ELAPSED ===<"
+  # - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+  # - echo ">=== Installing Julia and packages took $ELAPSED ===<"
 
   # Configure jupyter kernels
-  - echo ">=== Configuring Julia, Python and R kernels for jupyter... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Configuring Julia, Python and R kernels for jupyter... ===<"
   # Mark the system kernel as not to be used
   - |
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
@@ -676,14 +678,15 @@ runcmd:
   - jupyter kernelspec list
 
   # Install Azure Data Studio
-  - echo ">=== Installing Azure Data Studio... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing Azure Data Studio... ===<"
   - /installation/download_and_install_deb.sh azuredatastudio || exit 1
 
-  # Install DBeaver
-  - echo ">=== Installing DBeaver... ===<"
+  # Install DBeaver and drivers
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing DBeaver... ===<"
   - /installation/download_and_install_deb.sh dbeaver || exit 1
   # Install DBeaver drivers
-  - echo ">=== Install DBeaver drivers... ===<"
   - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - wget https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
@@ -702,26 +705,31 @@ runcmd:
   - ls -alh /usr/share/dbeaver/drivers/maven/maven-central/*
 
   # Install Microsoft ODBC drivers
-  - echo ">=== Install Microsoft ODBC tools... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Install Microsoft ODBC tools... ===<"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools mssql-cli
   - PATH=$PATH:/opt/mssql-tools/bin
   - if [ "$(which mssql-cli)" = "" ]; then echo "Could not install Microsoft ODBC tools"; exit 1; fi
 
   # Install PostgreSQL extensions
-  - echo ">=== Installing PostgreSQL extensions... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing PostgreSQL extensions... ===<"
   - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND"; done < /installation/postgresql.install
 
   # Install PyCharm
-  - echo ">=== Installing PyCharm... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing PyCharm... ===<"
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
 
   # Install spark
-  - echo ">=== Installing spark... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Installing spark... ===<"
   - /installation/download_and_install_tar.sh spark || exit 1
 
   # Check for successful installations
-  - echo ">=== Checking for successful installation... ===<"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Checking for successful installation... ===<"
   # :: Programming languages
   - echo ">=== Programming languages... ===<"
   - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
@@ -757,7 +765,7 @@ runcmd:
   - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)\n $(psql --version)"; else echo "psql not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; echo"$(psql --version)"; else echo "psql not found!"; exit 1; fi
   # Check for missing packages
   - echo "CRAN packages that could not be installed:"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)"
@@ -769,6 +777,8 @@ runcmd:
   # We do this at the end of the script so that
   #   (a) we know this is the PATH that worked when we checked for all the above packages
   #   (b) we only get one entry in /etc/bash.bashrc rather than several with "last-one-wins"
+  - START_TIME=$(date +%s)
+  - echo ">=== ${START_TIME} Setting PATH... ===<"
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc

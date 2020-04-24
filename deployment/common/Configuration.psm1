@@ -61,7 +61,11 @@ function Get-ShmFullConfig {
                 name = "ImageBuildSubnet"
                 cidr = "10.48.0.0/24"
             }
-            vmSize = "Standard_F2s_v2"  # very few parts of the build are parallelisable so per-core performance is the bottleneck
+            # very few parts of the build are parallelisable so per-core performance is the bottleneck. 4GB RAM is too small
+            # vmSize = "Standard_F2s_v2"  # 2 cores; 4GB RAM; £0.0753; 3.7 GHz
+            vmSize = "Standard_F4s_v2"  # 4 cores; 8GB RAM; £0.1506; 3.7 GHz
+            # vmSize = "Standard_E2_v3"   # 2 cores; 16GB RAM; £0.1163; 2.3 GHz
+            # vmSize = "Standard_DC2s_v2"   # 4 cores; 8GB RAM; £0.3697; 4.7 GHz
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"
