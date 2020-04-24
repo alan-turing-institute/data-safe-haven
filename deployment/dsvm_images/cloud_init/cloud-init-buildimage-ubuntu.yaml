@@ -148,11 +148,13 @@ runcmd:
 
   # Azure Data Studio
   - echo "Installing Azure Data Studio"
-  - /installation/download_and_install_deb.sh azuredatastudio || exit 1
+  - /installation/download_and_install_deb.sh azuredatastudio
+  - if [ "$(which azuredatastudio)" = "" ]; then echo "Could not install Azure Data Studio!"; exit 1; fi
 
   # DBeaver and drivers
   - echo "Installing DBeaver"
-  - /installation/download_and_install_deb.sh dbeaver || exit 1
+  - /installation/download_and_install_deb.sh dbeaver
+  - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers
   - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
   - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
@@ -175,20 +177,20 @@ runcmd:
   - echo "Installing Microsoft ODBC tools"
   - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
-  - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools"; exit 1; fi
+  - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # Install PyCharm
   - echo "Installing PyCharm"
   - snap install pycharm-community --classic
   - PATH=$PATH:/snap/bin
-  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "pycharm not found!"; fi
+  - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
 
   # Install spark
   - echo "Installing spark"
   - /installation/download_and_install_tar.sh spark || exit 1
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
-  - if [ "$(which spark-shell)" != "" ]; then echo "spark-shell $(which spark-shell)"; else echo "Could not install spark-shell!"; exit 1; fi
+  - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
 
   # Check for successful installations
   - echo "Checking apt/snap/deb package installation"
@@ -200,7 +202,8 @@ runcmd:
   - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
   - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
   - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
-  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; else echo "scala not found!"; exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; echo "$(scalac -version)"; else echo "scala not found!"; exit 1; fi
+  - if [ "$(which spark-shell)" != "" ]; then echo "R $(which spark-shell)"; echo "$(spark-shell --version)"; else echo "spark-shell not found!"; exit 1; fi
   # Editors
   - echo -e "\n... Editors:\n"
   - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
@@ -212,9 +215,9 @@ runcmd:
   # Presentation tools
   - echo -e "\n... Presentation tools:\n"
   - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
+  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
   - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
   - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
-  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
   # Development tools
   - echo -e "\n... Development tools:\n"
   - if [ "$(which azuredatastudio)" != "" ]; then echo "azuredatastudio $(which azuredatastudio)"; else echo "azuredatastudio not found!"; exit 1; fi
@@ -226,6 +229,8 @@ runcmd:
   - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
   - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
   - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; echo "$(psql --version)"; else echo "psql not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "PyCharm not found!"; exit 1; fi
+  - if [ "$(which sqlcmd)" = "" ]; then echo "sqlcmd $(which sqlcmd)"; echo "$(sqlcmd -? | grep Version)"; else echo "sqlcmd not found!"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== $(date +%s) Installing and configuring conda ===<"
