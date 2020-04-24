@@ -135,21 +135,20 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
-      # Require four arguments: environment name; expected time; (quoted) list of conda packages; (quoted) list of pip packages
-      if [ $# -ne 4 ]; then
-        exit 1
+      # Require three arguments: environment name; (quoted) list of conda packages; (quoted) list of pip packages
+      if [ $# -ne 3 ]; then
+          exit 1
       fi
       ENV_NAME=$1
-      EXPECTED=$2
-      CONDA_PACKAGES=$3
-      PIP_PACKAGES=$4
+      CONDA_PACKAGES=$2
+      PIP_PACKAGES=$3
       # Set version
       VERSION=3.7
       if [ "$ENV_NAME" == "py27" ]; then VERSION=2.7; fi
       if [ "$ENV_NAME" == "py36" ]; then VERSION=3.6; fi
       # Create environment
       START_TIME=$(date +%s)
-      echo ">=== ${START_TIME} Working on $ENV_NAME environment. Will take approximately $EXPECTED minutes ===<"
+      echo ">=== ${START_TIME} Configuring $ENV_NAME conda environment ===<"
       echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
       echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with conda..."
       echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
@@ -256,7 +255,7 @@ write_files:
           </provider>
       </drivers>
   - path: "/installation/analyse_build.py"
-    permissions: "0700"
+    permissions: "0755"
     content: |
       #! /usr/bin/env python3
       from contextlib import suppress
@@ -264,19 +263,18 @@ write_files:
       import json
       import subprocess
 
-      def pretty_time_delta(timedelta):
+      def human_readable(timedelta):
           seconds = int(timedelta.total_seconds())
           days, seconds = divmod(seconds, 86400)
           hours, seconds = divmod(seconds, 3600)
           minutes, seconds = divmod(seconds, 60)
           if days > 0:
-              return '%dd%dh%dm%ds' % (days, hours, minutes, seconds)
-          elif hours > 0:
-              return '%dh%dm%ds' % (hours, minutes, seconds)
-          elif minutes > 0:
-              return '%dm%ds' % (minutes, seconds)
-          else:
-              return '%ds' % (seconds,)
+              return f"{days:d}d{hours:d}h{minutes:d}m{seconds:d}s"
+          if hours > 0:
+              return f"{hours:d}h{minutes:d}m{seconds:d}s"
+          if minutes > 0:
+              return f"{minutes:d}m{seconds:d}s"
+          return f"{seconds:d}s"
 
       # Load events from cloud init dump
       # --------------------------------
@@ -304,9 +302,12 @@ write_files:
           events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Installing/updating Ubuntu packages"})
 
       # Get total time
+      build_end_status = None
       with suppress(IndexError):
           entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final", cloud_init_log_events))[0]
           events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Finished build"})
+          if entry["result"]:
+              build_end_status = (datetime.fromtimestamp(entry["timestamp"] - 1), entry["result"])
 
 
       # Load events from runcmd echo statements
@@ -319,12 +320,15 @@ write_files:
               message = event.split(start_time)[1].replace("===<", "").strip()
               runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
       for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
-          events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "INFO", "message": event["message"]})
+          events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
 
       # Add in progress task
-      current_task = runcmd_log_events[-1]["message"]
-      if current_task != "Finished run commands":
-          events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": current_task})
+      if runcmd_log_events:
+          current_task = runcmd_log_events[-1]["message"]
+          if build_end_status:
+              events.append({"timestamp": build_end_status[0], "level": build_end_status[1], "message": current_task})
+          else:
+              events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": current_task})
 
       # Log all events
       # --------------
@@ -333,12 +337,12 @@ write_files:
       for event in events:
           time_elapsed = ""
           if last_event_time:
-            if event["message"] == "Finished build":
-              time_elapsed = event["timestamp"] - initial_timestamp
-            else:
-              time_elapsed = event["timestamp"] - last_event_time
+              if event["message"] == "Finished build":
+                  time_elapsed = event["timestamp"] - datetime.fromtimestamp(initial_timestamp)
+              else:
+                  time_elapsed = event["timestamp"] - last_event_time
           if time_elapsed:
-              time_elapsed = ": {}".format(pretty_time_delta(time_elapsed))
+              time_elapsed = ": {}".format(human_readable(time_elapsed))
           print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
           last_event_time = event["timestamp"]
 
@@ -653,19 +657,18 @@ runcmd:
   - apt-get clean
 
   # Install latest anaconda version (download is ~640MB)
-  - echo ">=== $(date +%s) Installing conda ===<"
+  - echo ">=== $(date +%s) Installing and configuring conda ===<"
   - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
   - ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "Using installer from $ANACONDA_INSTALLER_URL"
   - cd /run/cloudinit
-  - curl -O $ANACONDA_INSTALLER_URL
+  - wget $ANACONDA_INSTALLER_URL
   - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
   - rm $ANACONDA_INSTALL_SCRIPT
   # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda
-  - echo ">=== $(date +%s) Updating conda installation ===<"
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
@@ -679,21 +682,22 @@ runcmd:
 
   # Create or update conda environments
   # === AUTOGENERATED ANACONDA PACKAGES GO HERE ===
-  - /installation/create_or_update_conda_python_environment.sh py27 300 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
-  - /installation/create_or_update_conda_python_environment.sh py36 35 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
-  - /installation/create_or_update_conda_python_environment.sh py37 10 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
+  # Python 2.7 (6hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
+  - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
+  - /installation/create_or_update_conda_python_environment.sh py37 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
   # List environments
   - echo "Final conda environments:"
   - conda env list
   # Set 'other' permissions on the anaconda directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
-  - echo ">=== $(date +%s) Updating /anaconda/ permissions ===<"
+  - echo "Updating /anaconda/ permissions"
   - rm -rf /anaconda/.cph_tmp*
   - chmod -R o=u,o-w /anaconda/
   - ls -alh /anaconda/
 
-  # Install R, RStudio and packages
-  - echo ">=== $(date +%s) Installing additional R packages. Will take approximately 20 minutes ===<"
+  # Install R, RStudio and packages - approximately 20 minutes
+  - echo ">=== $(date +%s) Installing additional R packages ===<"
   # === AUTOGENERATED R PACKAGES START HERE ===
   # CRAN
   - echo "Previously installed CRAN packages:"
@@ -776,9 +780,9 @@ runcmd:
 
   # Install Microsoft ODBC drivers
   - echo ">=== $(date +%s) Install Microsoft ODBC tools ===<"
-  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools mssql-cli
+  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
-  - if [ "$(which mssql-cli)" = "" ]; then echo "Could not install Microsoft ODBC tools"; exit 1; fi
+  - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools"; exit 1; fi
 
   # Install PostgreSQL extensions
   - echo ">=== $(date +%s) Installing PostgreSQL extensions ===<"
