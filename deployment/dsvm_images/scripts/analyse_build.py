@@ -25,22 +25,34 @@ cloud_init_log_events = json.loads(sp.stdout.decode("utf8"))
 
 # Get build start time
 initial_timestamp = min([entry["timestamp"] for entry in cloud_init_log_events])
-events.append({"timestamp": datetime.fromtimestamp(initial_timestamp), "level": "INFO", "message": "Started build"})
+events.append({"timestamp": datetime.fromtimestamp(initial_timestamp), "level": "SUCCESS", "message": "Started build"})
 
 # Get initial cloud-init setup time
 with suppress(IndexError):
-    entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "azure-ds/write_files", cloud_init_log_events))[0]
-    events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "File creation"})
+    start_entry = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "azure-ds/write_files", cloud_init_log_events))[0]
+    end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "azure-ds/write_files", cloud_init_log_events))
+    if end_entries:
+        events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "File creation"})
+    else:
+        events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "File creation"})
 
 # Get initial cloud-init setup time
 with suppress(IndexError):
-    entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-config", cloud_init_log_events))[0]
-    events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Cloud-init initial setup"})
+    start_entry = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "modules-config", cloud_init_log_events))[0]
+    end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-config", cloud_init_log_events))
+    if end_entries:
+        events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Cloud-init initial setup"})
+    else:
+        events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Cloud-init initial setup"})
 
 # Get package install/update time
 with suppress(IndexError):
-    entry = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))[0]
-    events.append({"timestamp": datetime.fromtimestamp(entry["timestamp"]), "level": entry["result"], "message": "Installing/updating Ubuntu packages"})
+    start_entry = list(filter(lambda x: x["event_type"] == "start" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))[0]
+    end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))
+    if end_entries:
+        events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Installing/updating Ubuntu packages"})
+    else:
+        events.append({"timestamp": datetime.now(), "level": "RUNNING", "message": "Installing/updating Ubuntu packages"})
 
 # Get total time
 build_end_status = None

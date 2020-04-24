@@ -109,7 +109,7 @@ foreach ($scriptName in @("analyse_build.py",
 $indent = "  - "
 $scriptName = "apt_packages.list"
 $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "scripts" $scriptName) -Raw
-$indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+$indented_script = $raw_script -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
 $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
 
 
@@ -187,7 +187,8 @@ $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
 Add-LogMessage -Level Info "  The password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.Name)' key vault"
-Add-LogMessage -Level Info "  Once logged in, check the installation progress with: tail -f -n+1 /var/log/cloud-init-output.log"
+Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /installation/analyse_build.py"
+Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 
 
 # Switch back to original subscription
