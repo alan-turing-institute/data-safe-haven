@@ -143,11 +143,6 @@ runcmd:
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
-  # Clean up installation - getting to this point takes approximately 30 mins
-  - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
-  - apt-get -y autoremove
-  - apt-get clean
-
   # Install Azure Data Studio
   - echo ">=== $(date +%s) Installing Azure Data Studio ===<"
   - /installation/download_and_install_deb.sh azuredatastudio || exit 1
@@ -252,7 +247,7 @@ runcmd:
   - echo "Initial conda environments:"
   - conda env list
 
-  # Create or update conda environments - approximately 14 hrs: Python 2.7 (6hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
+  # Create or update conda environments - approximately 14 hrs: Python 2.7 (5hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
   # <Python package list>
   - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
@@ -347,6 +342,11 @@ runcmd:
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
   - echo ">=== $(date +%s) Finished run commands ===<"
+
+  # Clean up installation
+  - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
+  - apt-get -y autoremove
+  - apt-get clean
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
