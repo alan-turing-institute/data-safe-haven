@@ -227,7 +227,7 @@ write_files:
       if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then echo "Checksum did not match expected for $PACKAGE_NAME"; exit 1; fi
       # Install and cleanup
       echo "Installing tar file..."
-      cd/opt/${PACKAGE_NAME}
+      cd /opt/${PACKAGE_NAME}
       tar -zxf ${PACKAGE_TARFILE}
       rm -rf ${PACKAGE_TARFILE}
       PATH=$PATH:/opt/${PACKAGE_NAME}/${PACKAGE_PATHDIR}/bin
@@ -638,7 +638,7 @@ runcmd:
   - echo ">=== Installing Julia... ===<"
   - START_TIME=$(date +%s)
   - echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
-  - /installation/download_and_install_tar.sh julia
+  - /installation/download_and_install_tar.sh julia || exit 1
   # Install Julia packages:
   # - packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
   # - we therefore install and build the packages before moving them into a common area
@@ -718,7 +718,7 @@ runcmd:
 
   # Install spark
   - echo ">=== Installing spark... ===<"
-  - /installation/download_and_install_tar.sh spark
+  - /installation/download_and_install_tar.sh spark || exit 1
 
   # Check for successful installations
   - echo ">=== Checking for successful installation... ===<"
