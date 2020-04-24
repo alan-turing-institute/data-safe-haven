@@ -9,7 +9,6 @@ bitarray
 bkcharts
 blaze
 bokeh
-boto3
 bottleneck
 catboost
 colorama
@@ -28,7 +27,6 @@ flask
 folium
 gensim
 geopandas
-gmplot
 gmpy2
 gpy
 gpyopt

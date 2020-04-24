@@ -585,6 +585,7 @@ runcmd:
   - conda update -n base -c defaults conda
   # Add channels (append puts them last in priority order)
   - conda config --append channels conda-forge
+  - conda config --set channel_priority strict
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
   - conda config --set remote_max_retries 20
@@ -653,6 +654,7 @@ runcmd:
   - JULIA_PACKAGES='["ArgCheck", "ArgParse", "BenchmarkTools", "CSV", "Clustering", "Conda", "CuArrays", "DSP", "DataFrames", "DataStructures", "Dates", "Debugger", "DecisionTree", "DifferentialEquations", "Distributions", "Flux", "Formatting", "GLM", "GR", "HypothesisTests", "IJulia", "Images", "Interact", "JDBC", "JLD2", "JSON", "KernelDensity", "LaTeXStrings", "LightGraphs", "LightXML", "MLBase", "Metalhead", "NearestNeighbors", "Nettle", "OnlineStats", "Optim", "Parameters", "Plots", "ProtoBuf", "PyCall", "PyPlot", "Rebugger", "Roots", "ScikitLearn", "StaticArrays", "StatsBase", "StatsFuns", "TensorFlow", "Zygote"]'
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   - mv ~/.julia/* $JULIA_DEPOT_PATH
+  - echo "export JULIA_DEPOT_PATH=${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
   - ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
   - echo ">=== Installing Julia and packages took $ELAPSED ===<"
 

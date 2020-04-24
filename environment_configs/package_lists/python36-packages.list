@@ -1,9 +1,7 @@
 absl-py
-aero-calc
 appdirs
 astor
 astropy
-atari_py
 atomicwrites
 automat
 backports
@@ -13,7 +11,6 @@ bitarray
 bkcharts
 blaze
 bokeh
-boto3
 bottleneck
 catboost
 cloudpickle
@@ -33,7 +30,6 @@ flask
 folium
 gensim
 geopandas
-gmplot
 gmpy2
 gpy
 gpyopt
@@ -49,7 +45,6 @@ markdown
 matplotlib
 mock
 mpi4py
-NavPy
 networkx
 nltk
 nltk_data
