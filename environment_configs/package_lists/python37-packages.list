@@ -71,7 +71,6 @@ pint
 plotly
 protobuf
 psycopg2
-pybox2d
 pycodestyle
 pycosat
 pyglet
