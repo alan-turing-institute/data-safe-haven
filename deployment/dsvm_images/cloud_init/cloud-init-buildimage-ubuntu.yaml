@@ -92,10 +92,6 @@ write_files:
       version: 2.4.5
       tarfile: spark-|VERSION|-bin-hadoop2.7.tgz
       remote: https://downloads.apache.org/spark/spark-|VERSION|/|TARFILE|
-  - path: "/installation/deprovision.log"
-    permissions: "0600"
-    content: |
-      # Deprovisioning log
   - path: "/installation/analyse_build.py"
     permissions: "0755"
     content: |
@@ -108,6 +104,10 @@ write_files:
     permissions: "0444"
     content: |
       <dbeaver_drivers_config.xml>
+  - path: "/installation/deprovision.log"
+    permissions: "0600"
+    content: |
+      # Deprovisioning log
   - path: "/installation/deprovision_vm.sh"
     permissions: "0500"
     content: |
@@ -124,6 +124,11 @@ write_files:
     permissions: "0400"
     content: |
       <install_postgres_extensions.sql>
+  - path: "/installation/performance_log.csv"
+    permissions: "0644"
+    content: |
+      # Performance log
+
 
 # List of packages to install with apt-get
 packages:
