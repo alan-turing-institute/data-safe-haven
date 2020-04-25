@@ -3,7 +3,10 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' [default], 'Ubuntu1810', 'Ubuntu1904', 'Ubuntu1910'")]
     [ValidateSet("Ubuntu1804", "Ubuntu1810", "Ubuntu1904", "Ubuntu1910")]
-    [string]$sourceImage = "Ubuntu1804"
+    [string]$sourceImage = "Ubuntu1804",
+    [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
+    [ValidateSet("default", "Standard_F4s_v2", "Standard_E2_v3", "Standard_E4_v3", "Standard_H8")]
+    [string]$vmSize = "default"
 )
 
 Import-Module Az
@@ -19,6 +22,10 @@ $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
+
+# Select which VM size to use
+# ---------------------------
+if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
 
 
 # Select which source URN to base the build on
@@ -156,7 +163,6 @@ $buildVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyV
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.dsvmImage.bootdiagnostics.accountName -ResourceGroupName $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
 $buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.dsvmImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.dsvmImage.location
-$buildVmSize = $config.dsvmImage.build.vmSize
 
 
 # Deploy the VM
@@ -166,7 +172,7 @@ Add-LogMessage -Level Info "  VM name: $buildVmName"
 Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
     Name = $buildVmName
-    Size = $buildVmSize
+    Size = $vmSize
     AdminPassword = $buildVmAdminPassword
     AdminUsername = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount

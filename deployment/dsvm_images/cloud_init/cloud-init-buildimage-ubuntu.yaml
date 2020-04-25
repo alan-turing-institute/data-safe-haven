@@ -1,7 +1,9 @@
 #cloud-config
 
+
 # Update package database on first boot (ie. run apt-get update)
 package_update: true
+
 
 # Upgrade installed packages on first boot (ie. run apt-get upgrade)
 package_upgrade: true
@@ -134,6 +136,8 @@ write_files:
 packages:
   - <apt_packages.list>
 
+
+# List of commands to run using `/bin/sh`
 runcmd:
   # Log system performance during the installation and record it each minute
   - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
@@ -144,6 +148,11 @@ runcmd:
   # Suppress apt prompts and warning messages
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
+  - apt-get -y autoremove
+  - apt-get clean
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
@@ -310,7 +319,7 @@ runcmd:
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
   - jupyter kernelspec install /usr/local/lib/R/site-library/IRkernel/R${R_VERSION} || exit 1
   # Log the output kernels
-  - echo "Available Jupyter kernels are:"
+  - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
 
   # Install PostgreSQL extensions
@@ -326,54 +335,49 @@ runcmd:
   - PATH="$PATH:\$HOME/.local/bin:\$HOME/bin"
   - echo "Setting PATH to '${PATH}'"
   - echo "export PATH=${PATH}" >> /etc/bash.bashrc
-  - echo ">=== $(date +%s) Finished run commands ===<"
-
-  # Clean up installation
-  - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
-  - apt-get -y autoremove
-  - apt-get clean
 
   # Check for successful installations
-  - echo ">=== $(date +%s) Checking environment is configured ===<"
+  - echo ">=== $(date +%s) Checking environment configuration ===<"
   # Programming languages
-  - echo -e "\n... Programming languages:\n"
-  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
-  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
-  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
-  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
-  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
-  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "Julia not found!"; exit 1; fi
-  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
-  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; echo "$(scalac -version)"; else echo "scala not found!"; exit 1; fi
-  - if [ "$(which spark-shell)" != "" ]; then echo "R $(which spark-shell)"; echo "$(spark-shell --version)"; else echo "spark-shell not found!"; exit 1; fi
+  - echo "\n... Programming languages:\n"
+  - if [ "$(which dotnet)" ]; then echo "\n\n*dotnet*\n\n$(which dotnet)"; echo "$(dotnet --version)"; else echo "ERROR dotnet not found!"; exit 1; fi
+  - if [ "$(which g++)" ]; then echo "\n\n*g++*\n\n$(which g++)"; echo "$(g++ --version)"; else echo "ERRO g++ not found!"; exit 1; fi
+  - if [ "$(which gcc)" ]; then echo "\n\n*gcc*\n\n$(which gcc)"; echo "$(gcc --version)"; else echo "ERROR gcc not found!"; exit 1; fi
+  - if [ "$(which gfortran)" ]; then echo "\n\n*gfortran*\n\n$(which gfortran)"; echo "$(gfortran --version)"; else echo "ERROR gfortran not found!"; exit 1; fi
+  - if [ "$(which java)" ]; then echo "\n\n*java*\n\n$(which java)"; echo "$(java -version)"; else echo "ERROR java not found!"; exit 1; fi
+  - if [ "$(which julia)" ]; then echo "\n\n*julia*\n\n$(which julia)"; echo "$(julia --version)"; else echo "ERROR Julia not found!"; exit 1; fi
+  - if [ "$(which R)" ]; then echo "\n\n*R*\n\n$(which R)"; echo "$(R --version)"; else echo "ERROR R not found!"; exit 1; fi
+  - if [ "$(which scala)" ]; then echo "\n\n*scala*\n\n$(which scala)"; echo "$(scalac -version)"; else echo "ERROR scala not found!"; exit 1; fi
+  - if [ "$(which spark-shell)" ]; then echo "\n\n*R*\n\n$(which spark-shell)"; echo "$(spark-shell --version)"; else echo "ERROR spark-shell not found!"; exit 1; fi
   # Editors
-  - echo -e "\n... Editors:\n"
-  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
-  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
-  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
-  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  - echo "\n... Editors:\n"
+  - if [ "$(which atom)" ]; then echo "\n\n*atom*\n\n$(which atom)"; echo "$(dpkg -s atom | grep '^Version:')"; else echo "ERROR atom not found!"; exit 1; fi
+  - if [ "$(which code)" ]; then echo "\n\n*code*\n\n$(which code)"; echo "$(code --version)"; else echo "ERROR code not found!"; exit 1; fi
+  - if [ "$(which emacs)" ]; then echo "\n\n*emacs*\n\n$(which emacs)"; echo "$(emacs --version)"; else echo "ERROR emacs not found!"; exit 1; fi
+  - if [ "$(which nano)" ]; then echo "\n\n*nano*\n\n$(which nano)"; echo "$(nano --version)"; else echo "ERROR nano not found!"; exit 1; fi
+  - if [ "$(which rstudio)" ]; then echo "\n\n*RStudio*\n\n$(which rstudio)"; echo "$(dpkg -s rstudio | grep '^Version:')"; else echo "ERROR RStudio not found!"; fi
+  - if [ "$(which vim)" ]; then echo "\n\n*vim*\n\n$(which vim)"; echo "$(vim --version | grep '^VIM')"; else echo "ERROR vim not found!"; exit 1; fi
   # Presentation tools
-  - echo -e "\n... Presentation tools:\n"
-  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
-  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
-  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
-  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
+  - echo "\n... Presentation tools:\n"
+  - if [ "$(which latex)" ]; then echo "\n\n*latex*\n\n$(which latex)"; echo "$(latex --version | grep 'TeX Live')"; else echo "ERROR latex not found!"; exit 1; fi
+  - if [ "$(which libreoffice)" ]; then echo "\n\n*libreoffice*\n\n$(which libreoffice)"; echo "$(libreoffice --version)"; else echo "ERROR libreoffice not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" ]; then echo "\n\n*pdflatex*\n\n$(which pdflatex)"; echo "$(pdflatex --version | grep 'TeX Live')"; else echo "ERROR pdflatex not found!"; exit 1; fi
+  - if [ "$(which xelatex)" ]; then echo "\n\n*xelatex*\n\n$(which xelatex)"; echo "$(xelatex --version | grep 'TeX Live')"; else echo "ERROR xelatex not found!"; exit 1; fi
   # Development tools
-  - echo -e "\n... Development tools:\n"
-  - if [ "$(which azuredatastudio)" != "" ]; then echo "azuredatastudio $(which azuredatastudio)"; else echo "azuredatastudio not found!"; exit 1; fi
-  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
-  - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
-  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
-  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
-  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
-  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
-  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; echo "$(psql --version)"; else echo "psql not found!"; exit 1; fi
-  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "PyCharm not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "RStudio $(which rstudio)"; else echo "RStudio not found!"; exit 1; fi
-  - if [ "$(which sqlcmd)" = "" ]; then echo "sqlcmd $(which sqlcmd)"; echo "$(sqlcmd -? | grep Version)"; else echo "sqlcmd not found!"; exit 1; fi
+  - echo "\n... Development tools:\n"
+  - if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which azuredatastudio)"; else echo "ERROR azuredatastudio not found!"; exit 1; fi
+  - if [ "$(which bash)" ]; then echo "\n\n*bash*\n\n$(which bash)"; echo "$(bash --version | grep 'version')"; else echo "ERROR bash not found!"; exit 1; fi
+  - if [ "$(which dbeaver)" ]; then echo "\n\n*DBeaver*\n\n$(which dbeaver)"; echo "$(dpkg -s dbeaver-ce | grep '^Version:')"; else echo "ERROR DBeaver not found!"; exit 1; fi
+  - if [ "$(which docker)" ]; then echo "\n\n*Docker*\n\n$(which docker)"; echo "$(docker --version)"; else echo "ERROR Docker not found!"; exit 1; fi
+  - if [ "$(which firefox)" ]; then echo "\n\n*Firefox*\n\n$(which firefox)"; echo "$(firefox --version)"; else echo "ERROR Firefox not found!"; exit 1; fi
+  - if [ "$(which git)" ]; then echo "\n\n*git*\n\n$(which git)"; echo "$(git --version)"; else echo "ERROR git not found!"; exit 1; fi
+  - if [ "$(which htop)" ]; then echo "\n\n*htop*\n\n$(which htop)"; echo "$(htop --version)"; else echo "ERROR htop not found!"; exit 1; fi
+  - if [ "$(which nvidia-smi)" ]; then echo "\n\n*nvidia-smi*\n\n$(which nvidia-smi)"; echo "$(modinfo nvidia | grep '^version:')"; else echo "nvidia-ERROR smi not found!"; exit 1; fi
+  - if [ "$(which psql)" ]; then echo "\n\n*psql*\n\n$(which psql)"; echo "$(psql --version)"; else echo "ERROR psql not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" ]; then echo "\n\n*pycharm*\n\n$(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "ERROR PyCharm not found!"; exit 1; fi
+  - if [ "$(which rstudio)" ]; then echo "\n\n*RStudio*\n\n$(which rstudio)"; else echo "ERROR RStudio not found!"; exit 1; fi
+  - if [ "$(which sqlcmd)" ]; then echo "\n\n*sqlcmd*\n\n$(which sqlcmd)"; echo "$(sqlcmd -? | grep Version)"; else echo "ERROR sqlcmd not found!"; exit 1; fi
+
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
