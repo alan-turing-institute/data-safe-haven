@@ -185,52 +185,17 @@ runcmd:
   - PATH=$PATH:/snap/bin
   - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
 
+  # Install RStudio,
+  - echo "Installing RStudio"
+  - /installation/download_and_install_deb.sh rstudio || exit 1
+  - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; fi
+
   # Install spark
   - echo "Installing spark"
   - /installation/download_and_install_tar.sh spark || exit 1
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
-
-  # Check for successful installations
-  - echo "Checking apt/snap/deb package installation"
-  # Programming languages
-  - echo -e "\n... Programming languages:\n"
-  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
-  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
-  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
-  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
-  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
-  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
-  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; echo "$(scalac -version)"; else echo "scala not found!"; exit 1; fi
-  - if [ "$(which spark-shell)" != "" ]; then echo "R $(which spark-shell)"; echo "$(spark-shell --version)"; else echo "spark-shell not found!"; exit 1; fi
-  # Editors
-  - echo -e "\n... Editors:\n"
-  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
-  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
-  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
-  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
-  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
-  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
-  # Presentation tools
-  - echo -e "\n... Presentation tools:\n"
-  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
-  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
-  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
-  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
-  # Development tools
-  - echo -e "\n... Development tools:\n"
-  - if [ "$(which azuredatastudio)" != "" ]; then echo "azuredatastudio $(which azuredatastudio)"; else echo "azuredatastudio not found!"; exit 1; fi
-  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
-  - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
-  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
-  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
-  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
-  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
-  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
-  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; echo "$(psql --version)"; else echo "psql not found!"; exit 1; fi
-  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "PyCharm not found!"; exit 1; fi
-  - if [ "$(which sqlcmd)" = "" ]; then echo "sqlcmd $(which sqlcmd)"; echo "$(sqlcmd -? | grep Version)"; else echo "sqlcmd not found!"; exit 1; fi
 
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== $(date +%s) Installing and configuring conda ===<"
@@ -287,10 +252,8 @@ runcmd:
   - Rscript -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/testing', dep=TRUE)"
   - Rscript -e "devtools::install_github('dgrtwo/gganimate')"
   - Rscript -e "devtools::install_github('IRkernel/IRkernel')"
-  # Install RStudio, ensuring that all users will pick up system R when running
-  - echo ">=== $(date +%s) Installing RStudio ===<"
+  # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
-  - /installation/download_and_install_deb.sh rstudio || exit 1
   # Check for missing packages
   - MISSING_CRAN_PACKAGES=$(Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)")
   - if [ "$MISSING_CRAN_PACKAGES" -ne "character(0)" ]; then echo "Could not install CRAN packages - $MISSING_CRAN_PACKAGES"; exit 1; fi
@@ -302,7 +265,7 @@ runcmd:
   - /installation/download_and_install_tar.sh julia || exit 1
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
-  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "Could not install Julia!"; exit 1; fi
+  - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
   # Packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
   # We therefore install and build the packages before moving them into a common area
   # <Julia package list>
@@ -311,8 +274,12 @@ runcmd:
   - mkdir -p ${JULIA_DEPOT_PATH}
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end" || exit 1
-  - mv ~/.julia/* $JULIA_DEPOT_PATH || exit 1
-  - rm -rf ~/.julia 2> /dev/null
+  - mv /root/.julia/* ${JULIA_DEPOT_PATH} || exit 1
+  - rm -rf /root/.julia 2> /dev/null
+  - echo "Updating Julia depot permissions"
+  - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
+  - chmod ugo+w ${JULIA_BASE_DIR}/depot/environments/*/*.toml
+  - echo "export CONDA_JL_HOME=${CONDA_JL_HOME}" >> /etc/bash.bashrc
   - echo "export JULIA_DEPOT_PATH=${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
 
   # Configure jupyter kernels
@@ -321,7 +288,7 @@ runcmd:
   - |
     sed -i "s|\"display_name\":.*Python.*|\"display_name\": \"System Python - do not use\",|" /usr/share/jupyter/kernels/python3/kernel.json
   # Add the Julia kernel
-  - mv ~/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
+  - mv /root/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
   # Add the anaconda kernels
   - jupyter kernelspec install /anaconda/envs/py27/share/jupyter/kernels/py27 || exit 1
   - jupyter kernelspec install /anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
@@ -355,6 +322,48 @@ runcmd:
   - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
   - apt-get -y autoremove
   - apt-get clean
+
+  # Check for successful installations
+  - echo ">=== $(date +%s) Checking environment is configured ===<"
+  # Programming languages
+  - echo -e "\n... Programming languages:\n"
+  - if [ "$(which dotnet)" != "" ]; then echo "dotnet $(which dotnet)"; echo "$(dotnet --info)"; else echo "dotnet not found!"; exit 1; fi
+  - if [ "$(which g++)" != "" ]; then echo "g++ $(which g++)"; echo "$(g++ --version)"; else echo "g++ not found!"; exit 1; fi
+  - if [ "$(which gcc)" != "" ]; then echo "gcc $(which gcc)"; echo "$(gcc --version)"; else echo "gcc not found!"; exit 1; fi
+  - if [ "$(which gfortran)" != "" ]; then echo "gfortran $(which gfortran)"; echo "$(gfortran --version)"; else echo "gfortran not found!"; exit 1; fi
+  - if [ "$(which java)" != "" ]; then echo "java $(which java)"; echo "$(java -version)"; else echo "java not found!"; exit 1; fi
+  - if [ "$(which julia)" != "" ]; then echo "julia $(which julia)"; echo "$(julia --version)"; else echo "Julia not found!"; exit 1; fi
+  - if [ "$(which R)" != "" ]; then echo "R $(which R)"; echo "$(R --version)"; else echo "R not found!"; exit 1; fi
+  - if [ "$(which scala)" != "" ]; then echo "scala $(which scala)"; echo "$(scalac -version)"; else echo "scala not found!"; exit 1; fi
+  - if [ "$(which spark-shell)" != "" ]; then echo "R $(which spark-shell)"; echo "$(spark-shell --version)"; else echo "spark-shell not found!"; exit 1; fi
+  # Editors
+  - echo -e "\n... Editors:\n"
+  - if [ "$(which atom)" != "" ]; then echo "atom $(which atom)"; echo "$(dpkg -s atom)"; else echo "atom not found!"; exit 1; fi
+  - if [ "$(which code)" != "" ]; then echo "code $(which code)"; echo "$(code --version)"; else echo "code not found!"; exit 1; fi
+  - if [ "$(which emacs)" != "" ]; then echo "emacs $(which emacs)"; echo "$(emacs --version)"; else echo "emacs not found!"; exit 1; fi
+  - if [ "$(which nano)" != "" ]; then echo "nano $(which nano)"; echo "$(nano --version)"; else echo "nano not found!"; exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "rstudio $(which rstudio)"; echo "$(dpkg -s rstudio)"; else echo "rstudio not found!"; fi
+  - if [ "$(which vim)" != "" ]; then echo "vim $(which vim)"; echo "$(vim --version)"; else echo "vim not found!"; exit 1; fi
+  # Presentation tools
+  - echo -e "\n... Presentation tools:\n"
+  - if [ "$(which latex)" != "" ]; then echo "latex $(which latex)"; echo "$(latex --version)"; else echo "latex not found!"; exit 1; fi
+  - if [ "$(which libreoffice)" != "" ]; then echo "libreoffice $(which libreoffice)"; echo "$(libreoffice --version)"; else echo "libreoffice not found!"; exit 1; fi
+  - if [ "$(which pdflatex)" != "" ]; then echo "pdflatex $(which pdflatex)"; echo "$(pdflatex --version)"; else echo "pdflatex not found!"; exit 1; fi
+  - if [ "$(which xelatex)" != "" ]; then echo "xelatex $(which xelatex)"; echo "$(xelatex --version)"; else echo "xelatex not found!"; exit 1; fi
+  # Development tools
+  - echo -e "\n... Development tools:\n"
+  - if [ "$(which azuredatastudio)" != "" ]; then echo "azuredatastudio $(which azuredatastudio)"; else echo "azuredatastudio not found!"; exit 1; fi
+  - if [ "$(which bash)" != "" ]; then echo "bash $(which bash)"; echo "$(bash --version)"; else echo "bash not found!"; exit 1; fi
+  - if [ "$(which dbeaver)" != "" ]; then echo "dbeaver $(which dbeaver)"; else echo "dbeaver not found!"; exit 1; fi
+  - if [ "$(which docker)" != "" ]; then echo "docker $(which docker)"; echo "$(docker --version)"; else echo "docker not found!"; exit 1; fi
+  - if [ "$(which firefox)" != "" ]; then echo "firefox $(which firefox)"; echo "$(firefox --version)"; else echo "firefox not found!"; exit 1; fi
+  - if [ "$(which git)" != "" ]; then echo "git $(which git)"; echo "$(git --version)"; else echo "git not found!"; exit 1; fi
+  - if [ "$(which htop)" != "" ]; then echo "htop $(which htop)"; echo "$(htop --version)"; else echo "htop not found!"; exit 1; fi
+  - if [ "$(which nvidia-smi)" != "" ]; then echo "nvidia-smi $(which nvidia-smi)"; echo "$(nvidia-smi --help)"; else echo "nvidia-smi not found!"; exit 1; fi
+  - if [ "$(which psql)" != "" ]; then echo "psql $(which psql)"; echo "$(psql --version)"; else echo "psql not found!"; exit 1; fi
+  - if [ "$(which pycharm-community)" != "" ]; then echo "pycharm $(which pycharm-community)"; echo "$(snap list pycharm-community)"; else echo "PyCharm not found!"; exit 1; fi
+  - if [ "$(which rstudio)" != "" ]; then echo "RStudio $(which rstudio)"; else echo "RStudio not found!"; exit 1; fi
+  - if [ "$(which sqlcmd)" = "" ]; then echo "sqlcmd $(which sqlcmd)"; echo "$(sqlcmd -? | grep Version)"; else echo "sqlcmd not found!"; exit 1; fi
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
