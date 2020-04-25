@@ -66,7 +66,8 @@ function Get-ShmFullConfig {
             # vmSize = "Standard_F4s_v2"  # 4 cores; 8GB RAM; £0.1506; 3.7 GHz
             # vmSize = "Standard_E2_v3"   # 2 cores; 16GB RAM; £0.1163; 2.3 GHz
             vmSize = "Standard_E4_v3"     # 4 cores; 32GB RAM; £0.2326; 2.3 GHz
-            # vmSize = "Standard_H8"        # 8 cores; 56GB RAM; £0.4271; 3.6 GHz
+            # vmSize = "Standard_E8_v3"   # 8 cores; 64GB RAM; £0.4651; 2.3 GHz
+            # vmSize = "Standard_H8"      # 8 cores; 56GB RAM; £0.4271; 3.6 GHz
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"

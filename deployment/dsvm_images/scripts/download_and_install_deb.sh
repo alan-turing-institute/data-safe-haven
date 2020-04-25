@@ -20,9 +20,10 @@ PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' |
 
 # Download and verify the .deb file
 echo "Downloading and verifying deb file..."
-wget -nv $PACKAGE_REMOTE -P /run/cloudinit/
-ls -alh /run/cloudinit/${PACKAGE_DEBFILE}
-echo "$PACKAGE_HASH /run/cloudinit/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
+mkdir -p /installation/
+wget -nv $PACKAGE_REMOTE -P /installation/
+ls -alh /installation/${PACKAGE_DEBFILE}
+echo "$PACKAGE_HASH /installation/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
 if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then
     echo "Checksum did not match expected for $PACKAGE_NAME"
     exit 1
@@ -30,8 +31,8 @@ fi
 
 # Install and cleanup
 echo "Installing deb file..."
-gdebi --non-interactive /run/cloudinit/${PACKAGE_DEBFILE}
-rm /run/cloudinit/${PACKAGE_DEBFILE}
+gdebi --non-interactive /installation/${PACKAGE_DEBFILE}
+rm /installation/${PACKAGE_DEBFILE}
 
 # Check whether the installation was successful
 if [ "$(which ${PACKAGE_NAME})" ]; then

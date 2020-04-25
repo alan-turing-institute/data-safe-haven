@@ -142,15 +142,9 @@ runcmd:
   # Log system performance during the installation and record it each minute
   - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
 
-  # Make a temporary directory (cloudinit recomends not using /tmp)
-  - mkdir /run/cloudinit
-
-  # Suppress apt prompts and warning messages
-  - DEBIAN_FRONTEND=noninteractive
-  - export DEBIAN_FRONTEND
-
-  # Clean up installation
-  - echo ">=== $(date +%s) Cleaning up unneeded packages ===<"
+  # Suppress apt prompts and warning messages then clean up installation
+  - echo "Cleaning up unneeded packages"
+  - export DEBIAN_FRONTEND=noninteractive
   - apt-get -y autoremove
   - apt-get clean
 
@@ -173,22 +167,19 @@ runcmd:
   - /installation/download_and_install_deb.sh dbeaver
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
   # Install drivers
-  - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
-  - cd /usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom
-  - cd - 2> /dev/null
-  - mkdir -p /usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/
-  - cd /usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/1.1.5/pgjdbc-core-parent-1.1.5.pom
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/1.1.5/pgjdbc-versions-1.1.5.pom
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.jar
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.pom
-  - cd - 2> /dev/null
+  - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
+  - mkdir -p ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - mkdir -p ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/1.1.5/pgjdbc-core-parent-1.1.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/1.1.5/pgjdbc-versions-1.1.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
   # Create driver configuration file
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
-  - ls -alh /usr/share/dbeaver/drivers/maven/maven-central/*
+  - ls -alh ${DBEAVER_DRIVER_DIR}/*
 
   # Microsoft ODBC tools
   - echo "Installing Microsoft ODBC tools"
@@ -217,12 +208,11 @@ runcmd:
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== $(date +%s) Installing and configuring conda ===<"
   - ANACONDA_INSTALL_SCRIPT="Miniconda3-latest-Linux-x86_64.sh"
-  - ANACONDA_INSTALLER_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
-  - echo "Using installer from $ANACONDA_INSTALLER_URL"
-  - cd /run/cloudinit
-  - wget -nv $ANACONDA_INSTALLER_URL
-  - bash $ANACONDA_INSTALL_SCRIPT -b -p /anaconda
-  - rm $ANACONDA_INSTALL_SCRIPT
+  - ANACONDA_REMOTE_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
+  - echo "Using installer from $ANACONDA_REMOTE_URL"
+  - wget -nv $ANACONDA_REMOTE_URL -P /installation/
+  - bash /installation/${ANACONDA_INSTALL_SCRIPT} -b -p /anaconda
+  - rm /installation/${ANACONDA_INSTALL_SCRIPT}
   # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
@@ -313,7 +303,7 @@ runcmd:
   - jupyter kernelspec install /anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
   - jupyter kernelspec install /anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
   # Add the R kernel
-  - R_VERSION=$(R --version | head -n1 | cut -d' ' -f3)
+  - R_VERSION=$(R --version | head -n 1 | cut -d' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
