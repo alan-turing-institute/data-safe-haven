@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 from contextlib import suppress
+import csv
 from datetime import datetime
+import itertools
 import json
 import subprocess
 
@@ -98,3 +100,17 @@ for event in events:
         time_elapsed = ": {}".format(human_readable(time_elapsed))
     print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
     last_event_time = event["timestamp"]
+
+
+# Check system performance
+# ------------------------
+mem_usage, cpu_usage = [], []
+with suppress(FileNotFoundError):
+    with open("/installation/performance_log.csv", "r") as system_log:
+        for row in csv.DictReader(itertools.islice(system_log, 5, None), delimiter=","): # skip the first five rows
+            mem_usage.append(100 * float(row["used"]) / (float(row["used"]) + float(row["free"])))
+            cpu_usage.append(100 - float(row["idl"]))
+with suppress(ZeroDivisionError):
+    prefix = "[{}: {: <7}]".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "INFO")
+    print("{} {}".format(prefix, "Memory usage: Mean ({:.2f}%) Max ({:.2f}%) Min ({:.2f}%)".format(sum(mem_usage) / len(mem_usage), max(mem_usage), min(mem_usage))))
+    print("{} {}".format(prefix, "CPU usage: Mean ({:.2f}%) Max ({:.2f}%) Min ({:.2f}%)".format(sum(cpu_usage) / len(cpu_usage), max(cpu_usage), min(cpu_usage))))

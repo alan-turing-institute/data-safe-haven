@@ -130,6 +130,9 @@ packages:
   - <apt_packages.list>
 
 runcmd:
+  # Log system performance during the installation and record it each minute
+  - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
+
   # Make a temporary directory (cloudinit recomends not using /tmp)
   - mkdir /run/cloudinit
 
