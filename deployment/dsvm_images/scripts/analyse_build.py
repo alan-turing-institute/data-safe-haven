@@ -107,7 +107,10 @@ for event in events:
 mem_usage, cpu_usage = [], []
 with suppress(FileNotFoundError):
     with open("/installation/performance_log.csv", "r") as system_log:
-        for row in csv.DictReader(itertools.islice(system_log, 5, None), delimiter=","): # skip the first five rows
+        first_lines = list(itertools.islice(system_log, 10))
+    lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0] # skip version info in the header
+    with open("/installation/performance_log.csv", "r") as system_log:
+        for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
             mem_usage.append(100 * float(row["used"]) / (float(row["used"]) + float(row["free"])))
             cpu_usage.append(100 - float(row["idl"]))
 with suppress(ZeroDivisionError):

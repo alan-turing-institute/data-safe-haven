@@ -243,8 +243,8 @@ runcmd:
   - chmod -R o=u,o-w /anaconda/
   - ls -alh /anaconda/
 
-  # Install R, RStudio and packages - approximately 20 minutes
-  - echo ">=== $(date +%s) Installing additional R packages ===<"
+  # Install any missing R packages - approximately 1 hr
+  - echo ">=== $(date +%s) Configuring R environment ===<"
   # <R package list>
   # CRAN
   - echo "Previously installed CRAN packages:"
