@@ -266,21 +266,23 @@ runcmd:
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
-  # Packages are installed on a per-user basis into '~/.julia/' (this is hardcoded)
-  # We therefore install and build the packages before moving them into a common area
   # <Julia package list>
-  - CONDA_JL_HOME="/anaconda/envs/py37/"
-  - JULIA_DEPOT_PATH="${JULIA_BASE_DIR}/depot/"
+  - export JULIA_DEPOT_PATH="${JULIA_BASE_DIR}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
+  - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
+  - export CONDA_JL_HOME="/anaconda/envs/py37/"
+  - export PYTHON="${CONDA_JL_HOME}/bin/python"
+  - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end" || exit 1
-  - mv /root/.julia/* ${JULIA_DEPOT_PATH} || exit 1
-  - rm -rf /root/.julia 2> /dev/null
-  - echo "Updating Julia depot permissions"
+  # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
-  - chmod ugo+w ${JULIA_BASE_DIR}/depot/environments/*/*.toml
+  # Ensure that the default Conda environment is the one we have used to build Tensorflow.
   - echo "export CONDA_JL_HOME=${CONDA_JL_HOME}" >> /etc/bash.bashrc
-  - echo "export JULIA_DEPOT_PATH=${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
+  # Ensure that the first thing on each user's DEPOT_PATH will be the usual default (~/.julia) followed by the global depot
+  - echo "export JULIA_DEPOT_PATH=~/.julia:${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
+  - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); catch e; println(package); end; end;")
+  - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; fi
 
   # Configure jupyter kernels
   - echo ">=== $(date +%s) Configuring Julia, Python and R kernels for jupyter ===<"
