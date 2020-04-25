@@ -4,6 +4,7 @@ import csv
 from datetime import datetime
 import itertools
 import json
+import multiprocessing
 import subprocess
 
 def human_readable(timedelta):
@@ -104,7 +105,7 @@ for event in events:
 
 # Check system performance
 # ------------------------
-mem_usage, cpu_usage = [], []
+mem_usage, cpu_usage, mem_bytes = [], [], []
 with suppress(FileNotFoundError):
     with open("/installation/performance_log.csv", "r") as system_log:
         first_lines = list(itertools.islice(system_log, 10))
@@ -112,9 +113,23 @@ with suppress(FileNotFoundError):
         lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0] # skip version info in the header
         with open("/installation/performance_log.csv", "r") as system_log:
             for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
-                mem_usage.append(100 * float(row["used"]) / (float(row["used"]) + float(row["free"])))
+                mem_bytes.append((float(row["used"]) + float(row["free"]) + float(row["buff"]) + float(row["cach"])))
+                mem_usage.append(100 * float(row["used"]) / mem_bytes[-1])
                 cpu_usage.append(100 - float(row["idl"]))
+
 with suppress(ZeroDivisionError):
+    mem_gb = (sum(mem_bytes) / len(mem_bytes)) / (1000 * 1000 * 1000)
+    n_cores = multiprocessing.cpu_count()
     prefix = "[{}: {: <7}]".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "INFO")
-    print("{} {}".format(prefix, "Memory usage: Mean ({:.2f}%) Max ({:.2f}%) Min ({:.2f}%)".format(sum(mem_usage) / len(mem_usage), max(mem_usage), min(mem_usage))))
-    print("{} {}".format(prefix, "CPU usage: Mean ({:.2f}%) Max ({:.2f}%) Min ({:.2f}%)".format(sum(cpu_usage) / len(cpu_usage), max(cpu_usage), min(cpu_usage))))
+    # Memory
+    print("{} Memory available: {:d} GB".format(prefix, int(mem_gb)))
+    mem_mean, mem_min, mem_max = sum(mem_usage) / len(mem_usage), min(mem_usage), max(mem_usage)
+    print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_mean, mem_gb * mem_mean / 100))
+    print("{} ...... min usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_min, mem_gb * mem_min / 100))
+    print("{} ...... max usage: {: >6.2f}% => {: >4.1f} GB".format(prefix, mem_max, mem_gb * mem_max / 100))
+    # CPU
+    print("{} CPU available: {:d} cores".format(prefix, int(n_cores)))
+    cpu_mean, cpu_min, cpu_max = sum(cpu_usage) / len(cpu_usage), min(cpu_usage), max(cpu_usage)
+    print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_mean, n_cores * cpu_mean / 100))
+    print("{} ...... min usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_min, n_cores * cpu_min / 100))
+    print("{} ...... max usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_max, n_cores * cpu_max / 100))
