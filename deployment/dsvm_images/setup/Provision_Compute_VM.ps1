@@ -5,7 +5,7 @@ param(
     [ValidateSet("Ubuntu1804", "Ubuntu1810", "Ubuntu1904", "Ubuntu1910")]
     [string]$sourceImage = "Ubuntu1804",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
-    [ValidateSet("default", "Standard_F4s_v2", "Standard_E2_v3", "Standard_E4_v3", "Standard_H8")]
+    [ValidateSet("default", "Standard_F4s_v2", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_H8")]
     [string]$vmSize = "default"
 )
 
