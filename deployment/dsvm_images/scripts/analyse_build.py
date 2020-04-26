@@ -72,14 +72,16 @@ def main():
     # Load events from runcmd echo statements
     # ---------------------------------------
     runcmd_log_events = []
-    bash_process = subprocess.run(["grep", ">===", "/var/log/cloud-init-output.log"], stdout=subprocess.PIPE, check=True)
-    for event in bash_process.stdout.decode("utf8").split("\n"):
-        with suppress(IndexError):
-            start_time = event.split(" ")[1]
-            message = event.split(start_time)[1].replace("===<", "").strip()
-            runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
-    for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
-        events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
+    with suppress(subprocess.CalledProcessError):
+        bash_process = subprocess.run(["grep", ">===", "/var/log/cloud-init-output.log"], stdout=subprocess.PIPE, check=True)
+        for event in bash_process.stdout.decode("utf8").split("\n"):
+            with suppress(IndexError):
+                start_time = event.split(" ")[1]
+                message = event.split(start_time)[1].replace("===<", "").strip()
+                runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
+        for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
+            events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
+
 
     # Add in progress task
     if runcmd_log_events:

@@ -3,6 +3,9 @@ apt-transport-https
 aspell
 atom
 attr
+auditd
+autotools-dev
+build-essential
 code
 default-jdk
 docker.io
@@ -10,14 +13,16 @@ dotnet-sdk-2.1
 dstat
 emacs
 firefox
-g++-6
-gcc-6
+g++
+gcc
 gdebi-core
 git-core
 jupyter
 krb5-kdc
 ldap-utils
 libasound2
+libboost-all-dev
+libbz2-dev
 libcanberra-gtk0
 libgconf-2-4
 libgdal-dev
@@ -29,6 +34,7 @@ libgnome-keyring0
 libgsl-dev
 libgtk-3-0
 libhdf5-serial-dev
+libicu-dev
 liblmdb-dev
 libmariadb-client-lgpl-dev
 libmpfr-dev
@@ -60,6 +66,7 @@ postgresql-12
 postgresql-12-pgrouting
 postgresql-12-postgis-3-scripts
 postgresql-contrib
+python3
 qgis
 r-base
 r-base-core
