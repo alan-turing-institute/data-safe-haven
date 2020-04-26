@@ -59,15 +59,17 @@ write_files:
       START_TIME=$(date +%s)
       if [ "$TIER" == "2" ]; then
           # Download all files
-          rsync -rtlv --delete --delete-excluded --exclude=bin/windows/* --exclude=bin/macos*/* --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          rsync -rtlvz --delete --delete-excluded --exclude=bin/windows/* --exclude=bin/macos*/* --progress cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       else
           # Download all whitelisted packages (which might be none)
-          INCLUDE_DIRS=""
-          WHITELISTED_PACKAGES=$(cat /home/mirrordaemon/package_whitelist.txt | grep -v "^#")
+          WHITELISTED_PACKAGES=$(grep -v "^#" /home/mirrordaemon/package_whitelist.txt)
+          # NB. Using an initial '/' anchors the search path at the directory root, speeding up calculation time
+          INCLUDE_DIRS="--include=/src/contrib/PACKAGES"
           for RPACKAGE in $WHITELISTED_PACKAGES; do
-              INCLUDE_DIRS="${INCLUDE_DIRS} --include=bin/linux/ubuntu/*/${RPACKAGE}_* --include=src/contrib/PACKAGES --include=src/contrib/${RPACKAGE}_* --include src/contrib/Archive/${RPACKAGE}/* --include web/checks/check_results_${RPACKAGE}.html --include web/dcmeta/${RPACKAGE}.xml --include web/packages/${RPACKAGE}/* --include web/packages/${RPACKAGE}/*/*"
+              INCLUDE_DIRS="${INCLUDE_DIRS} --include=/bin/linux/ubuntu/*/${RPACKAGE}_* --include=/src/contrib/${RPACKAGE}_* --include=/src/contrib/Archive/${RPACKAGE}/* --include=/web/checks/check_results_${RPACKAGE}.html --include=/web/dcmeta/${RPACKAGE}.xml --include=/web/packages/${RPACKAGE}/***"
           done
-          rsync -rtlv --delete --delete-excluded --progress --include='*/' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
+          # Note that there is a server-side timeout (30s) which might be a problem if this command gets too complicated
+          rsync -rtlvz --delete --delete-excluded --prune-empty-dirs --progress --include='*/' --include='/*' $INCLUDE_DIRS --exclude='*' cran.r-project.org::CRAN /datadrive/mirrordaemon/www/cran 2>&1 | tee /datadrive/mirrordaemon/pull_from_internet.log
       fi
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
