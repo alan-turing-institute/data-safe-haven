@@ -31,7 +31,7 @@ if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; t
 fi
 
 # Install and cleanup
-echo "Installing tar file..."
+echo "Installing tar file: /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}"
 cd /opt/${PACKAGE_NAME}
 tar -zxf ${PACKAGE_TARFILE}
 rm -rf ${PACKAGE_TARFILE}

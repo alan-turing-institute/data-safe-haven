@@ -30,7 +30,12 @@ if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; t
 fi
 
 # Install and cleanup
-echo "Installing deb file..."
+echo "Installing deb file: /installation/${PACKAGE_DEBFILE}"
+while fuser /var/lib/dpkg/lock > /dev/null 2>&1; do
+    echo "Waiting for another software manager to finish..."
+    sleep 1
+done
+
 gdebi --non-interactive /installation/${PACKAGE_DEBFILE}
 rm /installation/${PACKAGE_DEBFILE}
 
