@@ -21,7 +21,7 @@ apt:
   sources:
     gitlab.list:
       source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
-      keyid: 14219A96E15E78F4
+      keyid: 3F01618A51312F3F
 
 write_files:
   - path: /etc/gitlab/gitlab.rb
