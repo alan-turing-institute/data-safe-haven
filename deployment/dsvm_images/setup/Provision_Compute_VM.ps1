@@ -5,7 +5,7 @@ param(
     [ValidateSet("Ubuntu1804", "Ubuntu1810", "Ubuntu1904", "Ubuntu1910")]
     [string]$sourceImage = "Ubuntu1804",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
-    [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_H8")]
+    [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
 )
 
@@ -26,6 +26,13 @@ $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 # Select which VM size to use
 # ---------------------------
 if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
+# Standard_E2_v3"  => 2 cores; 16GB RAM; £0.1163/hr; 2.3 GHz => 15h33m56s
+# Standard_F4s_v2" => 4 cores;  8GB RAM; £0.1506/hr; 3.7 GHz
+# Standard_D4_v3"  => 4 cores; 16GB RAM; £0.1730/hr; 2.4 GHz
+# Standard_E4_v3"  => 4 cores; 32GB RAM; £0.2326/hr; 2.3 GHz => 16h40m9s
+# Standard_F8s_v2" => 8 cores; 16GB RAM; £0.3012/hr; 3.7 GHz
+# Standard_H8"     => 8 cores; 56GB RAM; £0.4271/hr; 3.6 GHz => 12h56m6s
+# Standard_E8_v3"  => 8 cores; 64GB RAM; £0.4651/hr; 2.3 GHz => 17h8m17s
 
 
 # Select which source URN to base the build on
