@@ -217,8 +217,9 @@ runcmd:
   - . /anaconda/etc/profile.d/conda.sh
   - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda and add conda-forge (append puts it last in priority order)
-  - conda update -n base -c defaults conda
   - conda config --append channels conda-forge
+  - conda update -y -n base -c defaults conda
+  - conda install -y -n base mamba
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
   - conda config --set remote_max_retries 20
