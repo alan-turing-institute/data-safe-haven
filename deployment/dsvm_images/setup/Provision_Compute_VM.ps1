@@ -129,7 +129,7 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $inden
 
 # Insert Julia package details into the cloud-init template
 # ---------------------------------------------------------
-$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "julia-packages.list")
+$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-julia.list")
 $juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQuote -Separator ', ')]'"
 $cloudInitTemplate = $cloudInitTemplate.Replace("# <Julia package list>", $juliaPackageText)
 
@@ -162,8 +162,8 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("# <Python package list>", $pyth
 
 # Insert R package details into the cloud-init template
 # -----------------------------------------------------
-$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "r-cran-packages.list")
-$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "r-bioconductor-packages.list")
+$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-r-cran.list")
+$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
              "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("# <R package list>", $rPackages)
