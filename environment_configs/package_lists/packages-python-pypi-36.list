@@ -61,9 +61,6 @@ requests
 safety
 scikit-image
 scikit-learn
-scikit-multilearn
-scikit-survival
-scikit-validate
 scipy
 seaborn
 six
