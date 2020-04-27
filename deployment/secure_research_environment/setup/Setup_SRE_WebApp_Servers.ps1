@@ -40,7 +40,15 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabInternal `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix Internet -DestinationPortRange *
 
+
 $nsgGitlabExternal = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabExternal `
+                             -Name "InboundDenyAll" `
+                             -Description "Inbound deny everything" `
+                             -Priority 4000 `
+                             -Direction Inbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix * -SourcePortRange * `
+                             -DestinationAddressPrefix * -DestinationPortRange *
 
 
 # Check that VNET and subnet exist
