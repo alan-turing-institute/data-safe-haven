@@ -19,9 +19,9 @@ echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
 echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with $CREATE_EXE..."
 echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
 if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then
-    $CREATE_EXE create -y --verbose --name $ENV_NAME python=$VERSION $CONDA_PACKAGES
+    $CREATE_EXE create -y --name $ENV_NAME python=$VERSION $CONDA_PACKAGES
 else
-    conda install -y --verbose --name $ENV_NAME $CONDA_PACKAGES
+    conda install -y --name $ENV_NAME $CONDA_PACKAGES
 fi
 
 # Check that environment exists
