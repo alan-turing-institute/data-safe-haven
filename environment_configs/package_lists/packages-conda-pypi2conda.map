@@ -1,0 +1,6 @@
+louvain: python-louvain
+pg8000:
+python-geohash:
+tables: pytables
+tensorflow: tensorflow-gpu
+torch: pytorch

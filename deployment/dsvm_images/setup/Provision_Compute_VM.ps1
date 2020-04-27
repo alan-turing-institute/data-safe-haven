@@ -136,20 +136,26 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("# <Julia package list>", $julia
 
 # Insert python package details into the cloud-init template
 # ---------------------------------------------------------
-$python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python27-packages.list")
-$python27PipPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python27-not-installable-with-conda.list")
-$python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -notcontains $_ }
-$python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python36-packages.list")
-$python36PipPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python36-not-installable-with-conda.list")
-$python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -notcontains $_ }
-$python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python37-packages.list")
-$python37PipPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "python37-not-installable-with-conda.list")
-$python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -notcontains $_ }
-$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages}`"" + "`n  " + `
+# List of common non-python packages
+$commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-nonpython.list")
+# Map of PyPI name to conda name (eg. `tables: pytables`)
+$pypi2conda = @{}
+Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
+# Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
+$python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-27.list")
+$python27PipPackages = $python27AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
+$python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-36.list")
+$python36PipPackages = $python36AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
+$python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-37.list")
+$python37PipPackages = $python37AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
+$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
                   "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-                  "- export PYTHON36_CONDA_PACKAGES=`"${python36CondaPackages}`"" + "`n  " + `
+                  "- export PYTHON36_CONDA_PACKAGES=`"${python36CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
                   "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-                  "- export PYTHON37_CONDA_PACKAGES=`"${python37CondaPackages}`"" + "`n  " + `
+                  "- export PYTHON37_CONDA_PACKAGES=`"${python37CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
                   "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("# <Python package list>", $pythonPackages)
 

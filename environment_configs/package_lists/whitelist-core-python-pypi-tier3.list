@@ -302,6 +302,7 @@ pytest-doctestplus
 pytest-openfiles
 pytest-remotedata
 python-dateutil
+python-dateutil
 python-editor
 python-geohash
 python-louvain
