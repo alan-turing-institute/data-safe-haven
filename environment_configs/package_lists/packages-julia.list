@@ -1,11 +1,10 @@
 ArgCheck
 ArgParse
 BenchmarkTools
-CSV
 Clustering
 Conda
+CSV
 CuArrays
-DSP
 DataFrames
 DataStructures
 Dates
@@ -13,6 +12,7 @@ Debugger
 DecisionTree
 DifferentialEquations
 Distributions
+DSP
 Flux
 Formatting
 GLM
@@ -28,8 +28,8 @@ KernelDensity
 LaTeXStrings
 LightGraphs
 LightXML
-MLBase
 Metalhead
+MLBase
 NearestNeighbors
 Nettle
 OnlineStats

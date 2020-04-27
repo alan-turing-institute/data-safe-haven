@@ -4,15 +4,15 @@ black
 blaze
 bokeh
 catboost
+colorama
 Cython
 dash
-colorama
 dask
-dill
 DataShape
+dill
 fbprophet
-flair
 Fiona
+flair
 flake8
 Flask
 folium
@@ -55,6 +55,7 @@ pyodbc
 pyshp
 pystan
 pytest
+python-dateutil
 PyYAML
 regex
 requests
@@ -84,4 +85,3 @@ wordcloud
 xgboost
 xlrd
 XlsxWriter
-python-dateutil

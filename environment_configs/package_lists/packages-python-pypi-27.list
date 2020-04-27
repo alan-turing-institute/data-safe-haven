@@ -1,6 +1,5 @@
 backports
 beautifulsoup4
-black
 blaze
 bokeh
 catboost
@@ -8,8 +7,8 @@ colorama
 Cython
 dash
 dask
-dill
 DataShape
+dill
 fbprophet
 Fiona
 flake8
@@ -21,7 +20,6 @@ GPy
 GPyOpt
 h5py
 html5lib
-imageio
 ipykernel
 Jinja2
 joblib
@@ -53,6 +51,7 @@ pyodbc
 pyshp
 pystan
 pytest
+python-dateutil
 PyYAML
 regex
 requests
@@ -81,4 +80,3 @@ wordcloud
 xgboost
 xlrd
 XlsxWriter
-python-dateutil
