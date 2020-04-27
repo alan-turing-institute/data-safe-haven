@@ -48,6 +48,7 @@ bedr
 beeswarm
 Benchmarking
 betareg
+BH
 BiasedUrn
 bibtex
 bigmemory
@@ -533,6 +534,7 @@ nortest
 np
 numDeriv
 oai
+odbc
 odbc
 officer
 openCR
