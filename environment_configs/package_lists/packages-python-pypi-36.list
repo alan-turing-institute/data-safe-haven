@@ -39,7 +39,6 @@ nose
 numpy
 numpydoc
 pandas
-pandas-datareader
 pandas-profiling
 pandasql
 pathos
@@ -59,6 +58,7 @@ pytest
 PyYAML
 regex
 requests
+safety
 scikit-image
 scikit-learn
 scikit-multilearn

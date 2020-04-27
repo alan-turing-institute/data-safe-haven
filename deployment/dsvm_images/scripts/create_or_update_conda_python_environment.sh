@@ -13,7 +13,7 @@ VERSION=$(echo $ENV_NAME | sed "s/py\([0-9]\)\([0-9]\)/\1.\2/")
 
 # Create environment
 START_TIME=$(date +%s)
-echo ">=== ${START_TIME} Configuring $ENV_NAME conda environment ===<"
+echo ">=== ${START_TIME} Creating $ENV_NAME conda environment ===<"
 CREATE_EXE=$([[ $(which mamba) ]] && echo "mamba" || echo "conda")
 echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
 echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with $CREATE_EXE..."
@@ -57,6 +57,10 @@ if [ "$MISSING_PACKAGES" ]; then
 else
     echo "All requested ${ENV_NAME} packages are installed"
 fi
+
+# Run safety check but do not attempt to pass/fail on the result
+echo "Running safety check on ${ENV_NAME} conda environment"
+/anaconda/envs/${ENV_NAME}/bin/safety check
 
 # Set the Jupyter kernel name to the full Python version name and store it as $ENV_NAME so that different python3 versions show up separately
 PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
