@@ -34,6 +34,7 @@
   - [:art: Connecting using Azure Data Studio](#art-connecting-using-azure-data-studio)
   - [:bear: Connecting using DBeaver](#bear-connecting-using-dbeaver)
   - [:snake: Connecting using Python](#snake-connecting-using-python)
+  - [:registered: Connecting using R](#registered-connecting-using-r)
 - [:bug: Report a bug](#bug-report-a-bug)
   - [:wrench: Help us to help you](#wrench-help-us-to-help-you)
 - [:pray: Acknowledgments](#pray-acknowledgments)
@@ -833,15 +834,29 @@ The instructions for using other graphical interfaces or programming languages w
 ### :snake: Connecting using Python
 ```python
 import pyodbc
-server = "SQL-ING-SANDBOX"
-username_domain = "apr20.turingsafehaven.ac.uk"
-port = 14330
+import pandas as pd
+
+server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
 db_name = "master"
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "." + username_domain + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
-cnxn.cursor()
-cursor.execute("SELECT table_catalog, table_schema, table_name FROM information_schema.tables")
-for row in cursor:
-    print(f"{row.table_catalog} | {row.table_schema} | {row.table_name}")
+
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
+
+df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
+df.head(3)
+```
+
+### :registered: Connecting using R
+```R
+library(odbc)
+
+con <- DBI::dbConnect(odbc::odbc(),
+                Driver = "ODBC Driver 17 for SQL Server",
+                Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
+                Database = "master",
+                Trusted_Connection = "yes")
+
+df <- dbGetQuery(con, "SELECT * FROM information_schema.tables;")
+head(df, 3)
 ```
 
 
