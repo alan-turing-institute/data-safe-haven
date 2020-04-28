@@ -1,6 +1,8 @@
+flair:
 louvain: python-louvain
 pg8000:
 python-geohash:
+spacy-langdetect:
 tables: pytables
 tensorflow: tensorflow-gpu
 torch: pytorch
