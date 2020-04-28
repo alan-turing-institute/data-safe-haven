@@ -1,0 +1,62 @@
+name: Create pdf versions of the markdown documentation
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+
+jobs:
+  markdown2pdf:
+    name: Build and upload the pdfs to a release
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          mkdir install
+          export NPM_CONFIG_PREFIX=~/install
+          npm install pretty-markdown-pdf -g
+      
+      - name: markdown2pdf
+        run: |
+          export PATH=$PATH:~/install/bin
+          cd docs
+          for f in *.md; do ./markdown2pdf.sh $f; done
+
+      # This action succeeds whether or not the release under the given tag exists already,
+      # but will not update the tag if it exists
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: 'docs/*.pdf'
+          artifactContentType: application/pdf
+          commit: ${{ github.sha }}
+          name: Documentation
+          prerelease: true
+          tag: latest-doc  
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # This action fails if the release does not exist: the above action ensures that it always does.
+      # Roll back the release and now we are in a known state (no release)
+      - name: Rollback Release
+        uses: author/action-rollback@stable
+        with:
+          tag: latest-doc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Repeat the first release action, to make it take effect for the current commit
+      - name: Release (again)
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: 'docs/*.pdf'
+          artifactContentType: application/pdf
+          commit: ${{ github.sha }}
+          name: Documentation
+          prerelease: true
+          tag: latest-doc  
+          token: ${{ secrets.GITHUB_TOKEN }}
