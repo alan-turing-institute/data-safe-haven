@@ -833,11 +833,10 @@ The instructions for using other graphical interfaces or programming languages w
 ### :snake: Connecting using Python
 ```python
 import pyodbc
-server = "SQL-ING-SANDBOX"
-username_domain = "apr20.turingsafehaven.ac.uk"
+server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk"
 port = 14330
 db_name = "master"
-cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "." + username_domain + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
+cnxn = pyodbc.connect("DRIVER={ODBC Driver 17 for SQL Server};SERVER=" + server + "," + port + ";DATABASE=" + db_name + ";Trusted_Connection=yes;")
 cursor = cnxn.cursor()
 cursor.execute("SELECT table_catalog, table_schema, table_name FROM information_schema.tables")
 for row in cursor:
