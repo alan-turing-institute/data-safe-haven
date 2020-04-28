@@ -32,24 +32,22 @@ if ($null -ne $certificate) {
 # Update RDS roles to use new certificate by thumbprint
 # -----------------------------------------------------
 Write-Host "Updating RDS roles to use new certificate..."
-Set-RDCertificate -Role RDPublishing -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
+Set-RDCertificate -Role RDPublishing -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
 $success = $?
-Set-RDCertificate -Role RDRedirector -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
+Set-RDCertificate -Role RDRedirector -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
 $success = $success -and $?
-Set-RDCertificate -Role RDWebAccess -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
+Set-RDCertificate -Role RDWebAccess -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
 $success = $success -and $?
-Set-RDCertificate -Role RDGateway -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
+Set-RDCertificate -Role RDGateway -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -ErrorAction Stop -Force
 $success = $success -and $?
+Write-Host "Currently installed certificates:"
+Get-RDCertificate -ConnectionBroker $rdsFqdn
 if($success) {
     Write-Host " [o] Successfully updated RDS roles"
 } else {
     Write-Host " [x] Failed to update RDS roles!"
     throw "Could not update RDS roles"
 }
-Write-Host "Currently installed certificates:"
-Get-RDCertificate -ConnectionBroker $rdsFqdn
-Write-Host "`n"
-
 
 # Extract a base64-encoded certificate
 # ------------------------------------

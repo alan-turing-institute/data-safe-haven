@@ -207,7 +207,8 @@
         "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
         "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
     },
-    "resources": [{
+    "resources": [
+        {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('RDS_Gateway_Name')]",
             "apiVersion": "2018-06-01",
@@ -244,7 +245,7 @@
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 511
+                            "diskSizeGB": 512
                         },
                         {
                             "lun": 1,
@@ -255,10 +256,10 @@
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 511
+                            "diskSizeGB": 512
                         },
                         {
-                            "lun": 1,
+                            "lun": 2,
                             "name": "[concat(parameters('RDS_Gateway_Name'),'-DATA-DISK-3')]",
                             "createOption": "Empty",
                             "caching": "None",
@@ -266,7 +267,7 @@
                             "managedDisk": {
                                 "storageAccountType": "Standard_LRS"
                             },
-                            "diskSizeGB": 511
+                            "diskSizeGB": 512
                         }
                     ]
                 },

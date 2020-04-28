@@ -23,22 +23,22 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 
 
-# Create VNet from template
-# -------------------------
-Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
-$params = @{
-    "Virtual Network Name" = $config.sre.network.vnet.Name
-    "Virtual Network Address Space" = $config.sre.network.vnet.cidr
-    "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
-    "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
-    "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
-    "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
-    "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
-    "Subnet-Data Name" = $config.sre.network.subnets.data.Name
-    "VNET_DNS_DC1" = $config.shm.dc.ip
-    "VNET_DNS_DC2" = $config.shm.dcb.ip
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+# # Create VNet from template
+# # -------------------------
+# Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
+# $params = @{
+#     "Virtual Network Name" = $config.sre.network.vnet.Name
+#     "Virtual Network Address Space" = $config.sre.network.vnet.cidr
+#     "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
+#     "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
+#     "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
+#     "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
+#     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
+#     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
+#     "VNET_DNS_DC1" = $config.shm.dc.ip
+#     "VNET_DNS_DC2" = $config.shm.dcb.ip
+# }
+# Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Fetch VNet information
@@ -53,50 +53,41 @@ $shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.Name -ResourceGro
 # ------------------------
 $shmPeeringName = "PEER_$($config.sre.network.vnet.Name)"
 $srePeeringName = "PEER_$($config.shm.network.vnet.Name)"
-# From SHM VNet
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg) {
-    Add-LogMessage -Level Info "[ ] Removing existing peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-    Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Peering removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Peering removal failed!"
+try {
+    # From SHM VNet
+    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop) {
+        Add-LogMessage -Level Info "[ ] Removing existing peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
+        Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force -ErrorAction Stop
     }
-}
-# From SRE VNet
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg) {
-    Add-LogMessage -Level Info "[ ] Removing existing peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-    Remove-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Peering removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Peering removal failed!"
+    # From SRE VNet
+    $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop) {
+        Add-LogMessage -Level Info "[ ] Removing existing peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
+        Remove-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -Force -ErrorAction Stop
     }
-}
-
-# Add peering to SHM Vnet
-# -----------------------
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
-$_ = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit
-if ($?) {
-    Add-LogMessage -Level Success "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' failed!"
+    # Success log message
+    Add-LogMessage -Level Success "Peering removal succeeded"
+} catch {
+    Add-LogMessage -Level Fatal "Peering removal failed!"
 }
 
 
-# Add peering to SRE VNet
-# -----------------------
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
-$_ = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways
-if ($?) {
-    Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)' succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Peering '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)' failed!"
+# Add new peerings between SHM and SRE VNets
+# ------------------------------------------
+try {
+    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
+    $_ = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit -ErrorAction Stop
+    # Add peering to SRE VNet
+    # -----------------------
+    $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+    Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
+    $_ = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways -ErrorAction Stop
+    # Success log message
+    Add-LogMessage -Level Success "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' succeeded"
+} catch {
+    Add-LogMessage -Level Fatal "Peering '$($config.shm.network.vnet.name)' and '$($config.sre.network.vnet.name)' failed!"
 }
 
 
@@ -248,38 +239,33 @@ Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
-# $template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1") -Raw
-# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
-$template.Replace('<shmNetbiosName>', $shmNetbiosName).
-          Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
-          Replace('<rdsSh1VmName>',$rdsSh1VmName).
-          Replace('<rdsSh2VmName>',$rdsSh2VmName).
-          Replace('<rdsSh3VmName>',$rdsSh3VmName).
+$template.Replace('<airlockSubnetIpPrefix>',$airlockSubnetIpPrefix).
+          Replace('<dataSubnetIpPrefix>',$dataSubnetIpPrefix).
           Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
+          Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
           Replace('<rdsSh1VmFqdn>',$rdsSh1VmFqdn).
+          Replace('<rdsSh1VmName>',$rdsSh1VmName).
           Replace('<rdsSh2VmFqdn>',$rdsSh2VmFqdn).
+          Replace('<rdsSh2VmName>',$rdsSh2VmName).
           Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
+          Replace('<rdsSh3VmName>',$rdsSh3VmName).
+          Replace('<remoteUploadDir>',$remoteUploadDir).
           Replace('<researchUserSgName>',$researchUserSgName).
           Replace('<reviewUserSgName>',$reviewUserSgName).
-          Replace('<dataSubnetIpPrefix>',$dataSubnetIpPrefix).
-          Replace('<airlockSubnetIpPrefix>',$airlockSubnetIpPrefix).
           Replace('<shmDcAdminUsername>',$shmDcAdminUsername).
-          Replace('<remoteUploadDir>',$remoteUploadDir).
-          Replace('<example>',$example).
-          Replace('<example>',$example).
-          Replace('<example>',$example).
-          Replace('<example>',$example).
-          Replace('<example>',$example).
-          Replace('<example>',$example).
-          Replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName) | Out-File $deployScriptLocalFilePath
-
-
+          Replace('<shmNetbiosName>', $shmNetbiosName).
+          Replace('<sreFqdn>',$sreFqdn) | Out-File $deployScriptLocalFilePath
 
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml") -Raw
-$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $serverListLocalFilePath
+$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
+$template.Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
+          Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
+          Replace('<rdsSh1VmFqdn>',$rdsSh1VmFqdn).
+          Replace('<rdsSh2VmFqdn>',$rdsSh2VmFqdn).
+          Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
+          Replace('<sreFqdn>',$sreFqdn) | Out-File $serverListLocalFilePath
 
 # Copy existing files
 Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
@@ -368,7 +354,10 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
+    $params = @{}
+    # The RDS Gateway needs the RDWebClientManagement Powershell module
+    if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg @params
 }
 
 
@@ -381,6 +370,7 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "[ ] Getting list of packages for each VM"
 $filePathsSh1 = New-Object System.Collections.ArrayList ($null)
 $filePathsSh2 = New-Object System.Collections.ArrayList ($null)
+$filePathsSh3 = New-Object System.Collections.ArrayList ($null)
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
     if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
         $_ = $filePathsSh1.Add($blob.Name)
@@ -468,14 +458,6 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
         Write-Output $result.Value
     }
 }
-
-
-# Install required Powershell modules on RDS Gateway
-# --------------------------------------------------
-Add-LogMessage -Level Info "[ ] Installing required Powershell modules on RDS Gateway..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Additional_Powershell_Modules.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg
-Write-Output $result.Value
 
 
 # Add VMs to correct NSG

@@ -300,7 +300,7 @@ function Add-SreConfig {
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
     $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
-    $reviewUsers= "SG $($config.sre.domain.netbiosName) Research Users"
+    $reviewUsers= "SG $($config.sre.domain.netbiosName) Review Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
@@ -498,6 +498,9 @@ function Add-SreConfig {
     $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
     $config.sre.rds.sessionHost2.fqdn = "$($config.sre.rds.sessionHost2.hostname).$($config.shm.domain.fqdn)"
     $config.sre.rds.sessionHost2.ip = "$($config.sre.network.subnets.rds.prefix).248"
+    $config.sre.rds.sessionHost3.hostname = $config.sre.rds.sessionHost3.vmName
+    $config.sre.rds.sessionHost3.fqdn = "$($config.sre.rds.sessionHost3.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.rds.sessionHost3.ip = "$($config.sre.network.subnets.rds.prefix).247"
 
     # --- Secure servers ---
 

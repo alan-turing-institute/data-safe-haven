@@ -154,8 +154,8 @@
           "description": "SG SANDBOX Research Users"
         },
         "reviewUsers": {
-          "name": "SG SANDBOX Research Users",
-          "description": "SG SANDBOX Research Users"
+          "name": "SG SANDBOX Review Users",
+          "description": "SG SANDBOX Review Users"
         }
       }
     },
@@ -302,7 +302,10 @@
       "sessionHost3": {
         "vmName": "REV-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS"
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "hostname": "REV-SRE-SANDBOX",
+        "fqdn": "REV-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
+        "ip": "10.150.1.247"
       }
     },
     "dataserver": {

@@ -1,6 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<ServerList xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" localhostName="$rdsGatewayVmName.$sreFqdn" xmlns="urn:serverpool-schema">
-    <ServerInfo name="$rdsGatewayVmFqdn" status="1" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
-    <ServerInfo name="$rdsSh1VmFqdn" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
-    <ServerInfo name="$rdsSh2VmFqdn" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
+<?xml version="1.0" encoding="utf-8"?>
+<ServerList xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" localhostName="<rdsGatewayVmName>.<sreFqdn>" xmlns="urn:serverpool-schema">
+    <ServerInfo name="<rdsGatewayVmFqdn>" status="1" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
+    <ServerInfo name="<rdsSh1VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
+    <ServerInfo name="<rdsSh2VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
+    <ServerInfo name="<rdsSh3VmFqdn>" status="2" lastUpdateTime="0001-01-01T00:00:00" locale="en-GB" />
 </ServerList>
