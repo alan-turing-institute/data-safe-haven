@@ -18,10 +18,10 @@ Start-Service ShellHWDetection
 # Setup user profile disk shares
 # ------------------------------
 Write-Host -ForegroundColor Cyan "Creating user profile disk shares..."
-ForEach (`$sharePath in ("F:\AppFileShares", "G:\RDPFileShares")) {
+ForEach (`$sharePath in ("F:\AppFileShares", "G:\RDPFileShares", "H:\ReviewFileShares")) {
     `$_ = New-Item -ItemType Directory -Force -Path `$sharePath
     if(`$(Get-SmbShare | Where-Object -Property Path -eq `$sharePath) -eq `$null) {
-        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$shmNetbiosName\$rdsGatewayVmName$","$shmNetbiosName\$rdsSh1VmName$","$shmNetbiosName\$rdsSh2VmName$","$shmNetbiosName\Domain Admins"
+        New-SmbShare -Path `$sharePath -Name `$sharePath.Split("\")[1] -FullAccess "$shmNetbiosName\$rdsGatewayVmName$","$shmNetbiosName\$rdsSh1VmName$","$shmNetbiosName\$rdsSh2VmName$","$shmNetbiosName\$rdsSh3VmName$","$shmNetbiosName\Domain Admins"
     }
 }
 
@@ -64,6 +64,12 @@ New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2V
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
+`$collectionName = "Review"
+Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
+New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh3VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Reviewers" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\ReviewFileShares -ConnectionBroker $rdsGatewayVmFqdn
+
 
 # Create applications
 # -------------------
@@ -75,6 +81,7 @@ New-RDRemoteApp -Alias "putty (2)" -DisplayName "DSVM Other (SSH)" -FilePath "C:
 New-RDRemoteApp -Alias WinSCP -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (1)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.151" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (2)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.152:3000" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
+New-RDRemoteApp -Alias "chrome (3)" -DisplayName "GitLab Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$airlockSubnetIpPrefix.151" -CollectionName "Review" -ConnectionBroker $rdsGatewayVmFqdn
 
 
 # Update server configuration

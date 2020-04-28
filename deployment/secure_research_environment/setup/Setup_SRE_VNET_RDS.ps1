@@ -107,13 +107,15 @@ $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
                  ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
-                 ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
+                 ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName),
+                 ("RDS Session Host (Review server)", $config.sre.rds.sessionHost3.vmName))
 
 
 # Set variables used in template expansion, retrieving from the key vault where appropriate
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
+$airlockSubnetIpPrefix = $config.sre.network.subnets.airlock.prefix
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
@@ -121,6 +123,8 @@ $rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
 $rdsSh1VmName = $config.sre.rds.sessionHost1.vmName
 $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
+$rdsSh3VmFqdn = $config.sre.rds.sessionHost3.fqdn
+$rdsSh3VmName = $config.sre.rds.sessionHost3.vmName
 $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
 $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
 $shmNetbiosName = $config.shm.domain.netbiosName
@@ -202,6 +206,9 @@ $params = @{
     RDS_Session_Host_Desktop_IP_Address = $config.sre.rds.sessionHost2.ip
     RDS_Session_Host_Desktop_Name = $config.sre.rds.sessionHost2.vmName
     RDS_Session_Host_Desktop_VM_Size = $config.sre.rds.sessionHost2.vmSize
+    RDS_Session_Host_Review_IP_Address = $config.sre.rds.sessionHost3.ip
+    RDS_Session_Host_Review_Name = $config.sre.rds.sessionHost3.vmName
+    RDS_Session_Host_Review_VM_Size = $config.sre.rds.sessionHost3.vmSize
     SRE_ID = $config.sre.Id
     Virtual_Network_Name = $config.sre.network.vnet.Name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
@@ -322,6 +329,7 @@ $params = @{
     gatewayHostname = "`"$($config.sre.rds.gateway.hostname)`""
     sh1Hostname = "`"$($config.sre.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.sre.rds.sessionHost2.hostname)`""
+    sh3Hostname = "`"$($config.sre.rds.sessionHost2.hostname)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
@@ -350,6 +358,7 @@ foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Conte
     if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
         $_ = $filePathsSh1.Add($blob.Name)
         $_ = $filePathsSh2.Add($blob.Name)
+        $_ = $filePathsSh3.Add($blob.Name)
     } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
         $_ = $filePathsSh2.Add($blob.Name)
     }
@@ -405,6 +414,19 @@ $params = @{
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
 
+# Copy software and/or scripts to RDS SH3 (Review server)
+Add-LogMessage -Level Info "[ ] Copying $($filePathsSh3.Count) files to RDS Session Host (Review server)"
+$params = @{
+    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
+    storageService = "blob"
+    shareOrContainerName = "`"$containerNameSessionHosts`""
+    sasToken = "`"$sasToken`""
+    pipeSeparatedremoteFilePaths = "`"$($filePathsSh3 -join "|")`""
+    downloadDir = "$remoteUploadDir"
+}
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost3.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+Write-Output $result.Value
+
 
 # Install packages on RDS VMs
 # ---------------------------
@@ -434,6 +456,7 @@ Write-Output $result.Value
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
 Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
 Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost3.vmName -NSGName $config.sre.rds.sessionHost3.nsg
 
 
 # Reboot all the RDS VMs

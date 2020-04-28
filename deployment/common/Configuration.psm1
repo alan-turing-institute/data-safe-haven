@@ -455,6 +455,11 @@ function Add-SreConfig {
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
+        sessionHost3 = [ordered]@{
+            vmName = "REV-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmSize = "Standard_DS2_v2"
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+        }
     }
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
