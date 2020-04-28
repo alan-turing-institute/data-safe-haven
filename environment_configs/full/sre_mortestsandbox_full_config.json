@@ -152,6 +152,10 @@
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
           "description": "SG SANDBOX Research Users"
+        },
+        "reviewUsers": {
+          "name": "SG SANDBOX Research Users",
+          "description": "SG SANDBOX Research Users"
         }
       }
     },
@@ -294,6 +298,11 @@
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
         "ip": "10.150.9.248"
+      },
+      "sessionHost3": {
+        "vmName": "REV-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS"
       }
     },
     "dataserver": {

@@ -9,6 +9,8 @@ param(
     [String]$shmFqdn,
     [String]$researchUserSgName,
     [String]$researchUserSgDescription,
+    [String]$reviewUserSgName,
+    [String]$reviewUserSgDescription,
     [String]$sqlAdminSgName,
     [String]$sqlAdminSgDescription,
     [String]$ldapUserSgName,
@@ -80,6 +82,7 @@ $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResear
 
 # Create SRE Security Groups
 New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+New-SreGroup -name $reviewUserSgName -description $reviewUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
 # Create Service Accounts for SRE
@@ -89,10 +92,15 @@ New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOu
 New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
-# Add Data Science LDAP users to SG Data Science LDAP Users security group
-Write-Output " [ ] Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
-Add-ADGroupMember "$ldapUserSgName" "$dsvmSamAccountName"
-
-# Add SRE test users to the relative Security Groups
-Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
-Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"
+# Add users to the relevant security groups
+foreach ($userGroupPair in @(($dsvmSamAccountName, $ldapUserSgName),
+                             ($testResearcherSamAccountName, $researchUserSgName))) {
+    $samAccountName, $sgName = $userGroupPair
+    Write-Output " [ ] Ensuring that '$samAccountName' user belongs to group '$sgName'"
+    Add-ADGroupMember "$sgName" "$samAccountName"
+    if ($?) {
+        Write-Output " [o] Succeeded"
+    } else {
+        Write-Output " [x] Failed to add '$samAccountName' to group '$sgName'!"
+    }
+}

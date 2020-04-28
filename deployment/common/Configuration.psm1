@@ -300,6 +300,7 @@ function Add-SreConfig {
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
     $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
+    $reviewUsers= "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
@@ -312,6 +313,10 @@ function Add-SreConfig {
         researchUsers = [ordered]@{
             name = $researchUsersGroup
             description = $researchUsersGroup
+        }
+        reviewUsers = [ordered]@{
+            name = $reviewUsers
+            description = $reviewUsers
         }
     }
 

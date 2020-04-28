@@ -125,6 +125,8 @@ $rdsSh2VmFqdn = $config.sre.rds.sessionHost2.fqdn
 $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
 $rdsSh3VmFqdn = $config.sre.rds.sessionHost3.fqdn
 $rdsSh3VmName = $config.sre.rds.sessionHost3.vmName
+$researchUserSgName = $config.sre.domain.securityGroups.researchUsers.name
+$reviewUserSgName = $config.sre.domain.securityGroups.reviewUsers.name
 $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
 $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
 $shmNetbiosName = $config.shm.domain.netbiosName
@@ -246,8 +248,33 @@ Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1") -Raw
-$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
+# $template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1") -Raw
+# $ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $deployScriptLocalFilePath
+$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
+$template.Replace('<shmNetbiosName>', $shmNetbiosName).
+          Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
+          Replace('<rdsSh1VmName>',$rdsSh1VmName).
+          Replace('<rdsSh2VmName>',$rdsSh2VmName).
+          Replace('<rdsSh3VmName>',$rdsSh3VmName).
+          Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
+          Replace('<rdsSh1VmFqdn>',$rdsSh1VmFqdn).
+          Replace('<rdsSh2VmFqdn>',$rdsSh2VmFqdn).
+          Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
+          Replace('<researchUserSgName>',$researchUserSgName).
+          Replace('<reviewUserSgName>',$reviewUserSgName).
+          Replace('<dataSubnetIpPrefix>',$dataSubnetIpPrefix).
+          Replace('<airlockSubnetIpPrefix>',$airlockSubnetIpPrefix).
+          Replace('<shmDcAdminUsername>',$shmDcAdminUsername).
+          Replace('<remoteUploadDir>',$remoteUploadDir).
+          Replace('<example>',$example).
+          Replace('<example>',$example).
+          Replace('<example>',$example).
+          Replace('<example>',$example).
+          Replace('<example>',$example).
+          Replace('<example>',$example).
+          Replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName) | Out-File $deployScriptLocalFilePath
+
+
 
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
