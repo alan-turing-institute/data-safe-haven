@@ -844,6 +844,20 @@ for row in cursor:
     print(f"{row.table_catalog} | {row.table_schema} | {row.table_name}")
 ```
 
+### Connecting using R
+```R
+library(odbc)
+con <- DBI::dbConnect(odbc::odbc(),
+                Driver = "ODBC Driver 17 for SQL Server",
+                Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
+                Database = "master",
+                Trusted_Connection = "yes",
+                Port = 14330)
+
+result <- dbSendQuery(con, "SELECT table_catalog, table_schema, table_name FROM information_schema.tables;")
+dbFetch(result)
+```
+
 
 ## :bug: Report a bug
 
