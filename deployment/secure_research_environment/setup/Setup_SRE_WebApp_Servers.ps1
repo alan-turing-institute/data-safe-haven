@@ -45,13 +45,14 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabInternal `
 
 
 $nsgGitlabExternal = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabExternal `
-                             -Name "InboundDenyAll" `
-                             -Description "Inbound deny everything" `
-                             -Priority 4000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+# TODO Removed for development testing
+# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabExternal `
+#                              -Name "InboundDenyAll" `
+#                              -Description "Inbound deny everything" `
+#                              -Priority 4000 `
+#                              -Direction Inbound -Access Deny -Protocol * `
+#                              -SourceAddressPrefix * -SourcePortRange * `
+#                              -DestinationAddressPrefix * -DestinationPortRange *
 
 
 # Check that VNET and subnet exist
@@ -63,8 +64,8 @@ $subnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.Name -VirtualN
 Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsgGitlabExternal -VirtualNetwork $vnet
 
 
-# Expand GitLab cloudinit
-# -----------------------
+# Expand GitLab internal cloudinit
+# --------------------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 $gitlabFqdn = $config.sre.webapps.gitlab.internal.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
@@ -184,7 +185,13 @@ $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config
 # Deploy the GitLab external VM
 # ------------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+
 $gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabExternalCloudInit = $gitlabExternalCloudInitTemplate.Replace('<gitlab-ip>',$config.sre.webapps.gitlab.internal.ip).
+                                                            Replace('<sre-admin-username>',$sreAdminUsername).
+                                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
+                                                            Replace('<gitlab-internal-username>',$gitlabExternalUsername).
+                                                            Replace('<gitlab-internal-api-token>',$gitlabExternalAPIToken)
 
 $params = @{
     Name = $vmName
@@ -192,7 +199,7 @@ $params = @{
     AdminPassword = $sreAdminPassword
     AdminUsername = $sreAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $gitlabExternalCloudInitTemplate
+    CloudInitYaml = $gitlabExternalCloudInit
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = "Standard_LRS"

@@ -3,12 +3,46 @@ package_update: true
 package_upgrade: true
 
 # Install LDAP tools for debugging LDAP issues
+# !!!TODO openssh-server for access during development only!!!!
 packages:
   - git
+  - openssh-client
+  - openssh-server
+
+write_files:
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token"
+    permissions: "0600"
+    content: |
+      <gitlab-internal-api-token>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address"
+    permissions: "0600"
+    content: |
+      <gitlab-ip>
 
 runcmd:
-  # Configure server
-  - echo "Configuring server"
+  # Change ownership of secrets to <sre-admin-username>
+  - |
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address";
+  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
+  - |
+    echo "Configuring SSH for gitlab internal";
+    mkdir -p /home/<sre-admin-username>/.ssh;
+    ssh-keygen -t ed25519 -C 'gitlab-internal' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519"
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519.pub"
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
+    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"external-ingress\"}" <gitlab-ip>/api/v4/user/keys;
+    ssh-keyscan -H <gitlab-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # Configure global git user to be gitlab internal user
+  - |
+    echo "Configuring git global user";
+    HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-internal-username>';
+    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-internal-username>@<gitlab-login-domain>';
+  # Give <sre-admin-username> ownership of their home directory
+  - |
+    chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>";
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
