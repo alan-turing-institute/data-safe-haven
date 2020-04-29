@@ -18,6 +18,65 @@ write_files:
     permissions: "0600"
     content: |
       <gitlab-ip>
+  - path: "/home/<sre-admin-username>/update_from_whitelist.py"
+    permissions: "0755"
+    content: |
+      import os
+      import json
+      import requests
+      import subprocess
+      from pathlib import Path
+      
+      home = str(Path.home())
+      
+      with open("../whitelist", "r") as f:
+          whitelist = [line.strip().split(" ") for line in f.readlines()]
+      
+      whitelist = [{"url": repo[0],
+                    "commit_sha": repo[1],
+                    "gitlab_name": repo[2],
+                    "gitlab_branch": repo[3]} for repo in whitelist]
+      
+      with open(f"{home}/.secrets/gitlab-internal-ip-address","r") as f:
+          gitlab_internal_ip = f.readlines()[0].strip()
+      
+      with open(f"{home}/.secrets/gitlab-internal-api-token","r") as f:
+          gitlab_token = f.readlines()[0].strip()
+      
+      gitlab_internal_url = "http://" + gitlab_internal_ip + "/api/v4/projects"
+      
+      gitlab_internal_projects = requests.get(gitlab_internal_url,
+                                              headers = {"Authorization": "Bearer " + gitlab_token},
+                                              params = {"owned": True, "simple": True})
+      
+      gitlab_internal_repo_names = [repo["name"].lower() for repo in gitlab_internal_projects.json()]
+      for repo in whitelist:
+          repo_name = repo["gitlab_name"]
+          repo_path = os.path.join(repo_name)
+          if not os.path.exists(repo_path):
+              os.system("git clone " + repo["url"] + " " + repo["gitlab_name"])
+      
+          os.chdir(repo["gitlab_name"])
+          os.system("git fetch")
+          os.system("git checkout " + repo["commit_sha"])
+          os.system("git branch -f " + repo["gitlab_branch"])
+          os.system("git checkout " + repo["gitlab_branch"])
+      
+          if repo_name.lower() not in gitlab_internal_repo_names:
+              response = requests.post(gitlab_internal_url,
+                                       headers = {"Authorization": "Bearer " + gitlab_token},
+                                       data = {"name": repo_name, "visibility": "public"})
+      
+              gitlab_internal_remote_url = response.json()["ssh_url_to_repo"]
+              assert(response.json()["name"] == repo_name)
+      
+              print("Adding remote gitlab-internal as " + gitlab_internal_remote_url)
+              os.system("git remote add gitlab-internal " + gitlab_internal_remote_url)
+      
+          
+          os.system("git push gitlab-internal " + repo["gitlab_branch"])
+              
+          os.chdir("..")  
 
 runcmd:
   # Change ownership of secrets to <sre-admin-username>
