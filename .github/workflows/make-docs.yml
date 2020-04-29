@@ -28,7 +28,7 @@ jobs:
       # This action succeeds whether or not the release under the given tag exists already,
       # but will not update the tag if it exists
       - name: Release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@6c34249ffcca8674b2e9ad44f8fb0de58bb8cb97
         with:
           allowUpdates: true
           artifacts: 'docs/*.pdf'
@@ -42,7 +42,7 @@ jobs:
       # This action fails if the release does not exist: the above action ensures that it always does.
       # Roll back the release and now we are in a known state (no release)
       - name: Rollback Release
-        uses: author/action-rollback@stable
+        uses: author/action-rollback@f6e07e50c820e83434c81c29babd59cff1138b32
         with:
           tag: latest-doc
         env:
@@ -50,7 +50,7 @@ jobs:
       
       # Repeat the first release action, to make it take effect for the current commit
       - name: Release (again)
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@6c34249ffcca8674b2e9ad44f8fb0de58bb8cb97
         with:
           allowUpdates: true
           artifacts: 'docs/*.pdf'
