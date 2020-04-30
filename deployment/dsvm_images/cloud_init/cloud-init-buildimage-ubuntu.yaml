@@ -166,17 +166,29 @@ runcmd:
   - echo "Installing DBeaver"
   - /installation/download_and_install_deb.sh dbeaver
   - if [ "$(which dbeaver)" = "" ]; then echo "Could not install DBeaver!"; exit 1; fi
-  # Install drivers
+  # Install drivers from maven
   - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
+  - MSSQL_JDBC_VERSION="7.4.1.jre8"
+  - PGJDBC_VERSION="1.1.5"
+  - POSTGIS_JDBC_VERSION="2.2.1"
+  - POSTGRESQL_VERSION="42.2.5"
+  # Note that the filenames specified here have to be kept synchronised with the names in the dbeaver_drivers_config.xml file.
+  # Adding new drivers therefore involves changing both this file and the XML file.
   - mkdir -p ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.jar -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
-  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.4.1.jre8/mssql-jdbc-7.4.1.jre8.pom -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/${MSSQL_JDBC_VERSION}/mssql-jdbc-${MSSQL_JDBC_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
+  - wget -nv https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/${MSSQL_JDBC_VERSION}/mssql-jdbc-${MSSQL_JDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
   - mkdir -p ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/1.1.5/pgjdbc-core-parent-1.1.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/1.1.5/pgjdbc-versions-1.1.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.5/postgresql-42.2.5.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
-  # Create driver configuration file
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-core-parent/${PGJDBC_VERSION}/pgjdbc-core-parent-${PGJDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/pgjdbc-versions/${PGJDBC_VERSION}/pgjdbc-versions-${PGJDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - wget -nv https://repo1.maven.org/maven2/org/postgresql/postgresql/${POSTGRESQL_VERSION}/postgresql-${POSTGRESQL_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/org.postgresql/
+  - mkdir -p ${DBEAVER_DRIVER_DIR}/net.postgis/
+  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
+  - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/${POSTGIS_JDBC_VERSION}/postgis-jdbc-${POSTGIS_JDBC_VERSION}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
+  # Expand driver configuration template
+  - sed -i "s/|POSTGRESQL_VERSION|/${POSTGRESQL_VERSION}/g" /installation/dbeaver_drivers_config.xml
+  - sed -i "s/|MSSQL_JDBC_VERSION|/${MSSQL_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
+  - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
