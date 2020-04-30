@@ -28,7 +28,7 @@ if (-Not $whitelistDirectory) { $whitelistDirectory = Join-Path $PSScriptRoot ".
 # Update all external package mirrors
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
-    $whitelistPath = Join-Path $whitelistDirectory "whitelist-core-*-${MirrorType}-tier${tier}.list".ToLower() -Resolve
+    $whitelistPath = Join-Path $whitelistDirectory "whitelist-core-${MirrorType}-tier${tier}.list".ToLower() -Resolve
     $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Failure "Could not find whitelist at '$whitelistPath'"
