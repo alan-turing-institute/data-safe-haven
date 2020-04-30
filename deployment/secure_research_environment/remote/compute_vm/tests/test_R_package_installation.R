@@ -38,7 +38,7 @@ for (repo in repos) {
     packages <- readLines(packageList)
     print(paste("Testing", length(packages), repo, "packages"))
     for (package in packages) {
-        if (!package %in% false_positive_list) {
+        if (!(package %in% false_positive_list)) {
             test_package(package)
         }
     }
