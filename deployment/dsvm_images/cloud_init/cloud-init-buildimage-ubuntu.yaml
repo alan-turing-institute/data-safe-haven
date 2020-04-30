@@ -249,7 +249,7 @@ runcmd:
   - conda env list
 
   # Create or update conda environments - approximately 14 hrs: Python 2.7 (5hrs); Python 3.6 (4hrs); Python 3.7 (3hrs)
-  # <Python package list>
+  - <Python package list>
   - /installation/create_or_update_conda_python_environment.sh py27 "$PYTHON27_CONDA_PACKAGES" "$PYTHON27_PIP_PACKAGES" || exit 1
   - /installation/create_or_update_conda_python_environment.sh py36 "$PYTHON36_CONDA_PACKAGES" "$PYTHON36_PIP_PACKAGES" || exit 1
   - /installation/create_or_update_conda_python_environment.sh py37 "$PYTHON37_CONDA_PACKAGES" "$PYTHON37_PIP_PACKAGES" || exit 1
@@ -265,7 +265,7 @@ runcmd:
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
-  # <R package list>
+  - <R package list>
   # CRAN
   - echo "Previously installed CRAN packages:"
   - Rscript -e "list.of.packages <- c($CRAN_PACKAGES); old.packages <- list.of.packages[(list.of.packages %in% installed.packages()[,'Package'])]; print(old.packages);"
@@ -294,7 +294,7 @@ runcmd:
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
-  # <Julia package list>
+  - <Julia package list>
   - export JULIA_DEPOT_PATH="${JULIA_BASE_DIR}/depot/"
   - mkdir -p ${JULIA_DEPOT_PATH}
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl

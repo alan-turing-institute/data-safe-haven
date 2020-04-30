@@ -131,7 +131,7 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $inden
 # ---------------------------------------------------------
 $juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-julia.list")
 $juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQuote -Separator ', ')]'"
-$cloudInitTemplate = $cloudInitTemplate.Replace("# <Julia package list>", $juliaPackageText)
+$cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $juliaPackageText)
 
 
 # Insert python package details into the cloud-init template
@@ -157,7 +157,7 @@ $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages} $
                   "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
                   "- export PYTHON37_CONDA_PACKAGES=`"${python37CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
                   "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
-$cloudInitTemplate = $cloudInitTemplate.Replace("# <Python package list>", $pythonPackages)
+$cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
 
 
 # Insert R package details into the cloud-init template
@@ -166,7 +166,7 @@ $cranPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment
 $bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
              "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
-$cloudInitTemplate = $cloudInitTemplate.Replace("# <R package list>", $rPackages)
+$cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
 # Construct build VM parameters
