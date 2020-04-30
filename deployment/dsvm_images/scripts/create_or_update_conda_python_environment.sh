@@ -33,7 +33,7 @@ fi
 # Install pip packages
 echo "Installing $(echo $PIP_PACKAGES | wc -w) additional packages with pip..."
 echo "$(echo $PIP_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
-/anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
+/opt/anaconda/envs/${ENV_NAME}/bin/pip install $PIP_PACKAGES
 
 # Check that all requested packages are installed
 MISSING_PACKAGES=""
@@ -60,12 +60,12 @@ fi
 
 # Run safety check but do not attempt to pass/fail on the result
 echo "Running safety check on ${ENV_NAME} conda environment"
-/anaconda/envs/${ENV_NAME}/bin/safety check
+/opt/anaconda/envs/${ENV_NAME}/bin/safety check
 
 # Set the Jupyter kernel name to the full Python version name and store it as $ENV_NAME so that different python3 versions show up separately
-PYTHON_VERSION=$(/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
-sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
-ln -s /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3] /anaconda/envs/${ENV_NAME}/share/jupyter/kernels/${ENV_NAME}
+PYTHON_VERSION=$(/opt/anaconda/envs/${ENV_NAME}/bin/python --version 2>&1 | cut -d' ' -f2)
+sed -i "s|\"display_name\": \"Python.*\"|\"display_name\": \"Python ${PYTHON_VERSION}\"|" /opt/anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3]/kernel.json
+ln -s /opt/anaconda/envs/${ENV_NAME}/share/jupyter/kernels/python[2,3] /opt/anaconda/envs/${ENV_NAME}/share/jupyter/kernels/${ENV_NAME}
 
 # Finish up
 ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")

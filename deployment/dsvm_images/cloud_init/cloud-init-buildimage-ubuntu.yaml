@@ -227,11 +227,13 @@ runcmd:
   - ANACONDA_REMOTE_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "Using installer from $ANACONDA_REMOTE_URL"
   - wget -nv $ANACONDA_REMOTE_URL -P /installation/
-  - bash /installation/${ANACONDA_INSTALL_SCRIPT} -b -p /anaconda
+  - mkdir -p /opt/anaconda
+  - bash /installation/${ANACONDA_INSTALL_SCRIPT} -b -p /opt/anaconda
   - rm /installation/${ANACONDA_INSTALL_SCRIPT}
-  # NB. Do not add /anaconda/bin to the PATH since conda must be used through a shell function, not directly as the executable
-  - . /anaconda/etc/profile.d/conda.sh
-  - echo ". /anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
+  # Setup anaconda so that it is usable by all users.
+  # NB. We cannot add the /bin/ directory to the PATH directly: conda.sh is needed to configure the shell environment
+  - . /opt/anaconda/etc/profile.d/conda.sh
+  - echo ". /opt/anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda and add conda-forge (append puts it last in priority order)
   - conda config --append channels conda-forge
   - conda update -y -n base -c defaults conda
@@ -253,10 +255,10 @@ runcmd:
   - conda env list
   # Set 'other' permissions on the anaconda directory to be equal to that of the owner
   # We then remove write access so that site-packages can be used but not altered
-  - echo "Updating /anaconda/ permissions"
-  - rm -rf /anaconda/.cph_tmp*
-  - chmod -R o=u,o-w /anaconda/
-  - ls -alh /anaconda/
+  - echo "Updating /opt/anaconda/ permissions"
+  - rm -rf /opt/anaconda/.cph_tmp*
+  - chmod -R o=u,o-w /opt/anaconda/
+  - ls -alh /opt/anaconda/
 
   # Install any missing R packages - approximately 1 hr
   - echo ">=== $(date +%s) Configuring R environment ===<"
@@ -294,7 +296,7 @@ runcmd:
   - mkdir -p ${JULIA_DEPOT_PATH}
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
-  - export CONDA_JL_HOME="/anaconda/envs/py37/"
+  - export CONDA_JL_HOME="/opt/anaconda/envs/py37/"
   - export PYTHON="${CONDA_JL_HOME}/bin/python"
   - export TF_USE_GPU=1
   - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
@@ -315,9 +317,9 @@ runcmd:
   # Add the Julia kernel
   - mv /root/.local/share/jupyter/kernels/julia-1.4 /usr/share/jupyter/kernels/
   # Add the anaconda kernels
-  - jupyter kernelspec install /anaconda/envs/py27/share/jupyter/kernels/py27 || exit 1
-  - jupyter kernelspec install /anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
-  - jupyter kernelspec install /anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
+  - jupyter kernelspec install /opt/anaconda/envs/py27/share/jupyter/kernels/py27 || exit 1
+  - jupyter kernelspec install /opt/anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
+  - jupyter kernelspec install /opt/anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
   # Add the R kernel
   - R_VERSION=$(R --version | head -n 1 | cut -d' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
