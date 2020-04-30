@@ -848,7 +848,7 @@ function New-DNSZone {
         $ResourceGroupName
     )
     Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
-    Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $_ = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
         $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
@@ -875,9 +875,7 @@ function Get-NSRecords {
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName
     )
-
-    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNZ Zone '$($DnsZoneName)'..."
-
+    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
     $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
     return $recordSet.Records
 }
@@ -939,7 +937,7 @@ function Set-DnsZoneAndParentNSRecords {
 
     # Check if parent DNS Zone exists in same subscription and resource group
     # -----------------------------------------------------------------------
-    Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $_ = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
         Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
