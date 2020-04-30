@@ -23,8 +23,8 @@ echo "Downloading and verifying deb file..."
 mkdir -p /installation/
 wget -nv $PACKAGE_REMOTE -P /installation/
 ls -alh /installation/${PACKAGE_DEBFILE}
-echo "$PACKAGE_HASH /installation/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
-if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then
+echo "$PACKAGE_HASH /installation/${PACKAGE_DEBFILE}" > /tmp/${PACKAGE_NAME}_sha256.hash
+if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha256.hash | grep FAILED)" != "" ]; then
     echo "Checksum did not match expected for $PACKAGE_NAME"
     exit 1
 fi

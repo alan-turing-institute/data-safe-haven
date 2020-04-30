@@ -24,8 +24,8 @@ echo "Downloading and verifying tar file..."
 mkdir -p /opt/${PACKAGE_NAME}
 wget -nv $PACKAGE_REMOTE -P /opt/${PACKAGE_NAME}
 ls -alh /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}
-echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha512.hash
-if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha512.hash | grep FAILED)" != "" ]; then
+echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha256.hash
+if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha256.hash | grep FAILED)" != "" ]; then
     echo "Checksum did not match expected for $PACKAGE_NAME"
     exit 1
 fi
