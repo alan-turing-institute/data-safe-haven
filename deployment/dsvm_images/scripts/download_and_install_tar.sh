@@ -19,6 +19,12 @@ PACKAGE_VERSION=$(grep "version:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||'
 PACKAGE_TARFILE=$(grep "tarfile:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION|/$PACKAGE_VERSION/")
 PACKAGE_REMOTE=$(grep "remote:" $CONFIG_FILE | cut -d':' -f2-99 | sed 's|^ ||' | sed "s/|VERSION_MAJOR|/$PACKAGE_VERSION_MAJOR/" | sed "s/|VERSION|/$PACKAGE_VERSION/" | sed "s/|TARFILE|/$PACKAGE_TARFILE/")
 
+# Ensure that all required variables have been set
+if [ ! "$PACKAGE_HASH" ]; then exit 3; fi
+if [ ! "$PACKAGE_NAME" ]; then exit 3; fi
+if [ ! "$PACKAGE_REMOTE" ]; then exit 3; fi
+if [ ! "$PACKAGE_TARFILE" ]; then exit 3; fi
+
 # Download and verify the .deb file
 echo "Downloading and verifying tar file..."
 mkdir -p /opt/${PACKAGE_NAME}
@@ -27,7 +33,7 @@ ls -alh /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}
 echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha256.hash
 if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha256.hash | grep FAILED)" != "" ]; then
     echo "Checksum did not match expected for $PACKAGE_NAME"
-    exit 1
+    exit 4
 fi
 
 # Install and cleanup
