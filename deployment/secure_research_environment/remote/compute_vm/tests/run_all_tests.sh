@@ -1,5 +1,71 @@
 #! /bin/bash
 
+# Test Julia packages
+julia_packages () {
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
+    OUTPUT=$(julia test_julia_package_installation.jl 2>&1)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "Packages not installed")
+    if [ "$TEST_RESULT" != "" ]; then
+        return 1
+    fi
+    return 0
+}
+
+
+# Test python packages
+_python_packages () {
+    conda activate $1
+    OUTPUT=$(python test_python_package_installation.py 2> /dev/null)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "packages are missing")
+    conda deactivate
+    if [ "$TEST_RESULT" != "" ]; then
+        return 1
+    fi
+    return 0
+}
+python_27_packages() { _python_packages py27; }
+python_36_packages() { _python_packages py36; }
+python_37_packages() { _python_packages py37; }
+
+
+# Test python logistic regression
+_python_logistic_regression () {
+    conda activate $1
+    OUTPUT=$(python test_logistic_regression.py 2>&1)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "Logistic model ran OK")
+        conda deactivate
+    if [ "$TEST_RESULT" == "" ]; then
+        return 1
+    fi
+    return 0
+}
+python_27_logistic_regression() { _python_logistic_regression py27; }
+python_36_logistic_regression() { _python_logistic_regression py36; }
+python_37_logistic_regression() { _python_logistic_regression py37; }
+
+
+# Test PyPI
+_python_pypi () {
+    conda activate $1
+    OUTPUT=$(bash test_pypi.sh 2>&1)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "PyPI working OK")
+    conda deactivate
+    if [ "$TEST_RESULT" == "" ]; then
+        return 1
+    fi
+    return 0
+}
+python_27_pypi() { _python_pypi py27; }
+python_36_pypi() { _python_pypi py36; }
+python_37_pypi() { _python_pypi py37; }
+
+
 # Test R packages
 R_packages () {
     if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
@@ -56,58 +122,6 @@ R_cran () {
 }
 
 
-# Test python packages
-_python_packages () {
-    conda activate $1
-    OUTPUT=$(python test_python_package_installation.py 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "packages are missing")
-    conda deactivate
-    if [ "$TEST_RESULT" != "" ]; then
-        return 1
-    fi
-    return 0
-}
-python_27_packages() { _python_packages py27; }
-python_36_packages() { _python_packages py36; }
-python_37_packages() { _python_packages py37; }
-
-
-# Test python logistic regression
-_python_logistic_regression () {
-    conda activate $1
-    OUTPUT=$(python test_logistic_regression.py 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "Logistic model ran OK")
-        conda deactivate
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
-}
-python_27_logistic_regression() { _python_logistic_regression py27; }
-python_36_logistic_regression() { _python_logistic_regression py36; }
-python_37_logistic_regression() { _python_logistic_regression py37; }
-
-
-# Test PyPI
-_python_pypi () {
-    conda activate $1
-    OUTPUT=$(bash test_pypi.sh 2>&1)
-    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "PyPI working OK")
-    conda deactivate
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
-}
-python_27_pypi() { _python_pypi py27; }
-python_36_pypi() { _python_pypi py36; }
-python_37_pypi() { _python_pypi py37; }
-
-
-
 do_test() {
     TEST_NAME=$1
     echo -e "\033[0;36m[ RUNNING  ]\033[0m $TEST_NAME"
@@ -128,17 +142,9 @@ do_test() {
 N_PASSING=0
 N_FAILING=0
 
-# R tests
-do_test R_packages
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test R_clustering
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_logistic_regression
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_cran
+# Julia tests
+do_test julia_packages
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 
@@ -174,6 +180,19 @@ if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAIL
 do_test python_37_pypi
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
+
+# R tests
+do_test R_packages
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+do_test R_clustering
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+do_test R_logistic_regression
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+do_test R_cran
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 # Summary
 N_TESTS=$(($N_PASSING + $N_FAILING))

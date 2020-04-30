@@ -1,7 +1,6 @@
 backports
 beautifulsoup4
 black
-blaze
 bokeh
 catboost
 colorama

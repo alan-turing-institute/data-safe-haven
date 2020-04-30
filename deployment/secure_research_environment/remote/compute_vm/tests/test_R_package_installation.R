@@ -34,7 +34,7 @@ test_package <- function(p) {
 repos <- c("CRAN", "Bioconductor")
 n_packages = 0
 for (repo in repos) {
-    packageList = file.path("..", "package_lists", paste("packages-r-", tolower(repo), ".list"))
+    packageList = file.path("..", "package_lists", paste("packages-r-", tolower(repo), ".list", sep=""))
     packages <- readLines(packageList)
     print(paste("Testing", length(packages), repo, "packages"))
     for (package in packages) {

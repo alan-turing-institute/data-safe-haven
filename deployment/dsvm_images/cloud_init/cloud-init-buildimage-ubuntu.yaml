@@ -230,7 +230,6 @@ runcmd:
   - ANACONDA_REMOTE_URL="https://repo.anaconda.com/miniconda/${ANACONDA_INSTALL_SCRIPT}"
   - echo "Using installer from $ANACONDA_REMOTE_URL"
   - wget -nv $ANACONDA_REMOTE_URL -P /installation/
-  - mkdir -p /opt/anaconda
   - bash /installation/${ANACONDA_INSTALL_SCRIPT} -b -p /opt/anaconda
   - rm /installation/${ANACONDA_INSTALL_SCRIPT}
   # Setup anaconda so that it is usable by all users.
@@ -239,6 +238,7 @@ runcmd:
   - echo ". /opt/anaconda/etc/profile.d/conda.sh" >> /etc/bash.bashrc
   # Update conda and add conda-forge (append puts it last in priority order)
   - conda config --append channels conda-forge
+  - conda config --append channels pytorch # [30/04/2020] the versions of pytorch in default and conda-forge are broken by a Pillow update
   - conda update -y -n base -c defaults conda
   # Increase timeouts and retries for downloading packages (we had some connection issues in testing)
   - conda config --set remote_connect_timeout_secs 60
@@ -299,16 +299,22 @@ runcmd:
   - mkdir -p ${JULIA_DEPOT_PATH}
   - sed -i "/DEPOT_PATH/d" ${JULIA_BASE_DIR}/etc/julia/startup.jl
   - echo "push!(DEPOT_PATH, \"${JULIA_DEPOT_PATH}\")" >> ${JULIA_BASE_DIR}/etc/julia/startup.jl
-  - export CONDA_JL_HOME="/opt/anaconda/envs/py37/"
+  # Set some Julia environment variables before installing/building the packages
+  - export CONDA_JL_HOME="/opt/anaconda/envs/py37/"  # use the most recent python version as the default Conda environment
+  - export JULIA_COPY_STACKS=1
   - export PYTHON="${CONDA_JL_HOME}/bin/python"
   - export TF_USE_GPU=1
-  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
+  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); @eval using \$(Symbol(package)); end"
   # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
-  # Ensure that the default Conda environment is the one we have used to build Tensorflow.
+  # Ensure that Julia environment variables that we used here are exported for all users
   - echo "export CONDA_JL_HOME=${CONDA_JL_HOME}" >> /etc/bash.bashrc
+  - echo "export JULIA_COPY_STACKS=${JULIA_COPY_STACKS}" >> /etc/bash.bashrc
+  - echo "export PYTHON="${PYTHON}"" >> /etc/bash.bashrc
+  - echo "export TF_USE_GPU=${TF_USE_GPU}" >> /etc/bash.bashrc
   # Ensure that the first thing on each user's DEPOT_PATH will be the usual default (~/.julia) followed by the global depot
   - echo "export JULIA_DEPOT_PATH=~/.julia:${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
+
   - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); catch e; println(package); end; end;")
   - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; fi
 

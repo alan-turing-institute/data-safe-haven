@@ -1,6 +1,5 @@
 backports
 beautifulsoup4
-blaze
 bokeh
 catboost
 colorama
@@ -14,7 +13,6 @@ Fiona
 flake8
 Flask
 folium
-gensim
 geopandas
 GPy
 GPyOpt
