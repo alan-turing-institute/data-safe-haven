@@ -5,16 +5,20 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreId,
-    [String]$testResearcherSamAccountName,
+    [String]$dataMountSamAccountName,
     [String]$dsvmLdapSamAccountName,
     [String]$gitlabLdapSamAccountName,
     [String]$hackmdLdapSamAccountName,
-    [String]$sreResearchUserSG,
     [String]$rdsDataserverVMName,
     [String]$rdsGatewayVMName,
     [String]$rdsSessionHostAppsVMName,
-    [String]$rdsSessionHostDesktopVMName
+    [String]$rdsSessionHostDesktopVMName,
+    [String]$rdsSessionHostReviewVMName,
+    [String]$researchUserSgName,
+    [String]$reviewUserSgName,
+    [String]$sqlAdminSgName,
+    [String]$sreId,
+    [String]$testResearcherSamAccountName
 )
 
 function Remove-SreUser($samAccountName) {
@@ -63,15 +67,22 @@ function Remove-SreGroup($groupName) {
 }
 
 # Remove users
-Remove-SreUser $testResearcherSamAccountName
+Remove-SreUser $dataMountSamAccountName
 Remove-SreUser $dsvmLdapSamAccountName
 Remove-SreUser $gitlabLdapSamAccountName
 Remove-SreUser $hackmdLdapSamAccountName
+Remove-SreUser $testResearcherSamAccountName
+
+# Remove groups
+Remove-SreGroup $researchUserSgName
+Remove-SreGroup $reviewUserSgName
+Remove-SreGroup $sqlAdminSgName
 
 # Remove service computers
 Remove-SreComputer $rdsDataserverVMName
 Remove-SreComputer $rdsGatewayVMName
 Remove-SreComputer $rdsSessionHostAppsVMName
+Remove-SreComputer $rdsSessionHostDesktopVMName
 Remove-SreComputer $rdsSessionHostDesktopVMName
 
 # Remove DSVMs
@@ -79,6 +90,3 @@ $dsvmPrefix = "SRE-$sreId".Replace(".","-").ToUpper()
 foreach ($dsvm in $(Get-ADComputer -Filter "Name -like '$dsvmPrefix*'")) {
     Remove-SreComputer $dsvm.Name
 }
-
-# Remove groups
-Remove-SreGroup $sreResearchUserSG

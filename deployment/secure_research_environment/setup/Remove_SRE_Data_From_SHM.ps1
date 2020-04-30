@@ -72,18 +72,22 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     # ---------------------------------------
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
+    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_SRE_Users_And_Groups.ps1" -Resolve
     $params = @{
-        sreId = "`"$($config.sre.id)`""
-        testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
+        dataMountSamAccountName = "`"$($config.sre.users.datamount.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
         gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
         hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
-        sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
         rdsDataserverVMName = "`"$($config.sre.dataserver.vmName)`""
         rdsGatewayVMName = "`"$($config.sre.rds.gateway.vmName)`""
         rdsSessionHostAppsVMName = "`"$($config.sre.rds.sessionHost1.vmName)`""
         rdsSessionHostDesktopVMName = "`"$($config.sre.rds.sessionHost2.vmName)`""
+        rdsSessionHostReviewVMName = "`"$($config.sre.rds.sessionHost3.vmName)`""
+        researchUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
+        reviewUserSgName = "`"$($config.sre.domain.securityGroups.reviewUsers.name)`""
+        sqlAdminSgName = "`"$($config.sre.domain.securityGroups.sqlAdmins.name)`""
+        sreId = "`"$($config.sre.id)`""
+        testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value

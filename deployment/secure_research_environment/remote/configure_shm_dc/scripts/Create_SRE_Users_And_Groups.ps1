@@ -5,33 +5,33 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreFqdn,
-    [String]$shmFqdn,
-    [String]$researchUserSgName,
-    [String]$researchUserSgDescription,
-    [String]$reviewUserSgName,
-    [String]$reviewUserSgDescription,
-    [String]$sqlAdminSgName,
-    [String]$sqlAdminSgDescription,
-    [String]$ldapUserSgName,
-    [String]$securityOuPath,
-    [String]$serviceOuPath,
-    [String]$researchUserOuPath,
-    [String]$hackmdSamAccountName,
-    [String]$hackmdName,
-    [String]$hackmdPasswordEncrypted,
-    [String]$gitlabSamAccountName,
-    [String]$gitlabName,
-    [String]$gitlabPasswordEncrypted,
-    [String]$dsvmSamAccountName,
-    [String]$dsvmName,
-    [String]$dsvmPasswordEncrypted,
-    [String]$dataMountSamAccountName,
     [String]$dataMountName,
     [String]$dataMountPasswordEncrypted,
-    [String]$testResearcherSamAccountName,
+    [String]$dataMountSamAccountName,
+    [String]$dsvmName,
+    [String]$dsvmPasswordEncrypted,
+    [String]$dsvmSamAccountName,
+    [String]$gitlabName,
+    [String]$gitlabPasswordEncrypted,
+    [String]$gitlabSamAccountName,
+    [String]$hackmdName,
+    [String]$hackmdPasswordEncrypted,
+    [String]$hackmdSamAccountName,
+    [String]$ldapUserSgName,
+    [String]$researchUserOuPath,
+    [String]$researchUserSgDescription,
+    [String]$researchUserSgName,
+    [String]$reviewUserSgDescription,
+    [String]$reviewUserSgName,
+    [String]$securityOuPath,
+    [String]$serviceOuPath,
+    [String]$shmFqdn,
+    [String]$sqlAdminSgDescription,
+    [String]$sqlAdminSgName,
+    [String]$sreFqdn,
     [String]$testResearcherName,
-    [String]$testResearcherPasswordEncrypted
+    [String]$testResearcherPasswordEncrypted,
+    [String]$testResearcherSamAccountName
 )
 
 function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
@@ -86,10 +86,10 @@ New-SreGroup -name $reviewUserSgName -description $reviewUserSgDescription -Path
 New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
 # Create Service Accounts for SRE
-New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
-New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
 New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
+New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
+New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
 # Add users to the relevant security groups

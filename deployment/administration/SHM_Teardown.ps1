@@ -71,11 +71,6 @@ $adDnsRecordname = "@"
 Add-LogMessage -Level Info "[ ] Removing '$adDnsRecordname' TXT record from SHM $shmId DNS zone ($shmDomain)"
 Remove-AzDnsRecordSet -Name $adDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
 $success = $?
-# # RDS ACME record
-# $rdsAcmeDnsRecordname = "_acme-challenge"
-# Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($shmDomain)"
-# Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-# $success = $success -and $?
 # Print success/failure message
 if ($success) {
     Add-LogMessage -Level Success "Record removal succeeded"

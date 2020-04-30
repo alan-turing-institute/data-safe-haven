@@ -439,7 +439,7 @@ function Add-SreConfig {
         researchers = [ordered]@{
             test = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Test Researcher"
-                samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "researcher$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
     }
