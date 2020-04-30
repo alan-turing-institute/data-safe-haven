@@ -9,7 +9,7 @@ build-essential
 code
 default-jdk
 docker.io
-dotnet-sdk-2.1
+dotnet-sdk-2.2
 dstat
 emacs
 firefox
