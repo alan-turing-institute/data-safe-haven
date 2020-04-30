@@ -8,7 +8,7 @@ import pkg_resources
 # Some packages cannot be imported so we skip them.
 KNOWN_RESOURCE_ISSUES = [
     "backports",  # not a single package
-    "xgboost",    # has dependencies on external library
+    "xgboost",  # has dependencies on external library
 ]
 
 # Some packages are imported using a different name than they `pip install` with
@@ -44,7 +44,7 @@ def get_python_version():
     v_info = sys.version_info
     return {
         "full": "{}.{}.{}".format(v_info.major, v_info.minor, v_info.micro),
-        "short": "{}{}".format(v_info.major, v_info.minor)
+        "short": "{}{}".format(v_info.major, v_info.minor),
     }
 
 
@@ -68,7 +68,9 @@ def get_missing_packages(packages):
     warning, missing = [], []
     for package in packages:
         # Test whether we can import
-        importable_name = IMPORTABLE_NAMES[package] if package in IMPORTABLE_NAMES else package
+        importable_name = (
+            IMPORTABLE_NAMES[package] if package in IMPORTABLE_NAMES else package
+        )
         try:
             _ = __import__(importable_name)
         except ImportError:
@@ -89,20 +91,32 @@ def get_missing_packages(packages):
 
 
 def test_packages():
-    python_version = get_python_version()
-    print("Python version %s found" % python_version["full"])
-    pypi_package_lists = glob.glob(os.path.join("..", "package_lists", "packages-python-pypi*"))
-    matching_package_lists = [l for l in pypi_package_lists if python_version["short"] in l]
+    version = get_python_version()
+    print("Python version %s found" % version["full"])
+    pypi_package_lists = glob.glob(
+        os.path.join("..", "package_lists", "packages-python-pypi*")
+    )
+    matching_package_lists = [l for l in pypi_package_lists if version["short"] in l]
     if matching_package_lists:
         with open(matching_package_lists[0], "r") as f_packages:
-            packages = [p.strip() for p in f_packages.readlines() if not p.startswith("#")]
+            packages = [
+                p.strip() for p in f_packages.readlines() if not p.startswith("#")
+            ]
         print("Testing {} python packages".format(len(packages)))
         warning, missing = get_missing_packages(packages)
         if warning:
-            print("\nThe following {} packages can be imported but had pkg_resource issues (possibly because they are C/C++ packages):".format(len(warning)))
+            print(
+                "\nThe following {} packages may be missing resources:".format(
+                    len(warning)
+                )
+            )
             print("\n".join(warning))
         if missing:
-            print("\nThe following {} packages are missing or broken:".format(len(missing)))
+            print(
+                "\nThe following {} packages are missing or broken:".format(
+                    len(missing)
+                )
+            )
             print("\n".join(missing))
 
 

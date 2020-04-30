@@ -22,5 +22,3 @@ if [ $OUTCOME -eq 0 ]; then
 else
     echo "PyPI installation failed"
 fi
-
-
