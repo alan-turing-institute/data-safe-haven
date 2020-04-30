@@ -9,7 +9,8 @@ CONDA_PACKAGES=$2
 PIP_PACKAGES=$3
 
 # Set version
-VERSION=$(echo $ENV_NAME | sed "s/py\([0-9]\)\([0-9]\)/\1.\2/")
+# TODO: revisit this logic if/when Python 10 is released!
+VERSION=$(echo $ENV_NAME | sed "s/py\([0-9]\)\([0-9]*\)/\1.\2/")
 
 # Create environment
 START_TIME=$(date +%s)

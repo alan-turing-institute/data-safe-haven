@@ -58,28 +58,28 @@ apt:
 
 
 write_files:
-  - path: "/installation/debinfo_azuredatastudio.yaml"
+  - path: "/installation/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
       hash: 34e6c2c04cce11a52affb17678e05a1a3e4f526948dee80cdbccd3754ed88e6e
       version: 1.16.1
       debfile: azuredatastudio-linux-|VERSION|.deb
       remote: https://azuredatastudiobuilds.blob.core.windows.net/releases/|VERSION|/|DEBFILE|
-  - path: "/installation/debinfo_dbeaver.yaml"
+  - path: "/installation/dbeaver.debinfo"
     permissions: "0400"
     content: |
       hash: 84e8c082e9fc23a149f6795bfaeb3da71b547a104a122e4a2cbf2f8dad4c862b
       version: 7.0.3
       debfile: dbeaver-ce_|VERSION|_amd64.deb
       remote: https://dbeaver.io/files/|VERSION|/|DEBFILE|
-  - path: "/installation/debinfo_rstudio.yaml"
+  - path: "/installation/rstudio.debinfo"
     permissions: "0400"
     content: |
       hash: 99e0f57b7426aa180db1b08163eba7a1a2e1ab033f2a632f6b852d7b23ca0f98
       version: 1.2.5042
       debfile: rstudio-|VERSION|-amd64.deb
       remote: https://download1.rstudio.org/desktop/bionic/amd64/|DEBFILE|
-  - path: "/installation/tarinfo_julia.yaml"
+  - path: "/installation/julia.tarinfo"
     permissions: "0400"
     content: |
       hash: fd6d8cadaed678174c3caefb92207a3b0e8da9f926af6703fb4d1e4e4f50610a
@@ -87,7 +87,7 @@ write_files:
       version: |VERSION_MAJOR|.1
       tarfile: julia-|VERSION|-linux-x86_64.tar.gz
       remote: https://julialang-s3.julialang.org/bin/linux/x64/|VERSION_MAJOR|/|TARFILE|
-  - path: "/installation/tarinfo_spark.yaml"
+  - path: "/installation/spark.tarinfo"
     permissions: "0400"
     content: |
       hash: 020be52524e4df366eb974d41a6e18fcb6efcaba9a51632169e917c74267dd81

@@ -7,7 +7,7 @@ fi
 PACKAGE_NAME=$1
 
 # Ensure that the config file exists
-CONFIG_FILE="/installation/tarinfo_${PACKAGE_NAME}.yaml"
+CONFIG_FILE="/installation/${PACKAGE_NAME}.tarinfo"
 if [ ! -e $CONFIG_FILE ]; then
     exit 2
 fi

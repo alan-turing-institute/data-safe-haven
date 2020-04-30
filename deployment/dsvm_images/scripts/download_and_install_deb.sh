@@ -7,7 +7,7 @@ fi
 PACKAGE_NAME=$1
 
 # Ensure that the config file exists
-CONFIG_FILE="/installation/debinfo_${PACKAGE_NAME}.yaml"
+CONFIG_FILE="/installation/${PACKAGE_NAME}.debinfo"
 if [ ! -e $CONFIG_FILE ]; then
     exit 2
 fi
