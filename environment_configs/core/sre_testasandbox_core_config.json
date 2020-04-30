@@ -7,7 +7,7 @@
     "domain": "sandbox.testa.dsgroupdev.co.uk",
     "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",
-    "rdsAllowedSources": "default",
+    "rdsAllowedSources": "Internet",
     "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.2.2020050300"

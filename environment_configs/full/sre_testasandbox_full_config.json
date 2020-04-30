@@ -152,6 +152,10 @@
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
           "description": "SG SANDBOX Research Users"
+        },
+        "reviewUsers": {
+          "name": "SG SANDBOX Review Users",
+          "description": "SG SANDBOX Review Users"
         }
       }
     },
@@ -182,12 +186,21 @@
           "prefix": "10.150.3",
           "nsg": "dbingress",
           "cidr": "10.150.3.0/24"
+        },
+        "airlock": {
+          "name": "AirlockSubnet",
+          "prefix": "10.150.4",
+          "nsg": "airlock",
+          "cidr": "10.150.4.0/24"
         }
       },
       "nsg": {
         "data": {},
         "dbingress": {
           "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        },
+        "airlock": {
+          "name": "NSG_SRE_SANDBOX_AIRLOCK"
         }
       }
     },
@@ -216,8 +229,14 @@
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
+        "gitlabInternalUsername": "sre-sandbox-gitlab-internal-username",
+        "gitlabInternalPassword": "sre-sandbox-gitlab-internal-password",
+        "gitlabInternalAPIToken": "sre-sandbox-gitlab-internal-api-token",
         "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
+        "gitlabExternalUsername": "sre-sandbox-gitlab-external-username",
+        "gitlabExternalPassword": "sre-sandbox-gitlab-external-password",
+        "gitlabExternalAPIToken": "sre-sandbox-gitlab-external-api-token",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
@@ -249,7 +268,7 @@
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "testresrchsandbox"
+          "samAccountName": "researchersandbox"
         }
       }
     },
@@ -260,7 +279,7 @@
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
-          "allowedSources": "193.60.220.253",
+          "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
@@ -282,6 +301,14 @@
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
         "ip": "10.150.1.248"
+      },
+      "sessionHost3": {
+        "vmName": "REV-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "hostname": "REV-SRE-SANDBOX",
+        "fqdn": "REV-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "ip": "10.150.1.247"
       }
     },
     "dataserver": {
@@ -300,11 +327,20 @@
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
-        "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.2.151"
+        "internal": {
+          "vmName": "GITLAB-INTERNAL-SRE-SANDBOX",
+          "vmSize": "Standard_D2s_v3",
+          "hostname": "GITLAB-INTERNAL-SRE-SANDBOX",
+          "fqdn": "GITLAB-INTERNAL-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+          "ip": "10.150.2.151"
+        },
+        "external": {
+          "vmName": "GITLAB-EXTERNAL-SRE-SANDBOX",
+          "vmSize": "Standard_D2s_v3",
+          "hostname": "GITLAB-EXTERNAL-SRE-SANDBOX",
+          "fqdn": "GITLAB-EXTERNAL-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+          "ip": "10.150.4.151"
+        }
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
