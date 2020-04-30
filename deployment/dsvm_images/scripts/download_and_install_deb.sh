@@ -45,11 +45,3 @@ done
 echo "Installing deb file: /installation/${PACKAGE_DEBFILE}"
 gdebi --non-interactive /installation/${PACKAGE_DEBFILE}
 rm /installation/${PACKAGE_DEBFILE}
-
-# Check whether the installation was successful
-if [ "$(which ${PACKAGE_NAME})" ]; then
-    echo "Installed ${PACKAGE_NAME} ${PACKAGE_VERSION}"
-else
-    echo "Could not install ${PACKAGE_NAME}"
-    exit 5
-fi

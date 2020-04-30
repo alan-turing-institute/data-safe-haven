@@ -195,15 +195,15 @@ runcmd:
 
   # Install RStudio,
   - echo "Installing RStudio"
-  - /installation/download_and_install_deb.sh rstudio || exit 1
+  - /installation/download_and_install_deb.sh rstudio
   - if [ "$(which rstudio)" = "" ]; then echo "Could not install RStudio!"; exit 1; fi
 
   # Install spark
   - echo "Installing spark"
-  - /installation/download_and_install_tar.sh spark || exit 1
+  - /installation/download_and_install_tar.sh spark
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
-  - if [ "$(which pycharm-community)" = "" ]; then echo "Could not install PyCharm!"; exit 1; fi
+  - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
     # Install PostgreSQL extensions
   - echo "Installing PostgreSQL extensions"
@@ -273,7 +273,7 @@ runcmd:
 
   # Install Julia and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing Julia and packages ===<"
-  - /installation/download_and_install_tar.sh julia || exit 1
+  - /installation/download_and_install_tar.sh julia
   - JULIA_BASE_DIR=$(ls -d /opt/julia/julia*)
   - PATH=$PATH:${JULIA_BASE_DIR}/bin
   - if [ "$(which julia)" = "" ]; then echo "Could not install Julia!"; exit 1; fi
@@ -285,7 +285,7 @@ runcmd:
   - export CONDA_JL_HOME="/anaconda/envs/py37/"
   - export PYTHON="${CONDA_JL_HOME}/bin/python"
   - export TF_USE_GPU=1
-  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end" || exit 1
+  - julia -e "using Pkg; Pkg.add($JULIA_PACKAGES); for package in $JULIA_PACKAGES; Pkg.build(package); end"
   # Allow users to read the global Julia depot
   - chmod -R o=u,o-w ${JULIA_BASE_DIR}/depot/
   # Ensure that the default Conda environment is the one we have used to build Tensorflow.
