@@ -54,7 +54,10 @@ Foreach ($pe in $config.sre.privateEndpoints) {
 
   # Create a Private DNS Zone
   # ----------------------------
-  $privateDnsZoneName = $resource.Properties.fullyQualifiedDomainName -replace $resource.Name, "privatelink" -replace "azure.com", "windows.net"
+  
+  # $privateDnsZoneName = $resource.Properties.fullyQualifiedDomainName -replace $resource.Name, "privatelink" -replace "azure.com", "windows.net"
+  $privateDnsZoneName = $pe.privateDnsZoneName
+  
   Add-LogMessage -Level Info "Creating private DNS zone '$($privateDnsZoneName)'"
   $zone = New-AzPrivateDnsZone -ResourceGroupName $config.sre.network.vnet.rg `
     -Name $privateDnsZoneName

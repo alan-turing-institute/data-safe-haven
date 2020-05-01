@@ -374,6 +374,13 @@
         "resourceName": "privateendpointtest-postgresserver",
         "PrivateLinkServiceConnectionGroupId": "postgresqlServer",
         "privateEndpointName": "privateendpointtest-privateendpoint"
+      },
+      {
+        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+        "resourceName": "sresandbox161storage",
+        "PrivateLinkServiceConnectionGroupId": "Blob",
+        "privateEndpointName": "privateendpointtest-privateendpoint-storageaccount",
+        "privateDnsZoneName": "privatelink.blob.core.windows.net"
       }
     ]
   }
