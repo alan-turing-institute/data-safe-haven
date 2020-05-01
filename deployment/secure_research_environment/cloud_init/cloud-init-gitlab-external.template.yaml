@@ -25,6 +25,7 @@ apt:
       keyid: 3F01618A51312F3F
 
 write_files:
+  # Gitlab server config
   - path: /etc/gitlab/gitlab.rb
     permissions: "0600"
     content: |
@@ -52,6 +53,7 @@ write_files:
         last_name:  'sn'
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
+  # Secrets for Gitlab Internal and External Access
   - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token"
     permissions: "0600"
     content: |
@@ -84,6 +86,7 @@ write_files:
     permissions: "0600"
     content: |
       <gitlab-external-username>@<gitlab-external-login-domain>
+  # Script for ingressing repos to gitlab internal
   - path: "/home/<sre-admin-username>/update_from_whitelist.py"
     permissions: "0755"
     content: |
@@ -143,7 +146,146 @@ write_files:
           
           os.system("git push gitlab-internal " + repo["gitlab_branch"])
               
-          os.chdir("..")  
+          os.chdir("..")
+  # Script for monitoring and accepting approved merge requests
+  - path: "/home/<sre-admin-username>/check_merge_requests.py"
+    permissions: "0755"
+    content: |
+      from datetime import datetime
+      import requests
+      from pathlib import Path
+
+      def get_request(endpoint, headers, params=None):
+          if params is not None:
+              r = requests.get(endpoint, headers=headers, params=params)
+          else:
+              r = requests.get(endpoint, headers=headers)
+          if r.ok:
+              return r.json()
+          else:
+              raise ValueError(f"Request failed: code {r.status_code}, content {r.content}")
+
+      def put_request(endpoint, headers, params=None):
+          if params is not None:
+              r = requests.put(endpoint, headers=headers, params=params)
+          else:
+              r = requests.put(endpoint, headers=headers)
+          if r.ok:
+              return r.json()
+          else:
+              raise ValueError(f"Request failed: code {r.status_code}, content {r.content}")
+
+      def get_gitlab_config(server="external"):
+          home = str(Path.home())
+          if server == "external":
+              with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
+                 ip = f.readlines()[0].strip()
+              with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
+                 token = f.readlines()[0].strip()
+          elif server == "internal":
+              with open(f"{home}/.secrets/gitlab-internal-ip-address", "r") as f:
+                  ip = f.readlines()[0].strip()
+              with open(f"{home}/.secrets/gitlab-internal-api-token", "r") as f:
+                  token = f.readlines()[0].strip()
+          else:
+              raise ValueError("Server must be external or internal")
+          api_url = f"http://{ip}/api/v4/"
+          headers = {"Authorization": "Bearer " + token}
+          return {"api_url": api_url, "api_token": token, "ip": ip, "headers": headers}
+
+      def get_group_id(group_name, config):
+          endpoint = config["api_url"] + "groups"
+          response = get_request(endpoint, headers=config["headers"])
+          for group in response:
+              if group["name"] == group_name:
+                  return group["id"]
+          raise ValueError(f"{group_name} not found in groups.")
+
+      def get_project_name(project_id, config):
+          endpoint = config["api_url"] + f"projects/{project_id}"
+          response = get_request(endpoint, headers=config["headers"])
+          return response["name"]
+
+      def get_merge_requests_for_approval(config):
+          group = get_group_id("approved", config)
+          endpoint = config["api_url"] + f"/groups/{group}/merge_requests"
+          response = get_request(
+              endpoint, headers=config["headers"], params={"state": "opened"}
+          )
+          return response
+
+      def count_unresolved_mr_discussions(mr, config):
+          if mr["user_notes_count"] == 0:
+              return 0
+          project_id = mr["project_id"]
+          mr_iid = mr["iid"]
+          endpoint = (
+              config["api_url"] + f"projects/{project_id}/merge_requests/{mr_iid}/discussions"
+          )
+          discussions = get_request(endpoint, headers=config["headers"])
+          if len(discussions) == 0:
+              return 0
+          else:
+              n_unresolved = 0
+              for d in discussions:
+                  for n in d["notes"]:
+                      if n["resolvable"] is True and n["resolved"] is False:
+                          n_unresolved += 1
+              return n_unresolved
+
+      def accept_merge_request(mr, config):
+          project_id = mr["project_id"]
+          mr_iid = mr["iid"]
+          endpoint = (
+              config["api_url"] + f"projects/{project_id}/merge_requests/{mr_iid}/merge"
+          )
+          result = put_request(endpoint, headers=config["headers"])
+          return result
+
+      def check_merge_requests():
+          print("Starting run at", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+          config = get_gitlab_config(server="external")
+          print("Getting open merge requests for approval")
+          merge_requests = get_merge_requests_for_approval(config)
+          print("Found", len(merge_requests), "open merge requests")
+          for i, mr in enumerate(merge_requests):
+              print("-" * 20)
+              print("Merge request", i, "out of", len(merge_requests))
+              print("-" * 20)
+              print("Project:", get_project_name(mr["project_id"], config))
+              print("Source Branch:", mr["source_branch"])
+              print("Target Branch:", mr["target_branch"])
+              status = mr["merge_status"]
+              print("Merge Status:", status)
+              wip = mr["work_in_progress"]
+              print("Work in Progress:", wip)
+              unresolved = count_unresolved_mr_discussions(mr, config)
+              print("Unresolved Discussions:", unresolved)
+              upvotes = mr["upvotes"]
+              print("Upvotes:", upvotes)
+              downvotes = mr["downvotes"]
+              print("Downvotes:", downvotes)
+              if (
+                  status == "can_be_merged"
+                  and wip is False
+                  and unresolved == 0
+                  and upvotes >= 2
+                  and downvotes == 0
+              ):
+                  print("Merge request has been approved. Proceeding with merge.")
+                  result = accept_merge_request(mr, config)
+                  if result["state"] == "merged":
+                      print("Merge successful!")
+                      # TODO CALL OLIVER'S FUNCTION
+                  else:
+                      print("Merge failed!")
+              else:
+                  print("Merge request has not been approved. Skipping.")
+          print("-" * 20)
+          print("Run finished at", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+
+      if __name__ == "__main__":
+          check_merge_requests()
 
 runcmd:
   # --------------------------------
@@ -206,12 +348,16 @@ runcmd:
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
-  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
+  # Create SSH key for gitlab external access, add gitlab external to known hosts
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
     curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
     ssh-keyscan -H <gitlab-external-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # Create groups for storing unapproved and approved repos
+  - |
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approved&path=approved&visibility=public" <gitlab-external-ip>/api/v4/groups;
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=public" <gitlab-external-ip>/api/v4/groups
   # --------------------------------
   # SETUP ACCESS TO GITLAB INTERNAL
   # --------------------------------
