@@ -80,21 +80,23 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
   - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for "DNS Zone" and locate the DNS Zone with the SHM's domain. The NS record will list 4 Azure name servers.
   - Duplicate these records to the parent DNS system as follows:
     - If the parent domain has an Azure DNS Zone, create an NS record set in this zone. The name should be set to the subdomain (e.g. `testa`) or `@` if using a custom domain, and the values duplicated from above (for example, for a new subdomain `testa.dsgroupdev.co.uk`, duplicate the NS records from the Azure DNS Zone `testa.dsgroupdev.co.uk` to the Azure DNS Zone for `dsgroupdev.co.uk`, by creating a record set with name `testa`).
-     ![Subdomain NS record](images/deploy_sre/subdomain_ns_record.png)
+    <p align="center">
+        <img src="images/deploy_sre/subdomain_ns_record.png" width="80%" title="Subdomain NS record">
+    </p>
     - If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
-
-
 
 
 ## 4. Setup Azure Active Directory (AAD)
 ### Create a new AAD
 1. Login to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
 2. Click `Create a Resource`  and search for `Azure Active Directory`
-   ![AAD](images/deploy_shm/AAD.png)
+   <p align="center">
+      <img src="images/deploy_shm/AAD.png" width="80%" title="Azure Active Directory">
+   </p>
 3. Click `Create`
-4. Set the "Organisation Name" to `<organisation> Safe Haven <environment>`, e.g. `Turing Safe Haven Test A`
-5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
-6. Set the "Country or Region" to "United Kingdom"
+4. Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Development Safe Haven A`)
+5. Set the `Initial Domain Name` to the `Organisation Name` all lower case with spaces removed (e.g. `turingdevelopmentsafehavena`)
+6. Set the `Country or Region` to whatever region is appropriate for your deployment (e.g. `United Kingdom`)
 7. Click `Create`
 8. Wait for the AAD to be created
 
@@ -104,13 +106,16 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     - Clicking the link displayed at the end of the initial AAD deployment.
     - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
 2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
-  ![AAD Tenant ID](images/deploy_shm/aad_tenant_id.png)
+   <p align="center">
+      <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
+   </p>
 3. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
     - Ensure you are authenticated to the AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`
     - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
-    - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again. 
+    - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
+
 
 ## 5. Deploy key vault for SHM secrets
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
@@ -130,11 +135,11 @@ For some steps, a dedicated **internal** Global Administrator is required (e.g. 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. On the left hand panel click `Azure Active Directory`.
 3. Navigate to `Users` and create a dedicated **internal** Global Administrator:
-    - Click on `+New user` and enter the following details:
+    - Click on `+ New user` and enter the following details:
       - Name: `AAD Global Admin`
       - Username: `admin@<SHM domain>`
       - Under `Groups and roles > Roles` change the role to `Global Administrator`
-      - Under `Settings > Usage location` change the location to `United Kingdom`
+      - Under `Settings > Usage location` change the location to the same one you used when setting up this Active Directory (e.g. `United Kingdom`)
       - Click `Create`
     - Click on the username in the users list in the Azure Active Directory
     - Click the `Reset password` icon to generate a temporary password
@@ -165,7 +170,7 @@ NB. You can also invite guest users from other Azure Active Directories at this 
 To enable MFA, purchase sufficient licences and add them to all the new users.
 - You will also need licences for standard users accessing the Safe Haven.
 
-1. Ensure that you are logged in as the "Local admin" user `admin@<SHM domain>`
+1. Ensure that you are logged in as a global admin user (e.g. the `admin@<SHM domain>` account you set up earlier)
   - Navigate to `Azure Active Directory` in the portal
   - Click on `Manage > Licences` in the left hand sidebar
   - Click on `All products` in the left hand sidebar
@@ -191,7 +196,9 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   - Click on `Users` in the left hand sidebar
   - For each user you want to add a licence to, click on their username
     - Ensure that the user has `usage location` set under "Settings" (see image below):
-  ![Set user location](images/deploy_shm/set_user_location.png)
+      <p align="center">
+          <img src="images/deploy_shm/set_user_location.png" width="80%" title="Set user location">
+      </p>
     - Click on `Licences` in the left hand sidebar
     - Click on `+ Assignments` in the top bar
     - Assign `Azure Active Directory Premium P1` and `Microsoft Azure Multi-Factor Authentication` then click `Save`
@@ -209,7 +216,9 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
     - In `Remember multi-factor authentication` section
       - ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
     - Click "Save" and close window
-      ![AAD MFA settings](images/deploy_shm/aad_mfa_settings.png)
+      <p align="center">
+          <img src="images/deploy_shm/aad_mfa_settings.png" width="80%" title="AAD MFA settings">
+      </p>
 
 4. Require MFA for all admins
   - Sign in to the Azure portal as a user administrator or global administrator.
@@ -249,8 +258,9 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around one hour** to run.
 - Once the script exits successfully you should see the following resource groups under the SHM subscription:
-   ![Resource groups](images/deploy_shm/resource_groups.png)
-
+  <p align="center">
+      <img src="images/deploy_shm/resource_groups.png" width="80%" title="Resource groups">
+  </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
 1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
@@ -265,7 +275,9 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
 1. Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Point-to-site configuration page under the "Settings" section in the left hand sidebar (see image below).
 3. Click the "Download VPN client" link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`)
-  ![certificate details](images/deploy_shm/certificate_details.png)
+   <p align="center">
+       <img src="images/deploy_shm/certificate_details.png" width="80%" title="Certificate details">
+   </p>
 4. Read through the following notes, then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
 
 **NOTES:**
@@ -392,7 +404,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
   - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
 3. Force a sync to the Azure Active Directory
   - Open Powershell as an administrator
-  - Run `C:\Installation\Run_ADSync.ps1`
+  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
 4. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
@@ -402,11 +414,15 @@ This step allows the locale (country code) to be pushed from the local AD to the
   - Select `Manage > Password reset` from the left hand menu
 2. Select `On-premises integration` from the left hand side bar
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
-    ![Enable writeback](images/deploy_shm/enable_writeback.png)
+    <p align="center">
+        <img src="images/deploy_shm/enable_writeback.png" width="80%" title="Enable writeback">
+    </p>
   - If you changed this setting, click the `Save` icon
 - Select `Properties` from the left hand side bar
   - Make sure that `Self service password reset enabled` is set to `All`
-    ![Enable password reset](images/deploy_shm/enable_passwordreset.png)
+    <p align="center">
+        <img src="images/deploy_shm/enable_passwordreset.png" width="80%" title="Enable password reset">
+    </p>
   - If you changed this setting, click the `Save` icon
 
 
@@ -416,7 +432,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
-- This will take **around 10 minutes** to run.
+- This will take **around 20 minutes** to run.
   - **Troubleshooting:** If you see an error similar to `New-AzResourceGroupDeployment : Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later. Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
 
 ### Configure NPS server
@@ -429,7 +445,9 @@ This step allows the locale (country code) to be pushed from the local AD to the
 2. In Server Manager select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
 3. Configure NPS server to log to a local text file:
   - Select `NPS (Local) > Accounting` on the left-hand sidebar
-    ![NPS accounting](images/deploy_shm/nps_accounting.png)
+    <p align="center">
+        <img src="images/deploy_shm/nps_accounting.png" width="80%" title="NPS accounting">
+    </p>
   - Click on `Accounting > Configure Accounting`
     - On the `Introduction` screen, click `Next`.
     - On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
