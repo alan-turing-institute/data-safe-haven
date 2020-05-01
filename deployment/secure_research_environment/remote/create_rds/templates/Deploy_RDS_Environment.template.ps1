@@ -53,7 +53,7 @@ try {
 # Create collections
 # ------------------
 foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUserSgName>", "F:\AppFileShares"),
-                               ("Desktop (Windows)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "G:\RDPFileShares"),
+                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "G:\RDPFileShares"),
                                ("Review", "<rdsSh3VmFqdn>", "<reviewUserSgName>", "H:\ReviewFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
 
@@ -103,10 +103,9 @@ try {
 # ---------------------------
 Write-Output "Updating server configuration..."
 try {
-
     Get-Process ServerManager -ErrorAction SilentlyContinue | Stop-Process -Force
     foreach ($targetDirectory in @("C:\Users\<shmDcAdminUsername>\AppData\Roaming\Microsoft\Windows\ServerManager",
-                                "C:\Users\<shmDcAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
+                                   "C:\Users\<shmDcAdminUsername>.<shmNetbiosName>\AppData\Roaming\Microsoft\Windows\ServerManager")) {
         $_ = New-Item -ItemType Directory -Path $targetDirectory -Force -ErrorAction Stop
         Copy-Item -Path "<remoteUploadDir>\ServerList.xml" -Destination "$targetDirectory\ServerList.xml" -Force -ErrorAction Stop
     }

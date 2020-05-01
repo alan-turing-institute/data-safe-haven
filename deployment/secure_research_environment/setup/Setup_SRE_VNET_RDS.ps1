@@ -23,22 +23,22 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 
 
-# # Create VNet from template
-# # -------------------------
-# Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
-# $params = @{
-#     "Virtual Network Name" = $config.sre.network.vnet.Name
-#     "Virtual Network Address Space" = $config.sre.network.vnet.cidr
-#     "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
-#     "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
-#     "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
-#     "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
-#     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
-#     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
-#     "VNET_DNS_DC1" = $config.shm.dc.ip
-#     "VNET_DNS_DC2" = $config.shm.dcb.ip
-# }
-# Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+# Create VNet from template
+# -------------------------
+Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
+$params = @{
+    "Virtual Network Name" = $config.sre.network.vnet.Name
+    "Virtual Network Address Space" = $config.sre.network.vnet.cidr
+    "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
+    "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
+    "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
+    "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
+    "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
+    "Subnet-Data Name" = $config.sre.network.subnets.data.Name
+    "VNET_DNS_DC1" = $config.shm.dc.ip
+    "VNET_DNS_DC2" = $config.shm.dcb.ip
+}
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # Fetch VNet information
@@ -107,7 +107,6 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
 $airlockSubnetIpPrefix = $config.sre.network.subnets.airlock.prefix
-$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
 $rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
@@ -124,7 +123,6 @@ $shmNetbiosName = $config.shm.domain.netbiosName
 $sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $sreFqdn = $config.sre.domain.fqdn
-$sreNetbiosName = $config.sre.domain.netbiosName
 
 
 # Ensure that boot diagnostics resource group and storage account exist
@@ -267,7 +265,7 @@ $template.Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
           Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
           Replace('<sreFqdn>',$sreFqdn) | Out-File $serverListLocalFilePath
 
-# Copy existing files
+# Copy installers from SHM storage
 Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
 $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts
 $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force
@@ -306,12 +304,11 @@ $baseDnsRecordname = "@"
 $gatewayDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
 $dnsResourceGroup = $config.shm.dns.rg
 $dnsTtlSeconds = 30
-$sreDomain = $config.sre.domain.fqdn
 
 # Set the A record
-Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
+Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreFqdn)"
+Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreFqdn -ResourceGroupName $dnsResourceGroup
+$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreFqdn -ResourceGroupName $dnsResourceGroup `
                              -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
@@ -320,10 +317,10 @@ if ($?) {
 }
 
 # Set the CNAME record
-Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreDomain)"
-Remove-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
-                             -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
+Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreFqdn)"
+Remove-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreFqdn -ResourceGroupName $dnsResourceGroup
+$result = New-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreFqdn -ResourceGroupName $dnsResourceGroup `
+                             -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreFqdn)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
 } else {
@@ -349,6 +346,48 @@ Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
+# Import files from blob storage to RDS VMs and install them if appropriate
+# -------------------------------------------------------------------------
+Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
+
+# Set correct list of package from blob storage for each session host
+$blobfiles = @{}
+$vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
+foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
+    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
+        $blobfiles[$config.sre.rds.sessionHost1.vmName] += @{$containerNameSessionHosts = $blob.Name}
+        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
+        $blobfiles[$config.sre.rds.sessionHost3.vmName] += @{$containerNameSessionHosts = $blob.Name}
+    } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
+        $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
+    }
+}
+# ... and for the gateway
+foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
+    $blobfiles[$config.sre.rds.gateway.vmName] += @{$containerNameGateway = $blob.Name}
+}
+
+# Copy software and/or scripts to RDS VMs
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
+foreach ($nameVMNameParamsPair in $vmNamePairs) {
+    $name, $vmName = $nameVMNameParamsPair
+    $containerName = $blobfiles[$vmName] | ForEach-Object { $_.Keys } | Select-Object -First 1
+    $fileNames = $blobfiles[$vmName] | ForEach-Object { $_.Values }
+    $sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
+    Add-LogMessage -Level Info "[ ] Copying $($fileNames.Count) files to $name"
+    $params = @{
+        storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
+        storageService = "blob"
+        shareOrContainerName = "`"$containerName`""
+        sasToken = "`"$sasToken`""
+        pipeSeparatedRemoteFilePaths = "`"$($fileNames -join "|")`""
+        downloadDir = "$remoteUploadDir"
+    }
+    $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
+    Write-Output $result.Value
+}
+
+
 # Set locale, install updates and reboot
 # --------------------------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -359,106 +398,6 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
     Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg @params
 }
-
-
-# Import files to RDS VMs
-# -----------------------
-Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-
-# Get list of packages for each session host
-Add-LogMessage -Level Info "[ ] Getting list of packages for each VM"
-$filePathsSh1 = New-Object System.Collections.ArrayList ($null)
-$filePathsSh2 = New-Object System.Collections.ArrayList ($null)
-$filePathsSh3 = New-Object System.Collections.ArrayList ($null)
-foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
-        $_ = $filePathsSh1.Add($blob.Name)
-        $_ = $filePathsSh2.Add($blob.Name)
-        $_ = $filePathsSh3.Add($blob.Name)
-    } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
-        $_ = $filePathsSh2.Add($blob.Name)
-    }
-}
-# ... and for the gateway
-$filePathsGateway = New-Object System.Collections.ArrayList ($null)
-foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-    $_ = $filePathsGateway.Add($blob.Name)
-}
-Add-LogMessage -Level Success "Found $($filePathsSh1.Count + $filePathsSh2.Count) packages in total"
-
-# Get SAS token to download files from storage account
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$sasToken = New-ReadOnlyAccountSasToken -SubscriptionName $config.sre.subscriptionName -ResourceGroup $config.sre.storage.artifacts.rg -AccountName $sreStorageAccount.StorageAccountName
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_Artifacts.ps1"
-
-# Copy software and/or scripts to RDS Gateway
-Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
-$params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameGateway`""
-    sasToken = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
-    downloadDir = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# Copy software and/or scripts to RDS SH1 (App server)
-Add-LogMessage -Level Info "[ ] Copying $($filePathsSh1.Count) files to RDS Session Host (App server)"
-$params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameSessionHosts`""
-    sasToken = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsSh1 -join "|")`""
-    downloadDir = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# Copy software and/or scripts to RDS SH2 (Remote desktop server)
-Add-LogMessage -Level Info "[ ] Copying $($filePathsSh2.Count) files to RDS Session Host (Remote desktop server)"
-$params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameSessionHosts`""
-    sasToken = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsSh2 -join "|")`""
-    downloadDir = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-# Copy software and/or scripts to RDS SH3 (Review server)
-Add-LogMessage -Level Info "[ ] Copying $($filePathsSh3.Count) files to RDS Session Host (Review server)"
-$params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameSessionHosts`""
-    sasToken = "`"$sasToken`""
-    pipeSeparatedremoteFilePaths = "`"$($filePathsSh3 -join "|")`""
-    downloadDir = "$remoteUploadDir"
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost3.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
-Write-Output $result.Value
-
-
-# Install packages on RDS VMs
-# ---------------------------
-Add-LogMessage -Level Info "Installing packages on RDS VMs..."
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-foreach ($nameVMNameParamsPair in $vmNamePairs) {
-    $name, $vmName = $nameVMNameParamsPair
-    if ($name -ne "RDS Gateway") {
-        Add-LogMessage -Level Info "[ ] Installing packages on ${name}: '$vmName'"
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Packages.ps1"
-        $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.rds.rg
-        Write-Output $result.Value
-    }
-}
-
 
 # Add VMs to correct NSG
 # ----------------------
@@ -472,13 +411,7 @@ Add-VmToNSG -VMName $config.sre.rds.sessionHost3.vmName -NSGName $config.sre.rds
 # ----------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
-    Add-LogMessage -Level Info "Rebooting the ${name} VM: '$vmName'"
     Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.rds.rg
-    if ($?) {
-        Add-LogMessage -Level Success "Rebooting the ${name} succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Rebooting the ${name} failed!"
-    }
 }
 
 
