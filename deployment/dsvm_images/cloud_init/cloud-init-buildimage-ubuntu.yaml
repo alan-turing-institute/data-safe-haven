@@ -134,7 +134,7 @@ write_files:
 
 # List of packages to install with apt-get
 packages:
-  - <apt_packages.list>
+  - <apt packages>
 
 
 # List of commands to run using `/bin/sh`

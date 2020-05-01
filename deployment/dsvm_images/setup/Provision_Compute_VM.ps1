@@ -107,7 +107,7 @@ foreach ($scriptName in @("analyse_build.py",
                           "download_and_install_deb.sh",
                           "download_and_install_tar.sh",
                           "install_postgres_extensions.sql")) {
-    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "scripts" $scriptName) -Raw
+    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
 }
@@ -116,15 +116,14 @@ foreach ($scriptName in @("analyse_build.py",
 # Insert apt packages into the cloud-init template
 # ------------------------------------------------
 $indent = "  - "
-$scriptName = "apt_packages.list"
-$raw_script = Get-Content (Join-Path $PSScriptRoot ".." "scripts" $scriptName) -Raw
+$raw_script = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-apt.list") -Raw
 $indented_script = $raw_script -split "`n" | Where-Object { $_ } | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+$cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<apt packages>", $indented_script)
 
 
 # Insert Julia package details into the cloud-init template
 # ---------------------------------------------------------
-$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-julia.list")
+$juliaPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-julia.list")
 $juliaPackageText = "- JULIA_PACKAGES='[$($juliaPackages | Join-String -DoubleQuote -Separator ', ')]'"
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $juliaPackageText)
 
@@ -132,18 +131,18 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $julia
 # Insert python package details into the cloud-init template
 # ---------------------------------------------------------
 # List of common non-python packages
-$commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-nonpython.list")
+$commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-nonpython.list")
 # Map of PyPI name to conda name (eg. `tables: pytables`)
 $pypi2conda = @{ }
-Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
+Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
 # Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
-$python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-27.list")
+$python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-27.list")
 $python27PipPackages = $python27AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
 $python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-36.list")
+$python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-36.list")
 $python36PipPackages = $python36AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
 $python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-37.list")
+$python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-37.list")
 $python37PipPackages = $python37AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
@@ -157,8 +156,8 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pyth
 
 # Insert R package details into the cloud-init template
 # -----------------------------------------------------
-$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-r-cran.list")
-$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-r-bioconductor.list")
+$cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
+$bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
              "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
@@ -188,7 +187,7 @@ $params = @{
     CloudInitYaml          = $cloudInitTemplate
     location               = $config.dsvmImage.location
     NicId                  = $buildVmNic.Id
-    OsDiskSizeGb           = 80
+    OsDiskSizeGb           = 64
     OsDiskType             = "Standard_LRS"
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
