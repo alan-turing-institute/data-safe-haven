@@ -25,11 +25,14 @@ $sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name 
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword
 $gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword
 $gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
-$gitlabExternalUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalUsername -DefaultValue "external"
+$gitlabExternalUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalUsername -DefaultValue "ingress"
 $gitlabExternalPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalPassword
 $gitlabExternalAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalAPIToken
 $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
 $hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
+$gitlabInternalUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalUsername -DefaultValue "ingress"
+$gitlabInternalPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalPassword
+$gitlabInternalAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalAPIToken
 
 
 # Set up the NSG for the webapps
@@ -81,9 +84,9 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-fqdn>',$gitlabFqdn).
                                             Replace('<gitlab-root-password>',$gitlabRootPassword).
                                             Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                            Replace('<gitlab-external-username>',$gitlabExternalUsername).
-                                            Replace('<gitlab-external-password>',$gitlabExternalPassword).
-                                            Replace('<gitlab-external-api-token>',$gitlabExternalAPIToken)
+                                            Replace('<gitlab-internal-username>',$gitlabInternalUsername).
+                                            Replace('<gitlab-internal-password>',$gitlabInternalPassword).
+                                            Replace('<gitlab-internal-api-token>',$gitlabInternalAPIToken)
   
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
@@ -186,12 +189,31 @@ $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config
 # ------------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 
+
+$shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
+$gitlabFqdn = $config.sre.webapps.gitlab.external.hostname + "." + $config.sre.domain.fqdn
+$gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
+$gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.reviewUsers.name + "," + $config.shm.domain.securityOuPath + "))"
+
 $gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
-$gitlabExternalCloudInit = $gitlabExternalCloudInitTemplate.Replace('<gitlab-ip>',$config.sre.webapps.gitlab.internal.ip).
-                                                            Replace('<sre-admin-username>',$sreAdminUsername).
-                                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                                            Replace('<gitlab-internal-username>',$gitlabExternalUsername).
-                                                            Replace('<gitlab-internal-api-token>',$gitlabExternalAPIToken)
+$gitlabExternalCloudInit = $gitlabExternalCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
+                                                            Replace('<gitlab-internal-ip>',$config.sre.webapps.gitlab.internal.ip).
+                                                            Replace('<gitlab-internal-login-domain>',$config.shm.domain.fqdn).
+                                                            Replace('<gitlab-internal-username>',$gitlabInternalUsername).
+                                                            Replace('<gitlab-internal-api-token>',$gitlabInternalAPIToken).
+                                                            Replace('<gitlab-external-rb-host>', $shmDcFqdn).
+                                                            Replace('<gitlab-external-rb-bind-dn>', $gitlabLdapUserDn).
+                                                            Replace('<gitlab-external-rb-pw>',$gitlabLdapPassword).
+                                                            Replace('<gitlab-external-rb-base>',$config.shm.domain.userOuPath).
+                                                            Replace('<gitlab-external-rb-user-filter>',$gitlabUserFilter).
+                                                            Replace('<gitlab-external-ip>',$config.sre.webapps.gitlab.external.ip).
+                                                            Replace('<gitlab-external-hostname>',$config.sre.webapps.gitlab.external.hostname).
+                                                            Replace('<gitlab-external-fqdn>',$gitlabFqdn).
+                                                            Replace('<gitlab-external-root-password>',$gitlabRootPassword).
+                                                            Replace('<gitlab-external-login-domain>',$config.shm.domain.fqdn).
+                                                            Replace('<gitlab-external-username>',$gitlabExternalUsername).
+                                                            Replace('<gitlab-external-password>',$gitlabExternalPassword).
+                                                            Replace('<gitlab-external-api-token>',$gitlabExternalAPIToken)
 
 $params = @{
     Name = $vmName

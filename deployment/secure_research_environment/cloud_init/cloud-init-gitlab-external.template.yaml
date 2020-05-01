@@ -3,13 +3,55 @@ package_update: true
 package_upgrade: true
 
 # Install LDAP tools for debugging LDAP issues
-# !!!TODO openssh-server for access during development only!!!!
 packages:
   - git
-  - openssh-client
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gitlab-ce
+  - gnupg
+  - ldap-utils
   - openssh-server
+  - postfix
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    gitlab.list:
+      source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
+      keyid: 3F01618A51312F3F
 
 write_files:
+  - path: /etc/gitlab/gitlab.rb
+    permissions: "0600"
+    content: |
+      external_url 'http://<gitlab-external-ip>'
+      gitlab_rails['ldap_enabled'] = true
+      gitlab_rails['ldap_servers'] = YAML.load <<-'EOS'
+        main: # 'main' is the GitLab 'provider ID' of this LDAP server
+          label: 'LDAP'
+          host: '<gitlab-external-rb-host>'
+          port: 389
+          uid: 'sAMAccountName'
+          method: 'plain' # "tls" or "ssl" or "plain"
+          bind_dn: '<gitlab-external-rb-bind-dn>'
+          password: '<gitlab-external-rb-pw>'
+          active_directory: true
+          allow_username_or_email_login: true
+          block_auto_created_users: false
+          base: '<gitlab-external-rb-base>'
+          user_filter: '<gitlab-external-rb-user-filter>'
+      attributes:
+        username: ['uid', 'userid', 'sAMAccountName']
+        email:    ['mail', 'email', 'userPrincipalName']
+        name:       'cn'
+        first_name: 'givenName'
+        last_name:  'sn'
+      EOS
+      git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
   - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token"
     permissions: "0600"
     content: |
@@ -17,7 +59,31 @@ write_files:
   - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address"
     permissions: "0600"
     content: |
-      <gitlab-ip>
+      <gitlab-internal-ip>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-username"
+    permissions: "0600"
+    content: |
+      <gitlab-internal-username>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email"
+    permissions: "0600"
+    content: |
+      <gitlab-internal-username>@<gitlab-internal-login-domain>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-api-token"
+    permissions: "0600"
+    content: |
+      <gitlab-external-api-token>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address"
+    permissions: "0600"
+    content: |
+      <gitlab-external-ip>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-username"
+    permissions: "0600"
+    content: |
+      <gitlab-external-username>
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-user-email"
+    permissions: "0600"
+    content: |
+      <gitlab-external-username>@<gitlab-external-login-domain>
   - path: "/home/<sre-admin-username>/update_from_whitelist.py"
     permissions: "0755"
     content: |
@@ -50,6 +116,7 @@ write_files:
                                               params = {"owned": True, "simple": True})
       
       gitlab_internal_repo_names = [repo["name"].lower() for repo in gitlab_internal_projects.json()]
+
       for repo in whitelist:
           repo_name = repo["gitlab_name"]
           repo_path = os.path.join(repo_name)
@@ -79,26 +146,96 @@ write_files:
           os.chdir("..")  
 
 runcmd:
+  # --------------------------------
+  # SETUP GITLAB EXTERNAL SERVER
+  # --------------------------------
+  # Configure server
+  - echo "Configuring gitlab external server"
+  - echo "<gitlab-external-ip> <gitlab-external-hostname> <gitlab-external-fqdn>" >> /etc/hosts
+  - echo "Europe/London" > /etc/timezone
+  - dpkg-reconfigure -f noninteractive tzdata
+  # Set up the data disk
+  - echo "Setting up data disk..."
+  - parted /dev/sdc mklabel gpt
+  - parted /dev/sdc mkpart primary ext4 0% 100%
+  - parted /dev/sdc print
+  - sleep 5
+  - mkfs -t ext4 /dev/sdc1
+  - mkdir -p /datadrive
+  - mount /dev/sdc1 /datadrive
+  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
+  - mv fstab.tmp /etc/fstab
+  - mkdir -p /datadrive/gitlab-data
+  # Enable custom GitLab settings and run an initial configuration
+  - echo "Running initial configuration"
+  - gitlab-ctl reconfigure
+  # Set root password and don't prompt for it to be reset when web app first loaded
+  - |
+    echo "user = User.find_by(username: 'root');user.password=user.password_confirmation='<gitlab-external-root-password>';user.password_automatically_set=false;user.save!;exit;" | gitlab-rails console -e production
+  # Turn off user account creation
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
+  # Restrict login to SHM domain (must be done AFTER GitLab update)
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-external-login-domain>'])"
+  # Create user for ingressing external git repos
+  - |
+    echo "user = User.create(:username => '<gitlab-external-username>', :password => '<gitlab-external-password>', :password_confirmation => '<gitlab-external-password>', :email =>'<gitlab-external-username>@<gitlab-external-login-domain>', :skip_confirmation => true, :name => '<gitlab-external-username>');user.save!;exit;" | gitlab-rails console -e production
+  # Create a API token for the ingress user created above
+  - |
+    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('<gitlab-external-api-token>'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
+  # Reload GitLab configuration and restart GitLab
+  - gitlab-ctl reconfigure
+  - gitlab-ctl restart
+  # --------------------------------
+  # Create SSH key
+  # --------------------------------
+  - |
+    mkdir -p /home/<sre-admin-username>/.ssh;
+    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519"
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519.pub"
+  # --------------------------------
+  # SETUP ACCESS TO GITLAB EXTERNAL
+  # --------------------------------
+  - echo "Configuring access to gitlab external"
+  # Change ownership of secrets to <sre-admin-username>
+  - |
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-api-token";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
+  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
+  - |
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
+    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
+    ssh-keyscan -H <gitlab-external-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # --------------------------------
+  # SETUP ACCESS TO GITLAB INTERNAL
+  # --------------------------------
+  - echo "Configuring access to gitlab internal"
   # Change ownership of secrets to <sre-admin-username>
   - |
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token";
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-username";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email";
   # Create SSH key for gitlab internal access, add gitlab internal to known hosts
   - |
-    echo "Configuring SSH for gitlab internal";
-    mkdir -p /home/<sre-admin-username>/.ssh;
-    ssh-keygen -t ed25519 -C 'gitlab-internal' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519;
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519"
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519.pub"
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"external-ingress\"}" <gitlab-ip>/api/v4/user/keys;
-    ssh-keyscan -H <gitlab-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys;
+    ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # --------------------------------
+  # FINAL SETUP
+  # --------------------------------
+  - echo "Finishing setup"
   # Configure global git user to be gitlab internal user
   - |
-    echo "Configuring git global user";
     HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-internal-username>';
-    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-internal-username>@<gitlab-login-domain>';
+    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-internal-username>@<gitlab-internal-login-domain>';
   # Give <sre-admin-username> ownership of their home directory
   - |
     chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>";

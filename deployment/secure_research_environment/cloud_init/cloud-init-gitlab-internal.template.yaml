@@ -85,10 +85,10 @@ runcmd:
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-login-domain>'])"
   # Create user for ingressing external git repos
   - |
-    echo "user = User.create(:username => '<gitlab-external-username>', :password => '<gitlab-external-password>', :password_confirmation => '<gitlab-external-password>', :email =>'<gitlab-external-username>@<gitlab-login-domain>', :skip_confirmation => true, :name => '<gitlab-external-username>');user.save!;exit;" | gitlab-rails console -e production
+    echo "user = User.create(:username => '<gitlab-internal-username>', :password => '<gitlab-internal-password>', :password_confirmation => '<gitlab-internal-password>', :email =>'<gitlab-internal-username>@<gitlab-login-domain>', :skip_confirmation => true, :name => '<gitlab-internal-username>');user.save!;exit;" | gitlab-rails console -e production
   # Create a API token for the ingress user created above
   - |
-    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('<gitlab-external-api-token>'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
+    echo "user = User.find_by(username: '<gitlab-internal-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('<gitlab-internal-api-token>'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
   # Reload GitLab configuration and restart GitLab
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
