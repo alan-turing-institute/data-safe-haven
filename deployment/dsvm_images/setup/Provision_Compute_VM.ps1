@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' [default], 'Ubuntu1810', 'Ubuntu1904', 'Ubuntu1910'")]
-    [ValidateSet("Ubuntu1804", "Ubuntu1810", "Ubuntu1904", "Ubuntu1910")]
+    [ValidateSet("Ubuntu1804", "Ubuntu2004")]
     [string]$sourceImage = "Ubuntu1804",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
@@ -30,7 +30,6 @@ if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
 # Standard_F4s_v2 => 4 cores;  8GB RAM; £0.1506/hr; 3.7 GHz :: build 12h22m17s => £1.86
 # Standard_D4_v3  => 4 cores; 16GB RAM; £0.1730/hr; 2.4 GHz :: build 16h41m13s => £2.88
 # Standard_E4_v3  => 4 cores; 32GB RAM; £0.2326/hr; 2.3 GHz :: build 16h40m9s  => £3.88
-# Standard_F8s_v2 => 8 cores; 16GB RAM; £0.3012/hr; 3.7 GHz
 # Standard_H8     => 8 cores; 56GB RAM; £0.4271/hr; 3.6 GHz :: build 12h56m6s  => £5.52
 # Standard_E8_v3  => 8 cores; 64GB RAM; £0.4651/hr; 2.3 GHz :: build 17h8m17s  => £7.97
 
@@ -40,14 +39,10 @@ if ($vmSize -eq "default") { $vmSize = $config.dsvmImage.build.vmSize }
 if ($sourceImage -eq "Ubuntu1804") {
     $baseImageSku = "18.04-LTS"
     $buildVmName = "ComputeVM-Ubuntu1804Base"
-} elseif ($sourceImage -eq "Ubuntu1810") {
-    Add-LogMessage -Level Fatal "Ubuntu 18.10 is no longer available on Azure!"
-} elseif ($sourceImage -eq "Ubuntu1904") {
-    $baseImageSku = "19.04"
-    $buildVmName = "ComputeVM-Ubuntu1904Base"
-} elseif ($sourceImage -eq "Ubuntu1910") {
-    $baseImageSku = "19_10-daily-gen2"
-    $buildVmName = "ComputeVM-Ubuntu1910Base"
+} elseif ($sourceImage -eq "Ubuntu2004") {
+    # $baseImageSku = "20.04-LTS"
+    # $buildVmName = "ComputeVM-Ubuntu2004Base"
+    Add-LogMessage -Level Fatal "Source image '$sourceImage' is not yet available but it will be shortly!"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
@@ -139,7 +134,7 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $julia
 # List of common non-python packages
 $commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-nonpython.list")
 # Map of PyPI name to conda name (eg. `tables: pytables`)
-$pypi2conda = @{}
+$pypi2conda = @{ }
 Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
 # Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
 $python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "packages-python-pypi-27.list")
@@ -185,18 +180,18 @@ Add-LogMessage -Level Info "  VM name: $buildVmName"
 Add-LogMessage -Level Info "  VM size: $vmSize"
 Add-LogMessage -Level Info "  Base image: Ubuntu $baseImageSku"
 $params = @{
-    Name = $buildVmName
-    Size = $vmSize
-    AdminPassword = $buildVmAdminPassword
-    AdminUsername = $buildVmAdminUsername
+    Name                   = $buildVmName
+    Size                   = $vmSize
+    AdminPassword          = $buildVmAdminPassword
+    AdminUsername          = $buildVmAdminUsername
     BootDiagnosticsAccount = $buildVmBootDiagnosticsAccount
-    CloudInitYaml = $cloudInitTemplate
-    location = $config.dsvmImage.location
-    NicId = $buildVmNic.Id
-    OsDiskSizeGb = 80
-    OsDiskType = "Standard_LRS"
-    ResourceGroupName = $config.dsvmImage.build.rg
-    ImageSku = $baseImageSku
+    CloudInitYaml          = $cloudInitTemplate
+    location               = $config.dsvmImage.location
+    NicId                  = $buildVmNic.Id
+    OsDiskSizeGb           = 80
+    OsDiskType             = "Standard_LRS"
+    ResourceGroupName      = $config.dsvmImage.build.rg
+    ImageSku               = $baseImageSku
 }
 $_ = Deploy-UbuntuVirtualMachine @params
 

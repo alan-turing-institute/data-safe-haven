@@ -66,7 +66,7 @@ while (-Not $statuses.Contains("ProvisioningState/succeeded")) {
 
 # Deallocate and generalize. Commands in Powershell are different from the Azure CLI https://docs.microsoft.com/en-us/azure/virtual-machines/windows/tutorial-custom-images
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Add-LogMessage -Level Info "Deallocating and generalising VM: '$($vm.Name)'. This will take around 20 minutes..."
+Add-LogMessage -Level Info "Deallocating and generalising VM: '$($vm.Name)'. This can take up to 20 minutes..."
 $_ = Stop-AzVM -ResourceGroupName $config.dsvmImage.build.rg -Name $vm.Name -Force
 Add-LogMessage -Level Info "VM is stopped"
 $_ = Set-AzVM -ResourceGroupName $config.dsvmImage.build.rg -Name $vm.Name -Generalized

@@ -70,7 +70,7 @@ function Get-ShmFullConfig {
             rg = "RG_SH_IMAGE_GALLERY"
             sig = "SAFE_HAVEN_COMPUTE_IMAGES"
             imageMajorVersion = 0
-            imageMinorVersion = 1
+            imageMinorVersion = 2
         }
         images = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"
@@ -547,10 +547,9 @@ function Add-SreConfig {
     $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
-
     $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
-        size_gb = "60"
+        size_gb = "64"
     }
     $config.sre.dsvm.datadisk = [ordered]@{
         type = "Standard_LRS"
