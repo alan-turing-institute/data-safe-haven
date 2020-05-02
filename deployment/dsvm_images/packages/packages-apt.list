@@ -18,6 +18,7 @@ g++
 gcc
 gdebi-core
 git-core
+jags
 jupyter
 krb5-kdc
 ldap-utils

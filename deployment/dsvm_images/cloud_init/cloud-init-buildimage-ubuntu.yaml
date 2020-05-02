@@ -155,24 +155,24 @@ runcmd:
 
   # Microsoft ODBC tools
   - echo "Installing Microsoft ODBC tools"
-  - ACCEPT_EULA=Y apt install -y msodbcsql17 mssql-tools
+  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
   - PATH=$PATH:/opt/mssql-tools/bin
   - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
-  - apt install -y --no-install-recommends nvidia-driver-430
-  - apt install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
-  - apt install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
+  - apt-get install -y --no-install-recommends nvidia-driver-430
+  - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
+  - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
 
   # Remove xscreensaver
-  - apt remove -y xscreensaver
+  - apt-get remove -y xscreensaver
 
   # Clean up unneeded apt packages
   - echo "Cleaning up unneeded packages"
   - export DEBIAN_FRONTEND=noninteractive
-  - apt autoremove -y --purge
-  - apt clean
+  - apt-get autoremove -y --purge
+  - apt-get clean
 
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
