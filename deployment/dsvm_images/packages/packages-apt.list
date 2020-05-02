@@ -55,6 +55,8 @@ libssl-dev
 libudunits2-dev
 libxss1
 lyx
+menu
+menu-l10n
 mono-complete
 mono-devel
 octave
