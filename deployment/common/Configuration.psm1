@@ -53,14 +53,24 @@ function Get-ShmFullConfig {
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
             nsg = [ordered]@{ name = "NSG_IMAGE_BUILD" }
-            subnet = [ordered]@{ name = "SUBNET_IMAGE_BUILD" }
-            vnet = [ordered]@{ name = "VNET_IMAGE_BUILD" }
+            vnet = [ordered]@{
+                name = "VNET_IMAGE_BUILD"
+                cidr = "10.48.0.0/16"
+            }
+            subnet = [ordered]@{
+                name = "ImageBuildSubnet"
+                cidr = "10.48.0.0/24"
+            }
+            # Only the R-package installation is parallelisable
+            # => per-core performance is the bottleneck
+            # 8 GB of RAM is sufficient so we want a compute-optimised VM
+            vmSize = "Standard_F4s_v2"
         }
         gallery = [ordered]@{
             rg = "RG_SH_IMAGE_GALLERY"
             sig = "SAFE_HAVEN_COMPUTE_IMAGES"
             imageMajorVersion = 0
-            imageMinorVersion = 1
+            imageMinorVersion = 2
         }
         images = [ordered]@{
             rg = "RG_SH_IMAGE_STORAGE"
@@ -537,10 +547,9 @@ function Add-SreConfig {
     $config.sre.dsvm.vmSizeDefault = "Standard_D2s_v3"
     $config.sre.dsvm.vmImageType = $sreConfigBase.computeVmImageType
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
-
     $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
-        size_gb = "60"
+        size_gb = "64"
     }
     $config.sre.dsvm.datadisk = [ordered]@{
         type = "Standard_LRS"

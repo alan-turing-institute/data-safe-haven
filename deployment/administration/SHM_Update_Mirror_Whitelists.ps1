@@ -28,7 +28,8 @@ if (-Not $whitelistDirectory) { $whitelistDirectory = Join-Path $PSScriptRoot ".
 # Update all external package mirrors
 # -----------------------------------
 foreach ($mirrorType in $mirrorTypes) {
-    $whitelistPath = Join-Path $whitelistDirectory "tier${tier}_${mirrorType}_whitelist.list".ToLower() -Resolve
+    $fullMirrorType = "${mirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
+    $whitelistPath = Join-Path $whitelistDirectory "whitelist-core-${fullMirrorType}-tier${tier}.list".ToLower() -Resolve
     $whiteList = Get-Content $whitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Failure "Could not find whitelist at '$whitelistPath'"

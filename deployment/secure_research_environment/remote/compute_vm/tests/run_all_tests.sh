@@ -1,58 +1,28 @@
 #! /bin/bash
 
-# Test R packages
-R_packages () {
+# Test Julia packages
+julia_packages () {
     if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
         conda deactivate
     fi
-    # Suppress a known spurious warning about database connections from BiocManager
-    OUTPUT=$(Rscript test_R_package_installation.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()")
-    echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    KNOWN_ISSUES=("BiocManager" "clusterProfiler" "flowUtils" "GOSemSim" "graphite" "rgl" "tmap")
-    PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
-    OUTCOME=0
-    for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
-        if [ "$PROBLEMATIC_PACKAGE" == "" ]; then
-            continue
-        fi
-        if [[ ! " ${KNOWN_ISSUES[@]} " =~ " ${PROBLEMATIC_PACKAGE} " ]]; then
-            echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
-            OUTCOME=1
-        fi
-    done
-    return $OUTCOME
-}
-
-
-# Test R clustering
-R_clustering () {
-    OUTPUT=$(Rscript test_clustering.R)
-    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    TEST_RESULT=$(echo $OUTPUT | grep "Clustering ran OK")
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
-}
-
-
-# Test R logistic regression
-R_logistic_regression () {
-    OUTPUT=$(Rscript test_logistic_regression.R)
-    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
-    TEST_RESULT=$(echo $OUTPUT | grep "Logistic regression ran OK")
-    if [ "$TEST_RESULT" == "" ]; then
-        return 1
-    fi
-    return 0
-}
-
-
-# Test CRAN access
-R_cran () {
-    OUTPUT=$(bash test_cran.sh)
+    OUTPUT=$(julia test_packages_installed_julia.jl 2>&1)
     echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "CRAN working OK")
+    TEST_RESULT=$(echo $OUTPUT | grep "Packages not installed")
+    if [ "$TEST_RESULT" != "" ]; then
+        return 1
+    fi
+    return 0
+}
+
+
+# Test Julia functionality
+julia_functionality () {
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
+    OUTPUT=$(julia test_functionality_julia.jl 2>&1)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
     if [ "$TEST_RESULT" == "" ]; then
         return 1
     fi
@@ -63,7 +33,7 @@ R_cran () {
 # Test python packages
 _python_packages () {
     conda activate $1
-    OUTPUT=$(python test_python_package_installation.py 2>&1)
+    OUTPUT=$(python test_packages_installed_python.py 2> /dev/null)
     echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "packages are missing")
     conda deactivate
@@ -78,26 +48,26 @@ python_37_packages() { _python_packages py37; }
 
 
 # Test python logistic regression
-_python_logistic_regression () {
+_python_functionality () {
     conda activate $1
-    OUTPUT=$(python test_logistic_regression.py 2>&1)
+    OUTPUT=$(python test_functionality_python.py 2>&1)
     echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
-    TEST_RESULT=$(echo $OUTPUT | grep "Logistic model ran OK")
+    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
         conda deactivate
     if [ "$TEST_RESULT" == "" ]; then
         return 1
     fi
     return 0
 }
-python_27_logistic_regression() { _python_logistic_regression py27; }
-python_36_logistic_regression() { _python_logistic_regression py36; }
-python_37_logistic_regression() { _python_logistic_regression py37; }
+python_27_functionality() { _python_functionality py27; }
+python_36_functionality() { _python_functionality py36; }
+python_37_functionality() { _python_functionality py37; }
 
 
 # Test PyPI
-_python_pypi () {
+_python_mirrors_pypi () {
     conda activate $1
-    OUTPUT=$(bash test_pypi.sh 2>&1)
+    OUTPUT=$(bash test_mirrors_pypi.sh 2>&1)
     echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
     TEST_RESULT=$(echo $OUTPUT | grep "PyPI working OK")
     conda deactivate
@@ -106,10 +76,59 @@ _python_pypi () {
     fi
     return 0
 }
-python_27_pypi() { _python_pypi py27; }
-python_36_pypi() { _python_pypi py36; }
-python_37_pypi() { _python_pypi py37; }
+python_27_mirrors_pypi() { _python_mirrors_pypi py27; }
+python_36_mirrors_pypi() { _python_mirrors_pypi py36; }
+python_37_mirrors_pypi() { _python_mirrors_pypi py37; }
 
+
+# Test R packages
+R_packages () {
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
+    # Suppress a known spurious warning about database connections from BiocManager
+    OUTPUT=$(Rscript test_packages_installed_R.R 2>&1 | grep -v "Warning message:" | grep -v "call dbDisconnect()")
+    echo "$OUTPUT" | sed "s/\(^[^\[]\)/[1]   \1/g" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
+    PROBLEMATIC_PACKAGES=$(echo "$OUTPUT" | grep -v "^\[")
+    OUTCOME=0
+    for PROBLEMATIC_PACKAGE in $PROBLEMATIC_PACKAGES; do
+        if [ "$PROBLEMATIC_PACKAGE" != "" ]; then
+            echo "Unexpected problem found with: $PROBLEMATIC_PACKAGE"
+            OUTCOME=1
+        fi
+    done
+    return $OUTCOME
+}
+
+
+# Test R functionality
+R_functionality () {
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
+    OUTPUT=$(Rscript test_functionality_R.R)
+    echo "$OUTPUT" | sed "s/\[1\]/[ DEBUG    ]/g" | sed 's/"//g'
+    TEST_RESULT=$(echo $OUTPUT | grep "All functionality tests passed")
+    if [ "$TEST_RESULT" == "" ]; then
+        return 1
+    fi
+    return 0
+}
+
+
+# Test CRAN access
+R_mirrors_cran () {
+    if [ "$(conda info | grep 'active environment' | cut -d':' -f2)" != " None" ]; then
+        conda deactivate
+    fi
+    OUTPUT=$(bash test_mirrors_cran.sh)
+    echo "$OUTPUT" | sed "s/^/[ DEBUG    ] /g"
+    TEST_RESULT=$(echo $OUTPUT | grep "CRAN working OK")
+    if [ "$TEST_RESULT" == "" ]; then
+        return 1
+    fi
+    return 0
+}
 
 
 do_test() {
@@ -132,17 +151,12 @@ do_test() {
 N_PASSING=0
 N_FAILING=0
 
-# R tests
-do_test R_packages
+
+# Julia tests
+do_test julia_packages
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test R_clustering
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_logistic_regression
-if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
-
-do_test R_cran
+do_test julia_functionality
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 
@@ -150,10 +164,10 @@ if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAIL
 do_test python_27_packages
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_27_logistic_regression
+do_test python_27_functionality
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_27_pypi
+do_test python_27_mirrors_pypi
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 
@@ -161,10 +175,10 @@ if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAIL
 do_test python_36_packages
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_36_logistic_regression
+do_test python_36_functionality
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_36_pypi
+do_test python_36_mirrors_pypi
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 
@@ -172,10 +186,21 @@ if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAIL
 do_test python_37_packages
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_37_logistic_regression
+do_test python_37_functionality
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
-do_test python_37_pypi
+do_test python_37_mirrors_pypi
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+
+# R tests
+do_test R_packages
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+do_test R_functionality
+if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
+
+do_test R_mirrors_cran
 if [[ $? -eq 0 ]]; then N_PASSING=$(($N_PASSING + 1)); else N_FAILING=$(($N_FAILING + 1)); fi
 
 

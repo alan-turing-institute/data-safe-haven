@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<drivers>
+    <provider id="sqlserver">
+        <driver id="microsoft" category="MS SQL Server" categories="sql" custom="false" embedded="false" name="SQL Server" class="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]" port="1433" description="Microsoft JDBC Driver for SQL Server (MSSQL)">
+            <library type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE" custom="false" version="|MSSQL_JDBC_VERSION|">
+                <file id="com.microsoft.sqlserver:mssql-jdbc" version="|MSSQL_JDBC_VERSION|" path="/usr/share/dbeaver/drivers/maven/maven-central/com.microsoft.sqlserver/mssql-jdbc-|MSSQL_JDBC_VERSION|.jar"/>
+            </library>
+        </driver>
+    </provider>
+    <provider id="postgresql">
+        <driver id="postgres-jdbc" categories="sql" custom="false" embedded="false" name="PostgreSQL" class="org.postgresql.Driver" url="jdbc:postgresql://{host}[:{port}]/[{database}]" port="5432" description="PostgreSQL standard driver">
+            <library type="jar" path="maven:/org.postgresql:postgresql:RELEASE" custom="false" version="|POSTGRESQL_VERSION|">
+                <file id="org.postgresql:postgresql" version="|POSTGRESQL_VERSION|" path="/usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/postgresql-|POSTGRESQL_VERSION|.jar"/>
+            </library>
+            <library type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE" custom="false" version="|POSTGIS_JDBC_VERSION|">
+                <file id="net.postgis:postgis-jdbc" version="|POSTGIS_JDBC_VERSION|" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-jdbc-|POSTGIS_JDBC_VERSION|.jar"/>
+        </library>
+        </driver>
+    </provider>
+</drivers>

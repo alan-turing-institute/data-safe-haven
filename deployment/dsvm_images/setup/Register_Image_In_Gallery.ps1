@@ -16,14 +16,14 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-ShmFullConfig($shmId)
+$config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 
 # Useful constants
 # ----------------
-$supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-Ubuntu1810Base", "ComputeVM-Ubuntu1904Base", "ComputeVM-Ubuntu1910Base")
+$supportedImages = @("ComputeVM-Ubuntu1804Base", "ComputeVM-Ubuntu2004Base")
 $majorVersion = $config.dsvmImage.gallery.imageMajorVersion
 $minorVersion = $config.dsvmImage.gallery.imageMinorVersion
 
@@ -95,9 +95,10 @@ Add-LogMessage -Level Success "Image version '$imageVersion' will be used"
 # Create the image as a new version of the appropriate existing registered version
 # --------------------------------------------------------------------------------
 $targetRegions = @(
-    @{Name="West Europe"; ReplicaCount=1},
-    @{Name="UK South"; ReplicaCount=1},
-    @{Name="UK West"; ReplicaCount=1}
+    @{Name = "Central US"; ReplicaCount = 1 },
+    @{Name = "UK South"; ReplicaCount = 1 },
+    @{Name = "UK West"; ReplicaCount = 1 },
+    @{Name = "West Europe"; ReplicaCount = 1 }
 )
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
 Add-LogMessage -Level Info "Please note, this may take about 1 hour to complete"
