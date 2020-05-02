@@ -163,6 +163,12 @@ $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuot
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
+# Insert xrdp logo into the cloud-init template
+# ---------------------------------------------
+$xrdpLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_logo_ubuntu.bmp"
+$xrdpLogoEncoded = [Convert]::ToBase64String((Get-Content $xrdpLogoPath -Raw -AsByteStream))
+$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpLogoEncoded>", $xrdpLogoEncoded)
+
 # Construct build VM parameters
 # -----------------------------
 $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.dsvmImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -defaultValue "dsvmbuildadmin"
