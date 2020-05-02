@@ -132,7 +132,7 @@ write_files:
       # Performance log
   - path: "/usr/share/xrdp/xrdp_logo_ubuntu.bmp"
     owner: root:root
-    encoding: b64
+    encoding: gz+b64
     permissions: "0644"
     content: <xrdpLogoEncoded>
 

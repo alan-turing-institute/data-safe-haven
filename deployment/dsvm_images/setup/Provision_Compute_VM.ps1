@@ -166,8 +166,15 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages
 # Insert xrdp logo into the cloud-init template
 # ---------------------------------------------
 $xrdpLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_logo_ubuntu.bmp"
-$xrdpLogoEncoded = [Convert]::ToBase64String((Get-Content $xrdpLogoPath -Raw -AsByteStream))
+$input = Get-Content $xrdpLogoPath -Raw -AsByteStream
+$outputStream = New-Object IO.MemoryStream
+$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+$gzipStream.Write($input, 0, $input.Length)
+$gzipStream.Close()
+$xrdpLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
+$outputStream.Close()
 $cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpLogoEncoded>", $xrdpLogoEncoded)
+
 
 # Construct build VM parameters
 # -----------------------------
