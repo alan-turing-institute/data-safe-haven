@@ -92,16 +92,26 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
 6. Set the "Country or Region" to "United Kingdom"
 7. Click `Create`
+8. Wait for the AAD to be created
 
-### Add the custom domain to the new AAD
-1. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
-2. If the Custom domain name blade shows `Status Verified` and no DNS details are displayed, you can skip to the next section. Otherwise, if you see DNS record details similar to the image below, you need to verify the domain. Note down the required details displayed and complete the following steps.
-  ![AAD DNS record details](images/deploy_shm/aad_dns_record_details.png)
-3. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
-4. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
+
+### Add the SHM domain to the new AAD
+1. Navigate to the AAD you have created within the Azure portal. You ca n do this by:
+    - Clicking the link displayed at the end of the initial AAD deployment.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
+2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
+  ![AAD Tenant ID](images/deploy_shm/aad_tenant_id.png)
+3. Add the SHM domain:
+    - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+    - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+    - Ensure you are authenticated to the AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`
+    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
+    - Note the domain verification details output by the script.
+4. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
+5. Create a new record using the details ouput by the `Setup_SHM_AAD_Domain.ps1` script.
   ![Create AAD DNS Record](images/deploy_shm/create_aad_dns_record.png)
-5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
-6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
+6. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
+7. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
 
 ## 5. Deploy key vault for SHM secrets
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
