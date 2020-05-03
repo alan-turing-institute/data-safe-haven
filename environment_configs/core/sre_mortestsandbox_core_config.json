@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Martin OReilly",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "sreId": "sandbox",
+    "shmId": "mortest",
+    "tier": "2",
+    "domain": "sandbox.mortest.dsgroupdev.co.uk",
+    "netbiosName": "SANDBOX",
+    "ipPrefix": "10.150.8",
+    "rdsAllowedSources": "Internet",
+    "rdsInternetAccess": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.1.2020032700"
+}
