@@ -199,12 +199,10 @@ write_files:
           home = str(Path.home())
 
           if server == "external":
-              ip = "0.0.0.0"
-              token = "YuHW8ytg2RnzzmSMZyfc"
-              # with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
-              #    ip = f.readlines()[0].strip()
-              # with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
-              #    token = f.readlines()[0].strip()
+              with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
+                 ip = f.readlines()[0].strip()
+              with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
+                 token = f.readlines()[0].strip()
           elif server == "internal":
               with open(f"{home}/.secrets/gitlab-internal-ip-address", "r") as f:
                   ip = f.readlines()[0].strip()
