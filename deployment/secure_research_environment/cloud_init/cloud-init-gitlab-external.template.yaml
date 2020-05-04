@@ -151,37 +151,60 @@ write_files:
   - path: "/home/<sre-admin-username>/check_merge_requests.py"
     permissions: "0755"
     content: |
-      from datetime import datetime
       import requests
       from pathlib import Path
+      import logging
+      from logging.handlers import RotatingFileHandler
+
+
+      logger = logging.getLogger("merge_requests_logger")
+      logger.setLevel(logging.INFO)
+      formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+      f_handler = RotatingFileHandler(
+          "check_merge_requests.log", maxBytes=5 * 1024 * 1024, backupCount=10
+      )
+      f_handler.setFormatter(formatter)
+      c_handler = logging.StreamHandler()
+      c_handler.setFormatter(formatter)
+      logger.addHandler(f_handler)
+      logger.addHandler(c_handler)
+
+
+      def push_to_internal(project_url, project_name, target_branch, commit_sha):
+          # TODO Replace with Oliver's function
+          logger.info(f"Pushing {project_name} to gitlab internal")
+
 
       def get_request(endpoint, headers, params=None):
-          if params is not None:
-              r = requests.get(endpoint, headers=headers, params=params)
-          else:
-              r = requests.get(endpoint, headers=headers)
+          r = requests.get(endpoint, headers=headers, params=params)
           if r.ok:
               return r.json()
           else:
-              raise ValueError(f"Request failed: code {r.status_code}, content {r.content}")
+              raise ValueError(
+                  f"Request failed: URL {endpoint}, CODE {r.status_code}, CONTENT {r.content}"
+              )
+
 
       def put_request(endpoint, headers, params=None):
-          if params is not None:
-              r = requests.put(endpoint, headers=headers, params=params)
-          else:
-              r = requests.put(endpoint, headers=headers)
+          r = requests.put(endpoint, headers=headers, params=params)
           if r.ok:
               return r.json()
           else:
-              raise ValueError(f"Request failed: code {r.status_code}, content {r.content}")
+              raise ValueError(
+                  f"Request failed: URL {endpoint}, CODE {r.status_code}, CONTENT {r.content}"
+              )
+
 
       def get_gitlab_config(server="external"):
           home = str(Path.home())
+
           if server == "external":
-              with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
-                 ip = f.readlines()[0].strip()
-              with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
-                 token = f.readlines()[0].strip()
+              ip = "0.0.0.0"
+              token = "YuHW8ytg2RnzzmSMZyfc"
+              # with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
+              #    ip = f.readlines()[0].strip()
+              # with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
+              #    token = f.readlines()[0].strip()
           elif server == "internal":
               with open(f"{home}/.secrets/gitlab-internal-ip-address", "r") as f:
                   ip = f.readlines()[0].strip()
@@ -189,9 +212,12 @@ write_files:
                   token = f.readlines()[0].strip()
           else:
               raise ValueError("Server must be external or internal")
+
           api_url = f"http://{ip}/api/v4/"
           headers = {"Authorization": "Bearer " + token}
+
           return {"api_url": api_url, "api_token": token, "ip": ip, "headers": headers}
+
 
       def get_group_id(group_name, config):
           endpoint = config["api_url"] + "groups"
@@ -201,10 +227,12 @@ write_files:
                   return group["id"]
           raise ValueError(f"{group_name} not found in groups.")
 
-      def get_project_name(project_id, config):
+
+      def get_project(project_id, config):
           endpoint = config["api_url"] + f"projects/{project_id}"
-          response = get_request(endpoint, headers=config["headers"])
-          return response["name"]
+          project = get_request(endpoint, headers=config["headers"])
+          return project
+
 
       def get_merge_requests_for_approval(config):
           group = get_group_id("approved", config)
@@ -213,6 +241,7 @@ write_files:
               endpoint, headers=config["headers"], params={"state": "opened"}
           )
           return response
+
 
       def count_unresolved_mr_discussions(mr, config):
           if mr["user_notes_count"] == 0:
@@ -233,38 +262,58 @@ write_files:
                           n_unresolved += 1
               return n_unresolved
 
+
       def accept_merge_request(mr, config):
           project_id = mr["project_id"]
           mr_iid = mr["iid"]
           endpoint = (
               config["api_url"] + f"projects/{project_id}/merge_requests/{mr_iid}/merge"
           )
-          result = put_request(endpoint, headers=config["headers"])
-          return result
+          return put_request(endpoint, headers=config["headers"])
+
 
       def check_merge_requests():
-          print("Starting run at", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-          config = get_gitlab_config(server="external")
-          print("Getting open merge requests for approval")
-          merge_requests = get_merge_requests_for_approval(config)
-          print("Found", len(merge_requests), "open merge requests")
+          logger.info(f"STARTING RUN")
+
+          try:
+              config = get_gitlab_config(server="external")
+          except Exception as e:
+              logger.critical(f"Failed to load gitlab secrets: {e}")
+              return
+
+          logger.info("Getting open merge requests for approval")
+          try:
+              merge_requests = get_merge_requests_for_approval(config)
+          except Exception as e:
+              logger.critical(f"Failed to get merge requests: {e}")
+              return
+          logger.info(f"Found {len(merge_requests)} open merge requests")
+
           for i, mr in enumerate(merge_requests):
-              print("-" * 20)
-              print("Merge request", i, "out of", len(merge_requests))
-              print("-" * 20)
-              print("Project:", get_project_name(mr["project_id"], config))
-              print("Source Branch:", mr["source_branch"])
-              print("Target Branch:", mr["target_branch"])
-              status = mr["merge_status"]
-              print("Merge Status:", status)
-              wip = mr["work_in_progress"]
-              print("Work in Progress:", wip)
-              unresolved = count_unresolved_mr_discussions(mr, config)
-              print("Unresolved Discussions:", unresolved)
-              upvotes = mr["upvotes"]
-              print("Upvotes:", upvotes)
-              downvotes = mr["downvotes"]
-              print("Downvotes:", downvotes)
+              logger.info("-" * 20)
+              logger.info(f"Merge request {i+1} out of {len(merge_requests)}")
+              try:
+                  source_project = get_project(mr["source_project_id"], config)
+                  logger.info(f"Source Project: {source_project['name_with_namespace']}")
+                  logger.info(f"Source Branch: {mr['source_branch']}")
+                  target_project = get_project(mr["project_id"], config)
+                  logger.info(f"Target Project: {target_project['name_with_namespace']}")
+                  logger.info(f"Target Branch: {mr['target_branch']}")
+                  logger.info(f"Commit SHA: {mr['sha']}")
+                  logger.info(f"Created At: {mr['created_at']}")
+                  status = mr["merge_status"]
+                  logger.info(f"Merge Status: {status}")
+                  wip = mr["work_in_progress"]
+                  logger.info(f"Work in Progress: {wip}")
+                  unresolved = count_unresolved_mr_discussions(mr, config)
+                  logger.info(f"Unresolved Discussions: {unresolved}")
+                  upvotes = mr["upvotes"]
+                  logger.info(f"Upvotes: {upvotes}")
+                  downvotes = mr["downvotes"]
+                  logger.info(f"Downvotes: {downvotes}")
+              except Exception as e:
+                  logger.error(f"Failed to extract merge request details: {e}")
+                  continue
               if (
                   status == "can_be_merged"
                   and wip is False
@@ -272,20 +321,41 @@ write_files:
                   and upvotes >= 2
                   and downvotes == 0
               ):
-                  print("Merge request has been approved. Proceeding with merge.")
-                  result = accept_merge_request(mr, config)
+                  logger.info("Merge request has been approved. Proceeding with merge.")
+                  try:
+                      result = accept_merge_request(mr, config)
+                  except Exception as e:
+                      logger.error(f"Merge failed! {e}")
+                      continue
                   if result["state"] == "merged":
-                      print("Merge successful!")
-                      # TODO CALL OLIVER'S FUNCTION
+                      logger.info(f"Merge successful! Merge SHA {result['merge_commit_sha']}")
+                      try:
+                          with open("accepted_merge_requests.log", "a") as f:
+                              f.write(
+                                  f"{result['merged_at']}, {source_project['name_with_namespace']}, {mr['source_branch']}, {mr['sha']}, {target_project['name_with_namespace']}, {mr['target_branch']}, {result['merge_commit_sha']}\n"
+                              )
+                      except Exception as e:
+                          logger.error(f"Failed to log accepted merge request: {e}")
+                      try:
+                          push_to_internal(
+                              target_project["ssh_url_to_repo"],
+                              target_project["name"],
+                              mr["target_branch"],
+                              result["merge_commit_sha"],
+                          )
+                      except Exception as e:
+                          logger.error(f"Failed to push to internal: {e}")
                   else:
-                      print("Merge failed!")
+                      logger.error(f"Merge failed! Merge status is {result['state']}")
               else:
-                  print("Merge request has not been approved. Skipping.")
-          print("-" * 20)
-          print("Run finished at", datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+                  logger.info("Merge request has not been approved. Skipping.")
+          logger.info(f"RUN FINISHED")
+          logger.info("=" * 30)
+
 
       if __name__ == "__main__":
           check_merge_requests()
+  
 
 runcmd:
   # --------------------------------
