@@ -147,7 +147,7 @@ write_files:
           os.system("git push gitlab-internal " + repo["gitlab_branch"])
               
           os.chdir("..")
-  # Script for monitoring and accepting approved merge requests
+  # Script for monitoring and accepting approval merge requests
   - path: "/home/<sre-admin-username>/check_merge_requests.py"
     permissions: "0755"
     content: |
@@ -233,7 +233,7 @@ write_files:
 
 
       def get_merge_requests_for_approval(config):
-          group = get_group_id("approved", config)
+          group = get_group_id("approval", config)
           endpoint = config["api_url"] + f"/groups/{group}/merge_requests"
           response = get_request(
               endpoint, headers=config["headers"], params={"state": "opened"}
@@ -407,26 +407,6 @@ runcmd:
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519"
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519.pub"
   # --------------------------------
-  # SETUP ACCESS TO GITLAB EXTERNAL
-  # --------------------------------
-  - echo "Configuring access to gitlab external"
-  # Change ownership of secrets to <sre-admin-username>
-  - |
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-api-token";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
-  # Create SSH key for gitlab external access, add gitlab external to known hosts
-  - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
-    ssh-keyscan -H <gitlab-external-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
-  # Create groups for storing unapproved and approved repos
-  - |
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approved&path=approved&visibility=public" <gitlab-external-ip>/api/v4/groups;
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=public" <gitlab-external-ip>/api/v4/groups
-  # --------------------------------
   # SETUP ACCESS TO GITLAB INTERNAL
   # --------------------------------
   - echo "Configuring access to gitlab internal"
@@ -442,6 +422,44 @@ runcmd:
     curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys;
     ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # --------------------------------
+  # WAIT FOR GITLAB EXTERNAL HEALTH CHECK
+  # --------------------------------  
+  - |
+    attempt_counter=0
+    max_attempts=60
+    echo "Waiting for GitLab OK health check"
+    until [[ $(curl -s localhost/-/health) == "GitLab OK" ]]
+    do
+      if [ ${attempt_counter} -eq ${max_attempts} ];then
+        echo
+        echo "FAILED: Max GitLab attempts reached. Exiting."
+        exit 1
+      fi
+      printf "."
+      attempt_counter=$(($attempt_counter+1))
+      sleep 10
+    done
+  # --------------------------------
+  # SETUP ACCESS TO GITLAB EXTERNAL
+  # --------------------------------
+  - echo "Configuring access to gitlab external"
+  # Change ownership of secrets to <sre-admin-username>
+  - |
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-api-token";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
+  # Create SSH key for gitlab external access, add gitlab external to known hosts
+  - |
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
+    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
+    ssh-keyscan -H <gitlab-external-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+  # Create groups for storing unapproved and approval repos
+  - |
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=public" <gitlab-external-ip>/api/v4/groups;
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=public" <gitlab-external-ip>/api/v4/groups  
   # --------------------------------
   # FINAL SETUP
   # --------------------------------
