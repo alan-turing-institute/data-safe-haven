@@ -152,10 +152,11 @@ write_files:
     permissions: "0755"
     content: |
       import requests
+      import subprocess
+      from urllib.parse import quote as url_quote
       from pathlib import Path
       import logging
       from logging.handlers import RotatingFileHandler
-
 
       logger = logging.getLogger("merge_requests_logger")
       logger.setLevel(logging.INFO)
@@ -169,10 +170,83 @@ write_files:
       logger.addHandler(f_handler)
       logger.addHandler(c_handler)
 
+      global HOME
+      global GL_INTERNAL_IP
+      global GL_INTERNAL_TOKEN
+      global GL_INTERNAL_AUTH_HEADER
 
-      def push_to_internal(project_url, project_name, target_branch, commit_sha):
-          # TODO Replace with Oliver's function
-          logger.info(f"Pushing {project_name} to gitlab internal")
+      HOME = str(Path.home())
+
+      with open(f"{HOME}/.secrets/gitlab-internal-ip-address", "r") as f:
+          GL_INTERNAL_IP = f.readlines()[0].strip()
+
+      GL_INTERNAL_URL = "http://" + GL_INTERNAL_IP + "/api/v4"
+
+      with open(f"{HOME}/.secrets/gitlab-internal-api-token", "r") as f:
+          GL_INTERNAL_TOKEN = f.readlines()[0].strip()
+
+      GL_INTERNAL_AUTH_HEADER = {"Authorization": "Bearer " + GL_INTERNAL_TOKEN}
+
+
+      def internal_project_exists(repo_name):
+          """Given a string (the name of a repo - not a URL), returns a pair
+          (exists, url):
+          - exists: boolean - does repo_name exist on GITLAB-INTERNAL?
+          - url: str - the ssh url to the repo (when 'exists' is true)
+          """
+
+          # build url-encoded repo_name
+          repo_path_encoded = url_quote("ingress/" + repo_name, safe='')
+
+          # Does repo_name exist on GITLAB-INTERNAL?
+          response = requests.get(GL_INTERNAL_URL + '/projects/' + repo_path_encoded,
+                                  headers=GL_INTERNAL_AUTH_HEADER)
+
+          if response.status_code == 404:
+              return (False, "")
+          elif response.status_code == 200:
+              return (True, response.json()["ssh_url_to_repo"])
+          else:
+              # Not using `response.raise_for_status()`, since we also want
+              # to raise an exception on unexpected "successful" responses
+              # (not 200)
+              raise requests.HTTPError("Unexpected response: " + response.reason
+                                       + ", content: " + response.text)
+
+
+      def internal_update_repo(gh_url, repo_name):
+          """Takes a GitHub URL, `gh_url`, which should be the URL to the
+          "APPROVED" repo, clones it and pushes all branches to the repo
+          `repo_name` owned by 'ingress' on GITLAB-INTERNAL, creating it
+          there first if it doesn't exist.
+          """
+          # clone the repo from gh_url (on GITLAB-EXTERNAL), removing any of
+          # the same name first (simpler than checking if it exists, has the
+          # same remote and pulling)
+          subprocess.run(["rm", "-rf", repo_name], check=True)
+          subprocess.run(["git", "clone", gh_url, repo_name], check=True)
+
+          project_exists, gl_internal_repo_url = internal_project_exists(repo_name)
+
+          # create the project if it doesn't exist
+          if not project_exists:
+              print("Creating: " + repo_name)
+              response = requests.post(GL_INTERNAL_URL + '/projects',
+                                       headers=GL_INTERNAL_AUTH_HEADER,
+                                       data={"name": repo_name,
+                                             "visibility": "public"})
+              response.raise_for_status()
+              assert(response.json()["path_with_namespace"] == "ingress/" + repo_name)
+
+              gl_internal_repo_url = response.json()["ssh_url_to_repo"]
+
+          # Set the remote
+          subprocess.run(["git", "remote", "add", "gitlab-internal",
+                          gl_internal_repo_url], cwd=repo_name, check=True)
+
+          # Force push current contents of all branches
+          subprocess.run(["git", "push", "--force", "--all",
+                          "gitlab-internal"], cwd=repo_name, check=True)
 
 
       def get_request(endpoint, headers, params=None):
@@ -335,11 +409,9 @@ write_files:
                       except Exception as e:
                           logger.error(f"Failed to log accepted merge request: {e}")
                       try:
-                          push_to_internal(
+                          internal_update_repo(
                               target_project["ssh_url_to_repo"],
-                              target_project["name"],
-                              mr["target_branch"],
-                              result["merge_commit_sha"],
+                              target_project["name"]
                           )
                       except Exception as e:
                           logger.error(f"Failed to push to internal: {e}")
@@ -353,7 +425,6 @@ write_files:
 
       if __name__ == "__main__":
           check_merge_requests()
-  
 
 runcmd:
   # --------------------------------
