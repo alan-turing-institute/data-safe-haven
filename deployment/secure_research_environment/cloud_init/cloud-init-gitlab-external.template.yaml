@@ -429,7 +429,7 @@ runcmd:
     attempt_counter=0
     max_attempts=60
     echo "Waiting for GitLab OK health check"
-    until [[ $(curl -s localhost/-/health) == "GitLab OK" ]]
+    until [ $(curl -s localhost/-/health) = "GitLab OK" ]
     do
       if [ ${attempt_counter} -eq ${max_attempts} ];then
         echo
