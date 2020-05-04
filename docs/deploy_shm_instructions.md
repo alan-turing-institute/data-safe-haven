@@ -18,9 +18,12 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
   - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
   - You will need to be a member of the relevant security group.
-- `PowerShell` with support for Azure
+- `PowerShell` with support for Azure and Azure Active Directory
   - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
   - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+  - Install the cross-platform AzureAD Powershell module:
+    - Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/'`
+    - Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - `OpenSSL`
