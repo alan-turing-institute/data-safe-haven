@@ -174,10 +174,6 @@ write_files:
     content: xfce4-session
 
 runcmd:
-  # ==========================================
-  # *** BEGINNING OF SRE-SPECIFIC COMMANDS ***
-  # *** END OF SRE-SPECIFIC COMMANDS ***
-  # ==========================================
   - echo ">=== Beginning DSVM configuration... ===<"
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
@@ -192,7 +188,7 @@ runcmd:
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that the admin user owns their home directory
   - echo ">=== Ensuring that user owns their home directory... ===<"
-  - chown -R $ADMIN_USERNAME:$ADMIN_USERNAME ~$ADMIN_USERNAME
+  - chown -R ${ADMIN_USERNAME}:${ADMIN_USERNAME} ~${ADMIN_USERNAME}
   # Ensure that sssd is running and enabled at startup
   - echo ">=== Restarting sssd service... ===<"
   - systemctl restart sssd
@@ -231,17 +227,17 @@ runcmd:
   # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
-  - echo "//$DATASERVER_HOSTNAME/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  - echo "//${DATASERVER_HOSTNAME}/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
-  - echo "//$DATASERVER_HOSTNAME/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//${DATASERVER_HOSTNAME}/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
-  - echo "//$DATASERVER_HOSTNAME/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//${DATASERVER_HOSTNAME}/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
