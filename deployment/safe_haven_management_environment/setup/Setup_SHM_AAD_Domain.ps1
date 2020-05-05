@@ -24,7 +24,7 @@ Add-LogMessage -Level Info "Adding SHM domain to AAD..."
 # if the domain has not yet been added.
 $aadDomain = Get-AzureADDomain | Where-Object { $_.Name -eq $config.domain.fqdn }
 if($aadDomain) {
-    Add-LogMessage -Level Success "'$($config.domain.fqdn)' already present as custom domain on SHM AAD."
+    Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already present as custom domain on SHM AAD."
 } else {
     $_ = New-AzureADDomain -Name $config.domain.fqdn
     Add-LogMessage -Level Success "'$($config.domain.fqdn)' added as custom domain on SHM AAD."
@@ -34,7 +34,7 @@ if($aadDomain) {
 # ---------------------------------------------
 Add-LogMessage -Level Info "Verifying domain on SHM AAD..."
 if($aadDomain.IsVerified) {
-    Add-LogMessage -Level Success "'$($config.domain.fqdn)' already verified on SHM AAD."
+    Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already verified on SHM AAD."
 } else {
     # Fetch TXT version of AAD domain verification record set
     $validationRecord = Get-AzureADDomainVerificationDnsRecord -Name $config.domain.fqdn `
@@ -59,7 +59,7 @@ if($aadDomain.IsVerified) {
         # Check if the verification TXT record already exists in domain DNS zone
         $existingRecord = $recordSet.Records | Where-Object { $_.Value -eq $validationCode}
         if($existingRecord) {
-            Add-LogMessage -Level Success "Verification TXT record already exists in '$($config.domain.fqdn)' DNS zone."
+            Add-LogMessage -Level InfoSuccess "Verification TXT record already exists in '$($config.domain.fqdn)' DNS zone."
         } else {
             # Add the verification TXT record if it did not already exist
             $_ = Add-AzDnsRecordConfig -RecordSet $recordSet -Value $validationCode
@@ -100,9 +100,9 @@ if($aadDomain.IsVerified) {
 # Make domain primary on SHM AAD
 # ------------------------------
 if($aadDomain.IsVerified) {
-    Add-LogMessage -Level Info "Making '$($config.domain.fqdn)' is primary domain on SHM AAD."
+    Add-LogMessage -Level Info "Ensuring '$($config.domain.fqdn)' is primary domain on SHM AAD."
     if($aadDomain.isDefault){
-        Add-LogMessage -Level Success "'$($config.domain.fqdn)' is already primary domain on SHM AAD."
+        Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' is already primary domain on SHM AAD."
     } else {
         $_ = Set-AzureADDomain -Name $config.domain.fqdn -IsDefault $TRUE
         Add-LogMessage -Level Success "Set '$($config.domain.fqdn)' as primary domain on SHM AAD."
