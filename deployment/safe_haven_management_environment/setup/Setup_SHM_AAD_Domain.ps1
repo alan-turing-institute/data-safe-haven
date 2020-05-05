@@ -35,8 +35,7 @@ if($aadDomain) {
 Add-LogMessage -Level Info "Verifying domain on SHM AAD..."
 if($aadDomain.IsVerified) {
     Add-LogMessage -Level Success "'$($config.domain.fqdn)' already verified on SHM AAD."
-}
-else {
+} else {
     # Fetch TXT version of AAD domain verification record set
     $validationRecord = Get-AzureADDomainVerificationDnsRecord -Name $config.domain.fqdn `
                           | Where-Object { $_.RecordType -eq "Txt"}
