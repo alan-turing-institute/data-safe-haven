@@ -1,6 +1,6 @@
 # The Turing Data Safe Haven
 
-This is the repository for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project, and contains the code and instrutions to to deploy, administer and use your own instance of the Turing's Data Safe Haven on Microsoft's Azure cloud platform.
+This is the repository for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project, and contains the code and instructions to to deploy, administer and use your own instance of the Turing's Data Safe Haven on Microsoft's Azure cloud platform.
 
 
 ## Introduction
