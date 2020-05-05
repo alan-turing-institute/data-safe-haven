@@ -97,7 +97,7 @@ Add-LogMessage -Level Info "Got SAS token and URL $remoteUrl"
 $script = @"
 #!/bin/bash
 mkdir -p /zfiles
-curl -X GET -o /zfiles/${zipFileName} ${remoteUrl}
+curl -X GET -o /zfiles/${zipFileName} "${remoteUrl}" >& /zfiles/curl.log
 "@
 
 Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $gitlabExternalVmName"
