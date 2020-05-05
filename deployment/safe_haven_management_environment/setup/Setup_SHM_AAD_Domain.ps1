@@ -22,8 +22,8 @@ Add-LogMessage -Level Info "Adding SHM domain to AAD..."
 # Check if domain name has already been added to AAD. Calling Get-AzureADDomain with no
 # arguments avoids having to use a try/catch to handle an expected 404 "Not found exception"
 # if the domain has not yet been added.
-$domain = Get-AzureADDomain | Where-Object { $_.Name -eq $config.domain.fqdn }
-if($domain) {
+$aadDomain = Get-AzureADDomain | Where-Object { $_.Name -eq $config.domain.fqdn }
+if($aadDomain) {
     Add-LogMessage -Level Success "'$($config.domain.fqdn)' already present as custom domain on SHM AAD."
 } else {
     $_ = New-AzureADDomain -Name $config.domain.fqdn
@@ -33,7 +33,6 @@ if($domain) {
 # Verify the SHM domain record for the Azure AD
 # ---------------------------------------------
 Add-LogMessage -Level Info "Verifying domain on SHM AAD..."
-$aadDomain = Get-AzureADDomain -Name $config.domain.fqdn
 if($aadDomain.IsVerified) {
     Add-LogMessage -Level Success "'$($config.domain.fqdn)' already verified on SHM AAD."
 }
