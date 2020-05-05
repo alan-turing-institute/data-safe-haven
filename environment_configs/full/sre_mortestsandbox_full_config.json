@@ -1,8 +1,8 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Test A",
-    "id": "cw20",
-    "name": "Turing Development Safe Haven CW20",
+    "subscriptionName": "Research Engineering",
+    "id": "mortest",
+    "name": "Turing Development Safe Haven MORTEST",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -12,13 +12,13 @@
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "cw20.dsgroupdev.co.uk",
-      "netbiosName": "SAFEHAVENCW20",
-      "dn": "DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "mortest.dsgroupdev.co.uk",
+      "netbiosName": "MORTEST",
+      "dn": "DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Safe Haven LDAP Users",
@@ -33,7 +33,7 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
-        "name": "VNET_SHM_CW20",
+        "name": "VNET_SHM_MORTEST",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
@@ -56,53 +56,53 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1-SHM-CW20",
+      "vmName": "DC1-SHM-MORTEST",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "DC1-SHM-CW20",
-      "fqdn": "DC1-SHM-CW20.cw20.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-MORTEST",
+      "fqdn": "DC1-SHM-MORTEST.mortest.dsgroupdev.co.uk",
       "ip": "10.0.0.250",
       "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
-      "vmName": "DC2-SHM-CW20",
-      "hostname": "DC2-SHM-CW20",
-      "fqdn": "DC2-SHM-CW20.cw20.dsgroupdev.co.uk",
+      "vmName": "DC2-SHM-MORTEST",
+      "hostname": "DC2-SHM-MORTEST",
+      "fqdn": "DC2-SHM-MORTEST.mortest.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS-SHM-CW20",
+      "vmName": "NPS-SHM-MORTEST",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "NPS-SHM-CW20",
+      "hostname": "NPS-SHM-MORTEST",
       "ip": "10.0.0.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmcw20artifactsvkdrsluo"
+        "accountName": "shmmortestartifactsnmbey"
       },
       "bootdiagnostics": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmcw20bootdiagsvkdrsluo"
+        "accountName": "shmmortestbootdiagsnmbey"
       }
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-cw20",
+      "name": "kv-shm-mortest",
       "secretNames": {
-        "aadAdminPassword": "shm-cw20-aad-admin-password",
-        "buildImageAdminUsername": "shm-cw20-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-cw20-buildimage-admin-password",
-        "dcSafemodePassword": "shm-cw20-dc-safemode-password",
-        "domainAdminPassword": "shm-cw20-domain-admin-password",
-        "localAdsyncPassword": "shm-cw20-localadsync-password",
-        "npsAdminPassword": "shm-cw20-nps-admin-password",
-        "vmAdminUsername": "shm-cw20-vm-admin-username",
-        "vpnCaCertificate": "shm-cw20-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-cw20-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-cw20-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-cw20-vpn-client-cert",
-        "vpnClientCertPassword": "shm-cw20-vpn-client-cert-password"
+        "aadAdminPassword": "shm-mortest-aad-admin-password",
+        "buildImageAdminUsername": "shm-mortest-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-mortest-buildimage-admin-password",
+        "dcSafemodePassword": "shm-mortest-dc-safemode-password",
+        "domainAdminPassword": "shm-mortest-domain-admin-password",
+        "localAdsyncPassword": "shm-mortest-localadsync-password",
+        "npsAdminPassword": "shm-mortest-nps-admin-password",
+        "vmAdminUsername": "shm-mortest-vm-admin-username",
+        "vpnCaCertificate": "shm-mortest-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-mortest-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-mortest-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-mortest-vpn-client-cert",
+        "vpnClientCertPassword": "shm-mortest-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -130,16 +130,16 @@
     }
   },
   "sre": {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "subscriptionName": "Martin OReilly",
     "id": "sandbox",
     "shortName": "sre-sandbox",
     "location": "centralus",
-    "tier": "3",
+    "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "sandbox.cw20.dsgroupdev.co.uk",
+      "fqdn": "sandbox.mortest.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
-      "dn": "DC=sandbox,DC=cw20,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=sandbox,DC=mortest,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "serverAdmins": {
           "name": "SG SANDBOX Server Administrators",
@@ -159,29 +159,29 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.150.0.0/21"
+        "cidr": "10.150.8.0/21"
       },
       "subnets": {
         "identity": {
           "name": "IdentitySubnet",
-          "prefix": "10.150.0",
-          "cidr": "10.150.0.0/24"
+          "prefix": "10.150.8",
+          "cidr": "10.150.8.0/24"
         },
         "rds": {
           "name": "RDSSubnet",
-          "prefix": "10.150.1",
-          "cidr": "10.150.1.0/24"
+          "prefix": "10.150.9",
+          "cidr": "10.150.9.0/24"
         },
         "data": {
           "name": "SharedDataSubnet",
-          "prefix": "10.150.2",
-          "cidr": "10.150.2.0/24"
+          "prefix": "10.150.10",
+          "cidr": "10.150.10.0/24"
         },
         "dbingress": {
           "name": "DbIngressSubnet",
-          "prefix": "10.150.3",
+          "prefix": "10.150.11",
           "nsg": "dbingress",
-          "cidr": "10.150.3.0/24"
+          "cidr": "10.150.11.0/24"
         }
       },
       "nsg": {
@@ -194,29 +194,25 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sreartifactszvmwtqkigrld"
+        "accountName": "sreartifactsvleunxydkmzt"
       },
       "bootdiagnostics": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "srebootdiagszvmwtqkigrld"
+        "accountName": "srebootdiagsvleunxydkmzt"
       }
     },
     "keyVault": {
-      "name": "kv-cw20-sre-sandbox",
+      "name": "kv-mortest-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
-        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
+        "dataMountPassword": "sre-sandbox-datamount-password",
         "dataServerAdminPassword": "sre-sandbox-dataservervm-admin-password",
         "dsvmAdminPassword": "sre-sandbox-dsvm-admin-password",
-        "webappAdminPassword": "sre-sandbox-webappvm-admin-password",
         "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
         "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
         "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
         "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-        "dataMountPassword": "sre-sandbox-datamount-password",
-        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
-        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
@@ -224,7 +220,11 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "testResearcherPassword": "sre-sandbox-test-researcher-password"
+        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
+        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
+        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "testResearcherPassword": "sre-sandbox-test-researcher-password",
+        "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
     },
     "users": {
@@ -264,24 +264,24 @@
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.250"
+        "fqdn": "RDG-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+        "ip": "10.150.9.250"
       },
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.249"
+        "fqdn": "APP-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+        "ip": "10.150.9.249"
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.1.248"
+        "fqdn": "DKP-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+        "ip": "10.150.9.248"
       }
     },
     "dataserver": {
@@ -290,8 +290,8 @@
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-      "ip": "10.150.2.250",
+      "fqdn": "DAT-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+      "ip": "10.150.10.250",
       "egressDiskGb": 512,
       "ingressDiskGb": 512,
       "sharedDiskGb": 512
@@ -303,15 +303,15 @@
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.2.151"
+        "fqdn": "GITLAB-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+        "ip": "10.150.10.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.cw20.dsgroupdev.co.uk",
-        "ip": "10.150.2.152"
+        "fqdn": "HACKMD-SRE-SANDBOX.mortest.dsgroupdev.co.uk",
+        "ip": "10.150.10.152"
       }
     },
     "databases": {
@@ -346,7 +346,7 @@
       "vmImageVersion": "0.1.2020032700",
       "osdisk": {
         "type": "Standard_LRS",
-        "size_gb": "60"
+        "size_gb": "64"
       },
       "datadisk": {
         "type": "Standard_LRS",
@@ -359,13 +359,13 @@
     },
     "mirrors": {
       "vnet": {
-        "name": "VNET_SHM_CW20_PACKAGE_MIRRORS_TIER3"
+        "name": "VNET_SHM_MORTEST_PACKAGE_MIRRORS_TIER2"
       },
       "cran": {
-        "ip": "10.20.3.21"
+        "ip": "10.20.2.21"
       },
       "pypi": {
-        "ip": "10.20.3.20"
+        "ip": "10.20.2.20"
       }
     }
   }

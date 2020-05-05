@@ -18,9 +18,13 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
   - This subscription should have an initial $3,000 for test and production sandbox environments, or the project specific budget for production project environments
   - The relevant Safe Haven Administrator Security Group must have the **Owner** role on the new subscription (e.g. "Safe Haven Test Admins" or "Safe Haven Production Admins").
   - You will need to be a member of the relevant security group.
-- `PowerShell` with support for Azure
+- `PowerShell` with support for Azure and Azure Active Directory
   - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
   - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
+  - Install the **cross-platform** AzureAD Powershell module:
+    - :warning: The version of the AzureAD module installable from the standard Powershell Gallery installs on all platforms, but only works on **Windows**. We therefore use the cross-platform module to ensure consistent functionality and behaviour on all platforms.
+    - Register the Powershell test gallery: `Register-PackageSource -Trusted -ProviderName 'PowerShellGet' -Name 'Posh Test Gallery' -Location https://www.poshtestgallery.com/api/v2/'`
+    - Install the cross-platform .NET Standard version of the `AzureAD` module `Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery"`
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - `OpenSSL`
@@ -92,16 +96,21 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 5. Set the "Initial Domain Name" to the "Organisation Name" all lower case with spaces removed
 6. Set the "Country or Region" to "United Kingdom"
 7. Click `Create`
+8. Wait for the AAD to be created
 
-### Add the custom domain to the new AAD
-1. Navigate to `Active Directory` and then click `Custom domain names` in the left panel. Click `Add custom domain` at the top and create a new domain name (e.g. `testa.dsgroupdev.co.uk`)
-2. If the Custom domain name blade shows `Status Verified` and no DNS details are displayed, you can skip to the next section. Otherwise, if you see DNS record details similar to the image below, you need to verify the domain. Note down the required details displayed and complete the following steps.
-  ![AAD DNS record details](images/deploy_shm/aad_dns_record_details.png)
-3. In a separate Azure portal window, switch to the Turing directory and navigate to the DNS Zone for your custom domain within the `RG_SHM_DNS` resource group in the management subscription.
-4. Create a new record using the details provided (the `@` goes in the `Name` field and the TTL of 3600 is in seconds)
-  ![Create AAD DNS Record](images/deploy_shm/create_aad_dns_record.png)
-5. Navigate back to the custom domain creation screen in the new AAD and click `Verify`
-6. Wait a few minutes then click on the domain that you just added and click the `Make primary` button.
+
+### Add the SHM domain to the new AAD
+1. Navigate to the AAD you have created within the Azure portal. You ca n do this by:
+    - Clicking the link displayed at the end of the initial AAD deployment.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
+2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
+  ![AAD Tenant ID](images/deploy_shm/aad_tenant_id.png)
+3. Add the SHM domain:
+    - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+    - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+    - Ensure you are authenticated to the AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`
+    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
+    - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again. 
 
 ## 5. Deploy key vault for SHM secrets
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).

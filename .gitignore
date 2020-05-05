@@ -1,7 +1,5 @@
 # System files
 *.DS_Store
-.idea/
-deployment/secure_research_environment/remote/compute_vm/tests/logistic.csv
 
 # All secrets folders, no matter how nested
 secrets/
@@ -10,6 +8,8 @@ temp/
 # Development tools
 .vscode
 .python-version
+.idea
+.ionide
 
 # PDF versions of our Markdown documents
 docs/*.pdf
