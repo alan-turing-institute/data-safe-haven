@@ -76,10 +76,14 @@ else {
         Add-LogMessage -Level Info "Checking domain verification status on SHM AAD (attempt $tries of $maxTries)..."
         try {
             $_ = Confirm-AzureADDomain -Name $config.domain.fqdn
-        } catch {            
-            # Confirm-AzureADDomain throws a 400 BadRequest exception both if the verification TXT record is not
-            # found and if the domain is already verified. Therefore we ignore any exception and explicitly
-            # fetch the domain and check its verified status afterwards
+        } catch {
+            # Confirm-AzureADDomain throws a 400 BadRequest exception if either the verification TXT record is not
+            # found or if the domain is already verified. Checking the exception message text to only ignore these
+            # conditions feels error prone. Instead print the exception messahe as a warning and continue with the
+            # retry loop
+            $ex = $_.Exception
+            $errorMessage = $ex.ErrorContent.Message.Value
+            Add-LogMessage -Level Warning "$errorMessage"
         }
         $aadDomain = Get-AzureADDomain -Name $config.domain.fqdn
         if($aadDomain.IsVerified) {
