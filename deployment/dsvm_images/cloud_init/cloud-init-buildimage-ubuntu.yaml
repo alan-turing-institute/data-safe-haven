@@ -1,11 +1,11 @@
 #cloud-config
 
 
-# Update package database on first boot (ie. run apt update)
+# Update package database on first boot (ie. run `apt-get update`)
 package_update: true
 
 
-# Upgrade installed packages on first boot (ie. run apt upgrade)
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
 package_upgrade: true
 
 
@@ -131,7 +131,7 @@ write_files:
     content: |
       # Performance log
 
-# List of packages to install with apt
+# List of packages to install with apt-get
 packages:
   - <apt packages>
 
