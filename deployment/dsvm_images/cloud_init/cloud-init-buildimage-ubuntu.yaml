@@ -399,3 +399,10 @@ runcmd:
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
+
+# Shutdown at the end of the job to save on running costs
+power_state:
+  mode: poweroff
+  message: "Shutting down after cloud-init is finished"
+  timeout: 30
+  condition: True

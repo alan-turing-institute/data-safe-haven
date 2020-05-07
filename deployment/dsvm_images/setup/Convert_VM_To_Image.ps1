@@ -42,6 +42,11 @@ if ($notExists) {
 }
 
 
+# Ensure that the VM is running
+# -----------------------------
+Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
+
+
 # Deprovision the VM over SSH
 # ---------------------------
 Add-LogMessage -Level Info "Deprovisioning VM: $($vm.Name)..."
