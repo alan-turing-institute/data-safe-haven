@@ -240,6 +240,16 @@ $xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
 $outputStream.Close()
 $cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
 
+# Insert PyCharm defaults into the cloud-init template
+# ----------------------------------------------------
+$indent = "      "
+foreach ($scriptName in @("jdk.table.xml",
+                          "project.default.xml")) {
+    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
+    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+}
+
 
 # Deploy NIC and data disks
 # -------------------------

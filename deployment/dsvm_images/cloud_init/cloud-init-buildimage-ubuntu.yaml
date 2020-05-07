@@ -142,6 +142,7 @@ write_files:
       Icon=/snap/pycharm-community/current/meta/gui/icon.png
       Categories=Utility;TextEditor;Development;IDE;
 
+
 # List of packages to install with apt-get
 packages:
   - <apt packages>
