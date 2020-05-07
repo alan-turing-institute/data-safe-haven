@@ -95,6 +95,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange *
+Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Insert scripts into the cloud-init template
