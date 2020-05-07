@@ -849,13 +849,17 @@ df.head(3)
 ```R
 library(odbc)
 
-con <- DBI::dbConnect(odbc::odbc(),
-                Driver = "ODBC Driver 17 for SQL Server",
-                Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330"
-                Database = "master",
-                Trusted_Connection = "yes")
+# Connect to the databases
+cnxn <- DBI::dbConnect(
+    odbc::odbc(),
+    Driver = "ODBC Driver 17 for SQL Server",
+    Server = "SQL-ING-SANDBOX.apr20.turingsafehaven.ac.uk,14330",
+    Database = "master",
+    Trusted_Connection = "yes"
+)
 
-df <- dbGetQuery(con, "SELECT * FROM information_schema.tables;")
+# Run a query and save the output into a dataframe
+df <- dbGetQuery(cnxn, "SELECT * FROM information_schema.tables;")
 head(df, 3)
 ```
 
