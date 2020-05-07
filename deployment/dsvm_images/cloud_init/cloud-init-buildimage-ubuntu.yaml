@@ -130,6 +130,17 @@ write_files:
     permissions: "0644"
     content: |
       # Performance log
+  - path: "/usr/share/applications/pycharm.desktop"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=PyCharm
+      Exec=/snap/bin/pycharm-community
+      Icon=/snap/pycharm-community/current/meta/gui/icon.png
+      Categories=Utility;TextEditor;Development;IDE;
 
 # List of packages to install with apt-get
 packages:
