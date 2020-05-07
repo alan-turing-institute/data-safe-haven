@@ -57,9 +57,9 @@ update_systemd_resolved_conf () {
     fi
 }
 
-# Restart the systemd-resolved
+# Restart the systemd-resolved service
 restart_resolved () {
-    echo "Restarting systemd-resolved nameservice"
+    echo "Restarting systemd-resolved name service"
     sudo systemctl restart systemd-resolved
     cat /etc/resolv.conf
 }

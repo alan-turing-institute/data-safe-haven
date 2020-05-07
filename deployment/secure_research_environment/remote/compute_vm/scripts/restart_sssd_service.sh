@@ -8,7 +8,7 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 echo -e "${BLUE}Checking SSSD status${END}"
-STATUS_CMD="sudo systemctl status sssd.service"
+STATUS_CMD="sudo systemctl status sssd"
 
 echo "Testing sssd status..."
 STATUS=$(${STATUS_CMD})
