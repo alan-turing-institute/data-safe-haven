@@ -210,7 +210,7 @@ runcmd:
   - sed -i "s/ls_bg_color=.*/ls_bg_color=ffffff/g" /etc/xrdp/xrdp.ini                       # grey box
   - sed -i "s/.*ls_title=.*/ls_title=\./g" /etc/xrdp/xrdp.ini                               # window title
   # Change logo
-  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_logo_ubuntu.bmp|g" /etc/xrdp/xrdp.ini
+  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini
   # Centre buttons
   - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini
   - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini

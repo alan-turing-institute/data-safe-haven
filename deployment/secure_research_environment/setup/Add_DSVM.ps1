@@ -209,22 +209,22 @@ Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-$cloudInitYaml = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
-                                                        Replace("<datamount-username>", $config.sre.users.datamount.samAccountName).
-                                                        Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
-                                                        Replace("<dsvm-hostname>", $vmName).
-                                                        Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
-                                                        Replace("<dsvm-ldap-username>", $config.sre.users.ldap.dsvm.samAccountName).
-                                                        Replace("<mirror-host-pypi>", $addresses.pypi.host).
-                                                        Replace("<mirror-url-cran>", $addresses.cran.url).
-                                                        Replace("<mirror-url-pypi>", $addresses.pypi.url).
-                                                        Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
-                                                        Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-                                                        Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-                                                        Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-                                                        Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
-                                                        Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)").
-                                                        Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
+$cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
+                                                            Replace("<datamount-username>", $config.sre.users.datamount.samAccountName).
+                                                            Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
+                                                            Replace("<dsvm-hostname>", $vmName).
+                                                            Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
+                                                            Replace("<dsvm-ldap-username>", $config.sre.users.ldap.dsvm.samAccountName).
+                                                            Replace("<mirror-host-pypi>", $addresses.pypi.host).
+                                                            Replace("<mirror-url-cran>", $addresses.cran.url).
+                                                            Replace("<mirror-url-pypi>", $addresses.pypi.url).
+                                                            Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
+                                                            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
+                                                            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
+                                                            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+                                                            Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
+                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)").
+                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
@@ -257,7 +257,7 @@ $params = @{
     AdminPassword = $dsvmAdminPassword
     AdminUsername = $dsvmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitYaml
+    CloudInitYaml = $cloudInitTemplate
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = $config.sre.dsvm.osdisk.type
