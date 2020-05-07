@@ -87,7 +87,7 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-internal-username>',$gitlabInternalUsername).
                                             Replace('<gitlab-internal-password>',$gitlabInternalPassword).
                                             Replace('<gitlab-internal-api-token>',$gitlabInternalAPIToken)
-  
+
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 
@@ -196,6 +196,19 @@ $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.s
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.reviewUsers.name + "," + $config.shm.domain.securityOuPath + "))"
 
 $gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
+
+# Insert scripts into the cloud-init template
+# -------------------------------------------
+$indent = "      "
+foreach ($scriptName in @("zipfile_to_gitlab_project.py",
+                          "check_merge_requests.py")) {
+
+    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
+    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+}
+
+
 $gitlabExternalCloudInit = $gitlabExternalCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
                                                             Replace('<gitlab-internal-ip>',$config.sre.webapps.gitlab.internal.ip).
                                                             Replace('<gitlab-internal-login-domain>',$config.shm.domain.fqdn).
