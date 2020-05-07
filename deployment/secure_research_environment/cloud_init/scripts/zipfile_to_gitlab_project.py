@@ -79,9 +79,6 @@ def unzip_zipfiles(zipfile_dir, tmp_repo_dir):
                 zip_obj.extractall(path=tmp_repo_dir)
             # we should have made a new directory - find its name
             unpacked_zips = os.listdir(tmp_repo_dir)
-            # should be one and only one directory in here
-            if len(unpacked_zips) != 1:
-                raise RuntimeError("Unexpected number of items in unpacked zip directory {}: {}".format(tmp_repo_dir, unpacked_zips))
             unpacked_location = os.path.join(tmp_repo_dir, unpacked_zips[0])
             output_list.append((repo_name, commit_hash, branch, unpacked_location))
         except(BadZipFile):
@@ -404,7 +401,7 @@ def check_if_merge_request_exists(repo_name,
     =======
     bool, True if merge request already exists, False otherwise
     """
-    mr_url = "{}/projects/{}/merge_requests".format(gitlab_url, source_project_id)
+    mr_url = "{}/projects/{}/merge_requests".format(gitlab_url, target_project_id)
     response = requests.get(mr_url,
                             headers = {"Authorization": "Bearer "+gitlab_token})
     if response.status_code != 200:
@@ -438,7 +435,7 @@ def create_merge_request(repo_name,
                          as the "ID" field of the json returned from the
                          projects API endpoint.
     source_branch: str, name of the branch on source project, will typically
-                      be the commit_hash from the original repo.
+                      be the 'branch-<commit-hash-from-the-original-repo>'.
     target_project_id: int, project_id for the "approval" group's project.
     target_branch: str, name of branch on target project, will typically
                       be the desired branch name.
@@ -469,17 +466,20 @@ def create_merge_request(repo_name,
                                      "target_project_id": target_project_id,
                                      "title": title})
     if response.status_code != 201:
-        raise RuntimeError("Problem creating Merge Request {} {} {}: {}"\
-                           .format(repo_name, source_branch,target_branch,
-                                   response.content))
+#        raise RuntimeError("Problem creating Merge Request {} {} {}: {}"\
+#                           .format(repo_name, source_branch,target_branch,
+#                                   response.content))
+##### TEMPORARY - don't raise an error here - we get 500 status code
+##### even though MR is created it - under investigation.
+        print("Problem creating Merge Request {} {} {}: {}"\
+              .format(repo_name, source_branch,target_branch,
+                      response.content))
+        return {}
     mr_info = response.json()
     return mr_info
 
 
-
-
-
-def push_to_remote(path_to_unzipped_repo, commit_hash, remote_url):
+def push_to_remote(path_to_unzipped_repo, branch_name, remote_url):
     """
     Run shell commands to convert the unzipped directory containing the
     repository contents into a git repo, then commit it to a branch named
@@ -488,18 +488,19 @@ def push_to_remote(path_to_unzipped_repo, commit_hash, remote_url):
     Parameters
     ==========
     path_to_unzipped_repo: str, the full directory path to the unzipped repo
-    commit_hash: str, original commit hash from the external git repo, will
+    branch_name: str, original commit hash from the external git repo, will
                   be used as the name of the branch to push to
     remote_url: str, the URL for this project on gitlab-external to be added
                   as a "remote".
     """
     subprocess.run(["git","init"], cwd=path_to_unzipped_repo, check=True)
     # Create a branch named after the original commit hash
-    subprocess.run(["git","checkout","-b",commit_hash],
+    subprocess.run(["git","checkout","-b",branch_name],
                    cwd=path_to_unzipped_repo, check=True)
     # Commit everything to this branch, also putting commit hash into message
     subprocess.run(["git","add","."], cwd=path_to_unzipped_repo, check=True)
-    subprocess.run(["git","commit","-m",commit_hash],
+    commit_msg = "Committing to branch {}".format(branch_name)
+    subprocess.run(["git","commit","-m", commit_msg],
                    cwd=path_to_unzipped_repo, check=True)
     # add the remote_url as a remote called 'gitlab-external'
     subprocess.run(["git","remote","add","gitlab-external",remote_url],
@@ -514,7 +515,7 @@ def create_and_push_unapproved_project(repo_name,
                                        gitlab_url,
                                        gitlab_token,
                                        path_to_unzipped_repo,
-                                       commit_hash):
+                                       branch_name):
     """
     We have unzipped a zipfile, and put the contents (i.e. the code we want
     to push) in path_to_unzipped_project.
@@ -527,7 +528,7 @@ def create_and_push_unapproved_project(repo_name,
     gitlab_url: str, the base URL of Gitlab API
     gitlab_token: str, API token for Gitlab API
     path_to_unzipped_repo: str, full directory path to code we want to commit
-    commit_hash: str, the commit hash from the original repo, to be used as
+    branch_name: str, the commit hash from the original repo, to be used as
                     the name of the branch we'll push to
 
     Returns
@@ -538,12 +539,12 @@ def create_and_push_unapproved_project(repo_name,
     project_id = get_project_id(repo_name, namespace_id, gitlab_url, gitlab_token)
     assert project_id
     # see if branch already exists with name=commit_hash
-    branch_exists = check_if_branch_exists(commit_hash,
+    branch_exists = check_if_branch_exists(branch_name,
                                            project_id,
                                            gitlab_url,
                                            gitlab_token)
     if branch_exists:
-        print("Branch {} already exists".format(commit_hash))
+        print("Branch {} already exists".format(branch_name))
         # already exists - do nothing
         return project_id
     # otherwise we need to commit code to it and push
@@ -551,7 +552,7 @@ def create_and_push_unapproved_project(repo_name,
                                         gitlab_url, gitlab_token)
     print("remote URL for {} is {}".format(repo_name, remote_url))
 
-    push_to_remote(path_to_unzipped_repo, commit_hash, remote_url)
+    push_to_remote(path_to_unzipped_repo, branch_name, remote_url)
     # Return the project_id, to use in merge request
     return project_id
 
@@ -619,14 +620,15 @@ def main():
         # unpack tuple
         repo_name, commit_hash, branch_name, location = repo
         print("Unpacked {} {} {}".format(repo_name, commit_hash, branch_name))
+        unapproved_branch_name = "branch-{}".format(commit_hash)
         src_project_id = create_and_push_unapproved_project(repo_name,
                                                             namespace_ids[GROUPS[0]],
                                                             config["api_url"],
                                                             config["api_token"],
                                                             location,
-                                                            commit_hash)
+                                                            unapproved_branch_name)
         print("Created project {}/{} branch {}".\
-              format(GROUPS[0],repo_name, commit_hash))
+              format(GROUPS[0],repo_name, unapproved_branch_name))
 
         # create project and branch on approved repo
         target_project_id = create_approved_project_branch(repo_name,
@@ -651,7 +653,7 @@ def main():
             # create merge request
             create_merge_request(repo_name,
                                  src_project_id,
-                                 commit_hash,
+                                 unapproved_branch_name,
                                  target_project_id,
                                  branch_name,
                                  config["api_url"],
