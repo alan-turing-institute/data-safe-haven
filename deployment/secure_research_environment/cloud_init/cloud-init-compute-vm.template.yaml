@@ -209,6 +209,8 @@ runcmd:
   # Set default terminal for xfce
   - echo ">=== Setting default xfce terminal... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
+  # Remove "default config" prompt
+  - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
   # Ensure that sssd is running and enabled at startup
   - echo ">=== Restarting sssd service... ===<"
   - systemctl restart sssd

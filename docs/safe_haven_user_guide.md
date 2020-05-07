@@ -399,8 +399,6 @@ Once connected to it, you can carry out data science research while remaining co
 
 4. You should now be greeted by a Linux desktop.
 
-   > :warning: When you get to this screen it is **important** that you select the `Use default config` option or you will end up without a desktop menu bar!
-
    <p align="center">
       <img src="images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial">
    </p>
