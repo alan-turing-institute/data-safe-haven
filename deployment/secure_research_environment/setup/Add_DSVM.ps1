@@ -34,7 +34,6 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
 if ($existingNic) {
     Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
-    $existingVmId = $existingNic.VirtualMachine.Id
     if ($existingNic.VirtualMachine.Id) {
         Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
         $_ = Set-AzContext -Context $originalContext
@@ -229,7 +228,9 @@ $cloudInitYaml = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-pass
                                                         Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
 
 # Insert xrdp logo into the cloud-init template
-# ---------------------------------------------
+# Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
+# If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
+# --------------------------------------------------------------------------------------------------------------
 $xrdpCustomLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp"
 $input = Get-Content $xrdpCustomLogoPath -Raw -AsByteStream
 $outputStream = New-Object IO.MemoryStream
