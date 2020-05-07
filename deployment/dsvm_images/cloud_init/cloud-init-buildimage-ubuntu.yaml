@@ -130,11 +130,6 @@ write_files:
     permissions: "0644"
     content: |
       # Performance log
-  - path: "/usr/share/xrdp/xrdp_logo_ubuntu.bmp"
-    owner: root:root
-    encoding: gz+b64
-    permissions: "0644"
-    content: <xrdpLogoEncoded>
 
 # List of packages to install with apt
 packages:
@@ -351,25 +346,6 @@ runcmd:
   # Log the output kernels
   - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
-
-  # Override xrdp defaults
-  - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                       # title bar (unselected)
-  - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                 # title bar (selected)
-  - sed -i "s/ls_top_window_bg_color=.*/ls_top_window_bg_color=000000/g" /etc/xrdp/xrdp.ini # teal background
-  - sed -i "s/ls_bg_color=.*/ls_bg_color=ffffff/g" /etc/xrdp/xrdp.ini                       # grey box
-  - sed -i "s/.*ls_title=.*/ls_title=\./g" /etc/xrdp/xrdp.ini                               # window title
-  # Change logo
-  - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_logo_ubuntu.bmp|g" /etc/xrdp/xrdp.ini
-  # Centre buttons
-  - sed -i "s|ls_btn_ok_x_pos=.*|ls_btn_ok_x_pos=85|g" /etc/xrdp/xrdp.ini
-  - sed -i "s|ls_btn_cancel_x_pos=.*|ls_btn_cancel_x_pos=180|g" /etc/xrdp/xrdp.ini
-  # Remove all sessions except Xorg
-  - sed -i '/\[X11rdp\]/,/^$/d' /etc/xrdp/xrdp.ini           # delete lines from [X11rdp] until next empty line
-  - sed -i '/\[Xvnc\]/,/^$/d' /etc/xrdp/xrdp.ini             # delete lines from [Xvnc] until next empty line
-  - sed -i '/\[console\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [console] until next empty line
-  - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
-  - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
-  - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
 
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"

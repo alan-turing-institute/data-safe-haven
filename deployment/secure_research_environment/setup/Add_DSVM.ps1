@@ -237,6 +237,19 @@ try {
 }
 
 
+# Insert xrdp logo into the cloud-init template
+# ---------------------------------------------
+$xrdpCustomLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp"
+$input = Get-Content $xrdpCustomLogoPath -Raw -AsByteStream
+$outputStream = New-Object IO.MemoryStream
+$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+$gzipStream.Write($input, 0, $input.Length)
+$gzipStream.Close()
+$xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
+$outputStream.Close()
+$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
+
+
 # Deploy NIC and data disks
 # -------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
