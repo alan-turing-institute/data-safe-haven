@@ -13,23 +13,23 @@ write_files:
   - path: "/etc/ldap.secret"
     permissions: "0600"
     content: |
-      $LDAP_SECRET_PLAINTEXT
+      <dsvm-ldap-password>
   - path: "/installation/.smbcredentials"
     owner: root:root
     permissions: "0600"
     content: |
-      username=$DATA_MOUNT_USERNAME
-      password=$DATA_MOUNT_PASSWORD
+      username=<datamount-username>
+      password=<datamount-password>
   - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
-      base $LDAP_BASE_DN
+      base <shm-ldap-base-dn>
 
       # Restrict users to those in the security group of this SRE
-      filter $LDAP_FILTER
+      filter <sre-ldap-user-filter>
 
       # Another way to specify your LDAP server is to provide a URI
-      uri ldap://${AD_DC_NAME_UPPER}.${DOMAIN_LOWER}:389
+      uri ldap://<shm-dc-hostname-upper>.<shm-fqdn-lower>:389
 
       # The LDAP version to use (defaults to 3
       # if supported by client library)
@@ -38,7 +38,7 @@ write_files:
       # The distinguished name to bind to the server with
       # if the effective user ID is root. Password is
       # stored in /etc/ldap.secret (mode 600)
-      rootbinddn $LDAP_BIND_DN
+      rootbinddn <sre-ldap-bind-dn>
 
       # Do not hash the password at all; presume
       # the directory server will do it, if
@@ -47,7 +47,7 @@ write_files:
   - path: "/etc/krb5.conf"
     content: |
       [libdefaults]
-        default_realm = $DOMAIN_UPPER
+        default_realm = <shm-fqdn-upper>
         rdns = false
         # The following krb5.conf variables are only for MIT Kerberos.
         krb4_config = /etc/krb.conf
@@ -70,15 +70,15 @@ write_files:
         fcc-mit-ticketflags = true
 
       [realms]
-        $DOMAIN_UPPER = {
-          kdc = ${AD_DC_NAME_UPPER}.${DOMAIN_UPPER}:88
-          admin_server = ${AD_DC_NAME_UPPER}.${DOMAIN_UPPER}
-          default_domain = $DOMAIN_UPPER
+        <shm-fqdn-upper> = {
+          kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
+          admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
+          default_domain = <shm-fqdn-upper>
         }
 
       [domain_realm]
-        .$DOMAIN_LOWER = $DOMAIN_UPPER
-        $DOMAIN_LOWER = $DOMAIN_UPPER
+        .<shm-fqdn-lower> = <shm-fqdn-upper>
+        <shm-fqdn-lower> = <shm-fqdn-upper>
 
       [login]
         krb4_convert = true
@@ -94,13 +94,13 @@ write_files:
       systemctl status sssd
       # Add information to hosts file
       echo "Setting hostname"
-      echo "$MACHINE_NAME" > /etc/hostname
+      echo "<dsvm-hostname>" > /etc/hostname
       echo ">=== /etc/hostname ===<"
       cat /etc/hostname
       echo ">=== end of /etc/hostname ===<"
-      echo "Adding $MACHINE_NAME [`$(hostname -i)] to /etc/hosts"
-      HOST_INFORMATION="`$(hostname -i) $MACHINE_NAME $MACHINE_NAME.$DOMAIN_LOWER"
-      sed -i "/127.0.0.1/ a `$HOST_INFORMATION" /etc/hosts
+      echo "Adding <dsvm-hostname> [$(hostname -i)] to /etc/hosts"
+      HOST_INFORMATION="$(hostname -i) <dsvm-hostname> <dsvm-hostname>.<shm-fqdn-lower>"
+      sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
       echo ">=== /etc/hosts ===<"
       cat /etc/hosts
       echo ">=== end of /etc/hosts ===<"
@@ -130,7 +130,7 @@ write_files:
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
-      cat /etc/ldap.secret | realm join --verbose -U $LDAP_USER $DOMAIN_LOWER --install=/
+      cat /etc/ldap.secret | realm join --verbose -U <dsvm-ldap-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
     content: |
       # Check the sssd.conf file
@@ -149,7 +149,7 @@ write_files:
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
-      sed "/pam_unix/ a `$PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
+      sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
       mv /tmp/common-session /etc/pam.d/common-session
       echo ">=== /etc/pam.d/common-session ===<"
       cat /etc/pam.d/common-session
@@ -158,15 +158,15 @@ write_files:
     content: |
       # Add the PyPI mirror to our global settings
       [global]
-      index = $PYPI_MIRROR_URL
-      index-url = $PYPI_MIRROR_URL/simple
-      trusted-host = $PYPI_MIRROR_HOST
+      index = <mirror-url-pypi>
+      index-url = <mirror-url-pypi>/simple
+      trusted-host = <mirror-host-pypi>
   - path: "/etc/R/Rprofile.site"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "$CRAN_MIRROR_URL"
+          r["CRAN"] <- "<mirror-url-cran>"
           options(repos = r)
       })
   - path: "/etc/skel/.xsession"
@@ -194,7 +194,7 @@ runcmd:
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
   # Ensure that the admin user owns their home directory
   - echo ">=== Ensuring that admin user owns their home directory... ===<"
-  - chown -R ${ADMIN_USERNAME}:${ADMIN_USERNAME} ~${ADMIN_USERNAME}
+  - chown -R <dsvm-admin-username>:<dsvm-admin-username> ~<dsvm-admin-username>
   # Ensure that sssd is running and enabled at startup
   - echo ">=== Restarting sssd service... ===<"
   - systemctl restart sssd
@@ -245,23 +245,23 @@ runcmd:
   # Update resolv.conf to point to the correct location
   - echo ">=== Update resolv.conf to point to the correct file... ===<"
   - rm /etc/resolv.conf
-  - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=$DOMAIN_LOWER/" /etc/systemd/resolved.conf
+  - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
   - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
   - ls -alh /etc/resolv.conf
   # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
-  - echo "//${DATASERVER_HOSTNAME}/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
-  - echo "//${DATASERVER_HOSTNAME}/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
-  - echo "//${DATASERVER_HOSTNAME}/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
@@ -273,8 +273,8 @@ runcmd:
   - mkdir -p /tmp/home
   - mount /dev/sdc1 /tmp/home
   - chmod 755 /tmp/home
-  - UUID=`$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - echo "UUID=`${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
   - umount /tmp/home
   - tail -n 1 /etc/fstab
   # Create scratch folder and grant all users access
@@ -287,8 +287,8 @@ runcmd:
   - mkdir -p /scratch
   - mount /dev/sdd1 /scratch
   - chmod go+rw /scratch
-  - UUID=`$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
-  - echo "UUID=`${UUID}\t/scratch\text4\tdefaults,nofail\t0\t3" >> /etc/fstab
+  - UUID=$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
+  - echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t3" >> /etc/fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
   - echo ">=== end of /etc/fstab ===<"
