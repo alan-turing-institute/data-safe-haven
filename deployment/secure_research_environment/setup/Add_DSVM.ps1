@@ -212,7 +212,6 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 $cloudInitYaml = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
                                                         Replace("<datamount-username>", $config.sre.users.datamount.samAccountName).
                                                         Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
-                                                        Replace("<dsvm-admin-username>", $dsvmAdminUsername).
                                                         Replace("<dsvm-hostname>", $vmName).
                                                         Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
                                                         Replace("<dsvm-ldap-username>", $config.sre.users.ldap.dsvm.samAccountName).
