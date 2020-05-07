@@ -192,9 +192,6 @@ runcmd:
   # Set default terminal for xfce
   - echo ">=== Setting default xfce terminal... ===<"
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
-  # Ensure that the admin user owns their home directory
-  - echo ">=== Ensuring that admin user owns their home directory... ===<"
-  - chown -R <dsvm-admin-username>:<dsvm-admin-username> ~<dsvm-admin-username>
   # Ensure that sssd is running and enabled at startup
   - echo ">=== Restarting sssd service... ===<"
   - systemctl restart sssd
