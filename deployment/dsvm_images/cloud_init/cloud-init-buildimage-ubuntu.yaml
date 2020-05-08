@@ -1,11 +1,11 @@
 #cloud-config
 
 
-# Update package database on first boot (ie. run apt-get update)
+# Update package database on first boot (ie. run `apt-get update`)
 package_update: true
 
 
-# Upgrade installed packages on first boot (ie. run apt-get upgrade)
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
 package_upgrade: true
 
 
@@ -131,7 +131,6 @@ write_files:
     content: |
       # Performance log
 
-
 # List of packages to install with apt-get
 packages:
   - <apt packages>
@@ -145,17 +144,30 @@ runcmd:
   # Log system performance during the installation and record it each minute
   - nohup dstat --mem --cpu --time --output /installation/performance_log.csv 60 > /dev/null &
 
-  # Suppress apt prompts and warning messages then clean up installation
+  # Suppress apt prompts and warning messages
   - echo "Cleaning up unneeded packages"
   - export DEBIAN_FRONTEND=noninteractive
-  - apt-get -y autoremove
-  - apt-get clean
+
+  # Microsoft ODBC tools
+  - echo "Installing Microsoft ODBC tools"
+  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
+  - PATH=$PATH:/opt/mssql-tools/bin
+  - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # NVidia setup (following https://www.tensorflow.org/install/gpu)
   - echo ">=== $(date +%s) Installing NVidia requirements for tensorflow ===<"
   - apt-get install -y --no-install-recommends nvidia-driver-430
   - apt-get install -y --no-install-recommends cuda-10-1 libcudnn7=7.6.4.38-1+cuda10.1 libcudnn7-dev=7.6.4.38-1+cuda10.1
   - apt-get install -y --no-install-recommends libnvinfer6=6.0.1-1+cuda10.1 libnvinfer-dev=6.0.1-1+cuda10.1 libnvinfer-plugin6=6.0.1-1+cuda10.1
+
+  # Remove xscreensaver
+  - apt-get remove -y xscreensaver
+
+  # Clean up unneeded apt packages
+  - echo "Cleaning up unneeded packages"
+  - export DEBIAN_FRONTEND=noninteractive
+  - apt-get autoremove -y --purge
+  - apt-get clean
 
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
@@ -195,12 +207,6 @@ runcmd:
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
-
-  # Microsoft ODBC tools
-  - echo "Installing Microsoft ODBC tools"
-  - ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
-  - PATH=$PATH:/opt/mssql-tools/bin
-  - if [ "$(which sqlcmd)" = "" ]; then echo "Could not install Microsoft ODBC tools!"; exit 1; fi
 
   # Install PyCharm
   - echo "Installing PyCharm"
@@ -393,3 +399,10 @@ runcmd:
 
 final_message:
   "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
+
+# Shutdown at the end of the job to save on running costs
+power_state:
+  mode: poweroff
+  message: "Shutting down after cloud-init is finished"
+  timeout: 30
+  condition: True

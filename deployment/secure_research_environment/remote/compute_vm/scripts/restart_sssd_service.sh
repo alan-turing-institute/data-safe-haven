@@ -8,20 +8,20 @@ BLUE="\033[0;36m"
 END="\033[0m"
 
 echo -e "${BLUE}Checking SSSD status${END}"
-STATUS_CMD="sudo systemctl status sssd.service"
+STATUS_CMD="sudo systemctl status sssd"
 
 echo "Testing sssd status..."
 STATUS=$(${STATUS_CMD})
 if [ "$(echo $STATUS | grep 'Active: failed')" != "" ]; then
     echo -e "${RED}SSSD service has failed. Restarting...${END}"
-    sudo systemctl stop sssd.service
+    sudo systemctl stop sssd
     # Update sssd settings
-    sudo sed -i -E 's/(use_fully_qualified_names = ).*/\1False/' /etc/sssd/sssd.conf
+    sudo sed -i -E 's|(use_fully_qualified_names = ).*|\1False|' /etc/sssd/sssd.conf
     sudo sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
-    sudo sed -i -E 's/(access_provider = ).*/\1simple/' /etc/sssd/sssd.conf
+    sudo sed -i -E 's|(access_provider = ).*|\1simple|' /etc/sssd/sssd.conf
     # Force re-generation of config files
     sudo rm /var/lib/sss/db/*.ldb
-    sudo systemctl restart sssd.service
+    sudo systemctl restart sssd
 else
     echo -e "${BLUE} [o] SSSD service is working. No need to restart.${END}"
     echo "SSSD STATUS RESULT:"
