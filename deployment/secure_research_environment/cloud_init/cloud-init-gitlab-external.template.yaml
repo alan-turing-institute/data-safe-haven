@@ -214,6 +214,13 @@ runcmd:
   # Give <sre-admin-username> ownership of their home directory
   - |
     chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>";
+  # --------------------------------
+  # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
+  # --------------------------------
+  - echo "*** Adding zipfile_to_gitlab_project.py to crontab ***"
+  - echo "*/10 * * * * <sre-admin-username> /home/<sre-admin-username>/zipfile_to_gitlab_project.py" >> /etc/crontab
+  - echo "*** Adding check_merge_requests.py to crontab ***"
+  - echo 5,15,25,35,45,55 * * * * <sre-admin-username> /home/<sre-admin-username>/check_merge_requests.py" >> /etc/crontab
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
