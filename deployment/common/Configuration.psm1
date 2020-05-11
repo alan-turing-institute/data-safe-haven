@@ -375,7 +375,9 @@ function Add-SreConfig {
         artifacts = [ordered]@{
             rg = $storageRg
             accountName = "sre$($shm.id)artifacts${storageSuffix}".ToLower() | TrimToLength 24
-	    gitlabAirlockContainerName = "sre$($shm.id)gitlabairlock${storageSuffix}"
+            containers = [ordered]@{
+                gitlabAirlockName = "gitlabairlock"
+            }
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
