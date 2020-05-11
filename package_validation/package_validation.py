@@ -206,7 +206,7 @@ R_PLATFORM = 'CRAN'
 
 # FOR PYTHON PACKAGES
 # Reading the list of Python package names
-python_packages = read_list('tier3_pypi_whitelist.list')
+python_packages = read_list('../environment_configs/package_lists/tier3_pypi_whitelist.list')
 # Making a copy that will be extended with all the dependencies iteratively
 dependencies_included = python_packages.copy()
 # Process the dependencies for a list of packages. The results are included to the `dependencies_included` list structure.
@@ -215,14 +215,14 @@ get_recursive_dependencies(PYTHON_PLATFORM, python_packages, verbose = True)
 # Sorting the results
 dependencies_included.sort()
 # Exporting the results
-with open('dependencies_included_PyPI.list', 'w') as f:
+with open('dependencies_included_pypi.list', 'w') as f:
     for package_name in dependencies_included:
         f.write(package_name + '\n')
 
 
 # FOR R PACKAGES
 # Reading the list of R package names
-r_packages = read_list('cran.list')
+r_packages = read_list('../environment_configs/package_lists/tier3_cran_whitelist.list')
 # Making a copy that will be extended with all the dependencies iteratively
 dependencies_included = r_packages.copy()
 # Process the dependencies for a list of packages. The results are included to the `dependencies_included` list structure.
@@ -230,6 +230,6 @@ dependencies_included = r_packages.copy()
 get_recursive_dependencies(R_PLATFORM, r_packages, verbose = True)
 # Exporting the results
 dependencies_included.sort()
-with open('dependencies_included_CRAN.list', 'w') as f:
+with open('dependencies_included_cran.list', 'w') as f:
     for package_name in dependencies_included:
         f.write(package_name + '\n')
