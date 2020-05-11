@@ -430,14 +430,16 @@ You can work with any of the pre-installed applications and programming language
    - `Spyder`
    - `vim`
    - `Visual Studio Code`
+- Database access through the following applications:
+   - `Azure Data Studio`
+   - `DBeaver`
+   - `psql`
 - Writing tools include:
-   - `LaTeX` for technical writing
+   - `LaTeX` and `TeXStudio` for technical writing
    - `LibreOffice` for creating presentations
 - Other applications include:
-   - `dbeaver`
    - `firefox`
    - `git`
-   - `psql`
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
