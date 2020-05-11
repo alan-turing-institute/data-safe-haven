@@ -74,11 +74,10 @@ $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storag
 $success = $success -and $?
 # Expand the AD disconnection template before uploading
 $adScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw
-$tmplKeyVaultName = $config.keyvault.secretNames.aadAdminPassword
-$tmplAadPasswordName = $config.keyvault.secretNames.aadAdminPassword
-$tmplShmFqdn = $config.domain.fqdn
-$ExecutionContext.InvokeCommand.ExpandString($template) | Out-File $adScriptLocalFilePath
+$adScriptTemplate = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw
+$adScriptTemplate.Replace('<shm-keyvault-name>', $config.keyvault.name).
+                  Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
+                  Replace('<shm-fqdn>',$config.domain.fqdn) | Out-File $adScriptLocalFilePath
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
 $success = $success -and $?
 Remove-Item $adScriptLocalFilePath
