@@ -339,7 +339,7 @@ $params = @{
     gatewayHostname = "`"$($config.sre.rds.gateway.hostname)`""
     sh1Hostname = "`"$($config.sre.rds.sessionHost1.hostname)`""
     sh2Hostname = "`"$($config.sre.rds.sessionHost2.hostname)`""
-    sh3Hostname = "`"$($config.sre.rds.sessionHost2.hostname)`""
+    sh3Hostname = "`"$($config.sre.rds.sessionHost3.hostname)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
