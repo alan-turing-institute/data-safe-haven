@@ -47,6 +47,7 @@ if (-not $existingVm) {
 }
 $existingVmName = $existingVm.Name
 
+
 # Stop existing VM
 # ----------------
 Add-LogMessage -Level Info "Stopping old virtual machine."
@@ -73,49 +74,27 @@ if (-not $homeDisk) {
 }
 
 
-# Detach existing disks
-#----------------------
-Add-LogMessage -Level Info "Detaching data disk."
-$_ = Remove-AzVMDataDisk -VM $existingVm -Name $dataDiskName
+# Take snapshots of data disks
+#-----------------------------
+Add-LogMessage -Level Info "Snapshotting data disk."
+$dataDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $dataDisk.Id -Location $config.sre.location -CreateOption copy
+$dataDiskSnapshotName = $existingVmName + "-DATA-DISK-SNAPSHOT"
+$dataDiskSnapshot = New-AzSnapshot -Snapshot $dataDiskSnapshotConfig -SnapshotName $dataDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
 if ($?) {
-    Add-LogMessage -Level Success "Disk detachment succeeded"
+    Add-LogMessage -Level Success "Snapshot succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Disk detachment failed!"
+    Add-LogMessage -Level Fatal "Snapshot failed!"
 }
-Add-LogMessage -Level Info "Detaching home disk."
-$_ = Remove-AzVMDataDisk -VM $existingVm -Name $homeDiskName
+Add-LogMessage -Level Info "Snapshotting home disk."
+$homeDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $homeDisk.Id -Location $config.sre.location -CreateOption copy
+$homeDiskSnapshotName = $existingVmName + "-HOME-DISK-SNAPSHOT"
+$homeDiskSnapshot = New-AzSnapshot -Snapshot $homeDiskSnapshotConfig -SnapshotName $homeDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
 if ($?) {
-    Add-LogMessage -Level Success "Disk detachment succeeded"
+    Add-LogMessage -Level Success "Snapshot succeeded"
 } else {
-    Add-LogMessage -Level Fatal "Disk detachment failed!"
-}
-Add-LogMessage -Level Info "Committing changes to VM."
-$_ = Update-AzVM -ResourceGroupName $existingVm.ResourceGroupName -VM $existingVm
-if ($?) {
-    Add-LogMessage -Level Success "success"
-} else {
-    Add-LogMessage -Level Fatal "Failed to commit changes!"
+    Add-LogMessage -Level Fatal "Snapshot failed!"
 }
 
-
-# Remove the existing OS disk
-# ---------------------------
-$OsDiskName = $existingVmName + "-OS-DISK"
-Add-LogMessage -Level Info "Detaching home disk."
-$_ = Remove-AzVMDataDisk -VM $existingVm -Name $OsDiskName
-if ($?) {
-    Add-LogMessage -Level Success "Disk detachment succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Disk detachment failed!"
-}
-# Add-LogMessage -Level Info "Deleting existing OS disk."
-# $_ = Remove-AzDisk -Name $OsDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
-# if ($?) {
-#     Add-LogMessage -Level Success "Disk deletion succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "Disk deletion failed!"
-# }
-#
 
 # Remove the existing VM
 # ----------------------
@@ -125,6 +104,31 @@ if ($?) {
 #     Add-LogMessage -Level Success "VM removal succeeded"
 # } else {
 #     Add-LogMessage -Level Fatal "VM removal failed!"
+# }
+
+
+# Remove the existing disks
+# -------------------------
+# Add-LogMessage -Level Info "Deleting existing OS disk."
+# $_ = Remove-AzDisk -Name $OsDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
+# if ($?) {
+#     Add-LogMessage -Level Success "Disk deletion succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "Disk deletion failed!"
+# }
+# Add-LogMessage -Level Info "Deleting existing data disk."
+# $_ = Remove-AzDisk -Name $dataDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
+# if ($?) {
+#     Add-LogMessage -Level Success "Disk deletion succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "Disk deletion failed!"
+# }
+# Add-LogMessage -Level Info "Deleting existing home disk."
+# $_ = Remove-AzDisk -Name $homeDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
+# if ($?) {
+#     Add-LogMessage -Level Success "Disk deletion succeeded"
+# } else {
+#     Add-LogMessage -Level Fatal "Disk deletion failed!"
 # }
 
 
@@ -256,10 +260,14 @@ if (-not $bootDiagnosticsAccount) {
 }
 
 
-# Create a new NIC
-# ----------------
+# Deploy NIC and data disks
+# -------------------------
 # $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.151.2.163 -Location $config.sre.location
+$dataDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $dataDiskSnapshot.Id -CreateOption copy
+$dataDisk = New-AzDisk -Disk $dataDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-DATA-DISK"
+$homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
+$homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-HOME-DISK"
 
 
 # Deploy the VM
