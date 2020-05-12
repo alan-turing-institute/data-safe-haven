@@ -399,8 +399,6 @@ Once connected to it, you can carry out data science research while remaining co
 
 4. You should now be greeted by a Linux desktop.
 
-   > :warning: When you get to this screen it is **important** that you select the `Use default config` option or you will end up without a desktop menu bar!
-
    <p align="center">
       <img src="images/user_guide/dsvm_desktop_initial.png" width="80%" title="dsvm_desktop_initial">
    </p>
@@ -432,14 +430,16 @@ You can work with any of the pre-installed applications and programming language
    - `Spyder`
    - `vim`
    - `Visual Studio Code`
+- Database access through the following applications:
+   - `Azure Data Studio`
+   - `DBeaver`
+   - `psql`
 - Writing tools include:
-   - `LaTeX` for technical writing
+   - `LaTeX` and `TeXStudio` for technical writing
    - `LibreOffice` for creating presentations
 - Other applications include:
-   - `dbeaver`
    - `firefox`
    - `git`
-   - `psql`
 
 If you need anything that is not already installed, please discuss this with the designated contact for your SRE.
 
