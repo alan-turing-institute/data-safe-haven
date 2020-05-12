@@ -265,10 +265,29 @@ if (-not $bootDiagnosticsAccount) {
 # $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.151.2.163 -Location $config.sre.location
 $dataDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $dataDiskSnapshot.Id -CreateOption copy
+Add-LogMessage -Level Info "Creating new data disk."
 $dataDisk = New-AzDisk -Disk $dataDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-DATA-DISK"
+if ($dataDisk) {
+    Add-LogMessage -Level Success "Disk creation succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Disk creation failed!"
+}
+if ($dataDisk) {
+    Add-LogMessage -Level Info "Deleting data disk snapshot"
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $dataDiskSnapshot -Force
+}
+Add-LogMessage -Level Info "Creating new home disk."
 $homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
 $homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-HOME-DISK"
-
+if ($homeDisk) {
+    Add-LogMessage -Level Success "Disk creation succeeded"
+} else {
+    Add-LogMessage -Level Fatal "Disk creation failed!"
+}
+if ($homeDisk) {
+    Add-LogMessage -Level Info "Deleting home disk snapshot"
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshot -Force
+}
 
 # Deploy the VM
 # -------------
