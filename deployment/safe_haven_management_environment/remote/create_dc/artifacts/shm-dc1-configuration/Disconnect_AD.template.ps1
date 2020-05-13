@@ -6,12 +6,12 @@ if (-Not (Get-Module -ListAvailable -Name MSOnline)) {
     Install-Module -Name MSOnline -Force
 }
 
-Write-Host "Please use username admin@$tmplShmFqdn and the $tmplAadPasswordName from $tmplKeyVaultName."
+Write-Output "Please use username admin@<shm-fqdn> and the <aad-admin-password-name> from <shm-keyvault-name>."
 Connect-MsolService
-Write-Host "Disabling directory synchronisation..."
-Set-MsolDirSyncEnabled -EnableDirSync `$False -Force
-Write-Host "Is directory synchronisation currently enabled? `$((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled)"
+Write-Output "Disabling directory synchronisation..."
+Set-MsolDirSyncEnabled -EnableDirSync $False -Force
+Write-Output "Is directory synchronisation currently enabled? $((Get-MSOLCompanyInformation).DirectorySynchronizationEnabled)"
 # Remove user-added service principals except the MFA service principal
-Write-Host "Removing any connected applications..."
-Get-MsolServicePrincipal | Where-Object { `$_.AppPrincipalId -ne "981f26a1-7f43-403b-a875-f8b09b8cd720" } | Remove-MsolServicePrincipal 2> Out-Null
-Write-Host "Finished"
+Write-Output "Removing any user-added service principals..."
+Get-MsolServicePrincipal | Where-Object { $_.AppPrincipalId -ne "981f26a1-7f43-403b-a875-f8b09b8cd720" } | Remove-MsolServicePrincipal 2>&1 | Out-Null
+Write-Output "Finished"
