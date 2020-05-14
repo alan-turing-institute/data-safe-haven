@@ -39,9 +39,17 @@ if ($sa.subscriptionName -eq $subscriptionName) {
     # Create storage account 
     New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
     Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $rg -Name $sa.accountName -DefaultAction Deny
+
+    $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
+    $accountId = $resource.ResourceId
+
+
   }  
   else {
     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
+    $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
+    $accountId = $resource.ResourceId
+
 
   }
 }
@@ -57,6 +65,7 @@ if
 ($availability.Reason -eq "AlreadyExists")
 {
   Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
+  $accountId = $sa.accountId
  
 }
 
@@ -77,7 +86,7 @@ else {
   Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
 
   $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
-    -PrivateLinkServiceId $sa.accountId `
+    -PrivateLinkServiceId $accountId `
     -GroupId $sa.PrivateLinkServiceConnectionGroupId
 
   $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
@@ -123,7 +132,6 @@ else {
         -PrivateDnsRecords (New-AzPrivateDnsRecordConfig -IPv4Address $ipconfig.properties.privateIPAddress)
     }
   }
-
 
 
 }

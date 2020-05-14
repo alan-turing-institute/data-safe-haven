@@ -369,6 +369,11 @@
       }
     },
     "storageAccounts":[
+            {
+        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+        "accountName": "lwmshstorageconnection8",
+        "PrivateLinkServiceConnectionGroupId": "Blob"
+      },
       {
         "subscriptionName": "Living with Machines",
         "accountName": "openlwmshstorageconn",
