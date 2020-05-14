@@ -1,3 +1,5 @@
+# Setup script that creates a storage account and related private endpoint if in the same subscription
+# or only the private endpoint to already existing resources in other subscriptions.
 
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
@@ -7,13 +9,11 @@ param(
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
-
-# Get config and original context before changing subscription
+# Get config and set context
 # ------------------
 $config = Get-SreConfig $sreId
 $subscriptionName = $config.sre.subscriptionName
 
-$originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Loop over the storage accounts in the configuration
@@ -21,69 +21,73 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 Foreach ($sa in $config.sre.storageAccounts) {
 
-$availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
+  # check if it is available or not
+  $availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
 
-if ($sa.subscriptionName -eq $subscriptionName) {
+  if ($sa.subscriptionName -eq $subscriptionName) {
 
-  if($availability.NameAvailable){
+    if($availability.NameAvailable){
 
-     $rg = $config.sre.dataserver.rg
-  
-    # Create database resource group if it does not exist
-    # ---------------------------------------------------
+      # the resource group where to create the storage account
+       $rg = $config.sre.dataserver.rg
+    
+      # Create storage account if it does not exist
+      # ---------------------------------------------------
+      Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($rg)' in the subscription '$($sa.subscriptionName)'"
 
-    Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($rg)' in the subscription '$($sa.subscriptionName)'"
+      $_ = Deploy-ResourceGroup -Name $rg -Location $config.sre.location
 
-    $_ = Deploy-ResourceGroup -Name $rg -Location $config.sre.location
+      # Create storage account 
+      New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
 
-    # Create storage account 
-    New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
-    Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $rg -Name $sa.accountName -DefaultAction Deny
+      # Deny network access
+      Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $rg -Name $sa.accountName -DefaultAction Deny
 
+    }  
+    else {
+      Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
+    }
+
+    # in both cases, get resource and account id
     $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
     $accountId = $resource.ResourceId
-
-
-  }  
-  else {
-    Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
-    $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
-    $accountId = $resource.ResourceId
-
 
   }
-}
-else {
-if($availability.NameAvailable){
+  else {
 
-  Add-LogMessage -Level Info "The storage account '$($sa.accountName)' in the subscription '$($sa.subscriptionName)' does not exist yet"
-  exit
-}
+    if($availability.NameAvailable){
 
-else{
-if
-($availability.Reason -eq "AlreadyExists")
-{
-  Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
-  $accountId = $sa.accountId
- 
-}
+      # exit in case the storage account doesn't exist under the external subscription
+      Add-LogMessage -Level Info "The storage account '$($sa.accountName)' in the subscription '$($sa.subscriptionName)' does not exist yet"
+      exit
+    }
 
-else {
-   write-host("The storage account belongs to a different subscription, and we encountered the following issue", $availability.Reason)
-   exit
+    else {
 
-}
-}
-}
 
-  $privateEndpointName = $sa.accountName + "-endpoint"
-  $privateDnsZoneName = $sa.accountName + ".blob.core.windows.net"
+      if($availability.Reason -eq "AlreadyExists")
+      {
+        # read the account id from the config
+        Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
+        $accountId = $sa.accountId
+       
+      }
 
+      else {
+        # otherwise report which issue was encountered
+         write-host("The storage account belongs to a different subscription, and we encountered the following issue", $availability.Reason)
+         exit
+
+      }
+    }
+  }
 
   # Create the private endpoint
   # ---------------------------
   Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
+
+  $privateEndpointName = $sa.accountName + "-endpoint"
+  $privateDnsZoneName = $sa.accountName + ".blob.core.windows.net"
 
   $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
     -PrivateLinkServiceId $accountId `
@@ -103,7 +107,7 @@ else {
 
   # Create a Private DNS Zone
   # ----------------------------
-    
+      
   Add-LogMessage -Level Info "Creating private DNS zone '$($privateDnsZoneName)'"
   $zone = New-AzPrivateDnsZone -ResourceGroupName $config.sre.network.vnet.rg `
     -Name $privateDnsZoneName
@@ -132,6 +136,5 @@ else {
         -PrivateDnsRecords (New-AzPrivateDnsRecordConfig -IPv4Address $ipconfig.properties.privateIPAddress)
     }
   }
-
 
 }
