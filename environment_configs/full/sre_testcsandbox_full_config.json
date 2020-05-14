@@ -368,19 +368,12 @@
         "ip": "10.20.2.20"
       }
     },
-    "privateEndpoints":[
+    "storageAccounts":[
       {
         "subscriptionName": "Living with Machines",
-        "resourceName": "privateendpointtest-postgresserver",
-        "PrivateLinkServiceConnectionGroupId": "postgresqlServer",
-        "privateEndpointName": "privateendpointtest-privateendpoint"
-      },
-      {
-        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-        "resourceName": "sresandbox161storage",
+        "accountName": "openlwmshstorageconn",
         "PrivateLinkServiceConnectionGroupId": "Blob",
-        "privateEndpointName": "privateendpointtest-privateendpoint-storageaccount",
-        "privateDnsZoneName": "privatelink.blob.core.windows.net"
+        "accountId":"/subscriptions/b8871872-a5e3-473f-b9b9-f4baaab6a9a0/resourceGroups/fede-playground/providers/Microsoft.Storage/storageAccounts/openlwmshstorageconn"
       }
     ]
   }
