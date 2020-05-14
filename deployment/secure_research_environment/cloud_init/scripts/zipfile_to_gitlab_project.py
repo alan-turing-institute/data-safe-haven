@@ -100,9 +100,9 @@ def get_gitlab_config():
 
     with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
         ip = f.readlines()[0].strip()
+
     with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
         token = f.readlines()[0].strip()
-
     api_url = f"http://{ip}/api/v4/"
     headers = {"Authorization": "Bearer " + token}
 
@@ -498,8 +498,9 @@ def clone_commit_and_push(repo_name, path_to_unzipped_repo, tmp_repo_dir, branch
     working_dir = os.path.join(tmp_repo_dir, repo_name)
     assert os.path.exists(working_dir)
     # Copy the unzipped repo contents into our cloned (empty) repo
-    subprocess.run("cp","-r",os.path.join(path_to_unzipped_repo,"*"),".",
-                   cwd=working_dir, check=True)
+    for item in os.listdir(path_to_unzipped_repo):
+        subprocess.run(["cp","-r",os.path.join(path_to_unzipped_repo,item),"."],
+                       cwd=working_dir, check=True)
     # Create a branch named after the original commit hash
     subprocess.run(["git","checkout","-b",branch_name],
                    cwd=working_dir, check=True)
@@ -509,7 +510,7 @@ def clone_commit_and_push(repo_name, path_to_unzipped_repo, tmp_repo_dir, branch
     subprocess.run(["git","commit","-m", commit_msg],
                    cwd=working_dir, check=True)
     # Push back to gitlab external
-    subprocess.run(["git","push","--force","--all","--set-upstream","origin",branch_name],
+    subprocess.run(["git","push","--set-upstream","origin",branch_name],
                    cwd=working_dir, check=True)
 
 
@@ -634,7 +635,7 @@ def unzipped_repo_to_merge_request(repo_details,
     unapproved_branch_name = "branch-{}".format(commit_hash)
     mr_exists = check_if_merge_request_exists(unapproved_branch_name,
                                               target_project_id,
-                                              target_branch,
+                                              branch_name,
                                               gitlab_config["api_url"],
                                               gitlab_config["api_token"])
     if mr_exists:
@@ -709,6 +710,7 @@ def cleanup(zipfile_dir, tmp_unzipped_dir, tmp_repo_dir):
 
 
 def main():
+
     ZIPFILE_DIR = "/zfiles"
     # create a directory to unpack the zipfiles into
     TMP_UNZIPPED_DIR = "/tmp/unzipped"
