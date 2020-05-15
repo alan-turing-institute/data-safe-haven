@@ -589,9 +589,7 @@ function Invoke-WindowsConfigureAndUpdate {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $false, HelpMessage = "Additional Powershell modules")]
-        [string[]]$AdditionalPowershellModules = @(),
-        [Parameter(Mandatory = $false, HelpMessage = "Path to common_powershell directory")]
-        [string]$CommonPowershellPath = $null
+        [string[]]$AdditionalPowershellModules = @()
     )
     # Install core Powershell modules
     Add-LogMessage -Level Info "[ ] Installing core Powershell modules on '$VMName'"
@@ -621,9 +619,9 @@ Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 function Remove-VirtualMachine {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of the VM to remove")]
-        $Name,
+        [string]$Name,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
-        $ResourceGroupName
+        [string]$ResourceGroupName
     )
 
     $_ = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue

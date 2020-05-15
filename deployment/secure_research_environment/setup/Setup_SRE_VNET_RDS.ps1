@@ -333,7 +333,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg
 }
 
 
