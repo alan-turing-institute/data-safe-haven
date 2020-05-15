@@ -311,7 +311,7 @@
         "type": "Standard_LRS",
         "size_gb": "60"
       },
-      "datadisk": {
+      "scratchdisk": {
         "type": "Standard_LRS",
         "size_gb": "512"
       },
