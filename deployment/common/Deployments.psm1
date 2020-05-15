@@ -12,13 +12,13 @@ function Add-NetworkSecurityGroupRule {
         $NetworkSecurityGroup,
         [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
         $Description,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
         $Priority,
-        [Parameter(Mandatory = $true, HelpMessage = "Whether to apply to incoming or outgoing traffic")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
         $Direction,
-        [Parameter(Mandatory = $true, HelpMessage = "Whether network traffic is allowed or denied")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
         $Access,
-        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
         $Protocol,
         [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
         $SourceAddressPrefix,
@@ -333,11 +333,11 @@ function Deploy-UbuntuVirtualMachine {
         $AdminUsername,
         [Parameter(Mandatory = $true, HelpMessage = "Name of storage account for boot diagnostics")]
         $BootDiagnosticsAccount,
-        [Parameter(Mandatory = $true, HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Cloud-init YAML file")]
         $CloudInitYaml,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "ID of network card to attach to this VM")]
         $NicId,
         [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
         $OsDiskType,
@@ -345,7 +345,7 @@ function Deploy-UbuntuVirtualMachine {
         $ResourceGroupName,
         [Parameter(Mandatory = $true, ParameterSetName="ByImageId", HelpMessage = "ID of VM image to deploy")]
         $ImageId = $null,
-        [Parameter(Mandatory = $true, ParameterSetName="ByImageSku", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         $ImageSku = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
         $OsDiskSizeGb = $null,
@@ -504,9 +504,9 @@ Export-ModuleMember -Function Enable-AzVM
 # ----------------------------------
 function Get-AzSubnet {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to retrieve")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Virtual network that this subnet belongs to")]
         $VirtualNetwork
     )
     $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
@@ -519,9 +519,9 @@ Export-ModuleMember -Function Get-AzSubnet
 # -----------------------
 function Invoke-RemoteScript {
     param(
-        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run locally")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByPath", HelpMessage = "Path to local script that will be run remotely")]
         $ScriptPath,
-        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Name of VM to run on")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByString", HelpMessage = "Contents of script that will be run remotely")]
         $Script,
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
         $VMName,
@@ -871,7 +871,7 @@ Export-ModuleMember -Function New-DNSZone
 # --------------
 function Get-NSRecords {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Record Set")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
         $RecordSetName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
         $DnsZoneName,
@@ -889,7 +889,7 @@ Export-ModuleMember -Function Get-NSRecords
 # ---------------------------------------------------------
 function Set-NSRecords {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Record Set")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
         $RecordSetName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
         $DnsZoneName,
@@ -919,9 +919,9 @@ Export-ModuleMember -Function Set-NSRecords
 # ---------------------------------------------------------
 function Set-DnsZoneAndParentNSRecords {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to create")]
         $DnsZoneName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group holding DNS zones")]
         $ResourceGroupName
     )
 
