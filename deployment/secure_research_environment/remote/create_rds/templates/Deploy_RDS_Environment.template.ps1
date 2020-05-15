@@ -21,12 +21,12 @@ Start-Service ShellHWDetection
 Write-Output "Removing any old RDS settings..."
 foreach ($collection in $(Get-RDSessionCollection -ErrorAction SilentlyContinue)) {
     Write-Output "... removing existing RDSessionCollection: '$($collection.CollectionName)'"
-    Remove-RDSessionCollection -CollectionName $collection.CollectionName -Force -ErrorAction SilentlyContinue
+    Remove-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName $collection.CollectionName -Force -ErrorAction SilentlyContinue
 }
 foreach ($server in $(Get-RDServer -ErrorAction SilentlyContinue)) {
     Write-Output "... removing existing RDServer: '$($server.Server)'"
     foreach ($role in $server.Roles) {
-        Remove-RDServer -Server $server.Server -Role $role -Force -ErrorAction SilentlyContinue
+        Remove-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server $server.Server -Role $role -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -37,12 +37,12 @@ Write-Output "Creating RDS Environment..."
 try {
     # Setup licensing server
     New-RDSessionDeployment -ConnectionBroker "<rdsGatewayVmFqdn>" -WebAccessServer "<rdsGatewayVmFqdn>" -SessionHost @("<rdsSh1VmFqdn>", "<rdsSh2VmFqdn>", "<rdsSh3VmFqdn>") -ErrorAction Stop
-    Add-RDServer -Server <rdsGatewayVmFqdn> -Role RDS-LICENSING -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    Set-RDLicenseConfiguration -LicenseServer <rdsGatewayVmFqdn> -Mode PerUser -ConnectionBroker <rdsGatewayVmFqdn> -Force -ErrorAction Stop
+    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
+    Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
     # Setup gateway server
     $_ = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
-    Add-RDServer -Server <rdsGatewayVmFqdn> -Role RDS-GATEWAY -ConnectionBroker <rdsGatewayVmFqdn> -GatewayExternalFqdn <sreFqdn> -ErrorAction Stop
-    Set-RDWorkspace -Name "Safe Haven Applications" -ConnectionBroker <rdsGatewayVmFqdn>
+    Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreFqdn>" -ErrorAction Stop
+    Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
     Write-Output " [o] RDS environment configuration update succeeded"
 } catch {
     Write-Output " [x] RDS environment configuration update failed!"
@@ -69,9 +69,9 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
     # Create collections
     Write-Output "Creating '$collectionName' collection..."
     try {
-        $_ = New-RDSessionCollection -CollectionName "$collectionName" -SessionHost "$sessionHost" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-        $_ = Set-RDSessionCollectionConfiguration -CollectionName "$collectionName" -UserGroup "<shmNetbiosName>\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-        $_ = Set-RDSessionCollectionConfiguration -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\<rdsGatewayVmName>\$shareName" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
+        $_ = New-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -SessionHost "$sessionHost" -ErrorAction Stop
+        $_ = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -UserGroup "<shmNetbiosName>\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ErrorAction Stop
+        $_ = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\<rdsGatewayVmName>\$shareName" -ErrorAction Stop
         Write-Output " [o] Creating '$collectionName' collection succeeded"
     } catch {
         Write-Output " [x] Creating '$collectionName' collection failed!"
@@ -85,14 +85,13 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $_ = New-RDRemoteApp -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.151" -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.152:3000" -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    $_ = New-RDRemoteApp -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
-    # $_ = New-RDRemoteApp -Alias "WinSCP" -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ConnectionBroker <rdsGatewayVmFqdn> -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.151" -CollectionName "Applications" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.152:3000" -CollectionName "Applications" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"
