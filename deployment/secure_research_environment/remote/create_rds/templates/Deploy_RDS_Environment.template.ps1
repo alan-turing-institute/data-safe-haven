@@ -52,9 +52,10 @@ try {
 
 # Create collections
 # ------------------
-foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUserSgName>", "F:\AppFileShares"),
-                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "G:\RDPFileShares"),
-                               ("Review", "<rdsSh3VmFqdn>", "<reviewUserSgName>", "H:\ReviewFileShares"))) {
+$driveLetters = Get-Volume | Where-Object { $_.FileSystemLabel -Like "DATA-[0-9]" } | ForEach-Object { $_.DriveLetter } | Sort
+foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUserSgName>", "$($driveLetters[0]):\AppFileShares"),
+                               ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "$($driveLetters[1]):\RDPFileShares"),
+                               ("Review", "<rdsSh3VmFqdn>", "<reviewUserSgName>", "$($driveLetters[2]):\ReviewFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
 
     # Setup user profile disk shares
