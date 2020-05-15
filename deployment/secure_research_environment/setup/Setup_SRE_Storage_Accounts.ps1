@@ -87,7 +87,9 @@ Foreach ($sa in $config.sre.storageAccounts) {
   Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
 
   $privateEndpointName = $sa.accountName + "-endpoint"
-  $privateDnsZoneName = $sa.accountName + ".blob.core.windows.net"
+
+  $privateDnsZoneName = $($sa.accountName +"." + $sa.PrivateLinkServiceConnectionGroupId+ ".core.windows.net").ToLower()
+  $privateDnsZoneName
 
   $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
     -PrivateLinkServiceId $accountId `
