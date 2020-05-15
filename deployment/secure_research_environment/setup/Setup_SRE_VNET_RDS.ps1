@@ -279,7 +279,6 @@ if ($?) {
 Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force
 Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force
-Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Set-RDPublishedName.ps1") -Blob "Set-RDPublishedName.ps1" -Force
 if ($?) {
     Add-LogMessage -Level Success "File uploading succeeded"
 } else {
