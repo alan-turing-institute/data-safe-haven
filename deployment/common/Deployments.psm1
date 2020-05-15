@@ -6,29 +6,29 @@ Import-Module $PSScriptRoot/Logging.psm1
 # -------------------------------------------------------
 function Add-NetworkSecurityGroupRule {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
+        [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
         $NetworkSecurityGroup,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "A description of the network security rule")]
+        [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
         $Description,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Priority,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Whether to apply to incoming or outgoing traffic")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether to apply to incoming or outgoing traffic")]
         $Direction,
-        [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Whether network traffic is allowed or denied")]
+        [Parameter(Mandatory = $true, HelpMessage = "Whether network traffic is allowed or denied")]
         $Access,
-        [Parameter(Position = 6, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Protocol,
-        [Parameter(Position = 7, Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
         $SourceAddressPrefix,
-        [Parameter(Position = 8, Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
+        [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
         $SourcePortRange,
-        [Parameter(Position = 9, Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
         $DestinationAddressPrefix,
-        [Parameter(Position = 10, Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
+        [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
         $DestinationPortRange,
-        [Parameter(Position = 11, Mandatory = $false, HelpMessage = "Print verbose logging messages")]
+        [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
         [switch]$VerboseLogging = $false
     )
     if ($VerboseLogging) { Add-LogMessage -Level Info "Ensuring that NSG rule '$Name' exists on '$($NetworkSecurityGroup.Name)'..." }
@@ -69,9 +69,9 @@ Export-ModuleMember -Function Add-NetworkSecurityGroupRule
 # ------------------------
 function Add-VmToNSG {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual machine")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine")]
         $VMName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of network security group")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group")]
         $NSGName
     )
     Add-LogMessage -Level Info ("[ ] Associating $VMName with $NSGName...")
@@ -92,11 +92,11 @@ Export-ModuleMember -Function Add-VmToNSG
 # -----------------------------------------
 function Deploy-ArmTemplate {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to template file")]
+        [Parameter(Mandatory = $true, HelpMessage = "Path to template file")]
         $TemplatePath,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Template parameters")]
+        [Parameter(Mandatory = $true, HelpMessage = "Template parameters")]
         $Params,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName
     )
     $templateName = Split-Path -Path "$TemplatePath" -LeafBase
@@ -116,11 +116,11 @@ Export-ModuleMember -Function Deploy-ArmTemplate
 # ---------------------------------------
 function Deploy-KeyVault {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of disk to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of disk to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that key vault '$Name' exists..."
@@ -145,15 +145,15 @@ Export-ModuleMember -Function Deploy-KeyVault
 # ------------------------------------------
 function Deploy-ManagedDisk {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of disk to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of disk to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Disk size in GB")]
+        [Parameter(Mandatory = $true, HelpMessage = "Disk size in GB")]
         $SizeGB,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
         $Type,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that managed disk '$Name' exists..."
@@ -179,11 +179,11 @@ Export-ModuleMember -Function Deploy-ManagedDisk
 # --------------------------------------------------
 function Deploy-NetworkSecurityGroup {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that network security group '$Name' exists..."
@@ -208,9 +208,9 @@ Export-ModuleMember -Function Deploy-NetworkSecurityGroup
 # ------------------------------------------
 function Deploy-ResourceGroup {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that resource group '$Name' exists..."
@@ -235,11 +235,11 @@ Export-ModuleMember -Function Deploy-ResourceGroup
 # ----------------------------------
 function Deploy-Subnet {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "A VirtualNetwork object to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "A VirtualNetwork object to deploy into")]
         $VirtualNetwork,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
         $AddressPrefix
     )
     Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
@@ -266,11 +266,11 @@ Export-ModuleMember -Function Deploy-Subnet
 # ------------------------------------------
 function Deploy-StorageAccount {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of storage account to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that storage account '$Name' exists in '$ResourceGroupName'..."
@@ -295,9 +295,9 @@ Export-ModuleMember -Function Deploy-StorageAccount
 # ------------------------------------------
 function Deploy-StorageContainer {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
         $StorageAccount
     )
     Add-LogMessage -Level Info "Ensuring that storage container '$Name' exists..."
@@ -440,13 +440,13 @@ Export-ModuleMember -Function Deploy-VirtualMachineNIC
 # ------------------------------------------
 function Deploy-VirtualNetwork {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
+        [Parameter(Mandatory = $true, HelpMessage = "Specifies a range of IP addresses for a virtual network")]
         $AddressPrefix,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location
     )
     Add-LogMessage -Level Info "Ensuring that virtual network '$Name' exists..."
@@ -471,9 +471,9 @@ Export-ModuleMember -Function Deploy-VirtualNetwork
 # ------------------------------------
 function Enable-AzVM {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM to enable")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM to enable")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         $ResourceGroupName
     )
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
@@ -504,9 +504,9 @@ Export-ModuleMember -Function Enable-AzVM
 # ----------------------------------
 function Get-AzSubnet {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of subnet to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Virtual network to deploy into")]
         $VirtualNetwork
     )
     $refreshedVNet = Get-AzVirtualNetwork -Name $VirtualNetwork.Name -ResourceGroupName $VirtualNetwork.ResourceGroupName
@@ -618,10 +618,10 @@ Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
 # ----------------------
 function Remove-VirtualMachine {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of the VM to remove")]
-        [string]$Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
-        [string]$ResourceGroupName
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the VM to remove")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the VM")]
+        $ResourceGroupName
     )
 
     $_ = Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -644,9 +644,9 @@ Export-ModuleMember -Function Remove-VirtualMachine
 # ---------------------------
 function Remove-VirtualMachineDisk {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of the disk to remove")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the disk to remove")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group containing the disk")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the disk")]
         $ResourceGroupName
     )
 
@@ -670,9 +670,9 @@ Export-ModuleMember -Function Remove-VirtualMachineDisk
 # ----------------------------
 function Remove-VirtualMachineNIC {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of VM NIC to remove")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of VM NIC to remove")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to remove from")]
         $ResourceGroupName
     )
     $_ = Get-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -695,9 +695,9 @@ Export-ModuleMember -Function Remove-VirtualMachineNIC
 # --------------------------------------------------------------------------
 function Set-KeyVaultPermissions {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault to set the permissions on")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
         $GroupName
     )
     Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
@@ -845,9 +845,9 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 # ------------------------------------
 function New-DNSZone {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
         $Name,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName
     )
     Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
@@ -871,11 +871,11 @@ Export-ModuleMember -Function New-DNSZone
 # --------------
 function Get-NSRecords {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Record Set")]
         $RecordSetName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
         $DnsZoneName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName
     )
     Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
@@ -889,13 +889,13 @@ Export-ModuleMember -Function Get-NSRecords
 # ---------------------------------------------------------
 function Set-NSRecords {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of Record Set")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Record Set")]
         $RecordSetName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
         $DnsZoneName,
-        [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Position = 3, Mandatory = $true, HelpMessage = "NS records to add")]
+        [Parameter(Mandatory = $true, HelpMessage = "NS records to add")]
         $NsRecords
     )
     $_ = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -919,9 +919,9 @@ Export-ModuleMember -Function Set-NSRecords
 # ---------------------------------------------------------
 function Set-DnsZoneAndParentNSRecords {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS Zone to create")]
         $DnsZoneName,
-        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of Resource Group holding DNS Zones")]
         $ResourceGroupName
     )
 
