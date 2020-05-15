@@ -130,6 +130,17 @@ write_files:
     permissions: "0644"
     content: |
       # Performance log
+  - path: "/usr/share/applications/jupyter-notebook.desktop"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=Jupyter Notebook
+      Exec=jupyter notebook
+      Icon=/usr/lib/python3/dist-packages/notebook/static/base/images/favicon.ico
+      Categories=Utility;TextEditor;Development;IDE;
   - path: "/usr/share/applications/pycharm.desktop"
     owner: "root:root"
     permissions: "0644"
