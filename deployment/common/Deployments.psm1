@@ -476,8 +476,8 @@ function Enable-AzVM {
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         $ResourceGroupName
     )
-    Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name'"
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    Add-LogMessage -Level Info "[ ] (Re)starting VM '$Name' [$powerState]"
     if ($powerState -eq "PowerState/running") {
         $_ = Restart-AzVM -Name $Name -ResourceGroupName $ResourceGroupName
         $success = $?
@@ -486,10 +486,15 @@ function Enable-AzVM {
         $success = $?
     }
     $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+    while ($powerState -ne "PowerState/running") {
+        $powerState = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code[1]
+        Start-Sleep 5
+    }
+    $success = $success -And $?
     if ($success) {
-        Add-LogMessage -Level Success "Successfully (re)started '$Name' [$powerstate]"
+        Add-LogMessage -Level Success "Successfully (re)started '$Name' [$powerState]"
     } else {
-        Add-LogMessage -Level Fatal "Failed to (re)start '$Name' [$powerstate]!"
+        Add-LogMessage -Level Fatal "Failed to (re)start '$Name' [$powerState]!"
     }
 }
 Export-ModuleMember -Function Enable-AzVM
