@@ -68,7 +68,11 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
     shutil.rmtree(tmp_unzipped_dir, ignore_errors=True)
     os.makedirs(tmp_unzipped_dir)
     # look in a directory for zipfiles
-    zipfiles = os.listdir(zipfile_dir)
+    try:
+        zipfiles = os.listdir(zipfile_dir)
+    except(FileNotFoundError):
+        logger.info("Zipfile dir {} not found - assume nothing to unzip".format(zipfile_dir))
+        return []
     for zipfile in zipfiles:
         filename_match = repo_commit_regex.search(zipfile)
         if not filename_match:
@@ -698,14 +702,17 @@ def cleanup(zipfile_dir, tmp_unzipped_dir, tmp_repo_dir):
                        tmp_unzipped_dir are copied in.  Remove.
     """
     logger.info(" === cleaning up ======")
-    shutil.rmtree(tmp_unzipped_dir)
+    shutil.rmtree(tmp_unzipped_dir, ignore_errors=True)
     logger.info("Removed directory {}".format(tmp_unzipped_dir))
-    shutil.rmtree(tmp_repo_dir)
+    shutil.rmtree(tmp_repo_dir, ignore_errors=True)
     logger.info("Removed directory {}".format(tmp_repo_dir))
-    for filename in os.listdir(zipfile_dir):
-        filepath = os.path.join(zipfile_dir, filename)
-        subprocess.run(["rm",filepath], check=True)
-        logger.info("Removed file {}".format(filepath))
+    try:
+        for filename in os.listdir(zipfile_dir):
+            filepath = os.path.join(zipfile_dir, filename)
+            subprocess.run(["rm",filepath], check=True)
+            logger.info("Removed file {}".format(filepath))
+    except(FileNotFoundError):
+        logger.info("Zipfile directory {} not found - skipping".format(zipfile_dir))
     return True
 
 
