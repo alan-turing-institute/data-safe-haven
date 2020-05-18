@@ -62,7 +62,7 @@ if ($?) {
 
 # Find the existing data disks
 # ----------------------------
-$dataDiskName = $existingVmName + "-DATA-DISK"
+$dataDiskName = $existingVmName + "-SCRATCH-DISK"
 $dataDisk = Get-AzDisk -DiskName $dataDiskName
 if (-not $dataDisk) {
     Add-LogMessage -Level Fatal "Data disk '$dataDiskName' not found, aborting upgrade."
@@ -78,7 +78,7 @@ if (-not $homeDisk) {
 #-----------------------------
 Add-LogMessage -Level Info "Snapshotting data disk."
 $dataDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $dataDisk.Id -Location $config.sre.location -CreateOption copy
-$dataDiskSnapshotName = $existingVmName + "-DATA-DISK-SNAPSHOT"
+$dataDiskSnapshotName = $existingVmName + "-SCRATCH-DISK-SNAPSHOT"
 $dataDiskSnapshot = New-AzSnapshot -Snapshot $dataDiskSnapshotConfig -SnapshotName $dataDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
 if ($?) {
     Add-LogMessage -Level Success "Snapshot succeeded"
@@ -266,7 +266,7 @@ if (-not $bootDiagnosticsAccount) {
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.151.2.163 -Location $config.sre.location
 $dataDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $dataDiskSnapshot.Id -CreateOption copy
 Add-LogMessage -Level Info "Creating new data disk."
-$dataDisk = New-AzDisk -Disk $dataDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-DATA-DISK"
+$dataDisk = New-AzDisk -Disk $dataDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-SCRATCH-DISK"
 if ($dataDisk) {
     Add-LogMessage -Level Success "Disk creation succeeded"
 } else {
@@ -278,7 +278,7 @@ if ($dataDisk) {
 }
 Add-LogMessage -Level Info "Creating new home disk."
 $homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
-$homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-NEW-HOME-DISK"
+$homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-HOME-DISK"
 if ($homeDisk) {
     Add-LogMessage -Level Success "Disk creation succeeded"
 } else {
