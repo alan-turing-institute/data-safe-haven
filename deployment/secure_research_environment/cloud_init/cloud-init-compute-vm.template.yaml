@@ -192,8 +192,8 @@ write_files:
         parted $DEVICE print
         sleep 5
         mkfs -t ext4 $PARTITION
-        mkdir -p /scratch
       fi
+      mkdir -p /scratch
       mount $PARTITION /scratch
       chmod go+rw /scratch
       UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
