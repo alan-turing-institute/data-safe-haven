@@ -6,6 +6,7 @@ param(
   [string]$sreId
 )
 
+Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 
@@ -38,10 +39,15 @@ Foreach ($sa in $config.sre.storageAccounts) {
       $_ = Deploy-ResourceGroup -Name $rg -Location $config.sre.location
 
       # Create storage account 
-      New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
+      $storageAccount = New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
 
       # Deny network access
       Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $rg -Name $sa.accountName -DefaultAction Deny
+
+      # Create two blob container: ingress and egress, which will have associated two differet SAS tokens with different permissions
+      $ctx = $storageAccount.Context
+      New-AzStorageContainer -Name "ingress" -Context $ctx 
+      New-AzStorageContainer -Name "egress" -Context $ctx 
 
     }  
     else {
