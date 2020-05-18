@@ -13,6 +13,10 @@ PIP_PACKAGES=$3
 # TODO: revisit this logic if/when Python 10 is released!
 VERSION=$(echo $ENV_NAME | sed "s/py\([0-9]\)\([0-9]*\)/\1.\2/")
 
+# Require package versions if any are requested
+CONDA_VERSIONED_PACKAGES=$CONDA_PACKAGES
+# <required versions>
+
 # Create environment
 START_TIME=$(date +%s)
 echo ">=== ${START_TIME} Creating $ENV_NAME conda environment ===<"
@@ -21,9 +25,9 @@ echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
 echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with $CREATE_EXE..."
 echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
 if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then
-    $CREATE_EXE create -y --name $ENV_NAME python=$VERSION $CONDA_PACKAGES
+    $CREATE_EXE create -y --name $ENV_NAME python=$VERSION $CONDA_VERSIONED_PACKAGES
 else
-    conda install -y --name $ENV_NAME $CONDA_PACKAGES
+    conda install -y --name $ENV_NAME $CONDA_VERSIONED_PACKAGES
 fi
 
 # Check that environment exists

@@ -95,7 +95,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange *
-Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+$_ = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Insert scripts into the cloud-init template
@@ -153,6 +153,11 @@ $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages} $
                   "- export PYTHON37_CONDA_PACKAGES=`"${python37CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
                   "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
+# Require specific versions of some packages
+$condaVersions = @{ }
+Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-required-versions.list") | ForEach-Object { $package, $version = $_.Split(":"); $condaVersions[$package] = $version.Trim() }
+$requiredCondaVersions = "CONDA_VERSIONED_PACKAGES=`$(echo `$CONDA_PACKAGES | sed " + $($condaVersions.Keys | ForEach-Object { "'s/$_/$_$($condaVersions[$_])/' " } | Join-String -Separator " ") + ")"
+$cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requiredCondaVersions)
 
 
 # Insert R package details into the cloud-init template
