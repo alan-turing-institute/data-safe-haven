@@ -1,7 +1,6 @@
 abind
 ada
 akima
-ape
 assertthat
 AUC
 backports
@@ -23,7 +22,6 @@ coda
 codetools
 colorRamps
 colorspace
-COMBAT
 compiler
 corrgram
 corrplot
@@ -58,7 +56,6 @@ factoextra
 FactoMineR
 fda
 fields
-fmsb
 foreach
 forecast
 foreign
@@ -152,7 +149,6 @@ purrr
 purrrlyr
 pvclust
 quanteda
-quantmod
 R6
 randomForest
 RColorBrewer
@@ -181,11 +177,9 @@ runjags
 RWeka
 Scale
 scales
-Seurat
 shiny
 slam
 sna
-SnowballC
 sourcetools
 sp
 spacyr
@@ -198,7 +192,6 @@ stats4
 stm
 stringi
 stringr
-surveillance
 survival
 synthpop
 tableone
@@ -208,7 +201,6 @@ text2vec
 tgp
 threejs
 tibble
-tidyr
 tidyr
 tidytext
 tidyverse
