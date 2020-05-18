@@ -58,7 +58,7 @@ $gitlabExternalVmName = $config.sre.webapps.gitlab.external.vmName
 # Go via blob storage - first create storage account if not already there
 $resourceGroupName = $config.sre.webapps.rg
 $sreStorageAccountName = $config.sre.storage.artifacts.accountName
-$sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $resourceGroupName -Location $config.sre.location
+$sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $config.sre.storage.artifacts.rg -Location $config.sre.location
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
