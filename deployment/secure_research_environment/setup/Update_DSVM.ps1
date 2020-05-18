@@ -62,10 +62,10 @@ if ($?) {
 
 # Find the existing data disks
 # ----------------------------
-$dataDiskName = $existingVmName + "-SCRATCH-DISK"
-$dataDisk = Get-AzDisk -DiskName $dataDiskName
-if (-not $dataDisk) {
-    Add-LogMessage -Level Fatal "Data disk '$dataDiskName' not found, aborting upgrade."
+$scratchDiskName = $existingVmName + "-SCRATCH-DISK"
+$scratchDisk = Get-AzDisk -DiskName $scratchDiskName
+if (-not $scratchDisk) {
+    Add-LogMessage -Level Fatal "Data disk '$scratchDiskName' not found, aborting upgrade."
 }
 $homeDiskName = $existingVmName + "-HOME-DISK"
 $homeDisk = Get-AzDisk -DiskName $homeDiskName
@@ -76,10 +76,10 @@ if (-not $homeDisk) {
 
 # Take snapshots of data disks
 #-----------------------------
-Add-LogMessage -Level Info "Snapshotting data disk."
-$dataDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $dataDisk.Id -Location $config.sre.location -CreateOption copy
-$dataDiskSnapshotName = $existingVmName + "-SCRATCH-DISK-SNAPSHOT"
-$dataDiskSnapshot = New-AzSnapshot -Snapshot $dataDiskSnapshotConfig -SnapshotName $dataDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
+Add-LogMessage -Level Info "Snapshotting scratch disk."
+$scratchDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $scratchDisk.Id -Location $config.sre.location -CreateOption copy
+$scratchDiskSnapshotName = $existingVmName + "-SCRATCH-DISK-SNAPSHOT"
+$scratchDiskSnapshot = New-AzSnapshot -Snapshot $scratchDiskSnapshotConfig -SnapshotName $scratchDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
 if ($?) {
     Add-LogMessage -Level Success "Snapshot succeeded"
 } else {
@@ -116,8 +116,8 @@ if ($?) {
 # } else {
 #     Add-LogMessage -Level Fatal "Disk deletion failed!"
 # }
-# Add-LogMessage -Level Info "Deleting existing data disk."
-# $_ = Remove-AzDisk -Name $dataDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
+# Add-LogMessage -Level Info "Deleting existing scratch disk."
+# $_ = Remove-AzDisk -Name $scratchDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
 # if ($?) {
 #     Add-LogMessage -Level Success "Disk deletion succeeded"
 # } else {
@@ -222,33 +222,50 @@ $dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name 
 # Construct the cloud-init yaml file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
-try {
-    # Load cloud-init template
-    $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
-    $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
-    if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-    $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
-    # Set template expansion variables
-    $DATASERVER_HOSTNAME = $config.sre.dataserver.hostname
-    $LDAP_SECRET_PLAINTEXT = $dsvmLdapPassword
-    $DOMAIN_UPPER = $($config.shm.domain.fqdn).ToUpper()
-    $DOMAIN_LOWER = $DOMAIN_UPPER.ToLower()
-    $AD_DC_NAME_UPPER = $($config.shm.dc.hostname).ToUpper()
-    $AD_DC_NAME_LOWER = $AD_DC_NAME_UPPER.ToLower()
-    $ADMIN_USERNAME = $dsvmAdminUsername
-    $MACHINE_NAME = $vmName
-    $DATA_MOUNT_USERNAME = $config.sre.users.datamount.samAccountName
-    $DATA_MOUNT_PASSWORD = $dataMountPassword
-    $LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
-    $LDAP_BASE_DN = $config.shm.domain.userOuPath
-    $LDAP_BIND_DN = "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)"
-    $LDAP_FILTER = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))"
-    $CRAN_MIRROR_URL = $addresses.cran.url
-    $PYPI_MIRROR_URL = $addresses.pypi.url
-    $PYPI_MIRROR_HOST = $addresses.pypi.host
-    $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
-} catch [System.Management.Automation.ParseException] {
-    Add-LogMessage -Level Fatal "Failed to construct cloud-init from template!"
+$cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
+$cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
+if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
+$cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
+                                                            Replace("<datamount-username>", $config.sre.users.datamount.samAccountName).
+                                                            Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
+                                                            Replace("<dsvm-hostname>", $vmName).
+                                                            Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
+                                                            Replace("<dsvm-ldap-username>", $config.sre.users.ldap.dsvm.samAccountName).
+                                                            Replace("<mirror-host-pypi>", $addresses.pypi.host).
+                                                            Replace("<mirror-url-cran>", $addresses.cran.url).
+                                                            Replace("<mirror-url-pypi>", $addresses.pypi.url).
+                                                            Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
+                                                            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
+                                                            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
+                                                            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+                                                            Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
+                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)").
+                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
+
+
+# Insert xrdp logo into the cloud-init template
+# Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
+# If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
+# --------------------------------------------------------------------------------------------------------------
+$xrdpCustomLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp"
+$input = Get-Content $xrdpCustomLogoPath -Raw -AsByteStream
+$outputStream = New-Object IO.MemoryStream
+$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+$gzipStream.Write($input, 0, $input.Length)
+$gzipStream.Close()
+$xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
+$outputStream.Close()
+$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
+
+
+# Insert PyCharm defaults into the cloud-init template
+# ----------------------------------------------------
+$indent = "      "
+foreach ($scriptName in @("jdk.table.xml",
+                          "project.default.xml")) {
+    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
+    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
 }
 
 
@@ -263,18 +280,18 @@ if (-not $bootDiagnosticsAccount) {
 # Deploy NIC and data disks
 # -------------------------
 # $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.151.2.163 -Location $config.sre.location
-$dataDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $dataDiskSnapshot.Id -CreateOption copy
-Add-LogMessage -Level Info "Creating new data disk."
-$dataDisk = New-AzDisk -Disk $dataDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-SCRATCH-DISK"
-if ($dataDisk) {
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.150.2.161 -Location $config.sre.location
+$scratchDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $scratchDiskSnapshot.Id -CreateOption copy
+Add-LogMessage -Level Info "Creating new scratch disk."
+$scratchDisk = New-AzDisk -Disk $scratchDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-SCRATCH-DISK"
+if ($scratchDisk) {
     Add-LogMessage -Level Success "Disk creation succeeded"
 } else {
     Add-LogMessage -Level Fatal "Disk creation failed!"
 }
-if ($dataDisk) {
-    Add-LogMessage -Level Info "Deleting data disk snapshot"
-    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $dataDiskSnapshot -Force
+if ($scratchDisk) {
+    Add-LogMessage -Level Info "Deleting scratch disk snapshot"
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $scratchDiskSnapshot -Force
 }
 Add-LogMessage -Level Info "Creating new home disk."
 $homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
@@ -289,7 +306,7 @@ if ($homeDisk) {
     $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshot -Force
 }
 
-# Deploy the VM
+
 # -------------
 $params = @{
     Name = $vmName
@@ -297,12 +314,12 @@ $params = @{
     AdminPassword = $dsvmAdminPassword
     AdminUsername = $dsvmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitYaml
+    CloudInitYaml = $cloudInitTemplate
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = $config.sre.dsvm.osdisk.type
     ResourceGroupName = $config.sre.dsvm.rg
-    DataDiskIds = @($dataDisk.Id,$homeDisk.Id)
+    DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
     ImageId = $image.Id
 }
 $_ = Deploy-UbuntuVirtualMachine @params
