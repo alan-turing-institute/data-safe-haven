@@ -94,11 +94,15 @@ $sasToken = New-ReadOnlyAccountSasToken -ResourceGroup $storageResourceGroupName
 $remoteUrl = "https://$($sreStorageAccount.StorageAccountName).blob.core.windows.net/${containerName}/${zipFileName}${sasToken}"
 Add-LogMessage -Level Info "Got SAS token and URL $remoteUrl"
 
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+
 # Create remote script (make a directory /zfiles/ and run CURL to download blob to there)
 $script = @"
 #!/bin/bash
 mkdir -p /tmp/zipfiles
 curl -X GET -o /tmp/zipfiles/${zipFileName} "${remoteUrl}"
+
+chown -R ${sreAdminUsername}:${sreAdminUsername} /tmp/zipfiles/
 "@
 
 $resourceGroupName = $config.sre.webapps.rg
