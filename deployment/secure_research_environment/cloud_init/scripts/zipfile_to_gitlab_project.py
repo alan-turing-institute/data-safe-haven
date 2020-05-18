@@ -260,7 +260,7 @@ def get_project_remote_url(repo_name, namespace_id,
 
 
 def get_project_id(repo_name, namespace_id,
-                          gitlab_url, gitlab_token):
+                   gitlab_url, gitlab_token):
     """
     Given the name of a repository and  namespace_id (i.e. group,
     "unapproved" or "approval"), either return the id of project
@@ -586,12 +586,10 @@ def unzipped_repo_to_merge_request(repo_details,
     # unpack tuple
     repo_name, commit_hash, target_branch_name, unzipped_location = repo_details
     logger.info("Unpacked {} {} {}".format(repo_name, commit_hash, target_branch_name))
-    # create project and branch on approved repo
-    target_project_info = create_project(repo_name,
-                                         namespace_ids[group_names[1]],
-                                         gitlab_config["api_url"],
-                                         gitlab_config["api_token"])
-    target_project_id = target_project_info["id"]
+    # create project on approved repo if not already there - this func will do that
+    target_project_id = get_project_id(repo_name, namespace_ids[group_names[1]],
+                                       gitlab_config["api_url"],
+                                       gitlab_config["api_token"])
     logger.info("Created project {}/{} ".\
           format(group_names[1],repo_name))
 
@@ -645,7 +643,7 @@ def unzipped_repo_to_merge_request(repo_details,
                                     target_project_id,
                                     gitlab_config["api_url"],
                                     gitlab_config["api_token"])
-        assert branch_info["name"] == branch_name
+        assert branch_info["name"] == target_branch_name
 
 
     # Create the merge request
