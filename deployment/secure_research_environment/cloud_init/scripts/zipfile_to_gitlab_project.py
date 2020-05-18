@@ -304,6 +304,7 @@ def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
     response = requests.post(projects_url,
                              headers = {"Authorization": "Bearer "+gitlab_token},
                              data = {"name": repo_name,
+                                     "path": repo_name,
                                      "visibility": "public",
                                      "namespace_id": namespace_id}
     )
