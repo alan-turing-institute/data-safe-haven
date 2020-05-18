@@ -281,30 +281,32 @@ runcmd:
   - tail -n 1 /etc/fstab
   # Create home folder and grant appropriate access
   - echo ">=== Create home folder using home disk... ===<"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
+  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+  - DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun1)
+  - parted $DEVICE mklabel gpt
+  - parted $DEVICE mkpart primary ext4 0% 100%
+  - parted $DEVICE print
+  - PARTITION="${DEVICE}1"
   - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /tmp/home
-  - mount /dev/sdc1 /tmp/home
-  - chmod 755 /tmp/home
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
+  - mkfs -t ext4 $PARTITION
+  - UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
   - echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
-  - umount /tmp/home
   - tail -n 1 /etc/fstab
   # Create scratch folder and grant all users access
   - echo ">=== Create local scratch folder using data disk... ===<"
-  - parted /dev/sdd mklabel gpt
-  - parted /dev/sdd mkpart primary ext4 0% 100%
-  - parted /dev/sdd print
+  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+  - DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun2)
+  - parted $DEVICE mklabel gpt
+  - parted $DEVICE mkpart primary ext4 0% 100%
+  - parted $DEVICE print
+  - PARTITION="${DEVICE}1"
   - sleep 5
-  - mkfs -t ext4 /dev/sdd1
+  - mkfs -t ext4 $PARTITION
   - mkdir -p /scratch
-  - mount /dev/sdd1 /scratch
+  - mount $PARTITION /scratch
   - chmod go+rw /scratch
-  - UUID=$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t3" >> /etc/fstab
+  - UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
+  - echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
   - echo ">=== /etc/fstab ===<"
   - cat /etc/fstab
   - echo ">=== end of /etc/fstab ===<"

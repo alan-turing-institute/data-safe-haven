@@ -251,11 +251,11 @@ foreach ($scriptName in @("jdk.table.xml",
 }
 
 
-# Deploy NIC and data disks
-# -------------------------
+# Deploy NIC and sratch disks
+# ---------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-$dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.sre.dsvm.datadisk.size_gb -Type $config.sre.dsvm.datadisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+$scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.scratchdisk.size_gb -Type $config.sre.dsvm.scratchdisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 
 
@@ -272,7 +272,7 @@ $params = @{
     NicId = $vmNic.Id
     OsDiskType = $config.sre.dsvm.osdisk.type
     ResourceGroupName = $config.sre.dsvm.rg
-    DataDiskIds = @($dataDisk.Id,$homeDisk.Id)
+    DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
     ImageId = $image.Id
 }
 $_ = Deploy-UbuntuVirtualMachine @params
