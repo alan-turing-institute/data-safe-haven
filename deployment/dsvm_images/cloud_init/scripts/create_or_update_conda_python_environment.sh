@@ -2,6 +2,7 @@
 
 # Require three arguments: environment name; (quoted) list of conda packages; (quoted) list of pip packages
 if [ $# -ne 3 ]; then
+    echo "FATAL: Incorrect number of arguments"
     exit 1
 fi
 ENV_NAME=$1
@@ -27,8 +28,8 @@ fi
 
 # Check that environment exists
 if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then
-    echo "Could not build python $VERSION environment"
-    exit 1
+    echo "FATAL: Could not build python $VERSION environment"
+    exit 2
 fi
 
 # Install pip packages
@@ -53,8 +54,9 @@ for REQUESTED_PACKAGE in $CONDA_PACKAGES $PIP_PACKAGES; do
     fi
 done
 if [ "$MISSING_PACKAGES" ]; then
-    echo "The following requested packages are missing:\n$MISSING_PACKAGES"
-    exit 1
+    echo "FATAL: The following requested packages are missing:"
+    echo "$MISSING_PACKAGES"
+    exit 3
 else
     echo "All requested ${ENV_NAME} packages are installed"
 fi
