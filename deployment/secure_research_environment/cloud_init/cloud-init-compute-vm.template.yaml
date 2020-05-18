@@ -154,6 +154,53 @@ write_files:
       echo ">=== /etc/pam.d/common-session ===<"
       cat /etc/pam.d/common-session
       echo ">=== end of /etc/pam.d/common-session ===<"
+  - path: "/disk_setup"
+    content: |
+      #!/bin/sh
+      # Create home folder and grant appropriate access
+      echo ">=== Create home folder using home disk... ===<"
+      # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+      DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun1)
+      PARTITION="${DEVICE}1"
+      # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
+      PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
+      # If the device has no partition table, create one, partition the disk and make an ext4 file system
+      if [ "$PARTITION_TABLE" = "unknown"]
+      then
+        parted $DEVICE mklabel gpt
+        parted $DEVICE mkpart primary ext4 0% 100%
+        parted $DEVICE print
+        sleep 5
+        mkfs -t ext4 $PARTITION
+      fi
+      # Create an entry for the home partition in fstab
+      UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
+      echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      tail -n 1 /etc/fstab
+      # Create scratch folder and grant all users access
+      echo ">=== Create local scratch folder using data disk... ===<"
+      # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+      DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun2)
+      PARTITION="${DEVICE}1"
+      # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
+      PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
+      # If the device has no partition table, create one, partition the disk and make an ext4 file system
+      if [ "$PARTITION_TABLE" = "unknown"]
+      then
+        parted $DEVICE mklabel gpt
+        parted $DEVICE mkpart primary ext4 0% 100%
+        parted $DEVICE print
+        sleep 5
+        mkfs -t ext4 $PARTITION
+        mkdir -p /scratch
+      fi
+      mount $PARTITION /scratch
+      chmod go+rw /scratch
+      UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
+      echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      echo ">=== /etc/fstab ===<"
+      cat /etc/fstab
+      echo ">=== end of /etc/fstab ===<"
   - path: "/etc/pip.conf"
     content: |
       # Add the PyPI mirror to our global settings
@@ -279,37 +326,11 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  # Create home folder and grant appropriate access
-  - echo ">=== Create home folder using home disk... ===<"
-  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
-  - DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun1)
-  - parted $DEVICE mklabel gpt
-  - parted $DEVICE mkpart primary ext4 0% 100%
-  - parted $DEVICE print
-  - PARTITION="${DEVICE}1"
-  - sleep 5
-  - mkfs -t ext4 $PARTITION
-  - UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
-  - tail -n 1 /etc/fstab
-  # Create scratch folder and grant all users access
-  - echo ">=== Create local scratch folder using data disk... ===<"
-  # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
-  - DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun2)
-  - parted $DEVICE mklabel gpt
-  - parted $DEVICE mkpart primary ext4 0% 100%
-  - parted $DEVICE print
-  - PARTITION="${DEVICE}1"
-  - sleep 5
-  - mkfs -t ext4 $PARTITION
-  - mkdir -p /scratch
-  - mount $PARTITION /scratch
-  - chmod go+rw /scratch
-  - UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
-  - echo ">=== /etc/fstab ===<"
-  - cat /etc/fstab
-  - echo ">=== end of /etc/fstab ===<"
+  # Configure disks
+  - chmod u+x /disk_setup
+  - echo ">=== Mount and configure disks... ===<"
+  - /disk_setup
+  - rm /disk_setup
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
