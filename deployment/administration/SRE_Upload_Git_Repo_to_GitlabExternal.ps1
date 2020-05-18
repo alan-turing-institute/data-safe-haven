@@ -97,8 +97,8 @@ Add-LogMessage -Level Info "Got SAS token and URL $remoteUrl"
 # Create remote script (make a directory /zfiles/ and run CURL to download blob to there)
 $script = @"
 #!/bin/bash
-mkdir -p /zfiles
-curl -X GET -o /zfiles/${zipFileName} "${remoteUrl}"
+mkdir -p /tmp/zipfiles
+curl -X GET -o /tmp/zipfiles/${zipFileName} "${remoteUrl}"
 "@
 
 $resourceGroupName = $config.sre.webapps.rg
