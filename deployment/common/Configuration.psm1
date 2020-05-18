@@ -551,7 +551,7 @@ function Add-SreConfig {
         type = "Standard_LRS"
         size_gb = "64"
     }
-    $config.sre.dsvm.datadisk = [ordered]@{
+    $config.sre.dsvm.scratchdisk = [ordered]@{
         type = "Standard_LRS"
         size_gb = "512"
     }
