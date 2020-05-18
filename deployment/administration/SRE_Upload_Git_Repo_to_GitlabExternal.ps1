@@ -56,11 +56,9 @@ Set-Location $workingDir
 
 $gitlabExternalVmName = $config.sre.webapps.gitlab.external.vmName
 # Go via blob storage - first create storage account if not already there
-$resourceGroupName = $config.sre.webapps.rg
-#$sreStorageAccountName = $config.sre.storage.artifacts.accountName
-$sreStorageAccountName = "gitlabingresstest18052020"
-#$sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $config.sre.storage.artifacts.rg -Location $config.sre.location
-$sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $resourceGroupName -Location $config.sre.location
+$storageResourceGroupName = $config.sre.storage.artifacts.rg
+$sreStorageAccountName = $config.sre.storage.artifacts.accountName
+$sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $storageResourceGroupName -Location $config.sre.location
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
@@ -92,7 +90,7 @@ Set-AzStorageBlobContent -Container $containerName -Context $sreStorageAccount.C
 # Download zipfile onto the remote machine
 # ----------------------------------------
 # Get a SAS token and construct URL
-$sasToken = New-ReadOnlyAccountSasToken -ResourceGroup $resourceGroupName -AccountName $sreStorageAccount.StorageAccountName -SubscriptionName $config.sre.subscriptionName
+$sasToken = New-ReadOnlyAccountSasToken -ResourceGroup $storageResourceGroupName -AccountName $sreStorageAccount.StorageAccountName -SubscriptionName $config.sre.subscriptionName
 $remoteUrl = "https://$($sreStorageAccount.StorageAccountName).blob.core.windows.net/${containerName}/${zipFileName}${sasToken}"
 Add-LogMessage -Level Info "Got SAS token and URL $remoteUrl"
 
@@ -103,6 +101,7 @@ mkdir -p /zfiles
 curl -X GET -o /zfiles/${zipFileName} "${remoteUrl}"
 "@
 
+$resourceGroupName = $config.sre.webapps.rg
 Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $gitlabExternalVmName"
 $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $gitlabExternalVmName -ResourceGroupName $resourceGroupName
 
