@@ -291,7 +291,7 @@ if ($scratchDisk) {
 }
 if ($scratchDisk) {
     Add-LogMessage -Level Info "Deleting scratch disk snapshot"
-    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $scratchDiskSnapshot -Force
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $scratchDiskSnapshotName -Force
 }
 Add-LogMessage -Level Info "Creating new home disk."
 $homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
@@ -303,7 +303,7 @@ if ($homeDisk) {
 }
 if ($homeDisk) {
     Add-LogMessage -Level Info "Deleting home disk snapshot"
-    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshot -Force
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshotName -Force
 }
 
 
