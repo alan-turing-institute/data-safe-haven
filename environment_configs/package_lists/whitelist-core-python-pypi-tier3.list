@@ -315,6 +315,7 @@ pyzmq
 qtconsole
 regex
 reportlab
+repro-catalogue
 requests
 retrying
 rpy2
