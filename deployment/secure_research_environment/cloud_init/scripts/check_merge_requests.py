@@ -88,7 +88,7 @@ def internal_project_exists(repo_name, config):
         )
 
 
-def internal_update_repo(git_url, repo_name, config):
+def internal_update_repo(git_url, repo_name, branch_name, config):
     """Takes a git URL, `git_url`, which should be the URL to the
     "APPROVED" repo on GITLAB-EXTERNAL, clones it and pushes all branches to
     the repo `repo_name` owned by 'ingress' on GITLAB-INTERNAL, creating it
@@ -109,6 +109,7 @@ def internal_update_repo(git_url, repo_name, config):
     # same remote and pulling)
     subprocess.run(["rm", "-rf", repo_name], check=True)
     subprocess.run(["git", "clone", git_url, repo_name], check=True)
+    subprocess.run(["git", "checkout", branch_name], cwd=repo_name, check=True)
 
     project_exists, gl_internal_repo_url = internal_project_exists(repo_name, config)
 
@@ -134,9 +135,7 @@ def internal_update_repo(git_url, repo_name, config):
 
     # Force push current contents of all branches
     subprocess.run(
-        ["git", "push", "--force", "--all", "gitlab-internal"],
-        cwd=repo_name,
-        check=True,
+        ["git", "push", "--force", "gitlab-internal"], cwd=repo_name, check=True
     )
 
 
@@ -308,7 +307,9 @@ def get_merge_requests_for_approval(config):
     group = get_group_id("approval", config)
     endpoint = config["api_url"] + f"/groups/{group}/merge_requests"
     response = get_request(
-        endpoint, headers=config["headers"], params={"state": "opened"}
+        endpoint,
+        headers=config["headers"],
+        params={"state": "opened", "scope": "created_by_me"},
     )
     return response
 
@@ -388,6 +389,21 @@ def check_merge_requests():
         logger.critical(f"Failed to load gitlab secrets: {e}")
         return
 
+    try:
+        internal_status = requests.get(
+            config_internal["api_url"] + "projects",
+            headers=config_internal["headers"],
+            timeout=5,
+        )
+        if not internal_status.ok:
+            logger.critical(
+                f"Gitlab Internal Not Responding: {internal_status.status_code}, CONTENT {internal_status.content}"
+            )
+            return
+    except Exception as e:
+        logger.critical(f"Gitlab Internal Not Responding: {e}")
+        return
+
     logger.info("Getting open merge requests for approval")
     try:
         merge_requests = get_merge_requests_for_approval(config_external)
@@ -406,7 +422,8 @@ def check_merge_requests():
             logger.info(f"Source Branch: {mr['source_branch']}")
             target_project = get_project(mr["project_id"], config_external)
             logger.info(f"Target Project: {target_project['name_with_namespace']}")
-            logger.info(f"Target Branch: {mr['target_branch']}")
+            target_branch = mr["target_branch"]
+            logger.info(f"Target Branch: {target_branch}")
             logger.info(f"Commit SHA: {mr['sha']}")
             logger.info(f"Created At: {mr['created_at']}")
             status = mr["merge_status"]
@@ -455,6 +472,7 @@ def check_merge_requests():
                     internal_update_repo(
                         target_project["ssh_url_to_repo"],
                         target_project["name"],
+                        target_branch,
                         config_internal,
                     )
                 except Exception as e:
