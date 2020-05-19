@@ -10,4 +10,4 @@
 # We only plan to require code owner review for 
 # master and other branches that may be deployed from.
 # Note: /dir/ applies to directory and all subdirectories
-/deployment/      @martintoreilly @jemrobinson
+/deployment/      @martintoreilly @jemrobinson @thobson88 @JimMadge
