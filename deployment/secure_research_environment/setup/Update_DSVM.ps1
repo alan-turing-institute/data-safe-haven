@@ -62,16 +62,22 @@ if ($?) {
 
 # Find the existing data disks
 # ----------------------------
-$scratchDiskName = $existingVmName + "-SCRATCH-DISK"
-$scratchDisk = Get-AzDisk -DiskName $scratchDiskName
-if (-not $scratchDisk) {
-    Add-LogMessage -Level Fatal "Data disk '$scratchDiskName' not found, aborting upgrade."
+$dataDiskSuffixes = @("-SCRATCH-DISK", "-HOME-DISK")
+$dataDisks = @()
+$dataDiskNames = @()
+foreach ($suffix in $dataDiskSuffixes) {
+    $diskName = $existingVmName + "$suffix"
+    $disk = Get-AzDisk -DiskName $diskName
+    if (-not $disk) {
+        Add-LogMessage -Level Fatal "Data disk '$diskName' not found, aborting upgrade."
+    }
+    $dataDisks += $disk
+    $dataDiskNames += $diskName
 }
-$homeDiskName = $existingVmName + "-HOME-DISK"
-$homeDisk = Get-AzDisk -DiskName $homeDiskName
-if (-not $homeDisk) {
-    Add-LogMessage -Level Fatal "Data disk '$homeDiskName' not found, aborting upgrade."
-}
+$scratchDisk = $dataDisks[0]
+$scratchDiskName = $dataDiskNames[0]
+$homeDisk = $dataDisks[1]
+$homeDiskName = $dataDiskNames[1]
 
 
 # Take snapshots of data disks
