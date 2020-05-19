@@ -337,6 +337,7 @@ Send2Trash
 sentencepiece
 service_identity
 setuptools
+setuptools-scm
 setuptools-git
 Shapely
 simplegeneric
