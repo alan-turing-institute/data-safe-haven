@@ -197,7 +197,7 @@ runcmd:
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
     curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
-    ssh-keyscan -H <gitlab-external-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    ssh-keyscan -H localhost >> /home/<sre-admin-username>/.ssh/known_hosts;
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
   # Create groups for storing unapproved and approval repos
   - |
