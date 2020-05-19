@@ -50,7 +50,7 @@ $existingVmName = $existingVm.Name
 
 # Stop existing VM
 # ----------------
-Add-LogMessage -Level Info "Stopping old virtual machine."
+Add-LogMessage -Level Info "[ ] Stopping old virtual machine."
 $existingVmName = $existingVm.Name
 $_ = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVmName -Force
 if ($?) {
@@ -76,7 +76,7 @@ if (-not $homeDisk) {
 
 # Take snapshots of data disks
 #-----------------------------
-Add-LogMessage -Level Info "Snapshotting scratch disk."
+Add-LogMessage -Level Info "[ ] Snapshotting scratch disk."
 $scratchDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $scratchDisk.Id -Location $config.sre.location -CreateOption copy
 $scratchDiskSnapshotName = $existingVmName + "-SCRATCH-DISK-SNAPSHOT"
 $scratchDiskSnapshot = New-AzSnapshot -Snapshot $scratchDiskSnapshotConfig -SnapshotName $scratchDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
@@ -85,7 +85,7 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Snapshot failed!"
 }
-Add-LogMessage -Level Info "Snapshotting home disk."
+Add-LogMessage -Level Info "[ ] Snapshotting home disk."
 $homeDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $homeDisk.Id -Location $config.sre.location -CreateOption copy
 $homeDiskSnapshotName = $existingVmName + "-HOME-DISK-SNAPSHOT"
 $homeDiskSnapshot = New-AzSnapshot -Snapshot $homeDiskSnapshotConfig -SnapshotName $homeDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
@@ -282,7 +282,7 @@ if (-not $bootDiagnosticsAccount) {
 # $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.150.2.161 -Location $config.sre.location
 $scratchDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $scratchDiskSnapshot.Id -CreateOption copy
-Add-LogMessage -Level Info "Creating new scratch disk."
+Add-LogMessage -Level Info "[ ] Creating new scratch disk."
 $scratchDisk = New-AzDisk -Disk $scratchDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-SCRATCH-DISK"
 if ($scratchDisk) {
     Add-LogMessage -Level Success "Disk creation succeeded"
@@ -290,10 +290,15 @@ if ($scratchDisk) {
     Add-LogMessage -Level Fatal "Disk creation failed!"
 }
 if ($scratchDisk) {
-    Add-LogMessage -Level Info "Deleting scratch disk snapshot"
+    Add-LogMessage -Level Info "[ ] Deleting scratch disk snapshot"
     $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $scratchDiskSnapshotName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Snapshot deletion succeeded"
+    } else {
+        Add-LogMessage -Level Failure "Snapshot deletion failed!"
+    }
 }
-Add-LogMessage -Level Info "Creating new home disk."
+Add-LogMessage -Level Info "[ ] Creating new home disk."
 $homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
 $homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-HOME-DISK"
 if ($homeDisk) {
@@ -302,8 +307,13 @@ if ($homeDisk) {
     Add-LogMessage -Level Fatal "Disk creation failed!"
 }
 if ($homeDisk) {
-    Add-LogMessage -Level Info "Deleting home disk snapshot"
+    Add-LogMessage -Level Info "[ ] Deleting home disk snapshot"
     $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshotName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Snapshot deletion succeeded"
+    } else {
+        Add-LogMessage -Level Failure "Snapshot deletion failed!"
+    }
 }
 
 
