@@ -118,7 +118,7 @@ def internal_update_repo(git_url, repo_name, config):
         response = requests.post(
             config["api_url"] + "projects",
             headers=config["headers"],
-            data={"name": repo_name, "visibility": "public"},
+            data={"name": repo_name, "path": repo_name, "visibility": "public"},
         )
         response.raise_for_status()
         assert response.json()["path_with_namespace"] == "ingress/" + repo_name
