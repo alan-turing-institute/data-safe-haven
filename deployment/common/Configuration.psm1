@@ -340,19 +340,26 @@ function Add-SreConfig {
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
                 nsg = "dbingress"
             }
+            dbanalysis = [ordered]@{
+                name = "DbAnalysisSubnet"
+                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 5)"
+                nsg = "dbanalysis"
+            }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
             dbingress = [ordered]@{
                 name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
             }
+            dbanalysis = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_DB_ANALYSIS".ToUpper()
+            }
         }
     }
-    # Construct the CIDR for each subnet based on the prefix
-    $config.sre.network.subnets.identity.cidr = "$($config.sre.network.subnets.identity.prefix).0/24"
-    $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
-    $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
-    $config.sre.network.subnets.dbingress.cidr = "$($config.sre.network.subnets.dbingress.prefix).0/24"
+    # Construct the CIDR for each subnet based on the prefix. Using '/24' gives 256 address for each subnet
+    foreach ($subnet in $config.sre.network.subnets.Keys) {
+        $config.sre.network.subnets[$subnet].cidr = "$($config.sre.network.subnets[$subnet].prefix).0/24"
+    }
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -388,6 +395,7 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
+            postgresDbLdapPassword = "$($config.sre.shortName)-postgresdb-ldap-password"
             rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
@@ -410,6 +418,10 @@ function Add-SreConfig {
             dsvm = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+            }
+            postgresdb = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) PostgresDB LDAP"
+                samAccountName = "pgdbldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
         }
         datamount = [ordered]@{
@@ -516,13 +528,31 @@ function Add-SreConfig {
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_DATABASES"
         # MS SQL data ingress
-        dbmssqlingress = [ordered]@{
+        dbmssql = [ordered]@{
             name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
+            type = "MSSQL"
             enableSSIS = $true
             ipLastOctet = "4"
             port = "14330"
             sku = "sqldev"
             subnet = "dbingress"
+            vmSize = "Standard_DS2_v2"
+            datadisk = [ordered]@{
+                size_gb = "2048"
+                type = "Standard_LRS"
+            }
+            osdisk = [ordered]@{
+                size_gb = "128"
+                type = "Standard_LRS"
+            }
+        }
+        # PostgreSQL data analysis
+        dbpostgres = [ordered]@{
+            name = "PGS-ANA-$($config.sre.id)".ToUpper() | TrimToLength 15
+            type = "PostgreSQL"
+            ipLastOctet = "4"
+            sku = "18.04-LTS"
+            subnet = "dbanalysis"
             vmSize = "Standard_DS2_v2"
             datadisk = [ordered]@{
                 size_gb = "2048"
@@ -581,7 +611,7 @@ function Add-SreConfig {
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
-    Write-Host $jsonOut
+    # Write-Host $jsonOut
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig

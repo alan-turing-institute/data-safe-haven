@@ -24,6 +24,9 @@ param(
     [String]$dsvmSamAccountName,
     [String]$dsvmName,
     [String]$dsvmPasswordEncrypted,
+    [String]$postgresDbSamAccountName,
+    [String]$postgresDbName,
+    [String]$postgresDbPasswordEncrypted,
     [String]$dataMountSamAccountName,
     [String]$dataMountName,
     [String]$dataMountPasswordEncrypted,
@@ -33,7 +36,7 @@ param(
 )
 
 function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
-    if(Get-ADGroup -Filter "Name -eq '$name'"){
+    if (Get-ADGroup -Filter "Name -eq '$name'") {
         Write-Output " [o] Group '$name' already exists"
     } else {
         Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'..."
@@ -48,8 +51,8 @@ function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
 }
 
 function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
-    if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
-        Write-Output " [o] User '$samAccountName' already exists"
+    if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
+        Write-Output " [o] User '$name' ('$samAccountName') already exists"
     } else {
         $principalName = $samAccountName + "@" + $shmFqdn;
         Write-Output " [ ] Creating user '$name' ($samAccountName)..."
@@ -76,6 +79,7 @@ $hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncr
 $gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
 $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
 $dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
+$postgresDbPasswordSecureString = ConvertTo-SecureString -String $postgresDbPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
 # Create SRE Security Groups
@@ -87,6 +91,7 @@ New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $servi
 New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
 New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
 New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+New-SreUser -samAccountName $postgresDbSamAccountName -name $postgresDbName -path $serviceOuPath -passwordSecureString $postgresDbPasswordSecureString
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
 # Add Data Science LDAP users to SG Data Science LDAP Users security group
