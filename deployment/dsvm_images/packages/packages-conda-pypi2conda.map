@@ -1,6 +1,7 @@
 flair:
 pg8000:
 python-geohash:
+repro-catalogue:
 spacy-langdetect:
 tables: pytables
 tensorflow: tensorflow-gpu
