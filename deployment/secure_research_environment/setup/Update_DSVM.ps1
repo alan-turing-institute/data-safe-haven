@@ -63,13 +63,11 @@ if ($?) {
 # Find and snapshot the existing data disks
 # -----------------------------------------
 $dataDiskSuffixes = @("-SCRATCH-DISK", "-HOME-DISK")
-$dataDisks = @()
-$dataDiskNames = @()
 $snapshots = @()
 $snapshotNames = @()
 foreach ($suffix in $dataDiskSuffixes) {
     # Find disk
-    $diskName = $existingVmName + "$suffix"
+    $diskName = $existingVmName + $suffix
     Add-LogMessage -Level Info "[ ] Locating data disk '$diskName'"
     $disk = Get-AzDisk -DiskName $diskName
     if ($disk) {
@@ -77,8 +75,6 @@ foreach ($suffix in $dataDiskSuffixes) {
     } else {
         Add-LogMessage -Level Fatal "Data disk '$diskName' not found, aborting upgrade."
     }
-    $dataDisks += $disk
-    $dataDiskNames += $diskName
 
     # Snapshot disk
     Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
@@ -93,50 +89,32 @@ foreach ($suffix in $dataDiskSuffixes) {
     $snapshots += $snapshot
     $snapshotNames += $snapshotName
 }
-$scratchDisk = $dataDisks[0]
-$scratchDiskName = $dataDiskNames[0]
-$scratchDiskSnapshot = $snapshots[0]
-$scratchDiskSnapshotName = $snapshotNames[0]
-$homeDisk = $dataDisks[1]
-$homeDiskName = $dataDiskNames[1]
-$homeDiskSnapshot = $snapshots[1]
-$homeDiskSnapshotName = $snapshotNames[1]
 
 
 # Remove the existing VM
 # ----------------------
-# Add-LogMessage -Level Info "Deleting existing VM."
-# $_ = Remove-AzVM -Name $existingVmName -ResourceGroupName $existingVm.ResourceGroupName -Force
-# if ($?) {
-#     Add-LogMessage -Level Success "VM removal succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "VM removal failed!"
-# }
+Add-LogMessage -Level Info "[ ] Deleting existing VM"
+$_ = Remove-AzVM -Name $existingVmName -ResourceGroupName $existingVm.ResourceGroupName -Force
+if ($?) {
+    Add-LogMessage -Level Success "VM removal succeeded"
+} else {
+    Add-LogMessage -Level Fatal "VM removal failed!"
+}
 
 
 # Remove the existing disks
 # -------------------------
-# Add-LogMessage -Level Info "Deleting existing OS disk."
-# $_ = Remove-AzDisk -Name $OsDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
-# if ($?) {
-#     Add-LogMessage -Level Success "Disk deletion succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "Disk deletion failed!"
-# }
-# Add-LogMessage -Level Info "Deleting existing scratch disk."
-# $_ = Remove-AzDisk -Name $scratchDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
-# if ($?) {
-#     Add-LogMessage -Level Success "Disk deletion succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "Disk deletion failed!"
-# }
-# Add-LogMessage -Level Info "Deleting existing home disk."
-# $_ = Remove-AzDisk -Name $homeDiskName -ResourceGroupName $existingVm.ResourceGroupName -Force
-# if ($?) {
-#     Add-LogMessage -Level Success "Disk deletion succeeded"
-# } else {
-#     Add-LogMessage -Level Fatal "Disk deletion failed!"
-# }
+$diskSuffixes = @("-OS-DISK", "-SCRATCH-DISK", "-HOME-DISK")
+foreach ($suffix in $diskSuffixes) {
+    $diskName = $existingVmName + $suffix
+    Add-LogMessage -Level Info "[ ] Deleting disk '$diskName'"
+    $_ = Remove-AzDisk -Name $diskName -ResourceGroupName $existingVm.ResourceGroupName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "Disk deletion succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Disk deletion failed!"
+    }
+}
 
 
 # Get list of image versions
@@ -183,7 +161,6 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 # -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
 $vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
-$vmName = $vmName + "-NEW"
 
 
 # Check that VNET and subnet exist
@@ -286,13 +263,13 @@ if (-not $bootDiagnosticsAccount) {
 
 # Deploy NIC and data disks
 # -------------------------
-# $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.150.2.161 -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+
 
 # Create disks from snapshots and delete snapshots
 # ------------------------------------------------
 $dataDisks = @()
-For ($i=0; $i -lt $snapshots.Length; $i++) {
+For ($i=0; $i -lt $dataDiskSuffixes.Length; $i++) {
     $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
     $diskName = $vmName + $dataDiskSuffixes[$i]
     Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
