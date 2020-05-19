@@ -87,7 +87,7 @@ To automatically assign licences to all local AD users that do not currently hav
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-- Run the `./SHM_Add_AAD_Licences.ps1 -tenantId <tenant ID>` script, where the tenant ID is the ID of your Azure Active Directory
+- Run the `./SHM_Add_AAD_Licences.ps1 -shmId <SHM ID>` script, where the SHM ID is the ID of the SHM you wish to add licences for.
 
 
 ## :running: User activation
