@@ -60,46 +60,47 @@ if ($?) {
 }
 
 
-# Find the existing data disks
-# ----------------------------
+# Find and snapshot the existing data disks
+# -----------------------------------------
 $dataDiskSuffixes = @("-SCRATCH-DISK", "-HOME-DISK")
 $dataDisks = @()
 $dataDiskNames = @()
+$snapshots = @()
+$snapshotNames = @()
 foreach ($suffix in $dataDiskSuffixes) {
+    # Find disk
     $diskName = $existingVmName + "$suffix"
+    Add-LogMessage -Level Info "[ ] Locating data disk '$diskName'"
     $disk = Get-AzDisk -DiskName $diskName
-    if (-not $disk) {
+    if ($disk) {
+        Add-LogMessage -Level Success "Data disk found"
+    } else {
         Add-LogMessage -Level Fatal "Data disk '$diskName' not found, aborting upgrade."
     }
     $dataDisks += $disk
     $dataDiskNames += $diskName
+
+    # Snapshot disk
+    Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
+    $snapshotConfig = New-AzSnapShotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
+    $snapshotName = $existingVmName + $suffix + "-SNAPSHOT"
+    $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $existingVm.ResourceGroupName
+    if ($snapshot) {
+        Add-LogMessage -Level Success "Snapshot succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Snapshot failed!"
+    }
+    $snapshots += $snapshot
+    $snapshotNames += $snapshotName
 }
 $scratchDisk = $dataDisks[0]
 $scratchDiskName = $dataDiskNames[0]
+$scratchDiskSnapshot = $snapshots[0]
+$scratchDiskSnapshotName = $snapshotNames[0]
 $homeDisk = $dataDisks[1]
 $homeDiskName = $dataDiskNames[1]
-
-
-# Take snapshots of data disks
-#-----------------------------
-Add-LogMessage -Level Info "[ ] Snapshotting scratch disk."
-$scratchDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $scratchDisk.Id -Location $config.sre.location -CreateOption copy
-$scratchDiskSnapshotName = $existingVmName + "-SCRATCH-DISK-SNAPSHOT"
-$scratchDiskSnapshot = New-AzSnapshot -Snapshot $scratchDiskSnapshotConfig -SnapshotName $scratchDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
-if ($?) {
-    Add-LogMessage -Level Success "Snapshot succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Snapshot failed!"
-}
-Add-LogMessage -Level Info "[ ] Snapshotting home disk."
-$homeDiskSnapshotConfig = New-AzSnapShotConfig -SourceUri $homeDisk.Id -Location $config.sre.location -CreateOption copy
-$homeDiskSnapshotName = $existingVmName + "-HOME-DISK-SNAPSHOT"
-$homeDiskSnapshot = New-AzSnapshot -Snapshot $homeDiskSnapshotConfig -SnapshotName $homeDiskSnapshotName -ResourceGroupName $existingVm.ResourceGroupName
-if ($?) {
-    Add-LogMessage -Level Success "Snapshot succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Snapshot failed!"
-}
+$homeDiskSnapshot = $snapshots[1]
+$homeDiskSnapshotName = $snapshotNames[1]
 
 
 # Remove the existing VM
