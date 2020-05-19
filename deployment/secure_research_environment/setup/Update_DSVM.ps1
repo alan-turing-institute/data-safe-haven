@@ -288,40 +288,33 @@ if (-not $bootDiagnosticsAccount) {
 # -------------------------
 # $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress 10.150.2.161 -Location $config.sre.location
-$scratchDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $scratchDiskSnapshot.Id -CreateOption copy
-Add-LogMessage -Level Info "[ ] Creating new scratch disk."
-$scratchDisk = New-AzDisk -Disk $scratchDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-SCRATCH-DISK"
-if ($scratchDisk) {
-    Add-LogMessage -Level Success "Disk creation succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Disk creation failed!"
-}
-if ($scratchDisk) {
-    Add-LogMessage -Level Info "[ ] Deleting scratch disk snapshot"
-    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $scratchDiskSnapshotName -Force
+
+# Create disks from snapshots and delete snapshots
+# ------------------------------------------------
+$dataDisks = @()
+For ($i=0; $i -lt $snapshots.Length; $i++) {
+    $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
+    $diskName = $vmName + $dataDiskSuffixes[$i]
+    Add-LogMessage -Level Info "[ ] Creating new disk '$diskName'"
+    $disk = New-AzDisk -Disk $diskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName $diskName
+    if ($disk) {
+        Add-LogMessage -Level Success "Disk creation succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "Disk creation failed!"
+    }
+    $dataDisks += $disk
+
+    $snapshotName = $snapshotNames[$i]
+    Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
+    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
     if ($?) {
         Add-LogMessage -Level Success "Snapshot deletion succeeded"
     } else {
         Add-LogMessage -Level Failure "Snapshot deletion failed!"
     }
 }
-Add-LogMessage -Level Info "[ ] Creating new home disk."
-$homeDiskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $homeDiskSnapshot.Id -CreateOption copy
-$homeDisk = New-AzDisk -Disk $homeDiskConfig -ResourceGroupName $config.sre.dsvm.rg -DiskName "$vmName-HOME-DISK"
-if ($homeDisk) {
-    Add-LogMessage -Level Success "Disk creation succeeded"
-} else {
-    Add-LogMessage -Level Fatal "Disk creation failed!"
-}
-if ($homeDisk) {
-    Add-LogMessage -Level Info "[ ] Deleting home disk snapshot"
-    $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $homeDiskSnapshotName -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Snapshot deletion succeeded"
-    } else {
-        Add-LogMessage -Level Failure "Snapshot deletion failed!"
-    }
-}
+$scratchDisk = $dataDisks[0]
+$homeDisk = $dataDisks[1]
 
 
 # -------------
