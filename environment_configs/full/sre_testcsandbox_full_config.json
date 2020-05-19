@@ -371,9 +371,22 @@
     "storageAccounts":[
             {
         "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-        "accountName": "lwmshstorageconnection14",
-        "PrivateLinkServiceConnectionGroupId": "Blob"
-      }
+        "accountName": "lwmshstorageconnection16",
+        "PrivateLinkServiceConnectionGroupId": "Blob",
+        "startAccess":0,
+        "endAccess":365
+      },
+      {
+        "subscriptionName": "Living with Machines",
+        "accountName": "lwmshstorageconnection",
+        "PrivateLinkServiceConnectionGroupId": "Blob",
+        "accountId":"/subscriptions/b8871872-a5e3-473f-b9b9-f4baaab6a9a0/resourceGroups/fede-playground/providers/Microsoft.Storage/storageAccounts/lwmshstorageconnection",
+        "rg": "fede-playground",
+        "startAccess":0,
+        "endAccess":365
+
+       }
+
     ]
   }
 }

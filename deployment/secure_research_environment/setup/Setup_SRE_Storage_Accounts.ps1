@@ -9,6 +9,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and set context
 # ------------------
@@ -27,10 +28,11 @@ Foreach ($sa in $config.sre.storageAccounts) {
 
   if ($sa.subscriptionName -eq $subscriptionName) {
 
-    if($availability.NameAvailable){
+    # the resource group location of the storage account
+    $rg = $config.sre.dataserver.rg
 
-      # the resource group where to create the storage account
-       $rg = $config.sre.dataserver.rg
+
+    if($availability.NameAvailable){
     
       # Create storage account if it does not exist
       # ---------------------------------------------------
@@ -76,6 +78,8 @@ Foreach ($sa in $config.sre.storageAccounts) {
         # read the account id from the config
         Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
         $accountId = $sa.accountId
+        $rg = $sa.rg
+
        
       }
 
@@ -87,6 +91,53 @@ Foreach ($sa in $config.sre.storageAccounts) {
       }
     }
   }
+
+  # Create the ingress and egress SAS token and store them in a secret
+
+  $accountKeys = Get-AzStorageAccountKey -ResourceGroupName $rg -Name $sa.accountName
+  $storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -StorageAccountKey $accountKeys[0].Value
+  $start = [System.DateTime]::Now.AddDays($sa.startAccess)
+  $end = [System.DateTime]::Now.AddDays($sa.endAccess)
+  $ingressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "r" -StartTime $start -ExpiryTime $end 
+  $egressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "w" -StartTime $start -ExpiryTime $end 
+
+  # Ensure the keyvault exists and set its access policies
+  # ------------------------------------------------------
+  $_ = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+  Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.sre.adminSecurityGroupName
+
+  # -----------------------------------------
+  Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+
+  $_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
+  if ($?) {
+      Add-LogMessage -Level Success "AD sync password exists"
+  } else {
+      Add-LogMessage -Level Fatal "Failed to create AD sync password!"
+  }
+
+  $_ = Set-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.storageIngressSAS -SecretValue (ConvertTo-SecureString "$ingressSAS" -AsPlainText -Force)
+  if ($?) {
+    Add-LogMessage -Level Success "Uploading the plain CA certificate succeeded"
+  } else {
+           Add-LogMessage -Level Fatal "Uploading the plain CA certificate failed!"
+          }
+
+
+  $_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageegressSAS
+  if ($?) {
+      Add-LogMessage -Level Success "AD sync password exists"
+  } else {
+      Add-LogMessage -Level Fatal "Failed to create AD sync password!"
+  }
+
+  $_ = Set-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.storageegressSAS -SecretValue (ConvertTo-SecureString "$egressSAS" -AsPlainText -Force)
+  if ($?) {
+    Add-LogMessage -Level Success "Uploading the plain CA certificate succeeded"
+  } else {
+           Add-LogMessage -Level Fatal "Uploading the plain CA certificate failed!"
+          }
+
 
   # Create the private endpoint
   # ---------------------------
