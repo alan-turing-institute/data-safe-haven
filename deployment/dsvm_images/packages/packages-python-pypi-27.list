@@ -52,6 +52,7 @@ pytest
 python-dateutil
 PyYAML
 regex
+repro-catalogue
 requests
 safety
 scikit-image

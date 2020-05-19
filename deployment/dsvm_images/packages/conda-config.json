@@ -9,6 +9,7 @@
         "flair",
         "pg8000",
         "python-geohash",
+        "repro-catalogue",
         "spacy-langdetect"
     ],
     "pypi-name-to-conda-name": {
