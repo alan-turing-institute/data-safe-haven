@@ -36,4 +36,4 @@ $unlicensedUsers | Set-AzureADUserLicense -AssignedLicenses $LicencesToAssign
 # connected to a different Azure AD they may have been connected to prior to running this
 # script and therefore perform subsequent operations against the wrong Azure AD
 Add-LogMessage -Level Info "Disconnecting from AzureAD for '$shmDomain"
-Disconnect-AzureAD
+$_ = Disconnect-AzureAD
