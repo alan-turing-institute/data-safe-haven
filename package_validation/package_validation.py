@@ -21,7 +21,7 @@ def read_list(file_path):
 
 def get_libraries_io_project_info(platform, name):
     """
-    Using the package name, it returns a JSON with information of the project/library from libraries.io 
+    Using the package name, it returns a JSON with information of the project/library from libraries.io
     The libraries.io API has a limit of 60 calls per minute.
     """
     api_key = get_libraries_io_api_key()
@@ -35,7 +35,7 @@ def get_libraries_io_project_info(platform, name):
         get_libraries_io_project_info(platform, name)
     else:
         return None
-    
+
 def get_project_dependencies(platform, name, version):
     """
     Returns a json with the dependencies of a package given its name, version and platform (CRAN, PyPI, etc.)
@@ -79,7 +79,7 @@ def load_api_keys(path='.', filename='secrets/libraries_io_api_keys.json'):
     """
     with open(path + '/' + filename) as json_file:
         keys = json.load(json_file)
-    
+
     if len(keys['keys'][0]['key']) == 0:
         print('Please store the key(s) for libraries.io in the secrets/libraries_io_api_keys.json file.')
         return None
@@ -88,7 +88,7 @@ def load_api_keys(path='.', filename='secrets/libraries_io_api_keys.json'):
         for i, key in enumerate(keys['keys']):
             key['reset_time'] = get_reset_time()
             available_keys.append(i)
-            
+
         keys['available_keys'] = available_keys
         return keys
 
@@ -98,7 +98,7 @@ def get_reset_time():
     This time is compared against now to decide if the key can still be used or should it wait until its reset.
     """
     return datetime.now() + timedelta(minutes=1)
-    
+
 def check_available_keys():
     """
     It updates a global variable with the available keys to query the API. It can handle many API keys at the same time.
@@ -112,15 +112,15 @@ def check_available_keys():
                 api_keys['available_keys'].append(i)
         elif api_keys['keys'][i]['api_calls'] >= api_keys['keys'][i]['limit'] and i in api_keys['available_keys']:
             api_keys['available_keys'].remove(i)
-        
+
 def get_libraries_io_api_key():
     """
-    Returns a valid API key for libraries.io 
+    Returns a valid API key for libraries.io
     It will wait until a key is reset if there are no more calls available.
-    The use of more than one API key is advisable. 
-    An API key can be obtained by creating an account in libraries.io and going to https://libraries.io/account to the `API Key` section. 
+    The use of more than one API key is advisable.
+    An API key can be obtained by creating an account in libraries.io and going to https://libraries.io/account to the `API Key` section.
     The API key is a string of  32 characters.
-    All the API keys must be added to the `secrets/libraries_io_api_keys.json` 
+    All the API keys must be added to the `secrets/libraries_io_api_keys.json`
     """
     global api_keys
     check_available_keys()
@@ -148,7 +148,7 @@ def get_package_dependencies(platform, package_name, verbose = False):
         if verbose:
             logging.info('{} {} versions {}'.format(package_name, len(package_versions), package_versions))
         pbar2 = tqdm(package_versions, leave = False)
-        
+
         for version in pbar2:
             pbar2.set_description('{} {}'.format(package_name, version))
             dependencies = get_project_dependencies(platform, package_name, version)
@@ -176,7 +176,7 @@ def get_recursive_dependencies(platform, package_names, verbose = False):
     `dependencies_included` will contain the extended list of packages including any package or dependency that is not in the input list of package names.
     """
     global dependencies_included
-    
+
     pbar1 = tqdm(package_names)
     for i, package_name in enumerate(pbar1):
         pbar1.set_description(package_name)
@@ -193,7 +193,7 @@ def get_recursive_dependencies(platform, package_names, verbose = False):
                 if verbose:
                     logging.info('{} {} dependency included'.format(package_name, p))
                     package_dependencies += get_package_dependencies(platform, p, verbose = verbose)
-                
+
         logging.info('{} finished validation {}/{} '.format(package_name, i, len(package_names)))
 
 # Reading the API keys to query libraries.io
@@ -206,7 +206,7 @@ R_PLATFORM = 'CRAN'
 
 # FOR PYTHON PACKAGES
 # Reading the list of Python package names
-python_packages = read_list('../environment_configs/package_lists/tier3_pypi_whitelist.list')
+python_packages = read_list('tier3_pypi_whitelist.list')
 # Making a copy that will be extended with all the dependencies iteratively
 dependencies_included = python_packages.copy()
 # Process the dependencies for a list of packages. The results are included to the `dependencies_included` list structure.
@@ -215,14 +215,14 @@ get_recursive_dependencies(PYTHON_PLATFORM, python_packages, verbose = True)
 # Sorting the results
 dependencies_included.sort()
 # Exporting the results
-with open('dependencies_included_pypi.list', 'w') as f:
+with open('dependencies_included_PyPI.list', 'w') as f:
     for package_name in dependencies_included:
         f.write(package_name + '\n')
 
 
 # FOR R PACKAGES
 # Reading the list of R package names
-r_packages = read_list('../environment_configs/package_lists/tier3_cran_whitelist.list')
+r_packages = read_list('cran.list')
 # Making a copy that will be extended with all the dependencies iteratively
 dependencies_included = r_packages.copy()
 # Process the dependencies for a list of packages. The results are included to the `dependencies_included` list structure.
@@ -230,6 +230,6 @@ dependencies_included = r_packages.copy()
 get_recursive_dependencies(R_PLATFORM, r_packages, verbose = True)
 # Exporting the results
 dependencies_included.sort()
-with open('dependencies_included_cran.list', 'w') as f:
+with open('dependencies_included_CRAN.list', 'w') as f:
     for package_name in dependencies_included:
         f.write(package_name + '\n')
