@@ -334,7 +334,6 @@ runcmd:
   - rm /disk_setup
 
 # additional packages needed
-packages:
   - sudo apt-get install blobfuse
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
