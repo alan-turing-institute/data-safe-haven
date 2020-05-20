@@ -510,18 +510,16 @@ def create_merge_request(
 def clone_commit_and_push(
     repo_name, path_to_unzipped_repo, tmp_repo_dir, branch_name, remote_url, commit_hash
 ):
-    """
-    Run shell commands to convert the unzipped directory containing the
-    repository contents into a git repo, then commit it to a branch named
-    as the commit_hash.
+    """Run shell commands to convert the unzipped directory containing the
+    repository contents into a git repo, then commit it on the branch
+    with the requested name.
 
     Parameters
     ==========
     repo_name: str, name of the repository/project
     path_to_unzipped_repo: str, the full directory path to the unzipped repo
     tmp_repo_dir: str, path to a temporary dir where we will clone the project
-    branch_name: str, original commit hash from the external git repo, will
-                  be used as the name of the branch to push to
+    branch_name: str, the name of the branch to push to
     remote_url: str, the URL for this project on gitlab-external to be added
                   as a "remote".
     """
@@ -536,7 +534,7 @@ def clone_commit_and_push(
             cwd=working_dir,
             check=True,
         )
-    # Create a branch named after the original commit hash
+    # Create the branch with the requested name
     subprocess.run(["git", "checkout", "-b", branch_name], cwd=working_dir, check=True)
     # Commit everything to this branch, also putting commit hash into message
     subprocess.run(["git", "add", "."], cwd=working_dir, check=True)
@@ -631,8 +629,11 @@ def unzipped_repo_to_merge_request(
     )
     logger.info("Created project {}/{} ".format(group_names[1], repo_name))
 
+    # Branch to create on the source (unapproved) repository of the
+    # matches that of the target
+    src_branch_name = target_branch_name
+
     # Check if we already have a Merge Request - if so we can just skip to the end
-    src_branch_name = "branch-{}".format(commit_hash)
     mr_exists = check_if_merge_request_exists(
         src_branch_name,
         target_project_id,
