@@ -508,7 +508,7 @@ def create_merge_request(
 
 
 def clone_commit_and_push(
-    repo_name, path_to_unzipped_repo, tmp_repo_dir, branch_name, remote_url
+    repo_name, path_to_unzipped_repo, tmp_repo_dir, branch_name, remote_url, commit_hash
 ):
     """
     Run shell commands to convert the unzipped directory containing the
@@ -540,7 +540,7 @@ def clone_commit_and_push(
     subprocess.run(["git", "checkout", "-b", branch_name], cwd=working_dir, check=True)
     # Commit everything to this branch, also putting commit hash into message
     subprocess.run(["git", "add", "."], cwd=working_dir, check=True)
-    commit_msg = "Committing to branch {}".format(branch_name)
+    commit_msg = "Import snapshot of {} at commit {}".format(remote_url, commit_hash)
     subprocess.run(["git", "commit", "-m", commit_msg], cwd=working_dir, check=True)
     # Push back to gitlab external
     subprocess.run(
@@ -678,7 +678,7 @@ def unzipped_repo_to_merge_request(
     )
     if not branch_exists:
         clone_commit_and_push(
-            repo_name, unzipped_location, tmp_repo_dir, src_branch_name, remote_url
+            repo_name, unzipped_location, tmp_repo_dir, src_branch_name, remote_url, commit_hash
         )
         logger.info(
             "Pushed to {}/{} branch {}".format(
