@@ -93,7 +93,7 @@ else {
 
 	  }
 	}
-	}
+}
 
 # Create the ingress and egress SAS token and store them in a secret
 
@@ -105,8 +105,13 @@ $storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -Stor
 $start = [System.DateTime]::Now.AddDays($sa.startAccess)
 $end = [System.DateTime]::Now.AddDays($sa.endAccess)
 
-$ingressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rw" -StartTime $start -ExpiryTime $end 
-$egressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rw" -StartTime $start -ExpiryTime $end 
+#$ingressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rwl" -StartTime $start -ExpiryTime $end 
+
+$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rwl" -StartTime $start -ExpiryTime $end 
+$ingressSAS
+exit
+
+$egressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rwl" -StartTime $start -ExpiryTime $end 
 
 
 
@@ -157,8 +162,6 @@ $privateEndpointName = $sa.accountName + "-endpoint"
 Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
 
 $privateDnsZoneName = $($sa.accountName +"." + $sa.PrivateLinkServiceConnectionGroupId+ ".core.windows.net").ToLower()
-$privateDnsZoneName
-$accountId
 $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
 -PrivateLinkServiceId $accountId `
 -GroupId $sa.PrivateLinkServiceConnectionGroupId
