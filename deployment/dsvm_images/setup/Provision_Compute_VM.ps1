@@ -133,23 +133,24 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $julia
 # ---------------------------------------------------------
 # Load conda config
 $condaConfig = Get-Content (Join-Path $PSScriptRoot ".." "packages" "conda-config.json") | ConvertFrom-Json -AsHashtable
-# List of common non-python packages
+# List of non-python packages we want to install from conda
 $nonPythonPackages = $condaConfig["non-python-packages"]
+# List of packages not available from conda
+$nonCondaPythonPackages = $condaConfig["not-available-from-conda"]
 # Hashmap of PyPI name to conda name (eg. `tables: pytables`)
 $pypi2conda = $condaConfig["pypi-name-to-conda-name"]
-foreach ($package in $condaConfig["not-available-from-conda"]) { $pypi2conda[$package] = "" }
 # Hashmap of package to version requirement (eg. `pytorch: >=1.1.0`)
-$packageVersions = $condaConfig["version_requirements"]
+$packageVersions = $condaConfig["version-requirements"]
 
 # Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
 $python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-27.list")
-$python27PipPackages = $python27AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python27PipPackages = $python27AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-36.list")
-$python36PipPackages = $python36AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python36PipPackages = $python36AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-37.list")
-$python37PipPackages = $python37AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python37PipPackages = $python37AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `

@@ -16,7 +16,7 @@
         "tensorflow": "tensorflow-gpu",
         "torch": "pytorch"
     },
-    "version_requirements": {
+    "version-requirements": {
         "langdetect": "==1.0.7",
         "pytorch": ">=1.1.0"
     }
