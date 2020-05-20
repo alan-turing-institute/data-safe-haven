@@ -131,14 +131,16 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $julia
 
 # Insert python package details into the cloud-init template
 # ---------------------------------------------------------
+# Load conda config
+$condaConfig = Get-Content (Join-Path $PSScriptRoot ".." "packages" "conda-config.json") | ConvertFrom-Json -AsHashtable
 # List of common non-python packages
-$commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-nonpython.list")
-# Map of PyPI name to conda name (eg. `tables: pytables`)
-$pypi2conda = @{ }
-Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
-# Map of package to version requirement (eg. `pytorch: >=1.1.0`)
-$packageVersions = @{ }
-Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-required-versions.list") | ForEach-Object { $package, $version = $_.Split(":"); $packageVersions[$package] = $version.Trim() }
+$nonPythonPackages = $condaConfig["non-python-packages"]
+# Hashmap of PyPI name to conda name (eg. `tables: pytables`)
+$pypi2conda = $condaConfig["pypi-name-to-conda-name"]
+foreach ($package in $condaConfig["not-available-from-conda"]) { $pypi2conda[$package] = "" }
+# Hashmap of package to version requirement (eg. `pytorch: >=1.1.0`)
+$packageVersions = $condaConfig["version_requirements"]
+
 # Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
 $python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-27.list")
 $python27PipPackages = $python27AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
@@ -149,11 +151,11 @@ $python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPacka
 $python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-37.list")
 $python37PipPackages = $python37AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${commonCondaPackages} `"" + "`n  " + `
+$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-                  "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${commonCondaPackages} `"" + "`n  " + `
+                  "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-                  "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${commonCondaPackages} `"" + "`n  " + `
+                  "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
 # Require specific versions of some packages. Replace ' package ' with ' package<version requirement> '
