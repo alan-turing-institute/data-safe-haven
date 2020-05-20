@@ -193,11 +193,15 @@ runcmd:
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
-  # Create SSH key for gitlab external access, add gitlab external to known hosts
+  # Create SSH key for gitlab external access
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
     curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
-    ssh-keyscan -H localhost >> /home/<sre-admin-username>/.ssh/known_hosts;
+  #  Get local ssh host keys, add them to known hosts under the gitlab external ip
+  - |    
+    echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
+    echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
+    echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
   # Create groups for storing unapproved and approval repos
   - |
