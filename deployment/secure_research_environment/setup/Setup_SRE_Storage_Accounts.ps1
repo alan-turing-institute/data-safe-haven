@@ -8,6 +8,7 @@ param(
 
 Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
@@ -105,16 +106,9 @@ $storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -Stor
 $start = [System.DateTime]::Now.AddDays($sa.startAccess)
 $end = [System.DateTime]::Now.AddDays($sa.endAccess)
 
-#$ingressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rwl" -StartTime $start -ExpiryTime $end 
+$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime $start -ExpiryTime $end 
 
-$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rwl" -StartTime $start -ExpiryTime $end 
-$ingressSAS
-exit
-
-$egressSAS = New-AzStorageAccountSASToken -Service $sa.PrivateLinkServiceConnectionGroupId -Context $storageContext -ResourceType Container  -Permission "rwl" -StartTime $start -ExpiryTime $end 
-
-
-
+$egressSAS = New-AzStorageContainerSASToken -Name "egress" -Context $storageContext -Permission "rlw" -StartTime $start -ExpiryTime $end 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
