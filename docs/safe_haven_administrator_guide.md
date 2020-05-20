@@ -72,22 +72,23 @@ Once you're certain that you're adding a new user, make sure that the following 
 - `DistinguishedName`: Formed of `CN=<DisplayName>,<OUPath>` by Active directory on user creation. If this is in use, consider changing `DisplayName` from `<GivenName> <Surname>` to `<GivenName> <Middle> <Initials> <Surname>`.
 
 ## :calling: Assign an MFA licence
-- Login into the Azure Portal and connect to the correct AAD subscription
+### Manually add licence to users
+- Login into the Azure Portal and connect to the correct AAD
 - Open `Azure Active Directory`
-- Location `Licenses` under `Manage` section
-- Open `All Products` under `Manage`
+- Select `Manage > Licenses > All Products`
 - Click `Azure Active Directory Premium P1`
 - Click `Assign`
 - Click `Users and groups`
 - Select the users you have recently created and click `Select`
 - Click `Assign` to complete the process
-- Return to `Azure Active Directory` pane
-- Click `Users` from `Manage` section
-- Click `Multi-Factor Authentication` button
-- Check the box for the users you want to apply MFA to
-- Click the `Enable` link in the `Quick steps` block on the right and confirm in the pop-up
-- Close MFA console
-- Users are now ready to reset password and set up MFA
+
+### Automatic
+To automatically assign licences to all local AD users that do not currently have a licence in AAD
+
+- Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
+- Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
+- Run the `./SHM_Add_AAD_Licences.ps1 -shmId <SHM ID>` script, where the SHM ID is the ID of the SHM you wish to add licences for.
+
 
 ## :running: User activation
 We need to contact the users to tell them their user ID and.
