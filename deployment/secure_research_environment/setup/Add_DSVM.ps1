@@ -110,7 +110,6 @@ if (-not $upgrade) {
     }
 
 
-
     # Remove the existing VM
     # ----------------------
     Add-LogMessage -Level Info "[ ] Deleting existing VM"
