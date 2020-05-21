@@ -60,6 +60,7 @@ if (-not $upgrade) {
     # Find the virtual machine associated with the NIC
     # ------------------------------------------------
     $existingVmId = $existingNic.VirtualMachine.Id
+    $existingNicName = $existingNic.Name
     $existingVm = Get-AzVM | Where-Object { $_.Id -eq $existingVmId }
     if (-not $existingVm) {
         Add-LogMessage -Level Fatal "No VM associated with the network card '$existingNicName', aborting upgrade"
@@ -117,6 +118,16 @@ if (-not $upgrade) {
         Add-LogMessage -Level Success "VM removal succeeded"
     } else {
         Add-LogMessage -Level Fatal "VM removal failed!"
+    }
+
+    # Remove the existing NIC
+    # -----------------------
+    Add-LogMessage -Level Info "[ ] Deleting existing NIC"
+    $_ = Remove-AzNetworkInterface -Name $existingNicName -ResourceGroupName $existingVm.ResourceGroupName -Force
+    if ($?) {
+        Add-LogMessage -Level Success "NIC removal succeeded"
+    } else {
+        Add-LogMessage -Level Fatal "NIC removal failed!"
     }
 
 
