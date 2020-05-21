@@ -144,6 +144,7 @@ if ($upgrade) {
             }
         }
     }
+}
 
 
 # Get list of image versions
