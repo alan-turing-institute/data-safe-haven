@@ -30,6 +30,14 @@ $vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
+# Set VM name including the image version.
+# As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
+# -----------------------------------------------------------------------------------------------------
+$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
+$imageVersion = $config.sre.dsvm.vmImageVersion
+$vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
+
+
 # Check whether this IP address has been used.
 # --------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
@@ -48,6 +56,15 @@ if ($upgrade) {
         Add-LogMessage -Level Fatal "No VM associated with the network card '$existingNicName', aborting upgrade"
     }
     $existingVmName = $existingVm.Name
+
+
+    # Ensure that an upgrade will occur
+    # ---------------------------------
+    if ($existingVmName = $vmName) {
+        Add-LogMessage -Level InfoSuccess "The existing VM appears to be using the same image version, no upgrade will occur"
+        $_ = Set-AzContext -Context $originalContext
+        exit 0
+    }
 
 
     # Stop existing VM
@@ -169,7 +186,6 @@ Add-LogMessage -Level Success "Using image type $imageDefinition"
 # Check that this is a valid version and then get the image ID
 # ------------------------------------------------------------
 $_ = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
-$imageVersion = $config.sre.dsvm.vmImageVersion
 Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
 try {
     $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
@@ -186,13 +202,6 @@ try {
 $imageVersion = $image.Name
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
 $_ = Set-AzContext -Subscription $config.sre.subscriptionName
-
-
-# Set VM name including the image version.
-# As only the first 15 characters are used in LDAP we structure the name to ensure these will be unique
-# -----------------------------------------------------------------------------------------------------
-$vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
-$vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
 
 
 # Check for any orphaned disks
