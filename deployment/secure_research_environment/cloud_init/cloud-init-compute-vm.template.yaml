@@ -167,8 +167,7 @@ write_files:
       # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
       PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
       # If the device has no partition table, create one, partition the disk and make an ext4 file system
-      if [ "$PARTITION_TABLE" = "unknown" ]
-      then
+      if [ "$PARTITION_TABLE" = "unknown" ]; then
         parted $DEVICE mklabel gpt
         parted $DEVICE mkpart primary ext4 0% 100%
         parted $DEVICE print
@@ -187,8 +186,7 @@ write_files:
       # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
       PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
       # If the device has no partition table, create one, partition the disk and make an ext4 file system
-      if [ "$PARTITION_TABLE" = "unknown" ]
-      then
+      if [ "$PARTITION_TABLE" = "unknown" ]; then
         parted $DEVICE mklabel gpt
         parted $DEVICE mkpart primary ext4 0% 100%
         parted $DEVICE print
