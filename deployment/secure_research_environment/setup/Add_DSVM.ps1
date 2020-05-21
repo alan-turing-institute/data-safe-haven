@@ -70,7 +70,6 @@ if (-not $upgrade) {
     # Stop existing VM
     # ----------------
     Add-LogMessage -Level Info "[ ] Stopping old virtual machine."
-    $existingVmName = $existingVm.Name
     $_ = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVmName -Force
     if ($?) {
         Add-LogMessage -Level Success "VM stopping succeeded"
