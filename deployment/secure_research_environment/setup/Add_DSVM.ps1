@@ -34,24 +34,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # If it has, check whether the NIC is attached to a VM
 # ----------------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
-if (-not $upgrade) {
-    if ($existingNic) {
-        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
-        if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
-            $_ = Set-AzContext -Context $originalContext
-            exit 0
-        } else {
-            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
-            $_ = $existingNic | Remove-AzNetworkInterface -Force
-            if ($?) {
-                Add-LogMessage -Level Success "Network card removal succeeded"
-            } else {
-                Add-LogMessage -Level Fatal "Network card removal failed!"
-            }
-        }
-    }
-} else {
+if ($upgrade) {
     if (-not $existingNic) {
         Add-LogMessage -Level Fatal "Failed to find an existing network card with IP address '$vmIpAddress', aborting upgrade"
     }
@@ -144,7 +127,23 @@ if (-not $upgrade) {
             Add-LogMessage -Level Fatal "Disk deletion failed!"
         }
     }
-}
+} else {
+    if ($existingNic) {
+        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+        if ($existingNic.VirtualMachine.Id) {
+            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
+            $_ = Set-AzContext -Context $originalContext
+            exit 0
+        } else {
+            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
+            $_ = $existingNic | Remove-AzNetworkInterface -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Network card removal succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Network card removal failed!"
+            }
+        }
+    }
 
 
 # Get list of image versions
@@ -352,10 +351,7 @@ foreach ($scriptName in @("jdk.table.xml",
 # ---------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
-if (-not $upgrade) {
-    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.scratchdisk.size_gb -Type $config.sre.dsvm.scratchdisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-} else {
+if ($upgrade) {
     # Create disks from snapshots and delete snapshots
     # ------------------------------------------------
     $dataDisks = @()
@@ -382,7 +378,11 @@ if (-not $upgrade) {
     }
     $scratchDisk = $dataDisks[0]
     $homeDisk = $dataDisks[1]
+} else {
+    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.scratchdisk.size_gb -Type $config.sre.dsvm.scratchdisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 }
+
 
 # Deploy the VM
 # -------------
