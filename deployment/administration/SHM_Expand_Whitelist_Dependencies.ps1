@@ -19,8 +19,9 @@ function Select-ResolvableDependencies {
         $Dependencies
     )
     if ($Repository -eq "cran") {
-        $packagesToIgnore = @("graphics", "methods", "R", "utils") # these are core packages
-        $packagesToIgnore += @("INLA", "survival4", "survival5") # these are not available on CRAN
+        $packagesToIgnore = @("graphics", "grDevices", "methods", "R", "utils") # these are core packages
+        $packagesToIgnore += @("graph", "grid", "INLA", "survival4", "survival5") # these are not available on CRAN
+        $packagesToIgnore += @("Biostrings", "BiocGenerics") # these are from Bioconductor
         $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
     }
     return $Dependencies
@@ -42,10 +43,11 @@ function Get-Dependencies {
     $versions = (Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey}).versions | ForEach-Object {$_.number}
     Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
     foreach ($version in $versions) {
-        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey}
+        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 10
         $dependencies += ($response.dependencies | ForEach-Object { $_.name })
         Start-Sleep 1 # wait for one second between requests to respect the API query limit
     }
+    if (-Not $dependencies) { return @() }
     return Select-ResolvableDependencies -Repository $Repository -Dependencies ($dependencies | Sort-Object | Uniq)
 }
 
@@ -76,16 +78,17 @@ while ($queue.Count) {
     $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList }
     $packageList += $newPackages
     $newPackages | ForEach-Object { $queue.Enqueue($_) }
-    Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded list"
-    Add-LogMessage -Level Info "... there are $($queue.Count) packages left to process"
+    Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
+    Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
 }
 
 
 # Add a log message for any unnecessary core packages
 # ---------------------------------------------------
 $unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies}
-Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
-
+if ($unneededCorePackages) {
+    Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
+}
 
 # Write the full package list to the expanded whitelist
 # -----------------------------------------------------
