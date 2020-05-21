@@ -60,7 +60,7 @@ if ($upgrade) {
 
     # Ensure that an upgrade will occur
     # ---------------------------------
-    if ($existingVmName = $vmName) {
+    if ($existingVmName -eq $vmName) {
         Add-LogMessage -Level InfoSuccess "The existing VM appears to be using the same image version, no upgrade will occur"
         $_ = Set-AzContext -Context $originalContext
         exit 0
