@@ -155,6 +155,8 @@ write_files:
       cat /etc/pam.d/common-session
       echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/disk_setup"
+    owner: root:root
+    permisions: '0500'
     content: |
       #!/bin/sh
       # Create home folder and grant appropriate access
@@ -327,7 +329,6 @@ runcmd:
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Configure disks
-  - chmod +x /disk_setup
   - echo ">=== Mount and configure disks... ===<"
   - /disk_setup
   - rm /disk_setup
