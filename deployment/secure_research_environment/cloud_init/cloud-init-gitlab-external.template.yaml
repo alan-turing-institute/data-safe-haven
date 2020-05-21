@@ -205,8 +205,8 @@ runcmd:
     chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
   # Create groups for storing unapproved and approval repos
   - |
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=public" <gitlab-external-ip>/api/v4/groups;
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=public" <gitlab-external-ip>/api/v4/groups
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups;
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
   # --------------------------------
   # FINAL SETUP
   # --------------------------------

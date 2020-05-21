@@ -305,7 +305,7 @@ def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
         data={
             "name": repo_name,
             "path": repo_name,
-            "visibility": "public",
+            "visibility": "internal",
             "namespace_id": namespace_id,
             "initialize_with_readme": True,
         },
