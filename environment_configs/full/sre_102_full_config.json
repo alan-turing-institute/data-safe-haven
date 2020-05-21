@@ -175,7 +175,10 @@
     },
     "keyVault": {
       "name": "kv-turing1-dsg102",
-      "rg": "RG_DSG_SECRETS"
+      "rg": "RG_DSG_SECRETS",
+      "secretNames": {
+        "letsEncryptCertificate": "sre-102-lets-encrypt-certificate"
+      }
     },
     "dc": {
       "rg": "RG_DSG_DC",
