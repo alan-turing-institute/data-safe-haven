@@ -1,29 +1,4 @@
 #!/usr/bin/env python3
-
-"""
-Start from zipfile of a particular commit - should have filename
-of the form <repo-name>_<commit-hash>_<desired_branch_name>.zip
-
-We want to turn this into a merge request on a Gitlab project.
-
-1) get useful gitlab stuff (url, api key, namespace_ids for our groups)
-2) unzip zipfiles in specified directory
-3) loop over unzipped repos. For each one:
-  a) see if "approval" project with same name exists, if not, create it
-  b) check if merge request to "approval/<repo_name>" with source and target branches
-     "commit-<commit-hash>" and "<desired_branch_name>" already exists.
-      If so, skip to the next unzipped repo.
-  b) see if "unapproved" project with same name exists, if not, fork "approval" one
-  c) clone "unapproved" project, and create branch called "commit-<commit_hash>"
-  d) copy in contents of unzipped repo.
-  e) git add, commit and push to "unapproved" project
-  f) create branch "<desired_branch_name>" on "approval" project
-  g) create merge request from unapproved/repo_name/commit_hash to
-     approval/repo_name/desired_branch_name
-4) clean up - remove zipfiles and unpacked repos.
-"""
-
-
 import os
 import shutil
 import re
@@ -49,20 +24,6 @@ logger.addHandler(c_handler)
 
 
 def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
-    """
-    Parameters
-    ==========
-    zipfile_dir: str, path to directory containing zipfiles
-    tmp_unzipped_dir: str, path to directory where zipfiles will be unzipped
-
-    Returns
-    =======
-    output_list: list of tuples
-           [(repo_name, commit_hash, desired_branch, unzipped-path),...]
-
-    Note that the convention for the zipfile filenames is
-    <repo-name>_<commit_hash>_<desired_branch_name>.zip
-    """
     output_list = []
     repo_commit_regex = re.compile("([-\w]+)_([a-f\d]+)_([\S]+).zip")
     # tear down and recreate the directory where we will put the unpacked zip
@@ -99,10 +60,6 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
 
 
 def get_gitlab_config():
-    """
-    Return a dictionary containing the base URL for the gitlab API,
-    the API token, the IP address, and the headers to go in any request
-    """
     home = str(Path.home())
 
     with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
@@ -119,21 +76,6 @@ def get_gitlab_config():
 def get_group_namespace_ids(
     gitlab_url, gitlab_token, groups=["approval", "unapproved"]
 ):
-    """
-    Find the namespace_id corresponding to the groups we're interested in,
-    e.g. 'approval' and 'unapproved'.
-
-    Parameters
-    ==========
-    gitlab_url: str, base URL for the API
-    gitlab_token: str, API token for Gitlab
-    groups: list of string, the group names to look for.
-
-    Returns
-    =======
-    namespace_id_dict: dict, format {<group_name:str>: <namespace_id:int>}
-
-    """
     namespaces_url = "{}/namespaces/".format(gitlab_url)
     response = requests.get(
         namespaces_url, headers={"Authorization": "Bearer " + gitlab_token}
@@ -151,20 +93,6 @@ def get_group_namespace_ids(
 
 
 def get_gitlab_project_list(gitlab_url, gitlab_token):
-    """
-    Get the list of Projects.
-
-    Parameters
-    ==========
-    namespace_id: int, ID of the group ("unapproved" or "approval")
-    gitlab_url: str, base URL for the API
-    gitlab_token: str, API token.
-
-    Returns
-    =======
-    gitlab_projects: list of dictionaries.
-    """
-
     # list currently existing projects on Gitlab
     projects_url = "{}/projects/".format(gitlab_url)
     response = requests.get(
@@ -182,21 +110,6 @@ def get_gitlab_project_list(gitlab_url, gitlab_token):
 
 
 def check_if_project_exists(repo_name, namespace_id, gitlab_url, gitlab_token):
-    """
-    Get a list of projects from the API - check if namespace_id (i.e. group)
-    and name match.
-
-    Parameters
-    ==========
-    repo_name: str, name of our repository/project
-    namespace_id: int, id of our group ("unapproved" or "approval")
-    gitlab_url: str, base URL of Gitlab API
-    gitlab_token: str, API key for Gitlab API.
-
-    Returns
-    =======
-    bool, True if project exists, False otherwise.
-    """
     projects = get_gitlab_project_list(gitlab_url, gitlab_token)
     for project in projects:
         if project["name"] == repo_name and project["namespace"]["id"] == namespace_id:
@@ -205,21 +118,6 @@ def check_if_project_exists(repo_name, namespace_id, gitlab_url, gitlab_token):
 
 
 def get_project_info(repo_name, namespace_id, gitlab_url, gitlab_token):
-    """
-    Check if project exists, and if so get its ID.  Otherwise, create
-    it and return the ID.
-
-    Parameters
-    ==========
-    repo_name: str, name of our repository/project
-    namespace_id: int, id of our group ("unapproved" or "approval")
-    gitlab_url: str, base URL of Gitlab API
-    gitlab_token: str, API key for Gitlab API.
-
-    Returns
-    =======
-    project_info: dict, containing info from the projects API endpoint
-    """
     already_exists = check_if_project_exists(
         repo_name, namespace_id, gitlab_url, gitlab_token
     )
@@ -237,67 +135,18 @@ def get_project_info(repo_name, namespace_id, gitlab_url, gitlab_token):
 
 
 def get_project_remote_url(repo_name, namespace_id, gitlab_url, gitlab_token):
-    """
-    Given the name of a repository and  namespace_id (i.e. group,
-    "unapproved" or "approval"), either return the remote URL for project
-    matching the repo name, or create it if it doesn't exist already,
-    and again return the remote URL.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repository/project we're looking for.
-    namespace_id: int, the ID of the group ("unapproved" or "approval")
-    gitlab_url: str, base URL of the API
-    gitlab_token: str, API key
-
-    Returns
-    =======
-    gitlab_project_url: str, the URL to be set as the "remote".
-    """
     project_info = get_project_info(repo_name, namespace_id, gitlab_url, gitlab_token)
 
     return project_info["ssh_url_to_repo"]
 
 
 def get_project_id(repo_name, namespace_id, gitlab_url, gitlab_token):
-    """
-    Given the name of a repository and  namespace_id (i.e. group,
-    "unapproved" or "approval"), either return the id of project
-    matching the repo name, or create it if it doesn't exist already,
-    and again return the id.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repository/project we're looking for.
-    namespace_id: int, the ID of the group ("unapproved" or "approval")
-    gitlab_url: str, base URL of the API
-    gitlab_token: str, API key
-
-    Returns
-    =======
-    gitlab_project_url: str, the URL to be set as the "remote".
-    """
     project_info = get_project_info(repo_name, namespace_id, gitlab_url, gitlab_token)
 
     return project_info["id"]
 
 
 def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
-    """
-    Create empty project on gitlab, and return the corresponding remote URL.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repository/project
-    namespace_id: int, ID of the group ("unapproved" or "approved")
-    gitlab_url: str, base URL of the API
-    gitlab_token: str, API token.
-
-    Returns
-    =======
-    gitlab_project_info: dict, containing among other things, the name and
-                        the remote URL for the project.
-    """
     projects_url = "{}projects/".format(gitlab_url)
     response = requests.post(
         projects_url,
@@ -382,20 +231,6 @@ commit history.
 
 
 def check_if_branch_exists(branch_name, project_id, gitlab_url, gitlab_token):
-    """
-    See if a branch with name branch_name already exists on this Project
-
-    Parameters
-    ==========
-    branch_name: str, name of branch to look for
-    project_id: int, id of the project, obtained from projects API endpoint
-    gitlab_url: base URL of the Gitlab API
-    gitlab_token: API token for the Gitlab API
-
-    Returns
-    =======
-    branch_exists: bool, True if branch exists, False if not.
-    """
     branches_url = "{}/projects/{}/repository/branches".format(gitlab_url, project_id)
     response = requests.get(
         branches_url, headers={"Authorization": "Bearer " + gitlab_token}
@@ -417,24 +252,6 @@ def create_branch(
     branch_name, project_id, gitlab_url, gitlab_token,
         reference_branch="_gitlab_ingress_review"
 ):
-    """
-    Create a new branch on an existing project.  By default, use
-    '_gitlab_ingress_review' (which is unlikely to exist in the source
-    repo) as the reference branch from which to create the new one.
-
-    Parameters
-    ==========
-    branch_name: str, the desired name of the new branch
-    project_id: int, the ID of the project, which is the "id" value in
-                 the dictionary of project information returned when
-                 creating a new project or listing existing ones.
-    gitlab_url: str, the base URL for the Gitlab API
-    gitlab_token: str, the Gitlab API token
-
-    Returns
-    =======
-    branch_info: dict, info about the branch from API endpoint
-    """
     # assume branch doesn't already exist - create it!
     branch_url = "{}/projects/{}/repository/branches".format(gitlab_url, project_id)
     response = requests.post(
@@ -454,24 +271,6 @@ def create_branch(
 def check_if_merge_request_exists(
     source_branch, target_project_id, target_branch, gitlab_url, gitlab_token
 ):
-    """
-    See if there is an existing merge request between the source and target
-    project/branch combinations.
-
-    Parameters
-    ==========
-    source_branch: str, name of the branch on source project, will typically
-                      be the commit_hash from the original repo.
-    target_project_id: int, project_id for the "approval" group's project.
-    target_branch: str, name of branch on target project, will typically
-                      be the desired branch name.
-    gitlab_url: str, base URL for the Gitlab API
-    gitlab_token: str, API token for the Gitlab API.
-
-    Returns
-    =======
-    bool, True if merge request already exists, False otherwise
-    """
     mr_url = "{}/projects/{}/merge_requests".format(gitlab_url, target_project_id)
     response = requests.get(mr_url, headers={"Authorization": "Bearer " + gitlab_token})
     if response.status_code != 200:
@@ -503,30 +302,6 @@ def create_merge_request(
     gitlab_url,
     gitlab_token,
 ):
-
-    """
-    Create a new MR, e.g. from the branch <commit_hash> in the "unapproved"
-    group's project, to the branch <desired_branch_name> in the "approval"
-    group's project.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repository
-    source_project_id: int, project_id for the unapproved project, obtainable
-                         as the "ID" field of the json returned from the
-                         projects API endpoint.
-    source_branch: str, name of the branch on source project, will typically
-                      be the 'branch-<commit-hash-from-the-original-repo>'.
-    target_project_id: int, project_id for the "approval" group's project.
-    target_branch: str, name of branch on target project, will typically
-                      be the desired branch name.
-    gitlab_url: str, base URL for the Gitlab API
-    gitlab_token: str, API token for the Gitlab API.
-
-    Returns
-    =======
-    mr_info: dict, the response from the API upon creating the Merge Request
-    """
     # first need to create a forked-from relationship between the projects
     fork_url = "{}/projects/{}/fork/{}".format(
         gitlab_url, source_project_id, target_project_id
@@ -573,19 +348,6 @@ def create_merge_request(
 def clone_commit_and_push(
     repo_name, path_to_unzipped_repo, tmp_repo_dir, branch_name, remote_url, commit_hash
 ):
-    """Run shell commands to convert the unzipped directory containing the
-    repository contents into a git repo, then commit it on the branch
-    with the requested name.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repository/project
-    path_to_unzipped_repo: str, the full directory path to the unzipped repo
-    tmp_repo_dir: str, path to a temporary dir where we will clone the project
-    branch_name: str, the name of the branch to push to
-    remote_url: str, the URL for this project on gitlab-external to be added
-                  as a "remote".
-    """
     # Clone the repo
     subprocess.run(["git", "clone", remote_url], cwd=tmp_repo_dir, check=True)
     working_dir = os.path.join(tmp_repo_dir, repo_name)
@@ -612,22 +374,6 @@ def clone_commit_and_push(
 
 
 def fork_project(repo_name, project_id, namespace_id, gitlab_url, gitlab_token):
-    """
-    Fork the project 'approval/<project-name>' to 'unapproved/<project-name>'
-    after first checking whether the latter exists.
-
-    Parameters
-    ==========
-    repo_name: str, name of the repo/project
-    project_id: int, project id of the 'approval/<project-name>' project
-    namespace_id: int, id of the 'unapproved' namespace
-    gitlab_url: str, str, the base URL of Gitlab API
-    gitlab_token: str, API token for Gitlab API
-
-    Returns
-    =======
-    new_project_id: int, the id of the newly created 'unapproved/<project-name>' project
-    """
     already_exists = check_if_project_exists(
         repo_name, namespace_id, gitlab_url, gitlab_token
     )
@@ -667,19 +413,6 @@ def fork_project(repo_name, project_id, namespace_id, gitlab_url, gitlab_token):
 def unzipped_repo_to_merge_request(
     repo_details, tmp_repo_dir, gitlab_config, namespace_ids, group_names
 ):
-    """
-    Go through all the steps for a single repo/project.
-
-    Parameters
-    ==========
-    repo_details: tuple of strings, (repo_name, hash, desired_branch, location)
-    tmp_repo_dir: str, directory where we will clone the repo, then copy the contents in
-    gitlab_config: dict, contains api url and token
-    namespace_ids; dict, keys are the group names (e.g. "unapproved", "approval", values
-                        are the ids of the corresponding namespaces in Gitlab
-    group_names: list of strings, typically ["unapproved", "approval"]
-    """
-
     # unpack tuple
     repo_name, commit_hash, target_branch_name, unzipped_location = repo_details
     logger.info("Unpacked {} {} {}".format(repo_name, commit_hash, target_branch_name))
@@ -801,17 +534,6 @@ def unzipped_repo_to_merge_request(
 
 
 def cleanup(zipfile_dir, tmp_unzipped_dir, tmp_repo_dir):
-    """
-    Remove directories and files after everything has been uploaded to gitlab
-
-    Parameters
-    ==========
-    zipfile_dir: str, directory containing the original zipfiles.  Will not remove this
-                      directory, but we will delete all the zipfiles in it.
-    tmp_unzipped_dir: str, directory where the unpacked zipfile contents are put. Remove.
-    tmp_repo_dir: str, directory where projects are cloned from Gitlab, then contents from
-                       tmp_unzipped_dir are copied in.  Remove.
-    """
     logger.info(" === cleaning up ======")
     shutil.rmtree(tmp_unzipped_dir, ignore_errors=True)
     logger.info("Removed directory {}".format(tmp_unzipped_dir))
@@ -828,7 +550,6 @@ def cleanup(zipfile_dir, tmp_unzipped_dir, tmp_repo_dir):
 
 
 def main():
-
     ZIPFILE_DIR = "/tmp/zipfiles"
     os.makedirs(ZIPFILE_DIR, exist_ok=True)
     # create a directory to unpack the zipfiles into
