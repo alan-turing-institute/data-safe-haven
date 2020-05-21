@@ -31,8 +31,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
 # Check whether this IP address has been used.
-# If it has, check whether the NIC is attached to a VM
-# ----------------------------------------------------
+# --------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
 if ($upgrade) {
     if (-not $existingNic) {
@@ -128,6 +127,9 @@ if ($upgrade) {
         }
     }
 } else {
+    # If the IP address is already used, check if there is a VM attached.
+    # If there is abort, otherwise remove the NIC
+    # -------------------------------------------------------------------
     if ($existingNic) {
         Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
         if ($existingNic.VirtualMachine.Id) {
