@@ -307,7 +307,7 @@ def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
             "path": repo_name,
             "visibility": "internal",
             "namespace_id": namespace_id,
-            "initialize_with_readme": True,
+            "default_branch": "_gitlab_ingress_review"
         },
     )
     assert response.json()["name"] == repo_name
@@ -316,6 +316,67 @@ def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
         "Created project {} in namespace {}, project_id {}".format(
             repo_name, namespace_id, project_info["id"]
         )
+    )
+    # make the initial commit of README initialized with some instructions
+    README = f"""
+# {repo_name}
+
+This is the root commit of the repository holding snapshots of the
+reqested Git repository, at the commits that have been requested for
+review.
+
+For guidance on the Safe Haven review process, see the Safe Haven
+documentation, or contact ....
+
+## For Reviewers
+
+There is a merge request into this repository (`approval/{repo_name}`)
+for each ingress request.
+
+Please look at each merge request in turn, and review it using the
+usual GitLab review facilities to determine whether it can be brought
+into the user-visible GitLab within the Safe Haven.
+
+- If you approve of making this snapshot available to the environment,
+  indicate your approval by leaving a "thumbs up" reaction to the top
+  comment of the Merge Request.
+- Two such approvals are **required** before the merge request will be
+  **automatically merged** and brought into the user-visible GitLab in
+  the Research Environment.
+- Any "unresolved threads" will prevent the merge so make sure that
+  all comment threads in the discussion have been marked as resolved.
+
+**Important**: Once the repository has had two approvals, the merge
+will be made automatically.  This could take up to 10 minutes.  There
+is no need (and you will not have the capability) to merge manually.
+
+## For Safe Haven Users
+
+The branches of this repository contain snapshots at the individual
+commits that have been requested and approved by the Safe Haven Git
+Ingress process.  The commit history is not kept.  For more on this
+process, see the Safe Haven documentation.  This commit will be the
+root of each of these branches, and the contents of this file will be
+overwritten (or removed) by the contents of the requested repository,
+so if you are reading this, it is likely that you are browsing the
+commit history.
+"""
+    # Make the first commit to the project with the README
+    project_commit_url = f"{gitlab_url}/projects/{project_info['id']}/repository/commits"   
+    response = requests.post(
+        project_commit_url,
+        headers={"Authorization": "Bearer " + gitlab_token},
+        json={
+            "branch": "_gitlab_ingress_review",
+            "commit_message": "Initial commit",
+            "actions": [
+                {
+                    "action": "create",
+                    "file_path": "README.md",
+                    "content": README
+                }
+            ]
+        }
     )
     return project_info
 
@@ -353,11 +414,13 @@ def check_if_branch_exists(branch_name, project_id, gitlab_url, gitlab_token):
 
 
 def create_branch(
-    branch_name, project_id, gitlab_url, gitlab_token, reference_branch="master"
+    branch_name, project_id, gitlab_url, gitlab_token,
+        reference_branch="_gitlab_ingress_review"
 ):
     """
-    Create a new branch on an existing project.  By default, use 'master'
-    as the reference branch from which to create the new one.
+    Create a new branch on an existing project.  By default, use
+    '_gitlab_ingress_review' (which is unlikely to exist in the source
+    repo) as the reference branch from which to create the new one.
 
     Parameters
     ==========
