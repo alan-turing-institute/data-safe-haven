@@ -51,10 +51,14 @@ function Get-Dependencies {
 }
 
 
-# Load core package list
-# ----------------------
-$fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-$corePackageList = Get-Content (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-$fullMirrorType-tier3.list")
+# Combine base image package lists with the core whitelist to construct a single list of core packages
+# ----------------------------------------------------------------------------------------------------
+$languageName = @{cran = "r"; pypi = "python"}[$MirrorType]
+$corePackageList = Get-Content (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list")
+foreach ($packageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
+    $corePackageList += $packageList
+}
+$corePackageList = $corePackageList | Sort-Object | Uniq
 
 
 # Initialise the package queue
@@ -92,4 +96,4 @@ if ($unneededCorePackages) {
 # Write the full package list to the expanded whitelist
 # -----------------------------------------------------
 Add-LogMessage -Level Info "Writing $($packageList.Count) packages to the expanded whitelist..."
-$packageList | Out-File (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-$fullMirrorType-tier3.list")
+$packageList | Out-File (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-$languageName-$MirrorType-tier3.list")
