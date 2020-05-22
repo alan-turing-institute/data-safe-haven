@@ -29,12 +29,14 @@ users:
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    owner: mirrordaemon:mirrordaemon
     permissions: "0600"
   - path: "/home/mirrordaemon/package_whitelist.txt"
     permissions: "0600"
     content: |
       # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
+    owner: mirrordaemon:mirrordaemon
     permissions: "0444"
     content: |
       #! /usr/bin/env python3
@@ -81,6 +83,7 @@ write_files:
               f_bandersnatch.write("\n")
       print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    owner: mirrordaemon:mirrordaemon
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -101,6 +104,7 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
+    owner: mirrordaemon:mirrordaemon
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -118,6 +122,7 @@ write_files:
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
+    owner: mirrordaemon:mirrordaemon
     permissions: "0700"
     content: |
       #! /bin/bash
