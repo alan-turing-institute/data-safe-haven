@@ -37,7 +37,7 @@ write_files:
       # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
     owner: mirrordaemon:mirrordaemon
-    permissions: "0444"
+    permissions: "0400"
     content: |
       #! /usr/bin/env python3
       from collections import defaultdict
