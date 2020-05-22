@@ -216,7 +216,6 @@ runcmd:
   - python3 /home/mirrordaemon/update_bandersnatch_config.py
 
   # Set up mirroring
-  - chmod u+x ~mirrordaemon/*.sh
   - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
   - echo "*** Adding external update (bandersnatch from PyPI) job to crontab (every 6 hours)... ***"
