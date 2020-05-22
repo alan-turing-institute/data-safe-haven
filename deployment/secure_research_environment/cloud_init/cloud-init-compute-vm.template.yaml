@@ -84,6 +84,8 @@ write_files:
         krb4_convert = true
         krb4_get_tickets = false
   - path: "/active_directory_step01_pre"
+    owner: root:root
+    permssions: "0500"
     content: |
       #!/bin/sh
       # Set up Active Directory
@@ -127,11 +129,15 @@ write_files:
       cat /etc/krb5.conf
       echo ">=== end of /etc/krb5.conf ===<"
   - path: "/active_directory_step02_realm_join"
+    owner: root:root
+    permssions: "0500"
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
       cat /etc/ldap.secret | realm join --verbose -U <dsvm-ldap-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
+    owner: root:root
+    permssions: "0500"
     content: |
       # Check the sssd.conf file
       echo "Updating sssd settings"
@@ -145,6 +151,8 @@ write_files:
       echo "Restarting sssd"
       systemctl restart sssd
   - path: "/active_directory_step04_update_pam"
+    owner: root:root
+    permssions: "0500"
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
@@ -287,19 +295,13 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
-  # Add execute permission to the Active Directory set up scripts
-  - echo ">=== Initialise Active Directory configuration... ===<"
-  - chmod +x /active_directory_step01_pre
-  - chmod +x /active_directory_step02_realm_join
-  - chmod +x /active_directory_step03_update_sssd
-  - chmod +x /active_directory_step04_update_pam
   # Run the Active Directory set up scripts
   - echo ">=== Run Active Directory setup scripts... ===<"
   - /active_directory_step01_pre
   - /active_directory_step02_realm_join
   - /active_directory_step03_update_sssd
   - /active_directory_step04_update_pam
-  # Remove the Active Directory set up scripts (as these contain secrets and are world readable
+  # Remove the Active Directory set up scripts (as these contain secrets)
   - echo ">=== Delete Active Directory setup scripts... ===<"
   - rm /active_directory_step01_pre
   - rm /active_directory_step02_realm_join
