@@ -1,5 +1,7 @@
 apeglm
 Biobase
+BiocGenerics
+Biostrings
 ChemmineR
 clusterProfiler
 ComplexHeatmap
@@ -16,6 +18,7 @@ fastseg
 FlowSOM
 flowUtils
 ggtree
+GlobalAncova
 GOSemSim
 GOstats
 graph
@@ -26,6 +29,7 @@ interactiveDisplayBase
 KEGGgraph
 limma
 made4
+MassSpecWavelet
 metagenomeSeq
 minet
 MLInterfaces
@@ -37,6 +41,7 @@ RankProd
 RBGL
 RDAVIDWebService
 Rgraphviz
+Rsamtools
 safe
 SC3
 scater
