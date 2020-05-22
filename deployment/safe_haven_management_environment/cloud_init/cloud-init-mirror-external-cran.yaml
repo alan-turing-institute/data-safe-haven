@@ -92,12 +92,7 @@ runcmd:
   # Generate SSH keys for connecting to the internal mirror
   # - do this early since it is pulled out of the VM by the deployment script
   - echo "*** Generating SSH keys for connecting to the internal mirror"
-  - ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
-  - sed -i 's/root@/mirrordaemon@/' id_rsa.pub
-  - mkdir -p ~mirrordaemon/.ssh
-  - mv id_rsa id_rsa.pub ~mirrordaemon/.ssh/
-  - chmod 0600 ~mirrordaemon/.ssh/id_rsa
-  - chmod 0644 ~mirrordaemon/.ssh/id_rsa.pub
+  - sudo -u mirrordaemon ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
 
   # Upgrade installation then clean up
   - echo "*** Upgrade and clean up apt-get packages... ***"
