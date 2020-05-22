@@ -119,7 +119,6 @@ runcmd:
   - mkdir -p /datadrive/mirrordaemon/www/cran
 
   # Set up mirroring
-  - chmod u+x ~mirrordaemon/*.sh
   - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
   - echo "*** Adding external update (rsync from CRAN) job to crontab (3am each day)... ***"
