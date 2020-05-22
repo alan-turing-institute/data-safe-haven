@@ -19,9 +19,8 @@ function Select-ResolvableDependencies {
         $Dependencies
     )
     if ($Repository -eq "cran") {
-        $packagesToIgnore = @("graphics", "grDevices", "methods", "R", "utils") # these are core packages
-        $packagesToIgnore += @("graph", "grid", "INLA", "survival4", "survival5") # these are not available on CRAN
-        $packagesToIgnore += @("Biostrings", "BiocGenerics") # these are from Bioconductor
+        $packagesToIgnore = @("base", "graphics", "grDevices", "methods", "R", "utils", "stats", "tools", "splines") # these are core packages
+        $packagesToIgnore += @("FEAR", "graph", "grid", "INLA", "survival4", "survival5") # these are not available on CRAN
         $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
     }
     return $Dependencies
@@ -40,10 +39,10 @@ function Get-Dependencies {
         $ApiKey
     )
     $dependencies = @()
-    $versions = (Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey}).versions | ForEach-Object {$_.number}
+    $versions = (Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 10 -RetryIntervalSec 30 -ErrorAction SilentlyContinue).versions | ForEach-Object {$_.number}
     Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
     foreach ($version in $versions) {
-        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 10
+        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 10 -RetryIntervalSec 30 -ErrorAction SilentlyContinue
         $dependencies += ($response.dependencies | ForEach-Object { $_.name })
         Start-Sleep 1 # wait for one second between requests to respect the API query limit
     }
