@@ -121,7 +121,6 @@ runcmd:
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
-  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Schedule initial update for next boot
   - echo "*** Schedule both mirror update jobs for each boot... ***"
