@@ -268,12 +268,33 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
 }
 
 
-# Give 'generic read', 'generic write', 'create child' and 'delete child' permissions on the computers container to the LDAP users group
-# --------------------------------------------------------------------------------------------------------------------------------------
+# Give permissions on the computers container to the LDAP users group
+# This allows the LDAP users to register computers in the domain when joining
+# TODO: reduce the scope of these permissions to only what is required
+# ---------------------------------------------------------------------------
 Write-Host "Delegating Active Directory registration permissions to the LDAP users group..."
 $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
-dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
-if ($?) {
+# dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
+# Add 'generic read', 'generic write', 'create child' and 'delete child' permissions
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\$($ldapUsersSgName):GRGWCCDC"
+$success = $?
+# Add 'read/write' permissions on service principal name
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;servicePrincipalName"
+# Add read/write permissions on DNS attributes
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;DNS Host Name Attributes"
+# Add read/write permissions on operating system attributes
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystem"
+$success = $success -And $?
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemVersion"
+$success = $success -And $?
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemServicePack"
+$success = $success -And $?
+# Add read/write permissions on supported encryption types
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;msDS-SupportedEncryptionTypes"
+$success = $success -And $?
+
+
+if ($success) {
     Write-Host " [o] Successfully delegated Active Directory permissions"
 } else {
     Write-Host " [x] Failed to delegate Active Directory permissions"
