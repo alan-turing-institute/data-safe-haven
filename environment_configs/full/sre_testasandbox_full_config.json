@@ -182,12 +182,21 @@
           "prefix": "10.150.3",
           "nsg": "dbingress",
           "cidr": "10.150.3.0/24"
+        },
+        "dbanalysis": {
+          "name": "DbAnalysisSubnet",
+          "prefix": "10.150.5",
+          "nsg": "dbanalysis",
+          "cidr": "10.150.5.0/24"
         }
       },
       "nsg": {
         "data": {},
         "dbingress": {
           "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        },
+        "dbanalysis": {
+          "name": "NSG_SRE_SANDBOX_DB_ANALYSIS"
         }
       }
     },
@@ -220,9 +229,15 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
+        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "postgresDbServiceAccountUsername": "sre-sandbox-postgresdb-service-account-username",
+        "postgresDbServiceAccountPassword": "sre-sandbox-postgresdb-service-account-password",
+        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
+        "postgresVmLdapPassword": "sre-sandbox-postgresvm-ldap-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
         "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
@@ -240,6 +255,10 @@
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
+        },
+        "postgresdb": {
+          "name": "SANDBOX PostgresDB LDAP",
+          "samAccountName": "pgdbldapsandbox"
         }
       },
       "datamount": {
@@ -316,13 +335,30 @@
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbmssqlingress": {
+      "dbmssql": {
         "name": "SQL-ING-SANDBOX",
+        "type": "MSSQL",
         "enableSSIS": true,
         "ipLastOctet": "4",
         "port": "14330",
         "sku": "sqldev",
         "subnet": "dbingress",
+        "vmSize": "Standard_DS2_v2",
+        "datadisk": {
+          "size_gb": "2048",
+          "type": "Standard_LRS"
+        },
+        "osdisk": {
+          "size_gb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "dbpostgres": {
+        "name": "PGS-ANA-SANDBOX",
+        "type": "PostgreSQL",
+        "ipLastOctet": "4",
+        "sku": "18.04-LTS",
+        "subnet": "dbanalysis",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
           "size_gb": "2048",
