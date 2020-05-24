@@ -20,7 +20,7 @@ function Select-ResolvableDependencies {
     )
     if ($Repository -eq "cran") {
         $packagesToIgnore = @("base", "graphics", "grDevices", "methods", "R", "utils", "stats", "tools", "splines") # these are core packages
-        $packagesToIgnore += @("FEAR", "graph", "grid", "INLA", "survival4", "survival5") # these are not available on CRAN
+        # $packagesToIgnore += @("aroma.light", "DierckxSpline", "FEAR", "graph", "grid", "INLA", "multicore", "odesolve", "rankreg", "ReadImages", "survival4", "survival5") # these are not available on CRAN
         $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
     }
     return $Dependencies
@@ -39,22 +39,33 @@ function Get-Dependencies {
         $ApiKey
     )
     $dependencies = @()
-    $versions = (Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 10 -RetryIntervalSec 30 -ErrorAction SilentlyContinue).versions | ForEach-Object {$_.number}
-    Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
-    foreach ($version in $versions) {
-        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 10 -RetryIntervalSec 30 -ErrorAction SilentlyContinue
-        $dependencies += ($response.dependencies | ForEach-Object { $_.name })
-        Start-Sleep 1 # wait for one second between requests to respect the API query limit
+    try {
+        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
+        $versions = $response.versions | ForEach-Object { $_.number }
+        Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
+        foreach ($version in $versions) {
+            $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
+            $dependencies += ($response.dependencies | ForEach-Object { $_.name })
+            Start-Sleep 1 # wait for one second between requests to respect the API query limit
+        }
+    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+        Add-LogMessage -Level Error "... $Package could not be found in ${Repository}. Has it been removed?"
     }
     if (-Not $dependencies) { return @() }
     return Select-ResolvableDependencies -Repository $Repository -Dependencies ($dependencies | Sort-Object | Uniq)
 }
 
 
+# Load appropriate whitelists
+# ---------------------------
+$languageName = @{cran = "r"; pypi = "python"}[$MirrorType]
+$coreWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list"
+$fullWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-${languageName}-${MirrorType}-tier3.list"
+
+
 # Combine base image package lists with the core whitelist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
-$languageName = @{cran = "r"; pypi = "python"}[$MirrorType]
-$corePackageList = Get-Content (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list")
+$corePackageList = Get-Content $coreWhitelistPath
 foreach ($packageList in (Get-Content (Join-Path $PSScriptRoot ".." "dsvm_images" "packages" "packages-${languageName}-${MirrorType}*.list"))) {
     $corePackageList += $packageList
 }
@@ -93,7 +104,12 @@ if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }
 
+# Remove any unnecesary packages from the core whitelist
+# ------------------------------------------------------
+Get-Content $coreWhitelistPath | Sort-Object | Uniq | Where-Object { $_ -NotIn $unneededCorePackages } | Out-File $coreWhitelistPath
+
+
 # Write the full package list to the expanded whitelist
 # -----------------------------------------------------
 Add-LogMessage -Level Info "Writing $($packageList.Count) packages to the expanded whitelist..."
-$packageList | Out-File (Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-$languageName-$MirrorType-tier3.list")
+$packageList | Sort-Object | Uniq | Out-File $fullWhitelistPath
