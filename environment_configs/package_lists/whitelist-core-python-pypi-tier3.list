@@ -64,7 +64,6 @@ pandas-datareader
 partd
 patsy
 pdfminer.six
-pep8
 Pint
 prometheus_client
 pycodestyle

@@ -53,11 +53,9 @@ geomorph
 ggnetwork
 ggseqlogo
 GJRM
-GlobalAncova
 gridGraphviz
 grr
 gsheet
-GSVA
 gWidgets2RGtk2
 HDCI
 HI
@@ -70,7 +68,6 @@ LDRTools
 leapp
 lmPerm
 LowRankQP
-MassSpecWavelet
 matlabr
 MaxPro
 mcmcplots
@@ -162,7 +159,7 @@ treeio
 tsBSS
 TSsql
 urlshorteneR
-vines'
+vines
 VSURF
 wmtsa
 wrapr
