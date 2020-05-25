@@ -24,7 +24,6 @@ codetools
 colorRamps
 colorspace
 COMBAT
-compiler
 corrgram
 corrplot
 cowplot
@@ -79,9 +78,6 @@ ggvis
 glmnet
 googleVis
 gplots
-graphics
-grDevices
-grid
 gridExtra
 gtable
 h2o
@@ -122,7 +118,6 @@ mboost
 mclust
 MCMCpack
 McSpatial
-methods
 mgcv
 mime
 mlbench
@@ -190,7 +185,6 @@ sourcetools
 sp
 spacyr
 spatial
-splines
 sqldf
 stargazer
 stats
@@ -218,7 +212,6 @@ topicmodels
 traj
 tsne
 urca
-utils
 uuid
 varbvs
 vars
