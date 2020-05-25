@@ -19,8 +19,7 @@ function Select-ResolvableDependencies {
         $Dependencies
     )
     if ($Repository -eq "cran") {
-        $packagesToIgnore = @("base", "graphics", "grDevices", "methods", "R", "utils", "stats", "tools", "splines") # these are core packages
-        # $packagesToIgnore += @("aroma.light", "DierckxSpline", "FEAR", "graph", "grid", "INLA", "multicore", "odesolve", "rankreg", "ReadImages", "survival4", "survival5") # these are not available on CRAN
+        $packagesToIgnore = @("base", "compiler", "graphics", "grDevices", "methods", "R", "splines", "stats", "tools", "utils") # these are core packages
         $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
     }
     return $Dependencies
@@ -41,15 +40,20 @@ function Get-Dependencies {
     $dependencies = @()
     try {
         $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
-        $versions = $response.versions | ForEach-Object { $_.number }
-        Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
+    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+        Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
+        throw [System.IO.FileNotFoundException]::new("Could not find package: $Package")
+    }
+    $versions = $response.versions | ForEach-Object { $_.number }
+    Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
+    try {
         foreach ($version in $versions) {
             $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
             $dependencies += ($response.dependencies | ForEach-Object { $_.name })
             Start-Sleep 1 # wait for one second between requests to respect the API query limit
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
-        Add-LogMessage -Level Error "... $Package could not be found in ${Repository}. Has it been removed?"
+        Add-LogMessage -Level Error "... could not load dependencies for all versions of $Package"
     }
     if (-Not $dependencies) { return @() }
     return Select-ResolvableDependencies -Repository $Repository -Dependencies ($dependencies | Sort-Object | Uniq)
@@ -86,12 +90,19 @@ Add-LogMessage -Level Info "Preparing to expand dependencies for $($packageList.
 while ($queue.Count) {
     $package = $queue.Dequeue()
     Add-LogMessage -Level Info "Finding dependencies for '$package'"
-    $dependencies = Get-Dependencies -Repository $MirrorType -Package $Package -ApiKey $ApiKey
-    Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-    $allDependencies += $dependencies
-    $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList }
-    $packageList += $newPackages
-    $newPackages | ForEach-Object { $queue.Enqueue($_) }
+    try {
+        # Add dependencies from this package
+        $dependencies = Get-Dependencies -Repository $MirrorType -Package $Package -ApiKey $ApiKey
+        Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
+        $allDependencies += $dependencies
+        $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList }
+        $packageList += $newPackages
+        $newPackages | ForEach-Object { $queue.Enqueue($_) }
+    } catch [System.IO.FileNotFoundException] {
+        # If this package could not be found then instead remove the package from the expanded list
+        Add-LogMessage -Level Error "... removing $Package from the expanded whitelist"
+        $packageList = $packageList | Where-Object { $_ -ne $package }
+    }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
 }
@@ -106,7 +117,8 @@ if ($unneededCorePackages) {
 
 # Remove any unnecesary packages from the core whitelist
 # ------------------------------------------------------
-Get-Content $coreWhitelistPath | Sort-Object | Uniq | Where-Object { $_ -NotIn $unneededCorePackages } | Out-File $coreWhitelistPath
+$corePackages = Get-Content $coreWhitelistPath
+$corePackages | Sort-Object | Uniq | Where-Object { $_ -NotIn $unneededCorePackages } | Out-File $coreWhitelistPath
 
 
 # Write the full package list to the expanded whitelist
