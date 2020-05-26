@@ -1,9 +1,12 @@
 # System files
 *.DS_Store
 
-# All secrets folders, no matter how nested
+# Top-level secrets and temp folder
 secrets/
 temp/
+
+# Dependency cache for package whitelisting
+deployment/administration/.dependency_cache.json
 
 # Development tools
 .vscode

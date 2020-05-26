@@ -19,7 +19,8 @@ function Select-ResolvableDependencies {
         $Dependencies
     )
     if ($Repository -eq "cran") {
-        $packagesToIgnore = @("base", "compiler", "graphics", "grDevices", "methods", "R", "splines", "stats", "tools", "utils") # these are core packages
+        # These are core packages and so we should ignore them
+        $packagesToIgnore = @("base", "compiler", "graphics", "grDevices", "methods", "R", "splines", "stats", "tools", "utils")
         $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
     }
     return $Dependencies
@@ -35,22 +36,29 @@ function Get-Dependencies {
         [Parameter(Mandatory = $true, HelpMessage = "Name of package to get dependencies for")]
         $Package,
         [Parameter(Mandatory = $true, HelpMessage = "API key for libraries.io")]
-        $ApiKey
+        $ApiKey,
+        [Parameter(Mandatory = $true, HelpMessage = "Hashtable containing cached dependencies")]
+        $Cache
     )
     $dependencies = @()
     try {
         $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
+        Start-Sleep 1 # wait for one second between requests to respect the API query limit
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
         throw [System.IO.FileNotFoundException]::new("Could not find package: $Package")
     }
+    if ($Package -NotIn $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
     $versions = $response.versions | ForEach-Object { $_.number }
     Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
     try {
         foreach ($version in $versions) {
-            $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
-            $dependencies += ($response.dependencies | ForEach-Object { $_.name })
-            Start-Sleep 1 # wait for one second between requests to respect the API query limit
+            if ($version -NotIn $Cache[$Repository][$Package].Keys) {
+                $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
+                $Cache[$Repository][$Package][$version] = @($response.dependencies | ForEach-Object { $_.name })
+                Start-Sleep 1 # wait for one second between requests to respect the API query limit
+            }
+            $dependencies += $Cache[$Repository][$Package][$version]
         }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... could not load dependencies for all versions of $Package"
@@ -65,7 +73,7 @@ function Get-Dependencies {
 $languageName = @{cran = "r"; pypi = "python"}[$MirrorType]
 $coreWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-core-${languageName}-${MirrorType}-tier3.list"
 $fullWhitelistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "whitelist-full-${languageName}-${MirrorType}-tier3.list"
-
+$dependencyCachePath = Join-Path $PSScriptRoot ".dependency_cache.json"
 
 # Combine base image package lists with the core whitelist to construct a single list of core packages
 # ----------------------------------------------------------------------------------------------------
@@ -83,6 +91,14 @@ $corePackageList | ForEach-Object { $queue.Enqueue($_) }
 $allDependencies = @()
 
 
+# Load any previously-cached dependencies
+$dependencyCache = [ordered]@{}
+if (Test-Path $dependencyCachePath -PathType Leaf) {
+    $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
+}
+if ($MirrorType -NotIn $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
+
+
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageList = $corePackageList
@@ -92,7 +108,7 @@ while ($queue.Count) {
     Add-LogMessage -Level Info "Finding dependencies for '$package'"
     try {
         # Add dependencies from this package
-        $dependencies = Get-Dependencies -Repository $MirrorType -Package $Package -ApiKey $ApiKey
+        $dependencies = Get-Dependencies -Repository $MirrorType -Package $Package -ApiKey $ApiKey -Cache $dependencyCache
         Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
         $allDependencies += $dependencies
         $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList }
@@ -105,6 +121,8 @@ while ($queue.Count) {
     }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
+    # Write to the dependency file after each package in case the script terminates early
+    $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 }
 
 
