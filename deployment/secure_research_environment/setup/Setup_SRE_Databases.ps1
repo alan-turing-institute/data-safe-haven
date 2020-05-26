@@ -35,6 +35,8 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
     $subnetCfg = $config.sre.network.subnets.($databaseCfg.subnet)
     $nsgCfg = $config.sre.network.nsg.($subnetCfg.nsg)
 
+    if ($databaseCfg.type -eq "MSSQL") { continue } # TODO remove this
+
     # Ensure that subnet exists
     # -------------------------
     $subnet = Deploy-Subnet -Name $subnetCfg.name -VirtualNetwork $virtualNetwork -AddressPrefix $subnetCfg.cidr
@@ -161,19 +163,20 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmLdapPassword
 
             # Create an AD service principal and get the keytab for it
+            Add-LogMessage -Level Info "Create a service principal for the database ($PostgresDbServiceAccountName) and get its keytab..."
             $_ = Set-AzContext -Subscription $config.shm.subscriptionName
             $params = @{
+                PostgresDbServiceAccountName = "`"$($PostgresDbServiceAccountName)`""
+                PostgresDbServiceAccountPassword = "`"$($PostgresDbServiceAccountPassword)`""
+                PostgresVmHostname = "`"$($databaseCfg.name)`""
+                ServiceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
                 ShmFqdn = "`"$($config.shm.domain.fqdn)`""
                 ShmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
                 SreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
-                PostgresDbServiceAccountName = "`"$($PostgresDbServiceAccountName)`""
-                PostgresDbServiceAccountPassword = "`"$($PostgresDbServiceAccountPassword)`""
-                PostgresDbHostname = "`"$($databaseCfg.name)`""
-                ServiceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Retrieve_Service_Principal_Keytab.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-            $b64keytab = (($result.Value[0].Message -split "\n" | Select-String "^Keytab:") -Split " ")[1]
+            $b64keytab = (($result.Value[0].Message -split "\n" | Select-String "^ \[o\] Extracted keytab:") -Split ":")[1].Trim()
             Write-Output $result.Value
             $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
@@ -193,7 +196,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<ldap-bind-passwd>", $postgresVmLdapPassword).
                                                     Replace("<ldap-group-filter>", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
-                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
+                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))").
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
                                                     Replace("<postgres-admin-user-password>", $postgresDbAdminPassword).
                                                     Replace("<postgres-ldap-username>", $config.sre.users.ldap.postgresdb.samAccountName).

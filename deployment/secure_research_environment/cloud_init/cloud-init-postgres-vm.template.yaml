@@ -74,27 +74,27 @@ write_files:
     permissions: "0700"
     content: |
       # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
-      echo "Setting hostname in /etc/hostname"
+      echo ">=== Setting hostname in /etc/hostname... ===<"
       hostnamectl set-hostname <db-vm-hostname>.<shm-fqdn-lower>
       cat /etc/hostname
       # Update DNS settings
-      echo "Updating DNS settings in /etc/resolv.conf"
+      echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
       rm /etc/resolv.conf
       sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
       ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
       cat /etc/resolv.conf
       # Add localhost information to /etc/hosts
-      echo "Adding <db-vm-hostname> [<db-vm-ipaddress>] to /etc/hosts"
+      echo ">=== Adding <db-vm-hostname> [<db-vm-ipaddress>] to /etc/hosts... ===<"
       HOST_INFORMATION="<db-vm-ipaddress> <db-vm-hostname> <db-vm-hostname>.<shm-fqdn-lower>"
       sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
       cat /etc/hosts
       # Configure sssd
-      echo "Configuring sssd"
+      echo ">=== Configuring sssd... ===<"
       cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
       chmod 0600 /etc/sssd/sssd.conf
-      cat /etc/sssd/sssd.conf
+      ls -alh /etc/sssd/sssd.conf
       # Join realm
-      echo "Joining realm"
+      echo ">=== Joining realm... ===<"
       cat /etc/ldap.secret | realm join --verbose -U <postgres-ldap-username> <shm-fqdn-lower> --install=/
   - path: "/pg-ldap-sync.yaml"
     owner: root:root
@@ -203,6 +203,16 @@ runcmd:
         fi
     done
 
+  # Add LDAP users with pg-ldap-sync and schedule a cronjob
+  - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
+  - mv /pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - sleep 30 # we need this to ensure that DNS settings have had time to propagate
+  - pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
+  - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - tail -n 1 /etc/crontab
+
   # Set appropriate permissions on public schema
   # - Remove privileges from PUBLIC (everyone)
   # - Grant usage permissions to the research users group
@@ -215,16 +225,7 @@ runcmd:
       GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-admin-group>";
     '
 
-  # Add LDAP users with pg-ldap-sync and schedule a cronjob
-  - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
-  - gem install pg-ldap-sync
-  - mv /pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
-  - pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
-  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-
-  # Allow login to 10.150.5.4 from other hosts and set the appropriate keytab file
+  # Allow login to this VM from other hosts and set the appropriate keytab file
   - echo ">=== Setting postgres config... ===<"
   - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
   - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
@@ -234,6 +235,7 @@ runcmd:
   # Get a Kerberos ticket
   - echo ">=== Getting initial Kerberos ticket... ===<"
   - chown postgres:postgres /var/lib/postgresql/data/postgres.keytab # we cannot do this on creation as the postgres user does not exist then
+  - echo "kinit -t /var/lib/postgresql/data/postgres.keytab POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
   - kinit -t /var/lib/postgresql/data/postgres.keytab POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>
   - klist
 
@@ -248,7 +250,7 @@ runcmd:
   - systemctl status postgresql@12-main
 
   # Show postgres users and roles
-  - echo ">=== postgres users and roles... ===<"
+  - echo ">=== List postgres users and roles... ===<"
   - echo "USERS:"
   - sudo -i -u postgres psql -q -c "SELECT * FROM pg_user"
   - echo "ROLES:"

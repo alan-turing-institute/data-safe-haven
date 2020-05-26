@@ -5,40 +5,35 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$ShmFqdn,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$ShmNetbiosName,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$SreNetbiosName,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
+    [Parameter(Mandatory = $true, HelpMessage = "sAMAccountName for the service account user (must be unique in the Active Directory)")]
     [string]$PostgresDbServiceAccountName,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
+    [Parameter(Mandatory = $true, HelpMessage = "Password for the service account user")]
     [string]$PostgresDbServiceAccountPassword,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$PostgresDbHostname,
-    [Parameter(Mandatory = $true, HelpMessage = "Whether SSIS should be enabled")]
-    [string]$ServiceOuPath
+    [Parameter(Mandatory = $true, HelpMessage = "Hostname for the Postgres VM")]
+    [string]$PostgresVmHostname,
+    [Parameter(Mandatory = $true, HelpMessage = "OU containing service accounts")]
+    [string]$ServiceOuPath,
+    [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM")]
+    [string]$ShmFqdn,
+    [Parameter(Mandatory = $true, HelpMessage = "NetBios name for the SHM")]
+    [string]$ShmNetbiosName,
+    [Parameter(Mandatory = $true, HelpMessage = "NetBios name for the SRE")]
+    [string]$SreNetbiosName
 )
 
-# setspn -S POSTGRES/PGS-ANA-SANDBOX.testa.dsgroupdev.co.uk SAFEHAVENTESTA\pgdbsasandbox
-# ktpass /out postgres.keytab /princ POSTGRES/PGS-ANA-SANDBOX.testa.dsgroupdev.co.uk@TESTA.DSGROUPDEV.CO.UK /mapuser SAFEHAVENTESTA\pgdbsasandbox /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL
+# Initialise useful variables
+$userName = "${SreNetbiosName} ${PostgresVmHostname} Service Account"
+$accountPasswordSecureString = ConvertTo-SecureString -AsPlainText $PostgresDbServiceAccountPassword -Force
+# NB. the SPN and UPN *must* have this exact name for authentication to work
+$servicePrincipalName = "POSTGRES/${PostgresVmHostname}.$($ShmFqdn.ToLower())"
+$userPrincipalName = "${servicePrincipalName}@$($ShmFqdn.ToUpper())"
 
-# Create useful variables
-$shmFqdnLower = $ShmFqdn.ToLower()
-$shmFqdnUpper = $ShmFqdn.ToUpper()
-$userName = "${SreNetbiosName} ${PostgresDbHostname} Service Account"
-$servicePrincipalName = "POSTGRES/${PostgresDbHostname}.${shmFqdnLower}"
-$userPrincipalName = "${servicePrincipalName}@${shmFqdnUpper}"
-$PostgresDbServiceAccountPasswordSecureString = ConvertTo-SecureString -AsPlainText $PostgresDbServiceAccountPassword -Force
-
-
-# Ensure that the SPN user exists in the AD
+# Ensure that the service account user exists in the AD
 if (Get-ADUser -Filter "SamAccountName -eq '$PostgresDbServiceAccountName'") {
-    Write-Output " [o] User '$userName' ('$PostgresDbServiceAccountName') already exists"
+    Write-Output " [o] Service principal user '$userName' ('$PostgresDbServiceAccountName') already exists"
 } else {
     $_ = New-ADUser -Name "$userName" `
-                    -AccountPassword $PostgresDbServiceAccountPasswordSecureString `
+                    -AccountPassword $accountPasswordSecureString `
                     -Description "$userName" `
                     -DisplayName "$userName" `
                     -Enabled $true `
@@ -46,7 +41,7 @@ if (Get-ADUser -Filter "SamAccountName -eq '$PostgresDbServiceAccountName'") {
                     -Path "$ServiceOuPath" `
                     -SamAccountName "$PostgresDbServiceAccountName" `
                     -ServicePrincipalNames $servicePrincipalName `
-                    -UserPrincipalName "${userPrincipalName}"
+                    -UserPrincipalName "$userPrincipalName"
     if ($?) {
         Write-Output " [o] Service principal user '$userName' ($PostgresDbServiceAccountName) created"
     } else {
@@ -54,22 +49,12 @@ if (Get-ADUser -Filter "SamAccountName -eq '$PostgresDbServiceAccountName'") {
     }
 }
 
-# setspn -S ${servicePrincipalName} ${ShmNetbiosName}\${PostgresDbServiceAccountName}
-# $mapUser = "${ShmNetbiosName}\${PostgresDbServiceAccountName}"
-# ktpass /out postgres.keytab /princ $userPrincipalName /mapuser $mapUser /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL
-
-
-# We need to change ErrorActionPreference to avoid a Powershell bug when processes write to STDERR
-# See https://mnaoumov.wordpress.com/2015/01/11/execution-of-external-commands-in-powershell-done-right/
-# $originalPreference = $ErrorActionPreference
-# $ErrorActionPreference = "Continue"
-# ktpass /out postgres.keytab /princ $userPrincipalName /mapuser "${ShmNetbiosName}\${PostgresDbServiceAccountName}" /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL
-$result = cmd /c "ktpass /out postgres.keytab /princ $userPrincipalName /mapuser ${ShmNetbiosName}\${PostgresDbServiceAccountName} /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL 2>&1"
+# Generate a keytab file for the service principal we created above
+# Note that this will invalidate any previous keytabs created for this user
+$keytabFilename = "postgres.keytab"
+# We redirect all output to STDOUT to avoid a Powershell bug when processes write to STDERR
+# See https://mnaoumov.wordpress.com/2015/01/11/execution-of-external-commands-in-powershell-done-right/ for more details
+$result = cmd /c "ktpass /out $keytabFilename /princ $userPrincipalName /mapuser ${ShmNetbiosName}\${PostgresDbServiceAccountName} /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL 2>&1"
 Write-Output $result
-foreach ($line in $result) { Write-Output $result }
-
-# $ErrorActionPreference = $originalPreference
-$b64keytab = [convert]::ToBase64String(([IO.File]::ReadAllBytes("postgres.keytab")))
-Write-Output "Keytab: $b64keytab"
-
-$result = cmd /c "ktpass /out postgres.keytab /princ $userPrincipalName /mapuser ${ShmNetbiosName}\${PostgresDbServiceAccountName} /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL" 2>&1 | ForEach-Object { "$_" }
+$b64keytab = [convert]::ToBase64String(([IO.File]::ReadAllBytes($keytabFilename)))
+Write-Output " [o] Extracted keytab: $b64keytab"
