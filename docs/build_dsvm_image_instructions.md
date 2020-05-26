@@ -37,7 +37,7 @@ The most common changes to this image that you are likely to want to make are to
 > `if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which azuredatastudio)"; else echo "ERROR azuredatastudio not found!"; exit 1; fi`
 
 **Adding a new Python package**
-- Add the name of the package as it appears on `PyPI` to each of
+- Add the name of the package as it appears on `PyPI` to each of the package lists (supported Python versions only):
   - `deployment/dsvm_images/packages/packages-python-pypi-27.list`
   - `deployment/dsvm_images/packages/packages-python-pypi-36.list`
   - `deployment/dsvm_images/packages/packages-python-pypi-37.list`
