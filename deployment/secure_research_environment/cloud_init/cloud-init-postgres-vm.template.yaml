@@ -20,6 +20,21 @@ apt:
       keyid: 7FCC7D46ACCC4CF8
 
 
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+ - [ /dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail" ]
+
 write_files:
   - path: "/etc/ldap.secret"
     permissions: "0600"
@@ -83,6 +98,9 @@ write_files:
       sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
       ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
       cat /etc/resolv.conf
+      # Restart systemd-resolved to ensure that these settings get propagated
+      systemctl restart systemd-resolved
+      systemctl status systemd-resolved
       # Add localhost information to /etc/hosts
       echo ">=== Adding <db-vm-hostname> [<db-vm-ipaddress>] to /etc/hosts... ===<"
       HOST_INFORMATION="<db-vm-ipaddress> <db-vm-hostname> <db-vm-hostname>.<shm-fqdn-lower>"
@@ -184,10 +202,25 @@ runcmd:
   # Join the domain
   - /root/join_domain.sh
 
+  - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
-  - echo ">=== Changing password for postgres user... ===<"
   - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '<postgres-admin-user-password>';"
-  - systemctl restart postgresql@12-main
+  # Use external disk for storing data
+  - systemctl stop postgresql@12-main
+  - mkdir -p /data/postgresql
+  - chmod 0700 /data/postgresql
+  - chown -R postgres:postgres /data/
+  - mv /var/lib/postgresql/12/main/* /data/postgresql
+  - sed -i "s|data_directory = .*|data_directory = '/data/postgresql'|g" /etc/postgresql/12/main/postgresql.conf
+  - grep data_directory /etc/postgresql/12/main/postgresql.conf
+  # Allow login to this database from other VMs
+  - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
+  - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
+  # Set the appropriate keytab file
+  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '/var/lib/postgresql/data/postgres.keytab'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
+  - grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
+  # Restart the server with all the above changes
+  - systemctl start postgresql@12-main
   - systemctl status postgresql@12-main
 
   # Create the required LDAP groups on the postgres server
@@ -207,7 +240,6 @@ runcmd:
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
   - mv /pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
-  - sleep 30 # we need this to ensure that DNS settings have had time to propagate
   - pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
   - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
@@ -217,6 +249,7 @@ runcmd:
   # - Remove privileges from PUBLIC (everyone)
   # - Grant usage permissions to the research users group
   # - Grant all permissions to the SQL admins group
+  - echo ">=== Setting appropriate permissions on public schema... ===<"
   - |
     sudo -i -u postgres psql -q -c '
       REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
@@ -224,13 +257,6 @@ runcmd:
       ALTER ROLE "<db-admin-group>" WITH CREATEDB;
       GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-admin-group>";
     '
-
-  # Allow login to this VM from other hosts and set the appropriate keytab file
-  - echo ">=== Setting postgres config... ===<"
-  - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
-  - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
-  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '/var/lib/postgresql/data/postgres.keytab'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
-  - grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
 
   # Get a Kerberos ticket
   - echo ">=== Getting initial Kerberos ticket... ===<"
