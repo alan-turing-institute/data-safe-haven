@@ -9,24 +9,6 @@ param(
 Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 
 
-# Filter out any dependencies that we do not want to add to the whitelist
-# -----------------------------------------------------------------------
-function Select-ResolvableDependencies {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of package repository")]
-        $Repository,
-        [Parameter(Mandatory = $true, HelpMessage = "List of dependencies to filter")]
-        $Dependencies
-    )
-    if ($Repository -eq "cran") {
-        # These are core packages and so we should ignore them
-        $packagesToIgnore = @("base", "compiler", "graphics", "grDevices", "methods", "R", "splines", "stats", "tools", "utils")
-        $Dependencies = $Dependencies | Where-Object { $_ -NotIn $packagesToIgnore }
-    }
-    return $Dependencies
-}
-
-
 # Get dependencies for all versions of a given package
 # ----------------------------------------------------
 function Get-Dependencies {
@@ -49,13 +31,13 @@ function Get-Dependencies {
         throw [System.IO.FileNotFoundException]::new("Could not find package: $Package")
     }
     if ($Package -NotIn $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
-    $versions = $response.versions | ForEach-Object { $_.number }
+    $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
     Add-LogMessage -Level Info "... found $($versions.Count) versions of $Package"
     try {
         foreach ($version in $versions) {
             if ($version -NotIn $Cache[$Repository][$Package].Keys) {
                 $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
-                $Cache[$Repository][$Package][$version] = @($response.dependencies | ForEach-Object { $_.name })
+                $Cache[$Repository][$Package][$version] = @($response.dependencies | ForEach-Object { $_.name }) | Sort-Object | Uniq
                 Start-Sleep 1 # wait for one second between requests to respect the API query limit
             }
             $dependencies += $Cache[$Repository][$Package][$version]
@@ -64,7 +46,7 @@ function Get-Dependencies {
         Add-LogMessage -Level Error "... could not load dependencies for all versions of $Package"
     }
     if (-Not $dependencies) { return @() }
-    return Select-ResolvableDependencies -Repository $Repository -Dependencies ($dependencies | Sort-Object | Uniq)
+    return $($dependencies | Sort-Object | Uniq)
 }
 
 
@@ -102,22 +84,24 @@ if ($MirrorType -NotIn $dependencyCache.Keys) { $dependencyCache[$MirrorType] = 
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageList = $corePackageList
+$unavailablePackages = @()
 Add-LogMessage -Level Info "Preparing to expand dependencies for $($packageList.Count) packages from $MirrorType"
 while ($queue.Count) {
     $package = $queue.Dequeue()
     Add-LogMessage -Level Info "Finding dependencies for '$package'"
     try {
         # Add dependencies from this package
-        $dependencies = Get-Dependencies -Repository $MirrorType -Package $Package -ApiKey $ApiKey -Cache $dependencyCache
+        $dependencies = Get-Dependencies -Repository $MirrorType -Package $package -ApiKey $ApiKey -Cache $dependencyCache
         Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
         $allDependencies += $dependencies
-        $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList }
+        $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList } | Where-Object { $_ -NotIn $unavailablePackages }
         $packageList += $newPackages
         $newPackages | ForEach-Object { $queue.Enqueue($_) }
     } catch [System.IO.FileNotFoundException] {
         # If this package could not be found then instead remove the package from the expanded list
-        Add-LogMessage -Level Error "... removing $Package from the expanded whitelist"
+        Add-LogMessage -Level Error "... removing $package from the expanded whitelist"
         $packageList = $packageList | Where-Object { $_ -ne $package }
+        $unavailablePackages = $unavailablePackages + $package | Sort-Object | Uniq
     }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -125,12 +109,29 @@ while ($queue.Count) {
     $dependencyCache | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 }
 
+# After processing all packages ensure that the dependencies cache is sorted
+Add-LogMessage -Level Info "Sorting dependency cache..."
+$sortedDependencies = [ordered]@{}
+foreach ($repoName in $($dependencyCache.Keys | Sort-Object)) {
+    $sortedDependencies[$repoName] = [ordered]@{}
+    foreach ($pkgName in $($dependencyCache[$repoName].Keys | Sort-Object)) {
+        $sortedDependencies[$repoName][$pkgName] = [ordered]@{}
+        foreach ($version in $($dependencyCache[$repoName][$pkgName].Keys | Sort-Object)) {
+            $sortedDependencies[$repoName][$pkgName][$version] = $dependencyCache[$repoName][$pkgName][$version] | Sort-Object | Uniq
+        }
+    }
+}
+$sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 
-# Add a log message for any unnecessary core packages
-# ---------------------------------------------------
-$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies}
+
+# Add a log message for any problematic packages
+# ----------------------------------------------
+$unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencies} | Sort-Object | Uniq
 if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
+}
+if ($unavailablePackages) {
+    Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
 }
 
 # Remove any unnecesary packages from the core whitelist
