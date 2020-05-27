@@ -85,7 +85,7 @@ write_files:
         krb4_get_tickets = false
   - path: "/active_directory_step01_pre"
     owner: root:root
-    permssions: "0500"
+    permissions: "0500"
     content: |
       #!/bin/sh
       # Set up Active Directory
@@ -130,14 +130,14 @@ write_files:
       echo ">=== end of /etc/krb5.conf ===<"
   - path: "/active_directory_step02_realm_join"
     owner: root:root
-    permssions: "0500"
+    permissions: "0500"
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
       cat /etc/ldap.secret | realm join --verbose -U <dsvm-ldap-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
     owner: root:root
-    permssions: "0500"
+    permissions: "0500"
     content: |
       # Check the sssd.conf file
       echo "Updating sssd settings"
@@ -152,7 +152,7 @@ write_files:
       systemctl restart sssd
   - path: "/active_directory_step04_update_pam"
     owner: root:root
-    permssions: "0500"
+    permissions: "0500"
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
