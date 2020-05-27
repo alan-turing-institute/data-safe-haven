@@ -186,7 +186,8 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             # Construct the cloud-init file
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
-            $cloudInitTemplate = $cloudInitTemplate.Replace("<db-admin-group>", $config.sre.domain.securityGroups.sqlAdmins.name).
+            $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.subnets.data.cidr).
+                                                    Replace("<db-admin-group>", $config.sre.domain.securityGroups.sqlAdmins.name).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
                                                     Replace("<db-vm-ipaddress>", $privateIpAddress).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.Name).
