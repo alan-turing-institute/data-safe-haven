@@ -2,6 +2,7 @@ annotate
 apeglm
 Biobase
 BiocGenerics
+BiocInstaller
 Biostrings
 ChemmineR
 clusterProfiler

@@ -1407,6 +1407,7 @@ qdapRegex
 qdapTools
 qgam
 qgraph
+qpdf
 qqman
 qrLMM
 qrng
@@ -2065,6 +2066,7 @@ VGAM
 VGAMdata
 VIM
 VineCopula
+vines
 vioplot
 vip
 vipor
