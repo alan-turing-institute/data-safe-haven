@@ -35,8 +35,6 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
     $subnetCfg = $config.sre.network.subnets.($databaseCfg.subnet)
     $nsgCfg = $config.sre.network.nsg.($subnetCfg.nsg)
 
-    if ($databaseCfg.type -eq "MSSQL") { continue } # TODO remove this
-
     # Ensure that subnet exists
     # -------------------------
     $subnet = Deploy-Subnet -Name $subnetCfg.name -VirtualNetwork $virtualNetwork -AddressPrefix $subnetCfg.cidr
