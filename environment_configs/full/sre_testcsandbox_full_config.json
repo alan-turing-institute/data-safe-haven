@@ -374,6 +374,12 @@
         "PrivateLinkServiceConnectionGroupId": "Blob",
         "startAccess":0,
         "endAccess":365
-      }
+      },
+    "privateEndpoints": [{
+        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+        "resourceName": "lwmshstorageconnection20",
+        "PrivateLinkServiceConnectionGroupId": "File",
+        "privateEndpointName":"testfileshare_pe"
+      }]
   }
 }
