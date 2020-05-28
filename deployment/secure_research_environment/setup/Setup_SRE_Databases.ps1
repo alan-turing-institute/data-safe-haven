@@ -169,12 +169,10 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                 PostgresVmHostname = "`"$($databaseCfg.name)`""
                 ServiceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
                 ShmFqdn = "`"$($config.shm.domain.fqdn)`""
-                ShmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
                 SreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
             }
-            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Retrieve_Service_Principal_Keytab.ps1"
+            $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-            $b64keytab = (($result.Value[0].Message -split "\n" | Select-String "^ \[o\] Extracted keytab:") -Split ":")[1].Trim()
             Write-Output $result.Value
             $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 
@@ -199,7 +197,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
                                                     Replace("<postgres-admin-user-password>", $postgresDbAdminPassword).
                                                     Replace("<postgres-ldap-username>", $config.sre.users.ldap.postgresdb.samAccountName).
-                                                    Replace("<postgres-service-account-keytab>", $b64keytab).
+                                                    Replace("<postgres-service-account-password>", $PostgresDbServiceAccountPassword).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

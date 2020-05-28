@@ -15,8 +15,6 @@ param(
     [string]$ServiceOuPath,
     [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM")]
     [string]$ShmFqdn,
-    [Parameter(Mandatory = $true, HelpMessage = "NetBios name for the SHM")]
-    [string]$ShmNetbiosName,
     [Parameter(Mandatory = $true, HelpMessage = "NetBios name for the SRE")]
     [string]$SreNetbiosName
 )
@@ -48,13 +46,3 @@ if (Get-ADUser -Filter "SamAccountName -eq '$PostgresDbServiceAccountName'") {
         Write-Output " [x] Failed to create service principal user '$userName' ($PostgresDbServiceAccountName)!"
     }
 }
-
-# Generate a keytab file for the service principal we created above
-# Note that this will invalidate any previous keytabs created for this user
-$keytabFilename = "postgres.keytab"
-# We redirect all output to STDOUT to avoid a Powershell bug when processes write to STDERR
-# See https://mnaoumov.wordpress.com/2015/01/11/execution-of-external-commands-in-powershell-done-right/ for more details
-$result = cmd /c "ktpass /out $keytabFilename /princ $userPrincipalName /mapuser ${ShmNetbiosName}\${PostgresDbServiceAccountName} /crypto ALL +rndpass -ptype KRB5_NT_PRINCIPAL 2>&1"
-Write-Output $result
-$b64keytab = [convert]::ToBase64String(([IO.File]::ReadAllBytes($keytabFilename)))
-Write-Output " [o] Extracted keytab: $b64keytab"

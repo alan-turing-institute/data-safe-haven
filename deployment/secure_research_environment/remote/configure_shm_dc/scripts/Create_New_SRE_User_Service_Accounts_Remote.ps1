@@ -87,16 +87,18 @@ New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -
 New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
 # Create Service Accounts for SRE
-New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
-New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
 New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
+New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
+New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
 New-SreUser -samAccountName $postgresDbSamAccountName -name $postgresDbName -path $serviceOuPath -passwordSecureString $postgresDbPasswordSecureString
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
-# Add Data Science LDAP users to SG Data Science LDAP Users security group
-Write-Output " [ ] Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
-Add-ADGroupMember "$ldapUserSgName" "$dsvmSamAccountName"
+# Add LDAP users to LDAP Users security group
+foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackmdSamAccountName, $postgresDbSamAccountName)) {
+    Write-Output " [ ] Adding '$samAccountName' user to group '$ldapUserSgName'"
+    Add-ADGroupMember "$ldapUserSgName" "$samAccountName"
+}
 
 # Add SRE test users to the relative Security Groups
 Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"

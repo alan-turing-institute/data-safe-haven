@@ -40,6 +40,14 @@ write_files:
     permissions: "0600"
     content: |
       <ldap-bind-passwd>
+  - path: "/etc/postgres-user.secret"
+    permissions: "0600"
+    content: |
+      <postgres-admin-user-password>
+  - path: "/etc/postgres-service-account.secret"
+    permissions: "0600"
+    content: |
+      <postgres-service-account-password>
   - path: "/etc/krb5.conf"
     content: |
       [libdefaults]
@@ -79,11 +87,6 @@ write_files:
       [login]
         krb4_convert = true
         krb4_get_tickets = false
-  - path: "/var/lib/postgresql/data/postgres.keytab"
-    permissions: "0755"
-    owner: root:root
-    encoding: b64
-    content: <postgres-service-account-keytab>
   - path: "/root/join_domain.sh"
     owner: root:root
     permissions: "0700"
@@ -202,9 +205,29 @@ runcmd:
   # Join the domain
   - /root/join_domain.sh
 
+  # Generate a keytab and verify by getting a Kerberos ticket
+  - echo ">=== Generating service principal credentials... ===<"
+  - SERVICE_PRINCIPAL="POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
+  - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
+  - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
+  # Use the same encryption methods and ordering as ktpass on Windows. NB. we use KVNO 1 here - this doesn't seem to be important
+  - DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
+  - DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
+  - A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
+  - AES256="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e aes256-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
+  - AES128="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
+  - printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES256\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
+  - echo "" # for appropriate spacing after the ktutil command
+  - chown postgres:postgres $KEYTAB_PATH # we cannot do this on creation as the postgres user does not exist then
+  - chmod 0400 $KEYTAB_PATH
+  - echo ">=== Testing credentials with kinit... ===<"
+  - echo "kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL"
+  - kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL
+  - klist
+
   - echo ">=== Configure postgres database... ===<"
   # Change the password for the postgres user
-  - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '<postgres-admin-user-password>';"
+  - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '$(cat /etc/postgres-user.secret)';"
   # Use external disk for storing data
   - systemctl stop postgresql@12-main
   - mkdir -p /data/postgresql
@@ -217,7 +240,7 @@ runcmd:
   - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
   - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
   # Set the appropriate keytab file
-  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '/var/lib/postgresql/data/postgres.keytab'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
+  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '$KEYTAB_PATH'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
   - grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
   # Restart the server with all the above changes
   - systemctl start postgresql@12-main
@@ -257,13 +280,6 @@ runcmd:
       ALTER ROLE "<db-admin-group>" WITH CREATEDB;
       GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-admin-group>";
     '
-
-  # Get a Kerberos ticket
-  - echo ">=== Getting initial Kerberos ticket... ===<"
-  - chown postgres:postgres /var/lib/postgresql/data/postgres.keytab # we cannot do this on creation as the postgres user does not exist then
-  - echo "kinit -t /var/lib/postgresql/data/postgres.keytab POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
-  - kinit -t /var/lib/postgresql/data/postgres.keytab POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>
-  - klist
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
