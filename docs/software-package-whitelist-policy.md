@@ -16,8 +16,8 @@ This page sets out the policy for whitelisting software packages and the criteri
 Given the safeguards afforded by the safe haven environment, and the separation of responsibilities between its constituent resources, the level of risk associated with the introduction of third party software packages is considered low. Moreover, access to the environment is carefully controlled and there is a presumption of trust in the individual researchers to whom access is granted.
 
 Nevertheless, the introduction of any software must be judged against the potential risks of:
-  - approved users having access to data to which they shouldn't (e.g. from data mixing)
-  - unapproved users having access to data (e.g. from a data breach)
+  - approved users gaining access to data to which they shouldn't (e.g. from data mixing)
+  - unapproved users gaining access to data (e.g. from a data breach)
   - poisoning of data and/or outputs
   - resource misuse (allocation of computational resources for unintended or wasteful purposes).
 
@@ -36,7 +36,7 @@ Specific risks which this policy aims to mitigate include:
 
 - Users may request to add packages to the whitelist via the procedure described below. In the interests of improving researcher productivity, the aim will be to accommodate such requests, provided there are no outweighing security concerns associated with the package or its dependencies.
 
-- Requests will be reviewed by a Turing safe haven administrator. When deciding whether to accept or reject a request, the reviewer will take into account:
+- Requests will be reviewed by a Turing safe haven administrator. When deciding whether to accept or reject a request the reviewer will take into account:
   - information provided by the user when making the request
   - package author/contributor identities
   - the existing package/version blacklist
@@ -69,7 +69,7 @@ To meet this condition, a package should:
    - What will you be able to do with this package that you can't currently do? What alternatives are there?
    - What risks to data integrity/security might arise from including this package or its dependencies?
 
-2. A member of the Turing safe haven administrators team reviews the request according to the terms of the [whitelisting policy](#policy).
+2. A Turing safe haven administrator reviews the request according to the terms of the [whitelisting policy](#policy).
 
 3. The reviewer adds their decision (accept/reject) to the form and notifies the user who made the request.
    - If the decision is to reject, the reviewer must include an explanation. Any subsequent request for the same package should address the specific concern raised.
