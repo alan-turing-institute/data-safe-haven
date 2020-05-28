@@ -37,7 +37,7 @@ function Get-Dependencies {
         foreach ($version in $versions) {
             if ($version -NotIn $Cache[$Repository][$Package].Keys) {
                 $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
-                $Cache[$Repository][$Package][$version] = @($response.dependencies | ForEach-Object { $_.name }) | Sort-Object | Uniq
+                $Cache[$Repository][$Package][$version] = @($response.dependencies | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name }) | Sort-Object | Uniq
                 Start-Sleep 1 # wait for one second between requests to respect the API query limit
             }
             $dependencies += $Cache[$Repository][$Package][$version]
