@@ -395,6 +395,7 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
+            postgresDbAdminUsername = "$($config.sre.shortName)-postgresdb-admin-username"
             postgresDbAdminPassword = "$($config.sre.shortName)-postgresdb-admin-password"
             postgresDbServiceAccountUsername = "$($config.sre.shortName)-postgresdb-service-account-username"
             postgresDbServiceAccountPassword = "$($config.sre.shortName)-postgresdb-service-account-password"

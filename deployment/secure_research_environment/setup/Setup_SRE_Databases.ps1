@@ -154,6 +154,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
 
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+            $postgresDbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
             $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword
             $postgresDbServiceAccountName = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbServiceAccountUsername -DefaultValue "sre$($config.sre.id)pgdbsa"
             $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbServiceAccountPassword
