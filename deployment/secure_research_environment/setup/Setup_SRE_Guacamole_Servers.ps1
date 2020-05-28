@@ -46,8 +46,7 @@ $SESSION_HOST_2 = $config.sre.rds.sessionHost2.hostname
 $DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
 
 # Load cloud-init template
-$cloudInitFilePath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml"
-$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+$cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
 
 # Set template expansion variables
 # The LDAP_* variables are passed through to the guacamole Docker container
@@ -63,6 +62,20 @@ $POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name
 
 # Templates/files
 $cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
+
+
+$cloudInitTemplate =Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
+$cloudInitTemplate = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.domain.userOuPath).
+                                        Replace('<ldap-hostname>', "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
+                                        Replace('<ldap-port>', 389).
+                                        Replace('<ldap-group-base-dn>', $config.shm.domain.securityOuPath).
+                                        Replace('<postgres-password>', $POSTGRES_PASSWORD).
+                                        Replace('<postgres-db-init>', $DBINIT).
+                                        Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
+                                        Replace('<gitlab-fqdn>',$gitlabFqdn).
+                                        Replace('<gitlab-root-password>',$gitlabRootPassword).
+                                        Replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
+
 
 # Check that VNET and subnet exist
 # --------------------------------

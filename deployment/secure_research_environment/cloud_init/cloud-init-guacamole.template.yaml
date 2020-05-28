@@ -35,7 +35,7 @@ write_files:
             PGDATA: /var/lib/postgresql/data/guacamole
             POSTGRES_DB: guacamole
             POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+            POSTGRES_PASSWORD: <postgres-password>
           restart: always
           volumes:
           - /src/guacamole/:/docker-entrypoint-initdb.d:ro
@@ -61,15 +61,15 @@ write_files:
           environment:
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: info
-            LDAP_HOSTNAME: $LDAP_HOSTNAME
-            LDAP_PORT: $LDAP_PORT
-            LDAP_USER_BASE_DN: $LDAP_USER_BASE_DN
+            LDAP_HOSTNAME: <ldap-hostname>
+            LDAP_PORT: <ldap-port>
+            LDAP_USER_BASE_DN: <ldap-user-base-dn>
             LDAP_USERNAME_ATTRIBUTE: CN
-            LDAP_GROUP_BASE_DN: $LDAP_GROUP_BASE_DN
+            LDAP_GROUP_BASE_DN: <ldap-group-base-dn>
             POSTGRES_HOSTNAME: postgres
             POSTGRES_DATABASE: guacamole
             POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+            POSTGRES_PASSWORD: <postgres-password>
           ports:
           - 8080/tcp
           restart: always
@@ -110,9 +110,9 @@ write_files:
           include       /etc/nginx/mime.types;
           default_type  application/octet-stream;
 
-          log_format  main  '`$remote_addr - `$remote_user [$time_local] "`$request" '
-                            '`$status `$body_bytes_sent "`$http_referer" '
-                            '"`$http_user_agent" "`$http_x_forwarded_for"';
+          log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                            '$status $body_bytes_sent "$http_referer" '
+                            '"$http_user_agent" "$http_x_forwarded_for"';
 
           access_log  /var/log/nginx/access.log  main;
 
@@ -144,9 +144,9 @@ write_files:
           proxy_pass http://guacamole:8080/guacamole/;
           proxy_buffering off;
           proxy_http_version 1.1;
-          proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
-          proxy_set_header Upgrade `$http_upgrade;
-          proxy_set_header Connection `$http_connection;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $http_connection;
           proxy_cookie_path /guacamole/ /;
           access_log off;
           client_max_body_size 4096m;
@@ -158,7 +158,7 @@ write_files:
       }
   - path: "/src/guacamole/initdb.sql"
     content: |
-$DBINIT
+<postgres-db-init>
 
 
 packages:
@@ -188,7 +188,7 @@ runcmd:
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
   # There isn't a corresponding environment variable in the Docker container image for this
   - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
-  - docker cp /src/guacamole/dbinit.sql `$(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
+  - docker cp /src/guacamole/dbinit.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
   - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
