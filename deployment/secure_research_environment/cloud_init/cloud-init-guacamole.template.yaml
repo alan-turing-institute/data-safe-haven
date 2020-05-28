@@ -14,7 +14,7 @@ apt:
   # Add repositories
   sources:
     docker.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu artful stable"
+      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
       keyid: 8D81803C0EBFCD88
 
 write_files:
@@ -48,7 +48,7 @@ write_files:
             guacnetwork_compose:
           restart: always
           environment:
-            GUACD_LOG_LEVEL: info
+            GUACD_LOG_LEVEL: debug
 
         guacamole:
           container_name: guacamole_compose
@@ -60,16 +60,14 @@ write_files:
           - postgres
           environment:
             GUACD_HOSTNAME: guacd
-            LOGBACK_LEVEL: info
+            LOGBACK_LEVEL: debug
             LDAP_HOSTNAME: <ldap-hostname>
             LDAP_PORT: <ldap-port>
             LDAP_USER_BASE_DN: <ldap-user-base-dn>
-            LDAP_USERNAME_ATTRIBUTE: CN
+            LDAP_USERNAME_ATTRIBUTE: sAMAccountName
             LDAP_GROUP_BASE_DN: <ldap-group-base-dn>
-            POSTGRES_HOSTNAME: postgres
-            POSTGRES_DATABASE: guacamole
-            POSTGRES_USER: guacamole
-            POSTGRES_PASSWORD: <postgres-password>
+            LDAP_SEARCH_BIND_DN: <ldap-search-bind-dn>
+            LDAP_SEARCH_BIND_PASSWORD: <ldap-search-bind-password>
           ports:
           - 8080/tcp
           restart: always
@@ -156,10 +154,13 @@ write_files:
             root   /usr/share/nginx/html;
         }
       }
-  - path: "/src/guacamole/initdb.sql"
+  - path: "/src/guacamole/custom.sql"
     content: |
-<postgres-db-init>
-
+      INSERT INTO guacamole_entity (name, type) VALUES ('<ldap-group-researchers>', 'USER_GROUP');
+      INSERT INTO guacamole_user_group (entity_id)
+      SELECT
+          entity_id
+      FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
 
 packages:
   - docker-ce
@@ -186,10 +187,22 @@ runcmd:
 
   - echo "Starting Guacamole"
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
-  # There isn't a corresponding environment variable in the Docker container image for this
-  - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
-  - docker cp /src/guacamole/dbinit.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
-  - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
+  # # There isn't a corresponding environment variable in the Docker container image for this
+  # - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
+  # - docker cp /src/guacamole/dbinit.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
+  # - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
+  # - docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./init/initdb.sql
+
+  # Generate the necessary SQL config for the local PostgreSQL database
+  - docker-compose -f /src/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /src/guacamole/db_init.sql
+  # Copy the base SQL config to the postgres container and run it
+  - docker cp /src/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
+  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
+  # Copy the custom SQL config to the postgres container and run it
+  - docker cp /src/guacamole/custom.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_custom.sql
+  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_custom.sql
+  # # Restart the
+  # - docker-compose -f /src/guacamole/docker-compose.yml restart guacd
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

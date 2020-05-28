@@ -52,30 +52,32 @@ $cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guaca
 # The LDAP_* variables are passed through to the guacamole Docker container
 # They are not documented, but see https://github.com/apache/guacamole-client/blob/1.1.0/guacamole-docker/bin/start.sh (in `associate_ldap`) for a list of valid keys
 # They map to the properties listed in https://guacamole.apache.org/doc/gug/ldap-auth.html#guac-ldap-config
-$LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
-$LDAP_PORT = 389 # or 636 for LDAP over SSL?
-$LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
+# $LDAP_HOSTNAME = "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())"
+# $LDAP_PORT = 389 # or 636 for LDAP over SSL?
+# $LDAP_USER_BASE_DN = $config.shm.domain.userOuPath
 # Set this so that connection information can be picked up from group membership.
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
-$LDAP_GROUP_BASE_DN = $config.shm.domain.securityOuPath
+# $LDAP_GROUP_BASE_DN = $config.shm.domain.securityOuPath
 $POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
-
-# Templates/files
-$cloudInitYaml = $ExecutionContext.InvokeCommand.ExpandString($cloudInitTemplate)
-
+$LDAP_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
 
 $cloudInitTemplate =Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
-$cloudInitTemplate = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.domain.userOuPath).
-                                        Replace('<ldap-hostname>', "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
-                                        Replace('<ldap-port>', 389).
-                                        Replace('<ldap-group-base-dn>', $config.shm.domain.securityOuPath).
-                                        Replace('<postgres-password>', $POSTGRES_PASSWORD).
-                                        Replace('<postgres-db-init>', $DBINIT).
-                                        Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
-                                        Replace('<gitlab-fqdn>',$gitlabFqdn).
-                                        Replace('<gitlab-root-password>',$gitlabRootPassword).
-                                        Replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
+$cloudInitYaml = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.domain.userOuPath).
+                                    Replace('<ldap-hostname>', "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
+                                    Replace('<ldap-port>', 389).
+                                    Replace('<ldap-group-base-dn>', $config.shm.domain.securityOuPath).
+                                    Replace('<ldap-search-bind-dn>', "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath).
+                                    Replace('<ldap-search-bind-password>', $LDAP_PASSWORD).
+                                    Replace('<ldap-group-researchers>', $config.sre.domain.securityGroups.researchUsers.Name).
+                                    Replace('<postgres-password>', $POSTGRES_PASSWORD)
+                                    # Replace('<postgres-db-init>', $DBINIT).
 
+
+                                    # "CN=SANDBOX DSVM LDAP,U=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+
+
+# Write-Host $cloudInitYaml
+# exit 1
 
 # Check that VNET and subnet exist
 # --------------------------------
@@ -105,7 +107,7 @@ $diskType = "Standard_LRS"
 # Deploy a NIC with a public IP address
 # -------------------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.guacamole.rg -Subnet $subnet -PrivateIpAddress $config.sre.guacamole.ip -Location $config.sre.location
-$publicIP = New-AzPublicIpAddress -Name "$vmName-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location
+$publicIP = New-AzPublicIpAddress -Name "$vmName-PIP" -ResourceGroupName $config.sre.guacamole.rg -AllocationMethod Static -IdleTimeoutInMinutes 4 -Location $config.sre.location -Force
 $_ = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Name -SubnetId $subnet.Id -PublicIpAddressId $publicIP.Id | Set-AzNetworkInterface
 
 
@@ -151,3 +153,34 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Rebooting '${vmName}' failed!"
 }
+
+
+# # Add DNS records to SRE DNS Zone
+# $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName
+# $baseDnsRecordname = "@"
+# $gatewayDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
+# $dnsResourceGroup = $config.shm.dns.rg
+# $dnsTtlSeconds = 30
+# $sreDomain = $config.sre.domain.fqdn
+
+# # Setting the A record
+# Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
+# Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+# $result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
+#                              -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
+# if ($?) {
+#     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
+# } else {
+#     Add-LogMessage -Level Info "Failed to set 'A' record for gateway host!"
+# }
+
+# # Setting the CNAME record
+# Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($sreDomain)"
+# Remove-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
+# $result = New-AzDnsRecordSet -Name $gatewayDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup `
+#                              -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $sreDomain)
+# if ($?) {
+#     Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
+# } else {
+#     Add-LogMessage -Level Info "Failed to set 'CNAME' record for gateway host!"
+# }
