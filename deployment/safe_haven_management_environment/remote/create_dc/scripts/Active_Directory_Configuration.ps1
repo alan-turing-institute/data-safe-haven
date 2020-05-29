@@ -272,7 +272,7 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
 # --------------------------------------------------------------------------------------------------------------------------------------
 Write-Host "Delegating Active Directory registration permissions to the LDAP users group..."
 $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
-dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC" | Out-Null
+dsacls $computersContainer /G "$netbiosname\$($ldapUsersSgName):GRGWCCDC"
 if ($?) {
     Write-Host " [o] Successfully delegated Active Directory permissions"
 } else {
