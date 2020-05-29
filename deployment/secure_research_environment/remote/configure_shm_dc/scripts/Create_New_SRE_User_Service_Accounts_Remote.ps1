@@ -7,10 +7,10 @@
 param(
     [String]$sreFqdn,
     [String]$shmFqdn,
+    [String]$dataAdministratorSgName,
+    [String]$dataAdministratorSgDescription,
     [String]$researchUserSgName,
     [String]$researchUserSgDescription,
-    [String]$sqlAdminSgName,
-    [String]$sqlAdminSgDescription,
     [String]$ldapUserSgName,
     [String]$securityOuPath,
     [String]$serviceOuPath,
@@ -24,9 +24,12 @@ param(
     [String]$dsvmSamAccountName,
     [String]$dsvmName,
     [String]$dsvmPasswordEncrypted,
-    [String]$postgresDbSamAccountName,
-    [String]$postgresDbName,
-    [String]$postgresDbPasswordEncrypted,
+    [String]$postgresDbServiceAccountSamAccountName,
+    [String]$postgresDbServiceAccountName,
+    [String]$postgresDbServiceAccountPasswordEncrypted,
+    [String]$postgresVmSamAccountName,
+    [String]$postgresVmName,
+    [String]$postgresVmPasswordEncrypted,
     [String]$dataMountSamAccountName,
     [String]$dataMountName,
     [String]$dataMountPasswordEncrypted,
@@ -79,27 +82,33 @@ $hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncr
 $gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
 $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
 $dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
-$postgresDbPasswordSecureString = ConvertTo-SecureString -String $postgresDbPasswordEncrypted -Key (1..16)
+$postgresVmPasswordSecureString = ConvertTo-SecureString -String $postgresVmPasswordEncrypted -Key (1..16)
+$postgresDbServiceAccountPasswordSecureString = ConvertTo-SecureString -String $postgresDbServiceAccountPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
 # Create SRE Security Groups
+New-SreGroup -name $dataAdministratorSgName -description $dataAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
-# Create Service Accounts for SRE
-New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+# Create LDAP users for SRE
 New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
 New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
 New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $postgresDbSamAccountName -name $postgresDbName -path $serviceOuPath -passwordSecureString $postgresDbPasswordSecureString
+New-SreUser -samAccountName $postgresVmSamAccountName -name $postgresVmName -path $serviceOuPath -passwordSecureString $postgresVmPasswordSecureString
+
+# Create service accounts for SRE
+New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+New-SreUser -samAccountName $postgresDbServiceAccountSamAccountName -name $postgresDbServiceAccountName -path $serviceOuPath -passwordSecureString $postgresDbServiceAccountPasswordSecureString
+
+# Create other accounts for SRE
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
-# Add LDAP users to LDAP Users security group
-foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackmdSamAccountName, $postgresDbSamAccountName)) {
+# Add LDAP users to the LDAP users security group
+foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackmdSamAccountName, $postgresVmSamAccountName)) {
     Write-Output " [ ] Adding '$samAccountName' user to group '$ldapUserSgName'"
     Add-ADGroupMember "$ldapUserSgName" "$samAccountName"
 }
 
-# Add SRE test users to the relative Security Groups
+# Add test researcher to the researchers security group
 Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
 Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"

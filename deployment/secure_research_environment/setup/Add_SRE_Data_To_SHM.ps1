@@ -36,14 +36,16 @@ $hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -S
 $gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
 $dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
-$postgresDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbLdapPassword
+$postgresVmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.postgres.passwordSecretName
+$postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName
 $testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
 # Encrypt passwords for passing to script
 $hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $gitlabPasswordEncrypted = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $dsvmPasswordEncrypted = ConvertTo-SecureString $dsvmPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $dataMountPasswordEncrypted = ConvertTo-SecureString $dataMountPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-$postgresDbPasswordEncrypted = ConvertTo-SecureString $postgresDbPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+$postgresVmPasswordEncrypted = ConvertTo-SecureString $postgresVmPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+$postgresDbServiceAccountPasswordEncrypted = ConvertTo-SecureString $postgresDbServiceAccountPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 $testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 
 
@@ -55,10 +57,10 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts"
 $params = @{
     shmFqdn = "`"$($config.shm.domain.fqdn)`""
     sreFqdn = "`"$($config.sre.domain.fqdn)`""
+    dataAdministratorSgName = "`"$($config.sre.domain.securityGroups.dataAdministrators.name)`""
+    dataAdministratorSgDescription = "`"$($config.sre.domain.securityGroups.dataAdministrators.description)`""
     researchUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     researchUserSgDescription = "`"$($config.sre.domain.securityGroups.researchUsers.description)`""
-    sqlAdminSgName = "`"$($config.sre.domain.securityGroups.sqlAdmins.name)`""
-    sqlAdminSgDescription = "`"$($config.sre.domain.securityGroups.sqlAdmins.description)`""
     ldapUserSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
     securityOuPath = "`"$($config.shm.domain.securityOuPath)`""
     serviceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
@@ -72,9 +74,12 @@ $params = @{
     dsvmSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
     dsvmName = "`"$($config.sre.users.ldap.dsvm.name)`""
     dsvmPasswordEncrypted = $dsvmPasswordEncrypted
-    postgresDbSamAccountName = "`"$($config.sre.users.ldap.postgresdb.samAccountName)`""
-    postgresDbName = "`"$($config.sre.users.ldap.postgresdb.name)`""
-    postgresDbPasswordEncrypted = $postgresDbPasswordEncrypted
+    postgresDbServiceAccountSamAccountName = "`"$($config.sre.users.serviceAccounts.postgres.samAccountName)`""
+    postgresDbServiceAccountName = "`"$($config.sre.users.serviceAccounts.postgres.name)`""
+    postgresDbServiceAccountPasswordEncrypted = $postgresDbServiceAccountPasswordEncrypted
+    postgresVmSamAccountName = "`"$($config.sre.users.ldap.postgres.samAccountName)`""
+    postgresVmName = "`"$($config.sre.users.ldap.postgres.name)`""
+    postgresVmPasswordEncrypted = $postgresVmPasswordEncrypted
     dataMountSamAccountName = "`"$($config.sre.users.datamount.samAccountName)`""
     dataMountName = "`"$($config.sre.users.datamount.name)`""
     dataMountPasswordEncrypted = $dataMountPasswordEncrypted
@@ -82,6 +87,9 @@ $params = @{
     testResearcherName = "`"$($config.sre.users.researchers.test.name)`""
     testResearcherPasswordEncrypted = $testResearcherPasswordEncrypted
 }
+
+Write-Host ($params | Out-String)
+
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
 

@@ -297,17 +297,17 @@ function Add-SreConfig {
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
+    $dataAdministratorsGroup = "SG $($config.sre.domain.netbiosName) Data Administrators"
     $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
-    $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
+        dataAdministrators = [ordered]@{
+            name = $dataAdministratorsGroup
+            description = $dataAdministratorsGroup
+        }
         serverAdmins = [ordered]@{
             name = $serverAdminsGroup
             description = $serverAdminsGroup
-        }
-        sqlAdmins = [ordered]@{
-            name = $sqlAdminsGroup
-            description = $sqlAdminsGroup
         }
         researchUsers = [ordered]@{
             name = $researchUsersGroup
@@ -397,10 +397,7 @@ function Add-SreConfig {
             npsSecret = "$($config.sre.shortName)-nps-secret"
             postgresDbAdminUsername = "$($config.sre.shortName)-postgresdb-admin-username"
             postgresDbAdminPassword = "$($config.sre.shortName)-postgresdb-admin-password"
-            postgresDbServiceAccountUsername = "$($config.sre.shortName)-postgresdb-service-account-username"
-            postgresDbServiceAccountPassword = "$($config.sre.shortName)-postgresdb-service-account-password"
             postgresVmAdminPassword = "$($config.sre.shortName)-postgresvm-admin-password"
-            postgresVmLdapPassword = "$($config.sre.shortName)-postgresvm-ldap-password"
             rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
@@ -425,13 +422,21 @@ function Add-SreConfig {
                 name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
-            postgresdb = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) PostgresDB LDAP"
-                samAccountName = "pgdbldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+            postgres = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) Postgres VM LDAP"
+                samAccountName = "pgvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                passwordSecretName = "$($config.sre.shortName)-postgresvm-ldap-password"
+            }
+        }
+        serviceAccounts = [ordered]@{
+            postgres = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
+                samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
             }
         }
         datamount = [ordered]@{
-            name = "$($config.sre.domain.netbiosName) Data Mount"
+            name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
             samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
         }
         researchers = [ordered]@{

@@ -141,13 +141,13 @@
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
+        "dataAdministrators": {
+          "name": "SG SANDBOX Data Administrators",
+          "description": "SG SANDBOX Data Administrators"
+        },
         "serverAdmins": {
           "name": "SG SANDBOX Server Administrators",
           "description": "SG SANDBOX Server Administrators"
-        },
-        "sqlAdmins": {
-          "name": "SG SANDBOX SQL Server Administrators",
-          "description": "SG SANDBOX SQL Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -229,11 +229,9 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
+        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
         "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
-        "postgresDbServiceAccountUsername": "sre-sandbox-postgresdb-service-account-username",
-        "postgresDbServiceAccountPassword": "sre-sandbox-postgresdb-service-account-password",
         "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
-        "postgresVmLdapPassword": "sre-sandbox-postgresvm-ldap-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
@@ -256,13 +254,21 @@
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
         },
-        "postgresdb": {
-          "name": "SANDBOX PostgresDB LDAP",
-          "samAccountName": "pgdbldapsandbox"
+        "postgres": {
+          "name": "SANDBOX Postgres VM LDAP",
+          "samAccountName": "pgvmldapsandbox",
+          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
+        }
+      },
+      "serviceAccounts": {
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcsandbox",
+          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount",
+        "name": "SANDBOX Data Mount Service Account",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {
