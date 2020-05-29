@@ -96,6 +96,11 @@ write_files:
     permissions: "0755"
     content: |
       <check_merge_requests.py>
+  # Populate SSH known hosts with keys from gitlab internal
+  - path: "/home/<sre-admin-username>/.ssh/known_hosts"
+    permissions: "0600"
+    content: |
+      <gitlab-internal-ssh-keys>
 
 runcmd:
   # --------------------------------
@@ -141,29 +146,18 @@ runcmd:
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
   # --------------------------------
-  # Create SSH key
+  # CREATE SSH KEY
   # --------------------------------
   - |
-    mkdir -p /home/<sre-admin-username>/.ssh;
-    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519;
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519"
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/id_ed25519.pub"
+    mkdir -p /home/<sre-admin-username>/.ssh
+    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519
   # --------------------------------
-  # SETUP ACCESS TO GITLAB INTERNAL
+  # REGISTER SSH KEY WITH GITLAB INTERNAL
   # --------------------------------
-  - echo "Configuring access to gitlab internal"
-  # Change ownership of secrets to <sre-admin-username>
   - |
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-username";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email";
-  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
-  - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys;
-    ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+    echo "Configuring access to gitlab internal"
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
+    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys
   # --------------------------------
   # WAIT FOR GITLAB EXTERNAL HEALTH CHECK
   # --------------------------------
@@ -187,37 +181,26 @@ runcmd:
   # SETUP ACCESS TO GITLAB EXTERNAL
   # --------------------------------
   - echo "Configuring access to gitlab external"
-  # Change ownership of secrets to <sre-admin-username>
-  - |
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-api-token";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-username";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-external-user-email";
   # Create SSH key for gitlab external access
   - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
+    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys
   #  Get local ssh host keys, add them to known hosts under the gitlab external ip
   - |    
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
   # Create groups for storing unapproved and approval repos
   - |
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups;
+    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups
     curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
   # --------------------------------
-  # FINAL SETUP
+  # GIT SETUP
   # --------------------------------
-  - echo "Finishing setup"
-  # Configure global git user to be gitlab internal user
   - |
-    HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-internal-username>';
-    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-internal-username>@<gitlab-internal-login-domain>';
-  # Give <sre-admin-username> ownership of their home directory
-  - |
-    chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>";
+    echo "Configuring git"
+    HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-internal-username>'
+    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-internal-username>@<gitlab-internal-login-domain>'
   # --------------------------------
   # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
   # --------------------------------
@@ -225,6 +208,10 @@ runcmd:
   - echo "*/10 * * * * <sre-admin-username> /home/<sre-admin-username>/zipfile_to_gitlab_project.py" >> /etc/crontab
   - echo "*** Adding check_merge_requests.py to crontab ***"
   - echo "5,15,25,35,45,55 * * * * <sre-admin-username> /home/<sre-admin-username>/check_merge_requests.py" >> /etc/crontab
+  # --------------------------------
+  # GIVE <sre-admin-username> OWNERSHIP OF THEIR HOME DIRECTORY
+  # --------------------------------
+  - chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>"
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

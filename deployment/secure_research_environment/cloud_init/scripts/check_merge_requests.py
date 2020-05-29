@@ -89,7 +89,7 @@ def internal_project_exists(repo_name, config):
 
 
 def internal_update_repo(git_url, repo_name, branch_name, config):
-    """Takes a git URL, `git_url`, which should be the URL to the
+    """Takes a git URL, `git_url`, which should be the SSH URL to the
     "APPROVED" repo on GITLAB-EXTERNAL, clones it and pushes all branches to
     the repo `repo_name` owned by 'ingress' on GITLAB-INTERNAL, creating it
     there first if it doesn't exist.

@@ -197,6 +197,27 @@ $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.sec
 
 $gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
 
+
+# Get public SSH keys from gitlab internal (so it can be added as a known host on gitlab external)
+# ------------------------------
+$script = '
+#! /bin/bash
+echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)"
+echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)"
+echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)"
+'.Replace('<gitlab-internal-ip>', $config.sre.webapps.gitlab.internal.ip)
+$vmNameInternal = $config.sre.webapps.gitlab.internal.vmName
+$result = Invoke-RemoteScript -VMName $vmNameInternal -ResourceGroupName $config.sre.webapps.rg -Shell "UnixShell" -Script $script
+Add-LogMessage -Level Success "Fetching ssh keys from gitlab internal succeeded"
+# Extract everything in between the [stdout] and [stderr] blocks of the result message. i.e. all output of the script.
+$internalSshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\[stderr\]"
+$internalSshKeys = $internalSshKeys.Matches.Groups[1].Value
+# Insert keys into cloud init template, maintaining indentation
+$indent = "      "
+$indented_internalSshKeys = $internalSshKeys -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+$gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${indent}<gitlab-internal-ssh-keys>", $indented_internalSshKeys)
+
+
 # Insert scripts into the cloud-init template
 # -------------------------------------------
 $indent = "      "
