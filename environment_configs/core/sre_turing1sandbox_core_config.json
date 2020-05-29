@@ -1,13 +1,13 @@
 {
-    "subscriptionName": "Turing SRE – Sandbox",
+    "subscriptionName": "[Prod] Turing SRE – Sandbox",
     "adminSecurityGroupName" : "Safe Haven Production Admins",
-    "sreId": "100",
+    "sreId": "sandbox",
     "shmId": "turing1",
     "tier": "2",
-    "domain": "dsgroup100.co.uk",
-    "netbiosName": "DSGROUP100",
+    "domain": "sandbox.turingsafehaven.ac.uk",
+    "netbiosName": "SANDBOX",
     "ipPrefix": "10.150.0",
     "rdsAllowedSources": "Internet",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.1.2019082900"
+    "computeVmImageVersion": "0.2.2020050300"
 }
