@@ -101,7 +101,7 @@ while ($queue.Count) {
         # If this package could not be found then instead remove the package from the expanded list
         Add-LogMessage -Level Error "... removing $package from the expanded whitelist"
         $packageList = $packageList | Where-Object { $_ -ne $package }
-        $unavailablePackages = $unavailablePackages + $package | Sort-Object | Uniq
+        $unavailablePackages = $unavailablePackages + @($package) | Sort-Object | Uniq
     }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -117,7 +117,7 @@ foreach ($repoName in $($dependencyCache.Keys | Sort-Object)) {
     foreach ($pkgName in $($dependencyCache[$repoName].Keys | Sort-Object)) {
         $sortedDependencies[$repoName][$pkgName] = [ordered]@{}
         foreach ($version in $($dependencyCache[$repoName][$pkgName].Keys | Sort-Object)) {
-            $sortedDependencies[$repoName][$pkgName][$version] = $dependencyCache[$repoName][$pkgName][$version] | Sort-Object | Uniq
+            $sortedDependencies[$repoName][$pkgName][$version] = @($dependencyCache[$repoName][$pkgName][$version] | Sort-Object | Uniq)
         }
     }
 }
