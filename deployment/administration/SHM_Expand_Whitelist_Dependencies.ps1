@@ -101,7 +101,7 @@ while ($queue.Count) {
         # If this package could not be found then instead remove the package from the expanded list
         Add-LogMessage -Level Error "... removing $package from the expanded whitelist"
         $packageList = $packageList | Where-Object { $_ -ne $package }
-        $unavailablePackages = $unavailablePackages + @($package) | Sort-Object | Uniq
+        $unavailablePackages += @($package) | Where-Object { $_ -NotIn $unavailablePackages }
     }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -131,7 +131,7 @@ if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }
 if ($unavailablePackages) {
-    Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
+    Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $($unavailablePackages | Sort-Object | Uniq)"
 }
 
 # Remove any unnecesary packages from the core whitelist
