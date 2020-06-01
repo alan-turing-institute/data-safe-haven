@@ -62,7 +62,6 @@ $sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -Resourc
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
-Add-LogMessage -Level Info "Creating blob storage container $containerName in storage account $sreStorageAccountName ..."
 $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 # delete existing blobs on the container
 $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
