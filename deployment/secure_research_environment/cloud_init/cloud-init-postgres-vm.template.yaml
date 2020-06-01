@@ -39,15 +39,15 @@ write_files:
   - path: "/etc/ldap.secret"
     permissions: "0600"
     content: |
-      <ldap-bind-passwd>
+      <ldap-bind-user-password>
   - path: "/etc/postgres-user.secret"
     permissions: "0600"
     content: |
-      <postgres-admin-user-password>
+      <db-local-admin-password>
   - path: "/etc/postgres-service-account.secret"
     permissions: "0600"
     content: |
-      <postgres-service-account-password>
+      <ldap-postgres-service-account-password>
   - path: "/etc/krb5.conf"
     content: |
       [libdefaults]
@@ -116,7 +116,7 @@ write_files:
       ls -alh /etc/sssd/sssd.conf
       # Join realm
       echo ">=== Joining realm... ===<"
-      cat /etc/ldap.secret | realm join --verbose -U <postgres-ldap-username> <shm-fqdn-lower> --install=/
+      cat /etc/ldap.secret | realm join --verbose -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
   - path: "/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
@@ -135,8 +135,8 @@ write_files:
         port: 389
         auth:
           method: :simple
-          username: <ldap-bind-dn>
-          password: <ldap-bind-passwd>
+          username: <ldap-bind-user-dn>
+          password: <ldap-bind-user-password>
         #encryption:
         #  method: :simple_tls
 
@@ -168,7 +168,7 @@ write_files:
         host: 127.0.0.1
         dbname: postgres
         user: postgres
-        password: <postgres-admin-user-password>
+        password: <db-local-admin-password>
 
       pg_users:
         # Filter for identifying LDAP generated users in the database.
@@ -210,17 +210,22 @@ runcmd:
   - SERVICE_PRINCIPAL="POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
   - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
   - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
-  # Use the same encryption methods and ordering as ktpass on Windows. NB. we use KVNO 1 here - this doesn't seem to be important
-  - DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
-  - DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
-  - A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
-  - AES256="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e aes256-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
-  - AES128="add_entry -password -p $SERVICE_PRINCIPAL -k 1 -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
-  - printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES256\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
+  - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-bind-user-dn>' -W msDS-KeyVersionNumber"
+  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-bind-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+  - echo "Current KVNO is $KVNO"
+  # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
+  # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab
+  - DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
+  - DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
+  - A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
+  - AES128="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
+  - printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
   - echo "" # for appropriate spacing after the ktutil command
-  - chown postgres:postgres $KEYTAB_PATH # we cannot do this on creation as the postgres user does not exist then
+  - chown postgres:postgres $KEYTAB_PATH
   - chmod 0400 $KEYTAB_PATH
   - echo ">=== Testing credentials with kinit... ===<"
+  - echo "klist -e -t -k $KEYTAB_PATH"
+  - klist -e -t -k $KEYTAB_PATH
   - echo "kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL"
   - kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL
   - klist

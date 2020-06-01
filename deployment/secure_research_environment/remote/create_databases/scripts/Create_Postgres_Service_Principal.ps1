@@ -5,44 +5,38 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "sAMAccountName for the service account user (must be unique in the Active Directory)")]
-    [string]$PostgresDbServiceAccountName,
-    [Parameter(Mandatory = $true, HelpMessage = "Password for the service account user")]
-    [string]$PostgresDbServiceAccountPassword,
-    [Parameter(Mandatory = $true, HelpMessage = "Hostname for the Postgres VM")]
-    [string]$PostgresVmHostname,
-    [Parameter(Mandatory = $true, HelpMessage = "OU containing service accounts")]
-    [string]$ServiceOuPath,
-    [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM")]
+    [Parameter(HelpMessage = "Hostname for the VM")]
+    [string]$Hostname,
+    [Parameter(HelpMessage = "Name/description for the service account user")]
+    [string]$Name,
+    [Parameter(HelpMessage = "sAMAccountName for the service account user (must be unique in the Active Directory)")]
+    [string]$SamAccountName,
+    [Parameter(HelpMessage = "FQDN for the SHM")]
     [string]$ShmFqdn,
-    [Parameter(Mandatory = $true, HelpMessage = "NetBios name for the SRE")]
-    [string]$SreNetbiosName
+    [Parameter(HelpMessage = "Name of the service we are registering against")]
+    [string]$ServiceName = "POSTGRES"
 )
 
-# Initialise useful variables
-$userName = "${SreNetbiosName} ${PostgresVmHostname} Service Account"
-$accountPasswordSecureString = ConvertTo-SecureString -AsPlainText $PostgresDbServiceAccountPassword -Force
-# NB. the SPN and UPN *must* have this exact name for authentication to work
-$servicePrincipalName = "POSTGRES/${PostgresVmHostname}.$($ShmFqdn.ToLower())"
+# Initialise SPN and UPN. NB. they must have this *exact* name for authentication to work
+$servicePrincipalName = "${ServiceName}/${Hostname}.$($ShmFqdn.ToLower())"
 $userPrincipalName = "${servicePrincipalName}@$($ShmFqdn.ToUpper())"
 
 # Ensure that the service account user exists in the AD
-if (Get-ADUser -Filter "SamAccountName -eq '$PostgresDbServiceAccountName'") {
-    Write-Output " [o] Service principal user '$userName' ('$PostgresDbServiceAccountName') already exists"
+Write-Output " [ ] Ensuring that account '$Name' ($SamAccountName) exists"
+$adUser = Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'"
+if ($? -And $adUser) {
+    Write-Output " [o] Found user '$Name' ($SamAccountName)"
 } else {
-    $_ = New-ADUser -Name "$userName" `
-                    -AccountPassword $accountPasswordSecureString `
-                    -Description "$userName" `
-                    -DisplayName "$userName" `
-                    -Enabled $true `
-                    -PasswordNeverExpires $true `
-                    -Path "$ServiceOuPath" `
-                    -SamAccountName "$PostgresDbServiceAccountName" `
-                    -ServicePrincipalNames $servicePrincipalName `
-                    -UserPrincipalName "$userPrincipalName"
-    if ($?) {
-        Write-Output " [o] Service principal user '$userName' ($PostgresDbServiceAccountName) created"
-    } else {
-        Write-Output " [x] Failed to create service principal user '$userName' ($PostgresDbServiceAccountName)!"
-    }
+    Write-Output " [x] Failed to find user '$Name' ($SamAccountName)!"
+    exit 1
+}
+
+# Set the service principal details
+Write-Output " [ ] Ensuring that '$Name' ($SamAccountName) is registered as a service principal"
+$adUser | Set-ADUser -ServicePrincipalNames @{Replace=$servicePrincipalName} -UserPrincipalName "$userPrincipalName"
+if ($?) {
+    Write-Output " [o] Registered '$Name' ($SamAccountName) as '$servicePrincipalName'"
+} else {
+    Write-Output " [x] Failed to register '$Name' ($SamAccountName) as '$servicePrincipalName'!"
+    exit 1
 }

@@ -92,6 +92,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         # Deploy an SQL server
         # --------------------
         if ($databaseCfg.type -eq "MSSQL") {
+            continue
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
             $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
@@ -137,7 +138,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                 EnableSSIS = $databaseCfg.enableSSIS
                 LocalAdminUser = $sreAdminUsername
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.sqlAdmins.name)"
+                SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
                 SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
                 SqlAuthUpdateUsername = $sqlAuthUpdateUsername
                 SreResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
@@ -156,21 +157,20 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
             $postgresDbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
             $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword
-            $postgresDbServiceAccountName = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbServiceAccountUsername -DefaultValue "sre$($config.sre.id)pgdbsa"
-            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbServiceAccountPassword
+            $postgresDbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
+            $postgresDbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
+            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName
             $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword
-            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmLdapPassword
+            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.postgres.passwordSecretName
 
             # Create an AD service principal and get the keytab for it
-            Add-LogMessage -Level Info "Create a service principal for the database ($PostgresDbServiceAccountName) and get its keytab..."
+            Add-LogMessage -Level Info "Register '$postgresDbServiceAccountName' ($postgresDbServiceAccountSamAccountName) as a service principal for the database..."
             $_ = Set-AzContext -Subscription $config.shm.subscriptionName
             $params = @{
-                PostgresDbServiceAccountName = "`"$($PostgresDbServiceAccountName)`""
-                PostgresDbServiceAccountPassword = "`"$($PostgresDbServiceAccountPassword)`""
-                PostgresVmHostname = "`"$($databaseCfg.name)`""
-                ServiceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
+                Hostname = "`"$($databaseCfg.name)`""
+                Name = "`"$($postgresDbServiceAccountName)`""
+                SamAccountName = "`"$($postgresDbServiceAccountSamAccountName)`""
                 ShmFqdn = "`"$($config.shm.domain.fqdn)`""
-                SreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -186,19 +186,20 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
             $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.subnets.data.cidr).
-                                                    Replace("<db-admin-group>", $config.sre.domain.securityGroups.sqlAdmins.name).
+                                                    Replace("<db-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
+                                                    Replace("<db-local-admin-password>", $postgresDbAdminPassword).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
                                                     Replace("<db-vm-ipaddress>", $privateIpAddress).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.Name).
-                                                    Replace("<ldap-bind-dn>", "CN=$($config.sre.users.ldap.postgresdb.Name),$($config.shm.domain.serviceOuPath)").
-                                                    Replace("<ldap-bind-passwd>", $postgresVmLdapPassword).
+                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.ldap.postgres.Name),$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<ldap-bind-user-password>", $postgresVmLdapPassword).
+                                                    Replace("<ldap-bind-user-username>", $config.sre.users.ldap.postgres.samAccountName).
                                                     Replace("<ldap-group-filter>", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))").
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
+                                                    Replace("<ldap-postgres-service-account-dn>", "CN=${postgresDbServiceAccountName},$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<ldap-postgres-service-account-password>", $postgresDbServiceAccountPassword).
                                                     Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))").
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
-                                                    Replace("<postgres-admin-user-password>", $postgresDbAdminPassword).
-                                                    Replace("<postgres-ldap-username>", $config.sre.users.ldap.postgresdb.samAccountName).
-                                                    Replace("<postgres-service-account-password>", $PostgresDbServiceAccountPassword).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
