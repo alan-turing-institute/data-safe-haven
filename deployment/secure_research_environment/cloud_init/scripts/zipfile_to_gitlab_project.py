@@ -387,7 +387,6 @@ def fork_project(repo_name, project_id, namespace_id, gitlab_url, gitlab_token):
         if response.status_code != 201:
             raise RuntimeError("Problem creating fork: {}".format(response.content))
         new_project_id = response.json()["id"]
-        return new_project_id
     else:
         # project already exists - ensure it is a fork of 'approval/<project-name>'
         new_project_id = get_project_id(
@@ -406,8 +405,7 @@ def fork_project(repo_name, project_id, namespace_id, gitlab_url, gitlab_token):
                     response.status_code, response.content
                 )
             )
-
-        return new_project_id
+    return new_project_id
 
 
 def unzipped_repo_to_merge_request(
