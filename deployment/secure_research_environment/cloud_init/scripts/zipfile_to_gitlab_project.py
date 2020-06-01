@@ -14,7 +14,7 @@ logger = logging.getLogger("project_upload_logger")
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
 f_handler = RotatingFileHandler(
-    "upload_zipfiles_to_projects.log", maxBytes=5 * 1024 * 1024, backupCount=10
+    "zipfile_to_gitlab_project.log", maxBytes=5 * 1024 * 1024, backupCount=10
 )
 f_handler.setFormatter(formatter)
 c_handler = logging.StreamHandler()
