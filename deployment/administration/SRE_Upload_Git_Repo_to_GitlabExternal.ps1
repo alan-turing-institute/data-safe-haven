@@ -20,7 +20,6 @@ Import-Module $PSScriptRoot/../common/GenerateSasToken.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-#$config = Get-ShmFullConfig $shmId
 $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
