@@ -278,21 +278,37 @@ $computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
 # Add 'generic read', 'generic write', 'create child' and 'delete child' permissions
 $_ = dsacls $computersContainer /I:T /G "${netbiosname}\$($ldapUsersSgName):GRGWCCDC"
 $success = $?
-# Add 'read/write' permissions on service principal name
+# Add 'control access' permission on computer password for child computers
+# $_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:CA;Change Password"
+$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:CA;Change Password;computer"
+$_ = dsacls $computersContainer /I:S /G "${netbiosname}\${ldapUsersSgName}:CA;Reset Password;computer"
+$success = $?
+# Add 'read property' and 'write property' on service principal name
 $_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;servicePrincipalName"
-# Add read/write permissions on DNS attributes
+# Add 'read property' and 'write property' on DNS attributes
 $_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;DNS Host Name Attributes"
-# Add read/write permissions on operating system attributes
-$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystem"
+# Add 'read property' and 'write property' on operating system attributes for child computers
+$_ = dsacls $computersContainer /I:S /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystem;computer"
 $success = $success -And $?
-$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemVersion"
+$_ = dsacls $computersContainer /I:S /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemVersion;computer"
 $success = $success -And $?
-$_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemServicePack"
+$_ = dsacls $computersContainer /I:S /G "${netbiosname}\${ldapUsersSgName}:RPWP;operatingSystemServicePack;computer"
 $success = $success -And $?
-# Add read/write permissions on supported encryption types
+# Add 'read property' and 'write property' on supported encryption types
 $_ = dsacls $computersContainer /I:T /G "${netbiosname}\${ldapUsersSgName}:RPWP;msDS-SupportedEncryptionTypes"
 $success = $success -And $?
 
+# TODO: check whether these permissions can replace the GRGWCCDC set
+# dsacls $computersContainer /I:S /G "$($user):GR;;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;pwdLastSet;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;Logon Information;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;description;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;displayName;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;sAMAccountName;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;DNS Host Name Attributes;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;Account Restrictions;computer"
+# dsacls $computersContainer /I:S /G "$($user):WP;servicePrincipalName;computer"
+# dsacls $computersContainer /I:S /G "$($user):CC;computer;organizationalUnit"
 
 if ($success) {
     Write-Host " [o] Successfully delegated Active Directory permissions"
