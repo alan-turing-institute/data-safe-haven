@@ -2,6 +2,7 @@
 
 # Require three arguments: environment name; (quoted) list of conda packages; (quoted) list of pip packages
 if [ $# -ne 3 ]; then
+    echo "FATAL: Incorrect number of arguments"
     exit 1
 fi
 ENV_NAME=$1
@@ -12,6 +13,10 @@ PIP_PACKAGES=$3
 # TODO: revisit this logic if/when Python 10 is released!
 VERSION=$(echo $ENV_NAME | sed "s/py\([0-9]\)\([0-9]*\)/\1.\2/")
 
+# Require package versions if any are requested
+CONDA_VERSIONED_PACKAGES=$CONDA_PACKAGES
+# <required versions>
+
 # Create environment
 START_TIME=$(date +%s)
 echo ">=== ${START_TIME} Creating $ENV_NAME conda environment ===<"
@@ -20,15 +25,15 @@ echo "Starting at $(date +'%Y-%m-%d %H:%M:%S')"
 echo "Installing $(echo $CONDA_PACKAGES | wc -w) packages with $CREATE_EXE..."
 echo "$(echo $CONDA_PACKAGES | tr ' ' '\n' | sort | tr '\n' ' ')"
 if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then
-    $CREATE_EXE create -y --name $ENV_NAME python=$VERSION $CONDA_PACKAGES
+    $CREATE_EXE create -y --name $ENV_NAME python=$VERSION $CONDA_VERSIONED_PACKAGES
 else
-    conda install -y --name $ENV_NAME $CONDA_PACKAGES
+    conda install -y --name $ENV_NAME $CONDA_VERSIONED_PACKAGES
 fi
 
 # Check that environment exists
 if [ "$(conda env list | grep $ENV_NAME)" = "" ]; then
-    echo "Could not build python $VERSION environment"
-    exit 1
+    echo "FATAL: Could not build python $VERSION environment"
+    exit 2
 fi
 
 # Install pip packages
@@ -53,8 +58,9 @@ for REQUESTED_PACKAGE in $CONDA_PACKAGES $PIP_PACKAGES; do
     fi
 done
 if [ "$MISSING_PACKAGES" ]; then
-    echo "The following requested packages are missing:\n$MISSING_PACKAGES"
-    exit 1
+    echo "FATAL: The following requested packages are missing:"
+    echo "$MISSING_PACKAGES"
+    exit 3
 else
     echo "All requested ${ENV_NAME} packages are installed"
 fi

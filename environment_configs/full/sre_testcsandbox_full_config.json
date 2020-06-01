@@ -60,7 +60,8 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-TESTC",
       "fqdn": "DC1-SHM-TESTC.testc.dsgroupdev.co.uk",
-      "ip": "10.0.0.250"
+      "ip": "10.0.0.250",
+      "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
       "vmName": "DC2-SHM-TESTC",
@@ -90,11 +91,12 @@
       "name": "kv-shm-testc",
       "secretNames": {
         "aadAdminPassword": "shm-testc-aad-admin-password",
+        "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
         "dcSafemodePassword": "shm-testc-dc-safemode-password",
         "domainAdminPassword": "shm-testc-domain-admin-password",
         "localAdsyncPassword": "shm-testc-localadsync-password",
         "npsAdminPassword": "shm-testc-nps-admin-password",
-        "testAdUserPassword": "shm-testc-testaduser-password",
         "vmAdminUsername": "shm-testc-vm-admin-username",
         "vpnCaCertificate": "shm-testc-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
@@ -104,25 +106,25 @@
       }
     },
     "dns": {
-      "subscriptionName": "[Prod] Safe Haven Domains",
+      "subscriptionName": "Turing Safe Haven Domains",
       "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
-      "vmSize": "Standard_D2s_v3",
+      "vmSize": "Standard_B2ms",
       "diskType": "Standard_LRS",
       "pypi": {
         "ipOffset": 4,
         "diskSize": {
-          "tier2": 16384,
-          "tier3": 512
+          "tier2": 8191,
+          "tier3": 511
         }
       },
       "cran": {
         "ipOffset": 5,
         "diskSize": {
-          "tier2": 512,
-          "tier3": 256
+          "tier2": 127,
+          "tier3": 31
         }
       }
     }
@@ -142,6 +144,10 @@
         "serverAdmins": {
           "name": "SG SANDBOX Server Administrators",
           "description": "SG SANDBOX Server Administrators"
+        },
+        "sqlAdmins": {
+          "name": "SG SANDBOX SQL Server Administrators",
+          "description": "SG SANDBOX SQL Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -171,14 +177,18 @@
           "prefix": "10.151.2",
           "cidr": "10.151.2.0/24"
         },
-        "gateway": {
-          "name": "GatewaySubnet",
-          "prefix": "10.151.7",
-          "cidr": "10.151.7.0/27"
+        "dbingress": {
+          "name": "DbIngressSubnet",
+          "prefix": "10.151.3",
+          "nsg": "dbingress",
+          "cidr": "10.151.3.0/24"
         }
       },
       "nsg": {
-        "data": {}
+        "data": {},
+        "dbingress": {
+          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        }
       }
     },
     "storage": {
@@ -196,15 +206,13 @@
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
-        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
+        "dataMountPassword": "sre-sandbox-datamount-password",
         "dataServerAdminPassword": "sre-sandbox-dataservervm-admin-password",
         "dsvmAdminPassword": "sre-sandbox-dsvm-admin-password",
-        "webappAdminPassword": "sre-sandbox-webappvm-admin-password",
         "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
         "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
         "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
         "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-        "dataMountPassword": "sre-sandbox-datamount-password",
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
@@ -212,7 +220,11 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "testResearcherPassword": "sre-sandbox-test-researcher-password"
+        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
+        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
+        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "testResearcherPassword": "sre-sandbox-test-researcher-password",
+        "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
     },
     "users": {
@@ -280,9 +292,9 @@
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.testc.dsgroupdev.co.uk",
       "ip": "10.151.2.250",
-      "egressDiskGb": 64,
+      "egressDiskGb": 512,
       "ingressDiskGb": 512,
-      "sharedDiskGb": 256
+      "sharedDiskGb": 512
     },
     "webapps": {
       "rg": "RG_SRE_WEBAPPS",
@@ -302,6 +314,26 @@
         "ip": "10.151.2.152"
       }
     },
+    "databases": {
+      "rg": "RG_SRE_DATABASES",
+      "dbmssqlingress": {
+        "name": "SQL-ING-SANDBOX",
+        "enableSSIS": true,
+        "ipLastOctet": "4",
+        "port": "14330",
+        "sku": "sqldev",
+        "subnet": "dbingress",
+        "vmSize": "Standard_DS2_v2",
+        "datadisk": {
+          "size_gb": "2048",
+          "type": "Standard_LRS"
+        },
+        "osdisk": {
+          "size_gb": "128",
+          "type": "Standard_LRS"
+        }
+      }
+    },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
@@ -314,9 +346,9 @@
       "vmImageVersion": "0.1.2019122000",
       "osdisk": {
         "type": "Standard_LRS",
-        "size_gb": "60"
+        "size_gb": "64"
       },
-      "datadisk": {
+      "scratchdisk": {
         "type": "Standard_LRS",
         "size_gb": "512"
       },

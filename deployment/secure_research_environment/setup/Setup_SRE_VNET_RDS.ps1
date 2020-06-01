@@ -345,8 +345,18 @@ Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Import files from blob storage to RDS VMs and install them if appropriate
-# -------------------------------------------------------------------------
+# Set locale, install updates and reboot
+# --------------------------------------
+foreach ($nameVMNameParamsPair in $vmNamePairs) {
+    $name, $vmName = $nameVMNameParamsPair
+    Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+}
+
+
+# Import files to RDS VMs
+# -----------------------
+
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 
 # Set correct list of package from blob storage for each session host

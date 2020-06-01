@@ -30,26 +30,39 @@ The most common changes to this image that you are likely to want to make are to
 
 **Adding a new apt package**
 - Add the name of the package to `deployment/dsvm_images/packages/packages-apt.list`
+- If this package adds a new executable that you would like to be available to the end user, you should also add a check for this to the end of `deployment/dsvm_images/cloud_init/cloud-init-buildimage-ubuntu.yaml`
+
+> For example, to check for `Azure Data Studio`, the following line was added:
+>
+> `if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which azuredatastudio)"; else echo "ERROR azuredatastudio not found!"; exit 1; fi`
 
 **Adding a new Python package**
 - Add the name of the package as it appears on `PyPI` to each of
   - `deployment/dsvm_images/packages/packages-python-pypi-27.list`
   - `deployment/dsvm_images/packages/packages-python-pypi-36.list`
   - `deployment/dsvm_images/packages/packages-python-pypi-37.list`
-- If the name on `PyPI` is different from the name on `conda` (other than capitalisation) you will also need to add an entry to `deployment/dsvm_images/packages/packages-conda-pypi2conda.map`
-- If the package is not available on `conda`, you will **also** need to:
-  - put a blank entry (like `<package-name>:`) in `deployment/dsvm_images/packages/packages-conda-pypi2conda.map`
+- If the name on `PyPI` is different from the name on `conda` (other than capitalisation) then add an entry to the `pypi-name-to-conda-name` section in `deployment/dsvm_images/packages/conda-config.json`
+- If the package is not available on `conda` then add an entry to the `not-available-from-conda` section in `deployment/dsvm_images/packages/conda-config.json`
+- If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the `version-requirements` section in `deployment/dsvm_images/packages/conda-config.json`
+- You should also add this package to the whitelist used by Tier-3 package mirrors
 
 **Adding a new R package**
 - Add the name of the package as it appears on `CRAN` or `Bioconductor` to the appropriate package list:
   - `deployment/dsvm_images/packages/packages-r-bioconductor.list`
   - `deployment/dsvm_images/packages/packages-r-cran.list`
-- Check whether this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind`) and add it to `deployment/dsvm_images/packages/packages-apt.list` if so
+- If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind`) then add it to `deployment/dsvm_images/packages/packages-apt.list` if so
+- You should also add this package to the whitelist used by Tier-3 package mirrors
+
+**Adding packages to the package whitelist**
+- When you add a new package to either the `PyPI` or `CRAN` whitelist you should also add all of its dependencies (and their dependencies, recursively)
+- Once you have the list of packages you should add them to:
+  - **PyPI:** `environment_configs/package_lists/whitelist-core-python-pypi-tier3.list`
+  - **CRAN:** `environment_configs/package_lists/whitelist-core-r-cran-tier3.list`
 
 **Changing the version of a package**
 If you want to update the version of one of the packages we install from a `.deb` file (eg. `dbeaver`), you will need to edit `deployment/dsvm_images/cloud-init`
 - Find the appropriate `/installation/<package name>.debinfo` section under the `write_files:` key
-- Update the version number and the sha256 hash for the file
+- Update the version number and the `sha256` hash for the file
 - Check that the file naming structure still matches the format described in this `.debinfo` file
 
 ### :running: Running the image build

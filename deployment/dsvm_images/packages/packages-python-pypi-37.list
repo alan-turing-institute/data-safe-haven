@@ -27,6 +27,7 @@ ipykernel
 Jinja2
 joblib
 Keras
+langdetect
 lightgbm
 louvain
 lxml

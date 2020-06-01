@@ -84,6 +84,8 @@ write_files:
         krb4_convert = true
         krb4_get_tickets = false
   - path: "/active_directory_step01_pre"
+    owner: root:root
+    permissions: "0500"
     content: |
       #!/bin/sh
       # Set up Active Directory
@@ -127,11 +129,15 @@ write_files:
       cat /etc/krb5.conf
       echo ">=== end of /etc/krb5.conf ===<"
   - path: "/active_directory_step02_realm_join"
+    owner: root:root
+    permissions: "0500"
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
       cat /etc/ldap.secret | realm join --verbose -U <dsvm-ldap-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
+    owner: root:root
+    permissions: "0500"
     content: |
       # Check the sssd.conf file
       echo "Updating sssd settings"
@@ -145,6 +151,8 @@ write_files:
       echo "Restarting sssd"
       systemctl restart sssd
   - path: "/active_directory_step04_update_pam"
+    owner: root:root
+    permissions: "0500"
     content: |
       # Edit the pam session configuration file
       echo "Updating PAM configuration"
@@ -154,6 +162,53 @@ write_files:
       echo ">=== /etc/pam.d/common-session ===<"
       cat /etc/pam.d/common-session
       echo ">=== end of /etc/pam.d/common-session ===<"
+  - path: "/disk_setup"
+    owner: root:root
+    permisions: '0500'
+    content: |
+      #!/bin/sh
+      # Create home folder and grant appropriate access
+      echo ">=== Create home folder using home disk... ===<"
+      # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+      DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun1)
+      PARTITION="${DEVICE}1"
+      # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
+      PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
+      # If the device has no partition table, create one, partition the disk and make an ext4 file system
+      if [ "$PARTITION_TABLE" = "unknown" ]; then
+        parted $DEVICE mklabel gpt
+        parted $DEVICE mkpart primary ext4 0% 100%
+        parted $DEVICE print
+        sleep 5
+        mkfs -t ext4 $PARTITION
+      fi
+      # Create an entry for the home partition in fstab
+      UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
+      echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      tail -n 1 /etc/fstab
+      # Create scratch folder and grant all users access
+      echo ">=== Create local scratch folder using data disk... ===<"
+      # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
+      DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun2)
+      PARTITION="${DEVICE}1"
+      # Get the partition table format of the disk using parted, then grep and sed to get the string after "Partition Table :"
+      PARTITION_TABLE=$(parted $DEVICE print | egrep '^Partition Table:' | sed -e 's/Partition Table: //')
+      # If the device has no partition table, create one, partition the disk and make an ext4 file system
+      if [ "$PARTITION_TABLE" = "unknown" ]; then
+        parted $DEVICE mklabel gpt
+        parted $DEVICE mkpart primary ext4 0% 100%
+        parted $DEVICE print
+        sleep 5
+        mkfs -t ext4 $PARTITION
+      fi
+      mkdir -p /scratch
+      mount $PARTITION /scratch
+      chmod go+rw /scratch
+      UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
+      echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      echo ">=== /etc/fstab ===<"
+      cat /etc/fstab
+      echo ">=== end of /etc/fstab ===<"
   - path: "/etc/pip.conf"
     content: |
       # Add the PyPI mirror to our global settings
@@ -240,19 +295,13 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
-  # Add execute permission to the Active Directory set up scripts
-  - echo ">=== Initialise Active Directory configuration... ===<"
-  - chmod +x /active_directory_step01_pre
-  - chmod +x /active_directory_step02_realm_join
-  - chmod +x /active_directory_step03_update_sssd
-  - chmod +x /active_directory_step04_update_pam
   # Run the Active Directory set up scripts
   - echo ">=== Run Active Directory setup scripts... ===<"
   - /active_directory_step01_pre
   - /active_directory_step02_realm_join
   - /active_directory_step03_update_sssd
   - /active_directory_step04_update_pam
-  # Remove the Active Directory set up scripts (as these contain secrets and are world readable
+  # Remove the Active Directory set up scripts (as these contain secrets)
   - echo ">=== Delete Active Directory setup scripts... ===<"
   - rm /active_directory_step01_pre
   - rm /active_directory_step02_realm_join
@@ -279,35 +328,10 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  # Create home folder and grant appropriate access
-  - echo ">=== Create home folder using home disk... ===<"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /tmp/home
-  - mount /dev/sdc1 /tmp/home
-  - chmod 755 /tmp/home
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/home\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
-  - umount /tmp/home
-  - tail -n 1 /etc/fstab
-  # Create scratch folder and grant all users access
-  - echo ">=== Create local scratch folder using data disk... ===<"
-  - parted /dev/sdd mklabel gpt
-  - parted /dev/sdd mkpart primary ext4 0% 100%
-  - parted /dev/sdd print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdd1
-  - mkdir -p /scratch
-  - mount /dev/sdd1 /scratch
-  - chmod go+rw /scratch
-  - UUID=$(blkid | grep "/dev/sdd1" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t3" >> /etc/fstab
-  - echo ">=== /etc/fstab ===<"
-  - cat /etc/fstab
-  - echo ">=== end of /etc/fstab ===<"
+  # Configure disks
+  - echo ">=== Mount and configure disks... ===<"
+  - /disk_setup
+  - rm /disk_setup
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
