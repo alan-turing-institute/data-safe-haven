@@ -319,6 +319,36 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
+# Create storage container and ensure it is empty
+# -----------------------------------------------
+function Deploy-EmptyStorageContainer {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        $StorageAccount
+    )
+    $_ = Deploy-StorageContainer -Name $Name -StorageAccount $StorageAccount
+    # delete existing blobs on the container
+    $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
+    $numBlobs = $blobs.Length
+    if ($numBlobs -gt 0) {
+        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$Name'..."
+        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $Name -Context $StorageAccount.Context -Force }
+        while ($numBlobs -gt 0) {
+            Start-Sleep -Seconds 5
+            $numBlobs = (Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length
+        }
+        if ($?) {
+            Add-LogMessage -Level Success "Blob deletion succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Blob deletion failed!"
+        }
+    }
+}
+Export-ModuleMember -Function Deploy-EmptyStorageContainer
+
+
 # Create Linux virtual machine if it does not exist
 # -------------------------------------------------
 function Deploy-UbuntuVirtualMachine {

@@ -62,23 +62,7 @@ $sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -Resourc
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
-$_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-# delete existing blobs on the container
-$blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-$numBlobs = $blobs.Length
-if ($numBlobs -gt 0) {
-    Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
-    $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-    while ($numBlobs -gt 0) {
-        Start-Sleep -Seconds 5
-        $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-    }
-    if ($?) {
-        Add-LogMessage -Level Success "Blob deletion succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Blob deletion failed!"
-    }
-}
+$_ = Deploy-EmptyStorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 
 # copy zipfile to blob storage
 # ----------------------------

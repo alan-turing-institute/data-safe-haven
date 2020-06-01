@@ -212,22 +212,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # ---------------------------------------------
 Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
 foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
-    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
+    Deploy-EmptyStorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 }
 
 
