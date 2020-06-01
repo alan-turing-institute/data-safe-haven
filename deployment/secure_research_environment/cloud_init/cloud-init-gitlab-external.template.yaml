@@ -141,7 +141,7 @@ runcmd:
     echo "user = User.create(:username => '<gitlab-external-username>', :password => '<gitlab-external-password>', :password_confirmation => '<gitlab-external-password>', :email =>'<gitlab-external-username>@<gitlab-external-login-domain>', :skip_confirmation => true, :name => '<gitlab-external-username>');user.save!;exit;" | gitlab-rails console -e production
   # Create a API token for the ingress user created above
   - |
-    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('<gitlab-external-api-token>'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
+    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('$(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
   # Reload GitLab configuration and restart GitLab
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
@@ -155,9 +155,17 @@ runcmd:
   # REGISTER SSH KEY WITH GITLAB INTERNAL
   # --------------------------------
   - |
-    echo "Configuring access to gitlab internal"
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
-    curl --header 'Authorization: Bearer <gitlab-internal-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-username";
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email";
+  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
+  - |
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
+    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-internal-api-token')" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys;
+    ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
+    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
+
   # --------------------------------
   # WAIT FOR GITLAB EXTERNAL HEALTH CHECK
   # --------------------------------
@@ -183,8 +191,8 @@ runcmd:
   - echo "Configuring access to gitlab external"
   # Create SSH key for gitlab external access
   - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
-    curl --header 'Authorization: Bearer <gitlab-external-api-token>' --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
+    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
   #  Get local ssh host keys, add them to known hosts under the gitlab external ip
   - |    
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
@@ -192,8 +200,9 @@ runcmd:
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
   # Create groups for storing unapproved and approval repos
   - |
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups
-    curl --header "Authorization: Bearer <gitlab-external-api-token>" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
+    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups;
+    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
+
   # --------------------------------
   # GIT SETUP
   # --------------------------------
