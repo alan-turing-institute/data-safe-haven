@@ -7,6 +7,10 @@
 param(
     [String]$sreFqdn,
     [String]$shmFqdn,
+    [String]$shmSystemAdministratorSgName,
+    [String]$shmSystemAdministratorSgDescription,
+    [String]$systemAdministratorSgName,
+    [String]$systemAdministratorSgDescription,
     [String]$dataAdministratorSgName,
     [String]$dataAdministratorSgDescription,
     [String]$researchUserSgName,
@@ -89,6 +93,7 @@ $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResear
 # Create SRE Security Groups
 New-SreGroup -name $dataAdministratorSgName -description $dataAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+New-SreGroup -name $systemAdministratorSgName -description $systemAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
 # Create LDAP users for SRE
 New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
@@ -112,3 +117,7 @@ foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackm
 # Add test researcher to the researchers security group
 Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
 Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"
+
+# Add SHM sysadmins group to the SRE sysadmins group
+Write-Output " [ ] Adding '$shmSystemAdministratorSgName' group to group '$systemAdministratorSgName'"
+Add-ADGroupMember "$systemAdministratorSgName" "$shmSystemAdministratorSgName"

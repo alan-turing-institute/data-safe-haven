@@ -298,16 +298,16 @@ function Add-SreConfig {
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
     $dataAdministratorsGroup = "SG $($config.sre.domain.netbiosName) Data Administrators"
-    $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
+    $systemAdministratorsGroup = "SG $($config.sre.domain.netbiosName) System Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $config.sre.domain.securityGroups = [ordered]@{
         dataAdministrators = [ordered]@{
             name = $dataAdministratorsGroup
             description = $dataAdministratorsGroup
         }
-        serverAdmins = [ordered]@{
-            name = $serverAdminsGroup
-            description = $serverAdminsGroup
+        systemAdministrators = [ordered]@{
+            name = $systemAdministratorsGroup
+            description = $systemAdministratorsGroup
         }
         researchUsers = [ordered]@{
             name = $researchUsersGroup
