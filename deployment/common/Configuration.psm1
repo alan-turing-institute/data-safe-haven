@@ -335,24 +335,16 @@ function Add-SreConfig {
                 name = "SharedDataSubnet"
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
             }
-            dbingress = [ordered]@{
-                name = "DbIngressSubnet"
+            databases = [ordered]@{
+                name = "DatabasesSubnet"
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
-                nsg = "dbingress"
-            }
-            dbanalysis = [ordered]@{
-                name = "DbAnalysisSubnet"
-                prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 5)"
-                nsg = "dbanalysis"
+                nsg = "databases"
             }
         }
         nsg = [ordered]@{
             data = [ordered]@{}
-            dbingress = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
-            }
-            dbanalysis = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_DB_ANALYSIS".ToUpper()
+            databases = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_DATABASES".ToUpper()
             }
         }
     }
@@ -538,18 +530,22 @@ function Add-SreConfig {
     # Databases
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_DATABASES"
-        # MS SQL data ingress
-        dbmssql = [ordered]@{
-            name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
-            type = "MSSQL"
-            enableSSIS = $true
-            ipLastOctet = "4"
-            port = "14330"
-            sku = "sqldev"
-            subnet = "dbingress"
+    }
+    $ipLastOctet = 4
+    $dbPorts = @{"MSSQL" = "14330"; "PostgreSQL" = "5432"}
+    $dbSkus = @{"MSSQL" = "sqldev"; "PostgreSQL" = "18.04-LTS"}
+    $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
+    foreach ($databaseType in $sreConfigBase.databases) {
+        $config.sre.databases["db$($databaseType.ToLower())"]  = [ordered]@{
+            name = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | TrimToLength 15
+            type = $databaseType
+            ipLastOctet = $ipLastOctet
+            port = $dbPorts[$databaseType]
+            sku = $dbSkus[$databaseType]
+            subnet = "databases"
             vmSize = "Standard_DS2_v2"
             datadisk = [ordered]@{
-                size_gb = "2048"
+                size_gb = "1024"
                 type = "Standard_LRS"
             }
             osdisk = [ordered]@{
@@ -557,23 +553,8 @@ function Add-SreConfig {
                 type = "Standard_LRS"
             }
         }
-        # PostgreSQL data analysis
-        dbpostgres = [ordered]@{
-            name = "PGS-ANA-$($config.sre.id)".ToUpper() | TrimToLength 15
-            type = "PostgreSQL"
-            ipLastOctet = "4"
-            sku = "18.04-LTS"
-            subnet = "dbanalysis"
-            vmSize = "Standard_DS2_v2"
-            datadisk = [ordered]@{
-                size_gb = "2048"
-                type = "Standard_LRS"
-            }
-            osdisk = [ordered]@{
-                size_gb = "128"
-                type = "Standard_LRS"
-            }
-        }
+        if ($databaseType -eq "MSSQL") { $config.sre.databases["db$($databaseType.ToLower())"]["enableSSIS"] = $true }
+        $ipLastOctet += 1
     }
 
     # Compute VMs

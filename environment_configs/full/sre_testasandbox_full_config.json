@@ -177,26 +177,17 @@
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
-        "dbingress": {
-          "name": "DbIngressSubnet",
+        "databases": {
+          "name": "DatabasesSubnet",
           "prefix": "10.150.3",
-          "nsg": "dbingress",
+          "nsg": "databases",
           "cidr": "10.150.3.0/24"
-        },
-        "dbanalysis": {
-          "name": "DbAnalysisSubnet",
-          "prefix": "10.150.5",
-          "nsg": "dbanalysis",
-          "cidr": "10.150.5.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "dbingress": {
-          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
-        },
-        "dbanalysis": {
-          "name": "NSG_SRE_SANDBOX_DB_ANALYSIS"
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
         }
       }
     },
@@ -342,32 +333,33 @@
     "databases": {
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
-        "name": "SQL-ING-SANDBOX",
+        "name": "MSSQL-SANDBOX",
         "type": "MSSQL",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
+        "ipLastOctet": 4,
         "port": "14330",
         "sku": "sqldev",
-        "subnet": "dbingress",
+        "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "2048",
+          "size_gb": "1024",
           "type": "Standard_LRS"
         },
         "osdisk": {
           "size_gb": "128",
           "type": "Standard_LRS"
-        }
+        },
+        "enableSSIS": true
       },
-      "dbpostgres": {
-        "name": "PGS-ANA-SANDBOX",
+      "dbpostgresql": {
+        "name": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
-        "ipLastOctet": "4",
+        "ipLastOctet": 5,
+        "port": "5432",
         "sku": "18.04-LTS",
-        "subnet": "dbanalysis",
+        "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "2048",
+          "size_gb": "1024",
           "type": "Standard_LRS"
         },
         "osdisk": {
