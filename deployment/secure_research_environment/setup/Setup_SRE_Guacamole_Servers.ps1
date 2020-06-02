@@ -1,6 +1,12 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$sreId,
+    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$duoIntegration,
+    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$duoSecret,
+    [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
+    [string]$duoApiHost
 )
 
 Import-Module Az
@@ -14,16 +20,18 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 $vmName = $config.sre.guacamole.vmName
 $vmSize = $config.sre.guacamole.vmSize
-$dcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dcAdminPassword
-# $bootDiagnosticsAccount = $config.sre.storage.bootdiagnostics.accountName
-# $vmNicName = "${vmName}-NIC"
-# $vmNic = Get-AzResource -Name $vmNicName
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
 
+# Get/set Duo secrets
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$duoIntegrationKey = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoIntegrationKey -DefaultValue $duoIntegration
+$duoSecretKey = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoSecretKey -DefaultValue $duoSecret
+$duoApiHostname = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.Name -SecretName $config.shm.keyVault.secretNames.duoApiHostname -DefaultValue $duoApiHost
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Create RDS resource group if it does not exist
 # ----------------------------------------------
@@ -69,15 +77,11 @@ $cloudInitYaml = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.d
                                     Replace('<ldap-search-bind-dn>', "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath).
                                     Replace('<ldap-search-bind-password>', $LDAP_PASSWORD).
                                     Replace('<ldap-group-researchers>', $config.sre.domain.securityGroups.researchUsers.Name).
-                                    Replace('<postgres-password>', $POSTGRES_PASSWORD)
-                                    # Replace('<postgres-db-init>', $DBINIT).
+                                    Replace('<postgres-password>', $POSTGRES_PASSWORD).
+                                    Replace('<duo-api-hostname>', $duoApiHostname).
+                                    Replace('<duo-integration-key>', $duoIntegrationKey).
+                                    Replace('<duo-secret-key>', $duoSecretKey)
 
-
-                                    # "CN=SANDBOX DSVM LDAP,U=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
-
-
-# Write-Host $cloudInitYaml
-# exit 1
 
 # Check that VNET and subnet exist
 # --------------------------------
@@ -114,16 +118,17 @@ $_ = $vmNic | Set-AzNetworkInterfaceIpConfig -Name $vmNic.ipConfigurations[0].Na
 # Deploy the VM
 # -------------
 $params = @{
-    Name = $vmName
-    Size = $vmSize
-    AdminPassword = $dcAdminPassword
-    AdminUsername = $dcAdminUsername
+    AdminPassword = $vmAdminPassword
+    AdminUsername = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml = $cloudInitYaml
-    location = $config.sre.location
+    ImageSku = "18.04-LTS"
+    Location = $config.sre.location
+    Name = $vmName
     NicId = $vmNic.Id
     OsDiskType = $diskType
     ResourceGroupName = $config.sre.guacamole.rg
+    Size = $vmSize
 }
 $_ = Deploy-UbuntuVirtualMachine @params
 

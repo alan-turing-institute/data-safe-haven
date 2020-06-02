@@ -68,6 +68,14 @@ write_files:
             LDAP_GROUP_BASE_DN: <ldap-group-base-dn>
             LDAP_SEARCH_BIND_DN: <ldap-search-bind-dn>
             LDAP_SEARCH_BIND_PASSWORD: <ldap-search-bind-password>
+            POSTGRES_HOSTNAME: postgres
+            POSTGRES_DATABASE: guacamole
+            POSTGRES_USER: guacamole
+            POSTGRES_PASSWORD: <postgres-password>
+            DUO_API_HOSTNAME: <duo-api-hostname>
+            DUO_INTEGRATION_KEY: <duo-integration-key>
+            DUO_SECRET_KEY: <duo-secret-key>
+            DUO_APPLICATION_KEY: <duo-application-key>
           ports:
           - 8080/tcp
           restart: always
@@ -171,13 +179,10 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # # Make a temporary directory (cloudinit recomends not using /tmp)
-  - mkdir /data
-  - mkdir -p /nginx/ssl
-
   # Create SSL certificates
   # echo "You can use your own certificates by placing the private key in nginx/ssl/self-ssl.key and the cert in nginx/ssl/self.cert"
   - echo "Creating SSL certificates"
+  - mkdir -p /nginx/ssl
   - openssl req -nodes -newkey rsa:2048 -new -x509 -keyout /nginx/ssl/self-ssl.key -out /nginx/ssl/self.cert -subj '/C=DE/ST=BY/L=Hintertupfing/O=Dorfwirt/OU=Theke/CN=www.example.com/emailAddress=docker@example.com'
 
   # Clean up installation - getting to this point takes approximately 30 mins
@@ -185,14 +190,11 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
 
-  - echo "Starting Guacamole"
+  # Setup Guacamole
+  - echo ">=== Starting Guacamole... ===<"
+  # Generate a random application key for Duo. This must be >40 characters so we generate 60 and strip any that are non-alphanumeric
+  - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /src/guacamole/docker-compose.yml
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
-  # # There isn't a corresponding environment variable in the Docker container image for this
-  # - docker-compose exec guacamole bash -c 'echo "ldap-user-attributes: userPrincipalName" >> /root/.guacamole/guacamole.properties'
-  # - docker cp /src/guacamole/dbinit.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/dbinit.sql
-  # - docker-compose exec postgres psql -U guacamole -f /dbinit.sql
-  # - docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgres > ./init/initdb.sql
-
   # Generate the necessary SQL config for the local PostgreSQL database
   - docker-compose -f /src/guacamole/docker-compose.yml exec guacamole /opt/guacamole/bin/initdb.sh --postgres > /src/guacamole/db_init.sql
   # Copy the base SQL config to the postgres container and run it
@@ -201,8 +203,7 @@ runcmd:
   # Copy the custom SQL config to the postgres container and run it
   - docker cp /src/guacamole/custom.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_custom.sql
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_custom.sql
-  # # Restart the
-  # - docker-compose -f /src/guacamole/docker-compose.yml restart guacd
+
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

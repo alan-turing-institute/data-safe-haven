@@ -102,7 +102,10 @@
         "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
         "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-testa-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password",
+        "duoIntegrationKey": "shm-testa-duo-integration-key",
+        "duoSecretKey": "shm-testa-duo-secret-key",
+        "duoApiHostname": "shm-testa-duo-api-hostname"
       }
     },
     "dns": {
@@ -258,7 +261,7 @@
     "guacamole": {
       "rg": "RG_SRE_GUACAMOLE",
       "vmName": "GUACAMOLE-SRE-SANDBOX",
-      "vmSize": "Standard_F8s_v2",
+      "vmSize": "Standard_D2s_v3",
       "ip": "10.150.1.100"
     },
     "rds": {

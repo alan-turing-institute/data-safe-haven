@@ -194,6 +194,9 @@ function Get-ShmFullConfig {
         vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
         vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
         vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
+        duoIntegrationKey = "shm-$($shm.id)-duo-integration-key".ToLower()
+        duoSecretKey = "shm-$($shm.id)-duo-secret-key".ToLower()
+        duoApiHostname = "shm-$($shm.id)-duo-api-hostname".ToLower()
     }
 
     # --- DNS config ---
