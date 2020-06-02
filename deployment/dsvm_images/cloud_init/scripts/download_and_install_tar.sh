@@ -2,6 +2,7 @@
 
 # Require one arguments: config file identifier
 if [ $# -ne 1 ]; then
+    echo "FATAL: Incorrect number of arguments"
     exit 1
 fi
 PACKAGE_NAME=$1
@@ -9,6 +10,7 @@ PACKAGE_NAME=$1
 # Ensure that the config file exists
 CONFIG_FILE="/installation/${PACKAGE_NAME}.tarinfo"
 if [ ! -e $CONFIG_FILE ]; then
+    echo "FATAL: Config file could not be loaded from $CONFIG_FILE"
     exit 2
 fi
 
@@ -32,7 +34,7 @@ wget -nv $PACKAGE_REMOTE -P /opt/${PACKAGE_NAME}
 ls -alh /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}
 echo "$PACKAGE_HASH /opt/${PACKAGE_NAME}/${PACKAGE_TARFILE}" > /tmp/${PACKAGE_NAME}_sha256.hash
 if [ "$(sha256sum -c /tmp/${PACKAGE_NAME}_sha256.hash | grep FAILED)" != "" ]; then
-    echo "Checksum did not match expected for $PACKAGE_NAME"
+    echo "FATAL: Checksum did not match expected for $PACKAGE_NAME"
     exit 4
 fi
 

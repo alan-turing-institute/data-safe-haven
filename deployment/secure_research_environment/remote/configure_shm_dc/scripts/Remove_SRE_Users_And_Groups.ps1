@@ -83,7 +83,7 @@ Remove-SreComputer $rdsDataserverVMName
 Remove-SreComputer $rdsGatewayVMName
 Remove-SreComputer $rdsSessionHostAppsVMName
 Remove-SreComputer $rdsSessionHostDesktopVMName
-Remove-SreComputer $rdsSessionHostDesktopVMName
+Remove-SreComputer $rdsSessionHostReviewVMName
 
 # Remove DSVMs
 $dsvmPrefix = "SRE-$sreId".Replace(".","-").ToUpper()

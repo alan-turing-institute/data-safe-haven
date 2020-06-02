@@ -20,7 +20,6 @@ Import-Module $PSScriptRoot/../common/GenerateSasToken.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-#$config = Get-ShmFullConfig $shmId
 $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
@@ -63,24 +62,7 @@ $sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -Resourc
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
-Add-LogMessage -Level Info "Creating blob storage container $containerName in storage account $sreStorageAccountName ..."
-$_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-# delete existing blobs on the container
-$blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-$numBlobs = $blobs.Length
-if ($numBlobs -gt 0) {
-    Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
-    $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-    while ($numBlobs -gt 0) {
-        Start-Sleep -Seconds 5
-        $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-    }
-    if ($?) {
-        Add-LogMessage -Level Success "Blob deletion succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Blob deletion failed!"
-    }
-}
+$_ = Deploy-EmptyStorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 
 # copy zipfile to blob storage
 # ----------------------------

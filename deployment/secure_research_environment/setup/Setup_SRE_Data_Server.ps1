@@ -83,7 +83,7 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating data server VM..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -CommonPowershellPath (Join-Path $PSScriptRoot ".." ".." "common")
+Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg
 
 
 # Configure data server

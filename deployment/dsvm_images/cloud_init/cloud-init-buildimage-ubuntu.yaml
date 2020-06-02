@@ -130,6 +130,17 @@ write_files:
     permissions: "0644"
     content: |
       # Performance log
+  - path: "/usr/share/applications/jupyter-notebook.desktop"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=Jupyter Notebook
+      Exec=jupyter notebook
+      Icon=/usr/lib/python3/dist-packages/notebook/static/base/images/favicon.ico
+      Categories=Utility;TextEditor;Development;IDE;
   - path: "/usr/share/applications/pycharm.desktop"
     owner: "root:root"
     permissions: "0644"
@@ -407,6 +418,8 @@ runcmd:
   - if [ "$(which nvidia-smi)" ]; then echo "\n\n*nvidia-smi*\n\n$(which nvidia-smi)\n$(modinfo nvidia | grep '^version:')"; else echo "nvidia-ERROR smi not found!"; exit 1; fi
   - if [ "$(which psql)" ]; then echo "\n\n*psql*\n\n$(which psql)\n$(psql --version)"; else echo "ERROR psql not found!"; exit 1; fi
   - if [ "$(which sqlcmd)" ]; then echo "\n\n*sqlcmd*\n\n$(which sqlcmd)\n$(sqlcmd -? | grep Version)"; else echo "ERROR sqlcmd not found!"; exit 1; fi
+  # Data Science tools
+  - if [ "$(which weka)" ]; then echo "\n\n*weka*\n\n$(which weka)\n$(weka -c weka.core.Version | head -n 1)"; else echo "ERROR weka not found!"; exit 1; fi
 
 
 final_message:

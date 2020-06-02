@@ -95,7 +95,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
                              -Protocol * `
                              -SourceAddressPrefix * `
                              -SourcePortRange *
-Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+$_ = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Insert scripts into the cloud-init template
@@ -131,28 +131,37 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("- <Julia package list>", $julia
 
 # Insert python package details into the cloud-init template
 # ---------------------------------------------------------
-# List of common non-python packages
-$commonCondaPackages += Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-nonpython.list")
-# Map of PyPI name to conda name (eg. `tables: pytables`)
-$pypi2conda = @{ }
-Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-conda-pypi2conda.map") | ForEach-Object { $pypi, $conda = $_.Split(":"); $pypi2conda[$pypi] = $conda.Trim() }
+# Load conda config
+$condaConfig = Get-Content (Join-Path $PSScriptRoot ".." "packages" "conda-config.json") | ConvertFrom-Json -AsHashtable
+# List of non-python packages we want to install from conda
+$nonPythonPackages = $condaConfig["non-python-packages"]
+# List of packages not available from conda
+$nonCondaPythonPackages = $condaConfig["not-available-from-conda"]
+# Hashmap of PyPI name to conda name (eg. `tables: pytables`)
+$pypi2conda = $condaConfig["pypi-name-to-conda-name"]
+# Hashmap of package to version requirement (eg. `pytorch: >=1.1.0`)
+$packageVersions = $condaConfig["version-requirements"]
+
 # Read the list of packages (using PyPI names) and translate into the lists of packages that must be installed with conda and pip
 $python27AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-27.list")
-$python27PipPackages = $python27AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python27PipPackages = $python27AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python27CondaPackages = $python27AllPackages | Where-Object { $python27PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $python36AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-36.list")
-$python36PipPackages = $python36AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python36PipPackages = $python36AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python36CondaPackages = $python36AllPackages | Where-Object { $python36PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-python-pypi-37.list")
-$python37PipPackages = $python37AllPackages | Where-Object { $pypi2conda.ContainsKey($_) -And -Not $pypi2conda[$_] }
+$python37PipPackages = $python37AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
-$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`"${python27CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
+$pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-                  "- export PYTHON36_CONDA_PACKAGES=`"${python36CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
+                  "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-                  "- export PYTHON37_CONDA_PACKAGES=`"${python37CondaPackages} ${commonCondaPackages}`"" + "`n  " + `
+                  "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
                   "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
+# Require specific versions of some packages. Replace ' package ' with ' package<version requirement> '
+$requiredCondaVersions = "CONDA_VERSIONED_PACKAGES=`$(echo `$CONDA_PACKAGES | sed " + $($packageVersions.Keys | ForEach-Object { "-e 's/ $_ / $_$($packageVersions[$_]) /g'" } | Join-String -Separator " ") + ")"
+$cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requiredCondaVersions)
 
 
 # Insert R package details into the cloud-init template
@@ -201,7 +210,8 @@ $_ = Deploy-UbuntuVirtualMachine @params
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*${buildVmName}-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "This process will take several hours to complete."
 Add-LogMessage -Level Info "  You can monitor installation progress using: ssh $buildVmAdminUsername@$publicIp"
-Add-LogMessage -Level Info "  The password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.Name)' key vault"
+Add-LogMessage -Level Info "  The password for this account can be found in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the Azure Key Vault at:"
+Add-LogMessage -Level Info "  $($config.dsvmImage.subscription) > $($config.dsvmImage.keyVault.rg) > $($config.dsvmImage.keyVault.Name)"
 Add-LogMessage -Level Info "  Once logged in, check the installation progress with: /installation/analyse_build.py"
 Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1 /var/log/cloud-init-output.log"
 

@@ -212,22 +212,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # ---------------------------------------------
 Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
 foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
-    $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$containerName'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
+    Deploy-EmptyStorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 }
 
 
@@ -345,8 +330,18 @@ Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Import files from blob storage to RDS VMs and install them if appropriate
-# -------------------------------------------------------------------------
+# Set locale, install updates and reboot
+# --------------------------------------
+foreach ($nameVMNameParamsPair in $vmNamePairs) {
+    $name, $vmName = $nameVMNameParamsPair
+    Add-LogMessage -Level Info "Updating ${name}: '$vmName'..."
+    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.rds.rg
+}
+
+
+# Import files to RDS VMs
+# -----------------------
+
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 
 # Set correct list of package from blob storage for each session host
