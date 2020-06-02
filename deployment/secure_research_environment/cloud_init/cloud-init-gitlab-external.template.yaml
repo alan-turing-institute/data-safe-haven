@@ -129,7 +129,8 @@ runcmd:
     echo "user = User.create(:username => '<gitlab-external-username>', :password => '<gitlab-external-password>', :password_confirmation => '<gitlab-external-password>', :email =>'<gitlab-external-username>@<gitlab-external-login-domain>', :skip_confirmation => true, :name => '<gitlab-external-username>');user.save!;exit;" | gitlab-rails console -e production
   # Create a API token for the ingress user created above
   - |
-    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('$(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
+    echo "user = User.find_by(username: '<gitlab-external-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('$token'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
   # Reload GitLab configuration and restart GitLab
   - gitlab-ctl reconfigure
   - gitlab-ctl restart
