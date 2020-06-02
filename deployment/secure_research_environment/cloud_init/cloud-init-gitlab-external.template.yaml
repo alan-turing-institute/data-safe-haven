@@ -54,38 +54,23 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
   # Secrets for Gitlab Internal and External Access
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token"
+  - path: "/home/<sre-admin-username>/.secrets/gitlab-config.json"
     permissions: "0600"
     content: |
-      <gitlab-internal-api-token>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address"
-    permissions: "0600"
-    content: |
-      <gitlab-internal-ip>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-username"
-    permissions: "0600"
-    content: |
-      <gitlab-internal-username>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email"
-    permissions: "0600"
-    content: |
-      <gitlab-internal-username>@<gitlab-internal-login-domain>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-api-token"
-    permissions: "0600"
-    content: |
-      <gitlab-external-api-token>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-ip-address"
-    permissions: "0600"
-    content: |
-      <gitlab-external-ip>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-username"
-    permissions: "0600"
-    content: |
-      <gitlab-external-username>
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-external-user-email"
-    permissions: "0600"
-    content: |
-      <gitlab-external-username>@<gitlab-external-login-domain>
+      {
+        "GITLAB_INTERNAL": {
+          "ip_address": "<gitlab-internal-ip>",
+          "username": "<gitlab-internal-username>",
+          "user_email": "<gitlab-internal-username>@<gitlab-internal-login-domain>",
+          "api_token": "<gitlab-internal-api-token>"
+        },
+        "GITLAB_EXTERNAL": {
+          "ip_address": "<gitlab-external-ip>",
+          "username": "<gitlab-external-username>",
+          "user_email": "<gitlab-external-username>@<gitlab-external-login-domain>",
+          "api_token": "<gitlab-external-api-token>"
+        }
+      }
   # Script for creating projects and merge requests on gitlab-external
   - path: "/home/<sre-admin-username>/zipfile_to_gitlab_project.py"
     permissions: "0755"
@@ -164,6 +149,7 @@ runcmd:
   - |
     attempt_counter=0
     max_attempts=60
+    echo
     echo "Waiting for GitLab OK health check"
     until [ "$(curl -s localhost/-/health)" = "GitLab OK" ]
     do
