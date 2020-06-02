@@ -143,7 +143,7 @@ def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
             "path": repo_name,
             "visibility": "internal",
             "namespace_id": namespace_id,
-            "default_branch": "_gitlab_ingress_review"
+            "default_branch": "_gitlab_ingress_review",
         },
     )
     assert response.json()["name"] == repo_name
@@ -198,7 +198,9 @@ so if you are reading this, it is likely that you are browsing the
 commit history.
 """
     # Make the first commit to the project with the README
-    project_commit_url = f"{gitlab_url}/projects/{project_info['id']}/repository/commits"   
+    project_commit_url = (
+        f"{gitlab_url}/projects/{project_info['id']}/repository/commits"
+    )
     response = requests.post(
         project_commit_url,
         headers={"Authorization": "Bearer " + gitlab_token},
@@ -206,13 +208,9 @@ commit history.
             "branch": "_gitlab_ingress_review",
             "commit_message": "Initial commit",
             "actions": [
-                {
-                    "action": "create",
-                    "file_path": "README.md",
-                    "content": README
-                }
-            ]
-        }
+                {"action": "create", "file_path": "README.md", "content": README}
+            ],
+        },
     )
     return project_info
 
@@ -236,8 +234,11 @@ def check_if_branch_exists(branch_name, project_id, gitlab_url, gitlab_token):
 
 
 def create_branch(
-    branch_name, project_id, gitlab_url, gitlab_token,
-        reference_branch="_gitlab_ingress_review"
+    branch_name,
+    project_id,
+    gitlab_url,
+    gitlab_token,
+    reference_branch="_gitlab_ingress_review",
 ):
     # assume branch doesn't already exist - create it!
     branch_url = "{}/projects/{}/repository/branches".format(gitlab_url, project_id)
@@ -460,7 +461,12 @@ def unzipped_repo_to_merge_request(
     )
     if not branch_exists:
         clone_commit_and_push(
-            repo_name, unzipped_location, tmp_repo_dir, src_branch_name, remote_url, commit_hash
+            repo_name,
+            unzipped_location,
+            tmp_repo_dir,
+            src_branch_name,
+            remote_url,
+            commit_hash,
         )
         logger.info(
             "Pushed to {}/{} branch {}".format(

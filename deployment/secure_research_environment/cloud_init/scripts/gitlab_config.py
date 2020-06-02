@@ -59,7 +59,7 @@ def get_api_config(server, file=None):
         Secrets api_url, api_token, ip and headers.
     """
     config = get_gitlab_config(file=file, server=server, value=None)
-    
+
     ip = config["ip_address"]
     token = config["api_token"]
     api_url = f"http://{ip}/api/v4"

@@ -298,7 +298,8 @@ def count_unresolved_mr_discussions(mr, config):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/discussions"
+        config["api_url"]
+        + f"/projects/{project_id}/merge_requests/{mr_iid}/discussions"
     )
     discussions = get_request(endpoint, headers=config["headers"])
     if len(discussions) == 0:
