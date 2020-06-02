@@ -165,10 +165,10 @@ write_files:
       # Connection parameters to PostgreSQL server
       # see also: http://rubydoc.info/gems/pg/PG/Connection#initialize-instance_method
       pg_connection:
-        host: 127.0.0.1
+        host:
         dbname: postgres
         user: postgres
-        password: <db-local-admin-password>
+        password:
 
       pg_users:
         # Filter for identifying LDAP generated users in the database.
@@ -268,14 +268,14 @@ runcmd:
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
   - mv /pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
-  - pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+  - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - echo "*/10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
   # Set appropriate permissions on public schema
   # - Remove privileges from PUBLIC (everyone) and grant them to db users
-  # - Grant the superuser role to db sysadmins
   # - Create the 'data' schema belonging to db data-admins and grant
   # - Grant db data-admins usage/create permissions on the 'data' schema
   # - Grant db data-admins full permissions on tables in the 'data' schema
@@ -284,14 +284,42 @@ runcmd:
   - echo ">=== Setting appropriate permissions on public schema... ===<"
   - |
     sudo -i -u postgres psql -q -c '
+      /* Restrict default privileges on public schema to '<db-users-group>' */
       REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
       GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
-      ALTER ROLE "<db-sysadmin-group>" WITH CREATEDB CREATEROLE SUPERUSER;
+      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
+          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
+
+      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
       CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
-      GRANT USAGE, CREATE ON SCHEMA data TO "<db-data-admin-group>";
-      GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA data TO "<db-data-admin-group>";
+      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
       GRANT USAGE ON SCHEMA data TO "<db-users-group>";
-      GRANT SELECT ON ALL TABLES IN SCHEMA data to "<db-users-group>";
+      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
+          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
     '
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
