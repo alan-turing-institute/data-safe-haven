@@ -829,6 +829,7 @@ Azure Data Studio is currently only able to connect to `Microsoft SQL` databases
 #### Microsoft SQL
 - Select `SQL Server` as the database type
 - Enter the necessary information in the `Host` and `Port` boxes and set `Authentication` to `Kerberos`
+- Tick `Show All Schemas` otherwise you will not be able to see the input data
 
 > :information_source: For our example user, Ada Lovelace, using the server `SQL-ING-SANDBOX` and her username domain of `apr20.turingsafehaven.ac.uk` would connect using DBeaver as follows
 
