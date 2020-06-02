@@ -691,7 +691,7 @@ In order to tear down the SHM, use the following procedure:
 - Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- For each SRE that each attached to the SHM, do the following:
+- For each SRE attached to the SHM, do the following:
   - Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
 - Tear down the SHM by running `./SHM_Teardown.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 
