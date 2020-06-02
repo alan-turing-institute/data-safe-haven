@@ -9,6 +9,7 @@ from urllib.parse import quote as url_quote
 from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
+from gitlab_config import get_api_config
 
 logger = logging.getLogger("project_upload_logger")
 logger.setLevel(logging.INFO)
@@ -57,20 +58,6 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
             logger.info("Bad zipfile: {}".format(zipfile))
             continue
     return output_list
-
-
-def get_gitlab_config():
-    home = str(Path.home())
-
-    with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
-        ip = f.readlines()[0].strip()
-
-    with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
-        token = f.readlines()[0].strip()
-    api_url = f"http://{ip}/api/v4/"
-    headers = {"Authorization": "Bearer " + token}
-
-    return {"api_url": api_url, "api_token": token, "ip": ip, "headers": headers}
 
 
 def get_group_namespace_ids(
@@ -147,7 +134,7 @@ def get_project_id(repo_name, namespace_id, gitlab_url, gitlab_token):
 
 
 def create_project(repo_name, namespace_id, gitlab_url, gitlab_token):
-    projects_url = "{}projects/".format(gitlab_url)
+    projects_url = "{}/projects/".format(gitlab_url)
     response = requests.post(
         projects_url,
         headers={"Authorization": "Bearer " + gitlab_token},
@@ -560,7 +547,7 @@ def main():
     os.makedirs(TMP_REPO_DIR)
 
     # get the gitlab config
-    config = get_gitlab_config()
+    config = get_api_config("GITLAB-EXTERNAL")
 
     # unzip the zipfiles, and retrieve a list of tuples describing
     # (repo_name, commit_hash, desired_branch, unzipped_location)

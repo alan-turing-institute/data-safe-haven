@@ -222,8 +222,8 @@ $gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${i
 # -------------------------------------------
 $indent = "      "
 foreach ($scriptName in @("zipfile_to_gitlab_project.py",
-                          "check_merge_requests.py")) {
-
+                          "check_merge_requests.py",
+                          "gitlab_config.py")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)

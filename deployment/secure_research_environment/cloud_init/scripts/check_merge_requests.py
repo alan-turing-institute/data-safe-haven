@@ -26,6 +26,7 @@ from urllib.parse import quote as url_quote
 from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
+from gitlab_config import get_api_config
 
 # Setup logging to console and file. File uses RotatingFileHandler to create
 # logs over a rolling window, 10 files each max 5 MB in size.
@@ -72,7 +73,7 @@ def internal_project_exists(repo_name, config):
 
     # Does repo_name exist on GITLAB-INTERNAL?
     response = requests.get(
-        config["api_url"] + "projects/" + repo_path_encoded, headers=config["headers"]
+        config["api_url"] + "/projects/" + repo_path_encoded, headers=config["headers"]
     )
 
     if response.status_code == 404:
@@ -117,7 +118,7 @@ def internal_update_repo(git_url, repo_name, branch_name, config):
     if not project_exists:
         print("Creating: " + repo_name)
         response = requests.post(
-            config["api_url"] + "projects",
+            config["api_url"] + "/projects",
             headers=config["headers"],
             data={"name": repo_name, "path": repo_name, "visibility": "public"},
         )
@@ -203,45 +204,6 @@ def put_request(endpoint, headers, params=None):
         )
 
 
-def get_gitlab_config(server="external"):
-    """Get gitlab server details and user account secrets
-
-    Parameters
-    ----------
-    server : str, optional
-        Which server to get secrets for either "internal" or, by default "external"
-
-    Returns
-    -------
-    dict
-        Secrets api_url, api_token, ip and headers.
-
-    Raises
-    ------
-    ValueError
-        If server is not a supported value
-    """
-    home = str(Path.home())
-
-    if server == "external":
-        with open(f"{home}/.secrets/gitlab-external-ip-address", "r") as f:
-            ip = f.readlines()[0].strip()
-        with open(f"{home}/.secrets/gitlab-external-api-token", "r") as f:
-            token = f.readlines()[0].strip()
-    elif server == "internal":
-        with open(f"{home}/.secrets/gitlab-internal-ip-address", "r") as f:
-            ip = f.readlines()[0].strip()
-        with open(f"{home}/.secrets/gitlab-internal-api-token", "r") as f:
-            token = f.readlines()[0].strip()
-    else:
-        raise ValueError("Server must be external or internal")
-
-    api_url = f"http://{ip}/api/v4/"
-    headers = {"Authorization": "Bearer " + token}
-
-    return {"api_url": api_url, "api_token": token, "ip": ip, "headers": headers}
-
-
 def get_group_id(group_name, config):
     """Get the ID of a group on a gitlab server.
 
@@ -262,7 +224,7 @@ def get_group_id(group_name, config):
     ValueError
         If group_name not found in the groups returned from the gitlab server.
     """
-    endpoint = config["api_url"] + "groups"
+    endpoint = config["api_url"] + "/groups"
     response = get_request(endpoint, headers=config["headers"])
     for group in response:
         if group["name"] == group_name:
@@ -285,7 +247,7 @@ def get_project(project_id, config):
     dict
         Project JSON as returned by the gitlab API.
     """
-    endpoint = config["api_url"] + f"projects/{project_id}"
+    endpoint = config["api_url"] + f"/projects/{project_id}"
     project = get_request(endpoint, headers=config["headers"])
     return project
 
@@ -336,7 +298,7 @@ def count_unresolved_mr_discussions(mr, config):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"] + f"projects/{project_id}/merge_requests/{mr_iid}/discussions"
+        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/discussions"
     )
     discussions = get_request(endpoint, headers=config["headers"])
     if len(discussions) == 0:
@@ -370,7 +332,7 @@ def accept_merge_request(mr, config):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"] + f"projects/{project_id}/merge_requests/{mr_iid}/merge"
+        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/merge"
     )
     return put_request(endpoint, headers=config["headers"])
 
@@ -383,17 +345,17 @@ def check_merge_requests():
     logger.info(f"STARTING RUN")
 
     try:
-        config_external = get_gitlab_config(server="external")
-        config_internal = get_gitlab_config(server="internal")
+        config_external = get_api_config(server="GITLAB-EXTERNAL")
+        config_internal = get_api_config(server="GITLAB-INTERNAL")
     except Exception as e:
         logger.critical(f"Failed to load gitlab secrets: {e}")
         return
 
     try:
         internal_status = requests.get(
-            config_internal["api_url"] + "projects",
+            config_internal["api_url"] + "/projects",
             headers=config_internal["headers"],
-            timeout=5,
+            timeout=10,
         )
         if not internal_status.ok:
             logger.critical(

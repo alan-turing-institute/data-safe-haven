@@ -17,7 +17,6 @@ packages:
 apt:
   # Preserves the existing /etc/apt/sources.list
   preserve_sources_list: true
-
   # Add repositories
   sources:
     gitlab.list:
@@ -53,24 +52,28 @@ write_files:
         last_name:  'sn'
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
-  # Secrets for Gitlab Internal and External Access
+  # Secrets for Gitlab Internal and External Access, and script to get them
   - path: "/home/<sre-admin-username>/.secrets/gitlab-config.json"
     permissions: "0600"
     content: |
       {
-        "GITLAB_INTERNAL": {
+        "GITLAB-INTERNAL": {
           "ip_address": "<gitlab-internal-ip>",
           "username": "<gitlab-internal-username>",
           "user_email": "<gitlab-internal-username>@<gitlab-internal-login-domain>",
           "api_token": "<gitlab-internal-api-token>"
         },
-        "GITLAB_EXTERNAL": {
+        "GITLAB-EXTERNAL": {
           "ip_address": "<gitlab-external-ip>",
           "username": "<gitlab-external-username>",
           "user_email": "<gitlab-external-username>@<gitlab-external-login-domain>",
           "api_token": "<gitlab-external-api-token>"
         }
       }
+  - path: "/home/<sre-admin-username>/gitlab_config.py"
+    permissions: "0755"
+    content: |
+      <gitlab_config.py>
   # Script for creating projects and merge requests on gitlab-external
   - path: "/home/<sre-admin-username>/zipfile_to_gitlab_project.py"
     permissions: "0755"
@@ -137,20 +140,13 @@ runcmd:
     mkdir -p /home/<sre-admin-username>/.ssh
     ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519
   # --------------------------------
-  # REGISTER SSH KEY WITH GITLAB INTERNAL
+  # GITLAB INTERNAL SSH SETUP
   # --------------------------------
   - |
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-api-token";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-ip-address";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-username";
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.secrets/gitlab-internal-user-email";
-  # Create SSH key for gitlab internal access, add gitlab internal to known hosts
-  - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-internal-api-token')" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys;
-    ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts;
-    chown <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>/.ssh/known_hosts"
-
+    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-INTERNAL --value api_token)
+    curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys
+    ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts
   # --------------------------------
   # WAIT FOR GITLAB EXTERNAL HEALTH CHECK
   # --------------------------------
@@ -178,7 +174,8 @@ runcmd:
   # Create SSH key for gitlab external access
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys;
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token)
+    curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys
   #  Get local ssh host keys, add them to known hosts under the gitlab external ip
   - |    
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
@@ -186,9 +183,9 @@ runcmd:
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
   # Create groups for storing unapproved and approval repos
   - |
-    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups;
-    curl --header "Authorization: Bearer $(cat '/home/<sre-admin-username>/.secrets/gitlab-external-api-token')" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
-
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token)
+    curl --header "Authorization: Bearer $token" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups
+    curl --header "Authorization: Bearer $token" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
   # --------------------------------
   # GIT SETUP
   # --------------------------------

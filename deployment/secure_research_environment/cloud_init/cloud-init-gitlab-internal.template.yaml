@@ -16,7 +16,6 @@ packages:
 apt:
   # Preserves the existing /etc/apt/sources.list
   preserve_sources_list: true
-
   # Add repositories
   sources:
     gitlab.list:
