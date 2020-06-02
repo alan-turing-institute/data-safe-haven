@@ -115,16 +115,29 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
     }
 
+    # Create the data schema
+    # ----------------------
+    $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'data') EXEC('CREATE SCHEMA data AUTHORIZATION [$DataAdminGroup]');"
+    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    if ($? -And -Not $sqlErrorMessage) {
+        Write-Output " [o] Successfully created the 'data' schema on: '$serverName'"
+        Start-Sleep -s 10  # allow time for the database action to complete
+    } else {
+        Write-Output " [x] Failed to create the 'data' schema on: '$serverName'!"
+        Write-Output "Failed SQL command was: $sqlCommand"
+        Write-Output "Error message: $sqlErrorMessage"
+        exit 1
+    }
+
 
     # Give domain groups appropriate roles on the SQL Server
     # ------------------------------------------------------
     foreach($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "datareader"))) {
         $domainGroup, $role = $groupRoleTuple
         if ($role -eq "sysadmin") { # this is a server-level role
-
             $sqlCommand = "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
         } elseif ($role -eq "dataadmin") { # this is a schema-level role
-            $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'data') EXEC('CREATE SCHEMA data AUTHORIZATION [$domainGroup]'); GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
+            $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
         } elseif ($role -eq "datareader") { # this is a schema-level role
             $sqlCommand = "GRANT SELECT ON SCHEMA::data TO [$domainGroup];"
         } else {
