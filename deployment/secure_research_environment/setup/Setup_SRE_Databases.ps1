@@ -21,7 +21,6 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 # ---------------------------------------------------
 $_ = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
 
-
 # Ensure that VNet exists
 # -----------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
@@ -92,7 +91,6 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         # Deploy an SQL server
         # --------------------
         if ($databaseCfg.type -eq "MSSQL") {
-            continue
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
             $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
@@ -137,11 +135,12 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             $params = @{
                 EnableSSIS = $databaseCfg.enableSSIS
                 LocalAdminUser = $sreAdminUsername
+                DataAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+                ResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
+                SysAdminGroup = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SqlAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
                 SqlAuthUpdateUserPassword = $sqlAuthUpdateUserPassword
                 SqlAuthUpdateUsername = $sqlAuthUpdateUsername
-                SreResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -Parameter $params
@@ -186,7 +185,8 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
             $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.subnets.data.cidr).
-                                                    Replace("<db-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
+                                                    Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
+                                                    Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-local-admin-password>", $postgresDbAdminPassword).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
                                                     Replace("<db-vm-ipaddress>", $privateIpAddress).
