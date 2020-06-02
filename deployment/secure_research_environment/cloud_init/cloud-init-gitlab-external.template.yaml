@@ -144,7 +144,7 @@ runcmd:
   # --------------------------------
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-INTERNAL --value api_token)
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-INTERNAL --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"InternalAPIUser\"}" <gitlab-internal-ip>/api/v4/user/keys
     ssh-keyscan -H <gitlab-internal-ip> >> /home/<sre-admin-username>/.ssh/known_hosts
   # --------------------------------
@@ -174,7 +174,7 @@ runcmd:
   # Create SSH key for gitlab external access
   - |
     key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token)
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ExternalAPIUser\"}" <gitlab-external-ip>/api/v4/user/keys
   #  Get local ssh host keys, add them to known hosts under the gitlab external ip
   - |    
@@ -183,7 +183,7 @@ runcmd:
     echo "<gitlab-external-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
   # Create groups for storing unapproved and approval repos
   - |
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token)
+    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-EXTERNAL --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --data "name=approval&path=approval&visibility=internal" <gitlab-external-ip>/api/v4/groups
     curl --header "Authorization: Bearer $token" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-external-ip>/api/v4/groups
   # --------------------------------
