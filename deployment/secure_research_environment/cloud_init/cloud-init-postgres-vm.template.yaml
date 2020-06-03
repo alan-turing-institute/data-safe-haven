@@ -87,9 +87,9 @@ write_files:
       [login]
         krb4_convert = true
         krb4_get_tickets = false
-  - path: "/root/join_domain.sh"
+  - path: "/opt/installation/join_domain.sh"
     owner: root:root
-    permissions: "0700"
+    permissions: "0500"
     content: |
       # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
       echo ">=== Setting hostname in /etc/hostname... ===<"
@@ -117,7 +117,7 @@ write_files:
       # Join realm
       echo ">=== Joining realm... ===<"
       cat /etc/ldap.secret | realm join --verbose -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
-  - path: "/pg-ldap-sync.yaml"
+  - path: "/opt/installation/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
     content: |
@@ -185,6 +185,64 @@ write_files:
         create_options: NOLOGIN IN ROLE ldap_groups
         grant_options:
 
+
+  - path: "/opt/installation/create-postgres-triggers.sql"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
+      /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
+      CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+          EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
+        END LOOP;
+        FOR obj in SELECT * FROM pg_authid WHERE (pg_has_role(oid, '<db-sysadmin-group>', 'member') AND rolcanlogin) LOOP
+          EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.rolname);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
+      /* Restrict default privileges on public schema to '<db-users-group>' */
+      REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
+      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
+          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
+      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
+      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
+      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
+      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
+          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
 
 # List of packages to install with apt-get
 packages:
@@ -267,7 +325,7 @@ runcmd:
   # Add LDAP users with pg-ldap-sync and schedule a cronjob
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - gem install pg-ldap-sync
-  - mv /pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - mv /opt/installation/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
   - sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
@@ -275,52 +333,12 @@ runcmd:
   - tail -n 1 /etc/crontab
 
   # Set appropriate permissions on public schema
-  # - Remove privileges from PUBLIC (everyone) and grant them to db users
-  # - Create the 'data' schema belonging to db data-admins and grant
-  # - Grant db data-admins usage/create permissions on the 'data' schema
-  # - Grant db data-admins full permissions on tables in the 'data' schema
-  # - Grant db users usage permissions on the 'data' schema
-  # - Grant db users select permissions on tables in the 'data' schema
+  # - Remove privileges from PUBLIC (everyone)
+  # - Create the 'data' schema belonging to data-admins and grant read access to research users
+  # - Grant all privileges on the 'public' schema to research users
+  # - Grant superuser privileges to sysadmins
   - echo ">=== Setting appropriate permissions on public schema... ===<"
-  - |
-    sudo -i -u postgres psql -q -c '
-      /* Restrict default privileges on public schema to '<db-users-group>' */
-      REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
-      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
-      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
-        RETURNS event_trigger
-        LANGUAGE plpgsql
-      AS $$
-      DECLARE
-        obj record;
-      BEGIN
-        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
-          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
-        END LOOP;
-      END;
-      $$;
-      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
-
-      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
-      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
-      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
-      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
-      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
-      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
-        RETURNS event_trigger
-        LANGUAGE plpgsql
-      AS $$
-      DECLARE
-        obj record;
-      BEGIN
-        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
-          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
-        END LOOP;
-      END;
-      $$;
-      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
-    '
+  - sudo -i -u postgres psql -f /opt/installation/create-postgres-triggers.sql
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"

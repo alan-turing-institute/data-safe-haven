@@ -185,7 +185,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
             $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.subnets.data.cidr).
-                                                    Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name). # NB. This is not currently used
+                                                    Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
                                                     Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-local-admin-password>", $postgresDbAdminPassword).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
@@ -194,11 +194,11 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.ldap.postgres.Name),$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-bind-user-password>", $postgresVmLdapPassword).
                                                     Replace("<ldap-bind-user-username>", $config.sre.users.ldap.postgres.samAccountName).
-                                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName) *))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
+                                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.Name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
                                                     Replace("<ldap-postgres-service-account-dn>", "CN=${postgresDbServiceAccountName},$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-postgres-service-account-password>", $postgresDbServiceAccountPassword).
-                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))").
+                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.Name),$($config.shm.domain.securityOuPath))))").
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
