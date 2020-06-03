@@ -192,6 +192,7 @@ write_files:
     content: |
       /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
       /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
+      /* We require that CURRENT_USER has SUPERUSER permissions inside the function, otherwise the ALTER USER calls will fail*/
       CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
         RETURNS event_trigger
         LANGUAGE plpgsql
@@ -199,12 +200,14 @@ write_files:
       DECLARE
         obj record;
       BEGIN
-        FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
-          EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
-        END LOOP;
-        FOR obj in SELECT * FROM pg_authid WHERE (pg_has_role(oid, '<db-sysadmin-group>', 'member') AND rolcanlogin) LOOP
-          EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.rolname);
-        END LOOP;
+        IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
+          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
+          END LOOP;
+          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);
+          END LOOP;
+        END IF;
       END;
       $$;
       CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
@@ -261,7 +264,7 @@ packages:
 
 runcmd:
   # Join the domain
-  - /root/join_domain.sh
+  - /opt/installation/join_domain.sh
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
