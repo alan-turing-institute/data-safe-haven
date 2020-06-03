@@ -178,7 +178,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Removing database access from the local Windows admin
     # -----------------------------------------------------
     $windowsAdmin = "${serverName}\${LocalAdminUser}"
-    Write-Output "Removing database access for $windowsAdmin on: '$serverName'..."
+    Write-Output "Removing database access from $windowsAdmin on: '$serverName'..."
     $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
@@ -195,7 +195,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Revoke the sysadmin role from the SQL AuthUpdateUser used to build the SQL Server
     # ---------------------------------------------------------------------------------
     Write-Output "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
-    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername"
+    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername;"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
