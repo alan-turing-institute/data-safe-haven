@@ -6,8 +6,13 @@ write_files:
     permissions: "0755"
     content: |
       #!/bin/sh
-      echo "LANG=en_GB.UTF-8" > /etc/default/locale
-      . /etc/default/locale
+      # Get system locale settings
+      if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG
+      fi
+      # Get system X11 settings
+      # . /etc/X11/Xsession
       # Start xfce4
       startxfce4
   - path: "/etc/ldap.secret"
