@@ -115,18 +115,21 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
     }
 
-    # Create the data schema
-    # ----------------------
-    $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'data') EXEC('CREATE SCHEMA data AUTHORIZATION [$DataAdminGroup]');"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
-    if ($? -And -Not $sqlErrorMessage) {
-        Write-Output " [o] Successfully created the 'data' schema on: '$serverName'"
-        Start-Sleep -s 10  # allow time for the database action to complete
-    } else {
-        Write-Output " [x] Failed to create the 'data' schema on: '$serverName'!"
-        Write-Output "Failed SQL command was: $sqlCommand"
-        Write-Output "Error message: $sqlErrorMessage"
-        exit 1
+    # Create the data and public schemas
+    # ----------------------------------
+    foreach($groupSchemaTuple in @(($DataAdminGroup, "data"), ($ResearchUsersGroup, "dbopublic"))) {
+        $domainGroup, $schemaName = $groupSchemaTuple
+        $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'$schemaName') EXEC('CREATE SCHEMA $schemaName AUTHORIZATION [$domainGroup]');"
+        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        if ($? -And -Not $sqlErrorMessage) {
+            Write-Output " [o] Successfully ensured that '$schemaName' schema exists on: '$serverName'"
+            Start-Sleep -s 10  # allow time for the database action to complete
+        } else {
+            Write-Output " [x] Failed to ensure that '$schemaName' schema exists on: '$serverName'!"
+            Write-Output "Failed SQL command was: $sqlCommand"
+            Write-Output "Error message: $sqlErrorMessage"
+            exit 1
+        }
     }
 
 
@@ -139,7 +142,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         } elseif ($role -eq "dataadmin") { # this is a schema-level role
             $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
         } elseif ($role -eq "datareader") { # this is a schema-level role
-            $sqlCommand = "GRANT SELECT ON SCHEMA::data TO [$domainGroup];"
+            $sqlCommand = "GRANT SELECT ON SCHEMA::data TO [$domainGroup]; ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; GRANT CREATE TABLE TO [$domainGroup];"
         } else {
             Write-Output " [x] Role $role not recognised!"
             continue
