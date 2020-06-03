@@ -305,6 +305,16 @@ runcmd:
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
   # TODO remove this
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
+  # Generate locales
+  - ehco ">=== Generating locales... ===<"
+  - sed -i 's/^# en_GB.UTF-8 .*/en_GB.UTF-8 UTF-8/' /etc/locale.gen
+  - locale-gen
+  - locale -a
+  # Set default locale
+  - ehco ">=== Set default locale... ===<"
+  - echo 'LANG=en_GB.UTF-8' > /etc/default/locale
+  - cat /etc/default/locale
+  - ehco ">=== Set default keyboard... ===<"
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
