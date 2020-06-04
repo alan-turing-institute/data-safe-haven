@@ -1,7 +1,7 @@
 # System files
 *.DS_Store
 
-# Top-level secrets and temp folder
+# All secrets folders, no matter how nested
 secrets/
 temp/
 
