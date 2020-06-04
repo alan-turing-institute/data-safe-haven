@@ -79,12 +79,13 @@ if (Test-Path $dependencyCachePath -PathType Leaf) {
     $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
 }
 if ($MirrorType -NotIn $dependencyCache.Keys) { $dependencyCache[$MirrorType] = [ordered]@{} }
+if ("unavailable_packages" -NotIn $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
+if ($MirrorType -NotIn $dependencyCache["unavailable_packages"].Keys) { $dependencyCache["unavailable_packages"][$MirrorType] = @() }
 
 
 # Resolve packages iteratively until the queue is empty
 # -----------------------------------------------------
 $packageList = $corePackageList
-$unavailablePackages = @()
 Add-LogMessage -Level Info "Preparing to expand dependencies for $($packageList.Count) packages from $MirrorType"
 while ($queue.Count) {
     $package = $queue.Dequeue()
@@ -101,7 +102,7 @@ while ($queue.Count) {
         # If this package could not be found then instead remove the package from the expanded list
         Add-LogMessage -Level Error "... removing $package from the expanded whitelist"
         $packageList = $packageList | Where-Object { $_ -ne $package }
-        $unavailablePackages += @($package) | Where-Object { $_ -NotIn $unavailablePackages }
+        $dependencyCache["unavailable_packages"][$MirrorType] += @($package) | Where-Object { $_ -NotIn $dependencyCache["unavailable_packages"][$MirrorType] }
     }
     Add-LogMessage -Level Info "... there are $($packageList.Count) packages on the expanded whitelist"
     Add-LogMessage -Level Info "... there are $($queue.Count) packages in the queue"
@@ -121,6 +122,9 @@ foreach ($repoName in $($dependencyCache.Keys | Sort-Object)) {
         }
     }
 }
+foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Object)) {
+    $sortedDependencies["unavailable_packages"][$repoName] = $dependencyCache["unavailable_packages"][$repoName] | Sort-Object | Uniq
+}
 $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 
 
@@ -130,7 +134,8 @@ $unneededCorePackages = $corePackageList | Where-Object { $_ -In $allDependencie
 if ($unneededCorePackages) {
     Add-LogMessage -Level Warning "... found $($unneededCorePackages.Count) core packages that would have been included as dependencies: $unneededCorePackages"
 }
-if ($unavailablePackages) {
+if ($sortedDependencies["unavailable_packages"][$MirrorType]) {
+    $unavailablePackages = $sortedDependencies["unavailable_packages"][$MirrorType]
     Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $($unavailablePackages | Sort-Object | Uniq)"
 }
 
