@@ -209,6 +209,17 @@ write_files:
       echo ">=== /etc/fstab ===<"
       cat /etc/fstab
       echo ">=== end of /etc/fstab ===<"
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/etc/pip.conf"
     content: |
       # Add the PyPI mirror to our global settings
@@ -253,6 +264,8 @@ runcmd:
   - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
+  # TODO remove this
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard

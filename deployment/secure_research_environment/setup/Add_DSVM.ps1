@@ -438,25 +438,6 @@ Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
 Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
-# Create Postgres roles
-# ---------------------
-Add-LogMessage -Level Info "[ ] Ensuring Postgres DB roles and initial shared users exist on VM $vmName"
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "create_postgres_roles.sh"
-$params = @{
-    DBADMINROLE = "admin"
-    DBADMINUSER = "dbadmin"
-    DBADMINPWD = $dsvmDbAdminPassword
-    DBWRITERROLE = "writer"
-    DBWRITERUSER = "dbwriter"
-    DBWRITERPWD = $dsvmDbWriterPassword
-    DBREADERROLE = "reader"
-    DBREADERUSER = "dbreader"
-    DBREADERPWD = $dsvmDbReaderPassword
-}
-$result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-Write-Output $result.Value
-
-
 # Create local zip file
 # ---------------------
 Add-LogMessage -Level Info "Creating smoke test package for the DSVM..."

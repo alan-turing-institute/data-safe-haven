@@ -141,13 +141,13 @@
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
+        "dataAdministrators": {
+          "name": "SG SANDBOX Data Administrators",
+          "description": "SG SANDBOX Data Administrators"
         },
-        "sqlAdmins": {
-          "name": "SG SANDBOX SQL Server Administrators",
-          "description": "SG SANDBOX SQL Server Administrators"
+        "systemAdministrators": {
+          "name": "SG SANDBOX System Administrators",
+          "description": "SG SANDBOX System Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -177,17 +177,17 @@
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
-        "dbingress": {
-          "name": "DbIngressSubnet",
+        "databases": {
+          "name": "DatabasesSubnet",
           "prefix": "10.150.3",
-          "nsg": "dbingress",
+          "nsg": "databases",
           "cidr": "10.150.3.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "dbingress": {
-          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
         }
       }
     },
@@ -220,9 +220,13 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
+        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
         "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
@@ -240,10 +244,22 @@
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
+        },
+        "postgres": {
+          "name": "SANDBOX Postgres VM LDAP",
+          "samAccountName": "pgvmldapsandbox",
+          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
+        }
+      },
+      "serviceAccounts": {
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcsandbox",
+          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount",
+        "name": "SANDBOX Data Mount Service Account",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {
@@ -316,16 +332,34 @@
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbmssqlingress": {
-        "name": "SQL-ING-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
+      "dbmssql": {
+        "name": "MSSQL-SANDBOX",
+        "type": "MSSQL",
+        "ipLastOctet": 4,
         "port": "14330",
         "sku": "sqldev",
-        "subnet": "dbingress",
+        "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "2048",
+          "size_gb": "1024",
+          "type": "Standard_LRS"
+        },
+        "osdisk": {
+          "size_gb": "128",
+          "type": "Standard_LRS"
+        },
+        "enableSSIS": true
+      },
+      "dbpostgresql": {
+        "name": "PSTGRS-SANDBOX",
+        "type": "PostgreSQL",
+        "ipLastOctet": 5,
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "vmSize": "Standard_DS2_v2",
+        "datadisk": {
+          "size_gb": "1024",
           "type": "Standard_LRS"
         },
         "osdisk": {

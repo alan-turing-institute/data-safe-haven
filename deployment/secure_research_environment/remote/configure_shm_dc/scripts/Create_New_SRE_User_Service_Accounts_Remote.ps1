@@ -7,10 +7,14 @@
 param(
     [String]$sreFqdn,
     [String]$shmFqdn,
+    [String]$shmSystemAdministratorSgName,
+    [String]$shmSystemAdministratorSgDescription,
+    [String]$systemAdministratorSgName,
+    [String]$systemAdministratorSgDescription,
+    [String]$dataAdministratorSgName,
+    [String]$dataAdministratorSgDescription,
     [String]$researchUserSgName,
     [String]$researchUserSgDescription,
-    [String]$sqlAdminSgName,
-    [String]$sqlAdminSgDescription,
     [String]$ldapUserSgName,
     [String]$securityOuPath,
     [String]$serviceOuPath,
@@ -24,6 +28,12 @@ param(
     [String]$dsvmSamAccountName,
     [String]$dsvmName,
     [String]$dsvmPasswordEncrypted,
+    [String]$postgresDbServiceAccountSamAccountName,
+    [String]$postgresDbServiceAccountName,
+    [String]$postgresDbServiceAccountPasswordEncrypted,
+    [String]$postgresVmSamAccountName,
+    [String]$postgresVmName,
+    [String]$postgresVmPasswordEncrypted,
     [String]$dataMountSamAccountName,
     [String]$dataMountName,
     [String]$dataMountPasswordEncrypted,
@@ -33,7 +43,7 @@ param(
 )
 
 function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
-    if(Get-ADGroup -Filter "Name -eq '$name'"){
+    if (Get-ADGroup -Filter "Name -eq '$name'") {
         Write-Output " [o] Group '$name' already exists"
     } else {
         Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'..."
@@ -48,8 +58,8 @@ function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
 }
 
 function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
-    if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
-        Write-Output " [o] User '$samAccountName' already exists"
+    if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
+        Write-Output " [o] User '$name' ('$samAccountName') already exists"
     } else {
         $principalName = $samAccountName + "@" + $shmFqdn;
         Write-Output " [ ] Creating user '$name' ($samAccountName)..."
@@ -76,23 +86,38 @@ $hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncr
 $gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
 $dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
 $dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
+$postgresVmPasswordSecureString = ConvertTo-SecureString -String $postgresVmPasswordEncrypted -Key (1..16)
+$postgresDbServiceAccountPasswordSecureString = ConvertTo-SecureString -String $postgresDbServiceAccountPasswordEncrypted -Key (1..16)
 $testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
 
 # Create SRE Security Groups
+New-SreGroup -name $dataAdministratorSgName -description $dataAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+New-SreGroup -name $systemAdministratorSgName -description $systemAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
 
-# Create Service Accounts for SRE
-New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
+# Create LDAP users for SRE
 New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
+New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
+New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
+New-SreUser -samAccountName $postgresVmSamAccountName -name $postgresVmName -path $serviceOuPath -passwordSecureString $postgresVmPasswordSecureString
+
+# Create service accounts for SRE
 New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
+New-SreUser -samAccountName $postgresDbServiceAccountSamAccountName -name $postgresDbServiceAccountName -path $serviceOuPath -passwordSecureString $postgresDbServiceAccountPasswordSecureString
+
+# Create other accounts for SRE
 New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
 
-# Add Data Science LDAP users to SG Data Science LDAP Users security group
-Write-Output " [ ] Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
-Add-ADGroupMember "$ldapUserSgName" "$dsvmSamAccountName"
+# Add LDAP users to the LDAP users security group
+foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackmdSamAccountName, $postgresVmSamAccountName)) {
+    Write-Output " [ ] Adding '$samAccountName' user to group '$ldapUserSgName'"
+    Add-ADGroupMember "$ldapUserSgName" "$samAccountName"
+}
 
-# Add SRE test users to the relative Security Groups
+# Add test researcher to the researchers security group
 Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
 Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"
+
+# Add SHM sysadmins group to the SRE sysadmins group
+Write-Output " [ ] Adding '$shmSystemAdministratorSgName' group to group '$systemAdministratorSgName'"
+Add-ADGroupMember "$systemAdministratorSgName" "$shmSystemAdministratorSgName"
