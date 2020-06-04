@@ -18,6 +18,68 @@ apt:
       keyid: 8D81803C0EBFCD88
 
 write_files:
+  - path: "/src/guacamole/pg-ldap-sync.yaml"
+    owner: root:root
+    permissions: "0700"
+    content: |
+      # With this sample config the distinction between LDAP-synchronized
+      # groups/users from is done by the membership to ldap_user and
+      # ldap_group. These two roles has to be defined manally before
+      # pg_ldap_sync can run.
+      # Connection parameters to LDAP server
+      # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
+      # TODO: get SSL working on port 636
+      ldap_connection:
+        host: <shm-dc-ip-address>
+        #port: 636
+        port: 389
+        auth:
+          method: :simple
+          username: <ldap-search-bind-dn>
+          password: <ldap-search-bind-password>
+        #encryption:
+        #  method: :simple_tls
+      # Search parameters for LDAP users which should be synchronized
+      ldap_users:
+        base: <ldap-users-base-dn>
+        # LDAP filter defining which LDAP users should be synchronized
+        filter: <ldap-user-filter>
+        # this attribute is used as PG role name
+        name_attribute: sAMAccountName
+        # lowercase name for use as PG role name
+        lowercase_name: false
+      # Search parameters for LDAP groups which should be synchronized
+      ldap_groups:
+        base: <ldap-groups-base-dn>
+        # LDAP filter defining which LDAP groups should be synchronized
+        filter: <ldap-group-filter>
+        # this attribute is used as PG role name
+        name_attribute: cn
+        # lowercase name for use as PG role name
+        lowercase_name: false
+        # this attribute must reference to all member DN's of the given group
+        member_attribute: member
+      # Connection parameters to PostgreSQL server
+      # see also: http://rubydoc.info/gems/pg/PG/Connection#initialize-instance_method
+      pg_connection:
+        host: localhost
+        dbname: guacamole
+        user: guacamole
+        password: <postgres-password>
+      pg_users:
+        # Filter for identifying LDAP generated users in the database.
+        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
+        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_users')
+        # Options for CREATE RULE statements
+        create_options: LOGIN IN ROLE ldap_users
+      pg_groups:
+        # Filter for identifying LDAP generated groups in the database.
+        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
+        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_groups')
+        # Options for CREATE RULE statements
+        create_options: NOLOGIN IN ROLE ldap_groups
+        grant_options:
+
   # taken from boschkundendienst/guacamole-docker-compose
   - path: "/src/guacamole/docker-compose.yml"
     content: |
@@ -36,6 +98,8 @@ write_files:
             POSTGRES_DB: guacamole
             POSTGRES_USER: guacamole
             POSTGRES_PASSWORD: <postgres-password>
+          ports:
+          - 5432:5432
           restart: always
           volumes:
           - /src/guacamole/:/docker-entrypoint-initdb.d:ro
@@ -166,13 +230,18 @@ write_files:
     content: |
       INSERT INTO guacamole_entity (name, type) VALUES ('<ldap-group-researchers>', 'USER_GROUP');
       INSERT INTO guacamole_user_group (entity_id)
-      SELECT
-          entity_id
-      FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
+        SELECT entity_id FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
 
+
+# SELECT * FROM guacamole_entity WHERE guacamole_entity.type = 'USER_GROUP'
 packages:
   - docker-ce
   - docker-compose
+  - gcc
+  - libpq-dev
+  - make
+  - ruby
+  - ruby-dev
 
 runcmd:
   # Suppress apt prompts and warning messages
@@ -192,7 +261,7 @@ runcmd:
 
   # Setup Guacamole
   - echo ">=== Starting Guacamole... ===<"
-  # Generate a random application key for Duo. This must be >40 characters so we generate 60 and strip any that are non-alphanumeric
+  # Generate a random application key for Duo. This must be >=40 characters so we generate 60 and strip any that are non-alphanumeric
   - sed -i "s|<duo-application-key>|$(openssl rand -base64 60 | tr -dc A-Za-z0-9)|" /src/guacamole/docker-compose.yml
   - docker-compose -f /src/guacamole/docker-compose.yml up -d
   # Generate the necessary SQL config for the local PostgreSQL database
@@ -200,6 +269,18 @@ runcmd:
   # Copy the base SQL config to the postgres container and run it
   - docker cp /src/guacamole/db_init.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_init.sql
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_init.sql
+
+  # Add LDAP users with pg-ldap-sync and schedule a cronjob
+  - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
+  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_users;"
+  - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_groups;"
+  - gem install pg-ldap-sync
+  - chown postgres:postgres /src/guacamole/main/pg-ldap-sync.yaml
+  - pg_ldap_sync -c /src/guacamole/pg-ldap-sync.yaml -vv
+  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
+  - echo "*/10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - tail -n 1 /etc/crontab
+
   # Copy the custom SQL config to the postgres container and run it
   - docker cp /src/guacamole/custom.sql $(docker ps --filter "name=postgres" | grep "postgres" | cut -d' ' -f1):/db_custom.sql
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -f /db_custom.sql

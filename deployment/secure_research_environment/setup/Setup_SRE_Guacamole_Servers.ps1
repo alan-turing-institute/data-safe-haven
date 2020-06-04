@@ -66,8 +66,9 @@ $cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guaca
 # Set this so that connection information can be picked up from group membership.
 # Not very well explained in Guacamole docs, but see "Controlling access using group membership" in https://enterprise.glyptodon.com/doc/latest/storing-connection-data-within-ldap-950383.html
 # $LDAP_GROUP_BASE_DN = $config.shm.domain.securityOuPath
-$POSTGRES_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
-$LDAP_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$guacamoleDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleDBPassword
+$ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+
 
 $cloudInitTemplate =Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.domain.userOuPath).
@@ -75,12 +76,17 @@ $cloudInitYaml = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.d
                                     Replace('<ldap-port>', 389).
                                     Replace('<ldap-group-base-dn>', $config.shm.domain.securityOuPath).
                                     Replace('<ldap-search-bind-dn>', "CN=" + $config.sre.users.ldap.dsvm.Name + "," + $config.shm.domain.serviceOuPath).
-                                    Replace('<ldap-search-bind-password>', $LDAP_PASSWORD).
+                                    Replace('<ldap-search-bind-password>', $ldapSearchPassword).
                                     Replace('<ldap-group-researchers>', $config.sre.domain.securityGroups.researchUsers.Name).
-                                    Replace('<postgres-password>', $POSTGRES_PASSWORD).
-                                    Replace('<duo-api-hostname>', $duoApiHostname).
+                                    Replace('<postgres-password>', $guacamoleDbPassword).
+                                    Replace('<duo-api-hostname>', $duoApiHost).
                                     Replace('<duo-integration-key>', $duoIntegrationKey).
-                                    Replace('<duo-secret-key>', $duoSecretKey)
+                                    Replace('<duo-secret-key>', $duoSecretKey).
+                                    Replace("<shm-dc-ip-address>", $config.shm.dc.ip).
+                                    Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
+                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))").
+                                    Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
+                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(CN=SG $($config.sre.domain.netbiosName)*))")
 
 
 # Check that VNET and subnet exist
