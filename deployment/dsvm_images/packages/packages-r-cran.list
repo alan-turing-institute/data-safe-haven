@@ -130,7 +130,6 @@ neuralnet
 nlme
 nnet
 odbc
-parallel
 parallelMap
 ParamHelpers
 party
@@ -186,8 +185,6 @@ spacyr
 spatial
 sqldf
 stargazer
-stats
-stats4
 stm
 stringi
 stringr
@@ -206,7 +203,6 @@ tidyr
 tidytext
 tidyverse
 tmap
-tools
 topicmodels
 traj
 tsne
