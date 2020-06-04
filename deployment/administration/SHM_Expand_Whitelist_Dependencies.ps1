@@ -28,7 +28,7 @@ function Get-Dependencies {
         Start-Sleep 1 # wait for one second between requests to respect the API query limit
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
-        throw [System.IO.FileNotFoundException]::new("Could not find package: $Package")
+        throw $_.Exception # rethrow the original exception
     }
     if ($Package -NotIn $Cache[$Repository].Keys) { $Cache[$Repository][$Package] = [ordered]@{} }
     $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
@@ -97,7 +97,7 @@ while ($queue.Count) {
         $newPackages = $dependencies | Where-Object { $_ -NotIn $packageList } | Where-Object { $_ -NotIn $unavailablePackages }
         $packageList += $newPackages
         $newPackages | ForEach-Object { $queue.Enqueue($_) }
-    } catch [System.IO.FileNotFoundException] {
+    } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then instead remove the package from the expanded list
         Add-LogMessage -Level Error "... removing $package from the expanded whitelist"
         $packageList = $packageList | Where-Object { $_ -ne $package }
