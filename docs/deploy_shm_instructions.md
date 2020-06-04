@@ -32,7 +32,9 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)
 - `OpenSSL`
-  - Install using your package manager of choice
+  - To install manually, see [Github](https://github.com/openssl/openssl)
+  - To install directly on Mac (if you use brew): ` brew install openssl`
+  - To install directly on Windows: see [wiki](https://wiki.openssl.org/index.php/Binaries) for list of binary distributions
 
 ## 2. Safe Haven Management configuration
 
@@ -79,7 +81,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a link to the Azure portal and a code to enter.
 - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
   <details><summary>Manual DNS configuration instructions</summary>
@@ -135,7 +137,9 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   - Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+    - :warning: This script requires powershell to use OpenSSL. In case powershell cannot run OpenSSL, you may need to add your OpenSSL directory to the powershell environment path. To add OpenSSL to your powershell environment path, run: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
     - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
+
 - This will take **a few minutes** to run.
 
 The User who creates the AAD will automatically have a **guest** account created in the AAD, with the Global Administrator (GA) Role. Users with this role have access to all administrative features in Azure Active Directory). You will use this account for almost all administration of the Safe Haven Azure AD.
@@ -279,7 +283,7 @@ A default external administrator account was automatically created for the user 
     - Click the `Save` icon at the top of the user details panel
 6. Add an authentication email
     - Click `Authentication methods` in the left hand sidebar
-    - Enter the user's institutional email address in the `Email` field 
+    - Enter the user's institutional email address in the `Email` field
     - Note that you do **not** need to fill out either of the `Phone` fields here
     - Click the `Save` icon at the top of the panel
 
@@ -311,7 +315,7 @@ The other administrators you have just set up can activate their accounts by fol
     - Log in with the password you set for yourself when activating your admin account in the previous step
 2. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
-3. Click `Users` in the left hand sidebar 
+3. Click `Users` in the left hand sidebar
 4. Select the default **external** user that was created when you created the Azure AD.
     - The `User name` field for this user will be at qa **different domain** than the internal administrator users you have just created
     - The `Source` field for this user will be `External Azure Active Directory`
@@ -323,7 +327,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 
 1. Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory. The name of the current directory is under your username in the top right corner of the Azure portal screen. To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
 2. Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
-3. Click `Licences` in the left hand sidebar 
+3. Click `Licences` in the left hand sidebar
 4. Click `All products` in the left hand sidebar
 5. Click the relevant licence product
 6. Click the `+Assign` icon in the top bar above the list of user licence assignments
@@ -371,6 +375,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 - Name the VPN connection "Safe Haven Management Gateway (`<SHM ID>`)", where `<SHM ID>` will be the one defined in the config file.
 - **Windows:** do not rename the VPN client as this will break it
 - **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`.
+- **Windows** you may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`. This may mean that your antivirus is blocking the VPN client. You will need configure your antivirus software to make an exception.  
 - **OSX:** you can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
 
 You should now be able to connect to the SHM virtual network via the VPN. Each time you need to access the virtual network ensure you are connected via the VPN.
@@ -396,7 +401,7 @@ rather than simply `<admin username>`)
         - Tick the `I agree to the license terms` box
         - Click `Continue`
     - On the `Express Settings` screen:
-        - Click `Customize` 
+        - Click `Customize`
     - On the `Install required components` screen:
         - Click `Install`
     - On the `User sign-in` screen:
