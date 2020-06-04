@@ -144,7 +144,8 @@ foreach ($repoName in $($dependencyCache.Keys | Sort-Object)) {
     }
 }
 foreach ($repoName in $($dependencyCache["unavailable_packages"].Keys | Sort-Object)) {
-    $sortedDependencies["unavailable_packages"][$repoName] = $dependencyCache["unavailable_packages"][$repoName] | Sort-Object | Uniq
+    $sortedDependencies["unavailable_packages"][$repoName] = @()
+    $sortedDependencies["unavailable_packages"][$repoName] += $dependencyCache["unavailable_packages"][$repoName] | Sort-Object | Uniq
 }
 $sortedDependencies | ConvertTo-Json -Depth 5 | Out-File $dependencyCachePath
 
