@@ -21,7 +21,6 @@ FlowSOM
 flowUtils
 ggtree
 GlobalAncova
-GlobalAncova
 GO
 GO.db
 GOSemSim
@@ -35,7 +34,6 @@ interactiveDisplayBase
 KEGGgraph
 limma
 made4
-MassSpecWavelet
 MassSpecWavelet
 metagenomeSeq
 minet
