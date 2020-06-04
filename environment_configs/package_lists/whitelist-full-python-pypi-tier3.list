@@ -16,7 +16,6 @@ astroid
 astropy
 async
 async_generator
-async-generator
 async-timeout
 atari-py
 atomicwrites
@@ -33,7 +32,6 @@ backports.functools_lru_cache
 backports.functools-lru-cache
 backports.lzma
 backports.shutil_get_terminal_size
-backports.shutil-get-terminal-size
 backports.ssl_match_hostname
 backports.weakref
 basemap
@@ -118,7 +116,7 @@ dill
 distlib
 distribute
 distributed
-django
+Django
 docopt
 docutils
 dominate
@@ -198,7 +196,6 @@ ipaddress
 ipykernel
 ipython
 ipython_genutils
-ipython-genutils
 ipywidgets
 isort
 itertoolz
@@ -229,9 +226,8 @@ Keras
 Keras-Applications
 Keras-Preprocessing
 kiwisolver
-korean_lunar_calendar
+korean-lunar-calendar
 langdetect
-lazy_object_proxy
 lazy-object-proxy
 ldap3
 lifelines
@@ -425,7 +421,6 @@ s3transfer
 sacremoses
 safety
 scandir
-scikit_learn
 scikit-bio
 scikit-image
 scikit-learn
@@ -454,7 +449,6 @@ simplepam
 singledispatch
 SIP
 six
-sklearn
 smart-open
 smartypants
 smmap
@@ -467,8 +461,8 @@ spacy
 spacy-langdetect
 spark-parser
 Sphinx
-sphinx_bootstrap_theme
 sphinx_rtd_theme
+sphinx-bootstrap-theme
 sphinxcontrib-applehelp
 sphinxcontrib-devhelp
 sphinxcontrib-htmlhelp
@@ -499,11 +493,11 @@ termcolor
 terminado
 testfixtures
 testpath
-text_unidecode
+text-unidecode
 texttable
 Theano
 thinc
-thinc_gpu_ops
+thinc-gpu-ops
 tika
 tokenize-rt
 tokenizers
@@ -520,13 +514,12 @@ tsfresh
 Twisted
 typed-ast
 typing
-typing_extensions
 typing-extensions
 tzlocal
 ujson
 uncompyle6
 unicodecsv
-unidecode
+Unidecode
 unittest2
 urllib3
 verlib
@@ -541,7 +534,7 @@ webencodings
 Werkzeug
 wget
 wheel
-whoosh
+Whoosh
 widgetsnbextension
 wordcloud
 wrapt

@@ -110,12 +110,16 @@ while ($queue.Count) {
         $versions = $response.versions | ForEach-Object { $_.number } | Sort-Object
         $packageWhitelist += @($response.Name)
         # Look for dependencies and add them to the queue
-        Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
-        $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache
-        Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
-        $newPackages = $dependencies | Where-Object { $_ -NotIn $packageWhitelist } | Where-Object { $_ -NotIn $allDependencies } | Where-Object { $_ -NotIn $dependencyCache["unavailable_packages"][$MirrorType] }
-        $newPackages | ForEach-Object { $queue.Enqueue($_) }
-        $allDependencies += $dependencies
+        if ($versions) {
+            Add-LogMessage -Level Info "... finding dependencies for $($response.Name)"
+            $dependencies = Get-Dependencies -Repository $MirrorType -Package $response.Name -Versions $versions -ApiKey $ApiKey -Cache $dependencyCache
+            Add-LogMessage -Level Info "... found $($dependencies.Count) dependencies: $dependencies"
+            $newPackages = $dependencies | Where-Object { $_ -NotIn $packageWhitelist } | Where-Object { $_ -NotIn $allDependencies } | Where-Object { $_ -NotIn $dependencyCache["unavailable_packages"][$MirrorType] }
+            $newPackages | ForEach-Object { $queue.Enqueue($_) }
+            $allDependencies += $dependencies
+        } else {
+            Add-LogMessage -Level Warning "... could not find any versions of $($response.Name)"
+        }
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         # If this package could not be found then mark it as unavailable
         Add-LogMessage -Level Error "... marking '$unverifiedName' as unavailable"

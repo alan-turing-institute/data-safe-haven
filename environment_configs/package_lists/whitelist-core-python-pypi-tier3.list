@@ -99,7 +99,6 @@ setuptools-git
 setuptools-scm
 Shapely
 SIP
-sklearn
 smart-open
 sqlitedict
 subprocess32
