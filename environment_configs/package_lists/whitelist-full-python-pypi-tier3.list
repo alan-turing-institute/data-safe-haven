@@ -24,7 +24,7 @@ attrs
 autograd
 autograd-gamma
 Automat
-babel
+Babel
 backcall
 background
 backports
@@ -141,9 +141,9 @@ flair
 flake8
 Flask
 Flask-Bootstrap
-flask-compress
-flask-cors
-flask-seasurf
+Flask-Compress
+Flask-Cors
+Flask-SeaSurf
 flexmock
 folium
 fsspec
@@ -161,7 +161,7 @@ gensim
 geopandas
 gitdb
 gitdb2
-gitpython
+GitPython
 gmplot
 gmpy2
 google-api-core
@@ -180,7 +180,7 @@ greenlet
 grpcio
 gym
 h5py
-heapdict
+HeapDict
 holidays
 html5lib
 httplib2
@@ -353,7 +353,7 @@ pycurl
 pydot
 pyflakes
 pyglet
-pygments
+Pygments
 PyGObject
 pygrib
 PyHamcrest
@@ -362,15 +362,15 @@ pyLDAvis
 pylint
 pymc3
 pymongo
-pynacl
+PyNaCl
 pyod
 pyodbc
 PyOpenGL
 PyOpenGL-accelerate
-pyopenssl
+pyOpenSSL
 pyparsing
 pyPdf
-pyPdf2
+PyPDF2
 pyproj
 pyrsistent
 pyshp
@@ -443,7 +443,6 @@ Send2Trash
 sentencepiece
 service_identity
 setuptools
-setuptools_git
 setuptools-git
 setuptools-scm
 Shapely

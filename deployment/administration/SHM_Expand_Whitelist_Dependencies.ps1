@@ -134,11 +134,6 @@ if ($unavailablePackages) {
     Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $($unavailablePackages | Sort-Object | Uniq)"
 }
 
-# Remove any unnecesary packages from the core whitelist
-# ------------------------------------------------------
-$corePackages = Get-Content $coreWhitelistPath
-$corePackages | Sort-Object | Uniq | Where-Object { $_ -NotIn $unneededCorePackages } | Out-File $coreWhitelistPath
-
 
 # Write the full package list to the expanded whitelist
 # -----------------------------------------------------
