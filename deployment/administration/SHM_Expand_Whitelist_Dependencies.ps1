@@ -24,8 +24,7 @@ function Get-Dependencies {
     )
     $dependencies = @()
     try {
-        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
-        Start-Sleep 1 # wait for one second between requests to respect the API query limit
+        $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
     } catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         Add-LogMessage -Level Error "... $Package could not be found in ${Repository}"
         throw $_.Exception # rethrow the original exception
@@ -36,9 +35,8 @@ function Get-Dependencies {
     try {
         foreach ($version in $versions) {
             if ($version -NotIn $Cache[$Repository][$Package].Keys) {
-                $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 5 -RetryIntervalSec 30 -ErrorAction Stop
+                $response = Invoke-RestMethod -URI https://libraries.io/api/${Repository}/${Package}/${version}/dependencies?api_key=${ApiKey} -MaximumRetryCount 12 -RetryIntervalSec 5 -ErrorAction Stop
                 $Cache[$Repository][$Package][$version] = @($response.dependencies | Where-Object { $_.kind -ne "suggests" } | ForEach-Object { $_.name }) | Sort-Object | Uniq
-                Start-Sleep 1 # wait for one second between requests to respect the API query limit
             }
             $dependencies += $Cache[$Repository][$Package][$version]
         }
