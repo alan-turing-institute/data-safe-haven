@@ -243,7 +243,7 @@ write_files:
   - path: "/etc/skel/.bashrc"
     owner: "root:root"
     permissions: "0644"
-    contents: |
+    content: |
       # determine if terminal has color support
       case "$TERM" in
         xterm-color|*-256color) color_prompt=yes;;
@@ -270,7 +270,7 @@ write_files:
     owner: "root:root"
     permissions: "0644"
     append: true
-    contents: |
+    content: |
       enable bash completion in interactive shells
       if ! shopt -oq posix; then
         if [ -f /usr/share/bash-completion/bash_completion ]; then
