@@ -384,7 +384,7 @@ On your **deployment machine**.
 - If you are not prompted with `login:`, hit enter until the prompt appears
 - Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE key vault.
 - Enter the password from the `sre-<SRE ID>-dsvm-admin-password` secret in the SRE key vault.
-- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-sre-<SRE ID>.template.yaml` file in the Safe Haven git repository.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `deployment/secure_research_environment/cloud_init/cloud-init-compute-vm.template.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## :lock: Apply network configuration
