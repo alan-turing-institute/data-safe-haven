@@ -10,5 +10,6 @@
     "rdsAllowedSources": "Internet",
     "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
-    "computeVmImageVersion": "0.2.2020050300"
+    "computeVmImageVersion": "0.2.2020050300",
+    "databases": ["MSSQL", "PostgreSQL"]
 }
