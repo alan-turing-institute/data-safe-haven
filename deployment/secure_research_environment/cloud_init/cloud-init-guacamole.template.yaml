@@ -228,12 +228,109 @@ write_files:
       }
   - path: "/src/guacamole/custom.sql"
     content: |
-      INSERT INTO guacamole_entity (name, type) VALUES ('<ldap-group-researchers>', 'USER_GROUP');
-      INSERT INTO guacamole_user_group (entity_id)
-        SELECT entity_id FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
+      /* Add RDP connections */
+      ALTER TABLE guacamole_connection ADD CONSTRAINT connection_name_constraint UNIQUE (connection_name);
+      INSERT INTO guacamole_connection (connection_name, protocol)
+        VALUES ('DSVM Main (Desktop)', 'rdp'),
+               ('Windows (Desktop)', 'rdp')
+      ON CONFLICT DO NOTHING;
+
+      /* Add connection details */
+      INSERT INTO guacamole_connection_parameter (connection_id, parameter_name, parameter_value)
+      SELECT guacamole_connection.connection_id, parameter_name, parameter_value
+      FROM (
+          VALUES
+              ('DSVM Main (Desktop)', 'hostname', '10.150.2.160'),
+              ('DSVM Main (Desktop)', 'username', '${GUAC_USERNAME}'),
+              ('DSVM Main (Desktop)', 'password', '${GUAC_PASSWORD}'),
+              ('Windows (Desktop)', 'hostname', '10.150.1.248'),
+              ('Windows (Desktop)', 'username', '${GUAC_USERNAME}'),
+              ('Windows (Desktop)', 'password', '${GUAC_PASSWORD}')
+      ) parameters (connection_name, parameter_name, parameter_value)
+      JOIN guacamole_connection ON parameters.connection_name = guacamole_connection.connection_name ON CONFLICT DO NOTHING;
+
+      /* Ensure that all users are Guacamole USER entities */
+      INSERT INTO guacamole_entity (name, type) SELECT usename, 'USER' FROM pg_user ON CONFLICT DO NOTHING;
+
+      /* Ensure that all user groups are Guacamole USER_GROUP entities */
+      INSERT INTO guacamole_entity (name, type) SELECT groname, 'USER_GROUP' FROM pg_group WHERE (groname LIKE 'SG SANDBOX %') ON CONFLICT DO NOTHING;
+
+      /* Ensure that all user groups are Guacamole USER_GROUP entities */
+      INSERT INTO guacamole_user_group (entity_id) SELECT entity_id FROM guacamole_entity WHERE type = 'USER_GROUP' ON CONFLICT DO NOTHING;
+
+      /* Ensure that all users are added to the correct group */
+      INSERT INTO guacamole_user_group_member (user_group_id, member_entity_id)
+        SELECT guacamole_user_group.user_group_id, guac_user.entity_id FROM pg_group
+        JOIN pg_user ON pg_has_role(pg_user.usesysid, grosysid, 'member')
+        JOIN guacamole_entity guac_group ON pg_group.groname = guac_group.name
+        JOIN guacamole_entity guac_user ON pg_user.usename = guac_user.name
+        JOIN guacamole_user_group ON guacamole_user_group.entity_id = guac_group.entity_id
+        WHERE (groname LIKE 'SG SANDBOX %')
+      ON CONFLICT DO NOTHING;
+
+      /* Assign connection permissions to each group */
+      INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
+      SELECT guacamole_entity.entity_id, guacamole_connection.connection_id, permission::guacamole_object_permission_type
+      FROM (
+          VALUES
+              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'READ'),
+              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'UPDATE'),
+              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'DELETE'),
+              ('guacadmin', 'USER', 'DSVM Main (Desktop)', 'ADMINISTER'),
+              ('guacadmin', 'USER', 'Windows (Desktop)', 'READ'),
+              ('guacadmin', 'USER', 'Windows (Desktop)', 'UPDATE'),
+              ('guacadmin', 'USER', 'Windows (Desktop)', 'DELETE'),
+              ('guacadmin', 'USER', 'Windows (Desktop)', 'ADMINISTER'),
+              ('<ldap-group-researchers>', 'USER_GROUP', 'DSVM Main (Desktop)', 'READ'),
+              ('<ldap-group-researchers>', 'USER_GROUP', 'Windows (Desktop)', 'READ')
+      ) permissions (username, entity_type, connection_name, permission)
+      JOIN guacamole_entity     ON permissions.username = guacamole_entity.name AND guacamole_entity.type::text = permissions.entity_type
+      JOIN guacamole_connection ON permissions.connection_name = guacamole_connection.connection_name ON CONFLICT DO NOTHING;
+
+
+
+
+# SELECT * FROM pg_group
+# JOIN guacamole_entity ON pg_group.groname = guacamole_entity.name
+# WHERE (groname LIKE 'SG SANDBOX %');
+
+
+# SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')
+
+
+# SELECT * FROM pg_group
+
+# SELECT guac_group.entity_id AS group_entity_id, guac_user.entity_id AS user_entity_id FROM pg_group
+# JOIN pg_user ON pg_has_role(pg_user.usesysid, grosysid, 'member')
+# JOIN guacamole_entity guac_group ON pg_group.groname = guac_group.name
+# JOIN guacamole_entity guac_user ON pg_user.usename = guac_user.name
+# WHERE (groname LIKE 'SG SANDBOX %');
+
+
+
+
+# SELECT * FROM pg_group
+# JOIN (
+#   SELECT usename, usesysid, entity_id AS user_entity_id FROM pg_user JOIN guacamole_entity ON pg_user.usename = guacamole_entity.name
+# ) ON pg_has_role(pg_user.usesysid, grosysid, 'member')
+
+
+# JOIN guacamole_entity ON pg_group.groname = guacamole_entity.name
+# WHERE (groname LIKE 'SG SANDBOX %');
+
+
+# (SELECT usename, usesysid, entity_id AS user_entity_id FROM pg_user JOIN guacamole_entity ON pg_user.usename = guacamole_entity.name)
+
+
+
 
 
 # SELECT * FROM guacamole_entity WHERE guacamole_entity.type = 'USER_GROUP'
+      # INSERT INTO guacamole_entity (name, type) VALUES ('<ldap-group-researchers>', 'USER_GROUP');
+      # INSERT INTO guacamole_user_group (entity_id)
+      #   SELECT entity_id FROM guacamole_entity WHERE name = '<ldap-group-researchers>' AND guacamole_entity.type = 'USER_GROUP';
+
+
 packages:
   - docker-ce
   - docker-compose
@@ -275,10 +372,9 @@ runcmd:
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_users;"
   - docker-compose -f /src/guacamole/docker-compose.yml exec postgres psql -U guacamole -c "CREATE ROLE ldap_groups;"
   - gem install pg-ldap-sync
-  - chown postgres:postgres /src/guacamole/main/pg-ldap-sync.yaml
   - pg_ldap_sync -c /src/guacamole/pg-ldap-sync.yaml -vv
   - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
-  - echo "*/10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - echo "*/10 * * * * root pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
   # Copy the custom SQL config to the postgres container and run it

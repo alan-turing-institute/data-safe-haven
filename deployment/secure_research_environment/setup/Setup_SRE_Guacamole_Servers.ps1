@@ -41,17 +41,17 @@ $_ = Deploy-ResourceGroup -Name $config.sre.guacamole.rg -Location $config.sre.l
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 
-# Load db-init template
-$dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
-$dbInitTemplate = Get-Content $dbInitFilePath -Raw
+# # Load db-init template
+# $dbInitFilePath = Join-Path $PSScriptRoot ".." "remote" "create_guacamole" "templates" "dbinit.template.sql"
+# $dbInitTemplate = Get-Content $dbInitFilePath -Raw
 
-# Set template expansion variables
-$GUACAMOLE_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
-$RESEARCHERS_LDAP_GROUP = $config.sre.domain.securityGroups.researchUsers.Name
-$SESSION_HOST_1 = $config.sre.rds.sessionHost1.hostname
-$SESSION_HOST_2 = $config.sre.rds.sessionHost2.hostname
+# # Set template expansion variables
+# $GUACAMOLE_PASSWORD = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.guacamoleAdminPassword
+# $RESEARCHERS_LDAP_GROUP = $config.sre.domain.securityGroups.researchUsers.Name
+# $SESSION_HOST_1 = $config.sre.rds.sessionHost1.hostname
+# $SESSION_HOST_2 = $config.sre.rds.sessionHost2.hostname
 
-$DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
+# $DBINIT = $ExecutionContext.InvokeCommand.ExpandString($dbInitTemplate)
 
 # Load cloud-init template
 $cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
@@ -70,7 +70,7 @@ $guacamoleDbPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Na
 $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
 
 
-$cloudInitTemplate =Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
+$cloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.template.yaml" | Get-Item | Get-Content -Raw
 $cloudInitYaml = $cloudInitTemplate.Replace('<ldap-user-base-dn>', $config.shm.domain.userOuPath).
                                     Replace('<ldap-hostname>', "$(($config.shm.dc.hostname).ToUpper()).$(($config.shm.domain.fqdn).ToLower())").
                                     Replace('<ldap-port>', 389).
