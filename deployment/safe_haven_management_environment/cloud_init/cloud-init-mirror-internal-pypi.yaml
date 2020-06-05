@@ -13,16 +13,6 @@ packages:
   - python3-pip
   - python3-venv
 
-# Add the atiadmin (default) and mirrordaemon users
-# lock_passwd: Lock the password to disable password login
-users:
-  - default
-  - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
-    ssh_authorized_keys:
-      - EXTERNAL_PUBLIC_SSH_KEY
-
 write_files:
   - path: "/etc/systemd/system/pypiserver.service"
     content: |
@@ -134,6 +124,15 @@ write_files:
       +    # End of patch
            entries = core.find_packages(packages())
 
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
 
 runcmd:
   # Suppress apt prompts and warning messages

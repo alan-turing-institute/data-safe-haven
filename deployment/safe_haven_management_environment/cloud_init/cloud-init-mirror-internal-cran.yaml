@@ -13,18 +13,10 @@ packages:
   - rsync
   - apache2
 
-# Add the atiadmin (default) and mirrordaemon users
-# lock_passwd: Lock the password to disable password login
-users:
-  - default
-  - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
-    ssh_authorized_keys:
-      - EXTERNAL_PUBLIC_SSH_KEY
-
 write_files:
-  - path: /000-default.conf
+  - path: /var/local/cran-mirror-apache.conf
+    owner: root:root
+    permissions: 0644
     content: |
       <VirtualHost *:80>
         DocumentRoot "/datadrive/mirrordaemon/www/cran"
@@ -36,6 +28,16 @@ write_files:
             Require all granted
         </Directory>
       </VirtualHost>
+
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
 
 runcmd:
   # Suppress apt prompts and warning messages
@@ -65,7 +67,7 @@ runcmd:
 
   # Set up apache: 'restart' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up apache server pointing to local disk... ***"
-  - mv /000-default.conf /etc/apache2/sites-enabled/000-default.conf
+  - mv /var/local/cran-mirror-apache.conf /etc/apache2/sites-enabled/000-default.conf
   - a2enmod rewrite
   - systemctl enable apache2.service
   - systemctl restart apache2.service
