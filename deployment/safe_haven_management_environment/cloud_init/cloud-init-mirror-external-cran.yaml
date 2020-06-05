@@ -7,6 +7,21 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+ - [ /dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail" ]
+
 # List of packages to install with apt-get
 packages:
   - openssh-server
@@ -94,6 +109,7 @@ runcmd:
   # - do this early since it is pulled out of the VM by the deployment script
   - echo "*** Generating SSH keys for connecting to the internal mirror"
   - sudo -u mirrordaemon ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - ls -alh ~mirrordaemon/.ssh
 
   # Upgrade installation then clean up
   - echo "*** Upgrade and clean up apt-get packages... ***"
@@ -102,31 +118,26 @@ runcmd:
 
   # Set up and partition data disk
   - echo "*** Setting up local disk... ***"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /datadrive
-  - mount /dev/sdc1 /datadrive
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
-  - mv fstab.tmp /etc/fstab
   - mkdir -p /datadrive/mirrordaemon/www/cran
+  - ls -alh /datadrive
 
-  # Set up mirroring
+  # Schedule regular mirroring jobs
   - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
+  - tail -n 1 /etc/crontab
   - echo "*** Adding external update (rsync from CRAN) job to crontab (3am each day)... ***"
   - echo "0 3 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - tail -n 1 /etc/crontab
+
+  # Schedule update job on each boot
+  - echo "*** Schedule both mirror update jobs for each boot... ***"
+  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
+  - tail -n 1 /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
   - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
-
-  # Schedule initial update for next boot
-  - echo "*** Schedule both mirror update jobs for each boot... ***"
-  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
+  - ls -alh ~mirrordaemon
 
   # Print out some diagnostic information
   - echo "*** This server is currently aware of internal mirrors at the following locations ***"
