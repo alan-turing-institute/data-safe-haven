@@ -255,6 +255,7 @@ mkl-random
 mock
 monocle
 more-itertools
+mpctools
 mpi4py
 mpld3
 mpmath
@@ -401,6 +402,7 @@ rdflib
 redis
 regex
 reportlab
+repro-catalogue
 requests
 requests-file
 requests-ftp

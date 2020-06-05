@@ -53,6 +53,7 @@ markdown2
 mkl-fft
 mkl-random
 monocle
+mpctools
 mpld3
 mypy-extensions
 NavPy
@@ -85,6 +86,7 @@ python-geohash
 python-louvain
 pytorch
 pytorch-pretrained-bert
+repro-catalogue
 rpy2
 Rtree
 sacremoses
