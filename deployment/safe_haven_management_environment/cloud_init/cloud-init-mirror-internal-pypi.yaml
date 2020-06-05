@@ -178,9 +178,9 @@ runcmd:
 
   # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up pypiserver pointing to local disk... ***"
-  - systemctl enable pypiserver.service
-  - systemctl start pypiserver.service
-  - systemctl status pypiserver.service
+  - systemctl enable pypiserver
+  - systemctl start pypiserver
+  - systemctl status pypiserver
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state

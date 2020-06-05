@@ -75,9 +75,9 @@ runcmd:
   - echo "*** Setting up apache server pointing to local disk... ***"
   - mv /var/local/cran-mirror-apache.conf /etc/apache2/sites-enabled/000-default.conf
   - a2enmod rewrite
-  - systemctl enable apache2.service
-  - systemctl restart apache2.service
-  - systemctl status apache2.service
+  - systemctl enable apache2
+  - systemctl restart apache2
+  - systemctl status apache2
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
