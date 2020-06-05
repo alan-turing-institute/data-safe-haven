@@ -157,7 +157,7 @@ Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgGitlab.Name)' N
 @($nsgGitlab.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
-# Finally, reboot the webapp servers
+# Reboot the HackMD and Gitlab servers
 # ----------------------------------
 foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
@@ -172,9 +172,9 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
 
 # Deploy NIC and data disks for gitlab review
 # ---------------------------------------------
-$vmName = $config.sre.webapps.gitlabreview.vmName
+$vmNameReview = $config.sre.webapps.gitlabreview.vmName
 $vmIpAddress = $config.sre.webapps.gitlabreview.ip
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmNameReview-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 
 
 # Deploy the GitLab review VM
@@ -223,26 +223,26 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
 
 
 $gitlabReviewCloudInit = $gitlabReviewCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
-                                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
-                                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                                            Replace('<gitlab-username>',$gitlabUsername).
-                                                            Replace('<gitlab-api-token>',$gitlabAPIToken).
-                                                            Replace('<gitlab-review-rb-host>', $shmDcFqdn).
-                                                            Replace('<gitlab-review-rb-bind-dn>', $gitlabLdapUserDn).
-                                                            Replace('<gitlab-review-rb-pw>',$gitlabLdapPassword).
-                                                            Replace('<gitlab-review-rb-base>',$config.shm.domain.userOuPath).
-                                                            Replace('<gitlab-review-rb-user-filter>',$gitlabUserFilter).
-                                                            Replace('<gitlab-review-ip>',$config.sre.webapps.gitlabreview.ip).
-                                                            Replace('<gitlab-review-hostname>',$config.sre.webapps.gitlabreview.hostname).
-                                                            Replace('<gitlab-review-fqdn>',$gitlabFqdn).
-                                                            Replace('<gitlab-review-root-password>',$gitlabRootPassword).
-                                                            Replace('<gitlab-review-login-domain>',$config.shm.domain.fqdn).
-                                                            Replace('<gitlab-review-username>',$gitlabReviewUsername).
-                                                            Replace('<gitlab-review-password>',$gitlabReviewPassword).
-                                                            Replace('<gitlab-review-api-token>',$gitlabReviewAPIToken)
+                                                        Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
+                                                        Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
+                                                        Replace('<gitlab-username>',$gitlabUsername).
+                                                        Replace('<gitlab-api-token>',$gitlabAPIToken).
+                                                        Replace('<gitlab-review-rb-host>', $shmDcFqdn).
+                                                        Replace('<gitlab-review-rb-bind-dn>', $gitlabLdapUserDn).
+                                                        Replace('<gitlab-review-rb-pw>',$gitlabLdapPassword).
+                                                        Replace('<gitlab-review-rb-base>',$config.shm.domain.userOuPath).
+                                                        Replace('<gitlab-review-rb-user-filter>',$gitlabUserFilter).
+                                                        Replace('<gitlab-review-ip>',$config.sre.webapps.gitlabreview.ip).
+                                                        Replace('<gitlab-review-hostname>',$config.sre.webapps.gitlabreview.hostname).
+                                                        Replace('<gitlab-review-fqdn>',$gitlabFqdn).
+                                                        Replace('<gitlab-review-root-password>',$gitlabRootPassword).
+                                                        Replace('<gitlab-review-login-domain>',$config.shm.domain.fqdn).
+                                                        Replace('<gitlab-review-username>',$gitlabReviewUsername).
+                                                        Replace('<gitlab-review-password>',$gitlabReviewPassword).
+                                                        Replace('<gitlab-review-api-token>',$gitlabReviewAPIToken)
 
 $params = @{
-    Name = $vmName
+    Name = $vmNameReview
     Size = $config.sre.webapps.gitlabreview.vmSize
     AdminPassword = $sreAdminPassword
     AdminUsername = $sreAdminUsername
@@ -266,8 +266,8 @@ while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitla
     Start-Sleep 10
 }
 
-Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
-Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
+Add-LogMessage -Level Info "Rebooting the $name VM: '$vmNameReview'"
+Enable-AzVM -Name $vmNameReview -ResourceGroupName $config.sre.webapps.rg
 
 
 # Switch back to original subscription
