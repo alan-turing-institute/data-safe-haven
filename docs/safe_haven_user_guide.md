@@ -624,6 +624,22 @@ They will have to discuss whether this is an acceptable risk to the data securit
 
 > :point_right: You can make the process as easy as possible by providing as much information as possible about the code or data you'd like to bring into the environment and about how it is to be used.
 
+Sometimes, it is desirable to bring in existing software into the SRE.  If this is a Python or R package residing on PyPI or CRAN (and is suitably whitelisted, where this is applicable), there is a good chance this will exist on the Package Mirrors within the SRE.  See the section [:gift: Install R and python packages](#gift-install-r-and-python-packages).
+
+If this is not the case, there is a structured process for reviewing and importing code from any accessible *Git URL*.  To initiate this process, contact your SRE designated contact.  The process is designed to bring in a **single snapshot** of the Git repo at a time (that is, the state of the repository after a given commit, but with no commit history).  This is to make it more straightforward to review.
+
+Be prepared to provide:
+- the name of your SRE
+- the Git URL of the repository (it does not have to be puplic, although your SRE contact should be able to clone from it, which might be by arrangement)
+- the **full commit SHA** of the commit (or commits) that you would like to request to be made available
+- the name of the branch (or branches) that these should correspond to
+
+Your SRE contact will then arrange for it to be reviewed.  Typically, there will be two reviewers: one of either the project PI or the data provider representative (DPR), and an independent referee.
+
+Once the review is complete, if the repository is *not* approved, this will be communicated along with the reason (so that this might be addressed for another request).
+
+An approved repository will appear in the SRE GitLab instance described below.  This repository will be owned by the GitLab user named "Ingress" and will be visible globally within the SRE.  You will not have direct write access to this repository -- any modifications made *within* theshould be made on a fork.  Since these repositories are in a single namespace, in the (somewhat unlikely) event of a naming collision, a repository may be added within the SRE under a different name.  Your SRE contact will advise if this is the case.
+
 ## :couple: Collaborate on code using GitLab
 
 GitLab is an open source version of GitHub, a code hosting platform for version control and collaboration.
