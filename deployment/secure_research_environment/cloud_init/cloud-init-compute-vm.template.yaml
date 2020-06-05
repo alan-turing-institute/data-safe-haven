@@ -266,19 +266,19 @@ write_files:
         alias fgrep='fgrep --color=auto'
         alias egrep='egrep --color=auto'
       fi
-    - path: "/etc/bash.bashrc"
-      owner: "root:root"
-      permissions: "0644"
-      append: true
-      contents: |
-        enable bash completion in interactive shells
-        if ! shopt -oq posix; then
-          if [ -f /usr/share/bash-completion/bash_completion ]; then
-            . /usr/share/bash-completion/bash_completion
-          elif [ -f /etc/bash_completion ]; then
-            . /etc/bash_completion
-          fi
+  - path: "/etc/bash.bashrc"
+    owner: "root:root"
+    permissions: "0644"
+    append: true
+    contents: |
+      enable bash completion in interactive shells
+      if ! shopt -oq posix; then
+        if [ -f /usr/share/bash-completion/bash_completion ]; then
+          . /usr/share/bash-completion/bash_completion
+        elif [ -f /etc/bash_completion ]; then
+          . /etc/bash_completion
         fi
+      fi
 
 
 runcmd:
