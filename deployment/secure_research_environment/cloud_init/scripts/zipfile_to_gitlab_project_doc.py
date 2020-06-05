@@ -9,17 +9,17 @@ We want to turn this into a merge request on a Gitlab project.
 1) get useful gitlab stuff (url, api key, namespace_ids for our groups)
 2) unzip zipfiles in specified directory
 3) loop over unzipped repos. For each one:
-  a) see if "approval" project with same name exists, if not, create it
-  b) check if merge request to "approval/<repo_name>" with source and target branches
+  a) see if "approved" project with same name exists, if not, create it
+  b) check if merge request to "approved/<repo_name>" with source and target branches
      "commit-<commit-hash>" and "<desired_branch_name>" already exists.
       If so, skip to the next unzipped repo.
-  b) see if "unapproved" project with same name exists, if not, fork "approval" one
+  b) see if "unapproved" project with same name exists, if not, fork "approved" one
   c) clone "unapproved" project, and create branch called "commit-<commit_hash>"
   d) copy in contents of unzipped repo.
   e) git add, commit and push to "unapproved" project
-  f) create branch "<desired_branch_name>" on "approval" project
+  f) create branch "<desired_branch_name>" on "approved" project
   g) create merge request from unapproved/repo_name/commit_hash to
-     approval/repo_name/desired_branch_name
+     approved/repo_name/desired_branch_name
 4) clean up - remove zipfiles and unpacked repos.
 """
 
@@ -45,7 +45,7 @@ the API token, the IP address, and the headers to go in any request
 
 get_group_namespace_ids.__doc__ = """
 Find the namespace_id corresponding to the groups we're interested in,
-e.g. 'approval' and 'unapproved'.
+e.g. 'approved' and 'unapproved'.
 
 Parameters
 ==========
@@ -63,7 +63,7 @@ Get the list of Projects.
 
 Parameters
 ==========
-namespace_id: int, ID of the group ("unapproved" or "approval")
+namespace_id: int, ID of the group ("unapproved" or "approved")
 gitlab_url: str, base URL for the API
 gitlab_token: str, API token.
 
@@ -79,7 +79,7 @@ and name match.
 Parameters
 ==========
 repo_name: str, name of our repository/project
-namespace_id: int, id of our group ("unapproved" or "approval")
+namespace_id: int, id of our group ("unapproved" or "approved")
 gitlab_url: str, base URL of Gitlab API
 gitlab_token: str, API key for Gitlab API.
 
@@ -95,7 +95,7 @@ it and return the ID.
 Parameters
 ==========
 repo_name: str, name of our repository/project
-namespace_id: int, id of our group ("unapproved" or "approval")
+namespace_id: int, id of our group ("unapproved" or "approved")
 gitlab_url: str, base URL of Gitlab API
 gitlab_token: str, API key for Gitlab API.
 
@@ -106,14 +106,14 @@ project_info: dict, containing info from the projects API endpoint
 
 get_project_id.__doc__ = """
 Given the name of a repository and  namespace_id (i.e. group,
-"unapproved" or "approval"), either return the remote URL for project
+"unapproved" or "approved"), either return the remote URL for project
 matching the repo name, or create it if it doesn't exist already,
 and again return the remote URL.
 
 Parameters
 ==========
 repo_name: str, name of the repository/project we're looking for.
-namespace_id: int, the ID of the group ("unapproved" or "approval")
+namespace_id: int, the ID of the group ("unapproved" or "approved")
 gitlab_url: str, base URL of the API
 gitlab_token: str, API key
 
@@ -180,7 +180,7 @@ Parameters
 ==========
 source_branch: str, name of the branch on source project, will typically
 be the commit_hash from the original repo.
-target_project_id: int, project_id for the "approval" group's project.
+target_project_id: int, project_id for the "approved" group's project.
 target_branch: str, name of branch on target project, will typically
 be the desired branch name.
 gitlab_url: str, base URL for the Gitlab API
@@ -193,7 +193,7 @@ bool, True if merge request already exists, False otherwise
 
 create_merge_request.__doc__ = """
 Create a new MR, e.g. from the branch <commit_hash> in the "unapproved"
-group's project, to the branch <desired_branch_name> in the "approval"
+group's project, to the branch <desired_branch_name> in the "approved"
 group's project.
 
 Parameters
@@ -204,7 +204,7 @@ as the "ID" field of the json returned from the
 projects API endpoint.
 source_branch: str, name of the branch on source project, will typically
 be the 'branch-<commit-hash-from-the-original-repo>'.
-target_project_id: int, project_id for the "approval" group's project.
+target_project_id: int, project_id for the "approved" group's project.
 target_branch: str, name of branch on target project, will typically
 be the desired branch name.
 gitlab_url: str, base URL for the Gitlab API
@@ -227,18 +227,18 @@ repo_name: str, name of the repository/project
 path_to_unzipped_repo: str, the full directory path to the unzipped repo
 tmp_repo_dir: str, path to a temporary dir where we will clone the project
 branch_name: str, the name of the branch to push to
-remote_url: str, the URL for this project on gitlab-external to be added
+remote_url: str, the URL for this project on gitlab-review to be added
 as a "remote".
 """
 
 fork_project.__doc__ = """
-Fork the project 'approval/<project-name>' to 'unapproved/<project-name>'
+Fork the project 'approved/<project-name>' to 'unapproved/<project-name>'
 after first checking whether the latter exists.
 
 Parameters
 ==========
 repo_name: str, name of the repo/project
-project_id: int, project id of the 'approval/<project-name>' project
+project_id: int, project id of the 'approved/<project-name>' project
 namespace_id: int, id of the 'unapproved' namespace
 gitlab_url: str, str, the base URL of Gitlab API
 gitlab_token: str, API token for Gitlab API
@@ -256,9 +256,9 @@ Parameters
 repo_details: tuple of strings, (repo_name, hash, desired_branch, location)
 tmp_repo_dir: str, directory where we will clone the repo, then copy the contents in
 gitlab_config: dict, contains api url and token
-namespace_ids; dict, keys are the group names (e.g. "unapproved", "approval", values
+namespace_ids; dict, keys are the group names (e.g. "unapproved", "approved", values
 are the ids of the corresponding namespaces in Gitlab
-group_names: list of strings, typically ["unapproved", "approval"]
+group_names: list of strings, typically ["unapproved", "approved"]
 """
 
 cleanup.__doc__ = """

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 """
-Check merge requests on gitlab external, approve them where appropriate,
-and push the approved repos to gitlab internal.
+Check merge requests on gitlab review, approve them where appropriate,
+and push the approved repos to gitlab .
 
-1) Get open merge requests in the approval group on gitlab external.
+1) Get open merge requests in the approved group on gitlab review.
 2) Check whether any of them meet the approval conditions. By default: status
 is can be merged, not flagged as work in progress, no unresolved discussions,
 at least two upvotes, and no downvotes.
-3) Accept approved merge requests (merged unapproved repo into approval repo).
-4) Push whole approval repo to gitlab internal, creating the repo if it doesn't
+3) Accept approved merge requests (merged unapproved repo into approved repo).
+4) Push whole approved repo to gitlab , creating the repo if it doesn't
 already exist.
 
 This script creates two log files in the same directory that it is run from:
@@ -43,24 +43,22 @@ logger.addHandler(f_handler)
 logger.addHandler(c_handler)
 
 
-def internal_project_exists(repo_name, config):
+def check_project_exists(repo_name, config):
     """Determine whether a repo exist in the ingress namespace on
-    GITLAB-INTERNAL.
+    gitlab server defined by config.
 
     Parameters
     ----------
     repo_name : str
-        The name of a repo (not a URL) to search for in the ingress namespace
-        on GITLAB-INTERNAL.
+        The name of a repo (not a URL) to search for in the ingress namespace.
     config : dict
-        GITLAB-INTERNAL details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_gitlab_config
 
     Returns
     -------
     tuple
-        (exists, url) tuple where exists: boolean - does repo_name exist on
-        GITLAB-INTERNAL?, and url: str - the ssh url to the repo (when 'exists'
-        is true)
+        (exists, url) tuple where exists: boolean - does repo_name exist,
+        and url: str - the ssh url to the repo (when 'exists' is true)
 
     Raises
     ------
@@ -71,7 +69,7 @@ def internal_project_exists(repo_name, config):
     # build url-encoded repo_name
     repo_path_encoded = url_quote("ingress/" + repo_name, safe="")
 
-    # Does repo_name exist on GITLAB-INTERNAL?
+    # Does repo_name exist?
     response = requests.get(
         config["api_url"] + "/projects/" + repo_path_encoded, headers=config["headers"]
     )
@@ -89,30 +87,30 @@ def internal_project_exists(repo_name, config):
         )
 
 
-def internal_update_repo(git_url, repo_name, branch_name, config):
+def update_repo(git_url, repo_name, branch_name, config):
     """Takes a git URL, `git_url`, which should be the SSH URL to the
-    "APPROVED" repo on GITLAB-EXTERNAL, clones it and pushes all branches to
-    the repo `repo_name` owned by 'ingress' on GITLAB-INTERNAL, creating it
-    there first if it doesn't exist.
+    "APPROVED" repo on GITLAB-REVIEW, clones it and pushes all branches to
+    the repo `repo_name` owned by 'ingress' on the gitlab server defined in
+    config, creating it there first if it doesn't exist.
 
     Parameters
     ----------
     git_url : str
-        URL to the "APPROVED" repo on GITLAB-EXTERNAL
+        URL to the "APPROVED" repo on GITLAB-REVIEW
     repo_name : str
-        Name of repo to create on GITLAB-INTERNAL.
+        Name of repo to create on.
     config : dict
-        GITLAB-INTERNAL details and secrets as returned by get_gitlab_config
+        Details and secrets as returned by get_gitlab_config
     """
 
-    # clone the repo from git_url (on GITLAB-EXTERNAL), removing any of
+    # clone the repo from git_url (on GITLAB-REVIEW), removing any of
     # the same name first (simpler than checking if it exists, has the
     # same remote and pulling)
     subprocess.run(["rm", "-rf", repo_name], check=True)
     subprocess.run(["git", "clone", git_url, repo_name], check=True)
     subprocess.run(["git", "checkout", branch_name], cwd=repo_name, check=True)
 
-    project_exists, gl_internal_repo_url = internal_project_exists(repo_name, config)
+    project_exists, gl_update_repo_url = check_project_exists(repo_name, config)
 
     # create the project if it doesn't exist
     if not project_exists:
@@ -125,18 +123,18 @@ def internal_update_repo(git_url, repo_name, branch_name, config):
         response.raise_for_status()
         assert response.json()["path_with_namespace"] == "ingress/" + repo_name
 
-        gl_internal_repo_url = response.json()["ssh_url_to_repo"]
+        gl_update_repo_url = response.json()["ssh_url_to_repo"]
 
     # Set the remote
     subprocess.run(
-        ["git", "remote", "add", "gitlab-internal", gl_internal_repo_url],
+        ["git", "remote", "add", "gitlab", gl_update_repo_url],
         cwd=repo_name,
         check=True,
     )
 
     # Force push current contents of all branches
     subprocess.run(
-        ["git", "push", "--force", "gitlab-internal"], cwd=repo_name, check=True
+        ["git", "push", "--force", "gitlab"], cwd=repo_name, check=True
     )
 
 
@@ -253,7 +251,7 @@ def get_project(project_id, config):
 
 
 def get_merge_requests_for_approval(config):
-    """Get the details of all open merge requests into the approval group on
+    """Get the details of all open merge requests into the approved group on
     a gitlab server.
 
     Parameters
@@ -266,7 +264,7 @@ def get_merge_requests_for_approval(config):
     list
         List of merge requests JSONs as returned by the gitlab API.
     """
-    group = get_group_id("approval", config)
+    group = get_group_id("approved", config)
     endpoint = config["api_url"] + f"/groups/{group}/merge_requests"
     response = get_request(
         endpoint,
@@ -339,37 +337,37 @@ def accept_merge_request(mr, config):
 
 
 def check_merge_requests():
-    """Main function to check merge requests in the approval group on gitlab external,
-    approve them where appropriate, and then push the approved repos to gitlab
-    internal.
+    """Main function to check merge requests in the approved group on gitlab review,
+    approve them where appropriate, and then push the approved repos to the normal
+    gitlab server for users..
     """
     logger.info(f"STARTING RUN")
 
     try:
-        config_external = get_api_config(server="GITLAB-EXTERNAL")
-        config_internal = get_api_config(server="GITLAB-INTERNAL")
+        config_gitlabreview = get_api_config(server="GITLAB-REVIEW")
+        config_gitlab = get_api_config(server="GITLAB")
     except Exception as e:
         logger.critical(f"Failed to load gitlab secrets: {e}")
         return
 
     try:
-        internal_status = requests.get(
-            config_internal["api_url"] + "/projects",
-            headers=config_internal["headers"],
+        gitlab_status = requests.get(
+            config_gitlab["api_url"] + "/projects",
+            headers=config_gitlab["headers"],
             timeout=10,
         )
-        if not internal_status.ok:
+        if not gitlab_status.ok:
             logger.critical(
-                f"Gitlab Internal Not Responding: {internal_status.status_code}, CONTENT {internal_status.content}"
+                f"Gitlab Not Responding: {gitlab_status.status_code}, CONTENT {gitlab_status.content}"
             )
             return
     except Exception as e:
-        logger.critical(f"Gitlab Internal Not Responding: {e}")
+        logger.critical(f"Gitlab Not Responding: {e}")
         return
 
     logger.info("Getting open merge requests for approval")
     try:
-        merge_requests = get_merge_requests_for_approval(config_external)
+        merge_requests = get_merge_requests_for_approval(config_gitlabreview)
     except Exception as e:
         logger.critical(f"Failed to get merge requests: {e}")
         return
@@ -380,10 +378,10 @@ def check_merge_requests():
         logger.info(f"Merge request {i+1} out of {len(merge_requests)}")
         try:
             # Extract merge request details
-            source_project = get_project(mr["source_project_id"], config_external)
+            source_project = get_project(mr["source_project_id"], config_gitlabreview)
             logger.info(f"Source Project: {source_project['name_with_namespace']}")
             logger.info(f"Source Branch: {mr['source_branch']}")
-            target_project = get_project(mr["project_id"], config_external)
+            target_project = get_project(mr["project_id"], config_gitlabreview)
             logger.info(f"Target Project: {target_project['name_with_namespace']}")
             target_branch = mr["target_branch"]
             logger.info(f"Target Branch: {target_branch}")
@@ -398,7 +396,7 @@ def check_merge_requests():
                 logger.info(f"Merge Status: {status}")
             wip = mr["work_in_progress"]
             logger.info(f"Work in Progress: {wip}")
-            unresolved = count_unresolved_mr_discussions(mr, config_external)
+            unresolved = count_unresolved_mr_discussions(mr, config_gitlabreview)
             logger.info(f"Unresolved Discussions: {unresolved}")
             upvotes = mr["upvotes"]
             logger.info(f"Upvotes: {upvotes}")
@@ -416,7 +414,7 @@ def check_merge_requests():
         ):
             logger.info("Merge request has been approved. Proceeding with merge.")
             try:
-                result = accept_merge_request(mr, config_external)
+                result = accept_merge_request(mr, config_gitlabreview)
             except Exception as e:
                 logger.error(f"Merge failed! {e}")
                 continue
@@ -431,15 +429,15 @@ def check_merge_requests():
                 except Exception as e:
                     logger.error(f"Failed to log accepted merge request: {e}")
                 try:
-                    logger.info("Pushing project to gitlab internal.")
-                    internal_update_repo(
+                    logger.info("Pushing project to gitlab user server.")
+                    update_repo(
                         target_project["ssh_url_to_repo"],
                         target_project["name"],
                         target_branch,
-                        config_internal,
+                        config_gitlab,
                     )
                 except Exception as e:
-                    logger.error(f"Failed to push to internal: {e}")
+                    logger.error(f"Failed to push to gitlab user server: {e}")
             else:
                 logger.error(f"Merge failed! Merge status is {result['state']}")
         else:

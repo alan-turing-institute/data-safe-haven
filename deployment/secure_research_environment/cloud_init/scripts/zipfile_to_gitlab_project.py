@@ -61,7 +61,7 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
 
 
 def get_group_namespace_ids(
-    gitlab_url, gitlab_token, groups=["approval", "unapproved"]
+    gitlab_url, gitlab_token, groups=["approved", "unapproved"]
 ):
     namespaces_url = "{}/namespaces/".format(gitlab_url)
     response = requests.get(
@@ -154,7 +154,7 @@ documentation, or contact ....
 
 ## For Reviewers
 
-There is a merge request into this repository (`approval/{repo_name}`)
+There is a merge request into this repository (`approved/{repo_name}`)
 for each ingress request.
 
 Please look at each merge request in turn, and review it using the
@@ -408,14 +408,14 @@ def clone_commit_and_push(
     assert os.path.exists(working_dir)
 
     # Add upstream (target repo) to this repo
-    subprocess.run(["git", "remote", "add", "approval", target_project_url], cwd=working_dir, check=True)
-    subprocess.run(["git", "fetch", "approval"], cwd=working_dir, check=True)
+    subprocess.run(["git", "remote", "add", "approved", target_project_url], cwd=working_dir, check=True)
+    subprocess.run(["git", "fetch", "approved"], cwd=working_dir, check=True)
 
     # Checkout the branch with the requested name (creating it at the
     # current commit of the default branch if it doesn't exist)
     git_checkout_result = subprocess.run(["git", "checkout", target_branch_name], cwd=working_dir)
     if git_checkout_result.returncode == 0:
-        subprocess.run(["git", "pull", "approval"], cwd=working_dir, check=True)
+        subprocess.run(["git", "pull", "approved"], cwd=working_dir, check=True)
 
     # now checkout the branch holding the snapshot
     subprocess.run(["git", "checkout", "-b", branch_name], cwd=working_dir, check=True)
@@ -437,7 +437,7 @@ def clone_commit_and_push(
     subprocess.run(["git", "add", "."], cwd=working_dir, check=True)
     commit_msg = "Import snapshot of {} at commit {}".format(remote_url, commit_hash)
     subprocess.run(["git", "commit", "-m", commit_msg], cwd=working_dir, check=True)
-    # Push back to gitlab external (unapproved)
+    # Push back to gitlab review (unapproved)
     subprocess.run(
         ["git", "push", "-f", "--set-upstream", "origin", branch_name],
         cwd=working_dir,
@@ -462,7 +462,7 @@ def fork_project(repo_name, project_id, namespace_id, gitlab_url, gitlab_token):
             raise RuntimeError("Problem creating fork: {}".format(response.content))
         new_project_info = response.json()#["id"]
     else:
-        # project already exists - ensure it is a fork of 'approval/<project-name>'
+        # project already exists - ensure it is a fork of 'approved/<project-name>'
         new_project_info = get_or_create_project(
             repo_name, namespace_id, gitlab_url, gitlab_token
         )
@@ -528,7 +528,7 @@ def unzipped_snapshot_to_merge_request(
         commit_hash,
     )
 
-    # Create the branch on the "approval" project if it doesn't already exist
+    # Create the branch on the "approved" project if it doesn't already exist
     create_branch_if_not_exists(
         target_branch_name,
         target_project_id,
@@ -578,14 +578,14 @@ def main():
     os.makedirs(TMP_REPO_DIR)
 
     # get the gitlab config
-    config = get_api_config("GITLAB-EXTERNAL")
+    config = get_api_config("GITLAB-REVIEW")
 
     # unzip the zipfiles, and retrieve a list of tuples describing
     # (repo_name, commit_hash, desired_branch, unzipped_location)
     unzipped_snapshots = unzip_zipfiles(ZIPFILE_DIR, TMP_UNZIPPED_DIR)
 
-    # get the namespace_ids of our "approval" and "unapproved" groups
-    GROUPS = ["unapproved", "approval"]
+    # get the namespace_ids of our "approved" and "unapproved" groups
+    GROUPS = ["unapproved", "approved"]
     namespace_ids = get_group_namespace_ids(
         config["api_url"], config["api_token"], GROUPS
     )

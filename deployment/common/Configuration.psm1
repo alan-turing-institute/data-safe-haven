@@ -401,14 +401,14 @@ function Add-SreConfig {
             gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
-            gitlabInternalUsername = "$($config.sre.shortName)-gitlab-internal-username"
-            gitlabInternalPassword = "$($config.sre.shortName)-gitlab-internal-password"
-            gitlabInternalAPIToken = "$($config.sre.shortName)-gitlab-internal-api-token"
+            gitlabUsername = "$($config.sre.shortName)-gitlab-username"
+            gitlabPassword = "$($config.sre.shortName)-gitlab-password"
+            gitlabAPIToken = "$($config.sre.shortName)-gitlab-api-token"
             hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
-            gitlabExternalUsername = "$($config.sre.shortName)-gitlab-external-username"
-            gitlabExternalPassword = "$($config.sre.shortName)-gitlab-external-password"
-            gitlabExternalAPIToken = "$($config.sre.shortName)-gitlab-external-api-token"
+            gitlabReviewUsername = "$($config.sre.shortName)-gitlab-review-username"
+            gitlabReviewPassword = "$($config.sre.shortName)-gitlab-review-password"
+            gitlabReviewAPIToken = "$($config.sre.shortName)-gitlab-review-api-token"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
             rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
@@ -528,26 +528,24 @@ function Add-SreConfig {
         rg = "RG_SRE_WEBAPPS"
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
-            internal = [ordered]@{
-                vmName = "GITLAB-INTERNAL-SRE-$($config.sre.id)".ToUpper()
+                vmName = "GITLAB-$($config.sre.id)".ToUpper()
                 vmSize = "Standard_D2s_v3"
-            }
-            external = [ordered]@{
-                vmName = "GITLAB-EXTERNAL-SRE-$($config.sre.id)".ToUpper()
-                vmSize = "Standard_D2s_v3"
-            }
+        }
+        gitlabreview = [ordered]@{
+            vmName = "GITLAB-REVIEW-$($config.sre.id)".ToUpper()
+            vmSize = "Standard_D2s_v3"
         }
         hackmd = [ordered]@{
-            vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
+            vmName = "HACKMD-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
         }
     }
-    $config.sre.webapps.gitlab.internal.hostname = $config.sre.webapps.gitlab.internal.vmName
-    $config.sre.webapps.gitlab.internal.fqdn = "$($config.sre.webapps.gitlab.internal.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.webapps.gitlab.internal.ip = "$($config.sre.network.subnets.data.prefix).151"
-    $config.sre.webapps.gitlab.external.hostname = $config.sre.webapps.gitlab.external.vmName
-    $config.sre.webapps.gitlab.external.fqdn = "$($config.sre.webapps.gitlab.external.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.webapps.gitlab.external.ip = "$($config.sre.network.subnets.airlock.prefix).151"
+    $config.sre.webapps.gitlab.hostname = $config.sre.webapps.gitlab.vmName
+    $config.sre.webapps.gitlab.fqdn = "$($config.sre.webapps.gitlab.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.webapps.gitlab.ip = "$($config.sre.network.subnets.data.prefix).151"
+    $config.sre.webapps.gitlabreview.hostname = $config.sre.webapps.gitlabreview.vmName
+    $config.sre.webapps.gitlabreview.fqdn = "$($config.sre.webapps.gitlabreview.hostname).$($config.shm.domain.fqdn)"
+    $config.sre.webapps.gitlabreview.ip = "$($config.sre.network.subnets.airlock.prefix).151"
     $config.sre.webapps.hackmd.hostname = $config.sre.webapps.hackmd.vmName
     $config.sre.webapps.hackmd.fqdn = "$($config.sre.webapps.hackmd.hostname).$($config.shm.domain.fqdn)"
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"

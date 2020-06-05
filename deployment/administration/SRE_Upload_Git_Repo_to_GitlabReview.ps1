@@ -54,7 +54,7 @@ Set-Location $workingDir
 # Upload the zip file to the VM, via blob storage
 # -----------------------------------------------
 
-$gitlabExternalVmName = $config.sre.webapps.gitlab.external.vmName
+$gitlabReviewVmName = $config.sre.webapps.gitlabreview.vmName
 # Go via blob storage - first create storage account if not already there
 $storageResourceGroupName = $config.sre.storage.artifacts.rg
 $sreStorageAccountName = $config.sre.storage.artifacts.accountName
@@ -89,8 +89,8 @@ chown -R ${sreAdminUsername}:${sreAdminUsername} /tmp/zipfiles/
 "@
 
 $resourceGroupName = $config.sre.webapps.rg
-Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $gitlabExternalVmName"
-$result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $gitlabExternalVmName -ResourceGroupName $resourceGroupName
+Add-LogMessage -Level Info "[ ] Running remote script to download zipfile onto $gitlabReviewVmName"
+$result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $gitlabReviewVmName -ResourceGroupName $resourceGroupName
 
 # clean up - remove the zipfile from local machine.
 Add-LogMessage -Level Info "[ ] Removing original zipfile $zipFilePath"

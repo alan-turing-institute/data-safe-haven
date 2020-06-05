@@ -25,20 +25,20 @@ $sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name 
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword
 $gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword
 $gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
-$gitlabExternalUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalUsername -DefaultValue "ingress"
-$gitlabExternalPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalPassword
-$gitlabExternalAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabExternalAPIToken
+$gitlabReviewUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewUsername -DefaultValue "ingress"
+$gitlabReviewPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewPassword
+$gitlabReviewAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabReviewAPIToken
 $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword
 $hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
-$gitlabInternalUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalUsername -DefaultValue "ingress"
-$gitlabInternalPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalPassword
-$gitlabInternalAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabInternalAPIToken
+$gitlabUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUsername -DefaultValue "ingress"
+$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabPassword
+$gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabAPIToken
 
 
 # Set up the NSG for the webapps
 # ------------------------------
-$nsgGitlabInternal = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabInternal `
+$nsgGitlab = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlab `
                              -Name "OutboundDenyInternet" `
                              -Description "Outbound deny internet" `
                              -Priority 4000 `
@@ -47,15 +47,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabInternal `
                              -DestinationAddressPrefix Internet -DestinationPortRange *
 
 
-$nsgGitlabExternal = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-# TODO Removed for development testing
-# Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGitlabExternal `
-#                              -Name "InboundDenyAll" `
-#                              -Description "Inbound deny everything" `
-#                              -Priority 4000 `
-#                              -Direction Inbound -Access Deny -Protocol * `
-#                              -SourceAddressPrefix * -SourcePortRange * `
-#                              -DestinationAddressPrefix * -DestinationPortRange *
+$nsgGitlabReview = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 
 
 # Check that VNET and subnet exist
@@ -64,29 +56,29 @@ $nsgGitlabExternal = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.a
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
 $subnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.Name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
 
-Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsgGitlabExternal -VirtualNetwork $vnet
+Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsgGitlabReview -VirtualNetwork $vnet
 
 
-# Expand GitLab internal cloudinit
+# Expand GitLab cloudinit
 # --------------------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
-$gitlabFqdn = $config.sre.webapps.gitlab.internal.hostname + "." + $config.sre.domain.fqdn
+$gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
-$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-internal.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
                                             Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
                                             Replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
                                             Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
-                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.internal.ip).
-                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.internal.hostname).
+                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
+                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
                                             Replace('<gitlab-fqdn>',$gitlabFqdn).
                                             Replace('<gitlab-root-password>',$gitlabRootPassword).
                                             Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                            Replace('<gitlab-internal-username>',$gitlabInternalUsername).
-                                            Replace('<gitlab-internal-password>',$gitlabInternalPassword).
-                                            Replace('<gitlab-internal-api-token>',$gitlabInternalAPIToken)
+                                            Replace('<gitlab-username>',$gitlabUsername).
+                                            Replace('<gitlab-password>',$gitlabPassword).
+                                            Replace('<gitlab-api-token>',$gitlabAPIToken)
 
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
@@ -125,9 +117,9 @@ $params = @{
     Administrator_User = $sreAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
-    GitLab_IP_Address =  $config.sre.webapps.gitlab.internal.ip
-    GitLab_Server_Name = $config.sre.webapps.gitlab.internal.vmName
-    GitLab_VM_Size = $config.sre.webapps.gitlab.internal.vmSize
+    GitLab_IP_Address =  $config.sre.webapps.gitlab.ip
+    GitLab_Server_Name = $config.sre.webapps.gitlab.vmName
+    GitLab_VM_Size = $config.sre.webapps.gitlab.vmSize
     HackMD_Cloud_Init = $hackmdCloudInitEncoded
     HackMD_IP_Address = $config.sre.webapps.hackmd.ip
     HackMD_Server_Name = $config.sre.webapps.hackmd.vmName
@@ -143,31 +135,31 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 # -----------------------------------------------
 Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
 $progress = 0
-$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.internal.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitlabStatuses.Contains("PowerState/stopped") -and
              $hackmdStatuses.Contains("ProvisioningState/succeeded") -and $hackmdStatuses.Contains("PowerState/stopped"))) {
     $progress = [math]::min(100, $progress + 1)
-    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.internal.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
     $hackmdStatuses = (Get-AzVM -Name $config.sre.webapps.hackmd.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
-    Write-Progress -Activity "Deployment status:" -Status "GitLab Internal [$($gitlabStatuses[0]) $($gitlabStatuses[1])], HackMD [$($hackmdStatuses[0]) $($hackmdStatuses[1])]" -PercentComplete $progress
+    Write-Progress -Activity "Deployment status:" -Status "GitLab [$($gitlabStatuses[0]) $($gitlabStatuses[1])], HackMD [$($hackmdStatuses[0]) $($hackmdStatuses[1])]" -PercentComplete $progress
     Start-Sleep 10
 }
 
 # While webapp servers are off, ensure they are bound to correct NSG
 # ------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
-foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.internal.vmName)) {
-    Add-VmToNSG -VMName $vmName -NSGName $nsgGitlabInternal.Name
+foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.vmName)) {
+    Add-VmToNSG -VMName $vmName -NSGName $nsgGitlab.Name
 }
 Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgGitlabInternal.Name)' NSG"
-@($nsgGitlabInternal.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+Add-LogMessage -Level Info "Summary: NICs associated with '$($nsgGitlab.Name)' NSG"
+@($nsgGitlab.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 
 
 # Finally, reboot the webapp servers
 # ----------------------------------
-foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.internal.vmName))) {
+foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName), ("GitLab", $config.sre.webapps.gitlab.vmName))) {
     $name, $vmName = $nameVMNameParamsPair
     Add-LogMessage -Level Info "Rebooting the $name VM: '$vmName'"
     Enable-AzVM -Name $vmName -ResourceGroupName $config.sre.webapps.rg
@@ -178,44 +170,44 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
     }
 }
 
-# Deploy NIC and data disks for gitlab.external
+# Deploy NIC and data disks for gitlab review
 # ---------------------------------------------
-$vmName = $config.sre.webapps.gitlab.external.vmName
-$vmIpAddress = $config.sre.webapps.gitlab.external.ip
+$vmName = $config.sre.webapps.gitlabreview.vmName
+$vmIpAddress = $config.sre.webapps.gitlabreview.ip
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 
 
-# Deploy the GitLab external VM
+# Deploy the GitLab review VM
 # ------------------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 
 
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
-$gitlabFqdn = $config.sre.webapps.gitlab.external.hostname + "." + $config.sre.domain.fqdn
+$gitlabFqdn = $config.sre.webapps.gitlabreview.hostname + "." + $config.sre.domain.fqdn
 $gitlabLdapUserDn = "CN=" + $config.sre.users.ldap.gitlab.name + "," + $config.shm.domain.serviceOuPath
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.reviewUsers.name + "," + $config.shm.domain.securityOuPath + "))"
 
-$gitlabExternalCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-external.template.yaml" | Get-Item | Get-Content -Raw
+$gitlabReviewCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab-review.template.yaml" | Get-Item | Get-Content -Raw
 
 
-# Get public SSH keys from gitlab internal (so it can be added as a known host on gitlab external)
+# Get public SSH keys from gitlab (so it can be added as a known host on gitlab review)
 # ------------------------------
 $script = '
 #! /bin/bash
-echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)"
-echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)"
-echo "<gitlab-internal-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)"
-'.Replace('<gitlab-internal-ip>', $config.sre.webapps.gitlab.internal.ip)
-$vmNameInternal = $config.sre.webapps.gitlab.internal.vmName
-$result = Invoke-RemoteScript -VMName $vmNameInternal -ResourceGroupName $config.sre.webapps.rg -Shell "UnixShell" -Script $script
-Add-LogMessage -Level Success "Fetching ssh keys from gitlab internal succeeded"
+echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)"
+echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)"
+echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)"
+'.Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip)
+$vmName = $config.sre.webapps.gitlab.vmName
+$result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.sre.webapps.rg -Shell "UnixShell" -Script $script
+Add-LogMessage -Level Success "Fetching ssh keys from gitlab succeeded"
 # Extract everything in between the [stdout] and [stderr] blocks of the result message. i.e. all output of the script.
-$internalSshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\[stderr\]"
-$internalSshKeys = $internalSshKeys.Matches.Groups[1].Value
+$sshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\[stderr\]"
+$sshKeys = $sshKeys.Matches.Groups[1].Value
 # Insert keys into cloud init template, maintaining indentation
 $indent = "      "
-$indented_internalSshKeys = $internalSshKeys -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-$gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${indent}<gitlab-internal-ssh-keys>", $indented_internalSshKeys)
+$indented_sshKeys = $sshKeys -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+$gitlabReviewCloudInitTemplate = $gitlabReviewCloudInitTemplate.Replace("${indent}<gitlab-ssh-keys>", $indented_sshKeys)
 
 
 # Insert scripts into the cloud-init template
@@ -226,36 +218,36 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
                           "gitlab_config.py")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $gitlabExternalCloudInitTemplate = $gitlabExternalCloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+    $gitlabReviewCloudInitTemplate = $gitlabReviewCloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
 }
 
 
-$gitlabExternalCloudInit = $gitlabExternalCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
-                                                            Replace('<gitlab-internal-ip>',$config.sre.webapps.gitlab.internal.ip).
-                                                            Replace('<gitlab-internal-login-domain>',$config.shm.domain.fqdn).
-                                                            Replace('<gitlab-internal-username>',$gitlabInternalUsername).
-                                                            Replace('<gitlab-internal-api-token>',$gitlabInternalAPIToken).
-                                                            Replace('<gitlab-external-rb-host>', $shmDcFqdn).
-                                                            Replace('<gitlab-external-rb-bind-dn>', $gitlabLdapUserDn).
-                                                            Replace('<gitlab-external-rb-pw>',$gitlabLdapPassword).
-                                                            Replace('<gitlab-external-rb-base>',$config.shm.domain.userOuPath).
-                                                            Replace('<gitlab-external-rb-user-filter>',$gitlabUserFilter).
-                                                            Replace('<gitlab-external-ip>',$config.sre.webapps.gitlab.external.ip).
-                                                            Replace('<gitlab-external-hostname>',$config.sre.webapps.gitlab.external.hostname).
-                                                            Replace('<gitlab-external-fqdn>',$gitlabFqdn).
-                                                            Replace('<gitlab-external-root-password>',$gitlabRootPassword).
-                                                            Replace('<gitlab-external-login-domain>',$config.shm.domain.fqdn).
-                                                            Replace('<gitlab-external-username>',$gitlabExternalUsername).
-                                                            Replace('<gitlab-external-password>',$gitlabExternalPassword).
-                                                            Replace('<gitlab-external-api-token>',$gitlabExternalAPIToken)
+$gitlabReviewCloudInit = $gitlabReviewCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
+                                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
+                                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
+                                                            Replace('<gitlab-username>',$gitlabUsername).
+                                                            Replace('<gitlab-api-token>',$gitlabAPIToken).
+                                                            Replace('<gitlab-review-rb-host>', $shmDcFqdn).
+                                                            Replace('<gitlab-review-rb-bind-dn>', $gitlabLdapUserDn).
+                                                            Replace('<gitlab-review-rb-pw>',$gitlabLdapPassword).
+                                                            Replace('<gitlab-review-rb-base>',$config.shm.domain.userOuPath).
+                                                            Replace('<gitlab-review-rb-user-filter>',$gitlabUserFilter).
+                                                            Replace('<gitlab-review-ip>',$config.sre.webapps.gitlabreview.ip).
+                                                            Replace('<gitlab-review-hostname>',$config.sre.webapps.gitlabreview.hostname).
+                                                            Replace('<gitlab-review-fqdn>',$gitlabFqdn).
+                                                            Replace('<gitlab-review-root-password>',$gitlabRootPassword).
+                                                            Replace('<gitlab-review-login-domain>',$config.shm.domain.fqdn).
+                                                            Replace('<gitlab-review-username>',$gitlabReviewUsername).
+                                                            Replace('<gitlab-review-password>',$gitlabReviewPassword).
+                                                            Replace('<gitlab-review-api-token>',$gitlabReviewAPIToken)
 
 $params = @{
     Name = $vmName
-    Size = $config.sre.webapps.gitlab.external.vmSize
+    Size = $config.sre.webapps.gitlabreview.vmSize
     AdminPassword = $sreAdminPassword
     AdminUsername = $sreAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $gitlabExternalCloudInit
+    CloudInitYaml = $gitlabReviewCloudInit
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = "Standard_LRS"
@@ -266,11 +258,11 @@ $_ = Deploy-UbuntuVirtualMachine @params
 
 Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
 $progress = 0
-$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.external.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+$gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
 while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitlabStatuses.Contains("PowerState/stopped"))) {
     $progress = [math]::min(100, $progress + 1)
-    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlab.external.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
-    Write-Progress -Activity "Deployment status:" -Status "GitLab External [$($gitlabStatuses[0]) $($gitlabStatuses[1])]" -PercentComplete $progress
+    $gitlabStatuses = (Get-AzVM -Name $config.sre.webapps.gitlabreview.vmName -ResourceGroupName $config.sre.webapps.rg -Status).Statuses.Code
+    Write-Progress -Activity "Deployment status:" -Status "GitLab Review [$($gitlabStatuses[0]) $($gitlabStatuses[1])]" -PercentComplete $progress
     Start-Sleep 10
 }
 
