@@ -240,6 +240,45 @@ write_files:
     permissions: "0400"
     content: |
       <jdk.table.xml>
+  - path: "/etc/skel/.bashrc"
+    owner: "root:root"
+    permissions: "0644"
+    contents: |
+      # determine if terminal has color support
+      case "$TERM" in
+        xterm-color|*-256color) color_prompt=yes;;
+      esac
+
+      # set prompt
+      if [ "$color_prompt" = yes ]; then
+        PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
+      else
+        PS1='\u:\W\$ '
+      fi
+      unset color_prompt
+
+      # enable color support of ls and also add handy aliases
+      if [ -x /usr/bin/dircolors ]; then
+        test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+        alias ls='ls --color=auto'
+
+        alias grep='grep --color=auto'
+        alias fgrep='fgrep --color=auto'
+        alias egrep='egrep --color=auto'
+      fi
+    - path: "/etc/bash.bashrc"
+      owner: "root:root"
+      permissions: "0644"
+      append: true
+      contents: |
+        enable bash completion in interactive shells
+        if ! shopt -oq posix; then
+          if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+          elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+          fi
+        fi
 
 
 runcmd:
@@ -257,11 +296,6 @@ runcmd:
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
   - cat /etc/default/keyboard
-  # Change default color-prompt and prompt to a concise style
-  - echo ">=== Settings default bash prompt... ===<"
-  - sed -i '/if \[ "\$color_prompt" = yes \]; then/{n;s/\s*PS1=.*/    PS1="\\[\\033[01;32m\\]\\u\\[\\033[00m\\]:\\[\\033[01;34m\\]\\W\\[\\033[00m\\]\\$ "/}' /etc/skel/.bashrc
-  - sed -i '/if \[ "\$color_prompt" = yes \]; then/{n;n;n;s/.\s*PS1=.*/    PS1="\\u:\\W\\$\ "/}' /etc/skel/.bashrc
-  - grep -A 4 'if [ "$color_prompt" = yes]; then' /etc/skel/.bashrc
   # Disable light-locker which can cause irritating error messages
   - echo ">=== Disabling screen lock... ===<"
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
