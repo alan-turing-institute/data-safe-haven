@@ -268,17 +268,7 @@ function Deploy-PackageMirror {
                 DataDiskIds = @($dataDisk.Id)
             }
             $_ = Deploy-UbuntuVirtualMachine @params
-
-            # Poll VM to see whether it has finished running
-            Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-            $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-            $progress = 0
-            while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
-                $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-                $progress = [math]::min(100, $progress + 1)
-                Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
-                Start-Sleep 10
-            }
+            Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.mirrors.rg
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."
