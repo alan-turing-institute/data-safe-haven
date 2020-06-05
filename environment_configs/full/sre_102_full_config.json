@@ -1,6 +1,6 @@
 {
   "shm": {
-    "subscriptionName": "Turing Safe Haven Management",
+    "subscriptionName": "[Prod] Safe Haven Management",
     "id": "turing1",
     "name": "Turng Safe Haven",
     "organisation": {
@@ -91,6 +91,7 @@
       }
     },
     "dns": {
+      "subscriptionName": "[Prod] Safe Haven Management",
       "rg": "RG_SHM_DNS"
     }
   },
@@ -174,7 +175,10 @@
     },
     "keyVault": {
       "name": "kv-turing1-dsg102",
-      "rg": "RG_DSG_SECRETS"
+      "rg": "RG_DSG_SECRETS",
+      "secretNames": {
+        "letsEncryptCertificate": "sre-102-lets-encrypt-certificate"
+      }
     },
     "dc": {
       "rg": "RG_DSG_DC",

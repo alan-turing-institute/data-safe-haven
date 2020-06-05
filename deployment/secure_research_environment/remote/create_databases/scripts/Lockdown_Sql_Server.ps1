@@ -11,14 +11,16 @@ param(
     [string]$LocalAdminUser,
     [Parameter(Mandatory = $true, HelpMessage = "Server lockdown command")]
     [string]$ServerLockdownCommandB64,
-    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SQL admin group")]
-    [string]$SqlAdminGroup,
+    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level system administrators group")]
+    [string]$SysAdminGroup,
     [Parameter(Mandatory = $true, HelpMessage = "Password for SQL AuthUpdate User")]
     [string]$SqlAuthUpdateUserPassword,
     [Parameter(Mandatory = $true, HelpMessage = "Name of SQL AuthUpdate User")]
     [string]$SqlAuthUpdateUsername,
-    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE research users group")]
-    [string]$SreResearchUsersGroup
+    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level data administrators group")]
+    [string]$DataAdminGroup,
+    [Parameter(Mandatory = $true, HelpMessage = "Domain-qualified name for the SRE-level research users group")]
+    [string]$ResearchUsersGroup
 )
 
 Import-Module SqlServer
@@ -85,7 +87,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Give the configured domain groups login access to the SQL Server
     # ----------------------------------------------------------------
-    foreach ($domainGroup in @($SqlAdminGroup, $SreResearchUsersGroup)) {
+    foreach ($domainGroup in @($SysAdminGroup, $DataAdminGroup, $ResearchUsersGroup)) {
         Write-Output "Ensuring that '$domainGroup' has SQL login access to: '$serverName'..."
         if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $domainGroup } ) {
             Write-Output " [o] '$domainGroup' already has SQL login access to: '$serverName'"
@@ -113,22 +115,38 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
     }
 
+    # Create the data and public schemas
+    # ----------------------------------
+    foreach($groupSchemaTuple in @(($DataAdminGroup, "data"), ($ResearchUsersGroup, "dbopublic"))) {
+        $domainGroup, $schemaName = $groupSchemaTuple
+        $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'$schemaName') EXEC('CREATE SCHEMA $schemaName AUTHORIZATION [$domainGroup]');"
+        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        if ($? -And -Not $sqlErrorMessage) {
+            Write-Output " [o] Successfully ensured that '$schemaName' schema exists on: '$serverName'"
+            Start-Sleep -s 10  # allow time for the database action to complete
+        } else {
+            Write-Output " [x] Failed to ensure that '$schemaName' schema exists on: '$serverName'!"
+            Write-Output "Failed SQL command was: $sqlCommand"
+            Write-Output "Error message: $sqlErrorMessage"
+            exit 1
+        }
+    }
+
 
     # Give domain groups appropriate roles on the SQL Server
     # ------------------------------------------------------
-    foreach($groupRoleTuple in @(($SqlAdminGroup, "sysadmin"), ($SreResearchUsersGroup, "db_datareader"))) {
+    foreach($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "datareader"))) {
         $domainGroup, $role = $groupRoleTuple
-        Write-Output "Giving '$domainGroup' the $role role on: '$serverName'..."
-        # For admin roles we can set the role at a server level.
-        # For non-admin roles we rely on the earlier code which ensured that a DB user exists for each login
-        # NB. Powershell versions lower than 7 have no ternary operator so we need this awkward syntax.
-        $sqlCommand = $(
-            if ($role -Like "*admin*") {
-                "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
-            } else {
-                "ALTER ROLE [$role] ADD MEMBER [$domainGroup];"
-            }
-        )
+        if ($role -eq "sysadmin") { # this is a server-level role
+            $sqlCommand = "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
+        } elseif ($role -eq "dataadmin") { # this is a schema-level role
+            $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
+        } elseif ($role -eq "datareader") { # this is a schema-level role
+            $sqlCommand = "GRANT SELECT ON SCHEMA::data TO [$domainGroup]; ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; GRANT CREATE TABLE TO [$domainGroup];"
+        } else {
+            Write-Output " [x] Role $role not recognised!"
+            continue
+        }
         Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Successfully gave '$domainGroup' the $role role on: '$serverName'"
@@ -160,7 +178,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Removing database access from the local Windows admin
     # -----------------------------------------------------
     $windowsAdmin = "${serverName}\${LocalAdminUser}"
-    Write-Output "Removing database access for $windowsAdmin on: '$serverName'..."
+    Write-Output "Removing database access from $windowsAdmin on: '$serverName'..."
     $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
@@ -177,7 +195,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # Revoke the sysadmin role from the SQL AuthUpdateUser used to build the SQL Server
     # ---------------------------------------------------------------------------------
     Write-Output "Revoking sysadmin role from $SqlAuthUpdateUsername on: '$serverName'..."
-    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername"
+    $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $SqlAuthUpdateUsername;"
     Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"

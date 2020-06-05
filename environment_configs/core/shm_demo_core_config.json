@@ -1,18 +1,18 @@
 {
-    "subscriptionName": "[Prod] Safe Haven Management",
+    "subscriptionName": "Safe Haven Management Test B",
     "domainSubscriptionName": "[Prod] Safe Haven Domains",
-    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "adminSecurityGroupName" : "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
-    "domain": "turingsafehaven.ac.uk",
-    "netbiosName": "TURINGSAFEHAVEN",
-    "shmId": "turing1",
-    "name": "Turing Safe Haven",
+    "domain": "demo.dsgroupdev.co.uk",
+    "netbiosName": "SAFEHAVENDEMO",
+    "shmId": "demo",
+    "name": "Turing Development Safe Haven B",
     "organisation": {
         "name": "The Alan Turing Institute",
         "townCity": "London",
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth",
+    "location": "centralus",
     "ipPrefix": "10.0.0"
 }

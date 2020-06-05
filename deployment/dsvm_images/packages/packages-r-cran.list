@@ -189,7 +189,7 @@ RMySQL
 ROCR
 roxygen2
 rpart
-RPostgreSQL
+RPostgres
 rPython
 RSQLite
 rstan
