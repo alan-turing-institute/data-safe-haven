@@ -16,27 +16,20 @@ packages:
   - python3-venv
   - rsync
 
-# Add the SHM admin (default) and mirrordaemon users
-# lock_passwd: Lock the password to disable password login
-users:
-  - default
-  - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
-
 # Initialise an empty file `internal_mirror_ip_addresses.txt`
 # When internal mirrors are deployed, they add their IP address to this file
 # Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
+# NB. Since write_files runs before user creation, only pre-existing users can be assigned as file owners
 write_files:
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
-    owner: mirrordaemon:mirrordaemon
+    owner: root:root
     permissions: "0600"
   - path: "/home/mirrordaemon/package_whitelist.txt"
     permissions: "0600"
     content: |
       # PACKAGE_WHITELIST
   - path: "/home/mirrordaemon/update_bandersnatch_config.py"
-    owner: mirrordaemon:mirrordaemon
+    owner: root:root
     permissions: "0400"
     content: |
       #! /usr/bin/env python3
@@ -83,7 +76,7 @@ write_files:
               f_bandersnatch.write("\n")
       print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_whitelist.txt")
   - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
-    owner: mirrordaemon:mirrordaemon
+    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -104,7 +97,7 @@ write_files:
           echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
       done
   - path: "/home/mirrordaemon/pull_from_internet.sh"
-    owner: mirrordaemon:mirrordaemon
+    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
@@ -122,13 +115,14 @@ write_files:
       ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
       echo "$(date +'%Y-%m-%d %H:%M:%S'): Finished pulling from the internet after $ELAPSED" | tee -a /datadrive/mirrordaemon/mirrorserver.log
   - path: "/home/mirrordaemon/pull_then_push.sh"
-    owner: mirrordaemon:mirrordaemon
+    owner: root:root
     permissions: "0700"
     content: |
       #! /bin/bash
       source ~mirrordaemon/pull_from_internet.sh
       source ~mirrordaemon/push_to_internal_mirrors.sh
   - path: "/etc/bandersnatch.conf"
+    owner: root:root
     permissions: "0644"
     content: |
       [mirror]
@@ -178,6 +172,14 @@ write_files:
           macos
           freebsd
 
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+
 runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
@@ -223,6 +225,7 @@ runcmd:
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Schedule initial update for next boot
   - echo "*** Scheduling full mirror update jobs for each boot... ***"
