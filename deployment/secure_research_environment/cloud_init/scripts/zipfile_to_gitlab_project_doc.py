@@ -38,11 +38,6 @@ Note that the convention for the zipfile filenames is
 <repo-name>_<commit_hash>_<desired_branch_name>.zip
 """
 
-get_gitlab_config.__doc__ = """
-Return a dictionary containing the base URL for the gitlab API,
-the API token, the IP address, and the headers to go in any request
-"""
-
 get_group_namespace_ids.__doc__ = """
 Find the namespace_id corresponding to the groups we're interested in,
 e.g. 'approval' and 'unapproved'.
@@ -63,7 +58,6 @@ Get the list of Projects.
 
 Parameters
 ==========
-namespace_id: int, ID of the group ("unapproved" or "approval")
 gitlab_url: str, base URL for the API
 gitlab_token: str, API token.
 
@@ -88,7 +82,7 @@ Returns
 bool, True if project exists, False otherwise.
 """
 
-get_project_info.__doc__ = """
+get_or_create_project.__doc__ = """
 Check if project exists, and if so get its ID.  Otherwise, create
 it and return the ID.
 
@@ -102,24 +96,6 @@ gitlab_token: str, API key for Gitlab API.
 Returns
 =======
 project_info: dict, containing info from the projects API endpoint
-"""
-
-get_project_id.__doc__ = """
-Given the name of a repository and  namespace_id (i.e. group,
-"unapproved" or "approval"), either return the remote URL for project
-matching the repo name, or create it if it doesn't exist already,
-and again return the remote URL.
-
-Parameters
-==========
-repo_name: str, name of the repository/project we're looking for.
-namespace_id: int, the ID of the group ("unapproved" or "approval")
-gitlab_url: str, base URL of the API
-gitlab_token: str, API key
-
-Returns
-=======
-gitlab_project_url: str, the URL to be set as the "remote".
 """
 
 create_project.__doc__ = """
@@ -166,10 +142,20 @@ the dictionary of project information returned when
 creating a new project or listing existing ones.
 gitlab_url: str, the base URL for the Gitlab API
 gitlab_token: str, the Gitlab API token
+reference_branch: str, (default "_gitlab_ingress_review"), create the new
+branch based on this branch
 
 Returns
 =======
 branch_info: dict, info about the branch from API endpoint
+"""
+
+create_branch_if_not_exists.__doc__ = """
+Idempotent form of `create_branch`.  
+
+Additional argument, (between gitlab_token and reference_branch)
+log_project_info: str, prefix to use for logging messages
+(most likely the repo name)
 """
 
 check_if_merge_request_exists.__doc__ = """
@@ -215,6 +201,9 @@ Returns
 mr_info: dict, the response from the API upon creating the Merge Request
 """
 
+create_merge_request_if_not_exists.__doc__ = """
+Idempotent form of `create_merge_request`.
+"""
 
 clone_commit_and_push.__doc__ = """ 
 Run shell commands to convert the unzipped directory containing the
@@ -248,7 +237,7 @@ Returns
 new_project_id: int, the id of the newly created 'unapproved/<project-name>' project
 """
 
-unzipped_repo_to_merge_request = """
+unzipped_snapshot_to_merge_request = """
 Go through all the steps for a single repo/project.
 
 Parameters
