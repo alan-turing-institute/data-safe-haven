@@ -35,7 +35,7 @@ Package | Version | Date of publication | Downloads last 30 days | Downloads las
 
 ## DECISION
 **Decision:** Accept/Reject\
-**Reason (required in case of rejection):**
+**Reason (required):**
 
 ## CIRCULATION
 
