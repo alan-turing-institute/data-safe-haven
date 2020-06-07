@@ -119,8 +119,8 @@ runcmd:
   - echo "*** Adding internal update (rsync) job to crontab (2am each day)... ***"
   - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
-  - echo "*** Adding external update (rsync from CRAN) job to crontab (3am each day)... ***"
-  - echo "0 3 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
+  - echo "*** Adding external update (rsync from CRAN) job to crontab (every 6 hours)... ***"
+  - echo "0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
   - tail -n 1 /etc/crontab
 
   # Schedule update job on each boot
