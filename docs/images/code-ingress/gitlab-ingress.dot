@@ -1,0 +1,65 @@
+digraph ingress {   
+    newrank=true;
+    rankdir=LR;
+    graph [compound = true, fontname="Trebuchet MS", fontsize=12];
+    node [shape=box, fontname="Trebuchet MS", fontsize=10];
+    edge [fontname="Trebuchet MS", fontsize=10]
+
+    blob [shape=cylinder];
+
+    {rank=same; blob, win_rds}
+
+    subgraph cluster_admin {
+        label="admin";
+        color=lightgray
+        rank=same0
+        SRE_Upload [label="SRE_Upload_Git_Repo_to_GitlabExternal.ps1", color=purple, fontcolor=purple, shape=note];
+    }
+
+    remote -> SRE_Upload [label="1. git clone", dir="back", color=purple, fontcolor=purple];
+    SRE_Upload -> curl_zipfile [label="3. Invoke-RemoteScript", color=purple, fontcolor=purple];
+    SRE_Upload -> blob [label="2. copy zipfile", color=purple, fontcolor=purple];
+    blob -> curl_zipfile [label="4. curl zipfile", dir="back", color=purple, fontcolor=purple];
+    {rank=same0; blob}
+
+    subgraph cluster_gl_external {
+        label = "GITLAB-EXTERNAL";
+        color=lightgray;
+
+        curl_zipfile [label="...", shape=note, color=purple, fontcolor=purple];
+        zipfile [label="url_sha_name_branch.zip", shape=cylinder];
+        curl_zipfile -> zipfile [label=create, arrowhead=empty, color=purple, fontcolor=purple];
+
+        subgraph cluster_glext_gitlab {
+            color = lightgray;
+            label = "GitLab";
+            unapproved [label="unapproved/repo", shape=folder]
+            approved [label="approved/repo", shape=folder]
+            unapproved -> approved [label="1. merge*", arrowhead=empty, color=darkgreen, fontcolor=darkgreen];
+            unapproved -> approved [label="4. open MR", arrowhead=empty, color=blue, fontcolor=blue];
+        }
+        git_repo [label="git repo", shape=folder]
+        git_repo -> unapproved [arrowhead=empty, label="3. GitLab create/git push", color=blue, fontcolor=blue];
+        git_repo -> unapproved [arrowtail=empty, dir="back", label="1. git clone", color=blue, fontcolor=blue];
+        zipfile -> git_repo [arrowhead=empty, label="2. Replace contents & commit", color=blue, fontcolor=blue];
+
+        cron [shape=circle]
+        check_merge_requests [color=darkgreen, fontcolor=darkgreen, shape=note, label="check_merge_requests.py"];
+        make_merge_request [color=blue, fontcolor=blue, shape=note, label="zipfile_to_gitlab_project.py"];
+        cron -> check_merge_requests [arrowhead=empty, label="invoke"];
+        cron -> make_merge_request [arrowhead=empty, label="invoke"];
+        whitelist_log [shape=cylinder];
+        check_merge_requests -> whitelist_log [arrowhead=empty, label="write to", color=darkgreen, fontcolor=darkgreen];
+        {rank="same"; cron, zipfile}
+        {rank="same"; git_repo, whitelist_log}
+    }
+    gl_internal [label="GITLAB-INTERNAL"]
+    approved -> gl_internal [label="2. GitLab create/git push", color=darkgreen, fontcolor=darkgreen]
+
+    win_rds -> win_review [label="reviewer"];
+    win_review -> unapproved [lhead=cluster_glext_gitlab, label="review open MRs"]
+    win_rds -> win_apps [label="user"];
+    {rank=same; win_review, win_apps}
+    win_apps -> dsvm [label="user"];
+    dsvm -> gl_internal;
+}
