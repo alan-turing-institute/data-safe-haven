@@ -158,7 +158,7 @@ if ($unneededCorePackages) {
 }
 $unavailablePackages = $sortedDependencies["unavailable_packages"][$MirrorType]
 if ($unavailablePackages) {
-    Add-LogMessage -Level Warning "... removed $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
+    Add-LogMessage -Level Warning "... ignored $($unavailablePackages.Count) dependencies that could not be found in ${MirrorType}: $unavailablePackages"
 }
 
 

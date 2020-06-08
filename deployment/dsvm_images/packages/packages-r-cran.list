@@ -161,12 +161,13 @@ rgdal
 rgeos
 rgl
 rJava
+RMariaDB
 rmarkdown
 RMySQL
 ROCR
 roxygen2
 rpart
-RPostgreSQL
+RPostgres
 rPython
 RSQLite
 rstan
