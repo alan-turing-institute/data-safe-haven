@@ -65,8 +65,30 @@ if ($upgrade) {
         $_ = Set-AzContext -Context $originalContext
         exit 0
     }
+} else {
+    # If the IP address is already used, check if there is a VM attached.
+    # If there is abort, otherwise remove the NIC
+    # -------------------------------------------------------------------
+    if ($existingNic) {
+        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+        if ($existingNic.VirtualMachine.Id) {
+            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
+            $_ = Set-AzContext -Context $originalContext
+            exit 0
+        } else {
+            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
+            $_ = $existingNic | Remove-AzNetworkInterface -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Network card removal succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Network card removal failed!"
+            }
+        }
+    }
+}
 
 
+if ($upgrade) {
     # Stop existing VM
     # ----------------
     Add-LogMessage -Level Info "[ ] Stopping old virtual machine."
@@ -141,26 +163,6 @@ if ($upgrade) {
             Add-LogMessage -Level Success "Disk deletion succeeded"
         } else {
             Add-LogMessage -Level Fatal "Disk deletion failed!"
-        }
-    }
-} else {
-    # If the IP address is already used, check if there is a VM attached.
-    # If there is abort, otherwise remove the NIC
-    # -------------------------------------------------------------------
-    if ($existingNic) {
-        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
-        if ($existingNic.VirtualMachine.Id) {
-            Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
-            $_ = Set-AzContext -Context $originalContext
-            exit 0
-        } else {
-            Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
-            $_ = $existingNic | Remove-AzNetworkInterface -Force
-            if ($?) {
-                Add-LogMessage -Level Success "Network card removal succeeded"
-            } else {
-                Add-LogMessage -Level Fatal "Network card removal failed!"
-            }
         }
     }
 }
