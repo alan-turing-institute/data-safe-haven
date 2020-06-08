@@ -7,21 +7,26 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+ - [ /dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail" ]
+
 # List of packages to install with apt-get
 packages:
   - openssh-server
   - python3-pip
   - python3-venv
-
-# Add the atiadmin (default) and mirrordaemon users
-# lock_passwd: Lock the password to disable password login
-users:
-  - default
-  - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
-    ssh_authorized_keys:
-      - EXTERNAL_PUBLIC_SSH_KEY
 
 write_files:
   - path: "/etc/systemd/system/pypiserver.service"
@@ -36,7 +41,7 @@ write_files:
       User=mirrordaemon
       Group=mirrordaemon
 
-      ExecStart=/pypiserver/bin/pypi-server -p 3128 -P . -a . -v --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
+      ExecStart=/usr/local/bin/pypi-server -p 3128 -P . -a . -v --log-file /datadrive/mirrordaemon/pypiserver.log /datadrive/mirrordaemon/pypi/web/packages
       ExecStop=/bin/kill -TERM $MAINPID
       ExecReload=/bin/kill -HUP $MAINPID
       Restart=always
@@ -48,7 +53,7 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
-  - path: "/pypiserver.app.py.patch"
+  - path: "/var/local/pypiserver.app.py.patch"
     content: |
       --- _app.py 2019-04-03 19:51:21.000000000 +0100
       +++ _app.py 2019-04-03 20:27:05.000000000 +0100
@@ -134,6 +139,15 @@ write_files:
       +    # End of patch
            entries = core.find_packages(packages())
 
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
 
 runcmd:
   # Suppress apt prompts and warning messages
@@ -146,36 +160,27 @@ runcmd:
 
   # Set up disk
   - echo "*** Setting up local disk... ***"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /datadrive
-  - mount /dev/sdc1 /datadrive
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
-  - mv fstab.tmp /etc/fstab
   - mkdir -p /datadrive/mirrordaemon/pypi/web/packages
+  - ls -alh /datadrive
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
 
   # Install pypiserver with pip
   - echo "*** Installing pypiserver... ***"
-  - python3 -m venv pypiserver
-  - pypiserver/bin/pip install pypiserver==1.2.7
+  - pip3 install pypiserver==1.2.7
   # Patch pypiserver so that it uses the static simple index files
   - echo "*** Patching pypiserver to use static index files ***"
-  - cd /pypiserver/lib/python3*/site-packages/pypiserver
-  - patch < /pypiserver.app.py.patch
+  - cd /usr/local/lib/python3*/dist-packages/pypiserver
+  - patch < /var/local/pypiserver.app.py.patch
   - cd /
+  - echo "Using pypi-server from '$(which pypi-server)'"
 
   # Set up pypiserver: 'start' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up pypiserver pointing to local disk... ***"
-  - systemctl enable pypiserver.service
-  - systemctl start pypiserver.service
-  - systemctl status pypiserver.service
+  - systemctl enable pypiserver
+  - systemctl start pypiserver
+  - systemctl status pypiserver
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
