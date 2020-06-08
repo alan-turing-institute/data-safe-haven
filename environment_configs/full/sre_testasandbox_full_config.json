@@ -276,7 +276,7 @@
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
-          "allowedSources": "193.60.220.253",
+          "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
