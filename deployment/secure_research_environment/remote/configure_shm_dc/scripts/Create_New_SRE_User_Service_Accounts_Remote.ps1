@@ -5,41 +5,15 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreFqdn,
-    [String]$shmFqdn,
+    [String]$shmLdapUserSgName,
     [String]$shmSystemAdministratorSgName,
-    [String]$shmSystemAdministratorSgDescription,
-    [String]$systemAdministratorSgName,
-    [String]$systemAdministratorSgDescription,
-    [String]$dataAdministratorSgName,
-    [String]$dataAdministratorSgDescription,
-    [String]$researchUserSgName,
-    [String]$researchUserSgDescription,
-    [String]$ldapUserSgName,
-    [String]$securityOuPath,
-    [String]$serviceOuPath,
+    [String]$groupsB64,
+    [String]$ldapUsersB64,
+    [String]$researchUsersB64,
+    [String]$serviceUsersB64,
     [String]$researchUserOuPath,
-    [String]$hackmdSamAccountName,
-    [String]$hackmdName,
-    [String]$hackmdPasswordEncrypted,
-    [String]$gitlabSamAccountName,
-    [String]$gitlabName,
-    [String]$gitlabPasswordEncrypted,
-    [String]$dsvmSamAccountName,
-    [String]$dsvmName,
-    [String]$dsvmPasswordEncrypted,
-    [String]$postgresDbServiceAccountSamAccountName,
-    [String]$postgresDbServiceAccountName,
-    [String]$postgresDbServiceAccountPasswordEncrypted,
-    [String]$postgresVmSamAccountName,
-    [String]$postgresVmName,
-    [String]$postgresVmPasswordEncrypted,
-    [String]$dataMountSamAccountName,
-    [String]$dataMountName,
-    [String]$dataMountPasswordEncrypted,
-    [String]$testResearcherSamAccountName,
-    [String]$testResearcherName,
-    [String]$testResearcherPasswordEncrypted
+    [String]$securityOuPath,
+    [String]$serviceOuPath
 )
 
 function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
@@ -81,43 +55,53 @@ function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
     }
 }
 
-# Convert encrypted string to secure string
-$hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncrypted -Key (1..16)
-$gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
-$dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
-$dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
-$postgresVmPasswordSecureString = ConvertTo-SecureString -String $postgresVmPasswordEncrypted -Key (1..16)
-$postgresDbServiceAccountPasswordSecureString = ConvertTo-SecureString -String $postgresDbServiceAccountPasswordEncrypted -Key (1..16)
-$testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
-
-# Create SRE Security Groups
-New-SreGroup -name $dataAdministratorSgName -description $dataAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-New-SreGroup -name $systemAdministratorSgName -description $systemAdministratorSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-
-# Create LDAP users for SRE
-New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
-New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
-New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $postgresVmSamAccountName -name $postgresVmName -path $serviceOuPath -passwordSecureString $postgresVmPasswordSecureString
-
-# Create service accounts for SRE
-New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
-New-SreUser -samAccountName $postgresDbServiceAccountSamAccountName -name $postgresDbServiceAccountName -path $serviceOuPath -passwordSecureString $postgresDbServiceAccountPasswordSecureString
-
-# Create other accounts for SRE
-New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
-
-# Add LDAP users to the LDAP users security group
-foreach ($samAccountName in @($dsvmSamAccountName, $gitlabSamAccountName, $hackmdSamAccountName, $postgresVmSamAccountName)) {
-    Write-Output " [ ] Adding '$samAccountName' user to group '$ldapUserSgName'"
-    Add-ADGroupMember "$ldapUserSgName" "$samAccountName"
+function Add-SreUserToGroup($name, $samAccountName, $groupName) {
+    if ((Get-ADGroupMember -Identity $groupName | Where-Object { $_.SamAccountName -eq "$samAccountName" })) {
+        Write-Output " [o] User '$name' ('$samAccountName') is already a member of '$groupName'"
+    } else {
+        Write-Output " [ ] Adding '$samAccountName)' user to group '$groupName'"
+        Add-ADGroupMember -Identity "$groupName" -Members "$samAccountName"
+        if ($?) {
+            Write-Output " [o] User '$name' ('$samAccountName') was added to '$groupName'"
+        } else {
+            Write-Output " [x] User '$name' ('$samAccountName') could not be added to '$groupName'!"
+        }
+        return $user
+    }
 }
 
-# Add test researcher to the researchers security group
-Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
-Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"
+# Unserialise JSON and read into PSCustomObject
+$groups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
+$ldapUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($ldapUsersB64)) | ConvertFrom-Json
+$researchUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($researchUsersB64)) | ConvertFrom-Json
+$serviceUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
+
+# Create SRE Security Groups
+$researchUserSgName = $null
+foreach ($group in $groups.PSObject.Members) {
+    if ($group.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreGroup -name $group.Value.name -description $group.Value.description -Path $securityOuPath -GroupScope Global -GroupCategory Security
+}
 
 # Add SHM sysadmins group to the SRE sysadmins group
-Write-Output " [ ] Adding '$shmSystemAdministratorSgName' group to group '$systemAdministratorSgName'"
-Add-ADGroupMember "$systemAdministratorSgName" "$shmSystemAdministratorSgName"
+Add-SreUserToGroup -samAccountName "$shmSystemAdministratorSgName" -name "$shmSystemAdministratorSgName" -groupName $groups.systemAdministrators.name
+
+# Create LDAP users for SRE and add them to the LDAP users SG
+foreach ($user in $ldapUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -samAccountName "$($user.Value.samAccountName)" -name "$($user.Value.name)" -path $serviceOuPath -passwordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+    Add-SreUserToGroup -samAccountName "$($user.Value.samAccountName)" -name "$($user.Value.name)" -groupName $shmLdapUserSgName
+}
+
+# Create service accounts for SRE
+foreach ($user in $serviceUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -samAccountName "$($user.Value.samAccountName)" -name "$($user.Value.name)" -path $serviceOuPath -passwordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+}
+
+# Create research users for SRE and add them to the researchers SG
+foreach ($user in $researchUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -samAccountName "$($user.Value.samAccountName)" -name "$($user.Value.name)" -path $researchUserOuPath -passwordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+    Add-SreUserToGroup -samAccountName "$($user.Value.samAccountName)" -name "$($user.Value.name)" -groupName $groups.researchUsers.name
+}
