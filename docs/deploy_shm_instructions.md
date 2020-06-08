@@ -465,7 +465,7 @@ rather than simply `<admin username>`)
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
 1. Update the AAD rules
-    - Open Powershell as an administrator
+    - Open Powershell (within the SHM DC) as an administrator
     - Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
@@ -494,6 +494,8 @@ This step allows the locale (country code) to be pushed from the local AD to the
 3. Go to the Azure Active Directory in `portal.azure.com`
     - Click `Users > All users` and confirm that the new user is shown in the user list.
     - It may take a few minutes for the synchronisation to fully propagate in Azure.
+    - The new user account should have `source` as `Windows Server AD`
+    - This may take a few minutes for the synchronisation to fully propagate in Azure.
 
 #### Troubleshooting: Account already exists
 If you get the message `New-ADUser :  The specified account already exists` you should first check to see whether that user actually does already exist!
@@ -530,7 +532,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ## 9. Deploy and configure Network Policy Server (NPS)
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
-- Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
+- Open a Powershell terminal (from your deployment machine) and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
     - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_NPS.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
@@ -539,7 +541,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### Configure NPS server
 1. Log in to the NPS Server VM using Microsoft Remote Desktop
-    - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group
+    - the private IP address for the SHM NPS VM can be found in the `RG_SHM_NPS` resource group by selecting one the `NPS-SHM-<SHM ID>` VM and looking at the `Private IP` field.
     - the Username and Password are the same as for `DC1-SHM` and `DC2-SHM` (ie the credentials you used above to Remote Desktop into the domain controller above):
     - To obtain the login credentials again, on the Azure portal navigate to the `RG_SHM_SECRETS` resource group and then the `kv-shm-<SHM ID>` key vault and then select `secrets` on the left hand panel.
     - The username is the `shm-<SHM ID>-vm-admin-username` secret plus the domain, ie `<admin username>@custom domain`
@@ -563,7 +565,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### MFA Configuation
 1. Configure MFA settings:
-    - Open Powershell as an administrator
+    - Open Powershell (from the SHM DC) as an administrator
     - Run `& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"`
     - Enter `A` when prompted
     - If you are prompted to add webpages to exceptions then accept them.
@@ -597,9 +599,9 @@ Once you're certain that you're adding a new user, make sure that the following 
       - If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`. Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
     - **Troubleshooting:** If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet`, check the following:
       - Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
-        - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\admin` rather than `NPS-SHM-<SHM ID>\admin`.
+        - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
         - If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-      - Make sure you authenticate to `Azure Active Directory` your own **internal** Global Administrator (i.e. `admin.forstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your ohone number + email address and c onfigured MFA on your account.
+      - Make sure you authenticate to `Azure Active Directory` your own **internal** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your ohone number + email address and c onfigured MFA on your account.
 4. At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 ## 10. Require MFA for all users
