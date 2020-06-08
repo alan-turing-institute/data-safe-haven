@@ -638,7 +638,7 @@ Your SRE contact will then arrange for it to be reviewed.  Typically, there will
 
 Once the review is complete, if the repository is *not* approved, this will be communicated along with the reason (so that this might be addressed for another request).
 
-An approved repository will appear in the SRE GitLab instance described below.  This repository will be owned by the GitLab user named "Ingress" and will be visible globally within the SRE.  You will not have direct write access to this repository -- any modifications made *within* theshould be made on a fork.  Since these repositories are in a single namespace, in the (somewhat unlikely) event of a naming collision, a repository may be added within the SRE under a different name.  Your SRE contact will advise if this is the case.
+An approved repository will appear in the SRE GitLab instance described below.  This repository will be owned by the GitLab user named "Ingress" and will be visible globally within the SRE.  You will not have direct write access to this repository -- any modifications made *within* the SRE should be made on a fork.  Since these repositories are in a single namespace, in the (somewhat unlikely) event of a naming collision, a repository may be added within the SRE under a different name.  Your SRE contact will advise if this is the case.
 
 ## :couple: Collaborate on code using GitLab
 
