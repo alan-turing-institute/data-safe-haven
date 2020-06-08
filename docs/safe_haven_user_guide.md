@@ -630,7 +630,7 @@ If this is not the case, there is a structured process for reviewing and importi
 
 Be prepared to provide:
 - the name of your SRE
-- the Git URL of the repository (it does not have to be puplic, although your SRE contact should be able to clone from it, which might be by arrangement)
+- the Git URL of the repository (it does not have to be public, although your SRE contact should be able to clone from it, which might be by arrangement)
 - the **full commit SHA** of the commit (or commits) that you would like to request to be made available
 - the name of the branch (or branches) that these should correspond to
 
