@@ -347,7 +347,7 @@ Add-LogMessage -Level Info "[ ] Getting list of packages for each VM"
 $filePathsSh1 = New-Object System.Collections.ArrayList ($null)
 $filePathsSh2 = New-Object System.Collections.ArrayList ($null)
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
+    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
         $_ = $filePathsSh1.Add($blob.Name)
         $_ = $filePathsSh2.Add($blob.Name)
     } elseif ($blob.Name -like "*LibreOffice_x64.msi") {
