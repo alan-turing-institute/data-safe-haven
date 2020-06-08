@@ -196,6 +196,7 @@ mkl-service
 mock
 monocle
 more-itertools
+mpctools
 mpi4py
 mpld3
 mpmath
@@ -315,6 +316,7 @@ pyzmq
 qtconsole
 regex
 reportlab
+repro-catalogue
 requests
 retrying
 rpy2
