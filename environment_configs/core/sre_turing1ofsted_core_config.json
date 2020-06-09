@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing1 SRE Ofsted",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "sreId": "ofsted",
+    "shmId": "turing1",
+    "tier": "3",
+    "domain": "sandbox.turingsafehaven.ac.uk",
+    "netbiosName": "OFSTED",
+    "ipPrefix": "10.228.8",
+    "rdsAllowedSources": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020050300"
+}
