@@ -137,9 +137,9 @@
     "tier": "3",
     "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
-      "fqdn": "sandbox.turingsafehaven.ac.uk",
+      "fqdn": "ofsted.turingsafehaven.ac.uk",
       "netbiosName": "OFSTED",
-      "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
+      "dn": "DC=ofsted,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
         "dataAdministrators": {
           "name": "SG OFSTED Data Administrators",

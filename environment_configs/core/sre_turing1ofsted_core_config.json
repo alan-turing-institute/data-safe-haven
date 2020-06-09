@@ -4,7 +4,7 @@
     "sreId": "ofsted",
     "shmId": "turing1",
     "tier": "3",
-    "domain": "sandbox.turingsafehaven.ac.uk",
+    "domain": "ofsted.turingsafehaven.ac.uk",
     "netbiosName": "OFSTED",
     "ipPrefix": "10.228.8",
     "rdsAllowedSources": "default",
