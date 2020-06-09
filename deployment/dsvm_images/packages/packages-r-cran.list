@@ -23,7 +23,7 @@ coda
 codetools
 colorRamps
 colorspace
-compiler
+COMBAT
 corrgram
 corrplot
 cowplot
@@ -32,7 +32,6 @@ crayon
 CVST
 cvTools
 data.table
-datasets
 DBI
 deepnet
 devtools
@@ -84,9 +83,6 @@ ggvis
 glmnet
 googleVis
 gplots
-graphics
-grDevices
-grid
 gridExtra
 groupdata2
 gtable
@@ -134,8 +130,6 @@ mboost
 mclust
 MCMCpack
 McSpatial
-methods
-Metrics
 mgcv
 microbenchmark
 mime
@@ -150,7 +144,6 @@ neuralnet
 nlme
 nnet
 odbc
-parallel
 parallelMap
 ParamHelpers
 party
@@ -184,6 +177,7 @@ rgdal
 rgeos
 rgl
 rJava
+RMariaDB
 rmarkdown
 RMySQL
 ROCR
@@ -204,11 +198,8 @@ sourcetools
 sp
 spacyr
 spatial
-splines
 sqldf
 stargazer
-stats
-stats4
 stm
 stringi
 stringr
@@ -222,17 +213,14 @@ text2vec
 tgp
 threejs
 tibble
-tictoc
 tidyr
 tidytext
 tidyverse
 tmap
-tools
 topicmodels
 traj
 tsne
 urca
-utils
 uuid
 varbvs
 varhandle
