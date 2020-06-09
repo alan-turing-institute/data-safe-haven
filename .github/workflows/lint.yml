@@ -1,0 +1,16 @@
+on: [push, pull_request]
+
+jobs:
+  lint:
+    name: Lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt install -y yamllint
+      - name: Lint YAML
+        run: |
+          yamllint ./
