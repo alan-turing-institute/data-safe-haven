@@ -16,6 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install flake8 yamllint
+          sudo apt install -y shellcheck
       - name: Lint YAML
         continue-on-error: true
         run: |
@@ -24,3 +25,6 @@ jobs:
         continue-on-error: true
         run: |
           flake8 . --statistics --count
+      - name: Lint shell scripts
+        run: |
+          find . -name "*.sh" -exec shellcheck -f gcc {} \+
