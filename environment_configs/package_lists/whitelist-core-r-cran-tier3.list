@@ -125,7 +125,6 @@ import
 kaps
 kernlab
 KernSmooth
->>>>>>> master
 KFAS
 kstMatrix
 latex2exp
@@ -208,7 +207,6 @@ R2jags
 R2WinBUGS
 R6
 R62S3
->>>>>>> master
 RandomFields
 randomForestSRC
 RApiSerialize
