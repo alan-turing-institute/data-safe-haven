@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing1 SRE World Bank",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "sreId": "wbank",
+    "shmId": "turing1",
+    "tier": "3",
+    "domain": "worldbank.turingsafehaven.ac.uk",
+    "netbiosName": "WORLDBANK",
+    "ipPrefix": "10.228.16",
+    "rdsAllowedSources": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020050300"
+}
