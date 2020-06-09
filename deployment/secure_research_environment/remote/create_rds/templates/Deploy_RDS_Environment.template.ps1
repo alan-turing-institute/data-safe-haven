@@ -58,11 +58,11 @@ New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh1V
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
 Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\AppFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
-`$collectionName = "Presentation Server"
-Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
-New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
-Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
+# `$collectionName = "Presentation Server"
+# Write-Host -ForegroundColor Cyan "Creating '`$collectionName' collection..."
+# New-RDSessionCollection -CollectionName "`$collectionName" -SessionHost $rdsSh2VmFqdn -ConnectionBroker $rdsGatewayVmFqdn
+# Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -UserGroup "$shmNetbiosName\SG $sreNetbiosName Research Users" -ClientPrinterRedirected `$false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ConnectionBroker $rdsGatewayVmFqdn
+# Set-RDSessionCollectionConfiguration -CollectionName "`$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath \\$rdsGatewayVmName\RDPFileShares -ConnectionBroker $rdsGatewayVmFqdn
 
 
 # Create applications
@@ -72,7 +72,6 @@ New-RDRemoteApp -Alias "mstsc (1)" -DisplayName "DSVM Main (Desktop)" -FilePath 
 New-RDRemoteApp -Alias "putty (1)" -DisplayName "DSVM Main (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh $dataSubnetIpPrefix.160" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "mstsc (2)" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "putty (2)" -DisplayName "DSVM Other (SSH)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
-New-RDRemoteApp -Alias WinSCP -DisplayName "File Transfer" -FilePath "C:\Program Files (x86)\WinSCP\WinSCP.exe" -ShowInWebAccess 1 -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (1)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.151" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 New-RDRemoteApp -Alias "chrome (2)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://$dataSubnetIpPrefix.152:3000" -CollectionName "Remote Applications" -ConnectionBroker $rdsGatewayVmFqdn
 
@@ -104,11 +103,6 @@ if (`$?) {
 } else {
     Write-Host " [x] RDS webclient installation failed!"
 }
-
-
-# # Update where the remote desktop is hosted
-# # -----------------------------------------
-# Invoke-Expression -Command "$remoteUploadDir\Set-RDPublishedName.ps1 -ClientAccessName `$sreFqdn"
 
 
 # Remove the requirement for the /RDWeb/webclient/ suffix by setting up a redirect in IIS

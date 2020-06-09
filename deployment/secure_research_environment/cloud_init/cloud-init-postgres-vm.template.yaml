@@ -1,0 +1,371 @@
+#cloud-config
+
+
+# Update package database on first boot (ie. run `apt-get update`)
+package_update: true
+
+
+# Upgrade installed packages on first boot (ie. run `apt-get upgrade`)
+package_upgrade: true
+
+
+apt:
+  # Preserves the existing /etc/apt/sources.list
+  preserve_sources_list: true
+
+  # Add repositories
+  sources:
+    postgresql.list:
+      source: "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+      keyid: 7FCC7D46ACCC4CF8
+
+
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+ - [ /dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail" ]
+
+write_files:
+  - path: "/etc/ldap.secret"
+    permissions: "0600"
+    content: |
+      <ldap-bind-user-password>
+  - path: "/etc/postgres-user.secret"
+    permissions: "0600"
+    content: |
+      <db-local-admin-password>
+  - path: "/etc/postgres-service-account.secret"
+    permissions: "0600"
+    content: |
+      <ldap-postgres-service-account-password>
+  - path: "/etc/krb5.conf"
+    content: |
+      [libdefaults]
+        default_realm = <shm-fqdn-upper>
+        rdns = false
+        # The following krb5.conf variables are only for MIT Kerberos.
+        krb4_config = /etc/krb.conf
+        krb4_realms = /etc/krb.realms
+        kdc_timesync = 1
+        ccache_type = 4
+        forwardable = true
+        proxiable = true
+        # The following libdefaults parameters are only for Heimdal Kerberos.
+        v4_instance_resolve = false
+        v4_name_convert = {
+          host = {
+            rcmd = host
+            ftp = ftp
+          }
+          plain = {
+            something = something-else
+          }
+        }
+        fcc-mit-ticketflags = true
+
+      [realms]
+        <shm-fqdn-upper> = {
+          kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
+          admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
+          default_domain = <shm-fqdn-upper>
+        }
+
+      [domain_realm]
+        .<shm-fqdn-lower> = <shm-fqdn-upper>
+        <shm-fqdn-lower> = <shm-fqdn-upper>
+
+      [login]
+        krb4_convert = true
+        krb4_get_tickets = false
+  - path: "/opt/installation/join_domain.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
+      echo ">=== Setting hostname in /etc/hostname... ===<"
+      hostnamectl set-hostname <db-vm-hostname>.<shm-fqdn-lower>
+      cat /etc/hostname
+      # Update DNS settings
+      echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
+      rm /etc/resolv.conf
+      sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
+      ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+      cat /etc/resolv.conf
+      # Restart systemd-resolved to ensure that these settings get propagated
+      systemctl restart systemd-resolved
+      systemctl status systemd-resolved
+      # Add localhost information to /etc/hosts
+      echo ">=== Adding <db-vm-hostname> [<db-vm-ipaddress>] to /etc/hosts... ===<"
+      HOST_INFORMATION="<db-vm-ipaddress> <db-vm-hostname> <db-vm-hostname>.<shm-fqdn-lower>"
+      sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
+      cat /etc/hosts
+      # Configure sssd
+      echo ">=== Configuring sssd... ===<"
+      cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
+      chmod 0600 /etc/sssd/sssd.conf
+      ls -alh /etc/sssd/sssd.conf
+      # Join realm
+      echo ">=== Joining realm... ===<"
+      cat /etc/ldap.secret | realm join --verbose -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
+  - path: "/opt/installation/pg-ldap-sync.yaml"
+    owner: root:root
+    permissions: "0700"
+    content: |
+      # With this sample config the distinction between LDAP-synchronized
+      # groups/users from is done by the membership to ldap_user and
+      # ldap_group. These two roles has to be defined manally before
+      # pg_ldap_sync can run.
+
+      # Connection parameters to LDAP server
+      # see also: http://net-ldap.rubyforge.org/Net/LDAP.html#method-c-new
+      # TODO: get SSL working on port 636
+      ldap_connection:
+        host: <shm-dc-hostname>
+        #port: 636
+        port: 389
+        auth:
+          method: :simple
+          username: <ldap-bind-user-dn>
+          password: <ldap-bind-user-password>
+        #encryption:
+        #  method: :simple_tls
+
+      # Search parameters for LDAP users which should be synchronized
+      ldap_users:
+        base: <ldap-users-base-dn>
+        # LDAP filter defining which LDAP users should be synchronized
+        filter: <ldap-user-filter>
+        # this attribute is used as PG role name
+        name_attribute: sAMAccountName
+        # lowercase name for use as PG role name
+        lowercase_name: false
+
+      # Search parameters for LDAP groups which should be synchronized
+      ldap_groups:
+        base: <ldap-groups-base-dn>
+        # LDAP filter defining which LDAP groups should be synchronized
+        filter: <ldap-group-filter>
+        # this attribute is used as PG role name
+        name_attribute: cn
+        # lowercase name for use as PG role name
+        lowercase_name: false
+        # this attribute must reference to all member DN's of the given group
+        member_attribute: member
+
+      # Connection parameters to PostgreSQL server
+      # see also: http://rubydoc.info/gems/pg/PG/Connection#initialize-instance_method
+      pg_connection:
+        host:
+        dbname: postgres
+        user: postgres
+        password:
+
+      pg_users:
+        # Filter for identifying LDAP generated users in the database.
+        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
+        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_users')
+        # Options for CREATE RULE statements
+        create_options: LOGIN IN ROLE ldap_users
+
+      pg_groups:
+        # Filter for identifying LDAP generated groups in the database.
+        # It's the WHERE-condition to "SELECT rolname, oid FROM pg_roles"
+        filter: oid IN (SELECT pam.member FROM pg_auth_members pam JOIN pg_roles pr ON pr.oid=pam.roleid WHERE pr.rolname='ldap_groups')
+        # Options for CREATE RULE statements
+        create_options: NOLOGIN IN ROLE ldap_groups
+        grant_options:
+
+
+  - path: "/opt/installation/create-postgres-triggers.sql"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      /* Ensure that all members of '<db-sysadmin-group>' have superuser permissions */
+      /* Triggering on all ddl_command_end will catch any: CREATE, ALTER, DROP, SECURITY LABEL, COMMENT, GRANT or REVOKE command */
+      /* We require that CURRENT_USER has SUPERUSER permissions inside the function, otherwise the ALTER USER calls will fail*/
+      CREATE OR REPLACE FUNCTION fn_sysadmin_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
+          FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
+          END LOOP;
+          FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '<db-sysadmin-group>', 'member')) LOOP
+            EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);
+          END LOOP;
+        END IF;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_sysadmin_permissions ON ddl_command_end EXECUTE FUNCTION fn_sysadmin_permissions();
+      /* Restrict default privileges on public schema to '<db-users-group>' */
+      REVOKE ALL PRIVILEGES ON SCHEMA public FROM PUBLIC;
+      GRANT ALL PRIVILEGES ON SCHEMA public TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'public' schema are readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_public_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='public') LOOP
+          EXECUTE format('GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_public_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_public_schema_table_permissions();
+      /* Create the data schema: allow '<db-users-group>' to read and '<db-data-admin-group>' to do anything */
+      CREATE SCHEMA IF NOT EXISTS data AUTHORIZATION "<db-data-admin-group>";
+      GRANT ALL PRIVILEGES ON SCHEMA data TO "<db-data-admin-group>";
+      GRANT USAGE ON SCHEMA data TO "<db-users-group>";
+      /* Add a trigger so that new tables under 'data' schema are owned by '<db-data-admin-group>' and readable by '<db-users-group>' */
+      CREATE OR REPLACE FUNCTION fn_data_schema_table_permissions()
+        RETURNS event_trigger
+        LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        obj record;
+      BEGIN
+        FOR obj IN SELECT * FROM pg_event_trigger_ddl_commands() WHERE (command_tag='CREATE TABLE' AND schema_name='data') LOOP
+          EXECUTE format('ALTER TABLE %s OWNER TO "<db-data-admin-group>"; GRANT SELECT ON TABLE %s TO "<db-users-group>";', obj.object_identity, obj.object_identity);
+        END LOOP;
+      END;
+      $$;
+      CREATE EVENT TRIGGER trg_data_schema_table_permissions ON ddl_command_end WHEN tag IN ('CREATE TABLE') EXECUTE PROCEDURE fn_data_schema_table_permissions();
+
+# List of packages to install with apt-get
+packages:
+  - gcc
+  - ldap-utils
+  - libpq-dev
+  - make
+  - postgresql
+  - ruby
+  - ruby-dev
+  - realmd
+  - adcli
+  - krb5-user
+  - sssd
+
+
+runcmd:
+  # Join the domain
+  - /opt/installation/join_domain.sh
+
+  # Generate a keytab and verify by getting a Kerberos ticket
+  - echo ">=== Generating service principal credentials... ===<"
+  - SERVICE_PRINCIPAL="POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
+  - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
+  - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
+  - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-bind-user-dn>' -W msDS-KeyVersionNumber"
+  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-bind-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+  - echo "Current KVNO is $KVNO"
+  # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
+  # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab
+  - DESCRC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-crc\n$(cat /etc/postgres-service-account.secret)"
+  - DESMD5="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e des-cbc-md5\n$(cat /etc/postgres-service-account.secret)"
+  - A4HMAC="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e arcfour-hmac\n$(cat /etc/postgres-service-account.secret)"
+  - AES128="add_entry -password -p $SERVICE_PRINCIPAL -k $KVNO -e aes128-cts-hmac-sha1-96\n$(cat /etc/postgres-service-account.secret)"
+  - printf "%b" "$DESCRC\n$DESMD5\n$A4HMAC\n$AES128\nwrite_kt $KEYTAB_PATH" | ktutil
+  - echo "" # for appropriate spacing after the ktutil command
+  - chown postgres:postgres $KEYTAB_PATH
+  - chmod 0400 $KEYTAB_PATH
+  - echo ">=== Testing credentials with kinit... ===<"
+  - echo "klist -e -t -k $KEYTAB_PATH"
+  - klist -e -t -k $KEYTAB_PATH
+  - echo "kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL"
+  - kinit -t $KEYTAB_PATH $SERVICE_PRINCIPAL
+  - klist
+
+  - echo ">=== Configure postgres database... ===<"
+  # Change the password for the postgres user
+  - sudo -i -u postgres psql -tc "ALTER USER postgres WITH PASSWORD '$(cat /etc/postgres-user.secret)';"
+  # Use external disk for storing data
+  - systemctl stop postgresql@12-main
+  - mkdir -p /data/postgresql
+  - chmod 0700 /data/postgresql
+  - chown -R postgres:postgres /data/
+  - mv /var/lib/postgresql/12/main/* /data/postgresql
+  - sed -i "s|data_directory = .*|data_directory = '/data/postgresql'|g" /etc/postgresql/12/main/postgresql.conf
+  - grep data_directory /etc/postgresql/12/main/postgresql.conf
+  # Allow login to this database from other VMs
+  - sed -i "s|#listen_addresses|listen_addresses = '*'\n#listen_addresses|g" /etc/postgresql/12/main/postgresql.conf
+  - grep listen_addresses /etc/postgresql/12/main/postgresql.conf
+  # Set the appropriate keytab file
+  - sed -i "s|#krb_server_keyfile|krb_server_keyfile = '$KEYTAB_PATH'\n#krb_server_keyfile|g" /etc/postgresql/12/main/postgresql.conf
+  - grep krb_server_keyfile /etc/postgresql/12/main/postgresql.conf
+  # Restart the server with all the above changes
+  - systemctl start postgresql@12-main
+  - systemctl status postgresql@12-main
+
+  # Create the required LDAP groups on the postgres server
+  - echo ">=== Creating necessary LDAP roles... ===<"
+  - |
+    for ROLE in "ldap_users" "ldap_groups"; do
+        ROLE_EXISTS=$(sudo -i -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${ROLE}'" | grep 1)
+        if [ "$ROLE_EXISTS" = "" ]; then
+            echo "Creating ${ROLE} role"
+            sudo -i -u postgres psql -q -c "CREATE ROLE ${ROLE};"
+        else
+            echo "${ROLE} role already exists"
+        fi
+    done
+
+  # Add LDAP users with pg-ldap-sync and schedule a cronjob
+  - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
+  - mv /opt/installation/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
+  - sudo -i -u postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+  - echo ">=== Scheduling LDAP user sync every 10 minutes... ===<"
+  - echo "*/10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv" >> /etc/crontab
+  - tail -n 1 /etc/crontab
+
+  # Set appropriate permissions on public schema
+  # - Remove privileges from PUBLIC (everyone)
+  # - Create the 'data' schema belonging to data-admins and grant read access to research users
+  # - Grant all privileges on the 'public' schema to research users
+  # - Grant superuser privileges to sysadmins
+  - echo ">=== Setting appropriate permissions on public schema... ===<"
+  - sudo -i -u postgres psql -f /opt/installation/create-postgres-triggers.sql
+
+  # Allow Kerberos login - disable all other login types except the dbadmin on localhost
+  - echo ">=== Restricting login types... ===<"
+  - echo "local all postgres peer\nhost all all <client-cidr> gss include_realm=0 krb_realm=<shm-fqdn-upper>" > /etc/postgresql/12/main/pg_hba.conf
+  - cat /etc/postgresql/12/main/pg_hba.conf
+
+  # Restart the postgresql service
+  - echo ">=== Restarting postgres... ===<"
+  - systemctl restart postgresql@12-main
+  - systemctl status postgresql@12-main
+
+  # Show postgres users and roles
+  - echo ">=== List postgres users and roles... ===<"
+  - echo "USERS:"
+  - sudo -i -u postgres psql -q -c "SELECT * FROM pg_user;"
+  - echo "ROLES:"
+  - sudo -i -u postgres psql -q -c "SELECT rolname, rolsuper, rolinherit, rolinherit, rolcreatedb, rolcanlogin, oid FROM pg_roles;"
+  - echo "SCHEMAS:"
+  - sudo -i -u postgres psql -q -c "SELECT schema_name FROM information_schema.schemata;"
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: True

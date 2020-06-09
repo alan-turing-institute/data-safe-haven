@@ -7,24 +7,31 @@ apt:
   # Update apt database on first boot (ie run apt-get update)
   update: true
 
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+ - [ /dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail" ]
+
 # List of packages to install with apt-get
 packages:
   - openssh-server
   - rsync
   - apache2
 
-# Add the atiadmin (default) and mirrordaemon users
-# lock_passwd: Lock the password to disable password login
-users:
-  - default
-  - name: mirrordaemon
-    lock_passwd: True
-    sudo: False
-    ssh_authorized_keys:
-      - EXTERNAL_PUBLIC_SSH_KEY
-
 write_files:
-  - path: /000-default.conf
+  - path: /var/local/cran-mirror-apache.conf
+    owner: root:root
+    permissions: 0644
     content: |
       <VirtualHost *:80>
         DocumentRoot "/datadrive/mirrordaemon/www/cran"
@@ -37,6 +44,16 @@ write_files:
         </Directory>
       </VirtualHost>
 
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: True
+    sudo: False
+    ssh_authorized_keys:
+      - EXTERNAL_PUBLIC_SSH_KEY
+
 runcmd:
   # Suppress apt prompts and warning messages
   - export DEBIAN_FRONTEND=noninteractive
@@ -48,29 +65,19 @@ runcmd:
 
   # Set up disk
   - echo "*** Setting up local disk... ***"
-  - parted /dev/sdc mklabel gpt
-  - parted /dev/sdc mkpart primary ext4 0% 100%
-  - parted /dev/sdc print
-  - sleep 5
-  - mkfs -t ext4 /dev/sdc1
-  - mkdir -p /datadrive
-  - mount /dev/sdc1 /datadrive
-  - UUID=$(blkid | grep "/dev/sdc1" | cut -d'"' -f2)
-  - sed "s|UUID|UUID=$UUID\t/datadrive\text4\tdefaults,nofail\t1\t2\nUUID|" /etc/fstab > fstab.tmp
-  - mv fstab.tmp /etc/fstab
   - mkdir -p /datadrive/mirrordaemon/www/cran
+  - ls -alh /datadrive
 
   # Fix permissions so that mirrordaemon owns its files
   - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
-  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
 
   # Set up apache: 'restart' runs it now; 'enable' adds it to the list of services run on boot
   - echo "*** Setting up apache server pointing to local disk... ***"
-  - mv /000-default.conf /etc/apache2/sites-enabled/000-default.conf
+  - mv /var/local/cran-mirror-apache.conf /etc/apache2/sites-enabled/000-default.conf
   - a2enmod rewrite
-  - systemctl enable apache2.service
-  - systemctl restart apache2.service
-  - systemctl status apache2.service
+  - systemctl enable apache2
+  - systemctl restart apache2
+  - systemctl status apache2
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state

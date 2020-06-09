@@ -58,6 +58,17 @@ apt:
 
 
 write_files:
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/installation/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
@@ -229,6 +240,7 @@ runcmd:
   - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
 
   # Install PyCharm
@@ -418,6 +430,8 @@ runcmd:
   - if [ "$(which nvidia-smi)" ]; then echo "\n\n*nvidia-smi*\n\n$(which nvidia-smi)\n$(modinfo nvidia | grep '^version:')"; else echo "nvidia-ERROR smi not found!"; exit 1; fi
   - if [ "$(which psql)" ]; then echo "\n\n*psql*\n\n$(which psql)\n$(psql --version)"; else echo "ERROR psql not found!"; exit 1; fi
   - if [ "$(which sqlcmd)" ]; then echo "\n\n*sqlcmd*\n\n$(which sqlcmd)\n$(sqlcmd -? | grep Version)"; else echo "ERROR sqlcmd not found!"; exit 1; fi
+  # Data Science tools
+  - if [ "$(which weka)" ]; then echo "\n\n*weka*\n\n$(which weka)\n$(weka -c weka.core.Version | head -n 1)"; else echo "ERROR weka not found!"; exit 1; fi
 
 
 final_message:

@@ -1,24 +1,24 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Test A",
-    "id": "testa",
-    "name": "Turing Development Safe Haven A",
+    "subscriptionName": "[Prod] Safe Haven Management",
+    "id": "turing1",
+    "name": "Turng Safe Haven",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
       "stateCountyRegion": "London",
       "countryCode": "GB"
     },
-    "location": "centralus",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
-      "fqdn": "testa.dsgroupdev.co.uk",
-      "netbiosName": "SAFEHAVENTESTA",
-      "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Safe Haven LDAP Users",
@@ -33,7 +33,7 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
-        "name": "VNET_SHM_TESTA",
+        "name": "VNET_SHM_TURING1",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
@@ -56,58 +56,58 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1-SHM-TESTA",
+      "vmName": "DC1-SHM-TURING1",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "DC1-SHM-TESTA",
-      "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-TURING1",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
       "ip": "10.0.0.250",
       "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
-      "vmName": "DC2-SHM-TESTA",
-      "hostname": "DC2-SHM-TESTA",
-      "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "vmName": "DC2-SHM-TURING1",
+      "hostname": "DC2-SHM-TURING1",
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS-SHM-TESTA",
+      "vmName": "NPS-SHM-TURING1",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "NPS-SHM-TESTA",
+      "hostname": "NPS-SHM-TURING1",
       "ip": "10.0.0.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmtestaartifactsvkdrslu"
+        "accountName": "shmturing1artifactsbkdlp"
       },
       "bootdiagnostics": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmtestabootdiagsvkdrslu"
+        "accountName": "shmturing1bootdiagsbkdlp"
       }
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-testa",
+      "name": "kv-shm-turing1",
       "secretNames": {
-        "aadAdminPassword": "shm-testa-aad-admin-password",
-        "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
-        "dcSafemodePassword": "shm-testa-dc-safemode-password",
-        "domainAdminPassword": "shm-testa-domain-admin-password",
-        "localAdsyncPassword": "shm-testa-localadsync-password",
-        "npsAdminPassword": "shm-testa-nps-admin-password",
-        "vmAdminUsername": "shm-testa-vm-admin-username",
-        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-testa-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+        "aadAdminPassword": "shm-turing1-aad-admin-password",
+        "buildImageAdminUsername": "shm-turing1-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-turing1-buildimage-admin-password",
+        "dcSafemodePassword": "shm-turing1-dc-safemode-password",
+        "domainAdminPassword": "shm-turing1-domain-admin-password",
+        "localAdsyncPassword": "shm-turing1-localadsync-password",
+        "npsAdminPassword": "shm-turing1-nps-admin-password",
+        "vmAdminUsername": "shm-turing1-vm-admin-username",
+        "vpnCaCertificate": "shm-turing1-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-turing1-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-turing1-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-turing1-vpn-client-cert",
+        "vpnClientCertPassword": "shm-turing1-vpn-client-cert-password"
       }
     },
     "dns": {
       "subscriptionName": "[Prod] Safe Haven Domains",
-      "rg": "RG_SHM_DNS_TEST"
+      "rg": "RG_SHM_DNS_PRODUCTION"
     },
     "mirrors": {
       "rg": "RG_SHM_PKG_MIRRORS",
@@ -130,24 +130,24 @@
     }
   },
   "sre": {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "subscriptionName": "[Prod] Turing SRE – Sandbox",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "centralus",
+    "location": "uksouth",
     "tier": "2",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "domain": {
-      "fqdn": "sandbox.testa.dsgroupdev.co.uk",
+      "fqdn": "sandbox.turingsafehaven.ac.uk",
       "netbiosName": "SANDBOX",
-      "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
-        "dataAdministrators": {
-          "name": "SG SANDBOX Data Administrators",
-          "description": "SG SANDBOX Data Administrators"
+        "serverAdmins": {
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
-        "systemAdministrators": {
-          "name": "SG SANDBOX System Administrators",
-          "description": "SG SANDBOX System Administrators"
+        "sqlAdmins": {
+          "name": "SG SANDBOX SQL Server Administrators",
+          "description": "SG SANDBOX SQL Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -177,32 +177,32 @@
           "prefix": "10.150.2",
           "cidr": "10.150.2.0/24"
         },
-        "databases": {
-          "name": "DatabasesSubnet",
+        "dbingress": {
+          "name": "DbIngressSubnet",
           "prefix": "10.150.3",
-          "nsg": "databases",
+          "nsg": "dbingress",
           "cidr": "10.150.3.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "databases": {
-          "name": "NSG_SRE_SANDBOX_DATABASES"
+        "dbingress": {
+          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
         }
       }
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sreartifactszvmwtqkigrld"
+        "accountName": "sreartifactszxtgfoabcyjd"
       },
       "bootdiagnostics": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "srebootdiagszvmwtqkigrld"
+        "accountName": "srebootdiagszxtgfoabcyjd"
       }
     },
     "keyVault": {
-      "name": "kv-testa-sre-sandbox",
+      "name": "kv-turing1-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
@@ -220,13 +220,9 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
-        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
-        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
         "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
@@ -244,22 +240,10 @@
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres VM LDAP",
-          "samAccountName": "pgvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-        }
-      },
-      "serviceAccounts": {
-        "postgres": {
-          "name": "SANDBOX Postgres DB Service Account",
-          "samAccountName": "pgdbsrvcsandbox",
-          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount Service Account",
+        "name": "SANDBOX Data Mount",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {
@@ -277,10 +261,10 @@
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
           "allowedSources": "Internet",
-          "outboundInternet": "Deny"
+          "outboundInternet": null
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "fqdn": "RDG-SRE-SANDBOX.turingsafehaven.ac.uk",
         "ip": "10.150.1.250"
       },
       "sessionHost1": {
@@ -288,7 +272,7 @@
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "fqdn": "APP-SRE-SANDBOX.turingsafehaven.ac.uk",
         "ip": "10.150.1.249"
       },
       "sessionHost2": {
@@ -296,7 +280,7 @@
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "fqdn": "DKP-SRE-SANDBOX.turingsafehaven.ac.uk",
         "ip": "10.150.1.248"
       }
     },
@@ -306,7 +290,7 @@
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+      "fqdn": "DAT-SRE-SANDBOX.turingsafehaven.ac.uk",
       "ip": "10.150.2.250",
       "egressDiskGb": 512,
       "ingressDiskGb": 512,
@@ -319,47 +303,29 @@
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "fqdn": "GITLAB-SRE-SANDBOX.turingsafehaven.ac.uk",
         "ip": "10.150.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.testa.dsgroupdev.co.uk",
+        "fqdn": "HACKMD-SRE-SANDBOX.turingsafehaven.ac.uk",
         "ip": "10.150.2.152"
       }
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbmssql": {
-        "name": "MSSQL-SANDBOX",
-        "type": "MSSQL",
-        "ipLastOctet": 4,
+      "dbmssqlingress": {
+        "name": "SQL-ING-SANDBOX",
+        "enableSSIS": true,
+        "ipLastOctet": "4",
         "port": "14330",
         "sku": "sqldev",
-        "subnet": "databases",
+        "subnet": "dbingress",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "1024",
-          "type": "Standard_LRS"
-        },
-        "osdisk": {
-          "size_gb": "128",
-          "type": "Standard_LRS"
-        },
-        "enableSSIS": true
-      },
-      "dbpostgresql": {
-        "name": "PSTGRS-SANDBOX",
-        "type": "PostgreSQL",
-        "ipLastOctet": 5,
-        "port": "5432",
-        "sku": "18.04-LTS",
-        "subnet": "databases",
-        "vmSize": "Standard_DS2_v2",
-        "datadisk": {
-          "size_gb": "1024",
+          "size_gb": "2048",
           "type": "Standard_LRS"
         },
         "osdisk": {
@@ -377,7 +343,7 @@
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.2.2020060100",
+      "vmImageVersion": "0.2.2020050300",
       "osdisk": {
         "type": "Standard_LRS",
         "size_gb": "64"
@@ -393,7 +359,7 @@
     },
     "mirrors": {
       "vnet": {
-        "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2"
+        "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER2"
       },
       "cran": {
         "ip": "10.20.2.21"
