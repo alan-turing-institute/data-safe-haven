@@ -17,6 +17,8 @@ jobs:
         run: |
           pip install flake8 yamllint
           sudo apt install -y shellcheck
+          sudo snap install powershell --classic
+          pwsh -c Install-Module -Name PSScriptAnalyzer -Force
       - name: Lint YAML
         continue-on-error: true
         run: |
@@ -26,5 +28,9 @@ jobs:
         run: |
           flake8 . --statistics --count
       - name: Lint shell scripts
+        continue-on-error: true
         run: |
           find . -name "*.sh" -exec shellcheck -f gcc {} \+
+      - name: Lint powershell
+        run: |
+          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse"
