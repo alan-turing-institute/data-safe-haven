@@ -33,4 +33,4 @@ jobs:
           find . -name "*.sh" -exec shellcheck -f gcc {} \+
       - name: Lint powershell
         run: |
-          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse"
+          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse -EnableExit"
