@@ -117,6 +117,9 @@ function Get-ShmFullConfig {
             name = "VNET_SHM_$($shm.id)".ToUpper()
             cidr = "${shmBasePrefix}.${shmThirdOctet}.0/21"
         }
+        vpn = [ordered]@{
+            cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
+        }
         subnets = [ordered]@{}
     }
     # --- Identity subnet

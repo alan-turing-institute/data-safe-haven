@@ -36,6 +36,9 @@
         "name": "VNET_SHM_TESTA",
         "cidr": "10.0.0.0/21"
       },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
+      },
       "subnets": {
         "identity": {
           "name": "IdentitySubnet",
