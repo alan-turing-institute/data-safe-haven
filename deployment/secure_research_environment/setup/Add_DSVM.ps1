@@ -6,7 +6,9 @@ param(
     [Parameter(Position = 2,Mandatory = $false,HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Position = 3,Mandatory = $false,HelpMessage = "Perform an in-place upgrade.")]
-    [switch]$upgrade
+    [switch]$upgrade,
+    [Parameter(Position = 4,Mandatory = $false,HelpMessage = "Force an in-place upgrade.")]
+    [switch]$forceUpgrade
 )
 
 Import-Module Az
@@ -60,8 +62,8 @@ if ($upgrade) {
 
     # Ensure that an upgrade will occur
     # ---------------------------------
-    if ($existingVmName -eq $vmName) {
-        Add-LogMessage -Level InfoSuccess "The existing VM appears to be using the same image version, no upgrade will occur"
+    if ($existingVmName -eq $vmName -and -not $forceUpgrade) {
+        Add-LogMessage -Level InfoSuccess "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
         $_ = Set-AzContext -Context $originalContext
         exit 0
     }
