@@ -1,14 +1,14 @@
 param(
-  [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (usually a number e.g enter '9' for DSG9)")]
     [string]$sreId,
-    [Parameter( Mandatory = $true, HelpMessage = "Enter repo URL")]
-    [string]$repoURL,
-    [Parameter( Mandatory = $true, HelpMessage = "Enter repo name")]
-    [string]$repoName,
-    [Parameter( Mandatory = $true, HelpMessage = "Enter commit hash of the desired commit on external repository")]
-    [string]$commitHash,
-    [Parameter( Mandatory = $true, HelpMessage = "Enter desired branch name for the project inside Safe Haven")]
-    [string]$branchName
+    [Parameter( Mandatory = $true, HelpMessage = "Enter the git URL of the source repository")]
+    [string]$sourceGitURL,
+    [Parameter( Mandatory = $true, HelpMessage = "Enter the name of the repository as it should appear within SRE GITLAB")]
+    [string]$targetRepoName,
+    [Parameter( Mandatory = $true, HelpMessage = "Enter the full commit hash of the commit in the source repository to snapshot")]
+    [string]$sourceCommitHash,
+    [Parameter( Mandatory = $true, HelpMessage = "Enter the desired branch name where the snapshot should be placed (in the repository inside SRE GITLAB)")]
+    [string]$targetBranchName
 )
 
 Import-Module Az
@@ -27,16 +27,16 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Create local zip file
 # ---------------------
 Add-LogMessage -Level Info "Creating zipfilepath."
-$zipFileName = "${repoName}_${commitHash}_${branchName}.zip"
+$zipFileName = "${targetRepoName}_${sourceCommitHash}_${targetBranchName}.zip"
 $zipFilePath = Join-Path $PSScriptRoot $zipFileName
 
 Add-LogMessage -Level Info "About to git clone "
-$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "$repoName")
+$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "$targetRepoName")
 
-Invoke-Expression -Command "git clone $repoURL $tempDir"
+Invoke-Expression -Command "git clone $sourceGitURL $tempDir"
 $workingDir = Get-Location
 Set-Location $tempDir
-Invoke-Expression -Command "git checkout $commitHash"
+Invoke-Expression -Command "git checkout $sourceCommitHash"
 # Remove the .git directory
 Remove-Item -Path ".git" -Recurse -Force
 # Zip this directory
