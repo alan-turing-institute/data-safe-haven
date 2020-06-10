@@ -50,6 +50,11 @@
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
         },
+        "firewall": {
+          "name": "AzureFirewallSubnet",
+          "prefix": "10.0.2",
+          "cidr": "10.0.2.0/24"
+        },
         "gateway": {
           "name": "GatewaySubnet",
           "prefix": "10.0.7",
@@ -78,6 +83,10 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TESTA",
       "ip": "10.0.0.248"
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTA",
+      "routeTableName": "FIREWALL-SHM-TESTA-ROUTE-TABLE"
     },
     "storage": {
       "artifacts": {
