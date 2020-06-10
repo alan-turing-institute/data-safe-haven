@@ -46,7 +46,6 @@
         },
         "RDS_Gateway_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.250",
             "metadata": {
                 "description": "Enter IP address for RDS Gateway VM, must end in 250"
             }
@@ -78,7 +77,6 @@
         },
         "RDS_Session_Host_Apps_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.249",
             "metadata": {
                 "description": "Enter IP address for RDS apps VM, must end in 249"
             }
@@ -110,7 +108,6 @@
         },
         "RDS_Session_Host_Desktop_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.248",
             "metadata": {
                 "description": "Enter IP address for RDS desktop VM, must end in 248"
             }
@@ -142,7 +139,6 @@
         },
         "RDS_Session_Host_Review_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.248",
             "metadata": {
                 "description": "Enter IP address for RDS review session host VM, must end in 248"
             }
