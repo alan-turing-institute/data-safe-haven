@@ -29,7 +29,6 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Creating zipfilepath."
 $zipFileName = "${repoName}_${commitHash}_${branchName}.zip"
 $zipFilePath = Join-Path $PSScriptRoot $zipFileName
-$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "")
 
 Add-LogMessage -Level Info "About to git clone "
 $tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "$repoName")
