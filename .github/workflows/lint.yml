@@ -2,8 +2,8 @@
 on: [push, pull_request]
 
 jobs:
-  lint:
-    name: Lint
+  lint_yaml:
+    name: Lint YAML
 
     runs-on: ubuntu-latest
 
@@ -15,22 +15,54 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: |
-          pip install flake8 yamllint
-          sudo apt install -y shellcheck
-          sudo snap install powershell --classic
-          pwsh -c Install-Module -Name PSScriptAnalyzer -Force
+          pip install yamllint
       - name: Lint YAML
-        continue-on-error: true
         run: |
           yamllint .
+
+  lint_python:
+    name: Lint Python
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install flake8
       - name: Lint Python
-        continue-on-error: true
         run: |
           flake8 . --statistics --count
+
+  lint_shell:
+    name: Lint shell
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt install -y shellcheck
       - name: Lint shell scripts
-        continue-on-error: true
         run: |
           find . -name "*.sh" -exec shellcheck -f gcc {} \+
+
+  lint_powershell:
+    name: Lint PowerShell
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo snap install powershell --classic
+          pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
       - name: Lint powershell
         run: |
           pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse -EnableExit"
