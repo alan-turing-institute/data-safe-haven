@@ -319,17 +319,16 @@ function Deploy-StorageContainer {
 Export-ModuleMember -Function Deploy-StorageContainer
 
 
-# Create storage container and ensure it is empty
+# Ensure the specified storage container is empty
 # -----------------------------------------------
-function Deploy-EmptyStorageContainer {
+function Clear-StorageContainer {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to clear")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account where the container exists")]
         $StorageAccount
     )
-    $_ = Deploy-StorageContainer -Name $Name -StorageAccount $StorageAccount
-    # delete existing blobs on the container
+    # delete existing blobs in the container
     $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
     $numBlobs = $blobs.Length
     if ($numBlobs -gt 0) {
@@ -346,7 +345,7 @@ function Deploy-EmptyStorageContainer {
         }
     }
 }
-Export-ModuleMember -Function Deploy-EmptyStorageContainer
+Export-ModuleMember -Function Clear-StorageContainer
 
 
 # Create Linux virtual machine if it does not exist

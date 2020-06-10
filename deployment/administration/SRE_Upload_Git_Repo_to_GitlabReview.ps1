@@ -61,7 +61,10 @@ $sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -Resourc
 
 # Create container if not already there
 $containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
-$_ = Deploy-EmptyStorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+
+# Ensure an empty storage container of the given name exists
+$_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+$_ = Clear-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 
 # copy zipfile to blob storage
 # ----------------------------
