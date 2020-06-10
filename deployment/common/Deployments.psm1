@@ -112,6 +112,38 @@ function Deploy-ArmTemplate {
 Export-ModuleMember -Function Deploy-ArmTemplate
 
 
+# Create a firewall if it does not exist
+# --------------------------------------
+function Deploy-Firewall {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of public IP address to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual network containing the 'AzureFirewall' subnet")]
+        $VirtualNetworkName,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
+    $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
+        $publicIp =  Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
+        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name #"${Name}-PIP"
+        if ($?) {
+            Add-LogMessage -Level Success "Created firewall '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create firewall '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Firewall '$Name' already exists"
+    }
+    return $firewall
+}
+Export-ModuleMember -Function Deploy-Firewall
+
+
 # Create a key vault if it does not exist
 # ---------------------------------------
 function Deploy-KeyVault {
@@ -204,6 +236,41 @@ function Deploy-NetworkSecurityGroup {
 Export-ModuleMember -Function Deploy-NetworkSecurityGroup
 
 
+# Create a public IP address if it does not exist
+# -----------------------------------------------
+function Deploy-PublicIpAddress {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of public IP address to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Allocation method (static or dynamic)")]
+        [ValidateSet("Dynamic", "Static")]
+        $AllocationMethod,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location,
+        [Parameter(Mandatory = $false, HelpMessage = "SKU ('Basic' or 'Standard')")]
+        [ValidateSet("Basic", "Standard")]
+        $Sku = "Basic"
+    )
+    Add-LogMessage -Level Info "Ensuring that public IP address '$Name' exists..."
+    $publicIpAddress = Get-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating public IP address '$Name'"
+        $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku
+        if ($?) {
+            Add-LogMessage -Level Success "Created public IP address '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create public IP address '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Public IP address '$Name' already exists"
+    }
+    return $publicIpAddress
+}
+Export-ModuleMember -Function Deploy-PublicIpAddress
+
+
 # Create resource group if it does not exist
 # ------------------------------------------
 function Deploy-ResourceGroup {
@@ -229,6 +296,71 @@ function Deploy-ResourceGroup {
     return $resourceGroup
 }
 Export-ModuleMember -Function Deploy-ResourceGroup
+
+
+# Create a route if it does not exist
+# -----------------------------------
+function Deploy-Route {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of route to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Route table that this route should be deployed into")]
+        $RouteTable,
+        [Parameter(Mandatory = $true, HelpMessage = "CIDR that this route applies to")]
+        $AppliesTo,
+        [Parameter(Mandatory = $true, HelpMessage = "The firewall IP address or one of 'Internet', 'None', 'VirtualNetworkGateway', 'VnetLocal'")]
+        $NextHop
+    )
+    Add-LogMessage -Level Info "Ensuring that route '$Name' exists..."
+    $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $RouteTable -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating route '$Name'"
+        if (@('Internet', 'None', 'VirtualNetworkGateway', 'VnetLocal').Contains($NextHop)) {
+            $null = Add-AzRouteConfig -Name $Name -RouteTable $RouteTable -AddressPrefix $AppliesTo -NextHopType $NextHop | Set-AzRouteTable
+        } else {
+            $null = Add-AzRouteConfig -Name $Name -RouteTable $RouteTable -AddressPrefix $AppliesTo -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHop | Set-AzRouteTable
+        }
+        $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $RouteTable
+        if ($?) {
+            Add-LogMessage -Level Success "Created route '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create route '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Route '$Name' already exists"
+    }
+    return $routeConfig
+}
+Export-ModuleMember -Function Deploy-Route
+
+
+# Create a route table if it does not exist
+# -----------------------------------------
+function Deploy-RouteTable {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of public IP address to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
+        $Location
+    )
+    Add-LogMessage -Level Info "Ensuring that route table '$Name' exists..."
+    $routeTable = Get-AzRouteTable -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating route table '$Name'"
+        $routeTable = New-AzRouteTable -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -DisableBgpRoutePropagation
+        if ($?) {
+            Add-LogMessage -Level Success "Created route table '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create route table '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Route table '$Name' already exists"
+    }
+    return $routeTable
+}
+Export-ModuleMember -Function Deploy-RouteTable
 
 
 # Create subnet if it does not exist
@@ -421,7 +553,6 @@ function Deploy-VirtualMachineNIC {
             $ipAddressParams["PublicIpAddress"] = $PublicIpAddress
         }
         if ($PrivateIpAddress) { $ipAddressParams["PrivateIpAddress"] = $PrivateIpAddress }
-        # $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -IpConfigurationName "ipconfig-$Name" -Force
         $vmNic = New-AzNetworkInterface -Name $Name -ResourceGroupName $ResourceGroupName -Subnet $Subnet -IpConfigurationName "ipconfig-$Name" -Location $Location @ipAddressParams -Force
         if ($?) {
             Add-LogMessage -Level Success "Created VM network card '$Name'"
@@ -513,6 +644,24 @@ function Get-AzSubnet {
     return ($refreshedVNet.Subnets | Where-Object { $_.Name -eq $Name })[0]
 }
 Export-ModuleMember -Function Get-AzSubnet
+
+
+# Get NS Records
+# --------------
+function Get-NSRecords {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
+        $RecordSetName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $DnsZoneName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
+    $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
+    return $recordSet.Records
+}
+Export-ModuleMember -Function Get-NSRecords
 
 
 # Run remote shell script
@@ -612,6 +761,32 @@ function Invoke-WindowsConfigureAndUpdate {
     Enable-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 }
 Export-ModuleMember -Function Invoke-WindowsConfigureAndUpdate
+
+
+# Create DNS Zone if it does not exist
+# ------------------------------------
+function New-DNSZone {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName
+    )
+    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
+    $_ = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
+        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
+        if ($?) {
+            Add-LogMessage -Level Success "Created DNS Zone '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create DNS Zone '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
+    }
+}
+Export-ModuleMember -Function New-DNSZone
 
 
 # Remove Virtual Machine
@@ -841,48 +1016,58 @@ function Update-NetworkSecurityGroupRule {
 Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 
 
-# Create DNS Zone if it does not exist
-# ------------------------------------
-function New-DNSZone {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone to deploy")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
-    )
-    Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
-    $_ = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if ($notExists) {
-        Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
-        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
-        if ($?) {
-            Add-LogMessage -Level Success "Created DNS Zone '$Name'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create DNS Zone '$Name'!"
-        }
-    } else {
-        Add-LogMessage -Level InfoSuccess "DNS Zone '$Name' already exists"
-    }
-}
-Export-ModuleMember -Function New-DNSZone
-
-
-# Get NS Records
-# --------------
-function Get-NSRecords {
+# Add NS Record Set to DNS Zone if it doesnot already exist
+# ---------------------------------------------------------
+function Unblock-Domain {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of record set")]
-        $RecordSetName,
+        $Firewall,
         [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
-        $DnsZoneName,
+        $RuleName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of DNS zone")]
+        $CollectionName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName
+        $SourceAddress,
+        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "Name of resource group to deploy into")]
+        $Protocol,
+        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "FQDN to unblock")]
+        $TargetFqdn,
+        [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "FQDN tag to unblock")]
+        $TargetTag,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group to deploy into")]
+        $Priority = 1000,
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group to deploy into")]
+        [ValidateSet("Allow", "Deny")]
+        $ActionType = "Allow"
     )
-    Add-LogMessage -Level Info "Reading NS records '$($RecordSetName)' for DNS Zone '$($DnsZoneName)'..."
-    $recordSet = Get-AzDnsRecordSet -ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Name $RecordSetName -RecordType "NS"
-    return $recordSet.Records
+    if ($TargetTag) {
+        Add-LogMessage -Level Info "Ensuring that '$TargetTag' is allowed through $($Firewall.Name)..."
+        $rule = New-AzFirewallApplicationRule -Name $RuleName -SourceAddress $SourceAddress -FqdnTag $TargetTag
+    } else {
+        Add-LogMessage -Level Info "Ensuring that '$TargetFqdn' is allowed through $($Firewall.Name)..."
+        $rule = New-AzFirewallApplicationRule -Name $RuleName -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
+    }
+    # Add the rule to an existing collection or create a new collection with only this rule in it
+    try {
+        $ruleCollection = $firewall.GetApplicationRuleCollectionByName($CollectionName)
+        # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
+        $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $RuleName }
+        if ($existingRule) { $ruleCollection.RemoveRuleByName($RuleName) }
+        $ruleCollection.AddRule($rule)
+        # Remove the existing rule collection to ensure that we can update with the new rule
+        $Firewall.RemoveApplicationRuleCollectionByName($CollectionName)
+    } catch [System.Management.Automation.MethodInvocationException] {
+        $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
+    }
+    $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
+    $null = Set-AzFirewall -AzureFirewall $Firewall
+    if ($?) {
+        Add-LogMessage -Level Success "Updated firewall rules for $SourceAddress"
+    } else {
+        Add-LogMessage -Level Warning "Failed to update firewall rules for $SourceAddress!"
+    }
 }
-Export-ModuleMember -Function Get-NSRecords
+Export-ModuleMember -Function Unblock-Domain
 
 
 # Add NS Record Set to DNS Zone if it doesnot already exist
