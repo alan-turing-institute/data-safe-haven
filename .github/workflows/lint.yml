@@ -22,6 +22,24 @@ jobs:
         run: |
           yamllint .
 
+  lint_json:
+    name: Lint JSON
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: |
+          npm install -g jsonlint
+      - name: Lint JSON
+        run: |
+          find . -name "*.json" -exec jsonlint --quiet --compact {} \;
+
   lint_python:
     name: Lint Python
 
