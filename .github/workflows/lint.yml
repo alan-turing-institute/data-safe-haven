@@ -90,3 +90,7 @@ jobs:
       - name: Lint powershell
         run: |
           pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
+      - name: Look for warnings
+        continue-on-error: true
+        run: |
+          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse -ReportSummary"
