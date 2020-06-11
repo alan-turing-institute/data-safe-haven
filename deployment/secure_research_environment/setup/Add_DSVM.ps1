@@ -74,7 +74,7 @@ if ($upgrade) {
 if ($upgrade) {
     # Attempt to find an existing virtual machine
     # -------------------------------------------
-    $existingVm = Get-AzVM | Where-Object { $_.Name -match "\w*-$ipLastOctet-DSVM-\d-\d-\d{10}" }
+    $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }
     if ($existingVm) {
         if ($existingVm.Length -ne 1) {
             foreach ($vm in $existingVm) {
@@ -120,7 +120,7 @@ if ($upgrade) {
     foreach ($name in $dataDiskNames) {
         # First attempt to find a disk
         Add-LogMessage -Level Info "[ ] Locating '$name' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "\w*-$ipLastOctet-DSVM-\d-\d-\d{10}-$name-DISK" }
+        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$name-DISK" }
 
         # If there is a disk, take a snapshot
         if ($disk) {
@@ -134,7 +134,7 @@ if ($upgrade) {
             # Snapshot disk
             Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
             $snapshotConfig = New-AzSnapShotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
-            $snapshotName = "$ipLastOctet" + "-" + "$name" + "-DISK-SNAPSHOT"
+            $snapshotName = $vmNamePrefix + "-" + "$name" + "-DISK-SNAPSHOT"
             $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
             if ($snapshot) {
                 Add-LogMessage -Level Success "Snapshot succeeded"
@@ -147,7 +147,7 @@ if ($upgrade) {
         # If there is no disk, look for an existing snapshot
         } else {
             Add-LogMessage -Level Info "'$name' disk not found, attempting to find existing snapshot"
-            $snapshot = Get-AzSnapShot | Where-Object { $_.Name -match "$ipLastOctet-$name-DISK-SNAPSHOT" }
+            $snapshot = Get-AzSnapShot | Where-Object { $_.Name -match "$vmNamePrefix-$name-DISK-SNAPSHOT" }
             if ($snapshot) {
                 if ($snapshot.Length -ne 1) {
                     Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
@@ -191,7 +191,7 @@ if ($upgrade) {
     $diskNames = @("OS", "SCRATCH", "HOME")
     foreach ($diskName in $diskNames) {
         Add-LogMessage -Level Info "[ ] Removing '$diskName' disk"
-        $disk = Get-AzDisk | Where-Object { $_.Name -match "\w*-$ipLastOctet-DSVM-\d-\d-\d{10}-$diskName-DISK" }
+        $disk = Get-AzDisk | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}-$diskName-DISK" }
         if ($disk) {
             if ($disk.Length -ne 1) {
                 Add-LogMessage -Level Warning "Multiple candidate '$diskName' disks found, not removing any"
