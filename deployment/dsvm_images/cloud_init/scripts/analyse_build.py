@@ -7,6 +7,7 @@ import json
 import multiprocessing
 import subprocess
 
+
 def human_readable(timedelta_):
     """Human readable string from timedelta"""
     seconds = int(timedelta_.total_seconds())
@@ -20,6 +21,7 @@ def human_readable(timedelta_):
     if minutes > 0:
         return f"{minutes:d}m{seconds:d}s"
     return f"{seconds:d}s"
+
 
 def main():
     """Process log files"""
@@ -68,7 +70,6 @@ def main():
         if entry["result"]:
             build_end_status = (datetime.fromtimestamp(entry["timestamp"] - 1), entry["result"])
 
-
     # Load events from runcmd echo statements
     # ---------------------------------------
     runcmd_log_events = []
@@ -81,7 +82,6 @@ def main():
                 runcmd_log_events.append({"start_time": int(start_time), "end_time": None, "message": message})
         for event, next_event in zip(runcmd_log_events[:-1], runcmd_log_events[1:]):
             events.append({"timestamp": datetime.fromtimestamp(next_event["start_time"]), "level": "SUCCESS", "message": event["message"]})
-
 
     # Add in progress task
     if runcmd_log_events:
@@ -107,15 +107,14 @@ def main():
         print("[{}: {: <7}] {}{}".format(event["timestamp"].strftime("%Y-%m-%d %H:%M:%S"), event["level"], event["message"], time_elapsed))
         previous_event_time = event["timestamp"]
 
-
-    # Check system performance
-    # ------------------------
+    #  Check system performance
+    #  ------------------------
     mem_usage, cpu_usage, mem_bytes = [], [], []
     with suppress(FileNotFoundError):
         with open("/installation/performance_log.csv", "r") as system_log:
             first_lines = list(itertools.islice(system_log, 10))
         with suppress(IndexError):
-            lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0] # skip version info in the header
+            lineskip = [idx for idx, line in enumerate(first_lines) if line.startswith('"used"')][0]  # skip version info in the header
             with open("/installation/performance_log.csv", "r") as system_log:
                 for row in csv.DictReader(itertools.islice(system_log, lineskip, None), delimiter=","):
                     if build_end_status:
@@ -143,6 +142,7 @@ def main():
         print("{} ..... mean usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_mean, n_cores * cpu_mean / 100))
         print("{} ...... min usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_min, n_cores * cpu_min / 100))
         print("{} ...... max usage: {: >6.2f}% => {: >4.1f} cores".format(prefix, cpu_max, n_cores * cpu_max / 100))
+
 
 if __name__ == "__main__":
     main()
