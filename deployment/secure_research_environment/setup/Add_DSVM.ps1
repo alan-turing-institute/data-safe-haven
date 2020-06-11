@@ -196,7 +196,7 @@ if ($upgrade) {
             if ($disk.Length -ne 1) {
                 Add-LogMessage -Level Warning "Multiple candidate '$diskName' disks found, not removing any"
             } else {
-                $_ = Remove-AzDisk -Name $diskName -ResourceGroupName $config.sre.dsvm.rg -Force
+                $_ = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
                 if ($?) {
                     Add-LogMessage -Level Success "Disk deletion succeeded"
                 } else {
