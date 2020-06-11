@@ -74,7 +74,7 @@ def get_missing_packages(packages):
     warning, missing = [], []
     for package in packages:
         # Some packages are not importable so we test for the executable instead
-        if package in NON_IMPORTABLE_PACKAGES.keys()
+        if package in NON_IMPORTABLE_PACKAGES.keys():
             if not shutil.which(NON_IMPORTABLE_PACKAGES[package]):
                 missing.append(package)
                 continue
