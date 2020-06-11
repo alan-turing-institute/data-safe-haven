@@ -1,3 +1,4 @@
+#!/bin/sh
 ./images_register_azure_image_in_gallery.sh -v 0.0.2018120600 -n ImageComputeVM-UbuntuTorch1804Base-201812051348
 ./images_register_azure_image_in_gallery.sh -v 0.0.2019032100 -n ImageComputeVM-UbuntuTorch1804Base-201903211221
 ./images_register_azure_image_in_gallery.sh -v 0.0.2018120500 -n ImageComputeVM-Ubuntu1804Base-201812051233

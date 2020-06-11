@@ -1,3 +1,4 @@
+#!/bin/sh
 # Options which are configurable at the command line
 BUILD_VMSIZE="Standard_E16s_v3"
 RESOURCEGROUP_BUILD="RG_SH_BUILD_CANDIDATES"

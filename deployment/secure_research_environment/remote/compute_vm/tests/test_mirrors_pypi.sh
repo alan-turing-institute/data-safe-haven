@@ -1,3 +1,4 @@
+#!/bin/sh
 # Use "MarkupSafe" as it is the first linux package on the Tier-3 whitelist (in the "00/00" package directory) so should be rsync'd near the end
 # Use "Fiona" as it is the last linux package on the Tier-3 whitelist (in the "ff/fb" package directory) so should be rsync'd near the end
 # Also take packages which are alphabetically early and late in the Tier-3 list
@@ -5,7 +6,7 @@ packages=("MarkupSafe" "Fiona" "alabaster" "zipp")
 
 # Install sample packages to local user library
 OUTCOME=0
-for package in ${packages[@]}; do
+for package in "${packages[@]}"; do
     echo "Attempting to install $package"
     failure=0
     pip install $package --user --quiet || failure=1

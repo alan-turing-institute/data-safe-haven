@@ -1,3 +1,4 @@
+#!/bin/sh
 # Options which are configurable at the command line
 KEYVAULT_NAME="kv-shm-pkg-mirrors" # must be globally unique
 RESOURCEGROUP="RG_SHM_PKG_MIRRORS"
