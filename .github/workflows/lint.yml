@@ -70,7 +70,11 @@ jobs:
           sudo apt install -y shellcheck
       - name: Lint shell scripts
         run: |
-          find . -name "*.sh" -exec shellcheck -f gcc {} \+
+          find . -name "*.sh" -exec shellcheck -f gcc -S error {} \+
+      - name: Look for warnings
+        continue-on-error: true
+        run:
+          find . -name "*.sh" -exec shellcheck -f gcc -S warning {} \+
 
   lint_powershell:
     name: Lint PowerShell
