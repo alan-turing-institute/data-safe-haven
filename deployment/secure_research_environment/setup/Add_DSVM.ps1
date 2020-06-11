@@ -468,8 +468,7 @@ while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Co
 # Remove snapshots
 # ----------------
 if ($upgrade) {
-    $dataDisks = @()
-    for ($snapshotName -in $snapshotNames) {
+    foreach ($snapshotName in $snapshotNames) {
         Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
         $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
         if ($?) {
