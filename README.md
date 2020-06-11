@@ -43,6 +43,6 @@ We welcome contributions from anyone who is interested in the project. There are
 
 We are grateful for the following support for this project:
 
-  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1))
-  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1))
-  - Microsoft's generous donation of [$5 million in Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute
+  - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
+  - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
+  - Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.
