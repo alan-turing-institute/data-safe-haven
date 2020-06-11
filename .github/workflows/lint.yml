@@ -89,4 +89,4 @@ jobs:
           pwsh -c "Install-Module -Name PSScriptAnalyzer -Force"
       - name: Lint powershell
         run: |
-          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse -EnableExit -ReportSummary"
+          pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
