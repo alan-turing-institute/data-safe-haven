@@ -94,7 +94,7 @@ if ($upgrade) {
     # ---------------------------------
     if ($existingVm) {
         if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
-            Add-LogMessage -Level InfoSuccess "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
+            Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
             $_ = Set-AzContext -Context $originalContext
             exit 0
         }
@@ -112,16 +112,17 @@ if ($upgrade) {
         }
     }
 
-
     # Find and snapshot the existing data disks
     # -----------------------------------------
     $dataDiskNames = @("SCRATCH", "HOME")
     $snapshots = @()
     $snapshotNames = @()
     foreach ($name in $dataDiskNames) {
-        # First attempt to find a disk and take a snapshot
+        # First attempt to find a disk
         Add-LogMessage -Level Info "[ ] Locating '$name' disk"
         $disk = Get-AzDisk | Where-Object { $_.Name -match "\w*-$ipLastOctet-DSVM-\d-\d-\d{10}-$name-DISK" }
+
+        # If there is a disk, take a snapshot
         if ($disk) {
             if ($disk.Length -ne 1) {
                 Add-LogMessage -Level Fatal "Multiple candidate '$name' disks found, aborting upgrade"
@@ -184,7 +185,6 @@ if ($upgrade) {
             Add-LogMessage -Level Fatal "NIC removal failed!"
         }
     }
-
 
     # Remove the existing disks
     # -------------------------
