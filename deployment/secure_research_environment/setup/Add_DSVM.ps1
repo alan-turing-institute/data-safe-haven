@@ -424,16 +424,6 @@ if ($upgrade) {
             Add-LogMessage -Level Fatal "Disk creation failed!"
         }
         $dataDisks += $disk
-
-        # Delete snapshot
-        $snapshotName = $snapshotNames[$i]
-        Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
-        $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Snapshot deletion succeeded"
-        } else {
-            Add-LogMessage -Level Failure "Snapshot deletion failed!"
-        }
     }
     $scratchDisk = $dataDisks[0]
     $homeDisk = $dataDisks[1]
@@ -472,6 +462,22 @@ while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Co
     $progress = [math]::min(100, $progress + 1)
     Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
     Start-Sleep 10
+}
+
+
+# Remove snapshots
+# ----------------
+if ($upgrade) {
+    $dataDisks = @()
+    for ($snapshotName -in $snapshotNames) {
+        Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
+        $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
+        if ($?) {
+            Add-LogMessage -Level Success "Snapshot deletion succeeded"
+        } else {
+            Add-LogMessage -Level Failure "Snapshot deletion failed!"
+        }
+    }
 }
 
 
