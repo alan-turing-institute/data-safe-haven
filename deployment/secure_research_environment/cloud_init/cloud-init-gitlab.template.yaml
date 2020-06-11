@@ -93,4 +93,3 @@ power_state:
   message: "Shutting down as a signal that setup is finished"
   timeout: 30
   condition: True
-
