@@ -71,7 +71,7 @@ jobs:
       - name: Lint shell scripts
         run: |
           find . -name "*.sh" -exec shellcheck --format gcc --severity error {} \+
-      - name: Look for warnings
+      - name: Gather all linting messages (non-failing)
         continue-on-error: true
         run: |
           find . -name "*.sh" -exec shellcheck --format gcc --severity warning {} \+
@@ -90,7 +90,7 @@ jobs:
       - name: Lint powershell
         run: |
           pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary"
-      - name: Look for warnings
+      - name: Gather all linting messages (non-failing)
         continue-on-error: true
         run: |
           pwsh -c "Import-Module PSScriptAnalyzer; Invoke-ScriptAnalyzer -Path . -Recurse -ReportSummary"
