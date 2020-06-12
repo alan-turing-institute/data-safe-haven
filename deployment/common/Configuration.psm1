@@ -113,11 +113,7 @@ function Get-ShmFullConfig {
     # --- Domain config ---
     $shm.domain = [ordered]@{}
     $shm.domain.fqdn = $shmConfigBase.domain
-    $netbiosNameMaxLength = 15
-    if ($shmConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
-        throw "Netbios name must be no more than 15 characters long. '$($shmConfigBase.netbiosName)' is $($shmConfigBase.netbiosName.length) characters long."
-    }
-    $shm.domain.netbiosName = $shmConfigBase.netbiosName
+    $shm.domain.netbiosName = $($shmConfigBase.netbiosName).ToUpper() | Limit-StringLength 15 -FailureIsFatal
     $shm.domain.dn = "DC=$($shm.domain.fqdn.Replace('.',',DC='))"
     $shm.domain.serviceServerOuPath = "OU=Safe Haven Service Servers,$($shm.domain.dn)"
     $shm.domain.serviceOuPath = "OU=Safe Haven Service Accounts,$($shm.domain.dn)"
@@ -312,13 +308,9 @@ function Add-SreConfig {
     $config.sre.adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
 
     # -- Domain config ---
-    $netbiosNameMaxLength = 15
-    if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
-        throw "NetBios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
-     }
     $config.sre.domain = [ordered]@{}
     $config.sre.domain.fqdn = $sreConfigBase.domain
-    $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
+    $config.sre.domain.netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
     $dataAdministratorsGroup = "SG $($config.sre.domain.netbiosName) Data Administrators"
     $systemAdministratorsGroup = "SG $($config.sre.domain.netbiosName) System Administrators"
