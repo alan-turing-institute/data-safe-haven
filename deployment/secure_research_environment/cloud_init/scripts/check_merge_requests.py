@@ -396,7 +396,7 @@ def check_merge_requests():
             status = mr["merge_status"]
             if status != "can_be_merged":
                 # Should never get merge conflicts so if we do something has
-                # gone wrong - log an error
+                # gone wrong - log an error and skip this merge request.
                 logger.error(f"Merge Status: {status}")
                 return_code = ERROR_CODE
                 continue

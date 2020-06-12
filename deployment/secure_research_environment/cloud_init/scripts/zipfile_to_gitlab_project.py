@@ -167,10 +167,14 @@ into the user-visible GitLab within the Safe Haven.
 - Two such approvals are **required** before the merge request will be
   **automatically merged** and brought into the user-visible GitLab in
   the Research Environment.
-- Any "unresolved threads" will prevent the merge so make sure that
-  all comment threads in the discussion have been marked as resolved.
+- Any "thumbs down" reactions to the top comment of the Merge Request
+  will prevent the automated merge. This applies even if there are two
+  "thumbs up" reactions.
+- Any "unresolved threads" will also prevent the merge so make sure
+  that all comment threads in the discussion have been marked as
+  resolved once they have been addressed.
 
-**Important**: Once the repository has had two approvals, the merge
+**Important**: Once the conditions above have been met, the merge
 will be made automatically.  This could take up to 10 minutes.  There
 is no need (and you will not have the capability) to merge manually.
 
