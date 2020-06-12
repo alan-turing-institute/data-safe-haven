@@ -1,11 +1,41 @@
 Import-Module $PSScriptRoot/Security.psm1
+Import-Module $PSScriptRoot/Logging.psm1
 
 
 # Get root directory for configuration files
 # ------------------------------------------
 function Get-ConfigRootDir {
-    $configRootDir = Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -Resolve -ErrorAction Stop
-    return $configRootDir
+    try {
+        return Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -Resolve -ErrorAction Stop
+    } catch [System.Management.Automation.ItemNotFoundException] {
+        Add-LogMessage -Level Fatal "Could not find the configuration file root directory!"
+    }
+}
+
+
+# Load a config file into a PSCustomObject
+# ----------------------------------------
+function Get-ConfigFile {
+    param(
+        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Config type ('sre' or 'shm')")]
+        [ValidateSet("sre", "shm")]
+        $configType,
+        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Config level ('core' or 'full')")]
+        [ValidateSet("core", "full")]
+        $configLevel,
+        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
+        $configName
+    )
+    $configFilename = "${configType}_${configName}_${configLevel}_config.json"
+    try {
+        $configPath = Join-Path $(Get-ConfigRootDir) $configLevel $configFilename -Resolve -ErrorAction Stop
+        $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+    } catch [System.Management.Automation.ItemNotFoundException] {
+        Add-LogMessage -Level Fatal "Could not find a config file named '$configFilename'..."
+    } catch [System.ArgumentException] {
+        Add-LogMessage -Level Fatal "'$configPath' is not a valid JSON config file..."
+    }
+    return $configJson
 }
 
 
@@ -16,12 +46,8 @@ function Get-ShmFullConfig {
         [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID ('test' or 'prod')")]
         $shmId
     )
-    $configRootDir = Get-ConfigRootDir
-    $shmCoreConfigFilename = "shm_${shmId}_core_config.json"
-    $shmCoreConfigPath = Join-Path $configRootDir "core" $shmCoreConfigFilename -Resolve
-
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $shmConfigBase = Get-Content -Path $shmCoreConfigPath -Raw | ConvertFrom-Json
+    $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
 
     # Safe Haven management config
     # ----------------------------
@@ -252,25 +278,16 @@ function Add-SreConfig {
         [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (usually a short string e.g '9' for SRE 9)")]
         $sreId
     )
-    $configRootDir = Get-ConfigRootDir
-    $sreCoreConfigFilename = "sre_${sreId}_core_config.json"
-    $sreCoreConfigPath = Join-Path $configRootDir "core" $sreCoreConfigFilename -Resolve
-    $sreFullConfigFilename = "sre_${sreId}_full_config.json"
-    $sreFullConfigPath = Join-Path $configRootDir "full" $sreFullConfigFilename
-
+    # === SRE configuration parameters ===
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
+    $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $sreId
+    $srePrefix = $sreConfigBase.ipPrefix
 
     # Use hash table for config
     $config = [ordered]@{
-        shm = Get-ShmFullConfig ($sreConfigBase.shmId)
+        shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{}
     }
-
-    # === SRE configuration parameters ===
-    # Import minimal SRE config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-Content -Path $sreCoreConfigPath -Raw | ConvertFrom-Json
-    $srePrefix = $sreConfigBase.ipPrefix
 
     # Deconstruct VNet address prefix to allow easy construction of IP based parameters
     $srePrefixOctets = $srePrefix.Split('.')
@@ -279,10 +296,7 @@ function Add-SreConfig {
 
     # --- Top-level config ---
     $config.sre.subscriptionName = $sreConfigBase.subscriptionName
-    $config.sre.id = $sreConfigBase.sreId
-    if ($config.sre.id.length -gt 7) {
-        throw "sreId must be 7 characters or fewer. '$($config.sre.id)' is $($config.sre.id.length) characters long."
-    }
+    $config.sre.id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
     $config.sre.shortName = "sre-$($sreConfigBase.sreId)".ToLower()
     $config.sre.location = $config.shm.location
     $config.sre.tier = $sreConfigBase.tier
@@ -292,7 +306,7 @@ function Add-SreConfig {
     $netbiosNameMaxLength = 15
     if ($sreConfigBase.netbiosName.length -gt $netbiosNameMaxLength) {
         throw "NetBios name must be no more than 15 characters long. '$($sreConfigBase.netbiosName)' is $($sreConfigBase.netbiosName.length) characters long."
-    }
+     }
     $config.sre.domain = [ordered]@{}
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
@@ -601,25 +615,20 @@ function Add-SreConfig {
         Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
         return
     }
-
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
-    # Write-Host $jsonOut
+    $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${sreId}_full_config.json"
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig
 
 
-# Get a SRE configuration
-# -----------------------
+# Get SRE configuration
+# ---------------------
 function Get-SreConfig {
     param(
         [string]$sreId
     )
-    # Read SRE config from file
-    $configRootDir = Join-Path $(Get-ConfigRootDir) "full" -Resolve
-    $configFilename = "sre_${sreId}_full_config.json"
-    $configPath = Join-Path $configRootDir $configFilename -Resolve
-    $config = Get-Content -Path $configPath -Raw | ConvertFrom-Json
-    return $config
+    # Read full SRE config from file
+    return Get-ConfigFile -configType "sre" -configLevel "full" -configName $sreId
 }
 Export-ModuleMember -Function Get-SreConfig
