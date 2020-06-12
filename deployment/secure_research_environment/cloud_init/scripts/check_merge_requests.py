@@ -399,10 +399,9 @@ def check_merge_requests():
                 # gone wrong - log an error
                 logger.error(f"Merge Status: {status}")
                 return_code = ERROR_CODE
+                continue
             else:
                 logger.info(f"Merge Status: {status}")
-            wip = mr["work_in_progress"]
-            logger.info(f"Work in Progress: {wip}")
             unresolved = count_unresolved_mr_discussions(mr, config_gitlabreview)
             logger.info(f"Unresolved Discussions: {unresolved}")
             upvotes = mr["upvotes"]
@@ -414,9 +413,7 @@ def check_merge_requests():
             return_code = ERROR_CODE
             continue
         if (
-            status == "can_be_merged"
-            and wip is False
-            and unresolved == 0
+            unresolved == 0
             and upvotes >= 2
             and downvotes == 0
         ):
