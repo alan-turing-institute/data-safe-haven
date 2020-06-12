@@ -3,8 +3,9 @@ param(
     [string]$sreId,
     [Parameter( Mandatory = $true, HelpMessage = "Enter the git URL of the source repository")]
     [string]$sourceGitURL,
-    [Parameter( Mandatory = $true, HelpMessage = "Enter the name of the repository as it should appear within SRE GITLAB")]
-    [string]$targetRepoName,
+    ## interpret the basename of the final path segment in a (possibly encoded) URI as the name of the repository
+    [Parameter( Mandatory = $false, HelpMessage = "Enter the name of the repository as it should appear within SRE GITLAB (default is the basename of the final path segment of the git URL)")]
+    [string]$targetRepoName = [uri]::UnescapeDataString((Split-Path -Path ([uri]$sourceGitURL).Segments[-1] -LeafBase)),
     [Parameter( Mandatory = $true, HelpMessage = "Enter the full commit hash of the commit in the source repository to snapshot")]
     [string]$sourceCommitHash,
     [Parameter( Mandatory = $true, HelpMessage = "Enter the desired branch name where the snapshot should be placed (in the repository inside SRE GITLAB)")]
