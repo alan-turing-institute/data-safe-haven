@@ -68,17 +68,17 @@ $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.sec
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
-                                            Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
-                                            Replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
-                                            Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
-                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
-                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
-                                            Replace('<gitlab-fqdn>',$gitlabFqdn).
-                                            Replace('<gitlab-root-password>',$gitlabRootPassword).
-                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                            Replace('<gitlab-username>',$gitlabUsername).
-                                            Replace('<gitlab-password>',$gitlabPassword).
-                                            Replace('<gitlab-api-token>',$gitlabAPIToken)
+                                            Replace('<gitlab-rb-pw>', $gitlabLdapPassword).
+                                            Replace('<gitlab-rb-base>', $config.shm.domain.userOuPath).
+                                            Replace('<gitlab-rb-user-filter>', $gitlabUserFilter).
+                                            Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
+                                            Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
+                                            Replace('<gitlab-fqdn>', $gitlabFqdn).
+                                            Replace('<gitlab-root-password>', $gitlabRootPassword).
+                                            Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
+                                            Replace('<gitlab-username>', $gitlabUsername).
+                                            Replace('<gitlab-password>', $gitlabPassword).
+                                            Replace('<gitlab-api-token>', $gitlabAPIToken)
 
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
@@ -94,12 +94,12 @@ $hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
                                             Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
                                             Replace('<hackmd-user-filter>',$hackmdUserFilter).
-                                            Replace('<hackmd-ldap-base>',$config.shm.domain.userOuPath).
-                                            Replace('<hackmd-ip>',$config.sre.webapps.hackmd.ip).
-                                            Replace('<hackmd-hostname>',$config.sre.webapps.hackmd.hostname).
-                                            Replace('<hackmd-fqdn>',$hackmdFqdn).
-                                            Replace('<hackmd-ldap-url>',$hackMdLdapUrl).
-                                            Replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
+                                            Replace('<hackmd-ldap-base>', $config.shm.domain.userOuPath).
+                                            Replace('<hackmd-ip>', $config.sre.webapps.hackmd.ip).
+                                            Replace('<hackmd-hostname>', $config.sre.webapps.hackmd.hostname).
+                                            Replace('<hackmd-fqdn>', $hackmdFqdn).
+                                            Replace('<hackmd-ldap-url>', $hackMdLdapUrl).
+                                            Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
 
@@ -222,24 +222,24 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
 }
 
 
-$gitlabReviewCloudInit = $gitlabReviewCloudInitTemplate.Replace('<sre-admin-username>',$sreAdminUsername).
-                                                        Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
-                                                        Replace('<gitlab-login-domain>',$config.shm.domain.fqdn).
-                                                        Replace('<gitlab-username>',$gitlabUsername).
-                                                        Replace('<gitlab-api-token>',$gitlabAPIToken).
+$gitlabReviewCloudInit = $gitlabReviewCloudInitTemplate.Replace('<sre-admin-username>', $sreAdminUsername).
+                                                        Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
+                                                        Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
+                                                        Replace('<gitlab-username>', $gitlabUsername).
+                                                        Replace('<gitlab-api-token>', $gitlabAPIToken).
                                                         Replace('<gitlab-review-rb-host>', $shmDcFqdn).
                                                         Replace('<gitlab-review-rb-bind-dn>', $gitlabLdapUserDn).
-                                                        Replace('<gitlab-review-rb-pw>',$gitlabLdapPassword).
-                                                        Replace('<gitlab-review-rb-base>',$config.shm.domain.userOuPath).
-                                                        Replace('<gitlab-review-rb-user-filter>',$gitlabUserFilter).
-                                                        Replace('<gitlab-review-ip>',$config.sre.webapps.gitlabreview.ip).
-                                                        Replace('<gitlab-review-hostname>',$config.sre.webapps.gitlabreview.hostname).
-                                                        Replace('<gitlab-review-fqdn>',$gitlabFqdn).
-                                                        Replace('<gitlab-review-root-password>',$gitlabRootPassword).
-                                                        Replace('<gitlab-review-login-domain>',$config.shm.domain.fqdn).
-                                                        Replace('<gitlab-review-username>',$gitlabReviewUsername).
-                                                        Replace('<gitlab-review-password>',$gitlabReviewPassword).
-                                                        Replace('<gitlab-review-api-token>',$gitlabReviewAPIToken)
+                                                        Replace('<gitlab-review-rb-pw>', $gitlabLdapPassword).
+                                                        Replace('<gitlab-review-rb-base>', $config.shm.domain.userOuPath).
+                                                        Replace('<gitlab-review-rb-user-filter>', $gitlabUserFilter).
+                                                        Replace('<gitlab-review-ip>', $config.sre.webapps.gitlabreview.ip).
+                                                        Replace('<gitlab-review-hostname>', $config.sre.webapps.gitlabreview.hostname).
+                                                        Replace('<gitlab-review-fqdn>', $gitlabFqdn).
+                                                        Replace('<gitlab-review-root-password>', $gitlabRootPassword).
+                                                        Replace('<gitlab-review-login-domain>', $config.shm.domain.fqdn).
+                                                        Replace('<gitlab-review-username>', $gitlabReviewUsername).
+                                                        Replace('<gitlab-review-password>', $gitlabReviewPassword).
+                                                        Replace('<gitlab-review-api-token>', $gitlabReviewAPIToken)
 
 $params = @{
     Name = $vmNameReview

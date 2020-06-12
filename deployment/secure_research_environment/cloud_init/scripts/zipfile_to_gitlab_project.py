@@ -41,7 +41,7 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
     for zipfile in zipfiles:
         filename_match = repo_commit_regex.search(zipfile)
         if not filename_match:
-            logger.info("Badly named zipfile! {}".format(zipfile))
+            logger.error("Badly named zipfile! {}".format(zipfile))
             continue
         repo_name, commit_hash, branch = filename_match.groups()
 
@@ -55,7 +55,7 @@ def unzip_zipfiles(zipfile_dir, tmp_unzipped_dir):
             unpacked_location = os.path.join(tmp_unzipped_dir, unpacked_zips[0])
             output_list.append((repo_name, commit_hash, branch, unpacked_location))
         except (BadZipFile):
-            logger.info("Bad zipfile: {}".format(zipfile))
+            logger.error("Bad zipfile: {}".format(zipfile))
             continue
     return output_list
 
@@ -348,7 +348,7 @@ def create_merge_request(
         #                                   response.content))
         ##### TEMPORARY - don't raise an error here - we get 500 status code
         ##### even though MR is created it - under investigation.
-        logger.info(
+        logger.error(
             "Problem creating Merge Request {} {} {}: {}".format(
                 repo_name, source_branch, target_branch, response.content
             )

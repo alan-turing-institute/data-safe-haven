@@ -20,6 +20,7 @@ in CSV format with columns merged time, source project, source branch, source
 commit, target project, target branch and target commit.
 """
 
+import sys
 import requests
 import subprocess
 from urllib.parse import quote as url_quote
@@ -41,6 +42,10 @@ c_handler = logging.StreamHandler()
 c_handler.setFormatter(formatter)
 logger.addHandler(f_handler)
 logger.addHandler(c_handler)
+
+# exit status codes
+OK_CODE = 0  # everything ran normally
+ERROR_CODE = 1  # logger.error or critical encountered
 
 
 def check_project_exists(repo_name, config):
@@ -342,13 +347,14 @@ def check_merge_requests():
     gitlab server for users..
     """
     logger.info(f"STARTING RUN")
-
+    return_code = OK_CODE
+    
     try:
         config_gitlabreview = get_api_config(server="GITLAB-REVIEW")
         config_gitlab = get_api_config(server="GITLAB")
     except Exception as e:
         logger.critical(f"Failed to load gitlab secrets: {e}")
-        return
+        return ERROR_CODE
 
     try:
         gitlab_status = requests.get(
@@ -360,17 +366,17 @@ def check_merge_requests():
             logger.critical(
                 f"Gitlab Not Responding: {gitlab_status.status_code}, CONTENT {gitlab_status.content}"
             )
-            return
+            return ERROR_CODE
     except Exception as e:
         logger.critical(f"Gitlab Not Responding: {e}")
-        return
+        return ERROR_CODE
 
     logger.info("Getting open merge requests for approval")
     try:
         merge_requests = get_merge_requests_for_approval(config_gitlabreview)
     except Exception as e:
         logger.critical(f"Failed to get merge requests: {e}")
-        return
+        return ERROR_CODE
     logger.info(f"Found {len(merge_requests)} open merge requests")
 
     for i, mr in enumerate(merge_requests):
@@ -392,6 +398,7 @@ def check_merge_requests():
                 # Should never get merge conflicts so if we do something has
                 # gone wrong - log an error
                 logger.error(f"Merge Status: {status}")
+                return_code = ERROR_CODE
             else:
                 logger.info(f"Merge Status: {status}")
             wip = mr["work_in_progress"]
@@ -404,6 +411,7 @@ def check_merge_requests():
             logger.info(f"Downvotes: {downvotes}")
         except Exception as e:
             logger.error(f"Failed to extract merge request details: {e}")
+            return_code = ERROR_CODE
             continue
         if (
             status == "can_be_merged"
@@ -417,6 +425,7 @@ def check_merge_requests():
                 result = accept_merge_request(mr, config_gitlabreview)
             except Exception as e:
                 logger.error(f"Merge failed! {e}")
+                return_code = ERROR_CODE
                 continue
             if result["state"] == "merged":
                 logger.info(f"Merge successful! Merge SHA {result['merge_commit_sha']}")
@@ -428,6 +437,7 @@ def check_merge_requests():
                         )
                 except Exception as e:
                     logger.error(f"Failed to log accepted merge request: {e}")
+                    return_code = ERROR_CODE
                 try:
                     logger.info("Pushing project to gitlab user server.")
                     update_repo(
@@ -438,13 +448,18 @@ def check_merge_requests():
                     )
                 except Exception as e:
                     logger.error(f"Failed to push to gitlab user server: {e}")
+                    return_code = ERROR_CODE
             else:
                 logger.error(f"Merge failed! Merge status is {result['state']}")
+                return_code = ERROR_CODE
         else:
             logger.info("Merge request has not been approved. Skipping.")
     logger.info(f"RUN FINISHED")
     logger.info("=" * 30)
+    
+    return return_code
 
 
 if __name__ == "__main__":
-    check_merge_requests()
+    return_code = check_merge_requests()
+    sys.exit(return_code)
