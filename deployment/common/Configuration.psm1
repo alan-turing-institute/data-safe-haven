@@ -74,7 +74,7 @@ function Get-ShmFullConfig {
         location = "uksouth"
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
-            accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
+            accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24
         }
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
@@ -103,7 +103,7 @@ function Get-ShmFullConfig {
         }
         keyVault = [ordered]@{
             rg = "RG_SH_SECRETS"
-            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | TrimToLength 24
+            name = "kv-shm-$($shm.id)-dsvm-imgs".ToLower() | Limit-StringLength 24
         }
         network = [ordered]@{
             rg = "RG_SH_NETWORKING"
@@ -193,18 +193,18 @@ function Get-ShmFullConfig {
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)artifacts${storageSuffix}".ToLower() | TrimToLength 24
+            accountName = "shm$($shm.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
+            accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24
         }
     }
 
     # --- Secrets config ---
     $shm.keyVault = [ordered]@{
         rg = "RG_SHM_SECRETS"
-        name = "kv-shm-$($shm.id)".ToLower() | TrimToLength 24
+        name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
     }
     $shm.keyVault.secretNames = [ordered]@{
         aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
@@ -259,16 +259,25 @@ function Get-ShmFullConfig {
 Export-ModuleMember -Function Get-ShmFullConfig
 
 
-function TrimToLength {
+function Limit-StringLength {
     param(
         [Parameter(Mandatory = $True,ValueFromPipeline = $True)]
-        [string]$str,
+        [string]$InputString,
         [Parameter(Mandatory = $True,Position = 1)]
-        [int]$length
+        [int]$MaximumLength,
+        [Parameter(Mandatory=$false)]
+        [Switch]$FailureIsFatal
     )
-    return $str[0..($length - 1)] -join ""
+    if ($InputString.Length -le $MaximumLength) {
+        return $InputString
+    }
+    if ($FailureIsFatal) {
+        Add-LogMessage -Level Fatal "'$InputString' has length $($InputString.Length) but must not exceed $MaximumLength!"
+    }
+    Add-LogMessage -Level Warning "Truncating '$InputString' to length $MaximumLength!"
+    return $InputString[0..($MaximumLength - 1)] -join ""
 }
-Export-ModuleMember -Function TrimToLength
+Export-ModuleMember -Function Limit-StringLength
 
 
 # Add a new SRE configuration
@@ -373,17 +382,17 @@ function Add-SreConfig {
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($shm.id)artifacts${storageSuffix}".ToLower() | TrimToLength 24
+            accountName = "sre$($shm.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
+            accountName = "sre$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24
         }
     }
 
     # --- Secrets ---
     $config.sre.keyVault = [ordered]@{
-        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | TrimToLength 24
+        name = "kv-$($config.shm.id)-sre-$($config.sre.id)".ToLower() | Limit-StringLength 24
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
@@ -418,37 +427,37 @@ function Add-SreConfig {
         ldap = [ordered]@{
             gitlab = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Gitlab LDAP"
-                samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
             }
             hackmd = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) HackMD LDAP"
-                samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
             }
             dsvm = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) DSVM LDAP"
-                samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
             }
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres VM LDAP"
-                samAccountName = "pgvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "pgvmldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
                 passwordSecretName = "$($config.sre.shortName)-postgresvm-ldap-password"
             }
         }
         serviceAccounts = [ordered]@{
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
-                samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
                 passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
             }
         }
         datamount = [ordered]@{
             name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
-            samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+            samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
         }
         researchers = [ordered]@{
             test = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Test Researcher"
-                samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
             }
         }
     }
@@ -457,18 +466,18 @@ function Add-SreConfig {
     $config.sre.rds = [ordered]@{
         rg = "RG_SRE_RDS"
         gateway = [ordered]@{
-            vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
         }
         sessionHost1 = [ordered]@{
-            vmName = "APP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
-            vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+            vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
@@ -512,7 +521,7 @@ function Add-SreConfig {
     $config.sre.dataserver = [ordered]@{}
     $config.sre.dataserver.rg = "RG_SRE_DATA"
     $config.sre.dataserver.nsg = "NSG_SRE_$($config.sre.id)_DATA".ToUpper()
-    $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | TrimToLength 15
+    $config.sre.dataserver.vmName = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
     $config.sre.dataserver.vmSize = "Standard_D2s_v3"
     $config.sre.dataserver.hostname = $config.sre.dataserver.vmName
     $config.sre.dataserver.fqdn = "$($config.sre.dataserver.hostname).$($config.shm.domain.fqdn)"
@@ -551,7 +560,7 @@ function Add-SreConfig {
     $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
     foreach ($databaseType in $sreConfigBase.databases) {
         $config.sre.databases["db$($databaseType.ToLower())"]  = [ordered]@{
-            name = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | TrimToLength 15
+            name = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
             ipLastOctet = $ipLastOctet
             port = $dbPorts[$databaseType]
