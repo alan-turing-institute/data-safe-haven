@@ -70,7 +70,6 @@ if ($null -eq $kvCertificate) {
 # -------------------------
 if ($requestCertificate) {
     Add-LogMessage -Level Info "Preparing to request a new certificate..."
-    # $baseFqdn = $config.sre.rds.gateway.fqdn
     $baseFqdn = $config.sre.domain.fqdn
     $rdsFqdn = $config.sre.rds.gateway.fqdn
 
