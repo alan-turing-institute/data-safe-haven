@@ -83,6 +83,7 @@ This is done using the VPN which should have been deployed when setting up the S
   - Click the `Download VPN client` link at the top of the page to get the root certificate (`VpnServerRoot.cer`) and VPN configuration file (`VpnSettings.xml`), then follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the Windows or Mac sections as appropriate.
   - :warning: **Windows:** you may get a "Windows protected your PC" pop up. If so, click `More info -> Run anyway`
   - :warning: **Windows:** do not rename the VPN client as this will break it
+  - :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. This is not true for OSX.
   - :pencil: **OSX** double clicking on the root certificate may not result in any pop-up dialogue, but the certificate should still be installed. You can view the details of the downloaded certificate by highlighting the certificate file in Finder and pressing the spacebar. You can then look for the certificate of the same name in the login KeyChain and view its details by double clicking the list entry. If the details match the certificate has been successfully installed.
   - :pencil: **OSX** on Catalina you may have to drag the certificate into your personal KeyChain as the default is to install system-wide
   - :pencil: **OSX** on Catalina, the Authentication Settings step is quite counter-intuitive: you must select "None" from the drop-down (not "Certificate") and then select the "Certificate" radio button underneath (see screenshot).
@@ -189,13 +190,13 @@ On your **deployment machine**.
 
 ### :registered: Register SRE with the SHM
 On your **deployment machine**.
-- Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>`, where the <SRE config ID> is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE CONFIG ID>` equal to `testcsandbox`.  
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :fishing_pole_and_fish: Deploy virtual network and remote desktop
 ### :clubs: Create SRE DNS Zone
 On your **deployment machine**.
-- Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>`, where the <SRE config ID> is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE CONFIG ID>` equal to `testcsandbox`.  
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
   <details><summary><b>Instructions for manually creating SRE DNS records</b></summary>
@@ -220,6 +221,7 @@ On your **deployment machine**.
 - Run `./Setup_SRE_VNET_RDS.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 50 minutes.
 - The VNet peerings may take a few minutes to provision after the script completes.
+  - **Troubleshooting** If you encounter errors with the deployment of the virtual network, or later with the RDS, do not rerun the scripts as they are not currently idempotent and can lead to different outputs. Instead, you should delete the entire SRE and start over from the beginning of this step.
 
 ### :satellite: Configure RDS webclient
 - Connect to the **RDS Gateway** via Remote Desktop client over the SHM VPN connection
@@ -227,6 +229,7 @@ On your **deployment machine**.
 - Login as the SHM **domain** admin user `<admin username>@<SHM domain>` (eg. `shmtestbadmin@testb.dsgroupdev.co.uk`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets`. as follows:
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
+  - :warning: **Windows:** when deploying on Windows, the SHM VPN needs to be redownloaded/reconfigured each time an SRE is deployed. This is not true for OSX.
 On the **SRE RDS Gateway**.
 - Open a PowerShell command window with elevated privileges - make sure to use the `Windows PowerShell` application, not the `Windows PowerShell (x86)` application. The required server management commandlets are not installed on the x86 version.
 - Run `C:\Installation\Deploy_RDS_Environment.ps1` (prefix the command with a leading `.\` if running from within the `C:\Installation` directory)
@@ -237,7 +240,7 @@ On your **deployment machine**.
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
-- Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Configure_SRE_RDS_CAP_And_RAP.ps1 -configId <SRE config ID>`, where the <SRE config ID> is `<SHM ID><SRE ID>` for the full config file you are using. For example, the full config file `sre_testcsandbox_full_config` will have `<SRE CONFIG ID>` equal to `testcsandbox`.  
 
 ### :closed_lock_with_key: Update SSL certificate
 On your **deployment machine**.
@@ -245,7 +248,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
+- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the <SRE config ID> is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 - **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
