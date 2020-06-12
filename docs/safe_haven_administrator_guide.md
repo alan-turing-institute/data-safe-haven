@@ -62,6 +62,7 @@ On the **SHM domain controller (DC1)**.
 ## :arrows_counterclockwise: Create and synchronise users
 
 Upload the user details CSV file to a sensible location on the SHM domain controller (recommended: `C:\Installation`). This can be done by copy pasting the file from your deployment device to the SHM DC.
+
 On the **SHM domain controller (DC1)**.
 - Open a PowerShell command window with elevated privileges.
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
