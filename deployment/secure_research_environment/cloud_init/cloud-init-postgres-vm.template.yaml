@@ -33,7 +33,7 @@ fs_setup:
     filesystem: ext4
 
 mounts:
- - [ /dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail" ]
+  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
   - path: "/etc/ldap.secret"

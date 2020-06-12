@@ -20,7 +20,7 @@ fs_setup:
     filesystem: ext4
 
 mounts:
- - [ /dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail" ]
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
 
 # List of packages to install with apt-get
 packages:

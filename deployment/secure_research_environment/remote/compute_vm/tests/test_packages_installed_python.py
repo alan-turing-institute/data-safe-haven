@@ -74,7 +74,7 @@ def get_missing_packages(packages):
     warning, missing = [], []
     for package in packages:
         # Some packages are not importable so we test for the executable instead
-        if package in NON_IMPORTABLE_PACKAGES.keys()
+        if package in NON_IMPORTABLE_PACKAGES.keys():
             if not shutil.which(NON_IMPORTABLE_PACKAGES[package]):
                 missing.append(package)
                 continue
@@ -108,7 +108,7 @@ def test_packages():
     pypi_package_lists = glob.glob(
         os.path.join("..", "package_lists", "packages-python-pypi*")
     )
-    matching_package_lists = [l for l in pypi_package_lists if version["short"] in l]
+    matching_package_lists = [_list for _list in pypi_package_lists if version["short"] in _list]
     if matching_package_lists:
         with open(matching_package_lists[0], "r") as f_packages:
             packages = [

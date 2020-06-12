@@ -1,0 +1,8 @@
+---
+extends: default
+
+rules:
+  # Make long lines a wanring rather than error
+  line-length:
+    max: 80
+    level: warning

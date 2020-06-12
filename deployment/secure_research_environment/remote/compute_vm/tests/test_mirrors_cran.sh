@@ -1,3 +1,4 @@
+#!/bin/sh
 # Take packages which are alphabetically first and last on our whitelist
 packages=("abind" "zoo")
 
@@ -6,7 +7,7 @@ Rscript -e "dir.create(path = Sys.getenv('R_LIBS_USER'), showWarnings = FALSE, r
 
 # Install sample packages to local user library
 OUTCOME=0
-for package in ${packages[@]}; do
+for package in "${packages[@]}"; do
     echo "Attempting to install $package"
     failure=0
     Rscript -e "options(warn=2); install.packages('${package}', lib=Sys.getenv('R_LIBS_USER'), quiet=TRUE)" || failure=1
