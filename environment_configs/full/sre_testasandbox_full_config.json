@@ -4,10 +4,10 @@
     "id": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
+      "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
       "stateCountyRegion": "London",
-      "countryCode": "GB"
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -133,9 +133,9 @@
     "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "centralus",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
+    "location": "centralus",
     "domain": {
       "fqdn": "sandbox.testa.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
@@ -265,7 +265,7 @@
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "researchersandbox"
+          "samAccountName": "testresrchsandbox"
         }
       }
     },
