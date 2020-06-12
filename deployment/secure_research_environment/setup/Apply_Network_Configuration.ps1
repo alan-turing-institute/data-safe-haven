@@ -82,7 +82,7 @@ $_ = Update-NetworkSecurityGroupRule -Name "HttpsIn" -NetworkSecurityGroup $nsgG
 
 # Update restricted Linux NSG
 Add-LogMessage -Level Info "Updating restricted Linux NSG to match SRE config..."
-$_ = Update-NetworkSecurityGroupRule -Name "OutboundDenyInternet" -NetworkSecurityGroup $nsgLinux -Access $config.sre.rds.gateway.networkRules.outboundInternet
+$_ = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgLinux -Access $config.sre.rds.gateway.networkRules.outboundInternet
 
 
 # Ensure SRE is peered to correct mirror set

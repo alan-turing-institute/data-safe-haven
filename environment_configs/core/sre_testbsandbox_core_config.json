@@ -5,10 +5,9 @@
     "shmId": "testb",
     "tier": "2",
     "domain": "sandbox.testb.dsgroupdev.co.uk",
-    "netbiosName": "SANDBOX",
     "ipPrefix": "10.151.0",
-    "rdsAllowedSources": "Internet",
-    "rdsInternetAccess": "default",
+    "inboundAccessFrom": "anywhere",
+    "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019122000"
 }

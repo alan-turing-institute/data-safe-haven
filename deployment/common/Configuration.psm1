@@ -508,7 +508,7 @@ function Add-SreConfig {
     }
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
-    if ($sreConfigBase.rdsAllowedSources -eq "default") {
+    if ($sreConfigBase.inboundAccessFrom -eq "default") {
         if (@("3", "4").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.allowedSources = "193.60.220.240"
         } elseif ($config.sre.tier -eq "2") {
@@ -516,16 +516,22 @@ function Add-SreConfig {
         } elseif (@("0", "1").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
         }
+    } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
+        $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
     } else {
         $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.rdsAllowedSources
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
-    if ($sreConfigBase.rdsInternetAccess -eq "default") {
+    if ($sreConfigBase.outboundInternetAccess -eq "default") {
         if (@("2", "3", "4").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
         } elseif (@("0", "1").Contains($config.sre.tier)) {
             $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
         }
+    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+        $config.sre.rds.gateway.networkRules.outboundInternet = "Deny"
+    } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+        $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
     } else {
         $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
