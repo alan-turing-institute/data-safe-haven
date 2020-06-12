@@ -1,6 +1,7 @@
 {
     "subscriptionName": "[Prod] Safe Haven Management",
-    "domainSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsSubscriptionName": "[Prod] Safe Haven Domains",
+    "dnsResourceGroupName": "RG_SHM_DNS_PRODUCTION",
     "adminSecurityGroupName" : "Safe Haven Production Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "turingsafehaven.ac.uk",

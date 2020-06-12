@@ -254,13 +254,9 @@ function Get-ShmFullConfig {
 
     # DNS config
     # ----------
-    $rgSuffix = "_PRODUCTION"
-    if ($($shm.adminSecurityGroupName).ToLower() -like "*test*") {
-        $rgSuffix = "_TEST"
-    }
     $shm.dns = [ordered]@{
-        subscriptionName = $shmConfigBase.domainSubscriptionName
-        rg = "RG_SHM_DNS$rgSuffix".ToUpper()
+        subscriptionName = $shmConfigBase.dnsSubscriptionName
+        rg = $shmConfigBase.dnsResourceGroupName
     }
 
     # Package mirror config
