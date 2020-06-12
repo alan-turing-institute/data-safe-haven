@@ -32,7 +32,7 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_SHM_NETWORKING",
+        "rg": "RG_SHM_TESTA_NETWORKING",
         "name": "VNET_SHM_TESTA",
         "cidr": "10.0.0.0/21"
       },
@@ -55,7 +55,7 @@
       }
     },
     "dc": {
-      "rg": "RG_SHM_DC",
+      "rg": "RG_SHM_TESTA_DC",
       "vmName": "DC1-SHM-TESTA",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DC1-SHM-TESTA",
@@ -70,7 +70,7 @@
       "ip": "10.0.0.249"
     },
     "nps": {
-      "rg": "RG_SHM_NPS",
+      "rg": "RG_SHM_TESTA_NPS",
       "vmName": "NPS-SHM-TESTA",
       "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TESTA",
@@ -78,16 +78,16 @@
     },
     "storage": {
       "artifacts": {
-        "rg": "RG_SHM_ARTIFACTS",
+        "rg": "RG_SHM_TESTA_ARTIFACTS",
         "accountName": "shmtestaartifactsvkdrslu"
       },
       "bootdiagnostics": {
-        "rg": "RG_SHM_ARTIFACTS",
+        "rg": "RG_SHM_TESTA_ARTIFACTS",
         "accountName": "shmtestabootdiagsvkdrslu"
       }
     },
     "keyVault": {
-      "rg": "RG_SHM_SECRETS",
+      "rg": "RG_SHM_TESTA_SECRETS",
       "name": "kv-shm-testa",
       "secretNames": {
         "aadAdminPassword": "shm-testa-aad-admin-password",
@@ -107,10 +107,10 @@
     },
     "dns": {
       "subscriptionName": "[Prod] Safe Haven Domains",
-      "rg": "RG_SHM_DNS_TEST"
+      "rg": "RG_SHM_TESTA_DNS"
     },
     "mirrors": {
-      "rg": "RG_SHM_PKG_MIRRORS",
+      "rg": "RG_SHM_TESTA_PKG_MIRRORS",
       "vmSize": "Standard_B2ms",
       "diskType": "Standard_LRS",
       "pypi": {
@@ -157,7 +157,7 @@
     },
     "network": {
       "vnet": {
-        "rg": "RG_SRE_NETWORKING",
+        "rg": "RG_SRE_SANDBOX_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
         "cidr": "10.150.0.0/21"
       },
@@ -193,17 +193,17 @@
     },
     "storage": {
       "artifacts": {
-        "rg": "RG_SRE_ARTIFACTS",
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS",
         "accountName": "sreartifactszvmwtqkigrld"
       },
       "bootdiagnostics": {
-        "rg": "RG_SRE_ARTIFACTS",
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS",
         "accountName": "srebootdiagszvmwtqkigrld"
       }
     },
     "keyVault": {
       "name": "kv-testa-sre-sandbox",
-      "rg": "RG_SRE_SECRETS",
+      "rg": "RG_SRE_SANDBOX_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
         "dataServerAdminPassword": "sre-sandbox-vm-admin-password-dataserver",
@@ -260,7 +260,7 @@
       }
     },
     "rds": {
-      "rg": "RG_SRE_RDS",
+      "rg": "RG_SRE_SANDBOX_RDS",
       "gateway": {
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
@@ -291,7 +291,7 @@
       }
     },
     "dataserver": {
-      "rg": "RG_SRE_DATA",
+      "rg": "RG_SRE_SANDBOX_DATA",
       "nsg": "NSG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
@@ -303,7 +303,7 @@
       "sharedDiskGb": 512
     },
     "webapps": {
-      "rg": "RG_SRE_WEBAPPS",
+      "rg": "RG_SRE_SANDBOX_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "vmName": "GITLAB-SRE-SANDBOX",
@@ -321,7 +321,7 @@
       }
     },
     "databases": {
-      "rg": "RG_SRE_DATABASES",
+      "rg": "RG_SRE_SANDBOX_DATABASES",
       "dbmssql": {
         "name": "MSSQL-SANDBOX",
         "type": "MSSQL",
@@ -359,7 +359,7 @@
       }
     },
     "dsvm": {
-      "rg": "RG_SRE_COMPUTE",
+      "rg": "RG_SRE_SANDBOX_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
       "vmImageSubscription": "[Prod] Safe Haven VM Images",

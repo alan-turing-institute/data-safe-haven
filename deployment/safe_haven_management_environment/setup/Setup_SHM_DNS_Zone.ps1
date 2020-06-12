@@ -13,11 +13,12 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-
-
-# Set to Domains subscription
-# ---------------------------
 $_ = Set-AzContext -Subscription $config.dns.subscriptionName
+
+
+# Ensure that DNS resource group exists
+# -------------------------------------
+$_ = Deploy-ResourceGroup -Name $config.dns.rg -Location $config.location
 
 
 # Create the DNS Zone and set the parent NS records if required
