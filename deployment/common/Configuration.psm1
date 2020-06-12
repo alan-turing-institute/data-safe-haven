@@ -401,17 +401,13 @@ function Add-SreConfig {
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            dataMountPassword = "$($config.sre.shortName)-datamount-password"
             dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
             dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
             dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
             dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
             dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
-            dsvmLdapPassword = "$($config.sre.shortName)-dsvm-ldap-password"
-            gitlabLdapPassword = "$($config.sre.shortName)-gitlab-ldap-password"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
-            hackmdLdapPassword = "$($config.sre.shortName)-hackmd-ldap-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
@@ -433,14 +429,17 @@ function Add-SreConfig {
             gitlab = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Gitlab LDAP"
                 samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-gitlab-ldap-password"
             }
             hackmd = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) HackMD LDAP"
                 samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-hackmd-ldap-password"
             }
             dsvm = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-dsvm-ldap-password"
             }
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres VM LDAP"
@@ -454,10 +453,11 @@ function Add-SreConfig {
                 samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
                 passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
             }
-        }
-        datamount = [ordered]@{
-            name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
-            samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+            datamount = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
+                samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-datamount-password"
+            }
         }
         researchers = [ordered]@{
             test = [ordered]@{

@@ -302,13 +302,13 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName
 $dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword
 $dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $dsvmDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbAdminPassword
 $dsvmDbReaderPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbReaderPassword
 $dsvmDbWriterPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmDbWriterPassword
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.dsvm.passwordSecretName
 
 
 # Construct the cloud-init yaml file for the target subscription
@@ -318,7 +318,7 @@ $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
-                                                            Replace("<datamount-username>", $config.sre.users.datamount.samAccountName).
+                                                            Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
                                                             Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
                                                             Replace("<dsvm-hostname>", $vmName).
                                                             Replace("<dsvm-ldap-password>", $dsvmLdapPassword).

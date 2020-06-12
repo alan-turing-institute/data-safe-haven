@@ -212,11 +212,8 @@
         "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
         "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
         "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
-        "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-        "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
-        "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
@@ -235,15 +232,18 @@
       "ldap": {
         "gitlab": {
           "name": "SANDBOX Gitlab LDAP",
-          "samAccountName": "gitlabldapsandbox"
+          "samAccountName": "gitlabldapsandbox",
+          "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
         },
         "hackmd": {
           "name": "SANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldapsandbox"
+          "samAccountName": "hackmdldapsandbox",
+          "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
         },
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldapsandbox"
+          "samAccountName": "dsvmldapsandbox",
+          "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
         },
         "postgres": {
           "name": "SANDBOX Postgres VM LDAP",

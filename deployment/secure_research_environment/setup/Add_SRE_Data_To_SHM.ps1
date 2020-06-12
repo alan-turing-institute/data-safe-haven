@@ -37,16 +37,11 @@ $groups = $config.sre.domain.securityGroups | ConvertTo-Json | ConvertFrom-Json 
 # Load SRE LDAP users
 $ldapUsers = $config.sre.users.ldap | ConvertTo-Json | ConvertFrom-Json -AsHashtable
 foreach ($user in $ldapUsers.Keys) {
-    if ($user -eq "dsvm") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.dsvmLdapPassword }  # TODO remove once secret name is moved
-    if ($user -eq "gitlab") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.gitlabLdapPassword }  # TODO remove once secret name is moved
-    if ($user -eq "hackmd") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.hackmdLdapPassword }  # TODO remove once secret name is moved
     $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"]
 }
 # Load other SRE service users
 $serviceUsers = $config.sre.users.serviceAccounts | ConvertTo-Json | ConvertFrom-Json -AsHashtable
-$serviceUsers["datamount"] = $config.sre.users.datamount | ConvertTo-Json | ConvertFrom-Json -AsHashtable
 foreach ($user in $serviceUsers.Keys) {
-    if ($user -eq "datamount") { $serviceUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.dataMountPassword }  # TODO remove once secret name is moved
     $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"]
 }
 # Load SRE research users

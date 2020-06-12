@@ -93,7 +93,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts
 $params = @{
     sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
     shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
-    dataMountUser = "`"$($config.sre.users.datamount.samAccountName)`""
+    dataMountUser = "`"$($config.sre.users.serviceAccounts.datamount.samAccountName)`""
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
     serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
 }
