@@ -302,6 +302,8 @@ function Add-SreConfig {
         [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (usually a short string e.g '9' for SRE 9)")]
         $sreId
     )
+    Add-LogMessage -Level Info "Generating/update config file for '$sreId'"
+
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $sreId
     $srePrefix = $sreConfigBase.ipPrefix
@@ -401,24 +403,21 @@ function Add-SreConfig {
         rg = "RG_SRE_SECRETS"
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            dataServerAdminPassword = "$($config.sre.shortName)-dataservervm-admin-password"
-            dsvmAdminPassword = "$($config.sre.shortName)-dsvm-admin-password"
-            dsvmDbAdminPassword = "$($config.sre.shortName)-dsvm-pgdb-admin-password"
-            dsvmDbReaderPassword = "$($config.sre.shortName)-dsvm-pgdb-reader-password"
-            dsvmDbWriterPassword = "$($config.sre.shortName)-dsvm-pgdb-writer-password"
+            dataServerAdminPassword = "$($config.sre.shortName)-vm-admin-password-dataserver"
+            dsvmAdminPassword = "$($config.sre.shortName)-vm-admin-password-dsvm"
             gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
             hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
-            postgresDbAdminUsername = "$($config.sre.shortName)-postgresdb-admin-username"
-            postgresDbAdminPassword = "$($config.sre.shortName)-postgresdb-admin-password"
-            postgresVmAdminPassword = "$($config.sre.shortName)-postgresvm-admin-password"
-            rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
-            sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
-            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
-            sqlVmAdminPassword = "$($config.sre.shortName)-sqlvm-admin-password"
-            webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
+            postgresDbAdminUsername = "$($config.sre.shortName)-db-postgres-admin-username"
+            postgresDbAdminPassword = "$($config.sre.shortName)-db-postgres-admin-password"
+            postgresVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-postgres"
+            rdsAdminPassword = "$($config.sre.shortName)-vm-admin-password-rds"
+            sqlAuthUpdateUsername = "$($config.sre.shortName)-db-mssql-admin-username"
+            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-db-mssql-admin-password"
+            sqlVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-mssql"
+            webappAdminPassword = "$($config.sre.shortName)-vm-admin-password-webapp"
         }
     }
 
@@ -628,6 +627,7 @@ function Add-SreConfig {
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${sreId}_full_config.json"
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
+    Add-LogMessage -Level Info "Wrote config file to '$sreFullConfigPath'"
 }
 Export-ModuleMember -Function Add-SreConfig
 
