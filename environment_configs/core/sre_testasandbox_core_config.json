@@ -10,5 +10,64 @@
     "rdsInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.2.2020060100",
-    "databases": ["MSSQL", "PostgreSQL"]
+    "databases": ["MSSQL", "PostgreSQL"],
+    "overrides": {
+        "shm": {
+            "network": {
+              "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+              }
+            },
+            "dc": {
+                "rg": "RG_SHM_DC"
+            },
+            "nps": {
+                "rg": "RG_SHM_NPS"
+            },
+            "storage": {
+                "artifacts": {
+                    "rg": "RG_SHM_ARTIFACTS"
+                },
+                "bootdiagnostics": {
+                    "rg": "RG_SHM_ARTIFACTS"
+                }
+            },
+            "keyVault": {
+                "rg": "RG_SHM_SECRETS"
+            },
+            "mirrors": {
+                "rg": "RG_SHM_PKG_MIRRORS"
+            }
+        },
+        "sre": {
+            "network": {
+              "vnet": {
+                "rg": "RG_SRE_NETWORKING"
+              }
+            },
+            "storage": {
+                "artifacts": {
+                    "rg": "RG_SRE_ARTIFACTS"
+                },
+                "bootdiagnostics": {
+                    "rg": "RG_SRE_ARTIFACTS"
+                }
+            },
+            "keyVault": {
+                "rg": "RG_SRE_SECRETS"
+            },
+            "rds": {
+                "rg": "RG_SRE_RDS"
+            },
+            "dataserver": {
+                "rg": "RG_SRE_DATA"
+            },
+            "webapps": {
+                "rg": "RG_SRE_WEBAPPS"
+            },
+            "databases": {
+                "rg": "RG_SRE_DATABASES"
+            }
+        }
+    }
 }

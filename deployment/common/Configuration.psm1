@@ -4,6 +4,27 @@ Import-Module $PSScriptRoot/Logging.psm1
 
 # Get root directory for configuration files
 # ------------------------------------------
+function Copy-HashtableOverrides {
+    param(
+        [Parameter(Mandatory = $true,HelpMessage = "Source hashtable")]
+        $Source,
+        [Parameter(Mandatory = $true,HelpMessage = "Target hashtable to override")]
+        $Target
+    )
+    foreach ($sourcePair in $Source.GetEnumerator()) {
+        # If we hit a leaf then override the target with the source value
+        if ($sourcePair.value -IsNot [Hashtable]) {
+            $target[$sourcePair.key] = $sourcePair.value
+            continue
+        }
+        Copy-HashtableOverrides $sourcePair.value $Target[$sourcePair.key]
+    }
+}
+Export-ModuleMember -Function Copy-HashtableOverrides
+
+
+# Get root directory for configuration files
+# ------------------------------------------
 function Get-ConfigRootDir {
     try {
         return Join-Path (Get-Item $PSScriptRoot).Parent.Parent.FullName "environment_configs" -Resolve -ErrorAction Stop
@@ -263,6 +284,12 @@ function Get-ShmFullConfig {
                 tier3 = 31
             }
         }
+    }
+
+    # Apply overrides (if any exist)
+    # ------------------------------
+    if ($shmConfigBase.overrides) {
+        Copy-HashtableOverrides -Source $shmConfigBase.overrides -Target $shm
     }
 
     return $shm
@@ -550,6 +577,7 @@ function Add-SreConfig {
     $config.sre.webapps.hackmd.ip = "$($config.sre.network.subnets.data.prefix).152"
 
     # Databases
+    # ---------
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_$($config.sre.id)_DATABASES".ToUpper()
     }
@@ -580,6 +608,7 @@ function Add-SreConfig {
     }
 
     # Compute VMs
+    # -----------
     $config.sre.dsvm = [ordered]@{
         rg = "RG_SRE_$($config.sre.id)_COMPUTE".ToUpper()
         nsg = "NSG_SRE_$($config.sre.Id)_COMPUTE".ToUpper()
@@ -605,7 +634,8 @@ function Add-SreConfig {
     }
     $config.shm.Remove("dsvmImage")
 
-    # --- Package mirror config ---
+    # Package mirror config
+    # ---------------------
     $config.sre.mirrors = [ordered]@{
         vnet = [ordered]@{}
         cran = [ordered]@{}
@@ -624,6 +654,15 @@ function Add-SreConfig {
         Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
         return
     }
+
+    # Apply overrides (if any exist)
+    # ------------------------------
+    if ($sreConfigBase.overrides) {
+        Copy-HashtableOverrides -Source $sreConfigBase.overrides -Target $config
+    }
+
+    # Write output to file
+    # --------------------
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${sreId}_full_config.json"
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
