@@ -418,7 +418,6 @@ function Add-SreConfig {
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             sqlVmAdminPassword = "$($config.sre.shortName)-sqlvm-admin-password"
-            testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
             webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
         }
     }
@@ -457,12 +456,6 @@ function Add-SreConfig {
                 name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
                 samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
                 passwordSecretName = "$($config.sre.shortName)-datamount-password"
-            }
-        }
-        researchers = [ordered]@{
-            test = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Test Researcher"
-                samAccountName = "testresrch$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
             }
         }
     }

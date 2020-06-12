@@ -44,12 +44,6 @@ $serviceUsers = $config.sre.users.serviceAccounts | ConvertTo-Json | ConvertFrom
 foreach ($user in $serviceUsers.Keys) {
     $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"]
 }
-# Load SRE research users
-$researchUsers = $config.sre.users.researchers | ConvertTo-Json | ConvertFrom-Json -AsHashtable
-foreach ($user in $researchUsers.Keys) {
-    if ($user -eq "test") { $researchUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.testResearcherPassword }  # TODO remove once secret name is moved
-    $researchUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $researchUsers[$user]["passwordSecretName"]
-}
 
 
 # Add SRE users and groups to SHM

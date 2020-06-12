@@ -249,43 +249,49 @@ On your **deployment machine**.
 - Disconnect from any SRE VMs and connect to the SHM VPN
 - Connect to the **SHM Domain Controller** via the Remote Desktop client
 - The IP address can be found using the Azure portal by navigating to the Virtual Machine (`Resource Groups -> RG_SHM_DC -> DC1-SHM-<SRE ID>`)
-- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under "SECRETS".
+- Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal. They are in the `RG_SHM_SECRETS` resource group, in the `kv-shm-<SHM ID>` key vault, under `Secrets`.
   - The username is the `shm-<SHM ID>-vm-admin-username` secret plus `@<SHM DOMAIN>` where you add your custom SHM domain. For example `shmtestbadmin@testb.dsgroupdev.co.uk`
   - The password in the `shm-<SHM ID>-domain-admin-password` secret.
 
 
 #### Set up a non-privileged user account
+At this point you should create a non-privileged user account for testing with.
 These steps ensure that you have created a non-privileged user account that you can use for testing.
-This user should be created in the local Active Directory on the SHM domain controller and must have been synchronised to the Azure Active Directory.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
-> :pencil: The automatically-created test researcher should already be in the correct group.
 
+1. **Create a new non-privileged user account for yourself**
 On the **SHM Domain Controller**.
-1. **Ensuring that a non-privileged user account exists**
-- In the `Server Management` app, click `Tools -> Active Directory Users and Computers`
-- Open the `Safe Haven Research Users` OU
-- Ensure that the non-privileged user account that you want to use is listed here, or if it is not then create it.
+- Follow the user creation instructions from the [administrator guide](safe_haven_administrator_guide.md). In brief these involve:
+  - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
+  - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
+This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.
 
-2. **Ensure that the user account is in the correct Security Group**
+2. **Ensure that your user account is in the correct Security Group**
 - Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
 - Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 - Click on the `Members` tab.
-- If the user you plan to use is not already listed here you must add them to the group (*the automatically-created test researcher should already be in the correct group*)
+- If your user is not already listed here you must add them to the group
   - Click the `Add` button
-  - Enter the start of the username and click `Check names`
-  - Select the correct username and click `Ok`
-  - Click `Ok` again to exit the add users dialogue
-- Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell
+  - Enter the start of your username and click `Check names`
+  - Select your username and click `Ok`
+  - Click `Ok` again to exit the `Add users` dialogue
+- Synchronise with Azure Active Directory by running `C:\Installation\Run_ADSync.ps1` in Powershell.
 
-3. **Ensure that the account has MFA enabled**
-Please ensure that this account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md).
-- The user's `Usage Location` must be set in Active Directory.
-  To check this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
+3. **Ensure that your user account has MFA enabled**
+Please ensure that your account is fully set-up (including MFA) as [detailed in the user guide](safe_haven_user_guide.md).
+In order to verify this switch to your custom Azure Active Directory in the Azure portal:
+- Go to `portal.azure.com` and click on your username in the top-right
+- Select `Switch directory` and then click on `All Directories`
+- Select your custom Azure Active Directory in the list of directories
+- This should cause the portal to reload
+
+You can now verify the following things
+- The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
+  - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account), and ensure that `Settings`->`Usage Location` is set.
 - A licence must be assigned to the user.
-  To check this in the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
+  - Navigate to `Azure Active Directory` -> `Manage / Users` -> (user account) -> `Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
 - MFA must be enabled for the user.
-  To enable this on the portal, switch to your custom AAD and navigate to `Azure Active Directory` -> `Manage`/`Users`, click the `Multi-Factor Authentication` button and verify that `MULTI-FACTOR AUTH STATUS` is enabled for the user.
-- The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](safe_haven_user_guide.md).
+  - The user must log into `aka.ms/mfasetup` and set up MFA as [detailed in the user guide](safe_haven_user_guide.md).
 
 #### Test the RDS using a non-privileged user account
 On your **deployment machine**.
