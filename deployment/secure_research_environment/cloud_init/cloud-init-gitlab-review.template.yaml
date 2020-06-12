@@ -2,7 +2,6 @@
 package_update: true
 package_upgrade: true
 
-# Install LDAP tools for debugging LDAP issues
 packages:
   - git
   - apt-transport-https
