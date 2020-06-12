@@ -329,7 +329,11 @@ function Add-SreConfig {
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $sreId
-    $srePrefix = $sreConfigBase.ipPrefix
+
+    # Ensure that naming structure is being adhered to
+    if ($sreId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
+        Add-LogMessage -Level Fatal "Config file '$sreId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
+    }
 
     # Secure research environment config
     # ----------------------------------
@@ -364,7 +368,7 @@ function Add-SreConfig {
     # Network config
     # --------------
     # Deconstruct base address prefix to allow easy construction of IP based parameters
-    $srePrefixOctets = $srePrefix.Split('.')
+    $srePrefixOctets = $sreConfigBase.ipPrefix.Split('.')
     $sreBasePrefix = "$($srePrefixOctets[0]).$($srePrefixOctets[1])"
     $sreThirdOctet = $srePrefixOctets[2]
     $config.sre.network = [ordered]@{
