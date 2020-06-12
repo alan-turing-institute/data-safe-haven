@@ -333,7 +333,7 @@
     "databases": {
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
-        "name": "MSSQL-SANDBOX",
+        "name": "SQL-ING-SANDBOX",
         "type": "MSSQL",
         "ipLastOctet": 4,
         "port": "14330",
@@ -341,7 +341,7 @@
         "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "1024",
+          "size_gb": "2048",
           "type": "Standard_LRS"
         },
         "osdisk": {
