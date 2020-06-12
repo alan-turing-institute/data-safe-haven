@@ -29,7 +29,7 @@ function Get-ConfigFile {
     $configFilename = "${configType}_${configName}_${configLevel}_config.json"
     try {
         $configPath = Join-Path $(Get-ConfigRootDir) $configLevel $configFilename -Resolve -ErrorAction Stop
-        $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        $configJson = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
     } catch [System.Management.Automation.ItemNotFoundException] {
         Add-LogMessage -Level Fatal "Could not find a config file named '$configFilename'..."
     } catch [System.ArgumentException] {
