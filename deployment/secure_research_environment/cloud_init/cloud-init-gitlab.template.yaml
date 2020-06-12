@@ -79,12 +79,13 @@ runcmd:
   # Turn off user account creation
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
+  # Create user for ingressing external git repos
+  - |
+    echo "user = User.create(:username => '<gitlab-username>', :password => '<gitlab-password>', :password_confirmation => '<gitlab-password>', :email =>'<gitlab-username>@example.com', :skip_confirmation => true, :name => '<gitlab-username>');user.save!;exit;" | gitlab-rails console -e production
+
   # Restrict login to SHM domain (must be done AFTER GitLab update)
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-login-domain>'])"
-  # Create user for ingressing external git repos
-  - |
-    echo "user = User.create(:username => '<gitlab-username>', :password => '<gitlab-password>', :password_confirmation => '<gitlab-password>', :email =>'<gitlab-username>@<gitlab-login-domain>', :skip_confirmation => true, :name => '<gitlab-username>');user.save!;exit;" | gitlab-rails console -e production
   # Create a API token for the ingress user created above
   - |
     echo "user = User.find_by(username: '<gitlab-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('<gitlab-api-token>'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production

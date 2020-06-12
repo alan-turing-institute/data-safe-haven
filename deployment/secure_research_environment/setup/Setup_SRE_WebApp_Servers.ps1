@@ -224,7 +224,6 @@ foreach ($scriptName in @("zipfile_to_gitlab_project.py",
 
 $gitlabReviewCloudInit = $gitlabReviewCloudInitTemplate.Replace('<sre-admin-username>', $sreAdminUsername).
                                                         Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
-                                                        Replace('<gitlab-login-domain>', $config.shm.domain.fqdn).
                                                         Replace('<gitlab-username>', $gitlabUsername).
                                                         Replace('<gitlab-api-token>', $gitlabAPIToken).
                                                         Replace('<gitlab-review-rb-host>', $shmDcFqdn).

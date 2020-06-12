@@ -59,13 +59,13 @@ write_files:
         "GITLAB": {
           "ip_address": "<gitlab-ip>",
           "username": "<gitlab-username>",
-          "user_email": "<gitlab-username>@<gitlab-login-domain>",
+          "user_email": "<gitlab-username>@example.com",
           "api_token": "<gitlab-api-token>"
         },
         "GITLAB-REVIEW": {
           "ip_address": "<gitlab-review-ip>",
           "username": "<gitlab-review-username>",
-          "user_email": "<gitlab-review-username>@<gitlab-review-login-domain>",
+          "user_email": "<gitlab-review-username>@example.com",
           "api_token": "<gitlab-review-api-token>"
         }
       }
@@ -120,12 +120,13 @@ runcmd:
   # Turn off user account creation
   - |
     gitlab-rails runner "ApplicationSetting.last.update_attributes(signup_enabled: false)"
-  # Restrict login to SHM domain (must be done AFTER GitLab update)
-  - |
-    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-review-login-domain>'])"
   # Create user for ingressing external git repos
   - |
-    echo "user = User.create(:username => '<gitlab-review-username>', :password => '<gitlab-review-password>', :password_confirmation => '<gitlab-review-password>', :email =>'<gitlab-review-username>@<gitlab-review-login-domain>', :skip_confirmation => true, :name => '<gitlab-review-username>');user.save!;exit;" | gitlab-rails console -e production
+    echo "user = User.create(:username => '<gitlab-review-username>', :password => '<gitlab-review-password>', :password_confirmation => '<gitlab-review-password>', :email =>'<gitlab-review-username>@example.com', :skip_confirmation => true, :name => '<gitlab-review-username>');user.save!;exit;" | gitlab-rails console -e production
+
+    # Restrict login to SHM domain (must be done AFTER GitLab update)
+  - |
+    gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-review-login-domain>'])"
   # Create a API token for the ingress user created above
   - |
     token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
@@ -192,7 +193,7 @@ runcmd:
   - |
     echo "Configuring git"
     HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-username>'
-    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-username>@<gitlab-login-domain>'
+    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-username>@example.com'
   # --------------------------------
   # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
   # --------------------------------
