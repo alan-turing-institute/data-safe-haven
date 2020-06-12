@@ -60,12 +60,11 @@ $storageResourceGroupName = $config.sre.storage.artifacts.rg
 $sreStorageAccountName = $config.sre.storage.artifacts.accountName
 $sreStorageAccount = Deploy-StorageAccount -Name $sreStorageAccountName -ResourceGroupName $storageResourceGroupName -Location $config.sre.location
 
-# Create container if not already there
-$containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName
+# Create a temporary storage container
+$containerName = $config.sre.storage.artifacts.containers.gitlabAirlockName + "-" + [Guid]::NewGuid().ToString()
 
 # Ensure an empty storage container of the given name exists
 $_ = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-$_ = Clear-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 
 # copy zipfile to blob storage
 # ----------------------------
@@ -99,6 +98,8 @@ $result = Invoke-RemoteScript -Shell "UnixShell" -Script $script -VMName $gitlab
 Add-LogMessage -Level Info "[ ] Removing original zipfile $zipFilePath"
 Remove-Item -Path $zipFilePath
 
+# Remove the temporary storage container
+Remove-AzStorageContainer -Name $containerName
 
 # Switch back to original subscription
 # ------------------------------------
