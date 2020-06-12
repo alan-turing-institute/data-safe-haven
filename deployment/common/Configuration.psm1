@@ -494,18 +494,29 @@ function Add-SreConfig {
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
+            ip = 250
         }
         sessionHost1 = [ordered]@{
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+            ip = 249
         }
         sessionHost2 = [ordered]@{
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+            ip = 248
         }
     }
+    # Construct the hostname and FQDN for each VM
+    foreach ($server in $config.sre.rds.Keys) {
+        if ($config.sre.rds[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
+        $config.sre.rds[$server].hostname = $config.sre.rds[$server].vmName
+        $config.sre.rds[$server].fqdn = "$($config.sre.rds[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.rds[$server].ip = "$($config.sre.network.subnets.rds.prefix).$($config.sre.rds[$server].ip)"
+    }
+
 
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.inboundAccessFrom -eq "default") {
@@ -535,15 +546,7 @@ function Add-SreConfig {
     } else {
         $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.rdsInternetAccess
     }
-    $config.sre.rds.gateway.hostname = $config.sre.rds.gateway.vmName
-    $config.sre.rds.gateway.fqdn = "$($config.sre.rds.gateway.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.gateway.ip = "$($config.sre.network.subnets.rds.prefix).250"
-    $config.sre.rds.sessionHost1.hostname = $config.sre.rds.sessionHost1.vmName
-    $config.sre.rds.sessionHost1.fqdn = "$($config.sre.rds.sessionHost1.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.sessionHost1.ip = "$($config.sre.network.subnets.rds.prefix).249"
-    $config.sre.rds.sessionHost2.hostname = $config.sre.rds.sessionHost2.vmName
-    $config.sre.rds.sessionHost2.fqdn = "$($config.sre.rds.sessionHost2.hostname).$($config.shm.domain.fqdn)"
-    $config.sre.rds.sessionHost2.ip = "$($config.sre.network.subnets.rds.prefix).248"
+
 
     # Data server
     # -----------

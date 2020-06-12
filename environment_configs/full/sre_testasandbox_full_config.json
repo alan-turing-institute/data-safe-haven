@@ -277,25 +277,25 @@
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
+        "ip": "10.150.1.250",
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.250"
+        "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       },
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "ip": "10.150.1.249",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.249"
+        "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "ip": "10.150.1.248",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.248"
+        "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       }
     },
     "dataserver": {
