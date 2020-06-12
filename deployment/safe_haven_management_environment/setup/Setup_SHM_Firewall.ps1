@@ -21,7 +21,7 @@ $_ = Set-AzContext -SubscriptionId $config.subscriptionName
 # Ensure that firewall subnet exists
 # ----------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.subnets.firewall.cidr
+$subnet = Deploy-Subnet -Name $config.network.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -33,8 +33,8 @@ $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $conf
 
 
 # Save the firewall private IP address for future use
-$firewallPrivateIP = $firewall.IpConfigurations.privateipaddress
-Add-LogMessage -Level Info "firewallPrivateIP $firewallPrivateIP ; firewallPublicIP $($firewallPublicIP.IpAddress)"
+$firewallPrivateIP = $firewall.IpConfigurations.PrivateIpAddress
+Add-LogMessage -Level Info "firewallPrivateIP $firewallPrivateIP"
 
 
 # Create a routing table ensuring that BGP propagation is disabled
@@ -58,10 +58,18 @@ $null = Deploy-Route -Name "ViaFirewall" -RouteTable $routeTable -AppliesTo "0.0
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.subnets.identity.name -AddressPrefix $config.network.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
 
 
-# Add rules to unblock access to resources on a per-subnet basis
-# --------------------------------------------------------------
-Unblock-Domain -Firewall $firewall -CollectionName "AllowedDomains" -RuleName "AllowOutboundGoogle" -SourceAddress $config.network.subnets.identity.cidr -Protocol http,https -TargetFqdn "google.com"
-Unblock-Domain -Firewall $firewall -CollectionName "AllowedDomains" -RuleName "AllowOutboundGoogle" -SourceAddress $config.network.subnets.identity.cidr -TargetTag "WindowsUpdate"
+# Set firewall rules from template
+# --------------------------------
+Add-LogMessage -Level Info "Setting firewall rules from template..."
+$params = @{
+    FirewallName = $config.firewall.name
+    FirewallPublicIpId = $firewall.IpConfigurations.PublicIpAddress.Id
+    FirewallSubnetId = $subnet.Id
+    Location = $config.location
+    SubnetCidrIdentity = $config.network.subnets.identity.cidr
+}
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-firewall-rules-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
+
 
 
 # Switch back to original subscription
