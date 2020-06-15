@@ -413,6 +413,9 @@
       "pypi": {
         "ip": "10.20.2.20"
       }
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     }
   }
 }

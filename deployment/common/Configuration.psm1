@@ -617,6 +617,11 @@ function Add-SreConfig {
         return
     }
 
+    # Firewall config
+    $config.sre.firewall = [ordered]@{
+        routeTableName = "ROUTE-TABLE-SRE-$($config.sre.id)".ToUpper()
+    }
+
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     # Write-Host $jsonOut
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
