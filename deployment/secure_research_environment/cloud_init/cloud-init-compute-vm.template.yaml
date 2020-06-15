@@ -164,7 +164,7 @@ write_files:
       echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/disk_setup"
     owner: root:root
-    permisions: '0500'
+    permissions: "0500"
     content: |
       #!/bin/sh
       # Create home folder and grant appropriate access
