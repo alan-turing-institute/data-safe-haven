@@ -43,18 +43,11 @@ $vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
 # Check whether this IP address has been used.
 # --------------------------------------------
 $existingNic = Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress }
-if ($upgrade) {
-    if ($existingNic) {
-        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress', this will be removed in the upgrade process"
+if ($existingNic) {
+    Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
+    if ($upgrade) {
+        Add-LogMessage -Level Info "This NIC will be removed in the upgrade process"
     } else {
-        Add-LogMessage -Level Info "No existing network card with IP address '$vmIpAddress'"
-    }
-} else {
-    # If the IP address is already used, check if there is a VM attached.
-    # If there is abort, otherwise remove the NIC
-    # -------------------------------------------------------------------
-    if ($existingNic) {
-        Add-LogMessage -Level Info "Found an existing network card with IP address '$vmIpAddress'"
         if ($existingNic.VirtualMachine.Id) {
             Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
             $_ = Set-AzContext -Context $originalContext
@@ -68,8 +61,12 @@ if ($upgrade) {
                 Add-LogMessage -Level Fatal "Network card removal failed!"
             }
         }
+
     }
+} else {
+    Add-LogMessage -Level Info "No existing network card with IP address '$vmIpAddress'"
 }
+
 
 if ($upgrade) {
     # Attempt to find an existing virtual machine
