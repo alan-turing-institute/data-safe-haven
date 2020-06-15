@@ -98,30 +98,34 @@ if (!$config.sre.mirrors.vnet.Name) {
     Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
 } else {
     # Fetch SRE and mirror VNets
-    $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-    $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg
+    try {
+        $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
+        $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+        $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
 
-    # Add peering to Mirror Vnet
-    $peeringName = "PEER_$($config.sre.network.vnet.Name)"
-    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to mirror VNet $($mirrorVnet.Name)."
-    $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
-    if ($?) {
-        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
-    }
+        # Add peering to Mirror Vnet
+        $peeringName = "PEER_$($config.sre.network.vnet.Name)"
+        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to mirror VNet $($mirrorVnet.Name)."
+        $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
+        if ($?) {
+            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+        }
 
-    # Add Peering to SRE Vnet
-    $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-    $peeringName = "PEER_$($config.sre.mirrors.vnet.Name)"
+        # Add Peering to SRE Vnet
+        $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+        $peeringName = "PEER_$($config.sre.mirrors.vnet.Name)"
 
-    Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet $($sreVnet.Name)."
-    $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
-    if ($?) {
-        Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+        Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet $($sreVnet.Name)."
+        $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
+        if ($?) {
+            Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Adding peering '$peeringName' failed!"
+        }
+    } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
+        Add-LogMessage -Level Warning "Mirror VNet could not be loaded! Did you deploy tier-$($config.sre.tier) mirrors?"
     }
 }
 
