@@ -6,9 +6,9 @@ Import-Module $PSScriptRoot/Logging.psm1
 # ------------------------------------------
 function Copy-HashtableOverrides {
     param(
-        [Parameter(Mandatory = $true,HelpMessage = "Source hashtable")]
+        [Parameter(Mandatory = $true, HelpMessage = "Source hashtable")]
         $Source,
-        [Parameter(Mandatory = $true,HelpMessage = "Target hashtable to override")]
+        [Parameter(Mandatory = $true, HelpMessage = "Target hashtable to override")]
         $Target
     )
     foreach ($sourcePair in $Source.GetEnumerator()) {
@@ -38,13 +38,13 @@ function Get-ConfigRootDir {
 # ----------------------------------------
 function Get-ConfigFile {
     param(
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Config type ('sre' or 'shm')")]
+        [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
         [ValidateSet("sre", "shm")]
         $configType,
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Config level ('core' or 'full')")]
+        [Parameter(Mandatory = $true, HelpMessage = "Config level ('core' or 'full')")]
         [ValidateSet("core", "full")]
         $configLevel,
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name that identifies this config file (ie. <SHM ID> or <SHM ID><SRE ID>))")]
         $configName
     )
     $configFilename = "${configType}_${configName}_${configLevel}_config.json"
@@ -64,7 +64,7 @@ function Get-ConfigFile {
 # ---------------------
 function Get-ShmFullConfig {
     param(
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID ('test' or 'prod')")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID ('test' or 'prod')")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -295,9 +295,9 @@ Export-ModuleMember -Function Get-ShmFullConfig
 
 function Limit-StringLength {
     param(
-        [Parameter(Mandatory = $True,ValueFromPipeline = $True)]
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string]$InputString,
-        [Parameter(Mandatory = $True,Position = 1)]
+        [Parameter(Mandatory = $True)]
         [int]$MaximumLength,
         [Parameter(Mandatory=$false)]
         [Switch]$FailureIsFatal,
@@ -322,7 +322,7 @@ Export-ModuleMember -Function Limit-StringLength
 # ---------------------------
 function Add-SreConfig {
     param(
-        [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SRE ID (usually a short string e.g '9' for SRE 9)")]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a short string e.g 'sandbox')")]
         $sreId
     )
     Add-LogMessage -Level Info "Generating/update config file for '$sreId'"
@@ -684,6 +684,7 @@ Export-ModuleMember -Function Add-SreConfig
 # ---------------------
 function Get-SreConfig {
     param(
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a short string e.g 'sandbox')")]
         [string]$sreId
     )
     # Read full SRE config from file
