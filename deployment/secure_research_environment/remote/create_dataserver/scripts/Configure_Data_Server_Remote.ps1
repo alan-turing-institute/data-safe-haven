@@ -16,16 +16,31 @@ param(
 # --------------------------
 Write-Host "Initialising data drives..."
 Stop-Service ShellHWDetection
-$CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | Sort -Property Number
-foreach ($rawDisk in $CandidateRawDisks) {
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $rawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
+$rawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | Sort -Property Number
+foreach ($rawDisk in $rawDisks) {
     $_ = Initialize-Disk -PartitionStyle GPT -Number $rawDisk.Number
-    $partition = New-Partition -DiskNumber $rawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $label = "DATA-$LUN"
-    Write-Host "Formatting partition $($partition.PartitionNumber) of raw disk $($rawDisk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
-    $_ = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
 }
 Start-Service ShellHWDetection
+
+
+# Check that all disks are correctly partitioned
+# ----------------------------------------------
+$dataDisks = Get-Disk | Where-Object { $_.Model -ne "Virtual HD" } | Sort -Property Number  # This excludes the OS and temp disks
+foreach ($disk in $dataDisks) {
+    $existingPartition = Get-Partition -DiskNumber $disk.Number | Where-Object { $_.Type -eq "Basic" }  # This selects normal partitions that are not system-reserved
+    if (-Not $existingPartition.DriveLetter) {
+        Write-Output "Partition '$($existingPartition.PartitionNumber)' on '$($disk.DiskNumber)' has no associated drive letter!"
+        if ($existingPartition.PartitionNumber) {
+            Write-Output "Removing partition '$($existingPartition.PartitionNumber)' from disk '$($disk.DiskNumber)'"
+            Remove-Partition -DiskNumber $disk.DiskNumber -PartitionNumber $existingPartition.PartitionNumber -Confirm:$false
+        }
+        $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $disk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
+        $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
+        $label = "DATA-$LUN"
+        Write-Host "Formatting partition $($partition.PartitionNumber) of raw disk $($disk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
+        $_ = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
+    }
+}
 
 
 # Setup disk shares
