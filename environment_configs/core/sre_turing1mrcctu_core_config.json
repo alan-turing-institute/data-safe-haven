@@ -1,0 +1,13 @@
+{
+    "subscriptionName": "Turing1 SRE MRCCTU",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "sreId": "mrcctu",
+    "shmId": "turing1",
+    "tier": "3",
+    "domain": "mrcctu.turingsafehaven.ac.uk",
+    "netbiosName": "MRCCTU",
+    "ipPrefix": "10.228.24",
+    "rdsAllowedSources": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020050300"
+}

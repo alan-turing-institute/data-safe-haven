@@ -1,0 +1,371 @@
+{
+  "shm": {
+    "subscriptionName": "[Prod] Safe Haven Management",
+    "id": "turing1",
+    "name": "Turing Safe Haven",
+    "organisation": {
+      "name": "The Alan Turing Institute",
+      "townCity": "London",
+      "stateCountyRegion": "London",
+      "countryCode": "GB"
+    },
+    "location": "uksouth",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "domain": {
+      "fqdn": "turingsafehaven.ac.uk",
+      "netbiosName": "TURINGSAFEHAVEN",
+      "dn": "DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dsvmLdapUsers": {
+          "name": "SG Safe Haven LDAP Users",
+          "description": "SG Safe Haven LDAP Users"
+        },
+        "serverAdmins": {
+          "name": "SG Safe Haven Server Administrators",
+          "description": "SG Safe Haven Server Administrators"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SHM_NETWORKING",
+        "name": "VNET_SHM_TURING1",
+        "cidr": "10.0.0.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "IdentitySubnet",
+          "prefix": "10.0.0",
+          "cidr": "10.0.0.0/24"
+        },
+        "web": {
+          "name": "WebSubnet",
+          "prefix": "10.0.1",
+          "cidr": "10.0.1.0/24"
+        },
+        "gateway": {
+          "name": "GatewaySubnet",
+          "prefix": "10.0.7",
+          "cidr": "10.0.7.0/24"
+        }
+      }
+    },
+    "dc": {
+      "rg": "RG_SHM_DC",
+      "vmName": "DC1-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "DC1-SHM-TURING1",
+      "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.250",
+      "external_dns_resolver": "168.63.129.16"
+    },
+    "dcb": {
+      "vmName": "DC2-SHM-TURING1",
+      "hostname": "DC2-SHM-TURING1",
+      "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
+      "ip": "10.0.0.249"
+    },
+    "nps": {
+      "rg": "RG_SHM_NPS",
+      "vmName": "NPS-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "NPS-SHM-TURING1",
+      "ip": "10.0.0.248"
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmturing1artifactsbkdlp"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SHM_ARTIFACTS",
+        "accountName": "shmturing1bootdiagsbkdlp"
+      }
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-turing1",
+      "secretNames": {
+        "aadAdminPassword": "shm-turing1-aad-admin-password",
+        "buildImageAdminUsername": "shm-turing1-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-turing1-buildimage-admin-password",
+        "dcSafemodePassword": "shm-turing1-dc-safemode-password",
+        "domainAdminPassword": "shm-turing1-domain-admin-password",
+        "localAdsyncPassword": "shm-turing1-localadsync-password",
+        "npsAdminPassword": "shm-turing1-nps-admin-password",
+        "vmAdminUsername": "shm-turing1-vm-admin-username",
+        "vpnCaCertificate": "shm-turing1-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-turing1-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-turing1-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-turing1-vpn-client-cert",
+        "vpnClientCertPassword": "shm-turing1-vpn-client-cert-password"
+      }
+    },
+    "dns": {
+      "subscriptionName": "[Prod] Safe Haven Domains",
+      "rg": "RG_SHM_DNS_PRODUCTION"
+    },
+    "mirrors": {
+      "rg": "RG_SHM_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms",
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "ipOffset": 4,
+        "diskSize": {
+          "tier2": 8191,
+          "tier3": 511
+        }
+      },
+      "cran": {
+        "ipOffset": 5,
+        "diskSize": {
+          "tier2": 127,
+          "tier3": 31
+        }
+      }
+    }
+  },
+  "sre": {
+    "subscriptionName": "Turing1 SRE MRCCTU",
+    "id": "mrcctu",
+    "shortName": "sre-mrcctu",
+    "location": "uksouth",
+    "tier": "3",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "domain": {
+      "fqdn": "mrcctu.turingsafehaven.ac.uk",
+      "netbiosName": "MRCCTU",
+      "dn": "DC=mrcctu,DC=turingsafehaven,DC=ac,DC=uk",
+      "securityGroups": {
+        "dataAdministrators": {
+          "name": "SG MRCCTU Data Administrators",
+          "description": "SG MRCCTU Data Administrators"
+        },
+        "systemAdministrators": {
+          "name": "SG MRCCTU System Administrators",
+          "description": "SG MRCCTU System Administrators"
+        },
+        "researchUsers": {
+          "name": "SG MRCCTU Research Users",
+          "description": "SG MRCCTU Research Users"
+        }
+      }
+    },
+    "network": {
+      "vnet": {
+        "rg": "RG_SRE_NETWORKING",
+        "name": "VNET_SRE_MRCCTU",
+        "cidr": "10.228.24.0/21"
+      },
+      "subnets": {
+        "identity": {
+          "name": "IdentitySubnet",
+          "prefix": "10.228.24",
+          "cidr": "10.228.24.0/24"
+        },
+        "rds": {
+          "name": "RDSSubnet",
+          "prefix": "10.228.25",
+          "cidr": "10.228.25.0/24"
+        },
+        "data": {
+          "name": "SharedDataSubnet",
+          "prefix": "10.228.26",
+          "cidr": "10.228.26.0/24"
+        },
+        "databases": {
+          "name": "DatabasesSubnet",
+          "prefix": "10.228.27",
+          "nsg": "databases",
+          "cidr": "10.228.27.0/24"
+        }
+      },
+      "nsg": {
+        "data": {},
+        "databases": {
+          "name": "NSG_SRE_MRCCTU_DATABASES"
+        }
+      }
+    },
+    "storage": {
+      "artifacts": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "sreartifactshdanryslombw"
+      },
+      "bootdiagnostics": {
+        "rg": "RG_SRE_ARTIFACTS",
+        "accountName": "srebootdiagshdanryslombw"
+      }
+    },
+    "keyVault": {
+      "name": "kv-turing1-sre-mrcctu",
+      "rg": "RG_SRE_SECRETS",
+      "secretNames": {
+        "adminUsername": "sre-mrcctu-vm-admin-username",
+        "dataMountPassword": "sre-mrcctu-datamount-password",
+        "dataServerAdminPassword": "sre-mrcctu-dataservervm-admin-password",
+        "dsvmAdminPassword": "sre-mrcctu-dsvm-admin-password",
+        "dsvmDbAdminPassword": "sre-mrcctu-dsvm-pgdb-admin-password",
+        "dsvmDbReaderPassword": "sre-mrcctu-dsvm-pgdb-reader-password",
+        "dsvmDbWriterPassword": "sre-mrcctu-dsvm-pgdb-writer-password",
+        "dsvmLdapPassword": "sre-mrcctu-dsvm-ldap-password",
+        "gitlabLdapPassword": "sre-mrcctu-gitlab-ldap-password",
+        "gitlabRootPassword": "sre-mrcctu-gitlab-root-password",
+        "gitlabUserPassword": "sre-mrcctu-gitlab-user-password",
+        "hackmdLdapPassword": "sre-mrcctu-hackmd-ldap-password",
+        "hackmdUserPassword": "sre-mrcctu-hackmd-user-password",
+        "letsEncryptCertificate": "sre-mrcctu-lets-encrypt-certificate",
+        "npsSecret": "sre-mrcctu-nps-secret",
+        "postgresDbAdminUsername": "sre-mrcctu-postgresdb-admin-username",
+        "postgresDbAdminPassword": "sre-mrcctu-postgresdb-admin-password",
+        "postgresVmAdminPassword": "sre-mrcctu-postgresvm-admin-password",
+        "rdsAdminPassword": "sre-mrcctu-rdsvm-admin-password",
+        "sqlAuthUpdateUsername": "sre-mrcctu-sql-authupdate-user-username",
+        "sqlAuthUpdateUserPassword": "sre-mrcctu-sql-authupdate-user-password",
+        "sqlVmAdminPassword": "sre-mrcctu-sqlvm-admin-password",
+        "testResearcherPassword": "sre-mrcctu-test-researcher-password",
+        "webappAdminPassword": "sre-mrcctu-webappvm-admin-password"
+      }
+    },
+    "users": {
+      "ldap": {
+        "gitlab": {
+          "name": "MRCCTU Gitlab LDAP",
+          "samAccountName": "gitlabldapmrcctu"
+        },
+        "hackmd": {
+          "name": "MRCCTU HackMD LDAP",
+          "samAccountName": "hackmdldapmrcctu"
+        },
+        "dsvm": {
+          "name": "MRCCTU DSVM LDAP",
+          "samAccountName": "dsvmldapmrcctu"
+        },
+        "postgres": {
+          "name": "MRCCTU Postgres VM LDAP",
+          "samAccountName": "pgvmldapmrcctu",
+          "passwordSecretName": "sre-mrcctu-postgresvm-ldap-password"
+        }
+      },
+      "serviceAccounts": {
+        "postgres": {
+          "name": "MRCCTU Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcmrcctu",
+          "passwordSecretName": "sre-mrcctu-postgresdb-service-account-password"
+        }
+      },
+      "datamount": {
+        "name": "MRCCTU Data Mount Service Account",
+        "samAccountName": "datamountmrcctu"
+      },
+      "researchers": {
+        "test": {
+          "name": "MRCCTU Test Researcher",
+          "samAccountName": "testresrchmrcctu"
+        }
+      }
+    },
+    "rds": {
+      "rg": "RG_SRE_RDS",
+      "gateway": {
+        "vmName": "RDG-SRE-MRCCTU",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MRCCTU_RDS_SERVER",
+        "networkRules": {
+          "allowedSources": "193.60.220.240",
+          "outboundInternet": null
+        },
+        "hostname": "RDG-SRE-MRCCTU",
+        "fqdn": "RDG-SRE-MRCCTU.turingsafehaven.ac.uk",
+        "ip": "10.228.25.250"
+      },
+      "sessionHost1": {
+        "vmName": "APP-SRE-MRCCTU",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MRCCTU_RDS_SESSION_HOSTS",
+        "hostname": "APP-SRE-MRCCTU",
+        "fqdn": "APP-SRE-MRCCTU.turingsafehaven.ac.uk",
+        "ip": "10.228.25.249"
+      },
+      "sessionHost2": {
+        "vmName": "DKP-SRE-MRCCTU",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_MRCCTU_RDS_SESSION_HOSTS",
+        "hostname": "DKP-SRE-MRCCTU",
+        "fqdn": "DKP-SRE-MRCCTU.turingsafehaven.ac.uk",
+        "ip": "10.228.25.248"
+      }
+    },
+    "dataserver": {
+      "rg": "RG_SRE_DATA",
+      "nsg": "NSG_SRE_MRCCTU_DATA",
+      "vmName": "DAT-SRE-MRCCTU",
+      "vmSize": "Standard_D2s_v3",
+      "hostname": "DAT-SRE-MRCCTU",
+      "fqdn": "DAT-SRE-MRCCTU.turingsafehaven.ac.uk",
+      "ip": "10.228.26.250",
+      "egressDiskGb": 512,
+      "ingressDiskGb": 512,
+      "sharedDiskGb": 512
+    },
+    "webapps": {
+      "rg": "RG_SRE_WEBAPPS",
+      "nsg": "NSG_SRE_MRCCTU_WEBAPPS",
+      "gitlab": {
+        "vmName": "GITLAB-SRE-MRCCTU",
+        "vmSize": "Standard_D2s_v3",
+        "hostname": "GITLAB-SRE-MRCCTU",
+        "fqdn": "GITLAB-SRE-MRCCTU.turingsafehaven.ac.uk",
+        "ip": "10.228.26.151"
+      },
+      "hackmd": {
+        "vmName": "HACKMD-SRE-MRCCTU",
+        "vmSize": "Standard_D2s_v3",
+        "hostname": "HACKMD-SRE-MRCCTU",
+        "fqdn": "HACKMD-SRE-MRCCTU.turingsafehaven.ac.uk",
+        "ip": "10.228.26.152"
+      }
+    },
+    "databases": {
+      "rg": "RG_SRE_DATABASES"
+    },
+    "dsvm": {
+      "rg": "RG_SRE_COMPUTE",
+      "nsg": "NSG_SRE_MRCCTU_COMPUTE",
+      "deploymentNsg": "NSG_SRE_MRCCTU_COMPUTE_DEPLOYMENT",
+      "vmImageSubscription": "[Prod] Safe Haven VM Images",
+      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
+      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+      "vmSizeDefault": "Standard_D2s_v3",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.2.2020050300",
+      "osdisk": {
+        "type": "Standard_LRS",
+        "size_gb": "64"
+      },
+      "scratchdisk": {
+        "type": "Standard_LRS",
+        "size_gb": "512"
+      },
+      "homedisk": {
+        "type": "Standard_LRS",
+        "size_gb": "128"
+      }
+    },
+    "mirrors": {
+      "vnet": {
+        "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER3"
+      },
+      "cran": {
+        "ip": "10.20.3.21"
+      },
+      "pypi": {
+        "ip": "10.20.3.20"
+      }
+    }
+  }
+}
