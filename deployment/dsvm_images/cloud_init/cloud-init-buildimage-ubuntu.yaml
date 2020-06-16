@@ -373,7 +373,7 @@ runcmd:
   - jupyter kernelspec install /opt/anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
   - jupyter kernelspec install /opt/anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
   # Add the R kernel
-  - R_VERSION=$(R --version | head -n 1 | cut -d' ' -f3)
+  - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json
@@ -432,6 +432,9 @@ runcmd:
   - if [ "$(which sqlcmd)" ]; then echo "\n\n*sqlcmd*\n\n$(which sqlcmd)\n$(sqlcmd -? | grep Version)"; else echo "ERROR sqlcmd not found!"; exit 1; fi
   # Data Science tools
   - if [ "$(which weka)" ]; then echo "\n\n*weka*\n\n$(which weka)\n$(weka -c weka.core.Version | head -n 1)"; else echo "ERROR weka not found!"; exit 1; fi
+
+  # Update clamav signature database
+  - freshclam
 
 
 final_message:
