@@ -6,6 +6,8 @@ attr
 auditd
 autotools-dev
 build-essential
+clamav
+clamav-daemon
 code
 default-jdk
 docker.io
