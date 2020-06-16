@@ -1,0 +1,14 @@
+{
+    "subscriptionName": "Turing1 SRE Longnlp",
+    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "sreId": "longnlp",
+    "shmId": "turing1",
+    "tier": "3",
+    "domain": "longnlp.turingsafehaven.ac.uk",
+    "netbiosName": "LONGNLP",
+    "ipPrefix": "10.228.32",
+    "rdsAllowedSources": "default",
+    "computeVmImageType": "Ubuntu",
+    "computeVmImageVersion": "0.2.2020050300",
+    "databases": ["MSSQL"]
+}
