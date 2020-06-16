@@ -290,6 +290,16 @@ write_files:
           . /etc/bash_completion
         fi
       fi
+  - path: "/etc/clmav/clamd.conf"
+    owner: "root:root"
+    permissions: "0644"
+    append: true
+    content: |
+      # Scan on access settings
+      OnAccessIncludePath /
+      OnAccessPrevention yes
+      OnAccessExcludeUname clamav
+      OnAccessExcludeRootUID yes
 
 
 runcmd:
