@@ -384,6 +384,10 @@ runcmd:
   - echo ">=== Mount and configure disks... ===<"
   - /disk_setup
   - rm /disk_setup
+  # Enable clamav-daemon
+  - systemctl enable clamav-daemon.service
+  # Disable freshclam-daemon as there is no internet connectivty so the database may not be updated
+  - systemctl disable clamav-freshclam.service
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
