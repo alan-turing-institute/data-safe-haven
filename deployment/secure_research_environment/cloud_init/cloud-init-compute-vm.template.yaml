@@ -290,6 +290,24 @@ write_files:
           . /etc/bash_completion
         fi
       fi
+  # Create systemd unit for clamav on acceess daemon
+  - path: "/lib/systemd/system/clamav-clamonacc.service"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav on access scanning daemon
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+      [Service]
+      Type=simple
+      User=root
+      ExecStart=/usr/bin/clamonacc --foreground=true
+      Restart=on-failure
+      Restart-sec=30
+      [Install]
+      WantedBy=multi-user.target
+
   - path: "/etc/clmav/clamd.conf"
     owner: "root:root"
     permissions: "0644"
@@ -398,6 +416,8 @@ runcmd:
   - systemctl enable clamav-daemon.service
   # Disable freshclam-daemon as there is no internet connectivty so the database may not be updated
   - systemctl disable clamav-freshclam.service
+  # Enable clamav scan on access
+  - systemctl enable clamav-clamonacc.service
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
