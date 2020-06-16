@@ -34,7 +34,8 @@ These instructions will deploy a new Safe Haven Management Environment (SHM). Th
 - `OpenSSL`
   - To install manually, see [Github](https://github.com/openssl/openssl)
   - To install directly on Mac (if you use brew): ` brew install openssl`
-  - To install directly on Windows: see [wiki](https://wiki.openssl.org/index.php/Binaries) for list of binary distributions
+  - To install directly on Windows: see [wiki](https://wiki.openssl.org/index.php/Binaries) for list of binary distributions.
+    - OpenSSL is used in the Powershell scripts. In case Powershell cannot run OpenSSL, you may need to add your OpenSSL directory to the Powershell environment path. To add OpenSSL to your Powershell environment path, run: `$env:path = $env:path + ";<path to OpenSSL bin directory>`
 
 ## 2. Safe Haven Management configuration
 
@@ -81,7 +82,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a link to the Azure portal and a code to enter.
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 - Run `./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
   <details><summary>Manual DNS configuration instructions</summary>
@@ -126,6 +127,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
     - Run `pwsh { ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
       - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
+      - :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
+      - :warning: if you are on Windows, you will need to first manually import the correct cross platform module by running `Import-module AzureAD.Standard.Preview`. Otherwise, the `Connect-AzureAD` command will not show up.
       - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
     - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 
@@ -133,7 +136,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ## 5. Deploy key vault for SHM secrets and create emergency admin account
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
+- Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
   - Run `pwsh { ./Setup_SHM_KeyVault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID> }`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
     - :pencil: Note the bracketing `pwsh { ... }` which runs this command in a new Powershell environment. This is necessary in order to prevent conflicts between the `AzureAD` and `Az` Powershell modules.
@@ -342,7 +345,7 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 ### Deploy the Virtual Network and Active Directory Domain Controller
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the domain controller (DC) VMs by running `./Setup_SHM_DC.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **around one hour** to run.
@@ -462,6 +465,9 @@ rather than simply `<admin username>`)
   - **Troubleshooting:** The error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again` may occur if you have recently torn down another SHM linked to the same Azure Active Directory. You need to wait for the Azure Active Directory to fully disconnect - this can take up to 72 hours but is typically sooner. You do not need to close the installer window while waiting. If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 
 ### Additional AAD Connect Configuration
+
+On the **SHM Domain Controller**
+
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
 1. Update the AAD rules
@@ -666,7 +672,7 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 ### Deploying package mirrors
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **around 30 minutes** to run.
@@ -675,7 +681,7 @@ A full set of Tier 2 mirrors take around 4 days to fully synchronise with the ex
 During normal usage, you should not need to tear down the package mirrors, but if you decide to do so, use the following procedure:
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier eg. '2'>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.
@@ -696,7 +702,7 @@ In order to tear down the SHM, use the following procedure:
 ### Tear down any attached SREs then the SHM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/administration` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
+- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - For each SRE attached to the SHM, do the following:
   - Tear down the SRE by running `./SRE_Teardown.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the relevant config file
