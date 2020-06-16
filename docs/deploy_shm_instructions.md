@@ -492,7 +492,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 
 
 ## 9. Deploy firewall
-<!-- NB. this should be moved to the beginning of the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
+<!-- NB. this could be moved earlier in the deployment process once this has been tested, but the first attempt will just focus on locking down an already-deployed environment -->
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
