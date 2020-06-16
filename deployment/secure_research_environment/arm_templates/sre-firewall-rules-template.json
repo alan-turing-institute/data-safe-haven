@@ -1,109 +1,73 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "FirewallName": {
-            "type": "string"
-        },
-        "FirewallPublicIpId": {
-            "type": "string"
-        },
-        "FirewallSubnetId": {
-            "type": "string"
-        },
-        "Location": {
-            "type": "string"
-        },
-        "Priority": {
-            "type": "string"
-        },
-        "SreId": {
-            "type": "string"
-        },
-        "SubnetCidrData": {
-            "type": "string"
-        },
-        "SubnetCidrDatabases": {
-            "type": "string"
-        },
-        "SubnetCidrIdentity": {
-            "type": "string"
-        },
-        "SubnetCidrRds": {
-            "type": "string"
-        }
-    },
-    "variables": {},
-    "resources": [
+    "routes": [
         {
-            "type": "Microsoft.Network/azureFirewalls",
-            "apiVersion": "2020-04-01",
-            "name": "[parameters('FirewallName')]",
-            "location": "[parameters('Location')]",
+            "name": "ViaFirewall",
             "properties": {
-                "sku": {
-                    "name": "AZFW_VNet",
-                    "tier": "Standard"
-                },
-                "threatIntelMode": "Alert",
-                "additionalProperties": {},
-                "ipConfigurations": [
-                    {
-                        "name": "AzureFirewallIpConfiguration",
-                        "properties": {
-                            "publicIPAddress": {
-                                "id": "[parameters('FirewallPublicIpId')]"
-                            },
-                            "subnet": {
-                                "id": "[parameters('FirewallSubnetId')]"
-                            }
-                        }
-                    }
-                ],
-                "networkRuleCollections": [],
-                "applicationRuleCollections": [
-                    {
-                        "name": "[concat(parameters('SreId'), 'AllSubnets')]",
-                        "properties": {
-                            "priority": "[parameters('Priority')]",
-                            "action": {
-                                "type": "Allow"
-                            },
-                            "rules": [
-                                {
-                                    "name": "WindowsUpdate",
-                                    "protocols": [
-                                        {
-                                            "protocolType": "Http",
-                                            "port": 80
-                                        },
-                                        {
-                                            "protocolType": "Https",
-                                            "port": 443
-                                        },
-                                        {
-                                            "protocolType": "Mssql",
-                                            "port": 1433
-                                        }
-                                    ],
-                                    "fqdnTags": [
-                                        "WindowsUpdate"
-                                    ],
-                                    "targetFqdns": [],
-                                    "sourceAddresses": [
-                                        "[parameters('SubnetCidrData')]",
-                                        "[parameters('SubnetCidrDatabases')]",
-                                        "[parameters('SubnetCidrIdentity')]",
-                                        "[parameters('SubnetCidrRds')]"
-                                    ],
-                                    "sourceIpGroups": []
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "natRuleCollections": []
+                "addressPrefix": "0.0.0.0/0",
+                "nextHop": "<shm-firewall-private-ip>"
+            }
+        },
+        {
+            "name": "ViaShmVnet",
+            "properties": {
+                "addressPrefix": "<vnet-shm-cidr>",
+                "nextHop": "VnetLocal"
+            }
+        },
+        {
+            "name": "ViaVpn",
+            "properties": {
+                "addressPrefix": "<subnet-shm-vpn-cidr>",
+                "nextHop": "VirtualNetworkGateway"
             }
         }
-    ]
+    ],
+    "networkRuleCollections": [],
+    "applicationRuleCollections": [
+        {
+            "name": "sre-<sre-id>",
+            "properties": {
+                "priority": "<priority>",
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "WindowsUpdate",
+                        "protocols": [],
+                        "fqdnTags": [
+                            "WindowsUpdate"
+                        ],
+                        "targetFqdns": [],
+                        "sourceAddresses": [
+                            "<subnet-data-cidr>",
+                            "<subnet-databases-cidr>",
+                            "<subnet-identity-cidr>",
+                            "<subnet-rds-cidr>"
+                        ],
+                        "sourceIpGroups": []
+                    },
+                    {
+                        "name": "Ubuntu",
+                        "protocols": [
+                            "http:80",
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "uk.archive.ubuntu.com",
+                            "security.ubuntu.com",
+                            "ppa.launchpad.net",
+                            "extras.ubuntu.com"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-data-cidr>"
+                        ],
+                        "sourceIpGroups": []
+                    }
+                ]
+            }
+        }
+    ],
+    "natRuleCollections": []
 }

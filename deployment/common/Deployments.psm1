@@ -144,6 +144,128 @@ function Deploy-Firewall {
 Export-ModuleMember -Function Deploy-Firewall
 
 
+# Deploy an application rule to a firewall
+# ----------------------------------------
+function Deploy-FirewallApplicationRule {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule collection to add this to")]
+        $CollectionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        $Firewall,
+        [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
+        $SourceAddress,
+        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "Protocol to use")]
+        $Protocol,
+        [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
+        $Priority,
+        [Parameter(Mandatory = $false, HelpMessage = "Whether these rules will allow or deny access to the specified resources")]
+        [ValidateSet("Allow", "Deny")]
+        $ActionType,
+        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "FQDN to unblock")]
+        $TargetFqdn,
+        [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "FQDN tag to unblock")]
+        $TargetTag
+    )
+    if ($TargetTag) {
+        Add-LogMessage -Level Info "Ensuring that '$TargetTag' is allowed through $($Firewall.Name)..."
+        $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
+    } else {
+        Add-LogMessage -Level Info "Ensuring that '$TargetFqdn' is allowed through $($Firewall.Name)..."
+        $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
+    }
+    try {
+        $ruleCollection = $firewall.GetApplicationRuleCollectionByName($CollectionName)
+        Add-LogMessage -Level InfoSuccess "Application rule collection '$Name' already exists"
+        # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
+        $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
+        if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
+        $ruleCollection.AddRule($rule)
+        # Remove the existing rule collection to ensure that we can update with the new rule
+        $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
+    } catch [System.Management.Automation.MethodInvocationException] {
+        Add-LogMessage -Level Info "[ ] Creating application rule collection '$Name'"
+        $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
+        if ($?) {
+            Add-LogMessage -Level Success "Created application rule collection '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create application rule collection '$Name'!"
+        }
+    }
+    $result = $?
+    $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
+    $result = $result -and $?
+    $null = Set-AzFirewall -AzureFirewall $Firewall
+    $result = $result -and $?
+    if ($result) {
+        Add-LogMessage -Level Success "Ensured that application rule '$Name' exists"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to ensure that application rule '$Name' exists!"
+    }
+    return $rule
+}
+Export-ModuleMember -Function Deploy-FirewallApplicationRule
+
+
+# Deploy a network rule collection to a firewall
+# ----------------------------------------------
+function Deploy-FirewallNetworkRule {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule collection to add this to")]
+        $CollectionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        $Firewall,
+        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
+        $SourceAddress,
+        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of destination")]
+        $DestinationAddress,
+        [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
+        $DestinationPort,
+        [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
+        $Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $Priority,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [ValidateSet("Allow", "Deny")]
+        $ActionType
+    )
+    $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
+    try {
+        $ruleCollection = $firewall.GetNetworkRuleCollectionByName($CollectionName)
+        Add-LogMessage -Level InfoSuccess "Network rule collection '$Name' already exists"
+        # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
+        $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
+        if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
+        $ruleCollection.AddRule($rule)
+        # Remove the existing rule collection to ensure that we can update with the new rule
+        $Firewall.RemoveNetworkRuleCollectionByName($ruleCollection.Name)
+    } catch [System.Management.Automation.MethodInvocationException] {
+        Add-LogMessage -Level Info "[ ] Creating network rule collection '$Name'"
+        $ruleCollection = New-AzFirewallNetworkRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
+        if ($?) {
+            Add-LogMessage -Level Success "Created network rule collection '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create network rule collection '$Name'!"
+        }
+    }
+    $result = $?
+    $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
+    $result = $result -and $?
+    $null = Set-AzFirewall -AzureFirewall $Firewall
+    $result = $result -and $?
+    if ($result) {
+        Add-LogMessage -Level Success "Ensured that network rule '$Name' exists"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to ensure that network rule '$Name' exists!"
+    }
+    return $rule
+}
+Export-ModuleMember -Function Deploy-FirewallNetworkRule
+
+
 # Create a key vault if it does not exist
 # ---------------------------------------
 function Deploy-KeyVault {

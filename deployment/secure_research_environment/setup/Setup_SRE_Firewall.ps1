@@ -16,12 +16,16 @@ $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
-# Load the SRE VNet and SHM firewall
-# ----------------------------------
+# Load the SRE VNet and gateway IP
+# --------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+$rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.rds.rg | Where-Object { $_.Name -match "$($config.sre.rds.gateway.vmName).*" } | Select-Object -First 1).IpAddress
+
+
+# Load the SHM firewall
+# ---------------------
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $firewall = Get-AzFirewall -Name $config.shm.firewall.name -ResourceGroupName $config.shm.network.vnet.rg
-$firewallPrivateIP = $firewall.IpConfigurations.PrivateIpAddress
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
@@ -31,22 +35,37 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 
 
+# Load all traffic rules from template
+# ------------------------------------
+$rules = (Get-Content (Join-Path $PSScriptRoot ".." "arm_templates" "sre-firewall-rules-template.json") -Raw).
+             Replace("<priority>", (2000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
+             Replace("<sre-id>", $config.sre.id).
+             Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
+             Replace("<sre-rdg-public-ip-cidr>", "${rdsGatewayPublicIp}/32").
+             Replace("<subnet-shm-vpn-cidr>", $config.shm.network.vpn.cidr).
+             Replace("<subnet-data-cidr>", $config.sre.network.subnets.data.cidr).
+             Replace("<subnet-databases-cidr>", $config.sre.network.subnets.databases.cidr).
+             Replace("<subnet-identity-cidr>", $config.sre.network.subnets.identity.cidr).
+             Replace("<subnet-rds-cidr>", $config.sre.network.subnets.rds.cidr).
+             Replace("<vnet-shm-cidr>", $config.shm.network.vnet.cidr) | ConvertFrom-Json -AsHashtable
+
+
 # Add routes to the route table
 # We need to keep all routing symmetric, or it will be dropped by the firewall.
 # VPN gateway connections do not come via the firewall so they must return by the same route.
 # All other requests should be routed via the firewall.
 # Since the gateway subnet CIDR is more specific than the general rule, it will take precedence
 # ---------------------------------------------------------------------------------------------
-$null = Deploy-Route -Name "ViaVpn" -RouteTable $routeTable -AppliesTo $config.shm.network.vpn.cidr -NextHop "VirtualNetworkGateway"
-$null = Deploy-Route -Name "ViaFirewall" -RouteTable $routeTable -AppliesTo "0.0.0.0/0" -NextHop $firewallPrivateIP
+foreach ($route in $rules.routes) {
+    $null = Deploy-Route -Name $route.name -RouteTable $routeTable -AppliesTo $route.properties.addressPrefix -NextHop $route.properties.nextHop
+}
 
 
-# Attach all subnets to the firewall route table
-# ----------------------------------------------
+# Attach all subnets except the RDG subnet to the firewall route table
+# --------------------------------------------------------------------
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.subnets.data.name -AddressPrefix $config.sre.network.subnets.data.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.subnets.databases.name -AddressPrefix $config.sre.network.subnets.databases.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.subnets.identity.name -AddressPrefix $config.sre.network.subnets.identity.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.sre.network.subnets.rds.name -AddressPrefix $config.sre.network.subnets.rds.cidr -RouteTable $routeTable | Set-AzVirtualNetwork
 
 
 # Set firewall rules from template
@@ -54,21 +73,28 @@ $null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 
-Add-LogMessage -Level Info "Setting firewall rules from template..."
-$params = @{
-    FirewallName = $firewall.Name
-    FirewallPublicIpId = $firewall.IpConfigurations.PublicIpAddress.Id
-    FirewallSubnetId = $firewall.IpConfigurations.Subnet.Id
-    Location = $config.shm.location
-    Priority = (2000 + ($config.sre.network.vnet.cidr).Split(".")[1])
-    SreId = $config.sre.id
-    SubnetCidrData = $config.sre.network.subnets.data.cidr
-    SubnetCidrDatabases = $config.sre.network.subnets.databases.cidr
-    SubnetCidrIdentity = $config.sre.network.subnets.identity.cidr
-    SubnetCidrRds = $config.sre.network.subnets.rds.cidr
+# Application rules
+# -----------------
+Add-LogMessage -Level Info "Setting firewall application rules..."
+foreach ($ruleCollection in $rules.applicationRuleCollections) {
+    foreach ($rule in $ruleCollection.properties.rules) {
+        $params = @{}
+        if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
+        if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
+        if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
+        $_ = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+    }
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-firewall-rules-template.json") -Params $params -ResourceGroupName $config.shm.network.vnet.rg
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
+# Network rules
+# -------------
+Add-LogMessage -Level Info "Setting firewall network rules..."
+foreach ($ruleCollection in $rules.networkRuleCollections) {
+    foreach ($rule in $ruleCollection.properties.rules) {
+        $_ = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
+    }
+}
 
 
 # Switch back to original subscription
