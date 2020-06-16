@@ -80,6 +80,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 ## 3. Configure DNS for the custom domain
 
+From your **deployment machine**
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
@@ -134,6 +136,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 
 
 ## 5. Deploy key vault for SHM secrets and create emergency admin account
+
+From your **deployment machine**
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
@@ -342,7 +346,11 @@ It appears that administrator accounts can use MFA and reset their passwords wit
 
 ## 8. Deploy and configure VNET and Domain Controllers
 
+
 ### Deploy the Virtual Network and Active Directory Domain Controller
+
+From your **deployment machine**
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
@@ -385,6 +393,9 @@ You should now be able to connect to the SHM virtual network via the VPN. Each t
 
 
 ### Access the first Domain Controller (DC1) via Remote Desktop
+
+From your **deployment machine**
+
 1. Open Microsoft Remote Desktop
 2. Click `Add Desktop` / `Add PC`
 3. In the Azure portal, navigate to the `RG_SHM_DC` resource group and then to the `DC1-SHM-<SHM ID>` virtual machine (VM).
@@ -607,7 +618,7 @@ Once you're certain that you're adding a new user, make sure that the following 
       - Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
         - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
         - If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-      - Make sure you authenticate to `Azure Active Directory` your own **internal** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your ohone number + email address and c onfigured MFA on your account.
+      - Make sure you authenticate to `Azure Active Directory` your own **internal** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number + email address and c onfigured MFA on your account.
 4. At the message `Configuration complete. Press Enter to continue`, press `Enter`
 
 ## 10. Require MFA for all users
@@ -670,6 +681,9 @@ In most cases the extensions have actually been successfully installed.
 A full set of Tier 2 mirrors take around 4 days to fully synchronise with the external package repositories, so you may want to kick off the building of these mirrors before deploying your first SRE.
 
 ### Deploying package mirrors
+
+From your **deployment machine**
+
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
