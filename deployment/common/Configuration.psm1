@@ -530,7 +530,7 @@ function Add-SreConfig {
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
         $config.sre.rds.gateway.networkRules.allowedSources = "Internet"
     } else {
-        $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.rdsAllowedSources
+        $config.sre.rds.gateway.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
     }
     # Set whether internet access is allowed: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
@@ -544,7 +544,7 @@ function Add-SreConfig {
     } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
         $config.sre.rds.gateway.networkRules.outboundInternet = "Allow"
     } else {
-        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.rdsInternetAccess
+        $config.sre.rds.gateway.networkRules.outboundInternet = $sreConfigBase.outboundInternet
     }
 
 
