@@ -51,12 +51,12 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in.",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records.",
+    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to.",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM.",
     "domain": "The fully qualified domain name for the management environment.",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or fewer.",
-    "shmId": "A short ID to identify the management environment.",
+    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name.",
     "organisation": {
         "name": "Organisation name.",
@@ -68,6 +68,8 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
 }
 ```
+
+> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ## 3. Configure DNS for the custom domain

@@ -91,7 +91,7 @@ function Resolve-KeyVaultSecret {
         [Parameter(Mandatory = $false, HelpMessage = "Default value for this secret")]
         [string]$DefaultValue,
         [Parameter(Mandatory = $false, HelpMessage = "Default number of random characters to be used when initialising this secret")]
-        [string]$DefaultLength = 20
+        [string]$DefaultLength
     )
     # Create a new secret if one does not exist in the key vault
     if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {

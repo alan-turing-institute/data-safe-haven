@@ -110,12 +110,12 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ```json
 {
     "subscriptionName": "Name of the Azure subscription the management environment is deployed in",
-    "domainSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "dnsSubscriptionName": "Name of the Azure subscription holding DNS records",
+    "dnsResourceGroupName": "Name of the resource group holding DNS records (eg. RG_SHM_DNS_TEST)",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this Safe Haven will belong to",
     "computeVmImageSubscriptionName": "Azure Subscription name for compute VM",
     "domain": "The fully qualified domain name for the management environment",
-    "netbiosname": "A short name to use as the local name for the domain. This must be 15 characters or less",
-    "shmId": "A short ID to identify the management environment",
+    "shmId": "A short ID to identify the management environment. This must be 7 or fewer characters.",
     "name": "Safe Haven deployment name",
     "organisation": {
         "name": "Organisation name",
@@ -128,7 +128,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 }
 ```
 
-> :warning: The `netbiosName` field must have a maximum length of 15 characters.
+> :warning: The `shmId` field must have a maximum of 7 characters.
 
 
 ### :green_apple: SRE configuration properties
@@ -139,22 +139,19 @@ The following core SRE properties must be defined in a JSON file named `sre_<SRE
 {
     "subscriptionName": "Name of the Azure subscription the secure research environment is deployed in",
     "adminSecurityGroupName" : "Name of the Azure Security Group that admins of this SHM belong to",
-    "sreId": "A short ID to identify the secure research environment. This *must be* 7 characters or less; if not it will be truncated in some places which might cause problems if those characters are not unique.",
     "shmId": "The short ID for the SHM segment to deploy against",
+    "sreId": "A short ID to identify the secure research environment. This *must be* 7 characters or less; if not it will be truncated in some places which might cause problems if those characters are not unique.",
     "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
     "domain": "The fully qualified domain name for the SRE",
-    "netbiosname": "A short name to use as the local name for the domain. This *must be* 15 characters or less. If the first part of the domain is less than 15 characters, use this for the netbiosName",
     "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environemnt",
-    "rdsAllowedSources": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
-    "rdsInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either 'Allow', 'Deny' or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
+    "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. For Tier 0 and 1 this should be 'Internet'. For Tier 2 this should correspond to the any organisational networks (including guest networks) at the partner organisations where access should be permitted from (i.e. any network managed by the organsiation, such as EduRoam, Turing Guest, Turing Secure etc). For Tier 3 SREs, this should correspond to the RESTRICTED networks at the partner organisations. These should only permit connections from within meduim security access controlled physical spaces and from managed devices (e.g. Turing Secure). Using 'default' will use the default Turing networks.",
+    "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
     "computeVmImageType": "The name of the Compute VM image (most commonly 'Ubuntu')",
     "computeVmImageVersion": "The version of the Compute VM image (e.g. 0.1.2019082900)"
 }
 ```
 
 > :warning: The `sreId` field must have a maximum length of 7 characters.
-
-> :warning: The `netbiosName` field must have a maximum length of 15 characters.
 
 > :warning: The `ipPrefix` must be unique for each SRE attached to the same SHM.
   It is very important that address spaces do not overlap in the environment as this will cause network faults.
@@ -168,7 +165,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the top-level folder within the Safe Haven repository.
 - Generate a new full configuration file for the new SRE using the following commands.
   - `Import-Module ./deployment/common/Configuration.psm1 -Force`
-  - `Add-SreConfig -sreId <SRE ID>`, where `<SRE ID>` is a short string, e.g. `sandbox` for `sandbox.dsgroupdev.co.uk`
+  - `Add-SreConfig -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using (e.g. `testasandbox` for the `sandbox` SRE in the `testa` SHM).
 - A full configuration file for the new SRE will be created at `environment_configs/full/sre_<SRE ID>_full_config.json`. This file is used by the subsequent steps in the SRE deployment.
 - Commit this new full configuration file to the Safe Haven repository
 
