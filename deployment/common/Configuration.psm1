@@ -571,7 +571,7 @@ function Add-SreConfig {
     $config.sre.dsvm.vmImageVersion = $sreConfigBase.computeVmImageVersion
     $config.sre.dsvm.osdisk = [ordered]@{
         type = "Standard_LRS"
-        size_gb = "64"
+        size_gb = "128"
     }
     $config.sre.dsvm.scratchdisk = [ordered]@{
         type = "Standard_LRS"
