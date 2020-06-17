@@ -2,28 +2,28 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Virtual Network Name": {
+        "Virtual_Network_Name": {
             "type": "string"
         },
-        "Virtual Network Address Space": {
+        "Virtual_Network_Address_Space": {
             "type": "string"
         },
-        "Subnet-Identity Address Prefix": {
+        "Subnet_Identity_Address_Space": {
             "type": "string"
         },
-        "Subnet-RDS Address Prefix": {
+        "Subnet_RDS_Address_Space": {
             "type": "string"
         },
-        "Subnet-Data Address Prefix": {
+        "Subnet_Data_Address_Space": {
             "type": "string"
         },
-        "Subnet-Identity Name": {
+        "Subnet_Identity_Name": {
             "type": "string"
         },
-        "Subnet-RDS Name": {
+        "Subnet_RDS_Name": {
             "type": "string"
         },
-        "Subnet-Data Name": {
+        "Subnet_Data_Name": {
             "type": "string"
         },
         "VNET_DNS_DC1": {
@@ -36,42 +36,42 @@
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('Virtual Network Name')]",
+            "name": "[parameters('Virtual_Network_Name')]",
             "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('Virtual Network Address Space')]"
+                        "[parameters('Virtual_Network_Address_Space')]"
                     ]
                 },
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[parameters('VNET_DNS_DC1')]",                        
+                        "[parameters('VNET_DNS_DC1')]",
                         "[parameters('VNET_DNS_DC2')]"
                     ]
                 },
                 "subnets": [{
-                        "name": "[parameters('Subnet-Identity Name')]",
+                        "name": "[parameters('Subnet_Identity_Name')]",
                         "properties": {
-                            "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",
+                            "addressPrefix": "[parameters('Subnet_Identity_Address_Space')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
                     },
                     {
-                        "name": "[parameters('Subnet-RDS Name')]",
+                        "name": "[parameters('Subnet_RDS_Name')]",
                         "properties": {
-                            "addressPrefix": "[parameters('Subnet-RDS Address Prefix')]",
+                            "addressPrefix": "[parameters('Subnet_RDS_Address_Space')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
                     },
                     {
-                        "name": "[parameters('Subnet-Data Name')]",
+                        "name": "[parameters('Subnet_Data_Name')]",
                         "properties": {
-                            "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                            "addressPrefix": "[parameters('Subnet_Data_Address_Space')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
@@ -84,44 +84,44 @@
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-Identity Name'))]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Identity_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[parameters('Subnet-Identity Address Prefix')]",
+                "addressPrefix": "[parameters('Subnet_Identity_Address_Space')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-RDS Name'))]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_RDS_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[parameters('Subnet-RDS Address Prefix')]",
+                "addressPrefix": "[parameters('Subnet_RDS_Address_Space')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-Data Name'))]",
+            "name": "[concat(parameters('Virtual_Network_Name'), '/', parameters('Subnet_Data_Name'))]",
             "apiVersion": "2018-10-01",
             "scale": null,
             "properties": {
-                "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                "addressPrefix": "[parameters('Subnet_Data_Address_Space')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]"
             ]
         }
     ]

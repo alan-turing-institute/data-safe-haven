@@ -23,48 +23,21 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $_ = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config.sre.location
 
 
-# Create VNet from template
-# -------------------------
-Add-LogMessage -Level Info "Creating virtual network '$($config.sre.network.vnet.name)' from template..."
-$params = @{
-    "Virtual Network Name" = $config.sre.network.vnet.Name
-    "Virtual Network Address Space" = $config.sre.network.vnet.cidr
-    "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
-    "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
-    "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
-    "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
-    "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
-    "Subnet-Data Name" = $config.sre.network.subnets.data.Name
-    "VNET_DNS_DC1" = $config.shm.dc.ip
-    "VNET_DNS_DC2" = $config.shm.dcb.ip
-}
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+# Create VNet and subnets
+# -----------------------
+$sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
+$null = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.data.cidr
+$null = Deploy-Subnet -Name $config.sre.network.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.identity.cidr
+$null = Deploy-Subnet -Name $config.sre.network.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.rds.cidr
 
 
-# $vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $config.network.vnet.rg -AddressPrefix "$vnetIpTriplet.0/24" -Location $config.location
-# # External subnet
-# $subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
-# # Internal subnet
-# $existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | ForEach-Object { $_.AddressPrefix }
-# $nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | ForEach-Object { "$vnetIpTriplet.$_/28" } | Where-Object { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
-# $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
-#
-
-
-# Fetch VNet information
-# ----------------------
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-$sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-$shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg
-
-
-# Remove existing peerings
-# ------------------------
-$shmPeeringName = "PEER_$($config.sre.network.vnet.Name)"
-$srePeeringName = "PEER_$($config.shm.network.vnet.Name)"
+# Remove existing SRE <-> SHM VNet peerings
+# -----------------------------------------
+$shmPeeringName = "PEER_$($config.sre.network.vnet.name)"
+$srePeeringName = "PEER_$($config.shm.network.vnet.name)"
 # From SHM VNet
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$shmVnet = Get-AzVirtualNetwork -Name $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg
 if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg) {
     Add-LogMessage -Level Info "[ ] Removing existing peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
     Remove-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
@@ -86,8 +59,9 @@ if (Get-AzVirtualNetworkPeering -VirtualNetworkName $config.sre.network.vnet.nam
     }
 }
 
-# Add peering to SHM Vnet
-# -----------------------
+# Add SRE <-> SHM VNet peerings
+# -----------------------------
+# To SHM VNet
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "[ ] Adding peering '$shmPeeringName' from '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)'..."
 $_ = Add-AzVirtualNetworkPeering -Name $shmPeeringName -VirtualNetwork $shmVnet -RemoteVirtualNetworkId $sreVnet.Id -AllowGatewayTransit
@@ -96,10 +70,7 @@ if ($?) {
 } else {
     Add-LogMessage -Level Fatal "Peering '$($config.sre.network.vnet.name)' to '$($config.shm.network.vnet.name)' failed!"
 }
-
-
-# Add peering to SRE VNet
-# -----------------------
+# To SRE VNet
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "[ ] Adding peering '$srePeeringName' from '$($config.shm.network.vnet.name)' to '$($config.sre.network.vnet.name)'..."
 $_ = Add-AzVirtualNetworkPeering -Name $srePeeringName -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $shmVnet.Id -UseRemoteGateways
@@ -127,7 +98,7 @@ Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($confi
 $dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 160
 $gitlabIpAddress = $config.sre.webapps.gitlab.ip
 $hackmdIpAddress = $config.sre.webapps.hackmd.ip
-$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
+$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
 $rdsSh1VmFqdn = $config.sre.rds.sessionHost1.fqdn
@@ -137,8 +108,8 @@ $rdsSh2VmName = $config.sre.rds.sessionHost2.vmName
 $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
 $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
 $shmNetbiosName = $config.shm.domain.netbiosName
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword -DefaultLength 20
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword -DefaultLength 20
+$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $sreFqdn = $config.sre.domain.fqdn
 $sreNetbiosName = $config.sre.domain.netbiosName
 
@@ -216,9 +187,9 @@ $params = @{
     RDS_Session_Host_Desktop_Name = $config.sre.rds.sessionHost2.vmName
     RDS_Session_Host_Desktop_VM_Size = $config.sre.rds.sessionHost2.vmSize
     SRE_ID = $config.sre.Id
-    Virtual_Network_Name = $config.sre.network.vnet.Name
+    Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.subnets.rds.Name
+    Virtual_Network_Subnet = $config.sre.network.subnets.rds.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 

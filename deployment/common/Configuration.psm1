@@ -216,7 +216,7 @@ function Get-ShmFullConfig {
 
     # Storage config
     # --------------
-    $storageSuffix = New-RandomLetters -SeedPhrase $shm.subscriptionName
+    $storageSuffix = New-RandomLetters -SeedPhrase ($shm.subscriptionName + $shm.id)
     $storageRg = "RG_SHM_$($shm.id)_ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
@@ -406,7 +406,7 @@ function Add-SreConfig {
     # Storage config
     # --------------
     $storageRg = "RG_SRE_$($config.sre.id)_ARTIFACTS".ToUpper()
-    $storageSuffix = New-RandomLetters -SeedPhrase $config.sre.subscriptionName
+    $storageSuffix = New-RandomLetters -SeedPhrase ($config.sre.subscriptionName + $config.sre.id)
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
