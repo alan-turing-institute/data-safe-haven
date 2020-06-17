@@ -130,7 +130,7 @@ function Get-ShmFullConfig {
     $shmDomainDN = "DC=$($($shmConfigBase.domain).Replace('.',',DC='))"
     $shm.domain = [ordered]@{
         fqdn = $shmConfigBase.domain
-        netbiosName = $($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : "SAFEHAVEN$($shm.id)").ToUpper() | Limit-StringLength 15
+        netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
         dn = $shmDomainDN
         serviceServerOuPath = "OU=Safe Haven Service Servers,${shmDomainDN}"
         serviceOuPath = "OU=Safe Haven Service Accounts,${shmDomainDN}"
@@ -325,7 +325,7 @@ function Add-SreConfig {
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a short string e.g 'sandbox')")]
         $sreId
     )
-    Add-LogMessage -Level Info "Generating/update config file for '$sreId'"
+    Add-LogMessage -Level Info "Generating/updating config file for '$sreId'"
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $sreId
@@ -353,7 +353,7 @@ function Add-SreConfig {
     # -------------
     $config.sre.domain = [ordered]@{
         fqdn = $sreConfigBase.domain
-        netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15
+        netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
         dn = "DC=$($sreConfigBase.domain.Replace('.',',DC='))"
     }
     $config.sre.domain.securityGroups = [ordered]@{
