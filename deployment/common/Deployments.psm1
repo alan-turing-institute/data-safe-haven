@@ -184,16 +184,17 @@ function Deploy-FirewallApplicationRule {
         $ruleCollection.AddRule($rule)
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
+        $result = $?
     } catch [System.Management.Automation.MethodInvocationException] {
         Add-LogMessage -Level Info "[ ] Creating application rule collection '$Name'"
         $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        if ($?) {
+        $result = $?
+        if ($result) {
             Add-LogMessage -Level Success "Created application rule collection '$Name'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create application rule collection '$Name'!"
         }
     }
-    $result = $?
     $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
     $result = $result -and $?
     $null = Set-AzFirewall -AzureFirewall $Firewall
