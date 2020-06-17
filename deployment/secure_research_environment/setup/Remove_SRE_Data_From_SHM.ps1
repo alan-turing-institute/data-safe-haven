@@ -19,8 +19,8 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Look for resources in this subscription
 # ---------------------------------------
-$sreResourceGroups = @(Get-AzResourceGroup)
-$sreResources = @(Get-AzResource)
+$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
+$sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
 
 
 # If resources are found then print a warning message
@@ -75,7 +75,6 @@ if ($sreResources -or $sreResourceGroups) {
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
         sreId = "`"$($config.sre.id)`""
-        testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
         dsvmLdapSamAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
         gitlabLdapSamAccountName = "`"$($config.sre.users.computerManagers.gitlab.samAccountName)`""
         hackmdLdapSamAccountName = "`"$($config.sre.users.computerManagers.hackmd.samAccountName)`""
