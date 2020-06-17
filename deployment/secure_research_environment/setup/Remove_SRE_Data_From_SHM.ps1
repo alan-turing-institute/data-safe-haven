@@ -1,6 +1,6 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-    [string]$sreId
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+    [string]$configId
 )
 
 Import-Module Az
@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
-$config = Get-SreConfig $sreId
+$config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
@@ -26,7 +26,7 @@ $sreResources = @(Get-AzResource)
 # If resources are found then print a warning message
 if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Warning "********************************************************************************"
-    Add-LogMessage -Level Warning "*** SRE $sreId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
+    Add-LogMessage -Level Warning "*** SRE $configId subscription '$($config.sre.subscriptionName)' is not empty!! ***"
     Add-LogMessage -Level Warning "********************************************************************************"
     Add-LogMessage -Level Warning "SRE data should not be deleted from the SHM unless all SRE resources have been deleted from the subscription."
     Add-LogMessage -Level Warning " "
@@ -120,16 +120,16 @@ if ($sreResources -or $sreResourceGroups) {
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # RDS @ record
-    Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $sreId DNS zone ($sreDomain)"
+    Add-LogMessage -Level Info "[ ] Removing '@' A record from SRE $($config.sre.id) DNS zone ($sreDomain)"
     Remove-AzDnsRecordSet -Name "@" -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     # RDS DNS record
     $rdsDnsRecordname = "$($config.sre.rds.gateway.hostname)".ToLower()
-    Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $sreId DNS zone ($sreDomain)"
+    Add-LogMessage -Level Info "[ ] Removing '$rdsDnsRecordname' CNAME record from SRE $($config.sre.id) DNS zone ($sreDomain)"
     Remove-AzDnsRecordSet -Name $rdsDnsRecordname -RecordType CNAME -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
     $success = $?
     # RDS ACME records
     foreach ($rdsAcmeDnsRecordname in ("_acme-challenge.$($config.sre.rds.gateway.hostname)".ToLower(), "_acme-challenge")) {
-        Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($sreDomain)"
+        Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $($config.sre.id) DNS zone ($sreDomain)"
         Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
         $success = $success -and $?
     }
