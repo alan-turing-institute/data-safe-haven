@@ -290,7 +290,13 @@ write_files:
           . /etc/bash_completion
         fi
       fi
-
+  - path: "/etc/docker/daemon.json" # For CoCalc
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      {
+        "data-root": "/shared"
+      }
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
@@ -386,8 +392,8 @@ runcmd:
   - rm /disk_setup
   # Install CoCalc
   - echo ">=== Install CoCalc... ===<"
-  - docker run --restart=always --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc
-
+  - systemctl start docker
+  - 'docker run --restart=always --name=cocalc -d -v /shared/cocalc:/projects -p 443:443 sagemathinc/cocalc'
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
