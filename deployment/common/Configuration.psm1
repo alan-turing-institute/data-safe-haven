@@ -34,8 +34,8 @@ function Get-ConfigRootDir {
 }
 
 
-# Load a config file into a PSCustomObject
-# ----------------------------------------
+# Load a config file into a hashtable
+# -----------------------------------
 function Get-ConfigFile {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Config type ('sre' or 'shm')")]
