@@ -7,6 +7,7 @@ Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
@@ -24,52 +25,52 @@ $_ = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.lo
 
 # Ensure the keyvault exists
 # --------------------------
-$_ = Deploy-KeyVault -Name $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
-Set-KeyVaultPermissions -Name $config.sre.keyVault.Name -GroupName $config.shm.adminSecurityGroupName
-Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.Name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
+$_ = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.adminSecurityGroupName
+Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
 
 
 # Ensure that secrets exist in the keyvault
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
 # :: Admin usernames
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
-    Add-LogMessage -Level Success "Successfully created SRE admin usernames"
+    Add-LogMessage -Level Success "Ensured that SRE admin usernames exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to create SRE admin usernames!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE admin usernames exist!"
 }
 # :: VM admin passwords
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dataServerAdminPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.rdsAdminPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.webappAdminPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlVmAdminPassword -DefaultLength 20
-    Add-LogMessage -Level Success "Successfully created SRE VM admin passwords"
+    Add-LogMessage -Level Success "Ensured that SRE VM admin passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to create SRE VM admin passwords!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE VM admin passwords exist!"
 }
 # :: Databases
 try {
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUserPassword -DefaultLength 20
-    Add-LogMessage -Level Success "Successfully created SRE database secrets"
+    Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to create SRE database secrets!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SRE database secrets exist!"
 }
 # :: Other secrets
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword -DefaultLength 20
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
-    Add-LogMessage -Level Success "Successfully created other SRE secrets"
+    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
+    Add-LogMessage -Level Success "Ensured that other SRE secrets exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to create other SRE secrets!"
+    Add-LogMessage -Level Fatal "Failed to ensure that other SRE secrets exist!"
 }
 
 
@@ -82,12 +83,12 @@ $groups = $config.sre.domain.securityGroups
 # Load SRE LDAP users
 $ldapUsers = $config.sre.users.computerManagers
 foreach ($user in $ldapUsers.Keys) {
-    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"] -DefaultLength 20
+    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $ldapUsers[$user]["passwordSecretName"] -DefaultLength 20
 }
 # Load other SRE service users
 $serviceUsers = $config.sre.users.serviceAccounts
 foreach ($user in $serviceUsers.Keys) {
-    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
+    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
 }
 
 

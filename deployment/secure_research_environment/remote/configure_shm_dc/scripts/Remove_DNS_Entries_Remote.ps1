@@ -5,19 +5,16 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreFqdn,
-    [String]$identitySubnetPrefix,
-    [String]$rdsSubnetPrefix,
-    [String]$dataSubnetPrefix
+    [String]$sreFqdn
 )
 
-function IpPrefixToInAddrArpa($ipPrefix)
-{
-    $octetList = @($ipPrefix.split("."))
-    [array]::Reverse($octetList)
-    $ipPrefixRev = $octetList -join "."
-    return "$ipPrefixRev.in-addr.arpa"
-}
+# function IpPrefixToInAddrArpa($ipPrefix)
+# {
+#     $octetList = @($ipPrefix.split("."))
+#     [array]::Reverse($octetList)
+#     $ipPrefixRev = $octetList -join "."
+#     return "$ipPrefixRev.in-addr.arpa"
+# }
 function Remove-SreDnsZone($zoneName) {
     if(Get-DnsServerZone | Where-Object {$_.ZoneName -eq "$zoneName"}){
         Write-Output " [ ] Removing '$zoneName' DNS record"
@@ -34,6 +31,6 @@ function Remove-SreDnsZone($zoneName) {
 }
 
 Remove-SreDnsZone $sreFqdn
-Remove-SreDnsZone (IpPrefixToInAddrArpa $identitySubnetPrefix)
-Remove-SreDnsZone (IpPrefixToInAddrArpa $rdsSubnetPrefix)
-Remove-SreDnsZone (IpPrefixToInAddrArpa $dataSubnetPrefix)
+# Remove-SreDnsZone (IpPrefixToInAddrArpa $identitySubnetPrefix)
+# Remove-SreDnsZone (IpPrefixToInAddrArpa $rdsSubnetPrefix)
+# Remove-SreDnsZone (IpPrefixToInAddrArpa $dataSubnetPrefix)

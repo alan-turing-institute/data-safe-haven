@@ -94,9 +94,9 @@ if ($sreResources -or $sreResourceGroups) {
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
         sreFqdn = "`"$($config.sre.domain.fqdn)`""
-        identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
-        rdsSubnetPrefix = "`"$($config.sre.network.subnets.rds.prefix)`""
-        dataSubnetPrefix = "`"$($config.sre.network.subnets.data.prefix)`""
+        # identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
+        # rdsSubnetPrefix = "`"$($config.sre.network.subnets.rds.prefix)`""
+        # dataSubnetPrefix = "`"$($config.sre.network.subnets.data.prefix)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value

@@ -72,14 +72,13 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
     try {
         # Temporarily allow outbound internet during deployment
         # -----------------------------------------------------
-        $privateIpAddress = "$($subnetCfg.prefix).$($databaseCfg.ipLastOctet)"
-        Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $privateIpAddress..."
+        Add-LogMessage -Level Warning "Temporarily allowing outbound internet access from $($databaseCfg.ip)..."
         Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                      -Name "OutboundAllowInternetTemporary" `
                                      -Description "Outbound allow internet" `
                                      -Priority 100 `
                                      -Direction Outbound -Access Allow -Protocol * `
-                                     -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
+                                     -SourceAddressPrefix $databaseCfg.ip -SourcePortRange * `
                                      -DestinationAddressPrefix Internet -DestinationPortRange *
 
         # Retrieve common secrets from key vaults
@@ -111,7 +110,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                 DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
                 DC_Join_User = $shmDcAdminUsername
                 Domain_Name = $config.shm.domain.fqdn
-                IP_Address = $privateIpAddress
+                IP_Address = $databaseCfg.ip
                 Location = $config.sre.location
                 OS_Disk_Size = $databaseCfg.osdisk.size_gb
                 OS_Disk_Type = $databaseCfg.osdisk.type
@@ -178,7 +177,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
 
             # Deploy NIC and data disks
             $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-            $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.name)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.sre.location
+            $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.name)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $databaseCfg.ip -Location $config.sre.location
             $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.name)-DATA-DISK" -SizeGB $databaseCfg.datadisk.size_gb -Type $databaseCfg.datadisk.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
 
             # Construct the cloud-init file
@@ -189,7 +188,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-local-admin-password>", $postgresDbAdminPassword).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
-                                                    Replace("<db-vm-ipaddress>", $privateIpAddress).
+                                                    Replace("<db-vm-ipaddress>", $databaseCfg.ip).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.Name).
                                                     Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.Name),$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-bind-user-password>", $postgresVmLdapPassword).
@@ -228,7 +227,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
 
     } finally {
         # Remove temporary NSG rules
-        Add-LogMessage -Level Info "Removing temporary outbound internet access from $privateIpAddress..."
+        Add-LogMessage -Level Info "Removing temporary outbound internet access from $($databaseCfg.ip)..."
         $_ = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
         $_ = $nsg | Set-AzNetworkSecurityGroup
     }

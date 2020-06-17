@@ -16,6 +16,7 @@ Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
+Import-Module $PSScriptRoot/../../common/Networking.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
 
@@ -28,7 +29,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Set common variables
 # --------------------
-$vmIpAddress = $config.sre.network.subnets.data.prefix + "." + $ipLastOctet
+$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 

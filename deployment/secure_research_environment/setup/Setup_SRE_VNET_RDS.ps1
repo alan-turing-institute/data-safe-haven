@@ -41,6 +41,16 @@ $params = @{
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-vnet-gateway-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
 
+# $vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $config.network.vnet.rg -AddressPrefix "$vnetIpTriplet.0/24" -Location $config.location
+# # External subnet
+# $subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
+# # Internal subnet
+# $existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | ForEach-Object { $_.AddressPrefix }
+# $nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | ForEach-Object { "$vnetIpTriplet.$_/28" } | Where-Object { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
+# $subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
+#
+
+
 # Fetch VNet information
 # ----------------------
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
@@ -113,7 +123,10 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # Set variables used in template expansion, retrieving from the key vault where appropriate
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
+# $dataSubnetIpPrefix = $config.sre.network.subnets.data.prefix
+$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 160
+$gitlabIpAddress = $config.sre.webapps.gitlab.ip
+$hackmdIpAddress = $config.sre.webapps.hackmd.ip
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 $rdsGatewayVmFqdn = $config.sre.rds.gateway.fqdn
 $rdsGatewayVmName = $config.sre.rds.gateway.vmName
