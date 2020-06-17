@@ -318,7 +318,7 @@ write_files:
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
-  - path: "/lib/systemd/system/clamdscan.service"
+  - path: "/lib/systemd/system/clamav-clamdscan.service"
     owner: "root:root"
     permissions: "0644"
     content: |
@@ -331,7 +331,7 @@ write_files:
       Type=oneshot
       User=root
       ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
-  - path: "/lib/systemd/system/clamdscan.timer"
+  - path: "/lib/systemd/system/clamav-clamdscan.timer"
     owner: "root:root"
     permissions: "0644"
     content: |
@@ -447,6 +447,8 @@ runcmd:
   - systemctl disable clamav-freshclam.service
   # Enable clamav scan on access
   - systemctl enable clamav-clamonacc.service
+  # Enable clamv peroidic scan
+  - systemctl enable clamav-clamdscan.timer
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
