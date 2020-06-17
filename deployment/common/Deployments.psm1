@@ -308,8 +308,7 @@ function Deploy-StorageContainer {
         if ($?) {
             Add-LogMessage -Level Success "Created storage container"
         } else {
-            Add-LogMessage -Level Failure "Failed to create storage container!"
-            throw "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+            Add-LogMessage -Level Fatal "Failed to create storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Storage container '$Name' already exists in storage account '$($StorageAccount.StorageAccountName)'"
@@ -569,9 +568,8 @@ function Invoke-RemoteScript {
     if ($success) {
         Add-LogMessage -Level Success "Remote script execution succeeded"
     } else {
-        Add-LogMessage -Level Failure "Remote script execution failed!"
-        Add-LogMessage -Level Failure "Script output:`n$($result | Out-String)"
-        throw "Remote script execution has failed. Please check the error message above before re-running this script."
+        Add-LogMessage -Level Info "Script output:`n$($result | Out-String)"
+        Add-LogMessage -Level Fatal "Remote script execution has failed. Please check the output above before re-running this script."
     }
     # Wait 10s to allow the run command extension to register as completed
     Start-Sleep 10
