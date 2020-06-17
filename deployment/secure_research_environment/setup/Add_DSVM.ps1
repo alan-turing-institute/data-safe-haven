@@ -305,7 +305,7 @@ Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($confi
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
 $dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
 $dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.dsvm.passwordSecretName -DefaultLength 20
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.computerManagers.dsvm.passwordSecretName -DefaultLength 20
 
 
 # Construct the cloud-init yaml file for the target subscription
@@ -319,7 +319,7 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
                                                             Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
                                                             Replace("<dsvm-hostname>", $vmName).
                                                             Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
-                                                            Replace("<dsvm-ldap-username>", $config.sre.users.ldap.dsvm.samAccountName).
+                                                            Replace("<dsvm-ldap-username>", $config.sre.users.computerManagers.dsvm.samAccountName).
                                                             Replace("<mirror-host-pypi>", $addresses.pypi.host).
                                                             Replace("<mirror-url-cran>", $addresses.cran.url).
                                                             Replace("<mirror-url-pypi>", $addresses.pypi.url).
@@ -328,7 +328,7 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
                                                             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
                                                             Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
                                                             Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
-                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.ldap.dsvm.Name),$($config.shm.domain.serviceOuPath)").
+                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.Name),$($config.shm.domain.serviceOuPath)").
                                                             Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
 
 # Insert xrdp logo into the cloud-init template
@@ -474,7 +474,7 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
 $params = @{
     TEST_HOST = $config.shm.dc.fqdn
-    LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
+    LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
     SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
 }

@@ -34,7 +34,7 @@ if ($?) {
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $($vm.Name)..."
 $params = @{
     TEST_HOST = $config.shm.dc.fqdn
-    LDAP_USER = $config.sre.users.ldap.dsvm.samAccountName
+    LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
     SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
 }
@@ -90,7 +90,7 @@ if ($success) {
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
-    samAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
+    samAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
     ldapPassword = "`"$kvLdapPassword`""
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"

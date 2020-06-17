@@ -160,7 +160,7 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             $postgresDbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
             $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
             $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
-            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.postgres.passwordSecretName -DefaultLength 20
+            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.computerManagers.postgres.passwordSecretName -DefaultLength 20
 
             # Create an AD service principal and get the keytab for it
             Add-LogMessage -Level Info "Register '$postgresDbServiceAccountName' ($postgresDbServiceAccountSamAccountName) as a service principal for the database..."
@@ -191,9 +191,9 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
                                                     Replace("<db-vm-ipaddress>", $privateIpAddress).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.Name).
-                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.ldap.postgres.Name),$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.Name),$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-bind-user-password>", $postgresVmLdapPassword).
-                                                    Replace("<ldap-bind-user-username>", $config.sre.users.ldap.postgres.samAccountName).
+                                                    Replace("<ldap-bind-user-username>", $config.sre.users.computerManagers.postgres.samAccountName).
                                                     Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.Name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
                                                     Replace("<ldap-postgres-service-account-dn>", "CN=${postgresDbServiceAccountName},$($config.shm.domain.serviceOuPath)").

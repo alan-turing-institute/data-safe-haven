@@ -80,7 +80,7 @@ Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
 # Load SRE groups
 $groups = $config.sre.domain.securityGroups
 # Load SRE LDAP users
-$ldapUsers = $config.sre.users.ldap
+$ldapUsers = $config.sre.users.computerManagers
 foreach ($user in $ldapUsers.Keys) {
     $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"] -DefaultLength 20
 }

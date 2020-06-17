@@ -76,9 +76,9 @@ if ($sreResources -or $sreResourceGroups) {
     $params = @{
         sreId = "`"$($config.sre.id)`""
         testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
-        dsvmLdapSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
-        gitlabLdapSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
-        hackmdLdapSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
+        dsvmLdapSamAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
+        gitlabLdapSamAccountName = "`"$($config.sre.users.computerManagers.gitlab.samAccountName)`""
+        hackmdLdapSamAccountName = "`"$($config.sre.users.computerManagers.hackmd.samAccountName)`""
         sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
         rdsDataserverVMName = "`"$($config.sre.dataserver.vmName)`""
         rdsGatewayVMName = "`"$($config.sre.rds.gateway.vmName)`""

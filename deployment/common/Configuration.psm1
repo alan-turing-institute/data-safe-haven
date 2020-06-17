@@ -450,32 +450,32 @@ function Add-SreConfig {
 
     # --- Domain users ---
     $config.sre.users = [ordered]@{
-        ldap = [ordered]@{
+        computerManagers = [ordered]@{
             gitlab = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Gitlab LDAP"
-                samAccountName = "gitlabldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-gitlab-ldap-password"
+                name = "$($config.sre.domain.netbiosName) Gitlab VM Service Account"
+                samAccountName = "vmgitlab$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-vm-gitlab-service-account-password"
             }
             hackmd = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) HackMD LDAP"
-                samAccountName = "hackmdldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-hackmd-ldap-password"
+                name = "$($config.sre.domain.netbiosName) HackMD VM Service Account"
+                samAccountName = "vmhackmd$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-vm-hackmd-service-account-password"
             }
             dsvm = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) DSVM LDAP"
-                samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-dsvm-ldap-password"
+                name = "$($config.sre.domain.netbiosName) Compute VM Service Account"
+                samAccountName = "vmcompute$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-vm-compute-service-account-password"
             }
             postgres = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Postgres VM LDAP"
-                samAccountName = "pgvmldap$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-postgresvm-ldap-password"
+                name = "$($config.sre.domain.netbiosName) Postgres VM Service Account"
+                samAccountName = "vmpostgres$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-vm-postgres-service-account-password"
             }
         }
         serviceAccounts = [ordered]@{
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
-                samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
+                samAccountName = "dbpostgres$($sreConfigBase.sreId)".ToLower() | Limit-StringLength 20
                 passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
             }
             datamount = [ordered]@{
