@@ -290,7 +290,6 @@ write_files:
           . /etc/bash_completion
         fi
       fi
-  # Create systemd unit for clamav on acceess daemon
   - path: "/lib/systemd/system/clamav-clamonacc.service"
     owner: "root:root"
     permissions: "0644"
@@ -299,12 +298,14 @@ write_files:
       Description=Clamav on access scanning daemon
       Requires=clamav-daemon.service
       After=clamav-daemon.service
+
       [Service]
       Type=simple
       User=root
       ExecStart=/usr/bin/clamonacc --foreground=true
       Restart=on-failure
       Restart-sec=30
+
       [Install]
       WantedBy=multi-user.target
   - path: "/etc/clmav/clamd.conf"
@@ -317,6 +318,19 @@ write_files:
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
+  - path: "/lib/systemd/system/clamdscan.service"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav full system scan
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+
+      [Service]
+      Type=oneshot
+      User=root
+      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
   - path: "/lib/systemd/system/clamdscan.timer"
     owner: "root:root"
     permissions: "0644"
@@ -327,6 +341,7 @@ write_files:
       [Timer]
       # Will run on every Monday at 00:00:00
       OnCalendar=weekly
+      AccuracySec=1h
       # Will run if a job was missed (e.g. due to system being powered down)
       Persistent=true
 
