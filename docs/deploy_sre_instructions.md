@@ -188,7 +188,7 @@ On your **deployment machine**.
 
 ### :registered: Register SRE with the SHM
 On your **deployment machine**.
-- Register service accounts with the SHM by running `./Add_SRE_Data_To_SHM.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Register service accounts with the SHM by running `./Setup_SRE_KeyVault_And_Users.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - This step also creates a key vault in the SRE subscription in `Resource Groups -> RG_SRE_SECRETS -> kv-shm-<SHM ID>-sre-<SRE ID>`. Additional deployment steps will add secrets to this key vault and you will need to access some of these for some of the manual configuration steps later.
 
 ## :fishing_pole_and_fish: Deploy virtual network and remote desktop
