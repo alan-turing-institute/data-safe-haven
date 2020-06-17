@@ -307,7 +307,6 @@ write_files:
       Restart-sec=30
       [Install]
       WantedBy=multi-user.target
-
   - path: "/etc/clmav/clamd.conf"
     owner: "root:root"
     permissions: "0644"
@@ -318,6 +317,21 @@ write_files:
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
+  - path: "/lib/systemd/system/clamdscan.timer"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run clamdscan every week
+
+      [Timer]
+      # Will run on every Monday at 00:00:00
+      OnCalendar=weekly
+      # Will run if a job was missed (e.g. due to system being powered down)
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
 
 
 runcmd:
