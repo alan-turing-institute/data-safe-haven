@@ -13,10 +13,19 @@
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "shm": {
+            "domain": {
+                "netbiosName": "SAFEHAVENTESTA",
+                "securityGroups": {
+                    "dsvmLdapUsers": {
+                        "name": "SG Safe Haven LDAP Users",
+                        "description": "SG Safe Haven LDAP Users"
+                    }
+                }
+            },
             "network": {
-              "vnet": {
-                "rg": "RG_SHM_NETWORKING"
-              }
+                "vnet": {
+                    "rg": "RG_SHM_NETWORKING"
+                }
             },
             "dc": {
                 "rg": "RG_SHM_DC"
@@ -46,9 +55,9 @@
         },
         "sre": {
             "network": {
-              "vnet": {
-                "rg": "RG_SRE_NETWORKING"
-              }
+                "vnet": {
+                    "rg": "RG_SRE_NETWORKING"
+                }
             },
             "storage": {
                 "artifacts": {
@@ -81,6 +90,37 @@
                     "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
                 }
             },
+            "users": {
+                "ldap": {
+                    "gitlab": {
+                        "name": "SANDBOX Gitlab LDAP",
+                        "samAccountName": "gitlabldapsandbox",
+                        "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
+                    },
+                    "hackmd": {
+                        "name": "SANDBOX HackMD LDAP",
+                        "samAccountName": "hackmdldapsandbox",
+                        "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
+                    },
+                    "dsvm": {
+                        "name": "SANDBOX DSVM LDAP",
+                        "samAccountName": "dsvmldapsandbox",
+                        "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
+                    },
+                    "postgres": {
+                        "name": "SANDBOX Postgres VM LDAP",
+                        "samAccountName": "pgvmldapsandbox",
+                        "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
+                    }
+                },
+                "serviceAccounts": {
+                    "postgres": {
+                        "name": "SANDBOX Postgres DB Service Account",
+                        "samAccountName": "pgdbsrvcsandbox",
+                        "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
+                    }
+                }
+            },
             "rds": {
                 "rg": "RG_SRE_RDS"
             },
@@ -97,5 +137,5 @@
                 "rg": "RG_SRE_COMPUTE"
             }
         }
-    }
+     }
 }

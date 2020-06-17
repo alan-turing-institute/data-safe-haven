@@ -17,6 +17,11 @@ function Copy-HashtableOverrides {
             $target[$sourcePair.key] = $sourcePair.value
             continue
         }
+        # If this key is not in the target then we add it
+        if (-not $Target.Contains($sourcePair.key)) {
+            $target[$sourcePair.key] = $sourcePair.value
+            continue
+        }
         Copy-HashtableOverrides $sourcePair.value $Target[$sourcePair.key]
     }
 }
@@ -297,7 +302,7 @@ function Limit-StringLength {
     param(
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string]$InputString,
-        [Parameter(Mandatory = $True)]
+        [Parameter(Position = 0, Mandatory = $True)]
         [int]$MaximumLength,
         [Parameter(Mandatory=$false)]
         [Switch]$FailureIsFatal,
@@ -322,17 +327,17 @@ Export-ModuleMember -Function Limit-StringLength
 # ---------------------------
 function Add-SreConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a short string e.g 'sandbox')")]
-        $sreId
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+        [string]$configId
     )
-    Add-LogMessage -Level Info "Generating/updating config file for '$sreId'"
+    Add-LogMessage -Level Info "Generating/updating config file for '$configId'"
 
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
-    $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $sreId
+    $sreConfigBase = Get-ConfigFile -configType "sre" -configLevel "core" -configName $configId
 
     # Ensure that naming structure is being adhered to
-    if ($sreId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
-        Add-LogMessage -Level Fatal "Config file '$sreId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
+    if ($configId -ne "$($sreConfigBase.shmId)$($sreConfigBase.sreId)") {
+        Add-LogMessage -Level Fatal "Config file '$configId' should be using '$($sreConfigBase.shmId)$($sreConfigBase.sreId)' as its identifier!"
     }
 
     # Secure research environment config
@@ -673,7 +678,7 @@ function Add-SreConfig {
     # Write output to file
     # --------------------
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
-    $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${sreId}_full_config.json"
+    $sreFullConfigPath = Join-Path $(Get-ConfigRootDir) "full" "sre_${configId}_full_config.json"
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
     Add-LogMessage -Level Info "Wrote config file to '$sreFullConfigPath'"
 }
@@ -684,10 +689,10 @@ Export-ModuleMember -Function Add-SreConfig
 # ---------------------
 function Get-SreConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE ID (usually a short string e.g 'sandbox')")]
-        [string]$sreId
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+        [string]$configId
     )
     # Read full SRE config from file
-    return Get-ConfigFile -configType "sre" -configLevel "full" -configName $sreId
+    return Get-ConfigFile -configType "sre" -configLevel "full" -configName $configId
 }
 Export-ModuleMember -Function Get-SreConfig
