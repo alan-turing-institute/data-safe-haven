@@ -265,7 +265,7 @@
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "researchersandbox"
+          "samAccountName": "testresrchsandbox"
         }
       }
     },
@@ -380,7 +380,7 @@
       "vmImageVersion": "0.2.2020060100",
       "osdisk": {
         "type": "Standard_LRS",
-        "size_gb": "64"
+        "size_gb": "128"
       },
       "scratchdisk": {
         "type": "Standard_LRS",
