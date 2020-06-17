@@ -1,3 +1,5 @@
+Import-Module $PSScriptRoot/Logging.psm1
+
 # Modified from the [System.Web.Security.Membership]::GeneratePassword() function
 # Source : https://github.com/Microsoft/referencesource/blob/master/System.Web/Security/Membership.cs
 # Needed because [System.Web.Security.Membership] is not in .NetCore so unavailable in Powershell 6
@@ -82,15 +84,27 @@ Export-ModuleMember -Function New-RandomLetters
 # -----------------------------------------
 function Resolve-KeyVaultSecret {
     param(
-        [string]$VaultName = "",
-        [string]$SecretName = "",
-        [string]$DefaultValue = "",
+        [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [string]$SecretName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [string]$VaultName,
+        [Parameter(Mandatory = $false, HelpMessage = "Default value for this secret")]
+        [string]$DefaultValue,
+        [Parameter(Mandatory = $false, HelpMessage = "Default number of random characters to be used when initialising this secret")]
         [string]$DefaultLength = 20
     )
     # Create a new secret if one does not exist in the key vault
     if (-not $(Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName)) {
-        # Generate a new password if there is no default
-        if ($DefaultValue -eq "") {
+        # If no default is provided then we cannot generate a secret
+        if ((-Not $DefaultValue) -And (-Not $DefaultLength)) {
+            Add-LogMessage -Level Fatal "Secret '$SecretName does not exist and no default value or length was provided!"
+        }
+        # If both defaults are provided then we do not know which to use
+        if ($DefaultValue -And $DefaultLength) {
+            Add-LogMessage -Level Fatal "Both a default value and a default length were provided. Please only use one of these options!"
+        }
+        # Generate a new password if there is no default value
+        if (-Not $DefaultValue) {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault

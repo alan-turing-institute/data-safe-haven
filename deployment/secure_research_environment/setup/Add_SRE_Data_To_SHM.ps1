@@ -37,12 +37,12 @@ $groups = $config.sre.domain.securityGroups | ConvertTo-Json | ConvertFrom-Json 
 # Load SRE LDAP users
 $ldapUsers = $config.sre.users.ldap | ConvertTo-Json | ConvertFrom-Json -AsHashtable
 foreach ($user in $ldapUsers.Keys) {
-    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"]
+    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"] -DefaultLength 20
 }
 # Load other SRE service users
 $serviceUsers = $config.sre.users.serviceAccounts | ConvertTo-Json | ConvertFrom-Json -AsHashtable
 foreach ($user in $serviceUsers.Keys) {
-    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"]
+    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
 }
 
 

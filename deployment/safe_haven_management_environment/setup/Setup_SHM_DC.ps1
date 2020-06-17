@@ -157,9 +157,9 @@ $_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 # Retrieve usernames/passwords from the keyvault
 # ----------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -defaultValue "shm$($config.id)admin".ToLower()
-$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
-$dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
+$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+$dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword -DefaultLength 20
 
 
 # Deploy SHM DC from template
@@ -215,7 +215,7 @@ Write-Output $result.Value
 # -----------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
 # Fetch ADSync user password
-$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
+$adsyncPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword -DefaultLength 20
 $adsyncAccountPasswordEncrypted = ConvertTo-SecureString $adsyncPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1"

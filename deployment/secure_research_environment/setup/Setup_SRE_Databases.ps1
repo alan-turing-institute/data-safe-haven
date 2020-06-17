@@ -93,12 +93,12 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
         if ($databaseCfg.type -eq "MSSQL") {
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-            $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword
+            $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
             $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-            $sqlAuthUpdateUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUserPassword
+            $sqlAuthUpdateUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUserPassword -DefaultLength 20
             $sqlAuthUpdateUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlAuthUpdateUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
-            $sqlVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlVmAdminPassword
+            $sqlVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlVmAdminPassword -DefaultLength 20
 
             # Create SQL server from template
             Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.name) from template..."
@@ -155,12 +155,12 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
             $postgresDbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
-            $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword
+            $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword -DefaultLength 20
             $postgresDbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
             $postgresDbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
-            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName
-            $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword
-            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.postgres.passwordSecretName
+            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
+            $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
+            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.ldap.postgres.passwordSecretName -DefaultLength 20
 
             # Create an AD service principal and get the keytab for it
             Add-LogMessage -Level Info "Register '$postgresDbServiceAccountName' ($postgresDbServiceAccountSamAccountName) as a service principal for the database..."

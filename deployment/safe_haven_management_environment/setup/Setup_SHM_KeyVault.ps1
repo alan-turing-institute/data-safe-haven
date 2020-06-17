@@ -32,7 +32,7 @@ Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecu
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 # :: AAD Global Administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "AAD Global Administrator password exists"
 } else {
@@ -48,7 +48,7 @@ if ($?) {
 }
 
 # :: DC/NPS administrator password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "Domain administrator password exists"
 } else {
@@ -56,7 +56,7 @@ if ($?) {
 }
 
 # :: DC safe mode password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "DC safe mode password exists"
 } else {
@@ -64,7 +64,7 @@ if ($?) {
 }
 
 # :: AD sync password
-$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword
+$_ = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword -DefaultLength 20
 if ($?) {
     Add-LogMessage -Level Success "AD sync password exists"
 } else {
@@ -110,7 +110,7 @@ try {
         # Create self-signed CA certificate with private key
         # --------------------------------------------------
         Add-LogMessage -Level Info "[ ] Generating self-signed certificate locally"
-        $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnCaCertPassword
+        $vpnCaCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnCaCertPassword -DefaultLength 20
         openssl req -subj "/CN=$caStem" -new -newkey rsa:2048 -sha256 -days $caValidityDays -nodes -x509 -keyout $caKeyPath -out $caCrtPath
         openssl pkcs12 -in $caCrtPath -inkey $caKeyPath -export -out $caPfxPath -password "pass:$vpnCaCertPassword"
         if ($?) {
@@ -227,7 +227,7 @@ try {
         # Sign the client certificate - create a PKCS#7 file from full certificate chain and merge it with the private key
         # ----------------------------------------------------------------------------------------------------------------
         Add-LogMessage -Level Info "[ ] Signing the CSR and merging into the '$($config.keyVault.secretNames.vpnClientCertificate)' certificate..."
-        $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnClientCertPassword
+        $vpnClientCertPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vpnClientCertPassword -DefaultLength 20
         openssl x509 -req -in $clientCsrPath -CA $caCrtPath -CAkey $caKeyPath -CAcreateserial -out $clientCrtPath -days $clientValidityDays -sha256
         openssl crl2pkcs7 -nocrl -certfile $clientCrtPath -certfile $caCrtPath -out $clientPkcs7Path 2>&1 | Out-Null
         $_ = Import-AzKeyVaultCertificate -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnClientCertificate -FilePath $clientPkcs7Path -Password (ConvertTo-SecureString "$vpnClientCertPassword" -AsPlainText -Force)
