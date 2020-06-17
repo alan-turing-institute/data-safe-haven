@@ -64,7 +64,7 @@ while ($sreResourceGroups.Length) {
 # Remove residual SRE data from the SHM
 # -------------------------------------
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup" "Remove_SRE_Data_From_SHM.ps1"
-Invoke-Expression -Command "$scriptPath -sreId $sreId"
+Invoke-Expression -Command "$scriptPath -configId $configId"
 
 
 # Switch back to original subscription
