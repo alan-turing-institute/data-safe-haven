@@ -97,7 +97,7 @@ Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
-    shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
+    shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.computerManagers.name)`""
     shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
     groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
     ldapUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($ldapUsers | ConvertTo-Json)))

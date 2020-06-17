@@ -138,7 +138,7 @@ function Get-ShmFullConfig {
         securityOuPath = "OU=Safe Haven Security Groups,${shmDomainDN}"
     }
     $shm.domain.securityGroups = [ordered]@{
-        dsvmLdapUsers = [ordered]@{ name = "SG Safe Haven LDAP Users" }
+        computerManagers = [ordered]@{ name = "SG Safe Haven Computer Management Users" }
         serverAdmins = [ordered]@{ name = "SG Safe Haven Server Administrators" }
     }
     foreach ($groupName in $shm.domain.securityGroups.Keys) {
