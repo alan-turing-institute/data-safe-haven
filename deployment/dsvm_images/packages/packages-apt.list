@@ -8,6 +8,7 @@ autotools-dev
 build-essential
 clamav
 clamav-daemon
+clamav-unofficial-sigs
 code
 default-jdk
 docker.io

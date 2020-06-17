@@ -435,6 +435,7 @@ runcmd:
 
   # Update clamav signature database
   - freshclam
+  - clamav-unofficial-sigs
 
 
 final_message:
