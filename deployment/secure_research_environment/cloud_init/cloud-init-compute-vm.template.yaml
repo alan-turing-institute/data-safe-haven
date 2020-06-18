@@ -290,13 +290,6 @@ write_files:
           . /etc/bash_completion
         fi
       fi
-  - path: "/etc/docker/daemon.json" # For CoCalc
-    owner: "root:root"
-    permissions: "0644"
-    content: |
-      {
-        "data-root": "/shared"
-      }
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"

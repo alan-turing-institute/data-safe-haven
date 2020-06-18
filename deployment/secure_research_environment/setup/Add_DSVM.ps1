@@ -443,6 +443,7 @@ $params = @{
     location = $config.sre.location
     NicId = $vmNic.Id
     OsDiskType = $config.sre.dsvm.osdisk.type
+    OsDiskSizeGb = $config.sre.dsvm.osdisk.size_gb
     ResourceGroupName = $config.sre.dsvm.rg
     DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
     ImageId = $image.Id
