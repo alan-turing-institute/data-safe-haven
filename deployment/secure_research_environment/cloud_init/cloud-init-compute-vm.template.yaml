@@ -164,7 +164,7 @@ write_files:
       echo ">=== end of /etc/pam.d/common-session ===<"
   - path: "/disk_setup"
     owner: root:root
-    permisions: '0500'
+    permissions: "0500"
     content: |
       #!/bin/sh
       # Create home folder and grant appropriate access
@@ -209,6 +209,17 @@ write_files:
       echo ">=== /etc/fstab ===<"
       cat /etc/fstab
       echo ">=== end of /etc/fstab ===<"
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/etc/pip.conf"
     content: |
       # Add the PyPI mirror to our global settings
@@ -240,19 +251,60 @@ write_files:
     permissions: "0400"
     content: |
       <jdk.table.xml>
+  - path: "/etc/skel/.bashrc"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      # determine if terminal has color support
+      case "$TERM" in
+        xterm-color|*-256color) color_prompt=yes;;
+      esac
+
+      # set prompt
+      if [ "$color_prompt" = yes ]; then
+        PS1='\[\033[01;32m\]\u\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
+      else
+        PS1='\u:\W\$ '
+      fi
+      unset color_prompt
+
+      # enable color support for ls and grep
+      if [ -x /usr/bin/dircolors ]; then
+        test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+        alias ls='ls --color=auto'
+
+        alias grep='grep --color=auto'
+        alias fgrep='fgrep --color=auto'
+        alias egrep='egrep --color=auto'
+      fi
+  - path: "/etc/bash.bashrc"
+    owner: "root:root"
+    permissions: "0644"
+    append: true
+    content: |
+      # enable bash completion in interactive shells
+      if ! shopt -oq posix; then
+        if [ -f /usr/share/bash-completion/bash_completion ]; then
+          . /usr/share/bash-completion/bash_completion
+        elif [ -f /etc/bash_completion ]; then
+          . /etc/bash_completion
+        fi
+      fi
 
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
   # PyCharm configuration
-  - PY27_VERSION=$(/opt/anaconda/envs/py27/bin/python --version 2>&1 | cut -d' ' -f2)
-  - PY36_VERSION=$(/opt/anaconda/envs/py36/bin/python --version 2>&1 | cut -d' ' -f2)
-  - PY37_VERSION=$(/opt/anaconda/envs/py37/bin/python --version 2>&1 | cut -d' ' -f2)
+  - PY27_VERSION=$(/opt/anaconda/envs/py27/bin/python --version 2>&1 | cut -d ' ' -f2)
+  - PY36_VERSION=$(/opt/anaconda/envs/py36/bin/python --version 2>&1 | cut -d ' ' -f2)
+  - PY37_VERSION=$(/opt/anaconda/envs/py37/bin/python --version 2>&1 | cut -d ' ' -f2)
   - sed -i "s/PY27_VERSION/$PY27_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - sed -i "s/PY36_VERSION/$PY36_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - sed -i "s/PY37_VERSION/$PY37_VERSION/g" /etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml
   - PYCHARM_VERSION=$(grep "dataDirectoryName" /snap/pycharm-community/current/product-info.json | cut -d':' -f2 | xargs | sed "s/,//")
   - mv /etc/skel/.config/JetBrains/PYCHARM_VERSION /etc/skel/.config/JetBrains/${PYCHARM_VERSION}
+  # TODO remove this
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard

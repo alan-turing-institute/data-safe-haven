@@ -297,18 +297,18 @@ function Add-SreConfig {
     $config.sre.domain.fqdn = $sreConfigBase.domain
     $config.sre.domain.netbiosName = $sreConfigBase.netbiosName
     $config.sre.domain.dn = "DC=$($config.sre.domain.fqdn.Replace('.',',DC='))"
-    $serverAdminsGroup = "SG $($config.sre.domain.netbiosName) Server Administrators"
-    $sqlAdminsGroup = "SG $($config.sre.domain.netbiosName) SQL Server Administrators"
+    $dataAdministratorsGroup = "SG $($config.sre.domain.netbiosName) Data Administrators"
+    $systemAdministratorsGroup = "SG $($config.sre.domain.netbiosName) System Administrators"
     $researchUsersGroup = "SG $($config.sre.domain.netbiosName) Research Users"
     $reviewUsersGroup = "SG $($config.sre.domain.netbiosName) Review Users"
     $config.sre.domain.securityGroups = [ordered]@{
-        serverAdmins = [ordered]@{
-            name = $serverAdminsGroup
-            description = $serverAdminsGroup
+        dataAdministrators = [ordered]@{
+            name = $dataAdministratorsGroup
+            description = $dataAdministratorsGroup
         }
-        sqlAdmins = [ordered]@{
-            name = $sqlAdminsGroup
-            description = $sqlAdminsGroup
+        systemAdministrators = [ordered]@{
+            name = $systemAdministratorsGroup
+            description = $systemAdministratorsGroup
         }
         researchUsers = [ordered]@{
             name = $researchUsersGroup
@@ -340,10 +340,10 @@ function Add-SreConfig {
                 name = "SharedDataSubnet"
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 2)"
             }
-            dbingress = [ordered]@{
-                name = "DbIngressSubnet"
+            databases = [ordered]@{
+                name = "DatabasesSubnet"
                 prefix = "${sreBasePrefix}.$([int]$sreThirdOctet + 3)"
-                nsg = "dbingress"
+                nsg = "databases"
             }
             airlock = [ordered]@{
                 name = "AirlockSubnet"
@@ -353,20 +353,18 @@ function Add-SreConfig {
         }
         nsg = [ordered]@{
             data = [ordered]@{}
-            dbingress = [ordered]@{
-                name = "NSG_SRE_$($config.sre.id)_DB_INGRESS".ToUpper()
+            databases = [ordered]@{
+                name = "NSG_SRE_$($config.sre.id)_DATABASES".ToUpper()
             }
             airlock = [ordered]@{
                 name = "NSG_SRE_$($config.sre.id)_AIRLOCK".ToUpper()
             }
         }
     }
-    # Construct the CIDR for each subnet based on the prefix
-    $config.sre.network.subnets.identity.cidr = "$($config.sre.network.subnets.identity.prefix).0/24"
-    $config.sre.network.subnets.rds.cidr = "$($config.sre.network.subnets.rds.prefix).0/24"
-    $config.sre.network.subnets.data.cidr = "$($config.sre.network.subnets.data.prefix).0/24"
-    $config.sre.network.subnets.dbingress.cidr = "$($config.sre.network.subnets.dbingress.prefix).0/24"
-    $config.sre.network.subnets.airlock.cidr = "$($config.sre.network.subnets.airlock.prefix).0/24"
+    # Construct the CIDR for each subnet based on the prefix. Using '/24' gives 256 address for each subnet
+    foreach ($subnet in $config.sre.network.subnets.Keys) {
+        $config.sre.network.subnets[$subnet].cidr = "$($config.sre.network.subnets[$subnet].prefix).0/24"
+    }
 
     # --- Storage config --
     $storageRg = "RG_SRE_ARTIFACTS"
@@ -411,9 +409,13 @@ function Add-SreConfig {
             gitlabReviewAPIToken = "$($config.sre.shortName)-gitlab-review-api-token"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-nps-secret"
+            postgresDbAdminUsername = "$($config.sre.shortName)-postgresdb-admin-username"
+            postgresDbAdminPassword = "$($config.sre.shortName)-postgresdb-admin-password"
+            postgresVmAdminPassword = "$($config.sre.shortName)-postgresvm-admin-password"
             rdsAdminPassword = "$($config.sre.shortName)-rdsvm-admin-password"
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
+            sqlVmAdminPassword = "$($config.sre.shortName)-sqlvm-admin-password"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
             webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
         }
@@ -434,9 +436,21 @@ function Add-SreConfig {
                 name = "$($config.sre.domain.netbiosName) DSVM LDAP"
                 samAccountName = "dsvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
             }
+            postgres = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) Postgres VM LDAP"
+                samAccountName = "pgvmldap$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                passwordSecretName = "$($config.sre.shortName)-postgresvm-ldap-password"
+            }
+        }
+        serviceAccounts = [ordered]@{
+            postgres = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
+                samAccountName = "pgdbsrvc$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
+                passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
+            }
         }
         datamount = [ordered]@{
-            name = "$($config.sre.domain.netbiosName) Data Mount"
+            name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
             samAccountName = "datamount$($sreConfigBase.sreId)".ToLower() | TrimToLength 20
         }
         researchers = [ordered]@{
@@ -553,17 +567,22 @@ function Add-SreConfig {
     # Databases
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_DATABASES"
-        # MS SQL data ingress
-        dbmssqlingress = [ordered]@{
-            name = "SQL-ING-$($config.sre.id)".ToUpper() | TrimToLength 15
-            enableSSIS = $true
-            ipLastOctet = "4"
-            port = "14330"
-            sku = "sqldev"
-            subnet = "dbingress"
+    }
+    $ipLastOctet = 4
+    $dbPorts = @{"MSSQL" = "14330"; "PostgreSQL" = "5432"}
+    $dbSkus = @{"MSSQL" = "sqldev"; "PostgreSQL" = "18.04-LTS"}
+    $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
+    foreach ($databaseType in $sreConfigBase.databases) {
+        $config.sre.databases["db$($databaseType.ToLower())"]  = [ordered]@{
+            name = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | TrimToLength 15
+            type = $databaseType
+            ipLastOctet = $ipLastOctet
+            port = $dbPorts[$databaseType]
+            sku = $dbSkus[$databaseType]
+            subnet = "databases"
             vmSize = "Standard_DS2_v2"
             datadisk = [ordered]@{
-                size_gb = "2048"
+                size_gb = "1024"
                 type = "Standard_LRS"
             }
             osdisk = [ordered]@{
@@ -571,6 +590,8 @@ function Add-SreConfig {
                 type = "Standard_LRS"
             }
         }
+        if ($databaseType -eq "MSSQL") { $config.sre.databases["db$($databaseType.ToLower())"]["enableSSIS"] = $true }
+        $ipLastOctet += 1
     }
 
     # Compute VMs
@@ -619,7 +640,6 @@ function Add-SreConfig {
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
-    Write-Host $jsonOut
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig

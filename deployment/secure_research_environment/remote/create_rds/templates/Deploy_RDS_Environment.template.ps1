@@ -9,9 +9,9 @@ $CandidateRawDisks = Get-Disk | Where-Object {$_.PartitionStyle -eq 'raw'} | Sor
 foreach ($RawDisk in $CandidateRawDisks) {
     Write-Output "Configuring disk $($RawDisk.Number)"
     $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $RawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
-    $_ = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
+    $null = Initialize-Disk -PartitionStyle GPT -Number $RawDisk.Number
     $Partition = New-Partition -DiskNumber $RawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $_ = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "DATA-$LUN" -Confirm:$false
+    $null = Format-Volume -Partition $Partition -FileSystem NTFS -NewFileSystemLabel "DATA-$LUN" -Confirm:$false
 }
 Start-Service ShellHWDetection
 
@@ -40,7 +40,7 @@ try {
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-LICENSING  -ErrorAction Stop
     Set-RDLicenseConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -LicenseServer "<rdsGatewayVmFqdn>" -Mode PerUser  -Force -ErrorAction Stop
     # Setup gateway server
-    $_ = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
+    $null = Add-WindowsFeature -Name RDS-Gateway -IncludeAllSubFeature -ErrorAction Stop
     Add-RDServer -ConnectionBroker "<rdsGatewayVmFqdn>" -Server "<rdsGatewayVmFqdn>" -Role RDS-GATEWAY -GatewayExternalFqdn "<sreFqdn>" -ErrorAction Stop
     Set-RDWorkspace -ConnectionBroker "<rdsGatewayVmFqdn>" -Name "Safe Haven Applications"
     Write-Output " [o] RDS environment configuration update succeeded"
@@ -57,22 +57,23 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
                                ("Windows (Desktop)", "<rdsSh2VmFqdn>", "<researchUserSgName>", "$($driveLetters[1]):\RDPFileShares"),
                                ("Review", "<rdsSh3VmFqdn>", "<reviewUserSgName>", "$($driveLetters[2]):\ReviewFileShares"))) {
     $collectionName, $sessionHost, $userGroup, $sharePath = $rdsConfiguration
+    if ($collectionName -eq "Windows (Desktop)") { continue }  # do not create links for the Windows desktop as we are preparing to remove this
 
     # Setup user profile disk shares
     Write-Output "Creating user profile disk shares..."
-    $_ = New-Item -ItemType Directory -Force -Path $sharePath
+    $null = New-Item -ItemType Directory -Force -Path $sharePath
     $shareName = $sharePath.Split("\")[1]
     $sessionHostComputerName = $sessionHost.Split(".")[0]
     if ($null -eq $(Get-SmbShare | Where-Object -Property Path -eq $sharePath)) {
-        $_ = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$","<shmNetbiosName>\${sessionHostComputerName}$","<shmNetbiosName>\Domain Admins"
+        $null = New-SmbShare -Path $sharePath -Name $shareName -FullAccess "<shmNetbiosName>\<rdsGatewayVmName>$","<shmNetbiosName>\${sessionHostComputerName}$","<shmNetbiosName>\Domain Admins"
     }
 
     # Create collections
     Write-Output "Creating '$collectionName' collection..."
     try {
-        $_ = New-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -SessionHost "$sessionHost" -ErrorAction Stop
-        $_ = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -UserGroup "<shmNetbiosName>\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ErrorAction Stop
-        $_ = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\<rdsGatewayVmName>\$shareName" -ErrorAction Stop
+        $null = New-RDSessionCollection -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -SessionHost "$sessionHost" -ErrorAction Stop
+        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -UserGroup "<shmNetbiosName>\$userGroup" -ClientPrinterRedirected $false -ClientDeviceRedirectionOptions None -DisconnectedSessionLimitMin 5 -IdleSessionLimitMin 720 -ErrorAction Stop
+        $null = Set-RDSessionCollectionConfiguration -ConnectionBroker "<rdsGatewayVmFqdn>" -CollectionName "$collectionName" -EnableUserProfileDisk -MaxUserProfileDiskSizeGB "20" -DiskPath "\\<rdsGatewayVmName>\$shareName" -ErrorAction Stop
         Write-Output " [o] Creating '$collectionName' collection succeeded"
     } catch {
         Write-Output " [x] Creating '$collectionName' collection failed!"
@@ -86,13 +87,13 @@ foreach($rdsConfiguration in @(("Applications", "<rdsSh1VmFqdn>", "<researchUser
 Write-Output "Registering applications..."
 Get-RDRemoteApp | Remove-RDRemoteApp -Force -ErrorAction SilentlyContinue
 try {
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "DSVM Main (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "DSVM Other (Desktop)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.151" -CollectionName "Applications" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.152:3000" -CollectionName "Applications" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
-    $_ = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (1)" -DisplayName "Code Review" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<airlockSubnetIpPrefix>.151" -CollectionName "Review" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (1)" -DisplayName "Desktop (DSVM Main)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-v <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "mstsc (2)" -DisplayName "Desktop (DSVM Other)" -FilePath "C:\Windows\system32\mstsc.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (2)" -DisplayName "GitLab" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.151" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "chrome (3)" -DisplayName "HackMD" -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "http://<dataSubnetIpPrefix>.152:3000" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (1)" -DisplayName "SSH (DSVM Main)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CommandLineSetting Require -RequiredCommandLine "-ssh <dataSubnetIpPrefix>.160" -CollectionName "Applications" -ErrorAction Stop
+    $null = New-RDRemoteApp -ConnectionBroker "<rdsGatewayVmFqdn>" -Alias "putty (2)" -DisplayName "SSH (DSVM Other)" -FilePath "C:\Program Files\PuTTY\putty.exe" -ShowInWebAccess 1 -CollectionName "Applications" -ErrorAction Stop
     Write-Output " [o] Registering applications succeeded"
 } catch {
     Write-Output " [x] Registering applications failed!"

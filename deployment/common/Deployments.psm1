@@ -981,3 +981,28 @@ function Set-DnsZoneAndParentNSRecords {
     }
 }
 Export-ModuleMember -Function Set-DnsZoneAndParentNSRecords
+
+
+
+# Wait for cloud-init provisioning to finish
+# ------------------------------------------
+function Wait-ForAzVMCloudInit {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine to wait for")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group VM belongs to")]
+        $ResourceGroupName
+    )
+    # Poll VM to see whether it has finished running
+    Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish for $Name..."
+    $progress = 0
+    $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+    while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Contains("PowerState/stopped"))) {
+        $statuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
+        $progress = [math]::min(100, $progress + 1)
+        Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
+        Start-Sleep 10
+    }
+    Add-LogMessage -Level Success "Cloud-init provisioning is finished for $Name"
+}
+Export-ModuleMember -Function Wait-ForAzVMCloudInit

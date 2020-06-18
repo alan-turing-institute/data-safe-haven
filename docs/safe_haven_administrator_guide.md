@@ -107,7 +107,8 @@ A sample email might look like the following
 > Your Safe Haven is hosted at: \<URL\>
 >
 > The Safe Haven is only accessible from certain networks and may also involve physical location restrictions.
-> <details about network and location/VPN restrictions here>
+>
+> --details about network and location/VPN restrictions here--
 
 
 

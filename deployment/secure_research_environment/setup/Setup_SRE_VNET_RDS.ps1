@@ -349,7 +349,7 @@ Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 $blobfiles = @{}
 $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
 foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi") -or ($blob.Name -like "*WinSCP_x32.exe")) {
+    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
         $blobfiles[$config.sre.rds.sessionHost1.vmName] += @{$containerNameSessionHosts = $blob.Name}
         $blobfiles[$config.sre.rds.sessionHost2.vmName] += @{$containerNameSessionHosts = $blob.Name}
         $blobfiles[$config.sre.rds.sessionHost3.vmName] += @{$containerNameSessionHosts = $blob.Name}

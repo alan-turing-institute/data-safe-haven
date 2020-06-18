@@ -58,6 +58,17 @@ apt:
 
 
 write_files:
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/installation/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
@@ -229,6 +240,7 @@ runcmd:
   - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
 
   # Install PyCharm

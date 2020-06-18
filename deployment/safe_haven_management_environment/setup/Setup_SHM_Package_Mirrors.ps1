@@ -207,7 +207,7 @@ function Deploy-PackageMirror {
     # --------------------
     $cloudInitPath = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-mirror-${mirrorDirection}-${MirrorType}.yaml".ToLower()
     $fullMirrorType = "${MirrorType}".ToLower().Replace("cran", "r-cran").Replace("pypi", "python-pypi")
-    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "whitelist-core-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
+    $whitelistPath = Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "whitelist-full-${fullMirrorType}-tier${tier}.list".ToLower() # do not resolve this path as we have not tested whether it exists yet
     $cloudInitYaml = Resolve-CloudInit -MirrorType $MirrorType -MirrorDirection $MirrorDirection -CloudInitPath $cloudInitPath -WhitelistPath $whitelistPath
 
     # Construct IP address for this mirror
@@ -268,17 +268,7 @@ function Deploy-PackageMirror {
                 DataDiskIds = @($dataDisk.Id)
             }
             $_ = Deploy-UbuntuVirtualMachine @params
-
-            # Poll VM to see whether it has finished running
-            Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-            $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-            $progress = 0
-            while (-not ($statuses.Contains("PowerState/stopped") -and $statuses.Contains("ProvisioningState/succeeded"))) {
-                $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -Status).Statuses.Code
-                $progress = [math]::min(100, $progress + 1)
-                Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
-                Start-Sleep 10
-            }
+            Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.mirrors.rg
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."
@@ -297,17 +287,20 @@ function Deploy-PackageMirror {
         # If we have deployed an internal mirror we need to let the external connect to it
         # --------------------------------------------------------------------------------
         if ($MirrorDirection -eq "Internal") {
-            Add-LogMessage -Level Info "Ensuring that '$VMName' can accept connections from the external mirror..."
+            Add-LogMessage -Level Info "Ensuring that '$vmName' can accept connections from the external mirror..."
             # Get public key for internal server
+            Add-LogMessage -Level Info "Retrieving public key for '$vmName'..."
             $script = "
             #! /bin/bash
             ssh-keyscan 127.0.0.1 2> /dev/null
             "
-            $result = Invoke-RemoteScript -VMName $VMName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $result = Invoke-RemoteScript -VMName $vmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             Write-Output $result.Value
             $internalFingerprint = $result.Value[0].Message -split "\n" | Select-String "^127.0.0.1" | ForEach-Object { $_ -replace "127.0.0.1", "$privateIpAddress" }
 
             # Inform external server about the new internal server
+            $externalVmName = $vmName.Replace("INTERNAL", "EXTERNAL")
+            Add-LogMessage -Level Info "Uploading '$vmName' public key to '$externalVmName'..."
             $script = "
             #! /bin/bash
             echo 'Update known hosts on the external server to allow connections to the internal server...'
@@ -326,7 +319,7 @@ function Deploy-PackageMirror {
             cat ~mirrordaemon/internal_mirror_ip_addresses.txt
             ls -alh ~mirrordaemon
             "
-            $result = Invoke-RemoteScript -VMName $vmName.Replace("INTERNAL", "EXTERNAL") -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
+            $result = Invoke-RemoteScript -VMName $externalVmName -ResourceGroupName $config.mirrors.rg -Shell "UnixShell" -Script $script
             Write-Output $result.Value
         }
     } else {
