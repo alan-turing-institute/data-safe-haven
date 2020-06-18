@@ -75,15 +75,17 @@ function Add-VmToNSG {
         $NSGName
     )
     Add-LogMessage -Level Info ("[ ] Associating $VMName with $NSGName...")
-    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq (Get-AzVM -Name $VMName).Id }
-    $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Name -eq $NSGName }
+    $vmId = $(Get-AzVM -Name $VMName).Id
+    $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }
+    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName
     $nic.NetworkSecurityGroup = $nsg
-    $_ = ($nic | Set-AzNetworkInterface)
+    $null = ($nic | Set-AzNetworkInterface)
     if ($?) {
         Add-LogMessage -Level Success "NSG association succeeded"
     } else {
         Add-LogMessage -Level Fatal "NSG association failed!"
     }
+    Start-Sleep -Seconds 10  # Allow NSG association to propagate
 }
 Export-ModuleMember -Function Add-VmToNSG
 
@@ -598,6 +600,7 @@ function Invoke-WindowsConfigureAndUpdate {
     $corePowershellScriptPath = Join-Path $PSScriptRoot "remote" "Install_Core_Powershell_Modules.ps1"
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $corePowershellScriptPath -VMName $VMName -ResourceGroupName $ResourceGroupName
     Write-Output $result.Value
+    Start-Sleep 10  # protect against 'Run command extension execution is in progress' errors
     # Install additional Powershell modules
     if ($AdditionalPowershellModules) {
         Add-LogMessage -Level Info "[ ] Installing additional Powershell modules on '$VMName'"

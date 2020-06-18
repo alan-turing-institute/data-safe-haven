@@ -33,7 +33,7 @@ $originalContext = Get-AzContext
 
 # Set common variables
 # --------------------
-$keyVaultName = $config.sre.keyVault.Name
+$keyVaultName = $config.sre.keyVault.name
 $certificateName = $config.sre.keyVault.secretNames.letsEncryptCertificate
 if ($dryRun) { $certificateName += "-dryrun" }
 

@@ -14,61 +14,50 @@ Import-Module $PSScriptRoot/../../common/Mirrors.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-
-# Set common variables
-# --------------------
-Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
-# Get NSGs
-$nsgGateway = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg
-if ($null -eq $nsgGateway) { throw "Could not load RDS gateway NSG" }
-$nsgLinux = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
-if ($null -eq $nsgLinux) { throw "Could not load Linux VMs NSG" }
-$nsgSessionHosts = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
-if ($null -eq $nsgSessionHosts) { throw "Could not load RDS session hosts NSG" }
-
-
-# Ensure RDS session hosts and dataserver are bound to session hosts NSG
-# ----------------------------------------------------------------------
-Add-LogMessage -Level Info "Ensure RDS session hosts and data server are bound to correct Network Security Group (NSG)..."
-foreach ($vmName in ($config.sre.rds.sessionHost1.vmName, $config.sre.rds.sessionHost2.vmName, $config.sre.dataserver.vmName)) {
-    Add-VmToNSG -VMName $vmName -NSGName $nsgSessionHosts.Name
-}
-Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "NICs associated with $($nsgSessionHosts.Name):"
-@($nsgSessionHosts.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
-
-
-# Ensure webapp servers and compute VMs are bound to webapp NSG
-# -------------------------------------------------------------
-Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
-$computeVMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name }
-$webappVMs = $config.sre.webapps.gitlab.vmName, $config.sre.webapps.hackmd.vmName
-foreach ($vmName in ([array]$computeVMs + $webappVMs)) {
-    Add-VmToNSG -VMName $vmName -NSGName $nsgLinux.Name
-}
-Start-Sleep -Seconds 30
-Add-LogMessage -Level Info "NICs associated with $($nsgLinux.Name):"
-@($nsgLinux.NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Ensure VMs are bound to correct NSGs
 # ------------------------------------
+Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
+$nsgs = @{}
+
+# RDS gateway
 Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
+$nsgs[$config.sre.rds.gateway.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg
+
+# RDS sesssion hosts
 Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
+$nsgs[$config.sre.rds.sessionHost1.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
 Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
+$nsgs[$config.sre.rds.sessionHost2.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost2.nsg
+
+# Data server
 Add-LogMessage -Level Info "Ensure data server is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.dataserver.vmName -NSGName $config.sre.dataserver.nsg
+$nsgs[$config.sre.dataserver.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dataserver.nsg
+
+# Webapp servers
 Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -NSGName $config.sre.webapps.nsg
 Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -NSGName $config.sre.webapps.nsg
+$nsgs[$config.sre.webapps.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
+
+# Compute VMs
 Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
-$computeVMs = Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name }
-foreach ($vmName in $computeVMs) {
+foreach ($vmName in $(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name })) {
     Add-VmToNSG -VMName $vmName -NSGName $config.sre.dsvm.nsg
+}
+$nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg
+
+
+# List all NICs associated with each NSG
+# --------------------------------------
+foreach ($nsgName in $nsgs.Keys) {
+    Add-LogMessage -Level Info "NICs associated with $($nsgs[$nsgName]):"
+    @($nsgs[$nsgName].NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 }
 
 
@@ -76,13 +65,14 @@ foreach ($vmName in $computeVMs) {
 # ----------------
 
 # Update RDS Gateway NSG
-Add-LogMessage -Level Info "Updating RDS Gateway NSG to match SRE config..."
+Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
 $allowedSources = ($config.sre.rds.gateway.networkRules.allowedSources.Split(',') | ForEach-Object { $_.Trim() })  # NB. Use an array, splitting on commas and trimming any whitespace from each item to avoid "invalid Address prefix" errors caused by extraneous whitespace
-$_ = Update-NetworkSecurityGroupRule -Name "HttpsIn" -NetworkSecurityGroup $nsgGateway -SourceAddressPrefix $allowedSources
+$null = Update-NetworkSecurityGroupRule -Name "HttpsIn" -NetworkSecurityGroup $nsgs[$config.sre.rds.gateway.nsg] -SourceAddressPrefix $allowedSources
 
-# Update restricted Linux NSG
-Add-LogMessage -Level Info "Updating restricted Linux NSG to match SRE config..."
-$_ = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgLinux -Access $config.sre.rds.gateway.networkRules.outboundInternet
+# Update user-facing NSGs
+Add-LogMessage -Level Info "Setting outbound internet rules on user-facing NSGs..."
+$null = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgs[$config.sre.dsvm.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
+$null = Update-NetworkSecurityGroupRule -Name "OutboundInternetAccess" -NetworkSecurityGroup $nsgs[$config.sre.webapps.nsg] -Access $config.sre.rds.gateway.networkRules.outboundInternet
 
 
 # Ensure SRE is peered to correct mirror set
@@ -99,14 +89,14 @@ if (!$config.sre.mirrors.vnet.Name) {
 } else {
     # Fetch SRE and mirror VNets
     try {
-        $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.Name -ResourceGroupName $config.sre.network.vnet.rg
-        $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-        $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
+        $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
+        $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+        $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
 
         # Add peering to Mirror Vnet
-        $peeringName = "PEER_$($config.sre.network.vnet.Name)"
+        $peeringName = "PEER_$($config.sre.network.vnet.name)"
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to mirror VNet $($mirrorVnet.Name)."
-        $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
+        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
         if ($?) {
             Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
         } else {
@@ -114,11 +104,11 @@ if (!$config.sre.mirrors.vnet.Name) {
         }
 
         # Add Peering to SRE Vnet
-        $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-        $peeringName = "PEER_$($config.sre.mirrors.vnet.Name)"
+        $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+        $peeringName = "PEER_$($config.sre.mirrors.vnet.name)"
 
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet $($sreVnet.Name)."
-        $_ = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
+        $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
         if ($?) {
             Add-LogMessage -Level Success "Adding peering '$peeringName' succeeded"
         } else {
@@ -139,7 +129,7 @@ Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
 
 # Set PyPI and CRAN locations on the compute VM
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
 foreach ($vmName in $computeVMs) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
@@ -155,4 +145,4 @@ foreach ($vmName in $computeVMs) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

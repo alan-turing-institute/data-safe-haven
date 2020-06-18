@@ -12,47 +12,6 @@
     "computeVmImageVersion": "0.2.2020060100",
     "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
-        "shm": {
-            "domain": {
-                "netbiosName": "SAFEHAVENTESTA",
-                "securityGroups": {
-                    "dsvmLdapUsers": {
-                        "name": "SG Safe Haven LDAP Users",
-                        "description": "SG Safe Haven LDAP Users"
-                    }
-                }
-            },
-            "network": {
-                "vnet": {
-                    "rg": "RG_SHM_NETWORKING"
-                }
-            },
-            "dc": {
-                "rg": "RG_SHM_DC"
-            },
-            "nps": {
-                "rg": "RG_SHM_NPS"
-            },
-            "storage": {
-                "artifacts": {
-                    "rg": "RG_SHM_ARTIFACTS"
-                },
-                "bootdiagnostics": {
-                    "rg": "RG_SHM_ARTIFACTS"
-                }
-            },
-            "keyVault": {
-                "rg": "RG_SHM_SECRETS",
-                "secretNames": {
-                    "dcSafemodePassword": "shm-testa-dc-safemode-password",
-                    "npsAdminPassword": "shm-testa-nps-admin-password",
-                    "vmAdminUsername": "shm-testa-vm-admin-username"
-                }
-            },
-            "mirrors": {
-                "rg": "RG_SHM_PKG_MIRRORS"
-            }
-        },
         "sre": {
             "network": {
                 "vnet": {
@@ -61,10 +20,12 @@
             },
             "storage": {
                 "artifacts": {
-                    "rg": "RG_SRE_ARTIFACTS"
+                    "rg": "RG_SRE_ARTIFACTS",
+                    "accountName": "sreartifactszvmwtqkigrld"
                 },
                 "bootdiagnostics": {
-                    "rg": "RG_SRE_ARTIFACTS"
+                    "rg": "RG_SRE_ARTIFACTS",
+                    "accountName": "srebootdiagszvmwtqkigrld"
                 }
             },
             "keyVault": {
@@ -91,7 +52,7 @@
                 }
             },
             "users": {
-                "ldap": {
+                "computerManagers": {
                     "gitlab": {
                         "name": "SANDBOX Gitlab LDAP",
                         "samAccountName": "gitlabldapsandbox",
@@ -118,17 +79,36 @@
                         "name": "SANDBOX Postgres DB Service Account",
                         "samAccountName": "pgdbsrvcsandbox",
                         "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
+                    },
+                    "datamount": {
+                        "samAccountName": "datamountsandbox"
                     }
                 }
             },
             "rds": {
-                "rg": "RG_SRE_RDS"
+                "rg": "RG_SRE_RDS",
+                "gateway": {
+                    "ip": "10.150.1.250"
+                },
+                "sessionHost1": {
+                    "ip": "10.150.1.249"
+                },
+                "sessionHost2": {
+                    "ip": "10.150.1.248"
+                }
             },
             "dataserver": {
-                "rg": "RG_SRE_DATA"
+                "rg": "RG_SRE_DATA",
+                "ip": "10.150.2.250"
             },
             "webapps": {
-                "rg": "RG_SRE_WEBAPPS"
+                "rg": "RG_SRE_WEBAPPS",
+                "gitlab": {
+                    "ip": "10.150.2.151"
+                },
+                "hackmd": {
+                    "ip": "10.150.2.152"
+                }
             },
             "databases": {
                 "rg": "RG_SRE_DATABASES"

@@ -28,11 +28,11 @@ $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -Reso
 
 # Create each database defined in the config file
 # -----------------------------------------------
-foreach ($dbConfig in $config.sre.databases.psobject.Members) {
-    if ($dbConfig.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
-    $databaseCfg = $dbConfig.Value
-    $subnetCfg = $config.sre.network.subnets.($databaseCfg.subnet)
-    $nsgCfg = $config.sre.network.nsg.($subnetCfg.nsg)
+foreach ($dbConfigName in $config.sre.databases.Keys) {
+    if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
+    $databaseCfg = $config.sre.databases[$dbConfigName]
+    $subnetCfg = $config.sre.network.subnets[$databaseCfg.subnet]
+    $nsgCfg = $config.sre.network.nsg[$subnetCfg.nsg]
 
     # Ensure that subnet exists
     # -------------------------
@@ -153,13 +153,13 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
 
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-            $postgresDbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
-            $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword -DefaultLength 20
+            $postgresDbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminUsername -DefaultValue "postgres" # This is recorded for auditing purposes - changing it will not change the username of the admin account
+            $postgresDbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresDbAdminPassword -DefaultLength 20
             $postgresDbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
             $postgresDbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
-            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
-            $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
-            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.computerManagers.postgres.passwordSecretName -DefaultLength 20
+            $postgresDbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
+            $postgresVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.postgresVmAdminPassword -DefaultLength 20
+            $postgresVmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.postgres.passwordSecretName -DefaultLength 20
 
             # Create an AD service principal and get the keytab for it
             Add-LogMessage -Level Info "Register '$postgresDbServiceAccountName' ($postgresDbServiceAccountSamAccountName) as a service principal for the database..."
@@ -189,15 +189,15 @@ foreach ($dbConfig in $config.sre.databases.psobject.Members) {
                                                     Replace("<db-local-admin-password>", $postgresDbAdminPassword).
                                                     Replace("<db-vm-hostname>", $databaseCfg.name).
                                                     Replace("<db-vm-ipaddress>", $databaseCfg.ip).
-                                                    Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.Name).
-                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.Name),$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
+                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.name),$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-bind-user-password>", $postgresVmLdapPassword).
                                                     Replace("<ldap-bind-user-username>", $config.sre.users.computerManagers.postgres.samAccountName).
-                                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.Name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
+                                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
                                                     Replace("<ldap-postgres-service-account-dn>", "CN=${postgresDbServiceAccountName},$($config.shm.domain.serviceOuPath)").
                                                     Replace("<ldap-postgres-service-account-password>", $postgresDbServiceAccountPassword).
-                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.Name),$($config.shm.domain.securityOuPath))))").
+                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.securityOuPath))))").
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).

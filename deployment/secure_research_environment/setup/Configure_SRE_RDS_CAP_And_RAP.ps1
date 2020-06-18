@@ -17,7 +17,11 @@ $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
+
+# Configure CAP and RAP settings
+# ------------------------------
+Add-LogMessage -Level Info "Creating/retrieving NPS secret from key vault '$($config.sre.keyVault.name)'..."
+$npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
 
 
 # Configure CAP and RAP settings

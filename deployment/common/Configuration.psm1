@@ -14,16 +14,16 @@ function Copy-HashtableOverrides {
     )
     foreach ($sourcePair in $Source.GetEnumerator()) {
         # If we hit a leaf then override the target with the source value
-        if ($sourcePair.value -IsNot [Hashtable]) {
-            $target[$sourcePair.key] = $sourcePair.value
+        if ($sourcePair.Value -isnot [Hashtable]) {
+            $target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
         # If this key is not in the target then we add it
-        if (-not $Target.Contains($sourcePair.key)) {
-            $target[$sourcePair.key] = $sourcePair.value
+        if (-not $Target.Contains($sourcePair.Key)) {
+            $target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
-        Copy-HashtableOverrides $sourcePair.value $Target[$sourcePair.key]
+        Copy-HashtableOverrides $sourcePair.Value $Target[$sourcePair.Key]
     }
 }
 Export-ModuleMember -Function Copy-HashtableOverrides
@@ -426,18 +426,18 @@ function Add-SreConfig {
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
             dataServerAdminPassword = "$($config.sre.shortName)-vm-admin-password-dataserver"
-            dsvmAdminPassword = "$($config.sre.shortName)-vm-admin-password-dsvm"
-            gitlabRootPassword = "$($config.sre.shortName)-gitlab-root-password"
-            gitlabUserPassword = "$($config.sre.shortName)-gitlab-user-password"
-            hackmdUserPassword = "$($config.sre.shortName)-hackmd-user-password"
-            letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
-            npsSecret = "$($config.sre.shortName)-nps-secret"
-            postgresDbAdminUsername = "$($config.sre.shortName)-db-postgres-admin-username"
-            postgresDbAdminPassword = "$($config.sre.shortName)-db-postgres-admin-password"
+            dsvmAdminPassword = "$($config.sre.shortName)-vm-admin-password-compute"
+            gitlabRootPassword = "$($config.sre.shortName)-other-gitlab-root-password"
+            gitlabUserPassword = "$($config.sre.shortName)-other-gitlab-user-password"
+            hackmdUserPassword = "$($config.sre.shortName)-other-hackmd-user-password"
+            letsEncryptCertificate = "$($config.sre.shortName)-other-lets-encrypt-certificate"
+            npsSecret = "$($config.sre.shortName)-other-nps-secret"
+            postgresDbAdminUsername = "$($config.sre.shortName)-db-admin-username-postgres"
+            postgresDbAdminPassword = "$($config.sre.shortName)-db-admin-password-postgres"
             postgresVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-postgres"
             rdsAdminPassword = "$($config.sre.shortName)-vm-admin-password-rds"
-            sqlAuthUpdateUsername = "$($config.sre.shortName)-db-mssql-admin-username"
-            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-db-mssql-admin-password"
+            sqlAuthUpdateUsername = "$($config.sre.shortName)-db-admin-username-mssql"
+            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-db-admin-password-mssql"
             sqlVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-mssql"
             webappAdminPassword = "$($config.sre.shortName)-vm-admin-password-webapp"
         }
@@ -449,34 +449,34 @@ function Add-SreConfig {
             gitlab = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Gitlab VM Service Account"
                 samAccountName = "$($config.sre.id)vmgitlab".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-gitlab-service-account-password"
+                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-gitlab"
             }
             hackmd = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) HackMD VM Service Account"
                 samAccountName = "$($config.sre.id)vmhackmd".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-hackmd-service-account-password"
+                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-hackmd"
             }
             dsvm = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Compute VM Service Account"
                 samAccountName = "$($config.sre.id)vmcompute".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-compute-service-account-password"
+                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-compute"
             }
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres VM Service Account"
                 samAccountName = "$($config.sre.id)vmpostgres".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-postgres-service-account-password"
+                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-postgres"
             }
         }
         serviceAccounts = [ordered]@{
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
                 samAccountName = "$($config.sre.id)dbpostgres".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-postgresdb-service-account-password"
+                passwordSecretName = "$($config.sre.shortName)-db-service-account-password-postgres"
             }
             datamount = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Data Mount Service Account"
                 samAccountName = "$($config.sre.id)datamount".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-datamount-password"
+                passwordSecretName = "$($config.sre.shortName)-other-service-account-password-datamount"
             }
         }
     }
@@ -566,13 +566,13 @@ function Add-SreConfig {
         gitlab = [ordered]@{
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 4
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 5
 
         }
         hackmd = [ordered]@{
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 5
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 6
 
         }
     }
@@ -595,7 +595,7 @@ function Add-SreConfig {
     $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
     foreach ($databaseType in $sreConfigBase.databases) {
         $config.sre.databases["db$($databaseType.ToLower())"]  = [ordered]@{
-            name = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+            vmName = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.databases.cidr -Offset $ipOffset
             port = $dbPorts[$databaseType]

@@ -1,9 +1,11 @@
+Import-Module Az
+
 # Get next available IP address in range
 # --------------------------------------
 function Get-NextAvailableIpInRange {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of VM to run on")]
-        [String]$IpRangeCidr,
+        [string]$IpRangeCidr,
         [Parameter(Mandatory = $false, HelpMessage = "Offset to apply before returning an IP address")]
         [int]$Offset,
         [Parameter(Mandatory = $false, HelpMessage = "Virtual network to check availability against")]

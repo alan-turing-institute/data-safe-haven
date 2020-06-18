@@ -17,7 +17,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Make user confirm before beginning deletion
 # -------------------------------------------
-Add-LogMessage -Level Warning "This will remove all resources from '$($config.sre.subscriptionName)'!"
+Add-LogMessage -Level Warning "This will remove all resources belonging to SRE '$($config.sre.id)' from '$($config.sre.subscriptionName)'!"
 $confirmation = Read-Host "Are you sure you want to proceed? [y/n]"
 while ($confirmation -ne "y") {
     if ($confirmation -eq "n") { exit 0 }
@@ -27,7 +27,7 @@ while ($confirmation -ne "y") {
 
 # Remove resources
 # ----------------
-$sreResources = @(Get-AzResource)
+$sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
 while ($sreResources.Length) {
     Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
     foreach ($resource in $sreResources) {
@@ -39,13 +39,13 @@ while ($sreResources.Length) {
             Add-LogMessage -Level Info "Resource removal failed - rescheduling."
         }
     }
-    $sreResources = @(Get-AzResource)
+    $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
 }
 
 
 # Remove resource groups
 # ----------------------
-$sreResourceGroups = @(Get-AzResourceGroup)
+$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
 while ($sreResourceGroups.Length) {
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
@@ -57,7 +57,7 @@ while ($sreResourceGroups.Length) {
             Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
         }
     }
-    $sreResourceGroups = @(Get-AzResourceGroup)
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
 }
 
 

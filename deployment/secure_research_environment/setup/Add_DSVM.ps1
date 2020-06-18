@@ -6,7 +6,7 @@ param(
     [Parameter(Position = 2, Mandatory = $false, HelpMessage = "Enter VM size to use (or leave empty to use default)")]
     [string]$vmSize = "",
     [Parameter(Position = 3, Mandatory = $false, HelpMessage = "Perform an in-place upgrade.")]
-    [switch]$upgrade
+    [switch]$upgrade,
     [Parameter(Position = 4, Mandatory = $false, HelpMessage = "Force an in-place upgrade.")]
     [switch]$forceUpgrade
 )
@@ -64,8 +64,6 @@ if ($existingNic) {
         }
 
     }
-} else {
-    Add-LogMessage -Level Info "No existing network card with IP address '$vmIpAddress'"
 }
 
 
@@ -85,7 +83,7 @@ if ($upgrade) {
             Add-LogMessage -Level Info "Found an existing VM '$existingVmName'"
         }
     } else {
-        Add-LogMessage -Level Info "No existing VM found"
+        Add-LogMessage -Level Warning "No existing VM found to upgrade"
     }
 
     # Ensure that an upgrade will occur
@@ -318,16 +316,16 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
 Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
 # $vnet = $null
 try {
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.Name -ErrorAction Stop
+    $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
 } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
     Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.Name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.Name }
+Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.name)'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.Name)' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 
@@ -344,10 +342,10 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
-$dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
-$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.users.computerManagers.dsvm.passwordSecretName -DefaultLength 20
+$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
+$dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
+$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.dsvm.passwordSecretName -DefaultLength 20
 
 
 # Construct the cloud-init yaml file for the target subscription
@@ -370,31 +368,30 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
                                                             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
                                                             Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
                                                             Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
-                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.Name),$($config.shm.domain.serviceOuPath)").
-                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.Name),$($config.shm.domain.securityOuPath)))")
+                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.serviceOuPath)").
+                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath)))")
 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
 # If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
 # --------------------------------------------------------------------------------------------------------------
-$xrdpCustomLogoPath = Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp"
-$input = Get-Content $xrdpCustomLogoPath -Raw -AsByteStream
+$xrdpCustomLogo = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
 $outputStream = New-Object IO.MemoryStream
 $gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
-$gzipStream.Write($input, 0, $input.Length)
+$gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
 $gzipStream.Close()
 $xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
 $outputStream.Close()
 $cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
 
+
 # Insert PyCharm defaults into the cloud-init template
 # ----------------------------------------------------
 $indent = "      "
-foreach ($scriptName in @("jdk.table.xml",
-                          "project.default.xml")) {
-    $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
-    $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
+foreach ($resourceFile in @("jdk.table.xml", "project.default.xml")) {
+    $unindentedContent = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $resourceFile) -Raw
+    $indentedContent = $unindentedContent -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$resourceFile>", $indentedContent)
 }
 
 
