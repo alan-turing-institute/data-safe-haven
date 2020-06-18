@@ -119,6 +119,7 @@ Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.sre.a
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
 
 $_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
+
 if ($?) {
   Add-LogMessage -Level Success "AD sync password exists"
 } else {

@@ -224,7 +224,10 @@
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
-        "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
+        "webappAdminPassword": "sre-sandbox-webappvm-admin-password",
+        "storageIngressSAS" : "sre-sandbox-storage-ingress-token",
+        "storagegressSAS" : "sre-sandbox-storage-egress-token"
+
       }
     },
     "users": {
