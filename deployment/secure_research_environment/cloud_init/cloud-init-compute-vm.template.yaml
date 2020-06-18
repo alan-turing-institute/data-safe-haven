@@ -296,7 +296,15 @@ write_files:
     append: true
     content: |
       # Scan on access settings
-      OnAccessIncludePath /
+      # Scan on access for locally mounted disks
+      OnAccessIncludePath /home
+      OnAccessIncludePath /scratch
+      OnAccessIncludePath /mnt
+      # Scane on access for samba shares
+      OnAccessIncludePath /shared
+      OnAccessIncludePath /data
+      OnAccessIncludePath /output
+      # Prevent access to infected files
       OnAccessPrevention yes
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
