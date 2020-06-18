@@ -386,7 +386,7 @@ runcmd:
   # Install CoCalc
   - echo ">=== Install CoCalc... ===<"
   - systemctl start docker
-  - 'docker run --restart=always --name=cocalc -d -v ~/cocalc:/projects -p 443:443 sagemathinc/cocalc'
+  - 'docker run --restart=always --name=cocalc -d -v /home/cocalc:/projects -p 443:443 sagemathinc/cocalc'
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
