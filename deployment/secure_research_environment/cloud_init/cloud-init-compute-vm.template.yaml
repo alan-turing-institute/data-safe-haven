@@ -290,7 +290,7 @@ write_files:
           . /etc/bash_completion
         fi
       fi
-  - path: "/etc/clmav/clamd.conf"
+  - path: "/etc/clamav/clamd.conf"
     owner: "root:root"
     permissions: "0644"
     append: true
