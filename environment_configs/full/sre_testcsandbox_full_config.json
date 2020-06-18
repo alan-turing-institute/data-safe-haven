@@ -106,7 +106,7 @@
       }
     },
     "dns": {
-      "subscriptionName": "Turing Safe Haven Domains",
+      "subscriptionName": "[Prod] Safe Haven Domains",
       "rg": "RG_SHM_DNS_TEST"
     },
     "mirrors": {
@@ -343,7 +343,7 @@
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2020032700",
+      "vmImageVersion": "0.1.2019122000",
       "osdisk": {
         "type": "Standard_LRS",
         "size_gb": "64"
@@ -369,17 +369,11 @@
       }
     },
     "storageAccount": {
-        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-        "accountName": "lwmshstorageconnection21",
-        "PrivateLinkServiceConnectionGroupId": "Blob",
-        "startAccess":0,
-        "endAccess":365
-      },
-    "privateEndpoints": [{
-        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-        "resourceName": "lwmshstorageconnection20",
-        "PrivateLinkServiceConnectionGroupId": "File",
-        "privateEndpointName":"testfileshare_pe"
-      }]
+      "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+      "accountName": "lwmshstorageconnection21",
+      "PrivateLinkServiceConnectionGroupId": "Blob",
+      "startAccess":0,
+      "endAccess":365
+    },
   }
 }
