@@ -382,6 +382,10 @@ runcmd:
   - echo "Checking installed Jupyter kernels"
   - jupyter kernelspec list
 
+  # Pull the latest CoCalc docker image - approximately 10 minutes
+  - echo "Pulling CoCalc image from Docker Hub"
+  - docker pull sagemathinc/cocalc
+
   # Check for successful installations
   - echo ">=== $(date +%s) Checking environment configuration ===<"
   # Set PATH to the current working version which contains all installed packages
