@@ -103,7 +103,7 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "*.passwordreset.microsoftonline.com"
+                            "*.passwordreset.microsoftonline.com",
                             "*.servicebus.windows.net"
                         ],
                         "sourceAddresses": [
