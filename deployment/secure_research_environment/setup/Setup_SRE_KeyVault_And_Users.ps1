@@ -102,7 +102,6 @@ $params = @{
     shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
     groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
     ldapUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($ldapUsers | ConvertTo-Json)))
-    researchUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($researchUsers | ConvertTo-Json)))
     serviceUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
     researchUserOuPath = "`"$($config.shm.domain.userOuPath)`""
     securityOuPath = "`"$($config.shm.domain.securityOuPath)`""

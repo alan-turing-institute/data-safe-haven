@@ -117,7 +117,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Sql_AuthUpdate_UserName = $sqlAuthUpdateUsername
                 Sql_AuthUpdate_Password = $sqlAuthUpdateUserPassword  # NB. This has to be in plaintext for the deployment to work correctly
                 Sql_Connection_Port = $databaseCfg.port
-                Sql_Server_Name = $databaseCfg.name
+                Sql_Server_Name = $databaseCfg.vmName
                 Sql_Server_Edition = $databaseCfg.sku
                 SubnetResourceId = $subnet.Id
                 VM_Size = $databaseCfg.vmSize
@@ -213,7 +213,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 DataDiskIds = @($dataDisk.Id)
                 ImageSku = $databaseCfg.sku
                 Location = $config.sre.location
-                Name = $databaseCfg.name
+                Name = $databaseCfg.vmName
                 NicId = $vmNic.Id
                 OsDiskType = $databaseCfg.osdisk.type
                 ResourceGroupName = $config.sre.databases.rg

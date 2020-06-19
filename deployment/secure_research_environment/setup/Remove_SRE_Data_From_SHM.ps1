@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Look for resources in this subscription
@@ -39,7 +39,7 @@ if ($sreResources -or $sreResourceGroups) {
 
 # ... otherwise continuing removing artifacts in the SHM subscription
 } else {
-    $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+    $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
@@ -48,7 +48,7 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove main SRE <-> SHM VNet peering
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
     Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
-    $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
+    $null = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
     if ($?) {
         Add-LogMessage -Level Success "Peering removal succeeded"
     } else {
@@ -60,7 +60,7 @@ if ($sreResources -or $sreResourceGroups) {
     foreach ($mirrorVNet in $mirrorVnets) {
         $peeringName = "PEER_$($config.sre.network.vnet.name)"
         Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from $($mirrorVNet.Name)..."
-        $_ = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name -ResourceGroupName $config.sre.mirrors.rg -Force
+        $null = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name -ResourceGroupName $config.sre.mirrors.rg -Force
         if ($?) {
             Add-LogMessage -Level Success "Peering removal succeeded"
         } else {
@@ -72,17 +72,17 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     # ---------------------------------------
     Add-LogMessage -Level Info "Removing SRE users and groups from SHM DC..."
+    # Load data to remove
+    $groupNames = $config.sre.domain.securityGroups.Values | ForEach-Object { $_.name }
+    $userNames = $config.sre.users.computerManagers.Values | ForEach-Object { $_.samAccountName }
+    $userNames += $config.sre.users.serviceAccounts.Values | ForEach-Object { $_.samAccountName }
+    $computerNamePatterns = @("*-$($config.sre.id)".ToUpper(), "*-$($config.sre.id)-*".ToUpper())
+    # Remove SRE users and groups from SHM DC
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
-        sreId = "`"$($config.sre.id)`""
-        dsvmLdapSamAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
-        gitlabLdapSamAccountName = "`"$($config.sre.users.computerManagers.gitlab.samAccountName)`""
-        hackmdLdapSamAccountName = "`"$($config.sre.users.computerManagers.hackmd.samAccountName)`""
-        sreResearchUserSG = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-        rdsDataserverVMName = "`"$($config.sre.dataserver.vmName)`""
-        rdsGatewayVMName = "`"$($config.sre.rds.gateway.vmName)`""
-        rdsSessionHostAppsVMName = "`"$($config.sre.rds.sessionHost1.vmName)`""
-        rdsSessionHostDesktopVMName = "`"$($config.sre.rds.sessionHost2.vmName)`""
+        groupNamesJoined = "`"$($groupNames -Join '|')`""
+        userNamesJoined = "`"$($userNames -Join '|')`""
+        computerNamePatternsJoined = "`"$($computerNamePatterns -Join '|')`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
@@ -93,10 +93,9 @@ if ($sreResources -or $sreResourceGroups) {
     Add-LogMessage -Level Info "Removing SRE DNS records from SHM DC..."
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
-        sreFqdn = "`"$($config.sre.domain.fqdn)`""
-        # identitySubnetPrefix = "`"$($config.sre.network.subnets.identity.prefix)`""
-        # rdsSubnetPrefix = "`"$($config.sre.network.subnets.rds.prefix)`""
-        # dataSubnetPrefix = "`"$($config.sre.network.subnets.data.prefix)`""
+        shmFqdn = "`"$($config.shm.domain.fqdn)`""
+        sreId = "`"$($config.sre.id)`""
+
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value
@@ -115,7 +114,7 @@ if ($sreResources -or $sreResourceGroups) {
 
     # Remove RDS entries from SRE DNS Zone
     # ------------------------------------
-    $_ = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
+    $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName;
     $dnsResourceGroup = $config.shm.dns.rg
     $sreDomain = $config.sre.domain.fqdn
     # RDS @ record
@@ -142,4 +141,4 @@ if ($sreResources -or $sreResourceGroups) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

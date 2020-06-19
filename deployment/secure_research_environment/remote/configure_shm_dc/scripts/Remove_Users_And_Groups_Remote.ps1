@@ -5,19 +5,13 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreId,
-    [String]$testResearcherSamAccountName,
-    [String]$dsvmLdapSamAccountName,
-    [String]$gitlabLdapSamAccountName,
-    [String]$hackmdLdapSamAccountName,
-    [String]$sreResearchUserSG,
-    [String]$rdsDataserverVMName,
-    [String]$rdsGatewayVMName,
-    [String]$rdsSessionHostAppsVMName,
-    [String]$rdsSessionHostDesktopVMName
+    [string]$groupNamesJoined,
+    [string]$userNamesJoined,
+    [string]$computerNamePatternsJoined
 )
 
-function Remove-SreUser($samAccountName) {
+# Remove users
+foreach ($samAccountName in $userNamesJoined.Split("|")) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
         Write-Host " [ ] Removing user '$samAccountName'"
         Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
@@ -32,22 +26,22 @@ function Remove-SreUser($samAccountName) {
     }
 }
 
-function Remove-SreComputer($computerName) {
-    if (Get-ADComputer -Filter "Name -eq '$computerName'") {
-        Write-Host " [ ] Removing computer '$computerName'"
-        Get-ADComputer $computerName | Remove-ADObject -Recursive -Confirm:$False
+# Remove computers
+foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
+    foreach ($computer in $(Get-ADComputer -Filter "Name -like '$computerNamePattern'")) {
+        Write-Host " [ ] Removing computer '$($computer.Name)'"
+        $computer | Remove-ADObject -Recursive -Confirm:$False
         if ($?) {
             Write-Host " [o] Succeeded"
         } else {
             Write-Host " [x] Failed"
             exit 1
         }
-    } else {
-        Write-Host "No computer named '$computerName' exists"
     }
 }
 
-function Remove-SreGroup($groupName) {
+# Remove groups
+foreach ($groupName in $groupNamesJoined.Split("|")) {
     if (Get-ADGroup -Filter "Name -eq '$groupName'") {
         Write-Host " [ ] Removing group '$groupName'"
         Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
@@ -61,24 +55,3 @@ function Remove-SreGroup($groupName) {
         Write-Host "No group named '$groupName' exists"
     }
 }
-
-# Remove users
-Remove-SreUser $testResearcherSamAccountName
-Remove-SreUser $dsvmLdapSamAccountName
-Remove-SreUser $gitlabLdapSamAccountName
-Remove-SreUser $hackmdLdapSamAccountName
-
-# Remove service computers
-Remove-SreComputer $rdsDataserverVMName
-Remove-SreComputer $rdsGatewayVMName
-Remove-SreComputer $rdsSessionHostAppsVMName
-Remove-SreComputer $rdsSessionHostDesktopVMName
-
-# Remove DSVMs
-$dsvmPrefix = "SRE-$sreId".Replace(".","-").ToUpper()
-foreach ($dsvm in $(Get-ADComputer -Filter "Name -like '$dsvmPrefix*'")) {
-    Remove-SreComputer $dsvm.Name
-}
-
-# Remove groups
-Remove-SreGroup $sreResearchUserSG

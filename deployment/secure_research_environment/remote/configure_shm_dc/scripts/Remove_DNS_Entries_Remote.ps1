@@ -5,32 +5,18 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreFqdn
+    [string]$shmFqdn,
+    [string]$sreId
 )
 
-# function IpPrefixToInAddrArpa($ipPrefix)
-# {
-#     $octetList = @($ipPrefix.split("."))
-#     [array]::Reverse($octetList)
-#     $ipPrefixRev = $octetList -join "."
-#     return "$ipPrefixRev.in-addr.arpa"
-# }
-function Remove-SreDnsZone($zoneName) {
-    if(Get-DnsServerZone | Where-Object {$_.ZoneName -eq "$zoneName"}){
-        Write-Output " [ ] Removing '$zoneName' DNS record"
-        Remove-DnsServerZone $zoneName -Force
-        if ($?) {
-            Write-Output " [o] Succeeded"
-        } else {
-            Write-Output " [x] Failed"
-            exit 1
-        }
+# Remove records for domain-joined SRE VMs
+# ----------------------------------------
+foreach ($dnsRecord in (Get-DnsServerResourceRecord -ZoneName "$shmFqdn" | Where-Object { $_.HostName -like "*$sreId" })) {
+    Write-Output " [ ] Removing '$($dnsRecord.HostName)' DNS record"
+    $dnsRecord | Remove-DnsServerResourceRecord -ZoneName "$shmFqdn" -Force
+    if ($?) {
+        Write-Output " [o] Successfully removed DNS record '$($dnsRecord.HostName)'"
     } else {
-        Write-Output "No '$zoneName' DNS record exists"
+        Write-Output " [x] Failed to remove DNS record '$($dnsRecord.HostName)'!"
     }
 }
-
-Remove-SreDnsZone $sreFqdn
-# Remove-SreDnsZone (IpPrefixToInAddrArpa $identitySubnetPrefix)
-# Remove-SreDnsZone (IpPrefixToInAddrArpa $rdsSubnetPrefix)
-# Remove-SreDnsZone (IpPrefixToInAddrArpa $dataSubnetPrefix)
