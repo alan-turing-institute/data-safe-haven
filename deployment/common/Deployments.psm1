@@ -163,9 +163,9 @@ function Deploy-FirewallApplicationRule {
         [Parameter(Mandatory = $false, HelpMessage = "Whether these rules will allow or deny access to the specified resources")]
         [ValidateSet("Allow", "Deny")]
         $ActionType,
-        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "FQDN to unblock")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
         $TargetFqdn,
-        [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "FQDN tag to unblock")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
         $TargetTag
     )
     if ($TargetTag) {
