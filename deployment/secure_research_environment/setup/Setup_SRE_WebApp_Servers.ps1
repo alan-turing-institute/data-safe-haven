@@ -56,10 +56,17 @@ $nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundAllowReviewServer" `
                              -Description "Inbound allow connections from review session host" `
-                             -Priority 3000 `
+                             -Priority 2000 `
                              -Direction Inbound -Access Allow -Protocol * `
                              -SourceAddressPrefix $config.sre.rds.sessionHost3.ip -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "InboundAllowVpnSsh" `
+                             -Description "Inbound allow SSH connections from VPN subnet" `
+                             -Priority 3000 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundDenyOtherVNet" `
                              -Description "Inbound deny other VNet connections" `
