@@ -67,7 +67,7 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
   # Secrets for Gitlab and Review Access, and script to get them
-  - path: "/home/<sre-admin-username>/.secrets/gitlab-config.json"
+  - path: "/home/gitlabdaemon/.secrets/gitlab-config.json"
     permissions: "0600"
     content: |
       {
@@ -84,27 +84,27 @@ write_files:
           "api_token": "<gitlab-review-api-token>"
         }
       }
-  - path: "/home/<sre-admin-username>/gitlab_config.py"
+  - path: "/home/gitlabdaemon/gitlab_config.py"
     permissions: "0755"
     content: |
       <gitlab_config.py>
   # Script for creating projects and merge requests on gitlab-review
-  - path: "/home/<sre-admin-username>/zipfile_to_gitlab_project.py"
+  - path: "/home/gitlabdaemon/zipfile_to_gitlab_project.py"
     permissions: "0755"
     content: |
       <zipfile_to_gitlab_project.py>
   # Script for monitoring and accepting merge requests
-  - path: "/home/<sre-admin-username>/check_merge_requests.py"
+  - path: "/home/gitlabdaemon/check_merge_requests.py"
     permissions: "0755"
     content: |
       <check_merge_requests.py>
   # Populate SSH known hosts with keys from gitlab server
-  - path: "/home/<sre-admin-username>/.ssh/known_hosts"
+  - path: "/home/gitlabdaemon/.ssh/known_hosts"
     permissions: "0600"
     content: |
       <gitlab-ssh-keys>
 
-# Add the SHM admin (default) and gitlabdaemon users
+# Add the SRE admin (default) and gitlabdaemon users
 # lock_passwd: Lock the password to disable password login
 users:
   - default
@@ -142,7 +142,7 @@ runcmd:
     gitlab-rails runner "ApplicationSetting.last.update_attributes(domain_whitelist: ['<gitlab-review-login-domain>'])"
   # Create a API token for the ingress user created above
   - |
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
     echo "user = User.find_by(username: '<gitlab-review-username>');user.personal_access_tokens.create(name: 'apitoken', token_digest: Gitlab::CryptoHelper.sha256('$token'), impersonation: false, scopes: [:api]);exit;" | gitlab-rails console -e production
   # Reload GitLab configuration and restart GitLab
   - gitlab-ctl reconfigure
@@ -151,16 +151,16 @@ runcmd:
   # CREATE SSH KEY
   # --------------------------------
   - |
-    mkdir -p /home/<sre-admin-username>/.ssh
-    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/<sre-admin-username>/.ssh/id_ed25519
+    mkdir -p /home/gitlabdaemon/.ssh
+    ssh-keygen -t ed25519 -C 'gitlab' -N '' -f /home/gitlabdaemon/.ssh/id_ed25519
   # --------------------------------
   # GITLAB SSH SETUP
   # --------------------------------
   - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub)
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
+    key=$(cat /home/gitlabdaemon/.ssh/id_ed25519.pub)
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"GitlabAPIUser\"}" <gitlab-ip>/api/v4/user/keys
-    ssh-keyscan -H <gitlab-ip> >> /home/<sre-admin-username>/.ssh/known_hosts
+    ssh-keyscan -H <gitlab-ip> >> /home/gitlabdaemon/.ssh/known_hosts
   # --------------------------------
   # WAIT FOR GITLAB REVIEW HEALTH CHECK
   # --------------------------------
@@ -187,17 +187,17 @@ runcmd:
   - echo "Configuring access to gitlab review"
   # Create SSH key for gitlab review access
   - |
-    key=$(cat /home/<sre-admin-username>/.ssh/id_ed25519.pub);
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
+    key=$(cat /home/gitlabdaemon/.ssh/id_ed25519.pub);
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --header 'Content-Type:application/json' --data "{\"key\": \"$key\", \"title\": \"ReviewAPIUser\"}" <gitlab-review-ip>/api/v4/user/keys
   #  Get local ssh host keys, add them to known hosts under the gitlab review ip
   - |
-    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
-    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
-    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/<sre-admin-username>/.ssh/known_hosts
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
+    echo "<gitlab-review-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)" >> /home/gitlabdaemon/.ssh/known_hosts
   # Create groups for storing unapproved and approved repos
   - |
-    token=$(/home/<sre-admin-username>/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/<sre-admin-username>/.secrets/gitlab-config.json)
+    token=$(/home/gitlabdaemon/gitlab_config.py --server GITLAB-REVIEW --value api_token --file /home/gitlabdaemon/.secrets/gitlab-config.json)
     curl --header "Authorization: Bearer $token" --data "name=approved&path=approved&visibility=internal" <gitlab-review-ip>/api/v4/groups
     curl --header "Authorization: Bearer $token" --data "name=unapproved&path=unapproved&visibility=internal" <gitlab-review-ip>/api/v4/groups
   # --------------------------------
@@ -205,19 +205,19 @@ runcmd:
   # --------------------------------
   - |
     echo "Configuring git"
-    HOME=/home/<sre-admin-username> git config --global user.name '<gitlab-username>'
-    HOME=/home/<sre-admin-username> git config --global user.email '<gitlab-username>@example.com'
+    HOME=/home/gitlabdaemon git config --global user.name '<gitlab-username>'
+    HOME=/home/gitlabdaemon git config --global user.email '<gitlab-username>@example.com'
   # --------------------------------
   # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
   # --------------------------------
   - echo "*** Adding zipfile_to_gitlab_project.py to crontab ***"
-  - echo "*/10 * * * * <sre-admin-username> /home/<sre-admin-username>/zipfile_to_gitlab_project.py" >> /etc/crontab
+  - echo "*/10 * * * * gitlabdaemon /home/gitlabdaemon/zipfile_to_gitlab_project.py" >> /etc/crontab
   - echo "*** Adding check_merge_requests.py to crontab ***"
-  - echo "5,15,25,35,45,55 * * * * <sre-admin-username> /home/<sre-admin-username>/check_merge_requests.py" >> /etc/crontab
+  - echo "5,15,25,35,45,55 * * * * gitlabdaemon /home/gitlabdaemon/check_merge_requests.py" >> /etc/crontab
   # --------------------------------
-  # GIVE <sre-admin-username> OWNERSHIP OF THEIR HOME DIRECTORY
+  # GIVE gitlabdaemon OWNERSHIP OF THEIR HOME DIRECTORY
   # --------------------------------
-  - chown -R <sre-admin-username>:<sre-admin-username> "/home/<sre-admin-username>"
+  - chown -R gitlabdaemon:gitlabdaemon "/home/gitlabdaemon"
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:
