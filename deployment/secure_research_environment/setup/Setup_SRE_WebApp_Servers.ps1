@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $sreId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Retrieve passwords from the keyvault
@@ -38,6 +38,34 @@ $gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -S
 # Set up NSGs for the webapps
 # ---------------------------
 $nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "InboundAllowVpnSsh" `
+                             -Description "Inbound allow SSH connections from VPN subnet" `
+                             -Priority 1000 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
+                             -Name "InboundAllowHttpSessionHost" `
+                             -Description "Inbound allow http(s) from application session host" `
+                             -Priority 2000 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix $config.sre.rds.sessionHost1.ip -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 80,443
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
+                             -Name "InboundAllowHttpComputeSubnet" `
+                             -Description "Inbound allow http(s) from compute VM subnet" `
+                             -Priority 3000 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix $config.sre.network.subnets.data.cidr -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 80,443
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "InboundDenyOtherVNet" `
+                             -Description "Inbound deny other VNet connections" `
+                             -Priority 4000 `
+                             -Direction Inbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "OutboundDenyInternet" `
                              -Description "Outbound deny internet" `
@@ -54,19 +82,19 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 $nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "InboundAllowVpnSsh" `
+                             -Description "Inbound allow SSH connections from VPN subnet" `
+                             -Priority 1000 `
+                             -Direction Inbound -Access Allow -Protocol TCP `
+                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundAllowReviewServer" `
                              -Description "Inbound allow connections from review session host" `
                              -Priority 2000 `
                              -Direction Inbound -Access Allow -Protocol * `
                              -SourceAddressPrefix $config.sre.rds.sessionHost3.ip -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "InboundAllowVpnSsh" `
-                             -Description "Inbound allow SSH connections from VPN subnet" `
-                             -Priority 3000 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 3389
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundDenyOtherVNet" `
                              -Description "Inbound deny other VNet connections" `
@@ -74,13 +102,26 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Direction Inbound -Access Deny -Protocol * `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
-
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "OutboundAllowGitLabInternal" `
+                             -Description "Outbound allow GitLab internal server" `
+                             -Priority 3000 `
+                             -Direction Outbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix $config.sre.webapps.gitlab.ip -DestinationPortRange *
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+                             -Name "OutboundDenyVNet" `
+                             -Description "Outbound deny other VNet connections" `
+                             -Priority 4000 `
+                             -Direction Inbound -Access Deny -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 
 # Check that VNET and subnets exist
 # ---------------------------------
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
 $null = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.data.cidr
-$airlockSubnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
+$null = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
 
 
 # Expand GitLab cloudinit
@@ -130,7 +171,7 @@ $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 
 # Create webapps resource group
 # --------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
 
 
 # Deploy GitLab/HackMD VMs from template
@@ -271,7 +312,7 @@ $params = @{
     ResourceGroupName = $config.sre.webapps.rg
     ImageSku = "18.04-LTS"
 }
-$_ = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params
 Wait-ForAzVMCloudInit -Name $vmNameReview -ResourceGroupName $config.sre.webapps.rg
 Add-VmToNSG -VMName $vmNameReview -NSGName $nsgAirlock
 Enable-AzVM -Name $vmNameReview -ResourceGroupName $config.sre.webapps.rg
@@ -287,4 +328,4 @@ foreach ($nsg in @($nsgWebapps, $nsgAirlock)) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;
