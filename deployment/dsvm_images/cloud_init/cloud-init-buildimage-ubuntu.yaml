@@ -261,9 +261,9 @@ runcmd:
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
 
-    # Install PostgreSQL extensions
-  - echo "Installing PostgreSQL extensions"
-  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND" || exit 1; done < /installation/install_postgres_extensions.sql
+  # Install PostgreSQL extensions
+  # - echo "Installing PostgreSQL extensions"
+  # - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND" || exit 1; done < /installation/install_postgres_extensions.sql
 
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== $(date +%s) Installing and configuring conda ===<"
