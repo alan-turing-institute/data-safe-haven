@@ -51,6 +51,14 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/datadrive/gitdata" } })
 
+# Add the SHM admin (default) and gitlabdaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: gitlabdaemon
+    lock_passwd: True
+    sudo: False
+
 runcmd:
   # Configure server
   - echo "Configuring server"
