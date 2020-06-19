@@ -30,6 +30,10 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmtestaloganalyticsvkdrsluofepzmnxqahgi"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
@@ -277,7 +281,7 @@
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "researchersandbox"
+          "samAccountName": "testresrchsandbox"
         }
       }
     },

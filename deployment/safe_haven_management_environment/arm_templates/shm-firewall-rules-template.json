@@ -13,6 +13,20 @@
                 "addressPrefix": "<subnet-vpn-cidr>",
                 "nextHop": "VirtualNetworkGateway"
             }
+        },
+        {
+            "name": "ADConnectPasswordResetRange1",
+            "properties": {
+                "addressPrefix": "20.190.128.0/18",
+                "nextHop": "Internet"
+            }
+        },
+        {
+            "name": "ADConnectPasswordResetRange2",
+            "properties": {
+                "addressPrefix": "40.126.0.0/18",
+                "nextHop": "Internet"
+            }
         }
     ],
     "networkRuleCollections": [
@@ -80,6 +94,22 @@
                             "<subnet-identity-cidr>"
                         ],
                         "sourceIpGroups": []
+                    },
+                    {
+                        "name": "ADConnectPasswordReset",
+                        "protocols": [
+                            "https:443",
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.passwordreset.microsoftonline.com"
+                            "*.servicebus.windows.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ],
+                        "sourceIpGroups": []
                     }
                 ]
             }
@@ -87,3 +117,4 @@
     ],
     "natRuleCollections": []
 }
+

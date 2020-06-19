@@ -110,6 +110,13 @@ function Get-ShmFullConfig {
         }
     }
 
+    # Logging config
+    # --------------
+    $shm.logging = [ordered]@{
+        rg = "RG_SHM_LOGGING"
+        workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower() #| TrimToLength 24
+    }
+
     # --- Network config ---
     $shm.network = [ordered]@{
         vnet = [ordered]@{

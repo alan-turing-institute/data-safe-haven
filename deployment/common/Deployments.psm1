@@ -177,7 +177,7 @@ function Deploy-FirewallApplicationRule {
     }
     try {
         $ruleCollection = $firewall.GetApplicationRuleCollectionByName($CollectionName)
-        Add-LogMessage -Level InfoSuccess "Application rule collection '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Application rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
         if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
@@ -186,13 +186,13 @@ function Deploy-FirewallApplicationRule {
         $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
         $result = $?
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating application rule collection '$Name'"
+        Add-LogMessage -Level Info "[ ] Creating application rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
         $result = $?
         if ($result) {
-            Add-LogMessage -Level Success "Created application rule collection '$Name'"
+            Add-LogMessage -Level Success "Created application rule collection '$CollectionName'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create application rule collection '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create application rule collection '$CollectionName'!"
         }
     }
     $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
@@ -236,7 +236,7 @@ function Deploy-FirewallNetworkRule {
     $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
     try {
         $ruleCollection = $firewall.GetNetworkRuleCollectionByName($CollectionName)
-        Add-LogMessage -Level InfoSuccess "Network rule collection '$Name' already exists"
+        Add-LogMessage -Level InfoSuccess "Network rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
         if ($existingRule) { $ruleCollection.RemoveRuleByName($Name) }
@@ -244,12 +244,12 @@ function Deploy-FirewallNetworkRule {
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveNetworkRuleCollectionByName($ruleCollection.Name)
     } catch [System.Management.Automation.MethodInvocationException] {
-        Add-LogMessage -Level Info "[ ] Creating network rule collection '$Name'"
+        Add-LogMessage -Level Info "[ ] Creating network rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallNetworkRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
         if ($?) {
-            Add-LogMessage -Level Success "Created network rule collection '$Name'"
+            Add-LogMessage -Level Success "Created network rule collection '$CollectionName'"
         } else {
-            Add-LogMessage -Level Fatal "Failed to create network rule collection '$Name'!"
+            Add-LogMessage -Level Fatal "Failed to create network rule collection '$CollectionName'!"
         }
     }
     $result = $?
@@ -294,6 +294,36 @@ function Deploy-KeyVault {
     return $keyVault
 }
 Export-ModuleMember -Function Deploy-KeyVault
+
+
+# Create log analytics workspace if it does not exist
+# ---------------------------------------------------
+function Deploy-LogAnalyticsWorkspace {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of log analytics workspace to deploy")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Location to deploy into")]
+        [string]$Location
+    )
+    $null = Deploy-ResourceGroup -Name $ResourceGroupName -Location $Location
+    Add-LogMessage -Level Info "Ensuring that log analytics workspace '$Name' exists..."
+    $workspace = Get-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
+        Add-LogMessage -Level Info "[ ] Creating log analytics workspace '$Name'"
+        $workspace = New-AzOperationalInsightsWorkspace -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -Sku Standard
+        if ($?) {
+            Add-LogMessage -Level Success "Created log analytics workspace '$Name'"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to create log analytics workspace '$Name'!"
+        }
+    } else {
+        Add-LogMessage -Level InfoSuccess "Log analytics workspace '$Name' already exists"
+    }
+    return $workspace
+}
+Export-ModuleMember -Function Deploy-LogAnalyticsWorkspace
 
 
 # Create a managed disk if it does not exist

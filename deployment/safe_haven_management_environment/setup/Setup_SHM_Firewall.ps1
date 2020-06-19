@@ -30,6 +30,18 @@ Add-LogMessage -Level Info "Create the firewall with a public IP address"
 $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -Location $config.location -VirtualNetworkName $config.network.vnet.name
 
 
+# Enable logging for this firewall
+# --------------------------------
+Add-LogMessage -Level Info "Enable logging for this firewall"
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.logging.workspaceName -ResourceGroupName $config.logging.rg -Location $config.location
+$null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
+if ($?) {
+    Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"
+} else {
+    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($config.logging.workspaceName)'!"
+}
+
+
 # Create a routing table ensuring that BGP propagation is disabled
 # Without this, VMs might be able to jump directly to the target without going through the firewall
 # -------------------------------------------------------------------------------------------------
