@@ -169,10 +169,10 @@ function Deploy-FirewallApplicationRule {
         $TargetTag
     )
     if ($TargetTag) {
-        Add-LogMessage -Level Info "Ensuring that '$TargetTag' is allowed through $($Firewall.Name)..."
+        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetTag' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -FqdnTag $TargetTag
     } else {
-        Add-LogMessage -Level Info "Ensuring that '$TargetFqdn' is allowed through $($Firewall.Name)..."
+        Add-LogMessage -Level Info "Ensuring that '$ActionType' rule for '$TargetFqdn' is set on $($Firewall.Name)..."
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
     }
     try {
