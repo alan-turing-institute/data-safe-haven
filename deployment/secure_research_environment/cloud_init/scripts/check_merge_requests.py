@@ -6,18 +6,17 @@ and push the approved repos to gitlab .
 
 1) Get open merge requests in the approved group on gitlab review.
 2) Check whether any of them meet the approval conditions. By default: status
-is can be merged, not flagged as work in progress, no unresolved discussions,
-at least two upvotes, and no downvotes.
+is can be merged, no unresolved discussions, at least two upvotes, and no downvotes.
 3) Accept approved merge requests (merged unapproved repo into approved repo).
-4) Push whole approved repo to gitlab , creating the repo if it doesn't
+4) Push whole approved repo to gitlab, creating the repo if it doesn't
 already exist.
 
-This script creates two log files in the same directory that it is run from:
+This script creates two log files in the directory where it is run:
 * check_merge_requests.log : A verbose log of the steps performed in each run
-and any errors encountered.
+and any errors encountered
 * accepted_merge_requests.log : A list of merge requests that have been accepted
 in CSV format with columns merged time, source project, source branch, source
-commit, target project, target branch and target commit.
+commit, target project, target branch and target commit
 """
 
 import sys
@@ -29,6 +28,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from gitlab_config import get_api_config
 
+##
 # Setup logging to console and file. File uses RotatingFileHandler to create
 # logs over a rolling window, 10 files each max 5 MB in size.
 logger = logging.getLogger("merge_requests_logger")
@@ -43,9 +43,13 @@ c_handler.setFormatter(formatter)
 logger.addHandler(f_handler)
 logger.addHandler(c_handler)
 
-# exit status codes
-OK_CODE = 0  # everything ran normally
-ERROR_CODE = 1  # logger.error or critical encountered
+# Separate logfile for accepted merge requests, no file size limit
+accepted_mr_logger = logging.getLogger("accepted_merge_requests_logger")
+accepted_mr_logger.setLevel(logging.INFO)
+accepted_mr_formatter = logging.Formatter("%(message)s")
+accepted_mr_handler = logging.FileHandler("accepted_merge_requests.log")
+accepted_mr_handler.setFormatter(accepted_mr_formatter)
+accepted_mr_logger.addHandler(accepted_mr_handler)
 
 
 def check_project_exists(repo_name, config):
@@ -57,7 +61,7 @@ def check_project_exists(repo_name, config):
     repo_name : str
         The name of a repo (not a URL) to search for in the ingress namespace.
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -76,7 +80,8 @@ def check_project_exists(repo_name, config):
 
     # Does repo_name exist?
     response = requests.get(
-        config["api_url"] + "/projects/" + repo_path_encoded, headers=config["headers"]
+        config["api_url"] + "/projects/" + repo_path_encoded,
+        headers=config["headers"],
     )
 
     if response.status_code == 404:
@@ -88,7 +93,10 @@ def check_project_exists(repo_name, config):
         # to raise an exception on unexpected "successful" responses
         # (not 200)
         raise requests.HTTPError(
-            "Unexpected response: " + response.reason + ", content: " + response.text
+            "Unexpected response: "
+            + response.reason
+            + ", content: "
+            + response.text
         )
 
 
@@ -105,7 +113,7 @@ def update_repo(git_url, repo_name, branch_name, config):
     repo_name : str
         Name of repo to create on.
     config : dict
-        Details and secrets as returned by get_gitlab_config
+        Details and secrets as returned by get_api_config
     """
 
     # clone the repo from git_url (on GITLAB-REVIEW), removing any of
@@ -143,70 +151,6 @@ def update_repo(git_url, repo_name, branch_name, config):
     )
 
 
-def get_request(endpoint, headers, params=None):
-    """Wrapper around requests.get that returns a JSON if request was successful
-    or raises a HTTPError otherwise.
-
-    Parameters
-    ----------
-    endpoint : str
-        URL of API endpoint to call
-    headers : dict
-        Request headers
-    params : dict, optional
-        Request parameters
-
-    Returns
-    -------
-    dict
-        JSON of request result
-
-    Raises
-    ------
-    requests.HTTPError
-        If not r.ok, raise HTTPError with details of failure
-    """
-    r = requests.get(endpoint, headers=headers, params=params)
-    if r.ok:
-        return r.json()
-    else:
-        raise requests.HTTPError(
-            f"Request failed: URL {endpoint}, CODE {r.status_code}, CONTENT {r.content}"
-        )
-
-
-def put_request(endpoint, headers, params=None):
-    """Wrapper around requests.put that returns a JSON if request was successful
-    or raises a HTTPError otherwise.
-
-    Parameters
-    ----------
-    endpoint : str
-        URL of API endpoint to call
-    headers : dict
-        Request headers
-    params : dict, optional
-        Request parameters
-
-    Returns
-    -------
-    dict
-        JSON of request result
-
-    Raises
-    ------
-    requests.HTTPError
-        If not r.ok, raise HTTPError with details of failure
-    """
-    r = requests.put(endpoint, headers=headers, params=params)
-    if r.ok:
-        return r.json()
-    else:
-        raise requests.HTTPError(
-            f"Request failed: URL {endpoint}, CODE {r.status_code}, CONTENT {r.content}"
-        )
-
-
 def get_group_id(group_name, config):
     """Get the ID of a group on a gitlab server.
 
@@ -215,7 +159,7 @@ def get_group_id(group_name, config):
     group_name : str
         Group name to find.
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -243,7 +187,7 @@ def get_project(project_id, config):
     project_id : int
         ID of the project on the gitlab server.
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -262,7 +206,7 @@ def get_merge_requests_for_approval(config):
     Parameters
     ----------
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -289,7 +233,7 @@ def count_unresolved_mr_discussions(mr, config):
     mr : dict
         A merge request JSON as returned by the gitlab API
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -316,7 +260,7 @@ def count_unresolved_mr_discussions(mr, config):
         return n_unresolved
 
 
-def accept_merge_request(mr, config):
+def accept_merge_request(config, mr):
     """Accept a merge request
 
     Parameters
@@ -325,7 +269,7 @@ def accept_merge_request(mr, config):
         For the merge request to approve: The merge request JSON as returned by
         the gitlab API.
     config : dict
-        Gitlab details and secrets as returned by get_gitlab_config
+        Gitlab details and secrets as returned by get_api_config
 
     Returns
     -------
@@ -336,127 +280,123 @@ def accept_merge_request(mr, config):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/merge"
+        config["api_url"]
+        + f"/projects/{project_id}/merge_requests/{mr_iid}/merge"
     )
-    return put_request(endpoint, headers=config["headers"])
+
+    response = requests.put(endpoint, headers=config["headers"])
+    if response.status_code != 200:
+        raise http_error("Accepting merge request", response)
+
+    return response.json()
 
 
-def check_merge_requests():
+def merge_allowed(config_gitlabreview, mr):
+    unresolved = count_unresolved_mr_discussions(mr, config_gitlabreview)
+    checks = {
+        "unresolved_check": unresolved == 0,
+        "upvotes_check": mr["upvotes"] >= 2,
+        "downvotes_check": mr["downvotes"] == 0,
+    }
+    return (all(checks.values()), checks)
+
+
+def handle_all_merge_requests():
     """Main function to check merge requests in the approved group on gitlab review,
     approve them where appropriate, and then push the approved repos to the normal
-    gitlab server for users..
+    gitlab server for users.
     """
     logger.info(f"STARTING RUN")
-    return_code = OK_CODE
-    
-    try:
-        config_gitlabreview = get_api_config(server="GITLAB-REVIEW")
-        config_gitlab = get_api_config(server="GITLAB")
-    except Exception as e:
-        logger.critical(f"Failed to load gitlab secrets: {e}")
-        return ERROR_CODE
 
-    try:
-        gitlab_status = requests.get(
-            config_gitlab["api_url"] + "/projects",
-            headers=config_gitlab["headers"],
-            timeout=10,
-        )
-        if not gitlab_status.ok:
-            logger.critical(
-                f"Gitlab Not Responding: {gitlab_status.status_code}, CONTENT {gitlab_status.content}"
-            )
-            return ERROR_CODE
-    except Exception as e:
-        logger.critical(f"Gitlab Not Responding: {e}")
-        return ERROR_CODE
+    config_gitlabreview = get_api_config(server="GITLAB-REVIEW")
+    config_gitlab = get_api_config(server="GITLAB")
+
+    response = requests.get(
+        config_gitlab["api_url"] + "/projects",
+        headers=config_gitlab["headers"],
+        timeout=10,
+    )
+    if response.status_code != 200:
+        raise http_error("Getting project list", response)
 
     logger.info("Getting open merge requests for approval")
-    try:
-        merge_requests = get_merge_requests_for_approval(config_gitlabreview)
-    except Exception as e:
-        logger.critical(f"Failed to get merge requests: {e}")
-        return ERROR_CODE
+
+    ## TODO throw in get_merge_requests_for_approval
+    merge_requests = get_merge_requests_for_approval(config_gitlabreview)
+
     logger.info(f"Found {len(merge_requests)} open merge requests")
 
+    mr_errors_encountered = 0
     for i, mr in enumerate(merge_requests):
         logger.info("-" * 20)
-        logger.info(f"Merge request {i+1} out of {len(merge_requests)}")
-        try:
-            # Extract merge request details
-            source_project = get_project(mr["source_project_id"], config_gitlabreview)
-            logger.info(f"Source Project: {source_project['name_with_namespace']}")
-            logger.info(f"Source Branch: {mr['source_branch']}")
-            target_project = get_project(mr["project_id"], config_gitlabreview)
-            logger.info(f"Target Project: {target_project['name_with_namespace']}")
-            target_branch = mr["target_branch"]
-            logger.info(f"Target Branch: {target_branch}")
-            logger.info(f"Commit SHA: {mr['sha']}")
-            logger.info(f"Created At: {mr['created_at']}")
-            status = mr["merge_status"]
-            if status != "can_be_merged":
-                # Should never get merge conflicts so if we do something has
-                # gone wrong - log an error and skip this merge request.
-                logger.error(f"Merge Status: {status}")
-                return_code = ERROR_CODE
-                continue
-            else:
-                logger.info(f"Merge Status: {status}")
-            unresolved = count_unresolved_mr_discussions(mr, config_gitlabreview)
-            logger.info(f"Unresolved Discussions: {unresolved}")
-            upvotes = mr["upvotes"]
-            logger.info(f"Upvotes: {upvotes}")
-            downvotes = mr["downvotes"]
-            logger.info(f"Downvotes: {downvotes}")
-        except Exception as e:
-            logger.error(f"Failed to extract merge request details: {e}")
-            return_code = ERROR_CODE
+        logger.info(f"Merge request {i+1} of {len(merge_requests)}")
+        logger.info(f"Checking merge request {mr}")
+
+        if mr["merge_status"] != "can_be_merged":
+            logger.error(
+                "This Merge Request's merge status indicates that "
+                "it cannot be merged.  This should never happen. "
+                "Skipping this MR."
+            )
+            mr_errors_encountered += 1
             continue
-        if (
-            unresolved == 0
-            and upvotes >= 2
-            and downvotes == 0
-        ):
-            logger.info("Merge request has been approved. Proceeding with merge.")
-            try:
-                result = accept_merge_request(mr, config_gitlabreview)
-            except Exception as e:
-                logger.error(f"Merge failed! {e}")
-                return_code = ERROR_CODE
-                continue
-            if result["state"] == "merged":
-                logger.info(f"Merge successful! Merge SHA {result['merge_commit_sha']}")
-                try:
-                    # Save details of accepted merge request to separate log file
-                    with open("accepted_merge_requests.log", "a") as f:
-                        f.write(
-                            f"{result['merged_at']}, {source_project['name_with_namespace']}, {mr['source_branch']}, {mr['sha']}, {target_project['name_with_namespace']}, {mr['target_branch']}, {result['merge_commit_sha']}\n"
-                        )
-                except Exception as e:
-                    logger.error(f"Failed to log accepted merge request: {e}")
-                    return_code = ERROR_CODE
-                try:
-                    logger.info("Pushing project to gitlab user server.")
-                    update_repo(
-                        target_project["ssh_url_to_repo"],
-                        target_project["name"],
-                        target_branch,
-                        config_gitlab,
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to push to gitlab user server: {e}")
-                    return_code = ERROR_CODE
+
+        try:
+            can_merge, merge_checks = merge_allowed(config_gitlabreview, mr)
+            if can_merge:
+                logger.info("Merge request has been approved. Proceeding with merge.")
+                source_project = get_project(config_gitlabreview, mr["source_project_id"])
+                target_project = get_project(config_gitlabreview, mr["project_id"])
+                merge_result = accept_merge_request(config_gitlabreview, mr)
+
+                logger.info("Merge completed")
+                accepted_mr_logger.info(
+                    f"{merge_result['merged_at']}, "
+                    f"{source_project['name_with_namespace']}, "
+                    f"{mr['source_branch']}, "
+                    f"{mr['sha']}, "
+                    f"{target_project['name_with_namespace']}, "
+                    f"{mr['target_branch']}, "
+                    f"{merge_result['merge_commit_sha']}"
+                )
+
+                logger.info("Pushing project to gitlab user server.")
+                update_repo(
+                    config_gitlab
+                    target_project["ssh_url_to_repo"],
+                    target_project["name"],
+                    target_branch,
+                )
+                logger.info("Done")
+
             else:
-                logger.error(f"Merge failed! Merge status is {result['state']}")
-                return_code = ERROR_CODE
-        else:
-            logger.info("Merge request has not been approved. Skipping.")
-    logger.info(f"RUN FINISHED")
+                logger.info(
+                    f"Merge request has not been approved: skipping.  Reason: {merge_checks}"
+                )
+
+        ## Errors from GitLab requests and subprocess
+        except requests.HTTPError, subprocess.CalledProcessError:
+            logger.exception(
+                f"Handling merge request failed for {mr}.  Attempting to continue with remaining merge requests."
+            )
+            mr_errors_encountered += 1
+            continue
+
+    logger.info("RUN FINISHED")
     logger.info("=" * 30)
-    
-    return return_code
+
+    return mr_errors_encountered
+
 
 
 if __name__ == "__main__":
-    return_code = check_merge_requests()
+
+    try:
+        mr_errors_encountered = handle_all_merge_requests()
+    except Exception as e:
+        logger.exception("Error handling merge requests")
+        raise
+
+    return_code = 0 if mr_errors_encountered == 0 else 1
+
     sys.exit(return_code)

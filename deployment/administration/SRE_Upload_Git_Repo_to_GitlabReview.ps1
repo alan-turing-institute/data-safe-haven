@@ -27,22 +27,52 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Create local zip file
 # ---------------------
+
+# The zipfile is called "repo.zip", with the following contents:
+#
+# repo/
+#   sourceGitURL
+#   targetRepoName
+#   sourceCommitHash
+#   targetBranchName
+#   snapshot/
+#     ... repository contents
+
+
 Add-LogMessage -Level Info "Creating zipfilepath."
-$zipFileName = "${targetRepoName}_${sourceCommitHash}_${targetBranchName}.zip"
-$zipFilePath = Join-Path $PSScriptRoot $zipFileName
+## $zipFileName = "${targetRepoName}_${sourceCommitHash}_${targetBranchName}.zip"
+$zipFileName = "repo.zip"
+
+$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()))
+
+$repoPath = Join-Path $tempDir "repo"
+New-Item -ItemType Directory $repoPath
+
+## 
+$workingDir = Get-Location
+Set-Location $repoPath
 
 Add-LogMessage -Level Info "About to git clone "
-$tempDir = New-Item -ItemType Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName()) "$targetRepoName")
+git clone $sourceGitURL snapshot
 
-Invoke-Expression -Command "git clone $sourceGitURL $tempDir"
-$workingDir = Get-Location
-Set-Location $tempDir
-Invoke-Expression -Command "git checkout $sourceCommitHash"
+Set-Location "snapshot"
+
+git checkout $sourceCommitHash
 # Remove the .git directory
 Remove-Item -Path ".git" -Recurse -Force
-# Zip this directory
-if (Test-Path $zipFilePath) { Remove-Item $zipFilePath }
-Compress-Archive -CompressionLevel NoCompression -Path $tempDir -DestinationPath $zipFilePath
+
+## Record some metadata about the repository
+Set-Location $repoPath
+$sourceGitURL > sourceGitURL
+$targetRepoName > targetRepoName
+$sourceCommitHash > sourceCommitHash
+$targetBranchName > targetBranchName
+
+# Zip contents and meta
+Set-Location $tempDir
+
+$zipFilePath = Join-Path $tempDir $zipFileName
+Compress-Archive -CompressionLevel NoCompression -Path $repoPath -DestinationPath $zipFilePath
 if ($?) {
     Add-LogMessage -Level Success "Zip file creation succeeded! $zipFilePath"
 } else {
@@ -81,11 +111,12 @@ Add-LogMessage -Level Info "Got SAS token and URL $remoteUrl"
 
 $sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
-# Create remote script (make a directory /zfiles/ and run CURL to download blob to there)
+# Create remote script (make a subdirectory of /tmp/zipfiles and run CURL to download blob to there)
 $script = @"
 #!/bin/bash
-mkdir -p /tmp/zipfiles
-curl -X GET -o /tmp/zipfiles/${zipFileName} "${remoteUrl}"
+mkdir -p /tmp/zipfiles/
+tmpdir=`$(mktemp -d /tmp/zipfiles/XXXXXXXXXXXXXXXXXXXX)
+curl -X GET -o `$tmpdir/${zipFileName} "${remoteUrl}"
 
 chown -R ${sreAdminUsername}:${sreAdminUsername} /tmp/zipfiles/
 "@
