@@ -14,7 +14,6 @@
         "countryCode": "GB"
     },
     "location": "centralus",
-    "ipPrefix": "10.0.0",
     "overrides": {
         "domain": {
             "netbiosName": "SAFEHAVENTESTA",

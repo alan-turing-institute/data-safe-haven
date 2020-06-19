@@ -75,6 +75,7 @@ function Get-ShmFullConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
+    $shmIpPrefix = "10.0.0"  # this does not need to be user-configurable as it is never changed in practice
 
     # Safe Haven management config
     # ----------------------------
@@ -154,7 +155,7 @@ function Get-ShmFullConfig {
     # Network config
     # --------------
     # Deconstruct base address prefix to allow easy construction of IP based parameters
-    $shmPrefixOctets = $shmConfigBase.ipPrefix.Split('.')
+    $shmPrefixOctets = $shmIpPrefix.Split(".")
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{

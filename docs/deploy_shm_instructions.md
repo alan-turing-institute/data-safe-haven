@@ -64,8 +64,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
         "stateCountyRegion": "Location.",
         "countryCode": "e.g. GB"
     },
-    "location": "The Azure location in which the management environment VMs are deployed.",
-    "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. Use 10.0.0 for this unless you have a good reason to use another prefix."
+    "location": "The Azure location in which the management environment VMs are deployed."
 }
 ```
 

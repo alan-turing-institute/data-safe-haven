@@ -14,6 +14,5 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "centralus",
-    "ipPrefix": "10.0.0"
+    "location": "centralus"
 }
