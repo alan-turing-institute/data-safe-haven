@@ -14,5 +14,53 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth"
+    "location": "uksouth",
+    "overrides": {
+        "domain": {
+            "netbiosName": "SAFEHAVENTESTC",
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "network": {
+            "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+            }
+        },
+        "dc": {
+            "rg": "RG_SHM_DC",
+            "ip": "10.0.0.250"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "rg": "RG_SHM_NPS",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmtestcartifactsnxbqspy"
+            },
+            "bootdiagnostics": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmtestcbootdiagsnxbqspy"
+            }
+        },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "dcSafemodePassword": "shm-testa-dc-safemode-password",
+                "npsAdminPassword": "shm-testa-nps-admin-password",
+                "vmAdminUsername": "shm-testa-vm-admin-username"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS"
+        }
+    }
 }
