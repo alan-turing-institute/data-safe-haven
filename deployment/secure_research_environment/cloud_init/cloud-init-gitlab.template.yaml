@@ -22,6 +22,21 @@ apt:
       source: "deb https://packages.gitlab.com/gitlab/gitlab-ce/ubuntu bionic main"
       keyid: 3F01618A51312F3F
 
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: True
+    overwrite: True
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
+
 write_files:
   - path: /etc/gitlab/gitlab.rb
     permissions: "0600"
@@ -67,16 +82,6 @@ runcmd:
   - dpkg-reconfigure -f noninteractive tzdata
   # Set up the data disk
   - echo "Setting up data disk..."
-  - DEVICE=$(readlink -f /dev/disk/azure/scsi1/lun0)
-  - parted $DEVICE mklabel gpt
-  - parted $DEVICE mkpart primary ext4 0% 100%
-  - parted $DEVICE print
-  - sleep 5
-  - mkfs -t ext4 ${DEVICE}1
-  - mkdir -p /datadrive
-  - mount ${DEVICE}1 /datadrive
-  - UUID=$(blkid | grep "${DEVICE}1" | cut -d'"' -f2)
-  - echo "UUID=${UUID}\t/datadrive\text4\tdefaults,nofail\t1\t2" >> /etc/fstab
   - mkdir -p /datadrive/gitdata
   # Enable custom GitLab settings and run an initial configuration
   - echo "Running initial configuration"
