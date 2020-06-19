@@ -137,7 +137,7 @@
                         "managedDisk": {
                             "storageAccountType": "Standard_LRS"
                         },
-                        "diskSizeGB": 50
+                        "diskSizeGB": 64
                     },
                     "dataDisks": [{
                         "lun": 1,
@@ -148,7 +148,7 @@
                         "managedDisk": {
                             "storageAccountType": "Standard_LRS"
                         },
-                        "diskSizeGB": 750
+                        "diskSizeGB": 512
                     }]
                 },
                 "osProfile": {
@@ -208,9 +208,19 @@
                         "managedDisk": {
                             "storageAccountType": "Standard_LRS"
                         },
-                        "diskSizeGB": 750
+                        "diskSizeGB": 64
                     },
-                    "dataDisks": []
+                    "dataDisks": [{
+                        "lun": 1,
+                        "name": "[concat(parameters('HackMD_Server_Name'),'-DATA-DISK')]",
+                        "createOption": "Empty",
+                        "caching": "None",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 512
+                    }]
                 },
                 "osProfile": {
                     "computerName": "[parameters('HackMD_Server_Name')]",
