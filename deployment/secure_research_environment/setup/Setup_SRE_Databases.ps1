@@ -100,7 +100,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             $sqlVmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.sqlVmAdminPassword -DefaultLength 20
 
             # Create SQL server from template
-            Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.name) from template..."
+            Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
             $params = @{
                 Administrator_Password = (ConvertTo-SecureString $sqlVmAdminPassword -AsPlainText -Force)
                 Administrator_User = $sreAdminUsername
@@ -125,11 +125,11 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 
             # Set locale, install updates and reboot
-            Add-LogMessage -Level Info "Updating $($databaseCfg.name)..."  # NB. this takes around 20 minutes due to a large SQL server update
-            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
+            Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."  # NB. this takes around 20 minutes due to a large SQL server update
+            Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -AdditionalPowershellModules @("SqlServer")
 
             # Lockdown SQL server
-            Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.name)..."
+            Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
             $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
             $params = @{
                 EnableSSIS = $databaseCfg.enableSSIS
@@ -142,14 +142,14 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 SqlAuthUpdateUsername = $sqlAuthUpdateUsername
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
-            $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.name -ResourceGroupName $config.sre.databases.rg -Parameter $params
+            $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
             Write-Output $result.Value
 
         # Deploy a PostgreSQL server
         # --------------------------
         } elseif ($databaseCfg.type -eq "PostgreSQL") {
             # Create PostgreSQL server from template
-            Add-LogMessage -Level Info "Preparing to create PostgreSQL database $($databaseCfg.name)..."
+            Add-LogMessage -Level Info "Preparing to create PostgreSQL database $($databaseCfg.vmName)..."
 
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
@@ -165,7 +165,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Add-LogMessage -Level Info "Register '$postgresDbServiceAccountName' ($postgresDbServiceAccountSamAccountName) as a service principal for the database..."
             $_ = Set-AzContext -Subscription $config.shm.subscriptionName
             $params = @{
-                Hostname = "`"$($databaseCfg.name)`""
+                Hostname = "`"$($databaseCfg.vmName)`""
                 Name = "`"$($postgresDbServiceAccountName)`""
                 SamAccountName = "`"$($postgresDbServiceAccountSamAccountName)`""
                 ShmFqdn = "`"$($config.shm.domain.fqdn)`""
@@ -177,8 +177,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Deploy NIC and data disks
             $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-            $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.name)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $databaseCfg.ip -Location $config.sre.location
-            $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.name)-DATA-DISK" -SizeGB $databaseCfg.datadisk.size_gb -Type $databaseCfg.datadisk.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
+            $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.vmName)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $databaseCfg.ip -Location $config.sre.location
+            $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.vmName)-DATA-DISK" -SizeGB $databaseCfg.datadisk.size_gb -Type $databaseCfg.datadisk.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
 
             # Construct the cloud-init file
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -187,7 +187,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                                     Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
                                                     Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-local-admin-password>", $postgresDbAdminPassword).
-                                                    Replace("<db-vm-hostname>", $databaseCfg.name).
+                                                    Replace("<db-vm-hostname>", $databaseCfg.vmName).
                                                     Replace("<db-vm-ipaddress>", $databaseCfg.ip).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
                                                     Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.name),$($config.shm.domain.serviceOuPath)").
@@ -220,8 +220,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Size = $databaseCfg.vmSize
             }
             $_ = Deploy-UbuntuVirtualMachine @params
-            Wait-ForAzVMCloudInit -Name $databaseCfg.name -ResourceGroupName $config.sre.databases.rg
-            Enable-AzVM -Name $databaseCfg.name -ResourceGroupName $config.sre.databases.rg
+            Wait-ForAzVMCloudInit -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
+            Enable-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
         }
 
 
