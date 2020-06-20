@@ -52,7 +52,7 @@ Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
 Add-LogMessage -Level Info "Deprovisioning VM: $($vm.Name)..."
 $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg | Where-Object { $_.Id -Like "*$($vm.Name)-NIC-PIP" }).IpAddress
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
-Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.Name)' key vault"
+Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.name)' key vault"
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /installation/deprovision_vm.sh | sudo tee /installation/deprovision.log'
 
 
