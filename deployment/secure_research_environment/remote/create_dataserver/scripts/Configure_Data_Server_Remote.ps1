@@ -95,5 +95,5 @@ foreach ($pathAccessPair in (("F:\Ingress", "Read"), ("G:\Shared", "Modify"), ("
     $_ = (Set-Acl $sharePath $acl)
     # Print current access rules
     Write-Host "ACL access rules for '$sharePath' folder are currently:"
-    Get-Acl $sharePath | Format-List
+    (Get-Acl $sharePath).Access | Select-Object -Property IdentityReference, FileSystemRights
 }
