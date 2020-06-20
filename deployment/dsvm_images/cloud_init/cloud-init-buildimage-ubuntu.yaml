@@ -356,7 +356,7 @@ runcmd:
   - echo "export TF_USE_GPU=${TF_USE_GPU}" >> /etc/bash.bashrc
   # Ensure that the first thing on each user's DEPOT_PATH will be the usual default (~/.julia) followed by the global depot
   - echo "export JULIA_DEPOT_PATH=~/.julia:${JULIA_DEPOT_PATH}" >> /etc/bash.bashrc
-
+  # Check for missing packages
   - MISSING_JULIA_PACKAGES=$(julia -e "for package in $JULIA_PACKAGES; try; abspath(joinpath(dirname(Base.find_package(package)))); catch e; println(package); end; end;")
   - if [ "$MISSING_JULIA_PACKAGES" ]; then echo "Could not install Julia packages - $MISSING_JULIA_PACKAGES"; exit 1; fi
 
@@ -422,7 +422,7 @@ runcmd:
   - if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which azuredatastudio)"; else echo "ERROR azuredatastudio not found!"; exit 1; fi
   - if [ "$(which bash)" ]; then echo "\n\n*bash*\n\n$(which bash)\n$(bash --version | grep 'version')"; else echo "ERROR bash not found!"; exit 1; fi
   - if [ "$(which dbeaver)" ]; then echo "\n\n*DBeaver*\n\n$(which dbeaver)\n$(dpkg -s dbeaver-ce | grep '^Version:')"; else echo "ERROR DBeaver not found!"; exit 1; fi
-  - if [ "$(which docker)" ]; then echo "\n\n*Docker*\n\n$(which docker)\n$(docker --version)"; else echo "ERROR Docker not found!"; exit 1; fi
+  - if [ "$(which docker)" ]; then echo "\n\n*Docker*\n\n$(which docker)\n$(docker --version)\n$(docker image ls)"; else echo "ERROR Docker not found!"; exit 1; fi
   - if [ "$(which firefox)" ]; then echo "\n\n*Firefox*\n\n$(which firefox)\n$(firefox --version)"; else echo "ERROR Firefox not found!"; exit 1; fi
   - if [ "$(which git)" ]; then echo "\n\n*git*\n\n$(which git)\n$(git --version)"; else echo "ERROR git not found!"; exit 1; fi
   - if [ "$(which htop)" ]; then echo "\n\n*htop*\n\n$(which htop)\n$(htop --version)"; else echo "ERROR htop not found!"; exit 1; fi
