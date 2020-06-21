@@ -38,7 +38,7 @@ if ($notExists) {
     foreach ($vm in Get-AzVM -ResourceGroupName $config.dsvmImage.build.rg) {
         Add-LogMessage -Level Info "  $($vm.Name)"
     }
-    throw "Could not find a machine called '$vmName'!"
+    Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
 
 
