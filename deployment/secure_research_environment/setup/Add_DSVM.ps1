@@ -24,7 +24,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Set common variables
@@ -51,11 +51,11 @@ if ($existingNic) {
     } else {
         if ($existingNic.VirtualMachine.Id) {
             Add-LogMessage -Level InfoSuccess "A DSVM already exists with IP address '$vmIpAddress'. No further action will be taken"
-            $_ = Set-AzContext -Context $originalContext
+            $null = Set-AzContext -Context $originalContext
             exit 0
         } else {
             Add-LogMessage -Level Info "No VM is attached to this network card, removing it"
-            $_ = $existingNic | Remove-AzNetworkInterface -Force
+            $null = $existingNic | Remove-AzNetworkInterface -Force
             if ($?) {
                 Add-LogMessage -Level Success "Network card removal succeeded"
             } else {
@@ -91,7 +91,7 @@ if ($upgrade) {
     if ($existingVm) {
         if ($existingVm.Name -eq $vmName -and -not $forceUpgrade) {
             Add-LogMessage -Level Info "The existing VM appears to be using the same image version, no upgrade will occur. Use -forceUpgrade to ignore this"
-            $_ = Set-AzContext -Context $originalContext
+            $null = Set-AzContext -Context $originalContext
             exit 0
         }
     }
@@ -100,7 +100,7 @@ if ($upgrade) {
     # ----------------
     if ($existingVm) {
         Add-LogMessage -Level Info "[ ] Stopping existing virtual machine."
-        $_ = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVm.Name -Force
+        $null = Stop-AzVM -ResourceGroupName $existingVm.ResourceGroupName -Name $existingVm.Name -Force
         if ($?) {
             Add-LogMessage -Level Success "VM stopping succeeded"
         } else {
@@ -162,7 +162,7 @@ if ($upgrade) {
     # ----------------------
     if ($existingVm) {
         Add-LogMessage -Level Info "[ ] Deleting existing VM"
-        $_ = Remove-AzVM -Name $existingVmName -ResourceGroupName $config.sre.dsvm.rg -Force
+        $null = Remove-AzVM -Name $existingVmName -ResourceGroupName $config.sre.dsvm.rg -Force
         if ($?) {
             Add-LogMessage -Level Success "VM removal succeeded"
         } else {
@@ -174,7 +174,7 @@ if ($upgrade) {
     # -----------------------
     if ($existingNic) {
         Add-LogMessage -Level Info "[ ] Deleting existing NIC"
-        $_ = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $config.sre.dsvm.rg -Force
+        $null = Remove-AzNetworkInterface -Name $existingNic.Name -ResourceGroupName $config.sre.dsvm.rg -Force
         if ($?) {
             Add-LogMessage -Level Success "NIC removal succeeded"
         } else {
@@ -192,7 +192,7 @@ if ($upgrade) {
             if ($disk.Length -ne 1) {
                 Add-LogMessage -Level Warning "Multiple candidate '$diskName' disks found, not removing any"
             } else {
-                $_ = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
+                $null = Remove-AzDisk -Name $disk.Name -ResourceGroupName $config.sre.dsvm.rg -Force
                 if ($?) {
                     Add-LogMessage -Level Success "Disk deletion succeeded"
                 } else {
@@ -225,7 +225,7 @@ Add-LogMessage -Level Success "Using image type $imageDefinition"
 
 # Check that this is a valid version and then get the image ID
 # ------------------------------------------------------------
-$_ = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
+$null = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
 Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
 try {
     $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
@@ -241,7 +241,7 @@ try {
 }
 $imageVersion = $image.Name
 Add-LogMessage -Level Success "Found image $imageDefinition version $imageVersion in gallery"
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Check for any orphaned disks
@@ -249,7 +249,7 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 $orphanedDisks = Get-AzDisk | Where-Object { $_.DiskState -eq "Unattached" } | Where-Object { $_.Name -Like "${$vmNamePrefix}*" }
 if ($orphanedDisks) {
     Add-LogMessage -Level Info "Removing $($orphanedDisks.Length) orphaned disks"
-    $_ = $orphanedDisks | Remove-AzDisk -Force
+    $null = $orphanedDisks | Remove-AzDisk -Force
     if ($?) {
         Add-LogMessage -Level Success "Orphaned disk removal succeeded"
     } else {
@@ -260,7 +260,7 @@ if ($orphanedDisks) {
 
 # Create DSVM resource group if it does not exist
 # ----------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.dsvm.rg -Location $config.sre.location
 
 
 # Ensure that runtime NSG exists
@@ -343,9 +343,9 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
-$dsvmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dsvmAdminPassword -DefaultLength 20
-$dsvmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.dsvm.passwordSecretName -DefaultLength 20
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
 # Construct the cloud-init yaml file for the target subscription
@@ -431,8 +431,8 @@ if ($upgrade) {
 $params = @{
     Name = $vmName
     Size = $vmSize
-    AdminPassword = $dsvmAdminPassword
-    AdminUsername = $dsvmAdminUsername
+    AdminPassword = $vmAdminPassword
+    AdminUsername = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
     CloudInitYaml = $cloudInitTemplate
     location = $config.sre.location
@@ -442,7 +442,7 @@ $params = @{
     DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
     ImageId = $image.Id
 }
-$_ = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params
 
 
 # Poll VM to see whether it has finished running
@@ -462,7 +462,7 @@ while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Co
 if ($upgrade) {
     foreach ($snapshotName in $snapshotNames) {
         Add-LogMessage -Level Info "[ ] Deleting snapshot '$snapshotName'"
-        $_ = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
+        $null = Remove-AzSnapshot -ResourceGroupName $config.sre.dsvm.rg -SnapshotName $snapshotName -Force
         if ($?) {
             Add-LogMessage -Level Success "Snapshot deletion succeeded"
         } else {
@@ -510,7 +510,7 @@ Remove-Item -Path $zipFilePath
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
 $params = @{
     PAYLOAD = $zipFileEncoded
-    ADMIN_USERNAME = $dsvmAdminUsername
+    ADMIN_USERNAME = $vmAdminUsername
 };
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
 $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
@@ -553,4 +553,4 @@ Add-LogMessage -Level Info "Deployment complete. This new VM can be accessed fro
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext
