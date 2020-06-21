@@ -32,6 +32,18 @@
                 "description": "Type of data disk"
             }
         },
+        "Db_Admin_Password": {
+            "type": "string",
+            "metadata": {
+                "description": "Password for SQL AuthUpdate User"
+            }
+        },
+        "Db_Admin_Username": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for SQL AuthUpdate User"
+            }
+        },
         "DC_Join_Password": {
             "type": "securestring",
             "metadata": {
@@ -74,18 +86,6 @@
             "type": "string",
             "metadata": {
                 "description": "Type of OS disk"
-            }
-        },
-        "Sql_AuthUpdate_Password": {
-            "type": "string",
-            "metadata": {
-                "description": "Password for SQL AuthUpdate User"
-            }
-        },
-        "Sql_AuthUpdate_UserName": {
-            "type": "string",
-            "metadata": {
-                "description": "Username for SQL AuthUpdate User"
             }
         },
         "Sql_Connection_Port": {
@@ -317,8 +317,8 @@
                     "SQLConnectivityUpdateSettings": {
                         "ConnectivityType": "Private",
                         "Port": "[parameters('Sql_Connection_Port')]",
-                        "SQLAuthUpdateUserName": "[parameters('Sql_AuthUpdate_UserName')]",
-                        "SQLAuthUpdatePassword": "[parameters('Sql_AuthUpdate_Password')]"
+                        "SQLAuthUpdateUserName": "[parameters('Db_Admin_Username')]",
+                        "SQLAuthUpdatePassword": "[parameters('Db_Admin_Password')]"
                     },
                     "AdditionalFeaturesServerConfigurations": {
                         "IsRServicesEnabled": "false"

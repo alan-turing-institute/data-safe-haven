@@ -431,12 +431,6 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-other-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-other-nps-secret"
-            postgresDbAdminUsername = "$($config.sre.shortName)-db-admin-username-postgres"
-            postgresDbAdminPassword = "$($config.sre.shortName)-db-admin-password-postgres"
-            postgresVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-postgres"
-            sqlAuthUpdateUsername = "$($config.sre.shortName)-db-admin-username-mssql"
-            sqlAuthUpdateUserPassword = "$($config.sre.shortName)-db-admin-password-mssql"
-            sqlVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-mssql"
             webappAdminPassword = "$($config.sre.shortName)-vm-admin-password-webapp"
         }
     }
@@ -597,7 +591,10 @@ function Add-SreConfig {
     $dbSkus = @{"MSSQL" = "sqldev"; "PostgreSQL" = "18.04-LTS"}
     $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
     foreach ($databaseType in $sreConfigBase.databases) {
-        $config.sre.databases["db$($databaseType.ToLower())"]  = [ordered]@{
+        $config.sre.databases["db$($databaseType.ToLower())"] = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
+            dbAdminUsername = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
+            dbAdminPassword = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
             vmName = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.databases.cidr -Offset $ipOffset

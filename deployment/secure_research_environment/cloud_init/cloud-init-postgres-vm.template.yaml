@@ -43,7 +43,7 @@ write_files:
   - path: "/etc/postgres-user.secret"
     permissions: "0600"
     content: |
-      <db-local-admin-password>
+      <db-admin-password>
   - path: "/etc/postgres-service-account.secret"
     permissions: "0600"
     content: |
@@ -93,7 +93,7 @@ write_files:
     content: |
       # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
       echo ">=== Setting hostname in /etc/hostname... ===<"
-      hostnamectl set-hostname <db-vm-hostname>.<shm-fqdn-lower>
+      hostnamectl set-hostname <vm-hostname>.<shm-fqdn-lower>
       cat /etc/hostname
       # Update DNS settings
       echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
@@ -105,8 +105,8 @@ write_files:
       systemctl restart systemd-resolved
       systemctl status systemd-resolved
       # Add localhost information to /etc/hosts
-      echo ">=== Adding <db-vm-hostname> [<db-vm-ipaddress>] to /etc/hosts... ===<"
-      HOST_INFORMATION="<db-vm-ipaddress> <db-vm-hostname> <db-vm-hostname>.<shm-fqdn-lower>"
+      echo ">=== Adding <vm-hostname> [<vm-ipaddress>] to /etc/hosts... ===<"
+      HOST_INFORMATION="<vm-ipaddress> <vm-hostname> <vm-hostname>.<shm-fqdn-lower>"
       sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
       cat /etc/hosts
       # Configure sssd
@@ -268,7 +268,7 @@ runcmd:
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
-  - SERVICE_PRINCIPAL="POSTGRES/<db-vm-hostname>.<shm-fqdn-lower>"
+  - SERVICE_PRINCIPAL="POSTGRES/<vm-hostname>.<shm-fqdn-lower>"
   - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
   - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
   - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-bind-user-dn>' -W msDS-KeyVersionNumber"
