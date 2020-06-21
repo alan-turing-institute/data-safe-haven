@@ -22,8 +22,8 @@ $_ = Set-AzContext -Subscription $config.sre.subscriptionName
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
 $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.dataServerAdminPassword -DefaultLength 20
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dataserver.adminPasswordSecretName -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
 # Create data server resource group if it does not exist
@@ -47,8 +47,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 # --------------------------------
 Add-LogMessage -Level Info "Creating data server '$($config.sre.dataserver.vmName)' from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-    Administrator_User = $sreAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+    Administrator_User = $vmAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     Data_Server_Name = $config.sre.dataserver.vmName
     DC_Administrator_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)

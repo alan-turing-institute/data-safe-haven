@@ -426,7 +426,6 @@ function Add-SreConfig {
         rg = "RG_SRE_$($config.sre.id)_SECRETS".ToUpper()
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            dataServerAdminPassword = "$($config.sre.shortName)-vm-admin-password-dataserver"
             dsvmAdminPassword = "$($config.sre.shortName)-vm-admin-password-compute"
             gitlabRootPassword = "$($config.sre.shortName)-other-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-other-gitlab-user-password"
@@ -550,6 +549,7 @@ function Add-SreConfig {
     # -----------
     $hostname = "DAT-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
     $config.sre.dataserver = [ordered]@{
+        adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-dataserver"
         rg = "RG_SRE_$($config.sre.id)_DATA".ToUpper()
         nsg = "NSG_SRE_$($config.sre.id)_DATA".ToUpper()
         vmName = $hostname
