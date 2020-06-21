@@ -326,10 +326,10 @@ runcmd:
   # Ensure that all users will pick up system R when running RStudio
   - echo "export RSTUDIO_WHICH_R=/usr/bin/R" >> /etc/bash.bashrc
   # Check for missing packages
-  - MISSING_CRAN_PACKAGES=$(Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)")
-  - if [ "$MISSING_CRAN_PACKAGES" -ne "character(0)" ]; then echo "Could not install CRAN packages - $MISSING_CRAN_PACKAGES"; exit 1; fi
-  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)")
-  - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" -ne "character(0)" ]; then echo "Could not install Bioconductor packages - $MISSING_BIOCONDUCTOR_PACKAGES"; exit 1; fi
+  - MISSING_CRAN_PACKAGES=$(Rscript -e "list.of.packages <- c($CRAN_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)" | sed "s/character(0)//")
+  - if [ "$MISSING_CRAN_PACKAGES" ]; then echo "Could not install CRAN packages\n$MISSING_CRAN_PACKAGES"; exit 1; fi
+  - MISSING_BIOCONDUCTOR_PACKAGES=$(Rscript -e "list.of.packages <- c($BIOCONDUCTOR_PACKAGES); missing.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,'Package'])]; print(missing.packages)" | sed "s/character(0)//")
+  - if [ "$MISSING_BIOCONDUCTOR_PACKAGES" ]; then echo "Could not install Bioconductor packages\n$MISSING_BIOCONDUCTOR_PACKAGES"; exit 1; fi
 
   # Install Julia and packages - approximately 20 minutes
   - echo ">=== $(date +%s) Installing Julia and packages ===<"
