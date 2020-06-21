@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for VM Administrator_Password"
-            }
-        },
         "Administrator_User": {
             "type": "string",
             "metadata": {
@@ -57,6 +51,12 @@
                 "description": "Name of the RDS gateway VM"
             }
         },
+        "RDS_Gateway_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
         "RDS_Gateway_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
@@ -89,6 +89,12 @@
                 "description": "Name of the RDS apps session host VM"
             }
         },
+        "RDS_Session_Host_Apps_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
         "RDS_Session_Host_Apps_VM_Size": {
             "type": "string",
             "defaultValue": "Standard_B2ms",
@@ -119,6 +125,12 @@
             "type": "string",
             "metadata": {
                 "description": "Name of the RDS desktop session host VM"
+            }
+        },
+        "RDS_Session_Host_Desktop_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
             }
         },
         "RDS_Session_Host_Desktop_VM_Size": {
@@ -229,7 +241,7 @@
                 "osProfile": {
                     "computerName": "[parameters('RDS_Gateway_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Gateway_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -289,7 +301,7 @@
                 "osProfile": {
                     "computerName": "[parameters('RDS_Session_Host_Apps_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Session_Host_Apps_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true
@@ -349,7 +361,7 @@
                 "osProfile": {
                     "computerName": "[parameters('RDS_Session_Host_Desktop_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('RDS_Session_Host_Desktop_Admin_Password')]",
                     "windowsConfiguration": {
                         "provisionVMAgent": true,
                         "enableAutomaticUpdates": true

@@ -411,11 +411,11 @@ function Add-SreConfig {
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($shm.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
     }
 
@@ -431,12 +431,11 @@ function Add-SreConfig {
             gitlabRootPassword = "$($config.sre.shortName)-other-gitlab-root-password"
             gitlabUserPassword = "$($config.sre.shortName)-other-gitlab-user-password"
             hackmdUserPassword = "$($config.sre.shortName)-other-hackmd-user-password"
-            letsEncryptCertificate = "$($config.sre.shortName)-other-lets-encrypt-certificate"
+            letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-other-nps-secret"
             postgresDbAdminUsername = "$($config.sre.shortName)-db-admin-username-postgres"
             postgresDbAdminPassword = "$($config.sre.shortName)-db-admin-password-postgres"
             postgresVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-postgres"
-            rdsAdminPassword = "$($config.sre.shortName)-vm-admin-password-rds"
             sqlAuthUpdateUsername = "$($config.sre.shortName)-db-admin-username-mssql"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-db-admin-password-mssql"
             sqlVmAdminPassword = "$($config.sre.shortName)-vm-admin-password-mssql"
@@ -482,27 +481,31 @@ function Add-SreConfig {
         }
     }
 
-    # --- RDS Servers ---
+    # RDS Servers
+    # -----------
     $config.sre.rds = [ordered]@{
         rg = "RG_SRE_$($config.sre.id)_RDS".ToUpper()
         gateway = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 4
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 4
         }
         sessionHost1 = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
-            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 5
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
-            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 6
+            nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
     }
     # Construct the hostname and FQDN for each VM
