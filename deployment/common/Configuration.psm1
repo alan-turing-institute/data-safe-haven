@@ -181,6 +181,26 @@ function Get-ShmFullConfig {
         }
     }
 
+    # Secrets config
+    # --------------
+    $shm.keyVault = [ordered]@{
+        rg = "RG_SHM_$($shm.id)_SECRETS".ToUpper()
+        name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
+        secretNames = [ordered]@{
+            aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+            buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
+            buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
+            domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
+            domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
+            localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
+            vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
+            vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
+            vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
+            vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
+            vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
+        }
+    }
+
     # Domain controller config
     # ------------------------
     $hostname = "DC1-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
@@ -192,6 +212,7 @@ function Get-ShmFullConfig {
         fqdn = "${hostname}.$($shm.domain.fqdn)"
         ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.subnets.identity.cidr -Offset 4
         external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
     }
 
     # Backup domain controller config
@@ -208,6 +229,7 @@ function Get-ShmFullConfig {
     # ----------
     $hostname = "NPS-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
     $shm.nps = [ordered]@{
+        adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-nps".ToLower()
         rg = "RG_SHM_$($shm.id)_NPS".ToUpper()
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
@@ -227,28 +249,6 @@ function Get-ShmFullConfig {
         bootdiagnostics = [ordered]@{
             rg = $storageRg
             accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
-        }
-    }
-
-    # Secrets config
-    # --------------
-    $shm.keyVault = [ordered]@{
-        rg = "RG_SHM_$($shm.id)_SECRETS".ToUpper()
-        name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
-        secretNames = [ordered]@{
-            aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
-            buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
-            buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
-            dcSafemodePassword = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
-            domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
-            localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
-            npsAdminPassword = "shm-$($shm.id)-vm-admin-password-nps".ToLower()
-            vmAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
-            vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
-            vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
-            vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
-            vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
-            vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
         }
     }
 

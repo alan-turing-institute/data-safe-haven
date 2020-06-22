@@ -157,9 +157,9 @@ $_ = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 # Retrieve usernames/passwords from the keyvault
 # ----------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 $domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-$dcSafemodePassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.dcSafemodePassword -DefaultLength 20
+$safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
 
 
 # Deploy SHM DC from template
@@ -168,7 +168,7 @@ Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    Administrator_User = $shmAdminUsername
+    Administrator_User = $domainAdminUsername
     Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
@@ -181,7 +181,7 @@ $params = @{
     Domain_Name = $config.domain.fqdn
     Domain_NetBIOS_Name = $config.domain.netbiosName
     External_DNS_Resolver = $config.dc.external_dns_resolver
-    SafeMode_Password = (ConvertTo-SecureString $dcSafemodePassword -AsPlainText -Force)
+    SafeMode_Password = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
     Shm_Id = $config.id
     Virtual_Network_Name = $config.network.vnet.Name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
@@ -226,7 +226,7 @@ $params = @{
     ldapUsersSgName = "`"$($config.domain.securityGroups.computerManagers.name)`""
     netbiosName = "`"$($config.domain.netbiosName)`""
     oubackuppath = "`"C:\Installation\GPOs`""
-    serverAdminName = "`"$shmAdminUsername`""
+    serverAdminName = "`"$domainAdminUsername`""
     serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
     serverName = "`"$($config.dc.vmName)`""
 }

@@ -15,28 +15,28 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig ($shmId)
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Create resource group if it does not exist
 # ------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 
 
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$shmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 $domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-$npsAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.npsAdminPassword -DefaultLength 20
+$vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
 
 
 # Ensure that artifacts resource group, storage account and storage container exist
 # ---------------------------------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 $storageContainerName = "shm-configuration-nps"
-$_ = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+$null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
 
 
 # Upload artifacts
@@ -45,7 +45,7 @@ Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.st
 Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
 $success = $true
 foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
-    $_ = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
+    $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
     $success = $success -and $?
 }
 if ($success) {
@@ -58,11 +58,11 @@ if ($success) {
 # ------------------------
 Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $npsAdminPassword -AsPlainText -Force)
-    Administrator_User = $shmAdminUsername
+    Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+    Administrator_User = $domainAdminUsername
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
     DC_Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    DC_Administrator_User = $shmAdminUsername
+    DC_Administrator_User = $domainAdminUsername
     Domain_Name = $config.domain.fqdn
     NPS_Host_Name = $config.nps.hostname
     NPS_IP_Address = $config.nps.ip
@@ -112,4 +112,4 @@ Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

@@ -93,8 +93,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         if ($databaseCfg.type -eq "MSSQL") {
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-            $shmDcAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-            $shmDcAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
+            $domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+            $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
             $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPassword -DefaultLength 20
             $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
@@ -109,8 +109,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Data_Disk_Type = $databaseCfg.datadisk.type
                 Db_Admin_Password = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
                 Db_Admin_Username = $dbAdminUsername
-                DC_Join_Password = (ConvertTo-SecureString $shmDcAdminPassword -AsPlainText -Force)
-                DC_Join_User = $shmDcAdminUsername
+                DC_Join_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
+                DC_Join_User = $domainAdminUsername
                 Domain_Name = $config.shm.domain.fqdn
                 IP_Address = $databaseCfg.ip
                 Location = $config.sre.location

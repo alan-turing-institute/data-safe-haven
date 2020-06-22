@@ -137,7 +137,7 @@ if ($?) {
 # Get common objects
 # ------------------
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-$adminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 
 
 # Resolve the cloud init file, applying a whitelist if needed
@@ -257,7 +257,7 @@ function Deploy-PackageMirror {
                 Name = $vmName
                 Size = $config.mirrors.vmSize
                 AdminPassword = (Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $adminPasswordSecretName -DefaultLength 20)
-                AdminUsername = $adminUsername
+                AdminUsername = $domainAdminUsername
                 BootDiagnosticsAccount = $bootDiagnosticsAccount
                 CloudInitYaml = $cloudInitYaml
                 Location = $config.location
