@@ -31,7 +31,7 @@ $virtualNetwork = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -Reso
 foreach ($dbConfigName in $config.sre.databases.Keys) {
     if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
     $databaseCfg = $config.sre.databases[$dbConfigName]
-    $subnetCfg = $config.sre.network.subnets[$databaseCfg.subnet]
+    $subnetCfg = $config.sre.network.vnet.subnets[$databaseCfg.subnet]
     $nsgCfg = $config.sre.network.nsg[$subnetCfg.nsg]
 
     # Ensure that subnet exists
@@ -181,7 +181,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             # Construct the cloud-init file
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
-            $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.subnets.data.cidr).
+            $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.vnet.subnets.data.cidr).
                                                     Replace("<db-admin-password>", $dbAdminPassword).
                                                     Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).

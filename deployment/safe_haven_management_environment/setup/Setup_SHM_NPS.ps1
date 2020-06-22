@@ -70,7 +70,7 @@ $params = @{
     OU_Path = $config.domain.serviceServerOuPath
     Virtual_Network_Name = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.subnets.identity.name
+    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
     VM_Size = $config.nps.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg

@@ -104,7 +104,7 @@ $params = @{
     HackMD_VM_Size = $config.sre.webapps.hackmd.vmSize
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.subnets.data.name
+    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
 

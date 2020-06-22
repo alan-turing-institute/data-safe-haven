@@ -4,10 +4,10 @@
     "id": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
+      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -34,20 +34,20 @@
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
         "name": "VNET_SHM_TESTA",
-        "cidr": "10.0.0.0/21"
-      },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "cidr": "10.0.0.0/24"
-        },
-        "web": {
-          "name": "WebSubnet",
-          "cidr": "10.0.1.0/24"
-        },
-        "gateway": {
-          "name": "GatewaySubnet",
-          "cidr": "10.0.7.0/24"
+        "cidr": "10.0.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.0.0.0/24"
+          },
+          "web": {
+            "name": "WebSubnet",
+            "cidr": "10.0.1.0/24"
+          },
+          "gateway": {
+            "name": "GatewaySubnet",
+            "cidr": "10.0.7.0/24"
+          }
         }
       },
       "mirrorVnets": {
@@ -246,25 +246,25 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.150.0.0/21"
-      },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "cidr": "10.150.0.0/24"
-        },
-        "rds": {
-          "name": "RDSSubnet",
-          "cidr": "10.150.1.0/24"
-        },
-        "data": {
-          "name": "SharedDataSubnet",
-          "cidr": "10.150.2.0/24"
-        },
-        "databases": {
-          "name": "DatabasesSubnet",
-          "cidr": "10.150.3.0/24",
-          "nsg": "databases"
+        "cidr": "10.150.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.150.0.0/24"
+          },
+          "rds": {
+            "name": "RDSSubnet",
+            "cidr": "10.150.1.0/24"
+          },
+          "data": {
+            "name": "SharedDataSubnet",
+            "cidr": "10.150.2.0/24"
+          },
+          "databases": {
+            "name": "DatabasesSubnet",
+            "cidr": "10.150.3.0/24",
+            "nsg": "databases"
+          }
         }
       },
       "nsg": {

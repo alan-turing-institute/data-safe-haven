@@ -60,7 +60,7 @@ $params = @{
     IP_Address = $config.sre.dataserver.ip
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.subnets.data.name
+    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
     VM_Size = $config.sre.dataserver.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg

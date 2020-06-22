@@ -164,20 +164,20 @@ function Get-ShmFullConfig {
             rg = "RG_SHM_$($shm.id)_NETWORKING".ToUpper()
             name = "VNET_SHM_$($shm.id)".ToUpper()
             cidr = "${shmBasePrefix}.${shmThirdOctet}.0/21"
-        }
-        subnets = [ordered]@{
-            identity = [ordered]@{
-                name = "IdentitySubnet"
-                cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
-            }
-            web = [ordered]@{
-                name = "WebSubnet"
-                cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
-            }
-            gateway = [ordered]@{
-                # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
-                name = "GatewaySubnet"
-                cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
+            subnets = [ordered]@{
+                identity = [ordered]@{
+                    name = "IdentitySubnet"
+                    cidr = "${shmBasePrefix}.${shmThirdOctet}.0/24"
+                }
+                web = [ordered]@{
+                    name = "WebSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
+                }
+                gateway = [ordered]@{
+                    # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+                    name = "GatewaySubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
+                }
             }
         }
         mirrorVnets = [ordered]@{}
@@ -245,7 +245,7 @@ function Get-ShmFullConfig {
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
         fqdn = "${hostname}.$($shm.domain.fqdn)"
-        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.subnets.identity.cidr -Offset 4
+        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
     }
@@ -257,7 +257,7 @@ function Get-ShmFullConfig {
         vmName = $hostname
         hostname = $hostname
         fqdn = "${hostname}.$($shm.domain.fqdn)"
-        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.subnets.identity.cidr -Offset 5
+        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
     }
 
     # NPS config
@@ -269,7 +269,7 @@ function Get-ShmFullConfig {
         vmName = $hostname
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
-        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.subnets.identity.cidr -Offset 6
+        ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
     }
 
     # Storage config
@@ -422,24 +422,24 @@ function Add-SreConfig {
             rg = "RG_SRE_$($config.sre.id)_NETWORKING".ToUpper()
             name = "VNET_SRE_$($config.sre.id)".ToUpper()
             cidr = "${sreBasePrefix}.${sreThirdOctet}.0/21"
-        }
-        subnets = [ordered]@{
-            identity = [ordered]@{
-                name = "IdentitySubnet"
-                cidr = "${sreBasePrefix}.${sreThirdOctet}.0/24"
-            }
-            rds = [ordered]@{
-                name = "RDSSubnet"
-                cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
-            }
-            data = [ordered]@{
-                name = "SharedDataSubnet"
-                cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
-            }
-            databases = [ordered]@{
-                name = "DatabasesSubnet"
-                cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
-                nsg = "databases"
+            subnets = [ordered]@{
+                identity = [ordered]@{
+                    name = "IdentitySubnet"
+                    cidr = "${sreBasePrefix}.${sreThirdOctet}.0/24"
+                }
+                rds = [ordered]@{
+                    name = "RDSSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 1).0/24"
+                }
+                data = [ordered]@{
+                    name = "SharedDataSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 2).0/24"
+                }
+                databases = [ordered]@{
+                    name = "DatabasesSubnet"
+                    cidr = "${sreBasePrefix}.$([int]$sreThirdOctet + 3).0/24"
+                    nsg = "databases"
+                }
             }
         }
         nsg = [ordered]@{
@@ -523,7 +523,7 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 4
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
         }
@@ -531,14 +531,14 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 5
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh2"
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 6
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 6
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
     }
@@ -591,7 +591,7 @@ function Add-SreConfig {
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
         fqdn = "${hostname}.$($config.shm.domain.fqdn)"
-        ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 4
+        ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 4
         egressDiskGb = 512
         ingressDiskGb = 512
         sharedDiskGb = 512
@@ -606,14 +606,14 @@ function Add-SreConfig {
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 5
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 5
             rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-root-password"
         }
         hackmd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 6
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 6
         }
     }
     # Construct the hostname and FQDN for each VM
@@ -640,7 +640,7 @@ function Add-SreConfig {
             dbAdminPassword = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
             vmName = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
-            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.databases.cidr -Offset $ipOffset
+            ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset
             port = $dbPorts[$databaseType]
             sku = $dbSkus[$databaseType]
             subnet = "databases"

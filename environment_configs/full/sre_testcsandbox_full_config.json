@@ -4,10 +4,10 @@
     "id": "testc",
     "name": "Turing Development Safe Haven C",
     "organisation": {
+      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -34,20 +34,20 @@
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
         "name": "VNET_SHM_TESTC",
-        "cidr": "10.0.0.0/21"
-      },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "cidr": "10.0.0.0/24"
-        },
-        "web": {
-          "name": "WebSubnet",
-          "cidr": "10.0.1.0/24"
-        },
-        "gateway": {
-          "name": "GatewaySubnet",
-          "cidr": "10.0.7.0/24"
+        "cidr": "10.0.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.0.0.0/24"
+          },
+          "web": {
+            "name": "WebSubnet",
+            "cidr": "10.0.1.0/24"
+          },
+          "gateway": {
+            "name": "GatewaySubnet",
+            "cidr": "10.0.7.0/24"
+          }
         }
       },
       "mirrorVnets": {
@@ -246,25 +246,25 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.151.0.0/21"
-      },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "cidr": "10.151.0.0/24"
-        },
-        "rds": {
-          "name": "RDSSubnet",
-          "cidr": "10.151.1.0/24"
-        },
-        "data": {
-          "name": "SharedDataSubnet",
-          "cidr": "10.151.2.0/24"
-        },
-        "databases": {
-          "name": "DatabasesSubnet",
-          "cidr": "10.151.3.0/24",
-          "nsg": "databases"
+        "cidr": "10.151.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.151.0.0/24"
+          },
+          "rds": {
+            "name": "RDSSubnet",
+            "cidr": "10.151.1.0/24"
+          },
+          "data": {
+            "name": "SharedDataSubnet",
+            "cidr": "10.151.2.0/24"
+          },
+          "databases": {
+            "name": "DatabasesSubnet",
+            "cidr": "10.151.3.0/24",
+            "nsg": "databases"
+          }
         }
       },
       "nsg": {
@@ -400,17 +400,17 @@
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-        "vmName": "SQL-ING-SANDBOX",
-        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
-        "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
-        "port": "14330"
-      },
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
         "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
         "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password"
+      },
+      "dbmssql": {
+        "vmName": "SQL-ING-SANDBOX",
+        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
+        "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+        "port": "14330"
       }
     },
     "dsvm": {

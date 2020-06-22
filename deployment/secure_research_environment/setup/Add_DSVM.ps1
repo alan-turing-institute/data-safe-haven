@@ -46,7 +46,7 @@ exit 1
 
 # Set common variables
 # --------------------
-$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset $ipLastOctet
+$vmIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset $ipLastOctet
 if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 
 
@@ -295,7 +295,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
 # Ensure that deployment NSG exists
 # ---------------------------------
 $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-$shmIdentitySubnetIpRange = $config.shm.network.subnets.identity.cidr
+$shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
                              -Name "InboundAllowLDAP" `
@@ -339,10 +339,10 @@ try {
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
 
-Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.subnets.data.name)'..."
-$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.subnets.data.name }
+Add-LogMessage -Level Info "Looking for subnet '$($config.sre.network.vnet.subnets.data.name)'..."
+$subnet = $vnet.subnets | Where-Object { $_.Name -eq $config.sre.network.vnet.subnets.data.name }
 if ($null -eq $subnet) {
-    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.subnets.data.name)' could not be found in virtual network '$($vnet.Name)'!"
+    Add-LogMessage -Level Fatal "Subnet '$($config.sre.network.vnet.subnets.data.name)' could not be found in virtual network '$($vnet.Name)'!"
 }
 Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 

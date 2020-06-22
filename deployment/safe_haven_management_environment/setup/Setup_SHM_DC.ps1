@@ -135,12 +135,12 @@ Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
     P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     Shm_Id = "$($config.id)".ToLower()
-    Subnet_Gateway_CIDR = $config.network.subnets.gateway.cidr
-    Subnet_Gateway_Name = $config.network.subnets.gateway.Name
-    Subnet_Identity_CIDR = $config.network.subnets.identity.cidr
-    Subnet_Identity_Name = $config.network.subnets.identity.Name
-    Subnet_Web_CIDR = $config.network.subnets.web.cidr
-    Subnet_Web_Name = $config.network.subnets.web.Name
+    Subnet_Gateway_CIDR = $config.network.vnet.subnets.gateway.cidr
+    Subnet_Gateway_Name = $config.network.vnet.subnets.gateway.Name
+    Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
+    Subnet_Identity_Name = $config.network.vnet.subnets.identity.Name
+    Subnet_Web_CIDR = $config.network.vnet.subnets.web.cidr
+    Subnet_Web_Name = $config.network.vnet.subnets.web.Name
     Virtual_Network_Name = $config.network.vnet.Name
     VNET_CIDR = $config.network.vnet.cidr
     VNET_DNS_DC1 = $config.dc.ip
@@ -185,7 +185,7 @@ $params = @{
     Shm_Id = $config.id
     Virtual_Network_Name = $config.network.vnet.Name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.subnets.identity.Name
+    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.Name
     VM_Size = $config.dc.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg

@@ -15,17 +15,17 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Create secrets resource group if it does not exist
 # --------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.keyVault.rg -Location $config.sre.location
 
 
 # Ensure the keyvault exists
 # --------------------------
-$_ = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
+$null = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
 Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.shm.adminSecurityGroupName
 Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -EnabledForDeployment
 
@@ -59,9 +59,9 @@ try {
         if ($config.sre.databases[$dbConfigName] -isnot [Hashtable]) { continue }
         $dbAdminUsername = "sre$($config.sre.id)dbadmin".ToLower()
         if ($dbConfigName -eq "dbpostgresql") { $dbAdminUsername = "postgres" } # This is recorded for auditing purposes - changing it will not change the username of the admin account
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsername $dbAdminUsername
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPassword -DefaultLength 20
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].adminPasswordSecretName -DefaultLength 20
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminUsername $dbAdminUsername
+        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$dbConfigName].dbAdminPassword -DefaultLength 20
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {
@@ -98,7 +98,7 @@ foreach ($user in $serviceUsers.Keys) {
 # Add SRE users and groups to SHM
 # -------------------------------
 Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
-$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+$null = Set-AzContext -Subscription $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
     shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.computerManagers.name)`""
@@ -116,4 +116,4 @@ Write-Output $result.Value
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

@@ -705,7 +705,7 @@ function Set-KeyVaultPermissions {
         [Parameter(Mandatory = $true, HelpMessage = "Name of group to give permissions to")]
         $GroupName
     )
-    Add-LogMessage -Level Info "Setting correct access policies for key vault '$Name'..."
+    Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
     try {
         $securityGroupId = (Get-AzADGroup -DisplayName $GroupName)[0].Id
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
@@ -721,9 +721,9 @@ function Set-KeyVaultPermissions {
         $success = $success -and $?
     }
     if ($success) {
-        Add-LogMessage -Level Success "Set correct access policies"
+        Add-LogMessage -Level Success "Set correct access policies for key vault '$Name'"
     } else {
-        Add-LogMessage -Level Fatal "Failed to set correct access policies!"
+        Add-LogMessage -Level Fatal "Failed to set correct access policies for key vault '$Name'!"
     }
 }
 Export-ModuleMember -Function Set-KeyVaultPermissions

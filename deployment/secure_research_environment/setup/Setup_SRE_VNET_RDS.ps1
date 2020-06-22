@@ -26,9 +26,9 @@ $null = Deploy-ResourceGroup -Name $config.sre.network.vnet.rg -Location $config
 # Create VNet and subnets
 # -----------------------
 $sreVnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location -DnsServer $config.shm.dc.ip, $config.shm.dcb.ip
-$null = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.data.cidr
-$null = Deploy-Subnet -Name $config.sre.network.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.identity.cidr
-$null = Deploy-Subnet -Name $config.sre.network.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.subnets.rds.cidr
+$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.data.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.data.cidr
+$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.identity.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.identity.cidr
+$null = Deploy-Subnet -Name $config.sre.network.vnet.subnets.rds.name -VirtualNetwork $sreVnet -AddressPrefix $config.sre.network.vnet.subnets.rds.cidr
 
 
 # Remove existing SRE <-> SHM VNet peerings
@@ -94,7 +94,7 @@ $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
 # Set variables used in template expansion, retrieving from the key vault where appropriate
 # -----------------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 160
+$dsvmInitialIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 160
 $gitlabIpAddress = $config.sre.webapps.gitlab.ip
 $hackmdIpAddress = $config.sre.webapps.hackmd.ip
 $npsSecret = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.npsSecret -DefaultLength 12
@@ -192,7 +192,7 @@ $params = @{
     SRE_ID = $config.sre.id
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.subnets.rds.name
+    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.rds.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
