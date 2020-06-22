@@ -105,8 +105,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
                 Administrator_User = $vmAdminUsername
                 BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-                Data_Disk_Size = $databaseCfg.datadisk.size_gb
-                Data_Disk_Type = $databaseCfg.datadisk.type
+                Data_Disk_Size = $databaseCfg.disks.data.sizeGb
+                Data_Disk_Type = $databaseCfg.disks.data.type
                 Db_Admin_Password = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
                 Db_Admin_Username = $dbAdminUsername
                 DC_Join_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
@@ -114,8 +114,8 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Domain_Name = $config.shm.domain.fqdn
                 IP_Address = $databaseCfg.ip
                 Location = $config.sre.location
-                OS_Disk_Size = $databaseCfg.osdisk.size_gb
-                OS_Disk_Type = $databaseCfg.osdisk.type
+                OS_Disk_Size = $databaseCfg.disks.os.sizeGb
+                OS_Disk_Type = $databaseCfg.disks.os.type
                 Sql_Connection_Port = $databaseCfg.port
                 Sql_Server_Name = $databaseCfg.vmName
                 Sql_Server_Edition = $databaseCfg.sku
@@ -176,7 +176,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             # Deploy NIC and data disks
             $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
             $vmNic = Deploy-VirtualMachineNIC -Name "$($databaseCfg.vmName)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -PrivateIpAddress $databaseCfg.ip -Location $config.sre.location
-            $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.vmName)-DATA-DISK" -SizeGB $databaseCfg.datadisk.size_gb -Type $databaseCfg.datadisk.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
+            $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.vmName)-DATA-DISK" -SizeGB $databaseCfg.disks.data.sizeGb -Type $databaseCfg.disks.data.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
 
             # Construct the cloud-init file
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
@@ -212,7 +212,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Location = $config.sre.location
                 Name = $databaseCfg.vmName
                 NicId = $vmNic.Id
-                OsDiskType = $databaseCfg.osdisk.type
+                OsDiskType = $databaseCfg.disks.os.type
                 ResourceGroupName = $config.sre.databases.rg
                 Size = $databaseCfg.vmSize
             }

@@ -248,6 +248,16 @@ function Get-ShmFullConfig {
         ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         safemodePasswordSecretName = "shm-$($shm.id)-vm-safemode-password-dc".ToLower()
+        disks = [ordered]@{
+            data = [ordered]@{
+                sizeGb = "20"
+                type = "Standard_LRS"
+            }
+            os = [ordered]@{
+                sizeGb = "128"
+                type = "Standard_LRS"
+            }
+        }
     }
 
     # Backup domain controller config
@@ -255,9 +265,20 @@ function Get-ShmFullConfig {
     $hostname = "DC2-SHM-$($shm.id)".ToUpper() | Limit-StringLength 15
     $shm.dcb = [ordered]@{
         vmName = $hostname
+        vmSize = "Standard_D2s_v3"
         hostname = $hostname
         fqdn = "${hostname}.$($shm.domain.fqdn)"
         ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
+        disks = [ordered]@{
+            data = [ordered]@{
+                sizeGb = "20"
+                type = "Standard_LRS"
+            }
+            os = [ordered]@{
+                sizeGb = "128"
+                type = "Standard_LRS"
+            }
+        }
     }
 
     # NPS config
@@ -270,6 +291,16 @@ function Get-ShmFullConfig {
         vmSize = "Standard_D2s_v3"
         hostname = $hostname
         ip = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
+        disks = [ordered]@{
+            data = [ordered]@{
+                sizeGb = "20"
+                type = "Standard_LRS"
+            }
+            os = [ordered]@{
+                sizeGb = "128"
+                type = "Standard_LRS"
+            }
+        }
     }
 
     # Storage config
@@ -526,6 +557,20 @@ function Add-SreConfig {
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 4
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SERVER".ToUpper()
             networkRules = [ordered]@{}
+            disks = [ordered]@{
+                data1 = [ordered]@{
+                    sizeGb = "1023"
+                    type = "Standard_LRS"
+                }
+                data2 = [ordered]@{
+                    sizeGb = "1023"
+                    type = "Standard_LRS"
+                }
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type = "Standard_LRS"
+                }
+            }
         }
         sessionHost1 = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
@@ -533,6 +578,12 @@ function Add-SreConfig {
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 5
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+            disks = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type = "Standard_LRS"
+                }
+            }
         }
         sessionHost2 = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh2"
@@ -540,6 +591,12 @@ function Add-SreConfig {
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.rds.cidr -Offset 6
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
+            disks = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type = "Standard_LRS"
+                }
+            }
         }
     }
     # Construct the hostname and FQDN for each VM
@@ -592,9 +649,20 @@ function Add-SreConfig {
         hostname = $hostname
         fqdn = "${hostname}.$($config.shm.domain.fqdn)"
         ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 4
-        egressDiskGb = 512
-        ingressDiskGb = 512
-        sharedDiskGb = 512
+        disks = [ordered]@{
+            egress = [ordered]@{
+                sizeGb = "512"
+                type = "Standard_LRS"
+            }
+            ingress = [ordered]@{
+                sizeGb = "512"
+                type = "Standard_LRS"
+            }
+            shared = [ordered]@{
+                sizeGb = "512"
+                type = "Standard_LRS"
+            }
+        }
     }
 
     # HackMD and Gitlab servers
@@ -608,12 +676,28 @@ function Add-SreConfig {
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 5
             rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-root-password"
+            disks = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "750"
+                    type = "Standard_LRS"
+                }
+                os = [ordered]@{
+                    sizeGb = "50"
+                    type = "Standard_LRS"
+                }
+            }
         }
         hackmd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.data.cidr -Offset 6
+            disks = [ordered]@{
+                os = [ordered]@{
+                    sizeGb = "750"
+                    type = "Standard_LRS"
+                }
+            }
         }
     }
     # Construct the hostname and FQDN for each VM
@@ -645,13 +729,15 @@ function Add-SreConfig {
             sku = $dbSkus[$databaseType]
             subnet = "databases"
             vmSize = "Standard_DS2_v2"
-            datadisk = [ordered]@{
-                size_gb = "1024"
-                type = "Standard_LRS"
-            }
-            osdisk = [ordered]@{
-                size_gb = "128"
-                type = "Standard_LRS"
+            disks = [ordered]@{
+                data = [ordered]@{
+                    sizeGb = "1024"
+                    type = "Standard_LRS"
+                }
+                os = [ordered]@{
+                    sizeGb = "128"
+                    type = "Standard_LRS"
+                }
             }
         }
         if ($databaseType -eq "MSSQL") { $config.sre.databases["db$($databaseType.ToLower())"]["enableSSIS"] = $true }
@@ -671,17 +757,19 @@ function Add-SreConfig {
         vmSizeDefault = "Standard_D2s_v3"
         vmImageType = $sreConfigBase.computeVmImageType
         vmImageVersion = $sreConfigBase.computeVmImageVersion
-        osdisk = [ordered]@{
-            type = "Standard_LRS"
-            size_gb = "64"
-        }
-        scratchdisk = [ordered]@{
-            type = "Standard_LRS"
-            size_gb = "512"
-        }
-        homedisk = [ordered]@{
-            type = "Standard_LRS"
-            size_gb = "128"
+        disks = [ordered]@{
+            home = [ordered]@{
+                sizeGb = "128"
+                type = "Standard_LRS"
+            }
+            os = [ordered]@{
+                sizeGb = "64"
+                type = "Standard_LRS"
+            }
+            scratch = [ordered]@{
+                sizeGb = "512"
+                type = "Standard_LRS"
+            }
         }
     }
     $config.shm.Remove("dsvmImage")

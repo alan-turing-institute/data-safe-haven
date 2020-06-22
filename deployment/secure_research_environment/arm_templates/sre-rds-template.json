@@ -38,6 +38,24 @@
                 "description": "Enter NSG Gateway Name"
             }
         },
+        "RDS_Gateway_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
+        "RDS_Gateway_Data1_Disk_Size_GB": {
+            "type": "string"
+        },
+        "RDS_Gateway_Data1_Disk_Type": {
+            "type": "string"
+        },
+        "RDS_Gateway_Data2_Disk_Size_GB": {
+            "type": "string"
+        },
+        "RDS_Gateway_Data2_Disk_Type": {
+            "type": "string"
+        },
         "RDS_Gateway_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.250",
@@ -51,11 +69,11 @@
                 "description": "Name of the RDS gateway VM"
             }
         },
-        "RDS_Gateway_Admin_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for RDS gateway"
-            }
+        "RDS_Gateway_Os_Disk_Size_GB": {
+            "type": "string"
+        },
+        "RDS_Gateway_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Gateway_VM_Size": {
             "type": "string",
@@ -76,6 +94,12 @@
                 "description": "Select size of RDS Gateway VM"
             }
         },
+        "RDS_Session_Host_Apps_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
         "RDS_Session_Host_Apps_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.249",
@@ -89,11 +113,11 @@
                 "description": "Name of the RDS apps session host VM"
             }
         },
-        "RDS_Session_Host_Apps_Admin_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for RDS gateway"
-            }
+        "RDS_Session_Host_Apps_Os_Disk_Size_GB": {
+            "type": "string"
+        },
+        "RDS_Session_Host_Apps_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Session_Host_Apps_VM_Size": {
             "type": "string",
@@ -114,6 +138,13 @@
                 "description": "Select size of RDS_Session_Host_Apps VM"
             }
         },
+        "RDS_Session_Host_Desktop_Admin_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for RDS gateway"
+            }
+        },
+
         "RDS_Session_Host_Desktop_IP_Address": {
             "type": "string",
             "defaultValue": "10.250.x.248",
@@ -127,11 +158,11 @@
                 "description": "Name of the RDS desktop session host VM"
             }
         },
-        "RDS_Session_Host_Desktop_Admin_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Password for RDS gateway"
-            }
+        "RDS_Session_Host_Desktop_Os_Disk_Size_GB": {
+            "type": "string"
+        },
+        "RDS_Session_Host_Desktop_Os_Disk_Type": {
+            "type": "string"
         },
         "RDS_Session_Host_Desktop_VM_Size": {
             "type": "string",
@@ -210,9 +241,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Gateway_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Gateway_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [{
                             "lun": 0,
@@ -221,9 +252,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('RDS_Gateway_Data1_Disk_Type')]"
                             },
-                            "diskSizeGB": 1023
+                            "diskSizeGB": "[parameters('RDS_Gateway_Data1_Disk_Size_GB')]"
                         },
                         {
                             "lun": 1,
@@ -232,9 +263,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "Standard_LRS"
+                                "storageAccountType": "[parameters('RDS_Gateway_Data2_Disk_Type')]"
                             },
-                            "diskSizeGB": 1023
+                            "diskSizeGB": "[parameters('RDS_Gateway_Data2_Disk_Size_GB')]"
                         }
                     ]
                 },
@@ -292,9 +323,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Session_Host_Apps_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Session_Host_Apps_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },
@@ -352,9 +383,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": 128
+                        "diskSizeGB": "[parameters('RDS_Session_Host_Desktop_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },

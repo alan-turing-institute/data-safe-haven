@@ -64,14 +64,18 @@ $params = @{
     DC_Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
     DC_Administrator_User = $domainAdminUsername
     Domain_Name = $config.domain.fqdn
+    NPS_Data_Disk_Size_GB = $config.nps.disks.data.sizeGb
+    NPS_Data_Disk_Type = $config.nps.disks.data.type
     NPS_Host_Name = $config.nps.hostname
     NPS_IP_Address = $config.nps.ip
+    NPS_Os_Disk_Size_GB = $config.nps.disks.os.sizeGb
+    NPS_Os_Disk_Type = $config.nps.disks.os.type
     NPS_VM_Name = $config.nps.vmName
+    NPS_VM_Size = $config.nps.vmSize
     OU_Path = $config.domain.serviceServerOuPath
     Virtual_Network_Name = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
-    VM_Size = $config.nps.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
 

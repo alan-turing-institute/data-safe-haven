@@ -172,12 +172,22 @@ $params = @{
     Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
     Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
+    DC1_Data_Disk_Size_GB = $config.dc.disks.data.sizeGb
+    DC1_Data_Disk_Type = $config.dc.disks.data.type
     DC1_Host_Name = $config.dc.hostname
     DC1_IP_Address = $config.dc.ip
+    DC1_Os_Disk_Size_GB = $config.dc.disks.os.sizeGb
+    DC1_Os_Disk_Type = $config.dc.disks.os.type
     DC1_VM_Name = $config.dc.vmName
+    DC1_VM_Size = $config.dc.vmSize
     DC2_Host_Name = $config.dcb.hostname
+    DC2_Data_Disk_Size_GB = $config.dcb.disks.data.sizeGb
+    DC2_Data_Disk_Type = $config.dcb.disks.data.type
     DC2_IP_Address = $config.dcb.ip
+    DC2_Os_Disk_Size_GB = $config.dcb.disks.os.sizeGb
+    DC2_Os_Disk_Type = $config.dcb.disks.os.type
     DC2_VM_Name = $config.dcb.vmName
+    DC2_VM_Size = $config.dcb.vmSize
     Domain_Name = $config.domain.fqdn
     Domain_NetBIOS_Name = $config.domain.netbiosName
     External_DNS_Resolver = $config.dc.external_dns_resolver
@@ -186,7 +196,6 @@ $params = @{
     Virtual_Network_Name = $config.network.vnet.Name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Virtual_Network_Subnet = $config.network.vnet.subnets.identity.Name
-    VM_Size = $config.dc.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 

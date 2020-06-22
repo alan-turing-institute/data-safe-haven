@@ -32,6 +32,18 @@
                 "description": "IP address for GitLab VM"
             }
         },
+        "GitLab_Data_Disk_Size_GB": {
+            "type": "string"
+        },
+        "GitLab_Data_Disk_Type": {
+            "type": "string"
+        },
+        "GitLab_Os_Disk_Size_GB": {
+            "type": "string"
+        },
+        "GitLab_Os_Disk_Type": {
+            "type": "string"
+        },
         "GitLab_Server_Name": {
             "type": "string"
         },
@@ -58,6 +70,12 @@
             "metadata": {
                 "description": "IP address for HackMD VM"
             }
+        },
+        "HackMD_Os_Disk_Size_GB": {
+            "type": "string"
+        },
+        "HackMD_Os_Disk_Type": {
+            "type": "string"
         },
         "HackMD_Server_Name": {
             "type": "string"
@@ -117,21 +135,23 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "parameters('GitLab_Os_Disk_Type')"
                         },
-                        "diskSizeGB": 50
+                        "diskSizeGB": "parameters('GitLab_Os_Disk_Size_GB')"
                     },
-                    "dataDisks": [{
-                        "lun": 0,
-                        "name": "[concat(parameters('GitLab_Server_Name'),'-DATA-DISK')]",
-                        "createOption": "Empty",
-                        "caching": "None",
-                        "writeAcceleratorEnabled": false,
-                        "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
-                        },
-                        "diskSizeGB": 750
-                    }]
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat(parameters('GitLab_Server_Name'),'-DATA-DISK')]",
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "writeAcceleratorEnabled": false,
+                            "managedDisk": {
+                                "storageAccountType": "parameters('GitLab_Data_Disk_Type')"
+                            },
+                            "diskSizeGB": "parameters('GitLab_Data_Disk_Size_GB')"
+                        }
+                    ]
                 },
                 "osProfile": {
                     "computerName": "[parameters('GitLab_Server_Name')]",
@@ -188,9 +208,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "Standard_LRS"
+                            "storageAccountType": "parameters('HackMD_Os_Disk_Type')"
                         },
-                        "diskSizeGB": 750
+                        "diskSizeGB": "parameters('HackMD_Os_Disk_Size_GB')"
                     },
                     "dataDisks": []
                 },

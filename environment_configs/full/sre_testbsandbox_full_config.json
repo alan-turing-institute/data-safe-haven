@@ -4,10 +4,10 @@
     "id": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
-      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London"
+      "townCity": "London",
+      "stateCountyRegion": "London"
     },
     "location": "uksouth",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -124,13 +124,34 @@
       "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
       "ip": "10.0.0.4",
       "external_dns_resolver": "168.63.129.16",
-      "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc"
+      "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "dcb": {
       "vmName": "DC2-SHM-TESTB",
+      "vmSize": "Standard_D2s_v3",
       "hostname": "DC2-SHM-TESTB",
       "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "ip": "10.0.0.5"
+      "ip": "10.0.0.5",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "nps": {
       "adminPasswordSecretName": "shm-testb-vm-admin-password-nps",
@@ -138,7 +159,17 @@
       "vmName": "NPS-SHM-TESTB",
       "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TESTB",
-      "ip": "10.0.0.6"
+      "ip": "10.0.0.6",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "storage": {
       "artifacts": {
@@ -341,6 +372,20 @@
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
+        "disks": {
+          "data1": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "data2": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "RDG-SRE-SANDBOX",
         "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk"
       },
@@ -350,6 +395,12 @@
         "vmSize": "Standard_DS2_v2",
         "ip": "10.151.1.5",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk"
       },
@@ -359,6 +410,12 @@
         "vmSize": "Standard_DS2_v2",
         "ip": "10.151.1.6",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.testb.dsgroupdev.co.uk"
       }
@@ -372,9 +429,20 @@
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
       "ip": "10.151.2.4",
-      "egressDiskGb": 512,
-      "ingressDiskGb": 512,
-      "sharedDiskGb": 512
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "webapps": {
       "rg": "RG_SRE_SANDBOX_WEBAPPS",
@@ -385,6 +453,16 @@
         "vmSize": "Standard_D2s_v3",
         "ip": "10.151.2.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
+        "disks": {
+          "data": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "50",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "GITLAB-SRE-SANDBOX",
         "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk"
       },
@@ -393,6 +471,12 @@
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "ip": "10.151.2.6",
+        "disks": {
+          "os": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "HACKMD-SRE-SANDBOX",
         "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk"
       }
@@ -411,17 +495,19 @@
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.1.2019122000",
-      "osdisk": {
-        "type": "Standard_LRS",
-        "size_gb": "64"
-      },
-      "scratchdisk": {
-        "type": "Standard_LRS",
-        "size_gb": "512"
-      },
-      "homedisk": {
-        "type": "Standard_LRS",
-        "size_gb": "128"
+      "disks": {
+        "home": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "64",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
       }
     }
   }

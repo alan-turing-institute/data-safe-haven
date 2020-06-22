@@ -438,8 +438,8 @@ if ($upgrade) {
     $homeDisk = $dataDisks[1]
 } else {
     # Create empty disks
-    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.scratchdisk.size_gb -Type $config.sre.dsvm.scratchdisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
-    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.homedisk.size_gb -Type $config.sre.dsvm.homedisk.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    $scratchDisk = Deploy-ManagedDisk -Name "$vmName-SCRATCH-DISK" -SizeGB $config.sre.dsvm.disks.scratch.sizeGb -Type $config.sre.dsvm.disks.scratch.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
+    $homeDisk = Deploy-ManagedDisk -Name "$vmName-HOME-DISK" -SizeGB $config.sre.dsvm.disks.home.sizeGb -Type $config.sre.dsvm.disks.home.type -ResourceGroupName $config.sre.dsvm.rg -Location $config.sre.location
 }
 
 
@@ -454,7 +454,8 @@ $params = @{
     CloudInitYaml = $cloudInitTemplate
     location = $config.sre.location
     NicId = $vmNic.Id
-    OsDiskType = $config.sre.dsvm.osdisk.type
+    OsDiskSizeGb = $config.sre.dsvm.disks.os.sizeGb
+    OsDiskType = $config.sre.dsvm.disks.os.type
     ResourceGroupName = $config.sre.dsvm.rg
     DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
     ImageId = $image.Id

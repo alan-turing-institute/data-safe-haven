@@ -50,18 +50,21 @@ $params = @{
     Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
     Administrator_User = $vmAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Data_Server_Name = $config.sre.dataserver.vmName
     DC_Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
     DC_Administrator_User = $domainAdminUsername
-    Disk_Size_Egress_GB = $config.sre.dataserver.egressDiskGb
-    Disk_Size_Ingress_GB = $config.sre.dataserver.ingressDiskGb
-    Disk_Size_Shared_GB = $config.sre.dataserver.sharedDiskGb
+    Data_Server_Disk_Egress_Size_GB = $config.sre.dataserver.disks.egress.sizeGb
+    Data_Server_Disk_Egress_Type = $config.sre.dataserver.disks.egress.type
+    Data_Server_Disk_Ingress_Size_GB = $config.sre.dataserver.disks.ingress.sizeGb
+    Data_Server_Disk_Ingress_Type = $config.sre.dataserver.disks.ingress.type
+    Data_Server_Disk_Shared_Size_GB = $config.sre.dataserver.disks.shared.sizeGb
+    Data_Server_Disk_Shared_Type = $config.sre.dataserver.disks.shared.type
+    Data_Server_Name = $config.sre.dataserver.vmName
+    Data_Server_VM_Size = $config.sre.dataserver.vmSize
     Domain_Name = $config.shm.domain.fqdn
     IP_Address = $config.sre.dataserver.ip
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
-    VM_Size = $config.sre.dataserver.vmSize
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
 
