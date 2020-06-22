@@ -106,8 +106,7 @@ foreach ($scriptName in @("analyse_build.py",
                           "dbeaver_drivers_config.xml",
                           "deprovision_vm.sh",
                           "download_and_install_deb.sh",
-                          "download_and_install_tar.sh",
-                          "install_postgres_extensions.sql")) {
+                          "download_and_install_tar.sh")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
