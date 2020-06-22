@@ -4,10 +4,10 @@
     "id": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
-      "townCity": "London",
+      "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
-      "countryCode": "GB"
+      "townCity": "London",
+      "stateCountyRegion": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -49,6 +49,71 @@
           "name": "GatewaySubnet",
           "cidr": "10.0.7.0/24"
         }
+      },
+      "mirrorVnets": {
+        "tier2": {
+          "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2",
+          "cidr": "10.20.2.0/24",
+          "subnets": {
+            "external": {
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "cidr": "10.20.2.0/28",
+              "nsg": "externalPackageMirrorsTier2"
+            },
+            "internal": {
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "cidr": "10.20.2.16/28",
+              "nsg": "internalPackageMirrorsTier2"
+            }
+          }
+        },
+        "tier3": {
+          "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER3",
+          "cidr": "10.20.3.0/24",
+          "subnets": {
+            "external": {
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "cidr": "10.20.3.0/28",
+              "nsg": "externalPackageMirrorsTier3"
+            },
+            "internal": {
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "cidr": "10.20.3.16/28",
+              "nsg": "internalPackageMirrorsTier3"
+            }
+          }
+        }
+      },
+      "nsg": {
+        "externalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "externalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TESTA_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "internalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "internalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TESTA_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        }
+      }
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-testa",
+      "secretNames": {
+        "aadAdminPassword": "shm-testa-aad-admin-password",
+        "aadLocalSyncPassword": "shm-testa-localadsync-password",
+        "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
+        "domainAdminUsername": "shm-testa-vm-admin-username",
+        "domainAdminPassword": "shm-testa-domain-admin-password",
+        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-testa-vpn-client-cert",
+        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
       }
     },
     "dc": {
@@ -58,7 +123,8 @@
       "hostname": "DC1-SHM-TESTA",
       "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
       "ip": "10.0.0.250",
-      "external_dns_resolver": "168.63.129.16"
+      "external_dns_resolver": "168.63.129.16",
+      "safemodePasswordSecretName": "shm-testa-dc-safemode-password"
     },
     "dcb": {
       "vmName": "DC2-SHM-TESTA",
@@ -67,6 +133,7 @@
       "ip": "10.0.0.249"
     },
     "nps": {
+      "adminPasswordSecretName": "shm-testa-nps-admin-password",
       "rg": "RG_SHM_NPS",
       "vmName": "NPS-SHM-TESTA",
       "vmSize": "Standard_D2s_v3",
@@ -83,25 +150,6 @@
         "accountName": "shmtestabootdiagsvkdrslu"
       }
     },
-    "keyVault": {
-      "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-testa",
-      "secretNames": {
-        "aadAdminPassword": "shm-testa-aad-admin-password",
-        "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
-        "dcSafemodePassword": "shm-testa-dc-safemode-password",
-        "domainAdminPassword": "shm-testa-domain-admin-password",
-        "localAdsyncPassword": "shm-testa-localadsync-password",
-        "npsAdminPassword": "shm-testa-nps-admin-password",
-        "vmAdminUsername": "shm-testa-vm-admin-username",
-        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-testa-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
-      }
-    },
     "dns": {
       "subscriptionName": "[Prod] Safe Haven Domains",
       "rg": "RG_SHM_DNS_TEST"
@@ -111,17 +159,59 @@
       "vmSize": "Standard_B2ms",
       "diskType": "Standard_LRS",
       "pypi": {
-        "ipOffset": 4,
-        "diskSize": {
-          "tier2": 8191,
-          "tier3": 511
+        "tier2": {
+          "diskSize": 8191,
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 511,
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          }
         }
       },
       "cran": {
-        "ipOffset": 5,
-        "diskSize": {
-          "tier2": 127,
-          "tier3": 31
+        "tier2": {
+          "diskSize": 127,
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-cran-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 31,
+          "internal": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-testa-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          }
         }
       }
     }
@@ -199,29 +289,9 @@
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
-        "dataServerAdminPassword": "sre-sandbox-dataservervm-admin-password",
-        "dsvmAdminPassword": "sre-sandbox-dsvm-admin-password",
-        "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
-        "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
-        "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
-        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
-        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
-        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
-        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
-        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
-        "webappAdminPassword": "sre-sandbox-webappvm-admin-password",
-        "testResearcherPassword": "sre-sandbox-test-researcher-password",
-        "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
-        "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
-        "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
-        "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
-        "dataMountPassword": "sre-sandbox-datamount-password",
-        "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-        "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password"
+        "gitlabRootPassword": "sre-sandbox-gitlab-root-password"
       }
     },
     "users": {
@@ -263,35 +333,39 @@
     "rds": {
       "rg": "RG_SRE_RDS",
       "gateway": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
+        "ip": "10.150.1.250",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
           "allowedSources": "Internet",
           "outboundInternet": "Deny"
         },
-        "ip": "10.150.1.250",
         "hostname": "RDG-SRE-SANDBOX",
         "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       },
       "sessionHost1": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "ip": "10.150.1.249",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
         "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       },
       "sessionHost2": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "ip": "10.150.1.248",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       }
     },
     "dataserver": {
+      "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
       "rg": "RG_SRE_DATA",
       "nsg": "NSG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
@@ -307,13 +381,16 @@
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
+        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "ip": "10.150.2.151",
+        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "hostname": "GITLAB-SRE-SANDBOX",
         "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk"
       },
       "hackmd": {
+        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "ip": "10.150.2.152",
@@ -324,7 +401,10 @@
     "databases": {
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
-        "name": "MSSQL-SANDBOX",
+        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
+        "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+        "vmName": "MSSQL-SANDBOX",
         "type": "MSSQL",
         "ip": "10.150.3.4",
         "port": "14330",
@@ -342,7 +422,10 @@
         "enableSSIS": true
       },
       "dbpostgresql": {
-        "name": "PSTGRS-SANDBOX",
+        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
+        "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+        "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password",
+        "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.150.3.5",
         "port": "5432",
@@ -360,6 +443,7 @@
       }
     },
     "dsvm": {
+      "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
@@ -380,17 +464,6 @@
       "homedisk": {
         "type": "Standard_LRS",
         "size_gb": "128"
-      }
-    },
-    "mirrors": {
-      "vnet": {
-        "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2"
-      },
-      "cran": {
-        "ip": "10.20.2.21"
-      },
-      "pypi": {
-        "ip": "10.20.2.20"
       }
     }
   }

@@ -339,14 +339,14 @@ rather than simply `<admin username>`)
       - Select `Use existing AD account`
       - Enter the details for the `localadsync` user.
         - Username: `localadsync@<SHM domain>` (e.g. localadsync)
-        - Password: use the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+        - Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
       - Click `OK`
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
           - In Server Manager click `Tools > Active Directory Users and Computers`
           - Expand the domain in the left hand panel
           - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<SHM ID>-localadsync-password` secret in the management Key Vault.
+          - Set the password to the the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
           - Leave the other settings as is and click `OK`
     - Click `Next`
   - On the `Azure AD sign-in configuration` screen:

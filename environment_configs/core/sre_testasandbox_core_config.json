@@ -31,24 +31,8 @@
             "keyVault": {
                 "rg": "RG_SRE_SECRETS",
                 "secretNames": {
-                    "dataMountPassword": "sre-sandbox-datamount-password",
-                    "dataServerAdminPassword": "sre-sandbox-dataservervm-admin-password",
-                    "dsvmAdminPassword": "sre-sandbox-dsvm-admin-password",
-                    "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
-                    "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
-                    "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
-                    "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-                    "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
-                    "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
-                    "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-                    "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
-                    "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
-                    "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
-                    "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
-                    "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
-                    "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
-                    "testResearcherPassword": "sre-sandbox-test-researcher-password",
-                    "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
+                    "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
+                    "npsSecret": "sre-sandbox-nps-secret",
                 }
             },
             "users": {
@@ -81,41 +65,60 @@
                         "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
                     },
                     "datamount": {
-                        "samAccountName": "datamountsandbox"
+                        "samAccountName": "datamountsandbox",
+                        "passwordSecretName": "sre-sandbox-datamount-password"
                     }
                 }
             },
             "rds": {
                 "rg": "RG_SRE_RDS",
                 "gateway": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
                     "ip": "10.150.1.250"
                 },
                 "sessionHost1": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
                     "ip": "10.150.1.249"
                 },
                 "sessionHost2": {
+                    "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
                     "ip": "10.150.1.248"
                 }
             },
             "dataserver": {
+                "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
                 "rg": "RG_SRE_DATA",
                 "ip": "10.150.2.250"
             },
             "webapps": {
                 "rg": "RG_SRE_WEBAPPS",
                 "gitlab": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
                     "ip": "10.150.2.151"
                 },
                 "hackmd": {
+                    "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
                     "ip": "10.150.2.152"
                 }
             },
             "databases": {
-                "rg": "RG_SRE_DATABASES"
+                "rg": "RG_SRE_DATABASES",
+                "dbmssql": {
+                    "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+                    "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
+                    "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+                    "port": "14330"
+                },
+                "dbpostgresql": {
+                    "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
+                    "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+                    "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password"
+                }
             },
             "dsvm": {
+                "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
                 "rg": "RG_SRE_COMPUTE"
             }
         }
-     }
+    }
 }

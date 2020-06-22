@@ -42,7 +42,7 @@ try {
 # :: AAD admin passwords
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.localAdsyncPassword -DefaultLength 20
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.aadLocalSyncPassword -DefaultLength 20
     Add-LogMessage -Level Success "Ensured that AAD admin passwords exist"
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that AAD admin passwords exist!"

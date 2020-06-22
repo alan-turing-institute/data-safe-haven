@@ -2,7 +2,7 @@
     "subscriptionName": "Safe Haven Management Test A",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "testa.dsgroupdev.co.uk",
     "shmId": "testa",
@@ -29,14 +29,23 @@
                 "rg": "RG_SHM_NETWORKING"
             }
         },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "aadLocalSyncPassword": "shm-testa-localadsync-password",
+                "domainAdminUsername": "shm-testa-vm-admin-username"
+            }
+        },
         "dc": {
             "rg": "RG_SHM_DC",
-            "ip": "10.0.0.250"
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-testa-dc-safemode-password"
         },
         "dcb": {
             "ip": "10.0.0.249"
         },
         "nps": {
+            "adminPasswordSecretName": "shm-testa-nps-admin-password",
             "rg": "RG_SHM_NPS",
             "ip": "10.0.0.248"
         },
@@ -50,16 +59,38 @@
                 "accountName": "shmtestabootdiagsvkdrslu"
             }
         },
-        "keyVault": {
-            "rg": "RG_SHM_SECRETS",
-            "secretNames": {
-                "dcSafemodePassword": "shm-testa-dc-safemode-password",
-                "npsAdminPassword": "shm-testa-nps-admin-password",
-                "vmAdminUsername": "shm-testa-vm-admin-username"
-            }
-        },
         "mirrors": {
-            "rg": "RG_SHM_PKG_MIRRORS"
+            "rg": "RG_SHM_PKG_MIRRORS",
+            "pypi": {
+                "tier2": {
+                    "diskSize": 8191,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-pypi-internal-tier-2-admin-password",
+                        "ipAddress": "10.20.2.20",
+                        "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-pypi-external-tier-2-admin-password",
+                        "ipAddress": "10.20.2.4",
+                        "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+                    }
+                }
+            },
+            "cran": {
+                "tier2": {
+                    "diskSize": 127,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-cran-internal-tier-2-admin-password",
+                        "ipAddress": "10.20.2.21",
+                        "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-testa-package-mirror-cran-external-tier-2-admin-password",
+                        "ipAddress": "10.20.2.5",
+                        "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+                    }
+                }
+            }
         }
     }
 }

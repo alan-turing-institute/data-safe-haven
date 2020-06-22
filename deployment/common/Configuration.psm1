@@ -223,11 +223,11 @@ function Get-ShmFullConfig {
         name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
         secretNames = [ordered]@{
             aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
+            aadLocalSyncPassword = "shm-$($shm.id)-aad-localsync-password".ToLower()
             buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
             buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
             domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
             domainAdminPassword = "shm-$($shm.id)-domain-admin-password".ToLower()
-            localAdsyncPassword = "shm-$($shm.id)-localadsync-password".ToLower()
             vpnCaCertificate = "shm-$($shm.id)-vpn-ca-cert".ToLower()
             vpnCaCertificatePlain = "shm-$($shm.id)-vpn-ca-cert-plain".ToLower()
             vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
@@ -520,7 +520,7 @@ function Add-SreConfig {
     $config.sre.rds = [ordered]@{
         rg = "RG_SRE_$($config.sre.id)_RDS".ToUpper()
         gateway = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
             vmName = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 4
@@ -528,14 +528,14 @@ function Add-SreConfig {
             networkRules = [ordered]@{}
         }
         sessionHost1 = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
             vmName = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 5
             nsg = "NSG_SRE_$($config.sre.id)_RDS_SESSION_HOSTS".ToUpper()
         }
         sessionHost2 = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds"
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh2"
             vmName = "DKP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             vmSize = "Standard_DS2_v2"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.rds.cidr -Offset 6
@@ -630,7 +630,7 @@ function Add-SreConfig {
         rg = "RG_SRE_$($config.sre.id)_DATABASES".ToUpper()
     }
     $ipOffset = 4
-    $dbPorts = @{"MSSQL" = "14330"; "PostgreSQL" = "5432"}
+    $dbPorts = @{"MSSQL" = "1433"; "PostgreSQL" = "5432"}
     $dbSkus = @{"MSSQL" = "sqldev"; "PostgreSQL" = "18.04-LTS"}
     $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
     foreach ($databaseType in $sreConfigBase.databases) {
