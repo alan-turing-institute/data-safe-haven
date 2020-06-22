@@ -158,6 +158,7 @@ function Get-ShmFullConfig {
     $shmPrefixOctets = $shmIpPrefix.Split(".")
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
+    $shmMirrorPrefixes = @{2 = "10.20.2"; 3 = "10.20.3"}
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "RG_SHM_$($shm.id)_NETWORKING".ToUpper()
@@ -177,6 +178,40 @@ function Get-ShmFullConfig {
                 # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
                 name = "GatewaySubnet"
                 cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 7).0/24"
+            }
+        }
+        mirrorVnets = [ordered]@{}
+        nsg = [ordered]@{
+            externalPackageMirrorsTier2 = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_EXTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
+            }
+            externalPackageMirrorsTier3 = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_EXTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
+            }
+            internalPackageMirrorsTier2 = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_INTERNAL_PACKAGE_MIRRORS_TIER2".ToUpper()
+            }
+            internalPackageMirrorsTier3 = [ordered]@{
+                name = "NSG_SHM_$($shm.id)_INTERNAL_PACKAGE_MIRRORS_TIER3".ToUpper()
+            }
+        }
+    }
+    # Set package mirror networking information
+    foreach ($tier in @(2, 3)) {
+        $shm.network.mirrorVnets["tier${tier}"] = [ordered]@{
+            name = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
+            cidr = "$($shmMirrorPrefixes[$tier]).0/24"
+            subnets = [ordered]@{
+                external = [ordered]@{
+                    name = "ExternalPackageMirrorsTier${tier}Subnet"
+                    cidr = "$($shmMirrorPrefixes[$tier]).0/28"
+                    nsg = "externalPackageMirrorsTier${tier}"
+                }
+                internal = [ordered]@{
+                    name = "InternalPackageMirrorsTier${tier}Subnet"
+                    cidr = "$($shmMirrorPrefixes[$tier]).16/28"
+                    nsg = "internalPackageMirrorsTier${tier}"
+                }
             }
         }
     }
@@ -261,23 +296,29 @@ function Get-ShmFullConfig {
 
     # Package mirror config
     # ---------------------
-    # Please note that each mirror type must have a distinct ipOffset in the range 4-15
     $shm.mirrors = [ordered]@{
         rg = "RG_SHM_$($shm.id)_PKG_MIRRORS".ToUpper()
         vmSize = "Standard_B2ms"
         diskType = "Standard_LRS"
         pypi = [ordered]@{
-            ipOffset = 4
-            diskSize = [ordered]@{
-                tier2 = 8191
-                tier3 = 511
-            }
+            tier2 = [ordered]@{ diskSize = 8191 }
+            tier3 = [ordered]@{ diskSize = 511 }
         }
         cran = [ordered]@{
-            ipOffset = 5
-            diskSize = [ordered]@{
-                tier2 = 127
-                tier3 = 31
+            tier2 = [ordered]@{ diskSize = 127 }
+            tier3 = [ordered]@{ diskSize = 31 }
+        }
+    }
+    # Set password secret name and IP address for each mirror
+    foreach ($tier in @(2, 3)) {
+        foreach ($direction in @("internal", "external")) {
+            # Please note that each mirror type must have a distinct ipOffset in the range 4-15
+            foreach ($typeOffset in @(("pypi", 4), ("cran", 5))) {
+                $shm.mirrors[$typeOffset[0]]["tier${tier}"][$direction] = [ordered]@{
+                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-$($typeOffset[0])-${direction}-mirror-tier-${tier}".ToLower()
+                    ipAddress = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.mirrorVnets["tier${tier}"].subnets[$direction].cidr -Offset $typeOffset[1]
+                    vmName = "$($typeOffset[0])-${direction}-MIRROR-TIER-${tier}".ToUpper()
+                }
             }
         }
     }
@@ -348,6 +389,11 @@ function Add-SreConfig {
         }
     }
     $config.sre.location = $config.shm.location
+
+    # Ensure that this tier is supported
+    if (-not @("0", "1", "2", "3").Contains($config.sre.tier)) {
+        Add-LogMessage -Level Fatal "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
+    }
 
     # Domain config
     # -------------
@@ -639,27 +685,6 @@ function Add-SreConfig {
         }
     }
     $config.shm.Remove("dsvmImage")
-
-    # Package mirror config
-    # ---------------------
-    $config.sre.mirrors = [ordered]@{
-        vnet = [ordered]@{}
-        cran = [ordered]@{}
-        pypi = [ordered]@{}
-    }
-    # Tier-2 and Tier-3 mirrors use different IP ranges for their VNets so they can be easily identified
-    if (@("2", "3").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.name = "VNET_SHM_$($config.shm.id)_PACKAGE_MIRRORS_TIER$($config.sre.tier)".ToUpper()
-        $config.sre.mirrors.pypi.ip = "10.20.$($config.sre.tier).20"
-        $config.sre.mirrors.cran.ip = "10.20.$($config.sre.tier).21"
-    } elseif (@("0", "1").Contains($config.sre.tier)) {
-        $config.sre.mirrors.vnet.name = $null
-        $config.sre.mirrors.pypi.ip = $null
-        $config.sre.mirrors.cran.ip = $null
-    } else {
-        Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
-        return
-    }
 
     # Apply overrides (if any exist)
     # ------------------------------

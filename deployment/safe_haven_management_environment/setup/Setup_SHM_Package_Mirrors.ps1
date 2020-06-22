@@ -3,9 +3,7 @@ param(
     [string]$shmId,
     [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
     [ValidateSet("2", "3")]
-    [string]$tier,
-    [Parameter(Position=2, Mandatory = $false, HelpMessage = "If multiple sets of internal mirrors are needed at the same tier, use this string to distinguish them")]
-    [string]$internalMirrorName = "Internal"
+    [string]$tier
 )
 
 Import-Module Az
@@ -19,39 +17,25 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Ensure that package mirror and networking resource groups exist
 # ---------------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.mirrors.rg -Location $config.location
-$_ = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
-
-
-# Common variable names
-# ---------------------
-$nsgExternalName = "NSG_SHM_$($config.id)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-$nsgInternalName = "NSG_SHM_$($config.id)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-$subnetExternalName = "ExternalPackageMirrorsTier${tier}Subnet"
-$subnetInternalName = "${internalMirrorName}PackageMirrorsTier${tier}Subnet"
-$vnetIpTriplet = "10.20.$tier"
-$vnetName = "VNET_SHM_$($config.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-$mirrorTypes = @("PyPI", "CRAN")
+$null = Deploy-ResourceGroup -Name $config.mirrors.rg -Location $config.location
+$null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.location
 
 
 # Set up the VNet with subnets for internal and external package mirrors
 # ----------------------------------------------------------------------
-$vnetPkgMirrors = Deploy-VirtualNetwork -Name $vnetName -ResourceGroupName $config.network.vnet.rg -AddressPrefix "$vnetIpTriplet.0/24" -Location $config.location
-# External subnet
-$subnetExternal = Deploy-Subnet -Name $subnetExternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix "$vnetIpTriplet.0/28"
-# Internal subnet
-$existingSubnetIpRanges = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnetPkgMirrors | ForEach-Object { $_.AddressPrefix }
-$nextAvailableIpRange = (0..240).Where({$_ % 16 -eq 0}) | ForEach-Object { "$vnetIpTriplet.$_/28" } | Where-Object { $_ -notin $existingSubnetIpRanges } | Select-Object -First 1
-$subnetInternal = Deploy-Subnet -Name $subnetInternalName -VirtualNetwork $vnetPkgMirrors -AddressPrefix $nextAvailableIpRange
+$vnetPkgMirrors = Deploy-VirtualNetwork -Name $config.network.mirrorVnets["tier${tier}"].name -ResourceGroupName $config.network.vnet.rg -AddressPrefix $config.network.mirrorVnets["tier${tier}"].cidr -Location $config.location
+$subnetExternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.external.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.external.cidr
+$subnetInternal = Deploy-Subnet -Name $config.network.mirrorVnets["tier${tier}"].subnets.internal.name -VirtualNetwork $vnetPkgMirrors -AddressPrefix $config.network.mirrorVnets["tier${tier}"].subnets.internal.cidr
 
 
 # Set up the NSG for external package mirrors
 # -------------------------------------------
+$nsgExternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.external.nsg].name
 $nsgExternal = Deploy-NetworkSecurityGroup -Name $nsgExternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreInboundRulesBelowHere" `
@@ -97,6 +81,7 @@ if ($?) {
 
 # Set up the NSG for internal package mirrors
 # -------------------------------------------
+$nsgInternalName = $config.network.nsg[$config.network.mirrorVnets["tier${tier}"].subnets.internal.nsg].name
 $nsgInternal = Deploy-NetworkSecurityGroup -Name $nsgInternalName -ResourceGroupName $config.network.vnet.rg -Location $config.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "RsyncFromExternal" `
@@ -217,15 +202,13 @@ function Deploy-PackageMirror {
     } else {
         $subnet = $subnetExternal
     }
-    $ipOctets = $subnet.AddressPrefix.Split("/")[0].Split(".")
-    $ipOctets[3] = [int]$ipOctets[3] + [int]$config.mirrors[$($MirrorType).ToLower()].ipOffset
-    $privateIpAddress = $ipOctets -join "."
+    $privateIpAddress = $config.mirrors[$MirrorType]["tier${tier}"][$MirrorDirection].ipAddress
 
     # Check whether the VM already exists
     # -----------------------------------
-    $vmName = "$MirrorType-$MirrorDirection-MIRROR-TIER-$tier".ToUpper()
-    $adminPasswordSecretName = ("shm-" + "$($config.id)".ToLower() + "-package-mirror-" + "$MirrorType".ToLower() + "-" + "$MirrorDirection".ToLower() + "-tier-$tier-admin-password")
-    $_ = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $vmName = $config.mirrors[$MirrorType]["tier${tier}"][$MirrorDirection].vmName
+    $adminPasswordSecretName = $config.mirrors[$MirrorType]["tier${tier}"][$MirrorDirection].adminPasswordSecretName
+    $null = Get-AzVM -Name $vmName -ResourceGroupName $config.mirrors.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         # Deploy NIC and data disks
         # -------------------------
@@ -267,14 +250,14 @@ function Deploy-PackageMirror {
                 ImageSku = "18.04-LTS"
                 DataDiskIds = @($dataDisk.Id)
             }
-            $_ = Deploy-UbuntuVirtualMachine @params
+            $null = Deploy-UbuntuVirtualMachine @params
             Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.mirrors.rg
         } finally {
             # Remove temporary NSG rules
             Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress and restarting VM: '$vmName'..."
-            $_ = Remove-AzNetworkSecurityRuleConfig -Name "ConfigurationOutboundTemporary" -NetworkSecurityGroup $nsg
-            $_ = Remove-AzNetworkSecurityRuleConfig -Name "VnetOutboundTemporary" -NetworkSecurityGroup $nsg
-            $_ = $nsg | Set-AzNetworkSecurityGroup
+            $null = Remove-AzNetworkSecurityRuleConfig -Name "ConfigurationOutboundTemporary" -NetworkSecurityGroup $nsg
+            $null = Remove-AzNetworkSecurityRuleConfig -Name "VnetOutboundTemporary" -NetworkSecurityGroup $nsg
+            $null = $nsg | Set-AzNetworkSecurityGroup
             if ($?) {
                 Add-LogMessage -Level Success "Configuring VM '$vmName' succeeded"
             } else {
@@ -330,7 +313,7 @@ function Deploy-PackageMirror {
 
 # Set up package mirror
 # ---------------------
-foreach ($mirrorType in $mirrorTypes) {
+foreach ($mirrorType in ($config.mirrors.Keys | Where-Object { $config.mirrors[$_] -isnot [string] })) {
     foreach ($mirrorDirection in ("External", "Internal")) {
         Deploy-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
     }
@@ -339,4 +322,4 @@ foreach ($mirrorType in $mirrorTypes) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

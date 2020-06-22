@@ -84,7 +84,7 @@ Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_Sre_And_Mirror_Netw
 
 # Re-peer to the correct network for this SRE
 Add-LogMessage -Level Info "Peering to the correct mirror network..."
-if (!$config.sre.mirrors.vnet.Name) {
+if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
     Add-LogMessage -Level Info "No mirror VNet is configured for Tier $($config.sre.tier) SRE $($config.sre.id). Nothing to do."
 } else {
     # Fetch SRE and mirror VNets
@@ -123,7 +123,7 @@ if (!$config.sre.mirrors.vnet.Name) {
 # Update SRE mirror lookup
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.sre.mirrors.cran.ip -pypiIp $config.sre.mirrors.pypi.ip
+$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].ipAddresses.internal -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].ipAddresses.internal
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"

@@ -26,6 +26,23 @@ $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
+# $config.sre.mirrors.cran.ip -pypiIp $config.sre.mirrors.pypi.ip
+
+$tier = $config.sre.tier
+$tier = "0"
+Write-Host "pypiIp $($config.sre.mirrors.pypi.ip)"
+$pypiIp = $config.shm.mirrors.pypi["tier${tier}"].ipAddresses.internal
+Write-Host "pypiIp $pypiIp '$($pypiIp -eq $null)'"
+
+
+if (-not $config.shm.network.mirrorVnets["tier${tier}"].name) {
+    Write-Host "No vnet for $tier"
+} else {
+    Write-Host $config.shm.network.mirrorVnets["tier${tier}"].name
+}
+
+exit 1
+
 
 # Set common variables
 # --------------------
@@ -333,7 +350,7 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.sre.mirrors.cran.ip -pypiIp $config.sre.mirrors.pypi.ip
+$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].ipAddresses.internal -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].ipAddresses.internal
 Add-LogMessage -Level Success "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Success "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
