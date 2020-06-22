@@ -14,5 +14,76 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "centralus"
+    "location": "centralus",
+    "overrides": {
+        "domain": {
+            "netbiosName": "SAFEHAVENDEMO",
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "network": {
+            "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+            }
+        },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "aadLocalSyncPassword": "shm-demo-localadsync-password",
+                "domainAdminUsername": "shm-demo-vm-admin-username"
+            }
+        },
+        "dc": {
+            "rg": "RG_SHM_DC",
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-demo-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-demo-nps-admin-password",
+            "rg": "RG_SHM_NPS",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmdemoartifactsnhavsfry"
+            },
+            "bootdiagnostics": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmdemobootdiagsnhavsfry"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS",
+            "pypi": {
+                "tier3": {
+                    "diskSize": 511,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-pypi-external-tier-3-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier3": {
+                    "diskSize": 31,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-internal-tier-3-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-demo-package-mirror-cran-external-tier-3-admin-password"
+                    }
+                }
+            }
+        }
+    }
 }

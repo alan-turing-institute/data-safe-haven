@@ -32,7 +32,7 @@
                 "rg": "RG_SRE_SECRETS",
                 "secretNames": {
                     "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
-                    "npsSecret": "sre-sandbox-nps-secret",
+                    "npsSecret": "sre-sandbox-nps-secret"
                 }
             },
             "users": {

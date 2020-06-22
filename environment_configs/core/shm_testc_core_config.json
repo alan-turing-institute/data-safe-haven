@@ -14,7 +14,7 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth",
+    "location": "centralus",
     "overrides": {
         "domain": {
             "netbiosName": "SAFEHAVENTESTC",
@@ -30,14 +30,23 @@
                 "rg": "RG_SHM_NETWORKING"
             }
         },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "aadLocalSyncPassword": "shm-testc-localadsync-password",
+                "domainAdminUsername": "shm-testc-vm-admin-username"
+            }
+        },
         "dc": {
             "rg": "RG_SHM_DC",
-            "ip": "10.0.0.250"
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-testc-dc-safemode-password"
         },
         "dcb": {
             "ip": "10.0.0.249"
         },
         "nps": {
+            "adminPasswordSecretName": "shm-testc-nps-admin-password",
             "rg": "RG_SHM_NPS",
             "ip": "10.0.0.248"
         },
@@ -50,17 +59,6 @@
                 "rg": "RG_SHM_ARTIFACTS",
                 "accountName": "shmtestcbootdiagsnxbqspy"
             }
-        },
-        "keyVault": {
-            "rg": "RG_SHM_SECRETS",
-            "secretNames": {
-                "dcSafemodePassword": "shm-testa-dc-safemode-password",
-                "npsAdminPassword": "shm-testa-nps-admin-password",
-                "vmAdminUsername": "shm-testa-vm-admin-username"
-            }
-        },
-        "mirrors": {
-            "rg": "RG_SHM_PKG_MIRRORS"
         }
     }
 }
