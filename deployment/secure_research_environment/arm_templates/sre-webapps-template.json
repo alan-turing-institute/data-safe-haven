@@ -2,12 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_Password": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Enter name for VM Administrator_Password"
-            }
-        },
         "Administrator_User": {
             "type": "string",
             "metadata": {
@@ -18,6 +12,12 @@
             "type": "string",
             "metadata": {
                 "description": "Enter name of storage account used for boot diagnostics"
+            }
+        },
+        "GitLab_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for VM Administrator_Password"
             }
         },
         "GitLab_Cloud_Init": {
@@ -50,6 +50,12 @@
             ],
             "metadata": {
                 "description": "Select size of VM"
+            }
+        },
+        "HackMD_Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for VM Administrator_Password"
             }
         },
         "HackMD_Cloud_Init": {
@@ -154,7 +160,7 @@
                 "osProfile": {
                     "computerName": "[parameters('GitLab_Server_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('GitLab_Administrator_Password')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true
@@ -215,7 +221,7 @@
                 "osProfile": {
                     "computerName": "[parameters('HackMD_Server_Name')]",
                     "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "adminPassword": "[parameters('HackMD_Administrator_Password')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
                         "provisionVMAgent": true

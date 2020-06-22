@@ -20,11 +20,12 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$sreAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
-$sreAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.webappAdminPassword -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabRootPassword -DefaultLength 20
 $gitlabUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.gitlabUserPassword -DefaultLength 20
 $gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.gitlab.passwordSecretName -DefaultLength 20
+$hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
 $hackmdUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.hackmdUserPassword -DefaultLength 20
 $hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.hackmd.passwordSecretName -DefaultLength 20
 
@@ -91,13 +92,14 @@ $_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.loc
 # --------------------------------------
 Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $sreAdminPassword -AsPlainText -Force)
-    Administrator_User = $sreAdminUsername
+    Administrator_User = $vmAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
     GitLab_Cloud_Init = $gitlabCloudInitEncoded
+    GitLab_Administrator_Password = (ConvertTo-SecureString $gitlabAdminPassword -AsPlainText -Force)
     GitLab_IP_Address =  $config.sre.webapps.gitlab.ip
     GitLab_Server_Name = $config.sre.webapps.gitlab.vmName
     GitLab_VM_Size = $config.sre.webapps.gitlab.vmSize
+    HackMD_Administrator_Password = (ConvertTo-SecureString $hackmdAdminPassword -AsPlainText -Force)
     HackMD_Cloud_Init = $hackmdCloudInitEncoded
     HackMD_IP_Address = $config.sre.webapps.hackmd.ip
     HackMD_Server_Name = $config.sre.webapps.hackmd.vmName

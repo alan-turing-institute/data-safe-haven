@@ -431,7 +431,6 @@ function Add-SreConfig {
             hackmdUserPassword = "$($config.sre.shortName)-other-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-other-nps-secret"
-            webappAdminPassword = "$($config.sre.shortName)-vm-admin-password-webapp"
         }
     }
 
@@ -561,12 +560,14 @@ function Add-SreConfig {
         rg = "RG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         nsg = "NSG_SRE_$($config.sre.id)_WEBAPPS".ToUpper()
         gitlab = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-gitlab"
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 5
 
         }
         hackmd = [ordered]@{
+            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 6
