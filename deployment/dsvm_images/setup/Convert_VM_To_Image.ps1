@@ -45,6 +45,7 @@ if ($notExists) {
 # Ensure that the VM is running
 # -----------------------------
 Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
+Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 
 
 # Deprovision the VM over SSH
