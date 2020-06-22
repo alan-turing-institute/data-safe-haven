@@ -426,9 +426,6 @@ function Add-SreConfig {
         rg = "RG_SRE_$($config.sre.id)_SECRETS".ToUpper()
         secretNames = [ordered]@{
             adminUsername = "$($config.sre.shortName)-vm-admin-username"
-            gitlabRootPassword = "$($config.sre.shortName)-other-gitlab-root-password"
-            gitlabUserPassword = "$($config.sre.shortName)-other-gitlab-user-password"
-            hackmdUserPassword = "$($config.sre.shortName)-other-hackmd-user-password"
             letsEncryptCertificate = "$($config.sre.shortName)-lets-encrypt-certificate"
             npsSecret = "$($config.sre.shortName)-other-nps-secret"
         }
@@ -564,14 +561,13 @@ function Add-SreConfig {
             vmName = "GITLAB-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 5
-
+            rootPasswordSecretName = "$($config.sre.shortName)-other-gitlab-root-password"
         }
         hackmd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-hackmd"
             vmName = "HACKMD-SRE-$($config.sre.id)".ToUpper()
             vmSize = "Standard_D2s_v3"
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.subnets.data.cidr -Offset 6
-
         }
     }
     # Construct the hostname and FQDN for each VM

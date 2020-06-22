@@ -5,109 +5,85 @@
         "Administrator_User": {
             "type": "string",
             "metadata": {
-                "description": "Enter name for VM Administrator"
+                "description": "VM admin username"
             }
         },
         "BootDiagnostics_Account_Name": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of storage account used for boot diagnostics"
+                "description": "Storage account used for boot diagnostics"
             }
         },
         "GitLab_Administrator_Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter name for VM Administrator_Password"
+                "description": "GitLab VM admin password"
             }
         },
         "GitLab_Cloud_Init": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
-                "description": "String passed down to the Virtual Machine."
+                "description": "Cloud-init YAML file"
             }
         },
         "GitLab_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.153",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 153"
+                "description": "IP address for GitLab VM"
             }
         },
         "GitLab_Server_Name": {
-            "defaultValue": "GITLAB",
             "type": "string"
         },
         "GitLab_VM_Size": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_F4s_v2"
-            ],
             "metadata": {
-                "description": "Select size of VM"
+                "description": "Size of GitLab VM"
             }
         },
         "HackMD_Administrator_Password": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter name for VM Administrator_Password"
+                "description": "HackMD VM admin password"
             }
         },
         "HackMD_Cloud_Init": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
-                "description": "String passed down to the Virtual Machine."
+                "description": "Cloud-init YAML file"
             }
         },
         "HackMD_IP_Address": {
             "type": "string",
-            "defaultValue": "10.250.x.154",
             "metadata": {
-                "description": "Enter IP address for VM, must end in 154"
+                "description": "IP address for HackMD VM"
             }
         },
         "HackMD_Server_Name": {
-            "defaultValue": "HACKMD",
             "type": "string"
         },
         "HackMD_VM_Size": {
             "type": "string",
-            "defaultValue": "Standard_B2ms",
-            "allowedValues": [
-                "Standard_B2ms",
-                "Standard_D2s_v3",
-                "Standard_DS2_v2",
-                "Standard_DS3_v2",
-                "Standard_F4s_v2"
-            ],
             "metadata": {
-                "description": "Select size of VM"
+                "description": "Size of HackMD VM"
             }
         },
         "Virtual_Network_Name": {
             "type": "string",
-            "defaultValue": "DSG_DSGROUPX_VNET1",
             "metadata": {
-                "description": "Enter name of virtual network to provision this VM"
+                "description": "Virtual network to provision this VM"
             }
         },
         "Virtual_Network_Resource_Group": {
             "type": "string",
             "metadata": {
-                "description": "Enter name of resource group that is associated with the virtual network above"
+                "description": "Resource group that is associated with the virtual network above"
             }
         },
         "Virtual_Network_Subnet": {
             "type": "string",
-            "defaultValue": "Subnet-Data",
             "metadata": {
-                "description": "Enter name of subnet where you want to provision this VM"
+                "description": "Subnet where you want to provision this VM"
             }
         }
     },
