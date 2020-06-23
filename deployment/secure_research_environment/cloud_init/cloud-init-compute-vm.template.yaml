@@ -450,6 +450,8 @@ runcmd:
   - /disk_setup
   - rm /disk_setup
   - echo ">=== Enabling clamav services... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
   # Enable clamav-daemon
   - systemctl enable clamav-daemon.service
   - systemctl status clamav-daemon.service
