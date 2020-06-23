@@ -44,8 +44,7 @@
                             "<subnet-databases-cidr>",
                             "<subnet-identity-cidr>",
                             "<subnet-rds-cidr>"
-                        ],
-                        "sourceIpGroups": []
+                        ]
                     },
                     {
                         "name": "Ubuntu",
@@ -62,8 +61,7 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-data-cidr>"
-                        ],
-                        "sourceIpGroups": []
+                        ]
                     }
                 ]
             }

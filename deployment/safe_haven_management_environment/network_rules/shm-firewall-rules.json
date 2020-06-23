@@ -76,8 +76,7 @@
                         "targetFqdns": [],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
-                        ],
-                        "sourceIpGroups": []
+                        ]
                     },
                     {
                         "name": "AzureMFA",
@@ -92,8 +91,7 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
-                        ],
-                        "sourceIpGroups": []
+                        ]
                     },
                     {
                         "name": "ADConnectPasswordReset",
@@ -108,8 +106,7 @@
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
-                        ],
-                        "sourceIpGroups": []
+                        ]
                     }
                 ]
             }
