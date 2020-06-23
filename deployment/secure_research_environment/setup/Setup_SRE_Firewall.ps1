@@ -57,7 +57,7 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "arm_templates" "sre-firewal
 # Since the gateway subnet CIDR is more specific than the general rule, it will take precedence
 # ---------------------------------------------------------------------------------------------
 foreach ($route in $rules.routes) {
-    $null = Deploy-Route -Name $route.name -RouteTable $routeTable -AppliesTo $route.properties.addressPrefix -NextHop $route.properties.nextHop
+    $null = Deploy-Route -Name $route.name -RouteTableName $config.sre.firewall.routeTableName -AppliesTo $route.properties.addressPrefix -NextHop $route.properties.nextHop
 }
 
 

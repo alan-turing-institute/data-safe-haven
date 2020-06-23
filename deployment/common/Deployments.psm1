@@ -176,7 +176,7 @@ function Deploy-FirewallApplicationRule {
         $rule = New-AzFirewallApplicationRule -Name $Name -SourceAddress $SourceAddress -Protocol $Protocol -TargetFqdn $TargetFqdn
     }
     try {
-        $ruleCollection = $firewall.GetApplicationRuleCollectionByName($CollectionName)
+        $ruleCollection = $Firewall.GetApplicationRuleCollectionByName($CollectionName)
         Add-LogMessage -Level InfoSuccess "Application rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
@@ -234,8 +234,9 @@ function Deploy-FirewallNetworkRule {
         $ActionType
     )
     $rule = New-AzFirewallNetworkRule -Name $Name -SourceAddress $SourceAddress -DestinationAddress $DestinationAddress -DestinationPort $DestinationPort -Protocol $Protocol
+    Add-LogMessage -Level Info "Ensuring that traffic from '$SourceAddress' to '$DestinationAddress' on port '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
     try {
-        $ruleCollection = $firewall.GetNetworkRuleCollectionByName($CollectionName)
+        $ruleCollection = $Firewall.GetNetworkRuleCollectionByName($CollectionName)
         Add-LogMessage -Level InfoSuccess "Network rule collection '$CollectionName' already exists"
         # Overwrite any existing rule with the same name to ensure that we can update if settings have changed
         $existingRule = $ruleCollection.Rules | Where-Object { $_.Name -eq $Name }
@@ -457,23 +458,27 @@ function Deploy-Route {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of route to deploy")]
         $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Route table that this route should be deployed into")]
-        $RouteTable,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of route table that this route should be deployed into")]
+        $RouteTableName,
         [Parameter(Mandatory = $true, HelpMessage = "CIDR that this route applies to")]
         $AppliesTo,
         [Parameter(Mandatory = $true, HelpMessage = "The firewall IP address or one of 'Internet', 'None', 'VirtualNetworkGateway', 'VnetLocal'")]
         $NextHop
     )
+    $routeTable = Get-AzRouteTable -Name $RouteTableName
+    if (-not $routeTable) {
+        Add-LogMessage -Level Fatal "No route table named '$routeTableName' was found in this subscription!"
+    }
     Add-LogMessage -Level Info "Ensuring that route '$Name' exists..."
-    $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $RouteTable -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $routeTable -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating route '$Name'"
         if (@('Internet', 'None', 'VirtualNetworkGateway', 'VnetLocal').Contains($NextHop)) {
-            $null = Add-AzRouteConfig -Name $Name -RouteTable $RouteTable -AddressPrefix $AppliesTo -NextHopType $NextHop | Set-AzRouteTable
+            $null = Add-AzRouteConfig -Name $Name -RouteTable $routeTable -AddressPrefix $AppliesTo -NextHopType $NextHop | Set-AzRouteTable
         } else {
-            $null = Add-AzRouteConfig -Name $Name -RouteTable $RouteTable -AddressPrefix $AppliesTo -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHop | Set-AzRouteTable
+            $null = Add-AzRouteConfig -Name $Name -RouteTable $routeTable -AddressPrefix $AppliesTo -NextHopType "VirtualAppliance" -NextHopIpAddress $NextHop | Set-AzRouteTable
         }
-        $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $RouteTable
+        $routeConfig = Get-AzRouteConfig -Name $Name -RouteTable $routeTable
         if ($?) {
             Add-LogMessage -Level Success "Created route '$Name'"
         } else {
