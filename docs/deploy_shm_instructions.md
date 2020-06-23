@@ -477,7 +477,7 @@ rather than simply `<admin username>`)
 
 ### Additional AAD Connect Configuration
 
-On the **SHM Domain Controller**
+Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
 
@@ -704,14 +704,17 @@ During normal usage, you should not need to tear down the package mirrors, but i
 In order to tear down the SHM, use the following procedure:
 
 ### Disconnect from the Azure Active Directory
-1. Using Microsoft Remote Desktop, connect to the `DC1-SHM-<SHM ID>` virtual machine (VM).
-2. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
-3. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
-4. Open Powershell as an administrator
+
+
+Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
+
+1. Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal.
+2. If you see a warning dialog that the certificate cannot be verified as root, accept this and continue.
+3. Open Powershell as an administrator
   - Navigate to `C:\Installation`
   - Run `.\Disconnect_AD.ps1`
   - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
-5. Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
+4. Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less. If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 
 ### Tear down any attached SREs then the SHM
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
