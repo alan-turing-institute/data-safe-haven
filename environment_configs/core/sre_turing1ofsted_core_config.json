@@ -3,7 +3,7 @@
     "adminSecurityGroupName" : "Safe Haven Production Admins",
     "sreId": "ofsted",
     "shmId": "turing1",
-    "tier": "3",
+    "tier": "2",
     "domain": "ofsted.turingsafehaven.ac.uk",
     "netbiosName": "OFSTED",
     "ipPrefix": "10.228.8",
