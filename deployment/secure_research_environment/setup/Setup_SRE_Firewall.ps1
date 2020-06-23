@@ -51,11 +51,11 @@ $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewal
 
 
 # Add routes to the route table
-# We need to keep all routing symmetric, or it will be dropped by the firewall.
-# VPN gateway connections do not come via the firewall so they must return by the same route.
+# We need to keep all routing symmetric, or it will be dropped by the firewall (see eg. https://azure.microsoft.com/en-gb/blog/accessing-virtual-machines-behind-azure-firewall-with-azure-bastion/).
+# VPN gateway and Remote Desktop connections do not come via the firewall so they must return by the same route.
 # All other requests should be routed via the firewall.
-# Since the gateway subnet CIDR is more specific than the general rule, it will take precedence
-# ---------------------------------------------------------------------------------------------
+# Rules are applied by looking for the closest CIDR match first, so the general rule from 0.0.0.0/0 will always come last.
+# ------------------------------------------------------------------------------------------------------------------------
 foreach ($route in $rules.routes) {
     $null = Deploy-Route -Name $route.name -RouteTableName $config.sre.firewall.routeTableName -AppliesTo $route.properties.addressPrefix -NextHop $route.properties.nextHop
 }
