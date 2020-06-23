@@ -202,6 +202,13 @@ runcmd:
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
 
+  # Manually update clamav signature database
+  # The systemd unit is disabled as otherwise the freshclam log will be locked
+  - echo "Updating clamav database"
+  - systemctl stop clamav-freshclam.service
+  - freshclam
+  - clamav-unofficial-sigs
+
   # Azure Data Studio
   - echo "Installing Azure Data Studio"
   - /installation/download_and_install_deb.sh azuredatastudio
@@ -424,10 +431,6 @@ runcmd:
   - if [ "$(which sqlcmd)" ]; then echo "\n\n*sqlcmd*\n\n$(which sqlcmd)\n$(sqlcmd -? | grep Version)"; else echo "ERROR sqlcmd not found!"; exit 1; fi
   # Data Science tools
   - if [ "$(which weka)" ]; then echo "\n\n*weka*\n\n$(which weka)\n$(weka -c weka.core.Version | head -n 1)"; else echo "ERROR weka not found!"; exit 1; fi
-
-  # Update clamav signature database
-  - freshclam
-  - clamav-unofficial-sigs
 
 
 final_message:
