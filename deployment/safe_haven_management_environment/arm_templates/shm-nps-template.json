@@ -30,7 +30,7 @@
             "type": "string"
         },
         "NPS_Data_Disk_Size_GB": {
-            "type": "string"
+            "type": "int"
         },
         "NPS_Data_Disk_Type')]"    : {
             "type": "string"
@@ -42,7 +42,7 @@
             "type": "string"
         },
         "NPS_Os_Disk_Size_GB": {
-            "type": "string"
+            "type": "int"
         },
         "NPS_Os_Disk_Type": {
             "type": "string"

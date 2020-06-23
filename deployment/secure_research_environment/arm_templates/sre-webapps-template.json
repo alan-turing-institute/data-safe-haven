@@ -33,13 +33,13 @@
             }
         },
         "GitLab_Data_Disk_Size_GB": {
-            "type": "string"
+            "type": "int"
         },
         "GitLab_Data_Disk_Type": {
             "type": "string"
         },
         "GitLab_Os_Disk_Size_GB": {
-            "type": "string"
+            "type": "int"
         },
         "GitLab_Os_Disk_Type": {
             "type": "string"
@@ -72,7 +72,7 @@
             }
         },
         "HackMD_Os_Disk_Size_GB": {
-            "type": "string"
+            "type": "int"
         },
         "HackMD_Os_Disk_Type": {
             "type": "string"
@@ -135,9 +135,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "parameters('GitLab_Os_Disk_Type')"
+                            "storageAccountType": "[parameters('GitLab_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": "parameters('GitLab_Os_Disk_Size_GB')"
+                        "diskSizeGB": "[parameters('GitLab_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": [
                         {
@@ -147,9 +147,9 @@
                             "caching": "None",
                             "writeAcceleratorEnabled": false,
                             "managedDisk": {
-                                "storageAccountType": "parameters('GitLab_Data_Disk_Type')"
+                                "storageAccountType": "[parameters('GitLab_Data_Disk_Type')]"
                             },
-                            "diskSizeGB": "parameters('GitLab_Data_Disk_Size_GB')"
+                            "diskSizeGB": "[parameters('GitLab_Data_Disk_Size_GB')]"
                         }
                     ]
                 },
@@ -208,9 +208,9 @@
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "parameters('HackMD_Os_Disk_Type')"
+                            "storageAccountType": "[parameters('HackMD_Os_Disk_Type')]"
                         },
-                        "diskSizeGB": "parameters('HackMD_Os_Disk_Size_GB')"
+                        "diskSizeGB": "[parameters('HackMD_Os_Disk_Size_GB')]"
                     },
                     "dataDisks": []
                 },

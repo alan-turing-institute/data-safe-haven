@@ -39,19 +39,19 @@
             }
         },
         "Data_Server_Disk_Egress_Size_GB": {
-            "type": "string",
+            "type": "int",
             "metadata": {
                 "description": "Egress disk size in GB"
             }
         },
         "Data_Server_Disk_Ingress_Size_GB": {
-            "type": "string",
+            "type": "int",
             "metadata": {
                 "description": "Ingress disk size in GB"
             }
         },
         "Data_Server_Disk_Shared_Size_GB": {
-            "type": "string",
+            "type": "int",
             "metadata": {
                 "description": "Shared disk size in GB"
             }
