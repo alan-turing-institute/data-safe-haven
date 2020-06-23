@@ -106,7 +106,6 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
         # Add Peering to SRE Vnet
         $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
         $peeringName = "PEER_$($config.sre.mirrors.vnet.name)"
-
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet $($sreVnet.Name)."
         $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
         if ($?) {

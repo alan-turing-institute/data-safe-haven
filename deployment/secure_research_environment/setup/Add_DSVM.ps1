@@ -26,23 +26,6 @@ $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
-# $config.sre.mirrors.cran.ip -pypiIp $config.sre.mirrors.pypi.ip
-
-$tier = $config.sre.tier
-$tier = "0"
-Write-Host "pypiIp $($config.sre.mirrors.pypi.ip)"
-$pypiIp = $config.shm.mirrors.pypi["tier${tier}"].ipAddresses.internal
-Write-Host "pypiIp $pypiIp '$($pypiIp -eq $null)'"
-
-
-if (-not $config.shm.network.mirrorVnets["tier${tier}"].name) {
-    Write-Host "No vnet for $tier"
-} else {
-    Write-Host $config.shm.network.mirrorVnets["tier${tier}"].name
-}
-
-exit 1
-
 
 # Set common variables
 # --------------------
