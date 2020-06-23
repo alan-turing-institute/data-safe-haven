@@ -45,23 +45,6 @@
                             "<subnet-identity-cidr>",
                             "<subnet-rds-cidr>"
                         ]
-                    },
-                    {
-                        "name": "Ubuntu",
-                        "protocols": [
-                            "http:80",
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "uk.archive.ubuntu.com",
-                            "security.ubuntu.com",
-                            "ppa.launchpad.net",
-                            "extras.ubuntu.com"
-                        ],
-                        "sourceAddresses": [
-                            "<subnet-data-cidr>"
-                        ]
                     }
                 ]
             }
