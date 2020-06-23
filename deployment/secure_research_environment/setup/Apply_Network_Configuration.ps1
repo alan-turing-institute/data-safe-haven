@@ -47,7 +47,8 @@ $nsgs[$config.sre.webapps.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.we
 
 # Compute VMs
 Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
-foreach ($vmName in $(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name })) {
+$computeVmNames = $(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $_.Name })
+foreach ($vmName in $computeVmNames) {
     Add-VmToNSG -VMName $vmName -NSGName $config.sre.dsvm.nsg
 }
 $nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg
@@ -56,7 +57,7 @@ $nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.
 # List all NICs associated with each NSG
 # --------------------------------------
 foreach ($nsgName in $nsgs.Keys) {
-    Add-LogMessage -Level Info "NICs associated with $($nsgs[$nsgName]):"
+    Add-LogMessage -Level Info "NICs associated with $($nsgs[$nsgName].Name):"
     @($nsgs[$nsgName].NetworkInterfaces) | ForEach-Object { Add-LogMessage -Level Info "=> $($_.Id.Split('/')[-1])" }
 }
 
@@ -91,10 +92,10 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
     try {
         $sreVnet = Get-AzVirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
         $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
-        $mirrorVnet = Get-AzVirtualNetwork -Name $config.sre.mirrors.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
+        $mirrorVnet = Get-AzVirtualNetwork -Name $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name -ResourceGroupName $config.shm.network.vnet.rg -ErrorAction Stop
 
         # Add peering to Mirror Vnet
-        $peeringName = "PEER_$($config.sre.network.vnet.name)"
+        $peeringName = "PEER_$($sreVnet.Name)"
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to mirror VNet $($mirrorVnet.Name)."
         $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $mirrorVnet -RemoteVirtualNetworkId $sreVnet.Id
         if ($?) {
@@ -105,7 +106,7 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
 
         # Add Peering to SRE Vnet
         $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-        $peeringName = "PEER_$($config.sre.mirrors.vnet.name)"
+        $peeringName = "PEER_$($mirrorVnet.Name)"
         Add-LogMessage -Level Info "[ ] Adding peering '$peeringName' to SRE VNet $($sreVnet.Name)."
         $null = Add-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetwork $sreVnet -RemoteVirtualNetworkId $mirrorVnet.Id
         if ($?) {
@@ -122,7 +123,7 @@ if (-not $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name) {
 # Update SRE mirror lookup
 # ------------------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].ipAddresses.internal -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].ipAddresses.internal
+$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
 Add-LogMessage -Level Info "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Info "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
@@ -130,7 +131,7 @@ Add-LogMessage -Level Info "PyPI host: '$($addresses.pypi.host)'"
 # Set PyPI and CRAN locations on the compute VM
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-foreach ($vmName in $computeVMs) {
+foreach ($vmName in $computeVmNames) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
     $params = @{
         CRAN_MIRROR_IP = "`"$($addresses.cran.url)`""
