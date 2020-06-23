@@ -5,7 +5,6 @@
     "adminSecurityGroupName" : "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "testb.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENTESTB",
     "shmId": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {

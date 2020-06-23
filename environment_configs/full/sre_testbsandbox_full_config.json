@@ -13,7 +13,7 @@
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "testb.dsgroupdev.co.uk",
-      "netbiosName": "SAFEHAVENTESTB",
+      "netbiosName": "TESTB",
       "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
@@ -277,23 +277,23 @@
       "vnet": {
         "rg": "RG_SRE_SANDBOX_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.151.0.0/21",
+        "cidr": "10.150.0.0/21",
         "subnets": {
           "identity": {
             "name": "IdentitySubnet",
-            "cidr": "10.151.0.0/24"
+            "cidr": "10.150.0.0/24"
           },
           "rds": {
             "name": "RDSSubnet",
-            "cidr": "10.151.1.0/24"
+            "cidr": "10.150.1.0/24"
           },
           "data": {
             "name": "SharedDataSubnet",
-            "cidr": "10.151.2.0/24"
+            "cidr": "10.150.2.0/24"
           },
           "databases": {
             "name": "DatabasesSubnet",
-            "cidr": "10.151.3.0/24",
+            "cidr": "10.150.3.0/24",
             "nsg": "databases"
           }
         }
@@ -366,10 +366,10 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "ip": "10.151.1.4",
+        "ip": "10.150.1.4",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
-          "allowedSources": "Internet",
+          "allowedSources": "193.60.220.253",
           "outboundInternet": "Deny"
         },
         "disks": {
@@ -393,7 +393,7 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "ip": "10.151.1.5",
+        "ip": "10.150.1.5",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "disks": {
           "os": {
@@ -408,7 +408,7 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh2",
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
-        "ip": "10.151.1.6",
+        "ip": "10.150.1.6",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "disks": {
           "os": {
@@ -428,7 +428,7 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-      "ip": "10.151.2.4",
+      "ip": "10.150.2.4",
       "disks": {
         "egress": {
           "sizeGb": "512",
@@ -451,7 +451,7 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
-        "ip": "10.151.2.5",
+        "ip": "10.150.2.5",
         "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "disks": {
           "data": {
@@ -470,7 +470,7 @@
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-hackmd",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
-        "ip": "10.151.2.6",
+        "ip": "10.150.2.6",
         "disks": {
           "os": {
             "sizeGb": "750",
@@ -482,7 +482,52 @@
       }
     },
     "databases": {
-      "rg": "RG_SRE_SANDBOX_DATABASES"
+      "rg": "RG_SRE_SANDBOX_DATABASES",
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
+        "dbAdminUsername": "sre-sandbox-db-admin-username-mssql",
+        "dbAdminPassword": "sre-sandbox-db-admin-password-mssql",
+        "vmName": "MSSQL-SANDBOX",
+        "type": "MSSQL",
+        "ip": "10.150.3.4",
+        "port": "1433",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "vmSize": "Standard_DS2_v2",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
+        "dbAdminUsername": "sre-sandbox-db-admin-username-postgresql",
+        "dbAdminPassword": "sre-sandbox-db-admin-password-postgresql",
+        "vmName": "PSTGRS-SANDBOX",
+        "type": "PostgreSQL",
+        "ip": "10.150.3.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "vmSize": "Standard_DS2_v2",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        }
+      }
     },
     "dsvm": {
       "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
@@ -494,7 +539,7 @@
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.1.2019122000",
+      "vmImageVersion": "0.2.2020062200",
       "disks": {
         "home": {
           "sizeGb": "128",
