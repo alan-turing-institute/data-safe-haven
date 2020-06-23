@@ -51,7 +51,7 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 # Set firewall rules from template
 # --------------------------------
 Add-LogMessage -Level Info "Setting firewall rules from template..."
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "arm_templates" "shm-firewall-rules-template.json") -Raw).
+$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
              Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
              Replace("<shm-id>", $config.id).
              Replace("<subnet-identity-cidr>", $config.network.subnets.identity.cidr).

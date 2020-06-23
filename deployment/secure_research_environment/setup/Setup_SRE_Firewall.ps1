@@ -37,7 +37,7 @@ $routeTable = Deploy-RouteTable -Name $config.sre.firewall.routeTableName -Resou
 
 # Load all traffic rules from template
 # ------------------------------------
-$rules = (Get-Content (Join-Path $PSScriptRoot ".." "arm_templates" "sre-firewall-rules-template.json") -Raw).
+$rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "sre-firewall-rules.json") -Raw).
              Replace("<priority>", (2000 + ($config.sre.network.vnet.cidr).Split(".")[1])).
              Replace("<sre-id>", $config.sre.id).
              Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
