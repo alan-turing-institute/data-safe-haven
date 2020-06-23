@@ -8,13 +8,6 @@
             }
         },
         {
-            "name": "ViaShmVnet",
-            "properties": {
-                "addressPrefix": "<vnet-shm-cidr>",
-                "nextHop": "VnetLocal"
-            }
-        },
-        {
             "name": "ViaVpn",
             "properties": {
                 "addressPrefix": "<subnet-shm-vpn-cidr>",
