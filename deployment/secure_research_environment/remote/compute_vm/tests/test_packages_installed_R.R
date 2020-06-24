@@ -13,7 +13,14 @@ error_list <- c()
 # rgl: Error is because the X11 server could not be loaded
 # tmap: False positive - no warning on package load
 # BiocInstaller: False positive - warning about not being able to connect to the internet
-# others: False positive - package not included in VM image 0.2.2020060100
+# COMBAT: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# RMariaDB: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# RPostgres: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# GlobalAncova: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# GO: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# GSVA: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# MassSpecWavelet: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
+# moe430a: False positive - package not included in VM image 0.2.2020060100 (TODO: revert this temporary workaround in future when using an updated VM image version)
 false_positive_list <- c("BiocManager", "clusterProfiler", "flowUtils", "GOSemSim", "graphite", "rgl", "tmap", "BiocInstaller", "COMBAT", "RMariaDB", "RPostgres", "GlobalAncova", "GO", "GSVA", "MassSpecWavelet", "moe430a")
 
 
