@@ -12,7 +12,10 @@ error_list <- c()
 # graphite: False positive - no warning on package load
 # rgl: Error is because the X11 server could not be loaded
 # tmap: False positive - no warning on package load
-false_positive_list <- c("BiocManager", "clusterProfiler", "flowUtils", "GOSemSim", "graphite", "rgl", "tmap")
+# BiocInstaller: False positive - warning about not being able to connect to the internet
+# others: False positive - package not included in VM image 0.2.2020060100
+false_positive_list <- c("BiocManager", "clusterProfiler", "flowUtils", "GOSemSim", "graphite", "rgl", "tmap", "BiocInstaller", "COMBAT", "RMariaDB", "RPostgres", "GlobalAncova", "GO", "GSVA", "MassSpecWavelet", "moe430a")
+
 
 # Test package with non-standard evaluation and append to the proper list
 test_package <- function(p) {
