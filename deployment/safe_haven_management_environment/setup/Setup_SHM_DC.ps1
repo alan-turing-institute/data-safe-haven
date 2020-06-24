@@ -72,6 +72,8 @@ $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storag
 $success = $success -and $?
 $_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "UpdateAADSyncRule.ps1") -Force
 $success = $success -and $?
+$_ = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "user_details_template.csv") -Force
+$success = $success -and $?
 # Expand the AD disconnection template before uploading
 $adScriptLocalFilePath = (New-TemporaryFile).FullName
 $adScriptTemplate = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw

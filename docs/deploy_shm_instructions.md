@@ -382,7 +382,20 @@ This step allows the locale (country code) to be pushed from the local AD to the
 
 
 ### Validation of AD sync
-1. Add yourself as a new Active Directory user:
+1. Make the initial sync to the Azure Active Directory
+  - Open Powershell as an administrator
+  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
+2. Add yourself as a new Active Directory user:
+  - Follow the user creation instructions from the [administrator guide](safe_haven_administrator_guide.md). In brief these involve:
+    - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
+    - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
+  - :pencil: Note that you should leave `GroupName` blank since there are no SRE groups at this point
+  This will create a user in the local Active Directory on the domain controller
+3. Go to the Azure Active Directory in `portal.azure.com`
+  - Click `Users > All users` and confirm that the new user is shown in the user list.
+  - It may take a few minutes for the synchronisation to fully propagate in Azure.
+
+<!--
   - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
   - Expand the domain
   - Right click on the `Safe Haven Research Users` OU and select `New -> User`
@@ -409,6 +422,7 @@ This step allows the locale (country code) to be pushed from the local AD to the
 4. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
+-->
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`

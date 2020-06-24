@@ -33,7 +33,10 @@
             }
         },
         "DC1_Data_Disk_Size_GB": {
-            "type": "int"
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC1 data disk in GB"
+            }
         },
         "DC1_Data_Disk_Type": {
             "type": "string"
@@ -45,7 +48,10 @@
             "type": "string"
         },
         "DC1_Os_Disk_Size_GB": {
-            "type": "int"
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC1 OS disk in GB"
+            }
         },
         "DC1_Os_Disk_Type": {
             "type": "string"
@@ -53,8 +59,14 @@
         "DC1_VM_Name": {
             "type": "string"
         },
+        "DC1_VM_Size": {
+            "type": "string"
+        },
         "DC2_Data_Disk_Size_GB": {
-            "type": "int"
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC2 data disk in GB"
+            }
         },
         "DC2_Data_Disk_Type": {
             "type": "string"
@@ -66,7 +78,10 @@
             "type": "string"
         },
         "DC2_Os_Disk_Size_GB": {
-            "type": "int"
+            "type": "int",
+            "metadata": {
+                "description": "Size of DC2 OS disk in GB"
+            }
         },
         "DC2_Os_Disk_Type": {
             "type": "string"
@@ -74,16 +89,19 @@
         "DC2_VM_Name": {
             "type": "string"
         },
+        "DC2_VM_Size": {
+            "type": "string"
+        },
         "Domain_Name": {
             "type": "string",
             "metadata": {
-                "Description": "Enter the correct public domain name"
+                "Description": "Public domain name for the SHM"
             }
         },
         "Domain_NetBIOS_Name": {
             "type": "string",
             "metadata": {
-                "Description": "Enter the correct NetBIOS name"
+                "Description": "NetBIOS name for the SHM"
             }
         },
         "External_DNS_Resolver": {
@@ -117,12 +135,6 @@
             "type": "string",
             "metadata": {
                 "description": "Enter name of subnet where you want to provision this VM"
-            }
-        },
-        "VM_Size": {
-            "type": "string",
-            "metadata": {
-                "description": "Select size of VM"
             }
         }
     },
