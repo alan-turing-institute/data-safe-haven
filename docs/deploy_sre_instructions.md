@@ -190,7 +190,7 @@ On your **deployment machine**.
 ## :fishing_pole_and_fish: Deploy virtual network and remote desktop
 ### :clubs: Create SRE DNS Zone
 On your **deployment machine**.
-- Run the `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Setup_SRE_DNS_Zone.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to manually add the specified NS records to the parent's DNS system, as follows:
 
 #### Manually add NS records
@@ -237,7 +237,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
+- Run `./Update_SRE_RDS_SSL_Certificate.ps1 -configId <SRE config ID> -emailAddress <email>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using and the email address is one that you would like to be notified when certificate expiry is approaching.
 - **NOTE:** This script should be run again whenever you want to update the certificate for this SRE.
 - **Troubleshooting:** Let's Encrypt will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.testa.dsgroupdev.co.uk`). For production environments this should usually not be an issue. The signed certificates are also stored in the key vault for easy redeployment. However, if you find yourself needing to re-run this step without the key vault secret available, either to debug an error experienced in production or when redeploying a test environment frequently during development, you should run `./Update_SRE_RDS_Ssl_Certificate.ps1 -dryRun $true` to use the Let's Encrypt staging server, which will issue certificates more frequently. However, these certificates will not be trusted by your browser, so you will need to override the security warning in your browser to access the RDS web client for testing.
 
@@ -339,7 +339,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_Databases.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Setup_SRE_Databases.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take around 30 minutes to complete, most of which is spent in Windows Update.
 
 ## :snowflake: Deploy web applications (GitLab and HackMD)
@@ -348,7 +348,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Setup_SRE_WebApp_Servers.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - The deployment will take a few minutes to complete
 
 ### :microscope: Test GitLab Server
@@ -372,7 +372,7 @@ On your **deployment machine**.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run `git fetch;git pull;git status;git log -1 --pretty="At commit %h (%H)"` to verify you are on the correct branch and up to date with `origin` (and to output this confirmation and the current commit for inclusion in the deployment record).
-- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Deploy a new VM into an SRE environment using `./Add_DSVM.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 - You will also be prompted for the VM size (optional) and the desired last octet of the IP address (the first machine deployed should use `160` here)
   - The initial shared VM should be deployed with the last octet `160`
   - The convention is that subsequent CPU-based VMs are deployed with the next unused last octet in the range `161` to `179` and GPU-based VMs are deployed with the next unused last octet between `180` and `199`.
@@ -395,7 +395,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Apply_Network_Configuration.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Apply_Network_Configuration.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 ### :fast_forward: Optional: Unpeering package mirrors
 The `Apply_Network_Configuration.ps1` script ensures that the SRE is peered to the correct mirror network.
@@ -408,7 +408,7 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Run the `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+- Run `./Unpeer_Sre_And_Mirror_Networks.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
 
 
 ## :fire: Run smoke tests on DSVM
@@ -430,4 +430,4 @@ On your **deployment machine**.
 - Open a Powershell terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Safe Haven repository.
 - Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  - Run the `./SRE_Teardown.ps1 -configId <SRE config ID>` script, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.
+  - Run `./SRE_Teardown.ps1 -configId <SRE config ID>`, where the config ID is `<SHM ID><SRE ID>` for the config file you are using.

@@ -15,12 +15,12 @@ function Copy-HashtableOverrides {
     foreach ($sourcePair in $Source.GetEnumerator()) {
         # If we hit a leaf then override the target with the source value
         if ($sourcePair.Value -isnot [Hashtable]) {
-            $target[$sourcePair.Key] = $sourcePair.Value
+            $Target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
         # If this key is not in the target then we add it
         if (-not $Target.Contains($sourcePair.Key)) {
-            $target[$sourcePair.Key] = $sourcePair.Value
+            $Target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
         Copy-HashtableOverrides $sourcePair.Value $Target[$sourcePair.Key]
