@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Configure CAP and RAP settings
@@ -46,7 +46,7 @@ Write-Output $result.Value
 
 # Configure SHM NPS for SRE RDS RADIUS client
 # -------------------------------------------
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Adding RDS Gateway as RADIUS client on SHM NPS"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Add_RDS_Gateway_RADIUS_Client_Remote.ps1"
@@ -58,7 +58,7 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
 Write-Output $result.Value
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Restart SHM NPS server
@@ -71,7 +71,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # We can only do (2) in a script, so that is what we do. An NPS restart is quite quick.
 
 # SWitch to SHM subscription
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 Add-LogMessage -Level Info "Restarting NPS Server..."
 # Restart SHM NPS
 Enable-AzVM -Name $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg
@@ -81,4 +81,4 @@ Start-Sleep 120
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

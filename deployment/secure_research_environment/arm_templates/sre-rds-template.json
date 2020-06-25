@@ -14,13 +14,25 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "Domain_Join_Password": {
+        "Domain_Join_Password_Gateway": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for DC Administrator Password"
             }
         },
-        "Domain_Join_User": {
+        "Domain_Join_Password_Session_Hosts": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Enter name for DC Administrator Password"
+            }
+        },
+        "Domain_Join_User_Gateway": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter name for DC Administrator"
+            }
+        },
+        "Domain_Join_User_Session_Hosts": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC Administrator"
@@ -36,6 +48,18 @@
             "type": "string",
             "metadata": {
                 "description": "Enter NSG Gateway Name"
+            }
+        },
+        "OU_Path_Gateway": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for gateway VMs"
+            }
+        },
+        "OU_Path_Session_Hosts": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter OU path for session host VMs"
             }
         },
         "RDS_Gateway_Admin_Password": {
@@ -599,13 +623,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
+                    "OUPath": "[parameters('OU_Path_Gateway')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Gateway'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Gateway')]"
                 }
             }
         },
@@ -625,13 +649,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
+                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
                 }
             }
         },
@@ -651,13 +675,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
+                    "OUPath": "[parameters('OU_Path_Session_Hosts')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User_Session_Hosts'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password')]"
+                    "Password": "[parameters('Domain_Join_Password_Session_Hosts')]"
                 }
             }
         }

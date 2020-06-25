@@ -59,7 +59,7 @@ if ($null -eq $kvCertificate) {
     }
     if (($null -eq $renewalDate) -or ($(Get-Date) -ge $renewalDate)) {
         Add-LogMessage -Level Warning "Removing outdated certificate from KeyVault '$keyVaultName'..."
-        $_ = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
+        $null = Remove-AzKeyVaultCertificate -VaultName $keyVaultName -Name $certificateName -Force
         $requestCertificate = $true
     }
 }
@@ -98,7 +98,7 @@ if ($requestCertificate) {
     # ------------------------------
     $azureContext = Set-AzContext -Subscription $config.shm.dns.subscriptionName
     $token = ($azureContext.TokenCache.ReadItems() | Where-Object { ($_.TenantId -eq $azureContext.Subscription.TenantId) -and ($_.Resource -eq "https://management.core.windows.net/") } | Select-Object -First 1).AccessToken
-    $_ = Set-AzContext -Subscription $config.sre.subscriptionName
+    $null = Set-AzContext -Subscription $config.sre.subscriptionName
 
     # Test DNS record creation
     # ------------------------
@@ -186,7 +186,7 @@ if ($doInstall) {
     $secretURL = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name $certificateName).Id
     $gatewayVm = Get-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName | Remove-AzVMSecret
     $gatewayVm = Add-AzVMSecret -VM $gatewayVm -SourceVaultId $vaultId -CertificateStore "My" -CertificateUrl $secretURL
-    $_ = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
+    $null = Update-AzVM -ResourceGroupName $config.sre.rds.rg -VM $gatewayVm
     if ($?) {
         Add-LogMessage -Level Success "Adding certificate succeeded"
     } else {
@@ -209,4 +209,4 @@ if ($doInstall) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

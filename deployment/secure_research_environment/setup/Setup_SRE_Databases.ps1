@@ -14,12 +14,12 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Create database resource group if it does not exist
 # ---------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.databases.rg -Location $config.sre.location
 
 # Ensure that VNet exists
 # -----------------------
@@ -66,7 +66,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
     # Attach the NSG to the appropriate subnet
     # ----------------------------------------
-    $_ = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
+    $null = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $nsg -VirtualNetwork $virtualNetwork
 
 
     try {
@@ -161,7 +161,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Create an AD service principal and get the keytab for it
             Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
-            $_ = Set-AzContext -Subscription $config.shm.subscriptionName
+            $null = Set-AzContext -Subscription $config.shm.subscriptionName
             $params = @{
                 Hostname = "`"$($databaseCfg.vmName)`""
                 Name = "`"$($dbServiceAccountName)`""
@@ -171,7 +171,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
             Write-Output $result.Value
-            $_ = Set-AzContext -Subscription $config.sre.subscriptionName
+            $null = Set-AzContext -Subscription $config.sre.subscriptionName
 
             # Deploy NIC and data disks
             $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
@@ -216,7 +216,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 ResourceGroupName = $config.sre.databases.rg
                 Size = $databaseCfg.vmSize
             }
-            $_ = Deploy-UbuntuVirtualMachine @params
+            $null = Deploy-UbuntuVirtualMachine @params
             Wait-ForAzVMCloudInit -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
             Enable-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg
         }
@@ -225,12 +225,12 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
     } finally {
         # Remove temporary NSG rules
         Add-LogMessage -Level Info "Removing temporary outbound internet access from $($databaseCfg.ip)..."
-        $_ = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
-        $_ = $nsg | Set-AzNetworkSecurityGroup
+        $null = Remove-AzNetworkSecurityRuleConfig -Name "OutboundAllowInternetTemporary" -NetworkSecurityGroup $nsg
+        $null = $nsg | Set-AzNetworkSecurityGroup
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

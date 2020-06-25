@@ -16,7 +16,7 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Tear down a single package mirror
@@ -40,7 +40,7 @@ function Remove-PackageMirror {
 # Check if Resource Group exists
 # ------------------------------
 
-$_ = Get-AzResourceGroup -Name $config.mirrors.rg -Location $config.location -ErrorVariable notExists -ErrorAction SilentlyContinue
+$null = Get-AzResourceGroup -Name $config.mirrors.rg -Location $config.location -ErrorVariable notExists -ErrorAction SilentlyContinue
 if ($notExists) {
     Add-LogMessage -Level InfoSuccess "Resource group '$($config.mirrors.rg)' does not exist"
 } else {
@@ -56,4 +56,4 @@ if ($notExists) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

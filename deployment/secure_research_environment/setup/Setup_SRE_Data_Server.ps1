@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Retrieve passwords from the keyvault
@@ -28,7 +28,7 @@ $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -
 
 # Create data server resource group if it does not exist
 # ------------------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.dataserver.rg -Location $config.sre.location
 
 
 # Set up the NSG for the data server
@@ -71,7 +71,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 
 # Move Data Server VM into correct OU
 # -----------------------------------
-$_ = Set-AzContext -Subscription $config.shm.subscriptionName
+$null = Set-AzContext -Subscription $config.shm.subscriptionName
 Add-LogMessage -Level Info "Adding data server VM to correct OUs on SHM DC..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
 $params = @{
@@ -80,7 +80,7 @@ $params = @{
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value
-$_ = Set-AzContext -Subscription $config.sre.subscriptionName
+$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set locale, install updates and reboot
@@ -106,4 +106,4 @@ Write-Output $result.Value
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;

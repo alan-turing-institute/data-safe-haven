@@ -129,15 +129,15 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 # ---------------------------------
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.Name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     Shm_Id = "$($config.id)".ToLower()
     Subnet_Gateway_CIDR = $config.network.vnet.subnets.gateway.cidr
-    Subnet_Gateway_Name = $config.network.vnet.subnets.gateway.Name
+    Subnet_Gateway_Name = $config.network.vnet.subnets.gateway.name
     Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
-    Subnet_Identity_Name = $config.network.vnet.subnets.identity.Name
+    Subnet_Identity_Name = $config.network.vnet.subnets.identity.name
     Subnet_Web_CIDR = $config.network.vnet.subnets.web.cidr
-    Subnet_Web_Name = $config.network.vnet.subnets.web.Name
-    Virtual_Network_Name = $config.network.vnet.Name
+    Subnet_Web_Name = $config.network.vnet.subnets.web.name
+    Virtual_Network_Name = $config.network.vnet.name
     VNET_CIDR = $config.network.vnet.cidr
     VNET_DNS_DC1 = $config.dc.ip
     VNET_DNS_DC2 = $config.dcb.ip
@@ -153,9 +153,9 @@ $null = Deploy-ResourceGroup -Name $config.dc.rg -Location $config.location
 # Retrieve usernames/passwords from the keyvault
 # ----------------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-$safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
+$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
+$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+$safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20
 
 
 # Deploy SHM DC from template
@@ -189,9 +189,9 @@ $params = @{
     External_DNS_Resolver = $config.dc.external_dns_resolver
     SafeMode_Password = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
     Shm_Id = $config.id
-    Virtual_Network_Name = $config.network.vnet.Name
+    Virtual_Network_Name = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.Name
+    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 

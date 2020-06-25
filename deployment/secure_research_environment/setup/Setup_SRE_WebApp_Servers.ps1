@@ -14,7 +14,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Retrieve passwords from the keyvault
@@ -83,7 +83,7 @@ $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 
 # Create webapps resource group
 # --------------------------------
-$_ = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
+$null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.location
 
 
 # Deploy GitLab/HackMD VMs from template
@@ -158,4 +158,4 @@ foreach ($nameVMNameParamsPair in (("HackMD", $config.sre.webapps.hackmd.vmName)
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext;
+$null = Set-AzContext -Context $originalContext;
