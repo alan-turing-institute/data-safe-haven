@@ -4,9 +4,9 @@
     "id": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
+      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "uksouth",

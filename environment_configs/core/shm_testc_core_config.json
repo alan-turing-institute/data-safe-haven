@@ -37,6 +37,15 @@
                 "domainAdminUsername": "shm-testc-vm-admin-username"
             }
         },
+        "users": {
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-testc-localadsync-password"
+                }
+            }
+        },
         "dc": {
             "rg": "RG_SHM_DC",
             "ip": "10.0.0.250",

@@ -6,8 +6,8 @@
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "stateCountyRegion": "London",
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -104,7 +104,6 @@
       "name": "kv-shm-testa",
       "secretNames": {
         "aadAdminPassword": "shm-testa-aad-admin-password",
-        "aadLocalSyncPassword": "shm-testa-localadsync-password",
         "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
         "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
         "domainAdminUsername": "shm-testa-vm-admin-username",
@@ -114,6 +113,22 @@
         "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-testa-vpn-client-cert",
         "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "serviceServers": {
+          "name": "TESTA Service Servers Manager",
+          "samAccountName": "testaserviceservers",
+          "passwordSecretName": "shm-testa-computer-manager-password-service-servers"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "samAccountName": "localadsync",
+          "passwordSecretName": "shm-testa-localadsync-password"
+        }
       }
     },
     "dc": {

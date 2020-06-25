@@ -2,7 +2,7 @@
     "subscriptionName": "Safe Haven Management Test B",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "demo.dsgroupdev.co.uk",
     "netbiosName": "SAFEHAVENDEMO",
@@ -33,8 +33,16 @@
         "keyVault": {
             "rg": "RG_SHM_SECRETS",
             "secretNames": {
-                "aadLocalSyncPassword": "shm-demo-localadsync-password",
                 "domainAdminUsername": "shm-demo-vm-admin-username"
+            }
+        },
+        "users": {
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-demo-localadsync-password"
+                }
             }
         },
         "dc": {

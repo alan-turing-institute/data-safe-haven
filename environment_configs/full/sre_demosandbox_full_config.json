@@ -6,8 +6,8 @@
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "stateCountyRegion": "London",
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -104,7 +104,6 @@
       "name": "kv-shm-demo",
       "secretNames": {
         "aadAdminPassword": "shm-demo-aad-admin-password",
-        "aadLocalSyncPassword": "shm-demo-localadsync-password",
         "buildImageAdminUsername": "shm-demo-buildimage-admin-username",
         "buildImageAdminPassword": "shm-demo-buildimage-admin-password",
         "domainAdminUsername": "shm-demo-vm-admin-username",
@@ -114,6 +113,22 @@
         "vpnCaCertPassword": "shm-demo-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-demo-vpn-client-cert",
         "vpnClientCertPassword": "shm-demo-vpn-client-cert-password"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "serviceServers": {
+          "name": "SAFEHAVENDEMO Service Servers Manager",
+          "samAccountName": "demoserviceservers",
+          "passwordSecretName": "shm-demo-computer-manager-password-service-servers"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "samAccountName": "localadsync",
+          "passwordSecretName": "shm-demo-localadsync-password"
+        }
       }
     },
     "dc": {

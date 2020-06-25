@@ -32,8 +32,16 @@
         "keyVault": {
             "rg": "RG_SHM_SECRETS",
             "secretNames": {
-                "aadLocalSyncPassword": "shm-testa-localadsync-password",
                 "domainAdminUsername": "shm-testa-vm-admin-username"
+            }
+        },
+        "users": {
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-testa-localadsync-password"
+                }
             }
         },
         "dc": {

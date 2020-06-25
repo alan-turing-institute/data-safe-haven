@@ -6,8 +6,8 @@
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "stateCountyRegion": "London",
+      "townCity": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -104,7 +104,6 @@
       "name": "kv-shm-testc",
       "secretNames": {
         "aadAdminPassword": "shm-testc-aad-admin-password",
-        "aadLocalSyncPassword": "shm-testc-localadsync-password",
         "buildImageAdminUsername": "shm-testc-buildimage-admin-username",
         "buildImageAdminPassword": "shm-testc-buildimage-admin-password",
         "domainAdminUsername": "shm-testc-vm-admin-username",
@@ -113,7 +112,24 @@
         "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
         "vpnCaCertPassword": "shm-testc-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-testc-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testc-vpn-client-cert-password"
+        "vpnClientCertPassword": "shm-testc-vpn-client-cert-password",
+        "aadLocalSyncPassword": "shm-testc-localadsync-password"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "serviceServers": {
+          "name": "SAFEHAVENTESTC Service Servers Manager",
+          "samAccountName": "testcserviceservers",
+          "passwordSecretName": "shm-testc-computer-manager-password-service-servers"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "samAccountName": "localadsync",
+          "passwordSecretName": "shm-testc-localadsync-password"
+        }
       }
     },
     "dc": {
@@ -485,16 +501,16 @@
     "databases": {
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-        "vmName": "SQL-ING-SANDBOX",
-        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
         "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
-        "port": "14330"
+        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
+        "port": "14330",
+        "vmName": "SQL-ING-SANDBOX",
+        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password"
       },
       "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
+        "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password",
         "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password"
+        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password"
       }
     },
     "dsvm": {
