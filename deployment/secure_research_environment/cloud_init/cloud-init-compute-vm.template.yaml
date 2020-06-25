@@ -300,7 +300,7 @@ write_files:
       OnAccessIncludePath /home
       OnAccessIncludePath /scratch
       OnAccessIncludePath /mnt
-      # Scane on access for samba shares
+      # Scan on access for samba shares
       OnAccessIncludePath /shared
       OnAccessIncludePath /data
       OnAccessIncludePath /output
