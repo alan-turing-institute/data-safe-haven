@@ -38,13 +38,14 @@ if ($notExists) {
     foreach ($vm in Get-AzVM -ResourceGroupName $config.dsvmImage.build.rg) {
         Add-LogMessage -Level Info "  $($vm.Name)"
     }
-    throw "Could not find a machine called '$vmName'!"
+    Add-LogMessage -Level Fatal "Could not find a machine called '$vmName'!"
 }
 
 
 # Ensure that the VM is running
 # -----------------------------
 Enable-AzVM -Name $vmName -ResourceGroupName $config.dsvmImage.build.rg
+Start-Sleep 60  # Wait to ensure that SSH is able to accept connections
 
 
 # Deprovision the VM over SSH
@@ -54,7 +55,9 @@ $publicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.dsvmImage.build.rg
 Add-LogMessage -Level Info "... preparing to send deprovisioning command over SSH to: $publicIp..."
 Add-LogMessage -Level Info "... the password for this account is in the '$($config.keyVault.secretNames.buildImageAdminPassword)' secret in the '$($config.dsvmImage.keyVault.Name)' key vault"
 ssh -t ${buildVmAdminUsername}@${publicIp} 'sudo /installation/deprovision_vm.sh | sudo tee /installation/deprovision.log'
-
+if (-not $?) {
+    Add-LogMessage -Level Fatal "Unable to send deprovisioning command!"
+} 
 
 # Poll VM to see whether it has finished running
 # ----------------------------------------------
