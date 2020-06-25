@@ -185,6 +185,24 @@ write_files:
         create_options: NOLOGIN IN ROLE ldap_groups
         grant_options:
 
+  - path: "/opt/installation/install-postgres-extensions.sql"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      CREATE SCHEMA IF NOT EXISTS postgis;
+      CREATE EXTENSION IF NOT EXISTS postgis;
+      CREATE EXTENSION IF NOT EXISTS postgis_topology;
+      CREATE EXTENSION IF NOT EXISTS postgis_sfcgal;
+      CREATE EXTENSION IF NOT EXISTS pgrouting;
+      CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+      CREATE EXTENSION IF NOT EXISTS unaccent;
+      CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      CREATE EXTENSION IF NOT EXISTS bloom;
+      CREATE EXTENSION IF NOT EXISTS citext;
+      CREATE EXTENSION IF NOT EXISTS cube;
+      CREATE EXTENSION IF NOT EXISTS file_fdw;
+      CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+      CREATE EXTENSION IF NOT EXISTS earthdistance;
 
   - path: "/opt/installation/create-postgres-triggers.sql"
     owner: root:root
@@ -253,7 +271,10 @@ packages:
   - ldap-utils
   - libpq-dev
   - make
-  - postgresql
+  - postgresql-12
+  - postgresql-12-pgrouting
+  - postgresql-12-postgis-3-scripts
+  - postgresql-contrib-12
   - ruby
   - ruby-dev
   - realmd
@@ -342,6 +363,10 @@ runcmd:
   # - Grant superuser privileges to sysadmins
   - echo ">=== Setting appropriate permissions on public schema... ===<"
   - sudo -i -u postgres psql -f /opt/installation/create-postgres-triggers.sql
+
+  # Install postgres extensions
+  - echo ">=== Installing postgis schema and extensions... ===<"
+  - sudo -i -u postgres psql -f /opt/installation/install-postgres-extensions.sql
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"
