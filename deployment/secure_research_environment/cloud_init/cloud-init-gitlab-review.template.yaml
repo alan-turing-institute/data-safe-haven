@@ -210,10 +210,8 @@ runcmd:
   # --------------------------------
   # ADD CRONTAB ENTRIES FOR GITLAB SCRIPTS
   # --------------------------------
-  - echo "*** Adding zipfile_to_gitlab_project.py to crontab ***"
-  - echo "*/10 * * * * gitlabdaemon /home/gitlabdaemon/zipfile_to_gitlab_project.py" >> /etc/crontab
-  - echo "*** Adding check_merge_requests.py to crontab ***"
-  - echo "5,15,25,35,45,55 * * * * gitlabdaemon /home/gitlabdaemon/check_merge_requests.py" >> /etc/crontab
+  - echo "*** Adding review_steps.sh to crontab ***"
+  - echo "*/10 * * * * gitlabdaemon 'flock -n /tmp/review_steps.lock /home/gitlabdaemon/review_steps.sh'" >> /etc/crontab
   # --------------------------------
   # GIVE gitlabdaemon OWNERSHIP OF THEIR HOME DIRECTORY
   # --------------------------------
