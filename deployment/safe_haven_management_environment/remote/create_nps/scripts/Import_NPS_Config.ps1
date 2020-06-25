@@ -37,11 +37,11 @@ foreach ($blobName in $blobNames) {
     $fileDirRel = Split-Path -Parent $blobName
     $fileDirFull = Join-Path $remoteDir $fileDirRel
     if (-not (Test-Path -Path $fileDirFull)) {
-        $_ = New-Item -ItemType directory -Path $fileDirFull
+        $null = New-Item -ItemType directory -Path $fileDirFull
     }
     $filePath = Join-Path $fileDirFull $fileName
     $blobUrl = "https://$storageAccountName.blob.core.windows.net/$storageContainerName/$blobName$sasToken"
-    $_ = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
+    $null = Invoke-WebRequest -Uri $blobUrl -OutFile $filePath
 }
 
 

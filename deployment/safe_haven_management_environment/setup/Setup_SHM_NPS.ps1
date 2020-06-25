@@ -26,8 +26,9 @@ $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
-$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20
+$domainJoinUsername = $config.users.computerManagers.serviceServers.samAccountName
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.users.computerManagers.serviceServers.passwordSecretName -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.Name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
 
 
@@ -54,15 +55,18 @@ if ($success) {
     Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
 }
 
+
 # Deploy NPS from template
 # ------------------------
 Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
+# NB. We do not currently use the dedicated service-servers computer management user.
+# This will need some deeper thought about which OU each VM should belong to.
 $params = @{
     Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    Administrator_User = $domainAdminUsername
+    Administrator_User = $vmAdminUsername
     BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
-    DC_Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    DC_Administrator_User = $domainAdminUsername
+    Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+    Domain_Join_User = $domainJoinUsername
     Domain_Name = $config.domain.fqdn
     NPS_Data_Disk_Size_GB = [int]$config.nps.disks.data.sizeGb
     NPS_Data_Disk_Type = $config.nps.disks.data.type
@@ -91,8 +95,8 @@ $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMNam
 Write-Output $result.Value
 
 
-# Import RDG conditional-access-policy settings
-# ---------------------------------------------
+# Import conditional-access-policy settings
+# -----------------------------------------
 Add-LogMessage -Level Info "Importing NPS configuration '$($config.nps.vmName)'..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }

@@ -5,24 +5,27 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Server admin name")]
+    [Parameter(HelpMessage = "Username for a user with domain admin privileges")]
     [ValidateNotNullOrEmpty()]
     [string]$domainAdminUsername,
-    [Parameter(HelpMessage = "Name of domain controller VM")]
+    [Parameter(HelpMessage = "Name of this VM (the domain controller)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainControllerVmName,
     [Parameter(HelpMessage = "NetBios name")]
     [ValidateNotNullOrEmpty()]
     [string]$netbiosName,
-    [Parameter(HelpMessage = "Enter Path to GPO backup files")]
+    [Parameter(HelpMessage = "Path to GPO backup files")]
     [ValidateNotNullOrEmpty()]
     [string]$ouBackupPath,
-    [Parameter(HelpMessage = "Name of the computer managers user group")]
+    [Parameter(HelpMessage = "Name of the computer managers user group (eg. 'SG Safe Haven Computer Management Users')")]
     [ValidateNotNullOrEmpty()]
     [string]$sgComputerManagersName,
-    [Parameter(HelpMessage = "Name of the server administrator group")]
+    [Parameter(HelpMessage = "Name of the server administrator group (eg. 'SG Safe Haven Server Administrators')")]
     [ValidateNotNullOrEmpty()]
     [string]$sgServerAdminsName,
+    [Parameter(HelpMessage = "Name of the service servers group (eg. 'Safe Haven Service Servers')")]
+    [ValidateNotNullOrEmpty()]
+    [string]$sgServiceServersName,
     [Parameter(HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
     [ValidateNotNullOrEmpty()]
     [string]$shmDomainOu,
@@ -57,6 +60,56 @@ function Add-ShmUserToGroup {
     }
 }
 
+function Grant-ComputerRegistrationPermissions {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of a container to grant permissions over")]
+        $ContainerName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the user or group that will be given permissions.")]
+        $UserPrincipalName
+    )
+    # TODO: check whether these permissions can replace the GRGWCCDC set
+    # dsacls $computersContainer /I:S /G "$($user):GR;;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;pwdLastSet;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;Logon Information;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;description;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;displayName;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;sAMAccountName;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;DNS Host Name Attributes;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;Account Restrictions;computer"
+    # dsacls $computersContainer /I:S /G "$($user):WP;servicePrincipalName;computer"
+    # dsacls $computersContainer /I:S /G "$($user):CC;computer;organizationalUnit"
+    $adContainer = Get-ADObject -Filter "Name -eq '$ContainerName'"
+    # Add 'generic read', 'generic write', 'create child' and 'delete child' permissions on the container
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:GRGWCCDC"
+    $success = $?
+    # Add 'read property' and 'write property' on service principal name
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;servicePrincipalName"
+    $success = $success -And $?
+    # Add 'read property' and 'write property' on DNS attributes
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;DNS Host Name Attributes"
+    $success = $success -And $?
+    # Add 'read property' and 'write property' on supported encryption types
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;msDS-SupportedEncryptionTypes"
+    $success = $success -And $?
+    # Add 'control access' permission on computer password for child computers
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:CA;Change Password;computer"
+    $success = $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:CA;Reset Password;computer"
+    $success = $?
+    # Add 'read property' and 'write property' on operating system attributes for child computers
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystem;computer"
+    $success = $success -And $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystemVersion;computer"
+    $success = $success -And $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystemServicePack;computer"
+    $success = $success -And $?
+    if ($success) {
+        Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to ${UserPrincipalName}"
+    } else {
+        Write-Output " [x] Failed to delegate permissions on the '$ContainerName' container to ${UserPrincipalName}!"
+    }
+}
+
 
 function New-ShmUser {
     param(
@@ -79,14 +132,14 @@ function New-ShmUser {
                    -Path "$Path" `
                    -SamAccountName $SamAccountName `
                    -DisplayName "$Name" `
-                   -Description "Azure AD Connect service account" `
+                   -Description "$Name" `
                    -AccountPassword $AccountPassword `
                    -Enabled $true `
                    -PasswordNeverExpires $true
         if ($?) {
-            Write-Output " [o] AD Sync Service account '$Name' ($SamAccountName) created successfully"
+            Write-Output " [o] Account '$Name' ($SamAccountName) created successfully"
         } else {
-            Write-Output " [x] AD Sync Service account '$Name' ($SamAccountName) creation failed!"
+            Write-Output " [x] Account '$Name' ($SamAccountName) creation failed!"
         }
     }
 }
@@ -179,16 +232,16 @@ $serviceOuPath = "OU=Safe Haven Service Accounts,$shmDomainOu"
 # NB. As of build 1.4.###.# it is no longer supported to use an enterprise admin or a domain admin account with AD Connect.
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
-# NPS domain joining service account
-Write-Output "Creating NPS domain joining account $($userAccounts.nps.samAccountName)..."
-New-ShmUser -Name "$($userAccounts.nps.name)" -SamAccountName "$($userAccounts.nps.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.nps.password -AsPlainText -Force) -Domain $shmFdqn
+# Service servers domain joining service account
+Write-Output "Creating service servers domain joining account $($userAccounts.serviceServers.samAccountName)..."
+New-ShmUser -Name "$($userAccounts.serviceServers.name)" -SamAccountName "$($userAccounts.serviceServers.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.serviceServers.password -AsPlainText -Force) -Domain $shmFdqn
 
 
 # Add users to security groups
 # ----------------------------
 Write-Output "Adding users to security groups..."
 Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $sgServerAdminsName
-Add-ShmUserToGroup -SamAccountName $userAccounts.nps.samAccountName -GroupName $sgComputerManagersName
+Add-ShmUserToGroup -SamAccountName $userAccounts.serviceServers.samAccountName -GroupName $sgComputerManagersName
 
 
 # Import GPOs onto domain controller
@@ -298,49 +351,10 @@ if ($success) {
 }
 
 
-# Give permissions on the computers container to the computer managers group
-# This allows the computer managers to register computers in the domain when joining
-# TODO: check whether these permissions can replace the GRGWCCDC set
-# dsacls $computersContainer /I:S /G "$($user):GR;;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;pwdLastSet;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;Logon Information;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;description;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;displayName;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;sAMAccountName;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;DNS Host Name Attributes;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;Account Restrictions;computer"
-# dsacls $computersContainer /I:S /G "$($user):WP;servicePrincipalName;computer"
-# dsacls $computersContainer /I:S /G "$($user):CC;computer;organizationalUnit"
-# ---------------------------------------------------------------------------
-Write-Output "Delegating Active Directory registration permissions to the computer managers group..."
-$computersContainer = Get-ADObject -Filter "Name -eq 'Computers'"
-# Add 'generic read', 'generic write', 'create child' and 'delete child' permissions
-$null = dsacls $computersContainer /I:T /G "${netbiosname}\$($sgComputerManagersName):GRGWCCDC"
-$success = $?
-# Add 'control access' permission on computer password for child computers
-$null = dsacls $computersContainer /I:T /G "${netbiosname}\${sgComputerManagersName}:CA;Change Password;computer"
-$null = dsacls $computersContainer /I:S /G "${netbiosname}\${sgComputerManagersName}:CA;Reset Password;computer"
-$success = $?
-# Add 'read property' and 'write property' on service principal name
-$null = dsacls $computersContainer /I:T /G "${netbiosname}\${sgComputerManagersName}:RPWP;servicePrincipalName"
-# Add 'read property' and 'write property' on DNS attributes
-$null = dsacls $computersContainer /I:T /G "${netbiosname}\${sgComputerManagersName}:RPWP;DNS Host Name Attributes"
-# Add 'read property' and 'write property' on operating system attributes for child computers
-$null = dsacls $computersContainer /I:S /G "${netbiosname}\${sgComputerManagersName}:RPWP;operatingSystem;computer"
-$success = $success -And $?
-$null = dsacls $computersContainer /I:S /G "${netbiosname}\${sgComputerManagersName}:RPWP;operatingSystemVersion;computer"
-$success = $success -And $?
-$null = dsacls $computersContainer /I:S /G "${netbiosname}\${sgComputerManagersName}:RPWP;operatingSystemServicePack;computer"
-$success = $success -And $?
-# Add 'read property' and 'write property' on supported encryption types
-$null = dsacls $computersContainer /I:T /G "${netbiosname}\${sgComputerManagersName}:RPWP;msDS-SupportedEncryptionTypes"
-$success = $success -And $?
-
-
-
-if ($success) {
-    Write-Output " [o] Successfully delegated Active Directory permissions"
-} else {
-    Write-Output " [x] Failed to delegate Active Directory permissions"
-}
-
+# Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
+# ---------------------------------------------------------------------------------------------------------
+Write-Output "Delegating Active Directory registration permissions to service users..."
+# Allow computer managers to register computers in the 'Computers' container
+Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\${sgComputerManagersName}"
+# Allow the service server user to register computers in the 'Safe Haven Service Servers' container
+Grant-ComputerRegistrationPermissions -ContainerName "$sgServiceServersName" -UserPrincipalName "${netbiosname}\$($userAccounts.serviceServers.samAccountName)"

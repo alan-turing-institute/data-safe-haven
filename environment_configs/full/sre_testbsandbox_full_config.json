@@ -6,8 +6,8 @@
     "organisation": {
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "stateCountyRegion": "London"
+      "stateCountyRegion": "London",
+      "townCity": "London"
     },
     "location": "uksouth",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -104,7 +104,6 @@
       "name": "kv-shm-testb",
       "secretNames": {
         "aadAdminPassword": "shm-testb-aad-admin-password",
-        "aadLocalSyncPassword": "shm-testb-aad-localsync-password",
         "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
         "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
         "domainAdminUsername": "shm-testb-domain-admin-username",
@@ -114,6 +113,22 @@
         "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-testb-vpn-client-cert",
         "vpnClientCertPassword": "shm-testb-vpn-client-cert-password"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "serviceServers": {
+          "name": "TESTB Service Servers Manager",
+          "samAccountName": "testbserviceservers",
+          "passwordSecretName": "shm-testb-computer-manager-password-service-servers"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "TESTB Local AD Sync Administrator",
+          "samAccountName": "testblocaladsync",
+          "passwordSecretName": "shm-testb-aad-localsync-password"
+        }
       }
     },
     "dc": {

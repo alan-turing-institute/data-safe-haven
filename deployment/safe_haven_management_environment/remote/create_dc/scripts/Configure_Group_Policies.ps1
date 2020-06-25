@@ -5,15 +5,15 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position = 0, HelpMessage = "Path to GPO backup files")]
+    [Parameter(HelpMessage = "Fully-qualified SHM domain name")]
     [string]$shmFqdn,
-    [Parameter(Position = 0, HelpMessage = "Name of the server administrator group")]
+    [Parameter(HelpMessage = "Name of the server administrator group")]
     [string]$serverAdminSgName
 )
 
-Write-Host "Configuring group policies"
 
 # Get SID for the Local Administrators group
+# ------------------------------------------
 $groupSID = ""
 $gpo = Get-GPO -Name "All servers - Local Administrators"
 [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.ID -ReportType xml
@@ -22,9 +22,12 @@ foreach ($group in $gpoReportXML.GPO.Computer.ExtensionData.Extension.Restricted
         $groupSID = $group.GroupName.SID.'#text'
     }
 }
-Write-Host "Found the 'Local Administrators' group: $groupSID"
+Write-Output "Found the 'Local Administrators' group: $groupSID"
 
-# Write GptTmpl file
+
+# Edit GptTmpl file controlling which domain users should be considered local administrators
+# ------------------------------------------------------------------------------------------
+Write-Output "Ensuring that members of '${serverAdminSgName}' are local administrators"
 $GptTmplString = @"
 [Unicode]
 Unicode=yes
@@ -37,19 +40,22 @@ Revision=1
 "@
 Set-Content -Path "F:\SYSVOL\domain\Policies\{$($gpo.ID)}\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf" -Value "$GptTmplString"
 if ($?) {
-    Write-Host " [o] Successfully set group policies for 'Local Administrators'"
+    Write-Output " [o] Successfully set group policies for 'Local Administrators'"
 } else {
-    Write-Host " [x] Failed to set group policies for 'Local Administrators'"
+    Write-Output " [x] Failed to set group policies for 'Local Administrators'"
 }
 
 
 # Set the layout file for the Remote Desktop servers
 # --------------------------------------------------
-Write-Host "Setting the layout file for the Remote Desktop servers..."
-$_ = Set-GPRegistryValue -Name "Session Servers - Remote Desktop Control" -Type "ExpandString" -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
-                         -ValueName "StartLayoutFile" -Value "\\$shmFqdn\SYSVOL\$shmFqdn\scripts\ServerStartMenu\LayoutModification.xml"
+Write-Output "Setting the layout file for the Remote Desktop servers..."
+$null = Set-GPRegistryValue -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
+                            -Name "Session Servers - Remote Desktop Control" `
+                            -Type "ExpandString" `
+                            -ValueName "StartLayoutFile" `
+                            -Value "\\$shmFqdn\SYSVOL\$shmFqdn\scripts\ServerStartMenu\LayoutModification.xml"
 if ($?) {
-    Write-Host " [o] Succeeded"
+    Write-Output " [o] Succeeded"
 } else {
-    Write-Host " [x] Failed!"
+    Write-Output " [x] Failed!"
 }

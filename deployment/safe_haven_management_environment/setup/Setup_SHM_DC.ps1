@@ -62,27 +62,21 @@ if ($success) {
 }
 # Upload artifacts for configuring the DC
 Add-LogMessage -Level Info "[ ] Uploading domain controller (DC) configuration files to blob storage"
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "CreateUsers.ps1") -Force
-$success = $success -and $?
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "GPOs.zip") -Force
-$success = $?
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Run_ADSync.ps1") -Force
-$success = $success -and $?
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "StartMenuLayoutModification.xml") -Force
-$success = $success -and $?
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "UpdateAADSyncRule.ps1") -Force
-$success = $success -and $?
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "user_details_template.csv") -Force
-$success = $success -and $?
-# Expand the AD disconnection template before uploading
-$adScriptLocalFilePath = (New-TemporaryFile).FullName
-$adScriptTemplate = Get-Content (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration" "Disconnect_AD.template.ps1") -Raw
-$adScriptTemplate.Replace('<shm-keyvault-name>', $config.keyvault.name).
-                  Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
-                  Replace('<shm-fqdn>', $config.domain.fqdn) | Out-File $adScriptLocalFilePath
-$null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
-$success = $success -and $?
-Remove-Item $adScriptLocalFilePath
+$success = $true
+foreach ($filePath in $(Get-ChildItem -File (Join-Path $PSScriptRoot ".." "remote" "create_dc" "artifacts" "shm-dc1-configuration"))) {
+    if ($($filePath | Split-Path -Leaf) -eq "Disconnect_AD.template.ps1") {
+        # Expand the AD disconnection template before uploading
+        $adScriptLocalFilePath = (New-TemporaryFile).FullName
+        (Get-Content $filePath -Raw).Replace('<shm-keyvault-name>', $config.keyvault.name).
+                                     Replace('<aad-admin-password-name>', $config.keyvault.secretNames.aadAdminPassword).
+                                     Replace('<shm-fqdn>', $config.domain.fqdn) | Out-File $adScriptLocalFilePath
+        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
+        $null = Remove-Item $adScriptLocalFilePath
+    } else {
+        $null = Set-AzStorageBlobContent -Container "shm-configuration-dc" -Context $storageAccount.Context -File $filePath -Force
+    }
+    $success = $success -and $?
+}
 if ($success) {
     Add-LogMessage -Level Success "Uploaded domain controller (DC) configuration files"
 } else {
@@ -240,6 +234,7 @@ $params = @{
     ouBackupPath = "`"C:\Installation\GPOs`""
     sgComputerManagersName = "`"$($config.domain.securityGroups.computerManagers.name)`""
     sgServerAdminsName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
+    sgServiceServersName = "`"$($config.domain.serviceServerOuPath.Split(',')[0].Replace('OU=', ''))`""
     shmDomainOu = "`"$($config.domain.dn)`""
     shmFdqn = "`"$($config.domain.fqdn)`""
     userAccountsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))

@@ -223,7 +223,6 @@ function Get-ShmFullConfig {
         name = "kv-shm-$($shm.id)".ToLower() | Limit-StringLength 24
         secretNames = [ordered]@{
             aadAdminPassword = "shm-$($shm.id)-aad-admin-password".ToLower()
-            aadLocalSyncPassword = "shm-$($shm.id)-aad-localsync-password".ToLower()
             buildImageAdminUsername = "shm-$($shm.id)-buildimage-admin-username".ToLower()
             buildImageAdminPassword = "shm-$($shm.id)-buildimage-admin-password".ToLower()
             domainAdminUsername = "shm-$($shm.id)-domain-admin-username".ToLower()
@@ -233,6 +232,25 @@ function Get-ShmFullConfig {
             vpnCaCertPassword = "shm-$($shm.id)-vpn-ca-cert-password".ToLower()
             vpnClientCertificate = "shm-$($shm.id)-vpn-client-cert".ToLower()
             vpnClientCertPassword = "shm-$($shm.id)-vpn-client-cert-password".ToLower()
+        }
+    }
+
+    # SHM users
+    # ---------
+    $shm.users = [ordered]@{
+        computerManagers = [ordered]@{
+            serviceServers = [ordered]@{
+                name = "$($shm.domain.netbiosName) Service Servers Manager"
+                samAccountName = "$($shm.id)serviceservers".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-service-servers".ToLower()
+            }
+        }
+        serviceAccounts = [ordered]@{
+            aadLocalSync = [ordered]@{
+                name = "$($shm.domain.netbiosName) Local AD Sync Administrator"
+                samAccountName = "$($shm.id)localadsync".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-aad-localsync-password".ToLower()
+            }
         }
     }
 
@@ -508,7 +526,8 @@ function Add-SreConfig {
         }
     }
 
-    # --- Domain users ---
+    # SRE users
+    # ---------
     $config.sre.users = [ordered]@{
         computerManagers = [ordered]@{
             gitlab = [ordered]@{

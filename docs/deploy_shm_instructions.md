@@ -375,14 +375,13 @@ rather than simply `<admin username>`)
 
 ### Additional AAD Connect Configuration
 This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
-
-1. Update the AAD rules
-  - Open Powershell as an administrator
-  - Run `C:\Installation\UpdateAADSyncRule.ps1`
+Update the AAD rules
+- Open Powershell as an administrator
+- Run `C:\Installation\UpdateAADSyncRule.ps1`
 
 
 ### Validation of AD sync
-1. Make the initial sync to the Azure Active Directory
+1. Make the initial synchronisation to the Azure Active Directory
   - Open Powershell as an administrator
   - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
 2. Add yourself as a new Active Directory user:
@@ -390,39 +389,11 @@ This step allows the locale (country code) to be pushed from the local AD to the
     - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
     - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
   - :pencil: Note that you should leave `GroupName` blank since there are no SRE groups at this point
-  This will create a user in the local Active Directory on the domain controller
+  This will create a user in the local Active Directory on the domain controller and start the synchronisation to Azure Active Directory.
 3. Go to the Azure Active Directory in `portal.azure.com`
   - Click `Users > All users` and confirm that the new user is shown in the user list.
   - It may take a few minutes for the synchronisation to fully propagate in Azure.
 
-<!--
-  - In Server Manager select `Tools > Active Directory Users and Computers` (or open the `Active Directory Users and Computers` desktop app directly)
-  - Expand the domain
-  - Right click on the `Safe Haven Research Users` OU and select `New -> User`
-  - Create a new user:
-    - First name: `<your first name>`
-    - Last name: `<your last name>`
-    - User login name: `<your first name>.<your last name>`
-    - Click `Next`
-  - Password:
-    - Choose something that is
-      - At least 6 characters
-      - Contains uppercase, lowercase and digits
-    - Ensure that `User must change password at next logon` is ticked
-    - Ensure that `Password never expires` is not ticked
-    - Click `Next`
-  - Click `Finish`
-2. Set the correct region
-  - The user you have just created should now appear in the list of `Safe Haven Research Users` (if not, then right click and select `Refresh`)
-  - Right click on this user and select `Properties`
-  - Go to the `Address` tab and under the `Country/region` drop-down select `United Kingdom`
-3. Force a sync to the Azure Active Directory
-  - Open Powershell as an administrator
-  - Run `C:\Installation\Run_ADSync.ps1 -sync Initial`
-4. Go to the Azure Active Directory in `portal.azure.com`
-  - Click `Users > All users` and confirm that the new user is shown in the user list.
-  - It may take a few minutes for the synchronisation to fully propagate in Azure.
--->
 
 ### Configure AAD side of AD connect
 1. Go to the Azure Active Directory in `portal.azure.com`

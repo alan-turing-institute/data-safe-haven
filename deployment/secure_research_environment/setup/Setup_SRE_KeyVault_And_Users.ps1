@@ -77,16 +77,15 @@ try {
 }
 
 
-
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
 # Load SRE groups
 $groups = $config.sre.domain.securityGroups
-# Load SRE LDAP users
-$ldapUsers = $config.sre.users.computerManagers
-foreach ($user in $ldapUsers.Keys) {
-    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $ldapUsers[$user]["passwordSecretName"] -DefaultLength 20
+# Load SRE computer manager users
+$computerManagers = $config.sre.users.computerManagers
+foreach ($user in $computerManagers.Keys) {
+    $computerManagers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $computerManagers[$user]["passwordSecretName"] -DefaultLength 20
 }
 # Load other SRE service users
 $serviceUsers = $config.sre.users.serviceAccounts
@@ -104,9 +103,8 @@ $params = @{
     shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.computerManagers.name)`""
     shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
     groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
-    ldapUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($ldapUsers | ConvertTo-Json)))
+    computerManagersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($computerManagers | ConvertTo-Json)))
     serviceUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
-    researchUserOuPath = "`"$($config.shm.domain.userOuPath)`""
     securityOuPath = "`"$($config.shm.domain.securityOuPath)`""
     serviceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
 }
