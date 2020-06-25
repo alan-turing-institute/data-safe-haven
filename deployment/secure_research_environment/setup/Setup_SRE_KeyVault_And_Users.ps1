@@ -105,8 +105,8 @@ $params = @{
     groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
     computerManagersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($computerManagers | ConvertTo-Json)))
     serviceUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
-    securityOuPath = "`"$($config.shm.domain.securityOuPath)`""
-    serviceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
+    securityOuPath = "`"$($config.shm.domain.ous.securityGroups.path)`""
+    serviceOuPath = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value

@@ -14,13 +14,13 @@
                 "description": "Enter name of storage account used for boot diagnostics"
             }
         },
-        "DC_Administrator_Password": {
+        "Domain_Join_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for DC Administrator Password"
             }
         },
-        "DC_Administrator_User": {
+        "Domain_Join_User": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC Administrator"
@@ -599,12 +599,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         },
@@ -624,12 +625,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         },
@@ -649,12 +651,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         }

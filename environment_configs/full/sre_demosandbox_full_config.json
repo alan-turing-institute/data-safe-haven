@@ -4,9 +4,9 @@
     "id": "demo",
     "name": "Turing Development Safe Haven B",
     "organisation": {
+      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "centralus",
@@ -15,10 +15,40 @@
       "fqdn": "demo.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENDEMO",
       "dn": "DC=demo,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Computers",
+          "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment Service Servers",
+          "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        }
+      },
       "securityGroups": {
         "computerManagers": {
           "name": "SG Safe Haven LDAP Users",
@@ -121,6 +151,26 @@
           "name": "SAFEHAVENDEMO Service Servers Manager",
           "samAccountName": "demoserviceservers",
           "passwordSecretName": "shm-demo-computer-manager-password-service-servers"
+        },
+        "dataServers": {
+          "name": "SAFEHAVENDEMO Data Servers Manager",
+          "samAccountName": "demodataservers",
+          "passwordSecretName": "shm-demo-computer-manager-password-data-servers"
+        },
+        "linuxServers": {
+          "name": "SAFEHAVENDEMO Linux Servers Manager",
+          "samAccountName": "demolinuxservers",
+          "passwordSecretName": "shm-demo-computer-manager-password-linux-servers"
+        },
+        "rdsGatewayServers": {
+          "name": "SAFEHAVENDEMO RDS Gateway Manager",
+          "samAccountName": "demordgservers",
+          "passwordSecretName": "shm-demo-computer-manager-password-rds-gateway-servers"
+        },
+        "rdsSessionServers": {
+          "name": "SAFEHAVENDEMO RDS Session Servers Manager",
+          "samAccountName": "demordshservers",
+          "passwordSecretName": "shm-demo-computer-manager-password-rds-session-servers"
         }
       },
       "serviceAccounts": {
@@ -528,7 +578,7 @@
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
         "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password",
+        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password",
         "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.151.3.5",

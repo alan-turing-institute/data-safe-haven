@@ -36,7 +36,7 @@ $params = @{
     TEST_HOST = $config.shm.dc.fqdn
     LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
-    SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
+    SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),

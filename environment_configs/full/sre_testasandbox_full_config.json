@@ -4,9 +4,9 @@
     "id": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
+      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "centralus",
@@ -15,10 +15,40 @@
       "fqdn": "testa.dsgroupdev.co.uk",
       "netbiosName": "SAFEHAVENTESTA",
       "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Computers",
+          "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment Service Servers",
+          "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        }
+      },
       "securityGroups": {
         "computerManagers": {
           "name": "SG Safe Haven LDAP Users",
@@ -121,6 +151,26 @@
           "name": "TESTA Service Servers Manager",
           "samAccountName": "testaserviceservers",
           "passwordSecretName": "shm-testa-computer-manager-password-service-servers"
+        },
+        "dataServers": {
+          "name": "TESTA Data Servers Manager",
+          "samAccountName": "testadataservers",
+          "passwordSecretName": "shm-testa-computer-manager-password-data-servers"
+        },
+        "linuxServers": {
+          "name": "TESTA Linux Servers Manager",
+          "samAccountName": "testalinuxservers",
+          "passwordSecretName": "shm-testa-computer-manager-password-linux-servers"
+        },
+        "rdsGatewayServers": {
+          "name": "TESTA RDS Gateway Manager",
+          "samAccountName": "testardgservers",
+          "passwordSecretName": "shm-testa-computer-manager-password-rds-gateway-servers"
+        },
+        "rdsSessionServers": {
+          "name": "TESTA RDS Session Servers Manager",
+          "samAccountName": "testardshservers",
+          "passwordSecretName": "shm-testa-computer-manager-password-rds-session-servers"
         }
       },
       "serviceAccounts": {
@@ -525,7 +575,7 @@
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
         "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password",
+        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password",
         "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.150.3.5",

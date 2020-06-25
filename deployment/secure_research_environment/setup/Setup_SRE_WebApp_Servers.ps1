@@ -44,19 +44,19 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 # -----------------------
 $shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
 $gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
-$gitlabLdapUserDn = "CN=" + $config.sre.users.computerManagers.gitlab.name + "," + $config.shm.domain.serviceOuPath
-$gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + "))"
+$gitlabLdapUserDn = "CN=$($config.sre.users.computerManagers.gitlab.name),$($config.shm.domain.ous.serviceAccounts.path)"
+$gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
                                             Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
-                                            Replace('<gitlab-rb-pw>',$gitlabLdapPassword).
-                                            Replace('<gitlab-rb-base>',$config.shm.domain.userOuPath).
+                                            Replace('<gitlab-rb-pw>', $gitlabLdapPassword).
+                                            Replace('<gitlab-rb-base>', $config.shm.domain.ous.researchUsers.path).
                                             Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
-                                            Replace('<gitlab-ip>',$config.sre.webapps.gitlab.ip).
-                                            Replace('<gitlab-hostname>',$config.sre.webapps.gitlab.hostname).
-                                            Replace('<gitlab-fqdn>',$gitlabFqdn).
-                                            Replace('<gitlab-root-password>',$gitlabRootPassword).
-                                            Replace('<gitlab-login-domain>',$config.shm.domain.fqdn)
+                                            Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
+                                            Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
+                                            Replace('<gitlab-fqdn>', $gitlabFqdn).
+                                            Replace('<gitlab-root-password>', $gitlabRootPassword).
+                                            Replace('<gitlab-login-domain>', $config.shm.domain.fqdn)
 # Encode as base64
 $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($gitlabCloudInit))
 
@@ -64,19 +64,19 @@ $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 # Expand HackMD cloudinit
 # -----------------------
 $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
-$hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=" + $config.sre.domain.securityGroups.researchUsers.name + "," + $config.shm.domain.securityOuPath + ")(userPrincipalName={{username}}))"
-$hackmdLdapUserDn = "CN=" + $config.sre.users.computerManagers.hackmd.name + "," + $config.shm.domain.serviceOuPath
+$hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(userPrincipalName={{username}}))"
+$hackmdLdapUserDn = "CN=$($config.sre.users.computerManagers.hackmd.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
 $hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
 $hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
                                             Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
-                                            Replace('<hackmd-user-filter>',$hackmdUserFilter).
-                                            Replace('<hackmd-ldap-base>',$config.shm.domain.userOuPath).
-                                            Replace('<hackmd-ip>',$config.sre.webapps.hackmd.ip).
-                                            Replace('<hackmd-hostname>',$config.sre.webapps.hackmd.hostname).
-                                            Replace('<hackmd-fqdn>',$hackmdFqdn).
-                                            Replace('<hackmd-ldap-url>',$hackMdLdapUrl).
-                                            Replace('<hackmd-ldap-netbios>',$config.shm.domain.netbiosName)
+                                            Replace('<hackmd-user-filter>', $hackmdUserFilter).
+                                            Replace('<hackmd-ldap-base>', $config.shm.domain.ous.researchUsers.path).
+                                            Replace('<hackmd-ip>', $config.sre.webapps.hackmd.ip).
+                                            Replace('<hackmd-hostname>', $config.sre.webapps.hackmd.hostname).
+                                            Replace('<hackmd-fqdn>', $hackmdFqdn).
+                                            Replace('<hackmd-ldap-url>', $hackMdLdapUrl).
+                                            Replace('<hackmd-ldap-netbios>', $config.shm.domain.netbiosName)
 # Encode as base64
 $hackmdCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($hackmdCloudInit))
 

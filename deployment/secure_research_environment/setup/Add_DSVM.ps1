@@ -367,9 +367,9 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
                                                             Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
                                                             Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-                                                            Replace("<shm-ldap-base-dn>", $config.shm.domain.userOuPath).
-                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.serviceOuPath)").
-                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath)))")
+                                                            Replace("<shm-ldap-base-dn>", $config.shm.domain.ous.researchUsers.path).
+                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.ous.serviceAccounts.path)").
+                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))")
 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
@@ -525,7 +525,7 @@ $params = @{
     TEST_HOST = $config.shm.dc.fqdn
     LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
-    SERVICE_PATH = "'$($config.shm.domain.serviceOuPath)'"
+    SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),

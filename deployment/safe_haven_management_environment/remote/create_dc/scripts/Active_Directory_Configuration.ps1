@@ -11,27 +11,21 @@ param(
     [Parameter(HelpMessage = "Name of this VM (the domain controller)")]
     [ValidateNotNullOrEmpty()]
     [string]$domainControllerVmName,
+    [Parameter(HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
+    [ValidateNotNullOrEmpty()]
+    [string]$domainOuBase,
+    [Parameter(HelpMessage = "Path to GPO backup files")]
+    [ValidateNotNullOrEmpty()]
+    [string]$gpoBackupPath,
     [Parameter(HelpMessage = "NetBios name")]
     [ValidateNotNullOrEmpty()]
     [string]$netbiosName,
-    [Parameter(HelpMessage = "Path to GPO backup files")]
-    [ValidateNotNullOrEmpty()]
-    [string]$ouBackupPath,
-    [Parameter(HelpMessage = "Name of the computer managers user group (eg. 'SG Safe Haven Computer Management Users')")]
-    [ValidateNotNullOrEmpty()]
-    [string]$sgComputerManagersName,
-    [Parameter(HelpMessage = "Name of the server administrator group (eg. 'SG Safe Haven Server Administrators')")]
-    [ValidateNotNullOrEmpty()]
-    [string]$sgServerAdminsName,
-    [Parameter(HelpMessage = "Name of the service servers group (eg. 'Safe Haven Service Servers')")]
-    [ValidateNotNullOrEmpty()]
-    [string]$sgServiceServersName,
-    [Parameter(HelpMessage = "Domain OU (eg. DC=TURINGSAFEHAVEN,DC=AC,DC=UK)")]
-    [ValidateNotNullOrEmpty()]
-    [string]$shmDomainOu,
     [Parameter(HelpMessage = "Domain (eg. turingsafehaven.ac.uk)")]
     [ValidateNotNullOrEmpty()]
     [string]$shmFdqn,
+    [Parameter(HelpMessage = "Base64-encoded security groups")]
+    [ValidateNotNullOrEmpty()]
+    [string]$securityGroupsB64,
     [Parameter(HelpMessage = "Base64-encoded user account details")]
     [ValidateNotNullOrEmpty()]
     [string]$userAccountsB64
@@ -104,9 +98,9 @@ function Grant-ComputerRegistrationPermissions {
     $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystemServicePack;computer"
     $success = $success -And $?
     if ($success) {
-        Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to ${UserPrincipalName}"
+        Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to '${UserPrincipalName}'"
     } else {
-        Write-Output " [x] Failed to delegate permissions on the '$ContainerName' container to ${UserPrincipalName}!"
+        Write-Output " [x] Failed to delegate permissions on the '$ContainerName' container to '${UserPrincipalName}'!"
     }
 }
 
@@ -148,7 +142,7 @@ function New-ShmUser {
 # Enable AD Recycle Bin
 # ---------------------
 Write-Output "Configuring AD recycle bin..."
-$featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $domainControllerVmName).EnabledScopes | Select-String "$shmDomainOu"
+$featureExists = $(Get-ADOptionalFeature -Identity "Recycle Bin Feature" -Server $domainControllerVmName).EnabledScopes | Select-String "$domainOuBase"
 if ($featureExists) {
     Write-Output " [o] AD recycle bin is already enabled"
 } else {
@@ -185,13 +179,14 @@ if ($?) {
 # Ensure that OUs exist
 # ---------------------
 Write-Output "Creating management OUs..."
-foreach ($ouName in ("Safe Haven Research Users",
-                     "Safe Haven Security Groups",
-                     "Safe Haven Service Accounts",
-                     "Safe Haven Service Servers",
-                     "Secure Research Environment Data Servers",
-                     "Secure Research Environment RDS Session Servers",
-                     "Secure Research Environment Service Servers")
+foreach ($ouName in ("<ou-research-users-name>",
+                     "<ou-security-groups-name>",
+                     "<ou-service-accounts-name>",
+                     "<ou-service-servers-name>",
+                     "<ou-data-servers-name>",
+                     "<ou-linux-servers-name>",
+                     "<ou-rds-session-servers-name>",
+                     "<ou-rds-gateway-servers-name>")
                      ) {
     $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
     if ("$ouExists" -ne "") {
@@ -209,12 +204,15 @@ foreach ($ouName in ("Safe Haven Research Users",
 # Create security groups
 # ----------------------
 Write-Output "Creating security groups..."
-foreach ($groupName in ($sgServerAdminsName, $sgComputerManagersName)) {
+$securityGroups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($securityGroupsB64)) | ConvertFrom-Json
+foreach ($groupCfg in $securityGroups.PSObject.Members) {
+    if ($groupCfg.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    $groupName = $groupCfg.Value.name
     $groupExists = $(Get-ADGroup -Filter "Name -eq '$groupName'").Name
-    if ("$groupExists" -ne "") {
+    if ($groupExists) {
         Write-Output " [o] Security group '$groupName' already exists"
     } else {
-        New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=Safe Haven Security Groups,$shmDomainOu"
+        New-ADGroup -Name "$groupName" -GroupScope Global -Description "$groupName" -GroupCategory Security -Path "OU=<ou-security-groups-name>,$domainOuBase"
         if ($?) {
             Write-Output " [o] Security group '$groupName' created successfully"
         } else {
@@ -227,21 +225,27 @@ foreach ($groupName in ($sgServerAdminsName, $sgComputerManagersName)) {
 # Decode user accounts and create them
 # ------------------------------------
 $userAccounts = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($userAccountsB64)) | ConvertFrom-Json
-$serviceOuPath = "OU=Safe Haven Service Accounts,$shmDomainOu"
+$serviceOuPath = "OU=<ou-service-accounts-name>,$domainOuBase"
 # Azure active directory synchronisation service account
 # NB. As of build 1.4.###.# it is no longer supported to use an enterprise admin or a domain admin account with AD Connect.
 Write-Output "Creating AD Sync Service account $($userAccounts.aadLocalSync.samAccountName)..."
 New-ShmUser -Name "$($userAccounts.aadLocalSync.name)" -SamAccountName "$($userAccounts.aadLocalSync.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.aadLocalSync.password -AsPlainText -Force) -Domain $shmFdqn
 # Service servers domain joining service account
-Write-Output "Creating service servers domain joining account $($userAccounts.serviceServers.samAccountName)..."
-New-ShmUser -Name "$($userAccounts.serviceServers.name)" -SamAccountName "$($userAccounts.serviceServers.samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts.serviceServers.password -AsPlainText -Force) -Domain $shmFdqn
+foreach ($serviceAccount in @("serviceServers", "dataServers", "linuxServers", "rdsGatewayServers", "rdsSessionServers")) {
+    Write-Output "Creating $serviceAccount domain joining account $($userAccounts."$serviceAccount".samAccountName)..."
+    New-ShmUser -Name "$($userAccounts."$serviceAccount".name)" -SamAccountName "$($userAccounts."$serviceAccount".samAccountName)" -Path $serviceOuPath -AccountPassword $(ConvertTo-SecureString $userAccounts."$serviceAccount".password -AsPlainText -Force) -Domain $shmFdqn
+}
 
 
 # Add users to security groups
 # ----------------------------
 Write-Output "Adding users to security groups..."
-Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $sgServerAdminsName
-Add-ShmUserToGroup -SamAccountName $userAccounts.serviceServers.samAccountName -GroupName $sgComputerManagersName
+Add-ShmUserToGroup -SamAccountName $domainAdminUsername -GroupName $securityGroups.serverAdmins.name
+Add-ShmUserToGroup -SamAccountName $userAccounts.serviceServers.samAccountName -GroupName $securityGroups.computerManagers.name
+Add-ShmUserToGroup -SamAccountName $userAccounts.dataServers.samAccountName -GroupName $securityGroups.computerManagers.name
+Add-ShmUserToGroup -SamAccountName $userAccounts.linuxServers.samAccountName -GroupName $securityGroups.computerManagers.name
+Add-ShmUserToGroup -SamAccountName $userAccounts.rdsGatewayServers.samAccountName -GroupName $securityGroups.computerManagers.name
+Add-ShmUserToGroup -SamAccountName $userAccounts.rdsSessionServers.samAccountName -GroupName $securityGroups.computerManagers.name
 
 
 # Import GPOs onto domain controller
@@ -252,7 +256,7 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
                                ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
                                ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
     $backup,$target = $backupTargetPair
-    $null = Import-GPO -BackupId "$backup" -TargetName "$target" -Path $ouBackupPath -CreateIfNeeded
+    $null = Import-GPO -BackupId "$backup" -TargetName "$target" -Path $gpoBackupPath -CreateIfNeeded
     if ($?) {
         Write-Output " [o] Importing '$backup' to '$target' succeeded"
     } else {
@@ -264,21 +268,21 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
 # Link GPO with OUs
 # -----------------
 Write-Output "Linking GPOs to OUs..."
-foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven Service Servers"),
-                            ("All servers - Local Administrators", "Secure Research Environment Data Servers"),
-                            ("All servers - Local Administrators", "Secure Research Environment RDS Session Servers"),
-                            ("All servers - Local Administrators", "Secure Research Environment Service Servers"),
+foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-service-servers-name>"),
+                            ("All servers - Local Administrators", "<ou-data-servers-name>"),
+                            ("All servers - Local Administrators", "<ou-rds-session-servers-name>"),
+                            ("All servers - Local Administrators", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Services", "Domain Controllers"),
-                            ("All Servers - Windows Services", "Safe Haven Service Servers"),
-                            ("All Servers - Windows Services", "Secure Research Environment Data Servers"),
-                            ("All Servers - Windows Services", "Secure Research Environment RDS Session Servers"),
-                            ("All Servers - Windows Services", "Secure Research Environment Service Servers"),
+                            ("All Servers - Windows Services", "<ou-service-servers-name>"),
+                            ("All Servers - Windows Services", "<ou-data-servers-name>"),
+                            ("All Servers - Windows Services", "<ou-rds-session-servers-name>"),
+                            ("All Servers - Windows Services", "<ou-rds-gateway-servers-name>"),
                             ("All Servers - Windows Update", "Domain Controllers"),
-                            ("All Servers - Windows Update", "Safe Haven Service Servers"),
-                            ("All Servers - Windows Update", "Secure Research Environment Data Servers"),
-                            ("All Servers - Windows Update", "Secure Research Environment RDS Session Servers"),
-                            ("All Servers - Windows Update", "Secure Research Environment Service Servers"),
-                            ("Session Servers - Remote Desktop Control", "Secure Research Environment RDS Session Servers"))) {
+                            ("All Servers - Windows Update", "<ou-service-servers-name>"),
+                            ("All Servers - Windows Update", "<ou-data-servers-name>"),
+                            ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
+                            ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
+                            ("Session Servers - Remote Desktop Control", "<ou-rds-session-servers-name>"))) {
     $gpoName,$ouName = $gpoOuNamePair
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
@@ -293,7 +297,7 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "Safe Haven S
     if ($hasGPLink) {
         Write-Output " [o] GPO '$gpoName' already linked to '$ouName'"
     } else {
-        New-GPLink -Guid $gpo.Id -Target "OU=$ouName,$shmDomainOu" -LinkEnabled Yes
+        New-GPLink -Guid $gpo.Id -Target "OU=$ouName,$domainOuBase" -LinkEnabled Yes
         if ($?) {
             Write-Output " [o] Linking GPO '$gpoName' to '$ouName' succeeded"
         } else {
@@ -320,7 +324,7 @@ Get-ADObject -SearchBase $configurationNamingContext -LDAPFilter "(&(objectclass
 $adsyncSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADUser $userAccounts.aadLocalSync.samAccountName).SID
 $success = $?
 # Get a copy of the current ACL on the OU
-$acl = Get-ACL -Path "AD:\${shmDomainOu}"
+$acl = Get-ACL -Path "AD:\${domainOuBase}"
 $success = $success -and $?
 # Allow the localadsync account to reset and change passwords on all descendent user objects
 $acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "ExtendedRight", "Allow", $extendedrightsmap["Reset Password"], "Descendents", $guidmap["user"]))
@@ -333,7 +337,7 @@ $success = $success -and $?
 $acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["pwdLastSet"], "Descendents", $guidmap["user"]))
 $success = $success -and $?
 # Set the ACL properties
-Set-ACL -ACLObject $acl -Path "AD:\${shmDomainOu}"
+Set-ACL -ACLObject $acl -Path "AD:\${domainOuBase}"
 $success = $success -and $?
 # Allow the localadsync account to replicate directory changes
 $null = dsacls "$defaultNamingContext" /G "${adsyncSID}:CA;Replicating Directory Changes"
@@ -355,6 +359,14 @@ if ($success) {
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
 # Allow computer managers to register computers in the 'Computers' container
-Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\${sgComputerManagersName}"
-# Allow the service server user to register computers in the 'Safe Haven Service Servers' container
-Grant-ComputerRegistrationPermissions -ContainerName "$sgServiceServersName" -UserPrincipalName "${netbiosname}\$($userAccounts.serviceServers.samAccountName)"
+Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\$($securityGroups.computerManagers.name)"
+# Allow the service server user to register computers in the '<ou-service-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-service-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.serviceServers.samAccountName)"
+# Allow the data server user to register computers in the '<ou-data-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-data-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.dataServers.samAccountName)"
+# Allow the Linux server user to register computers in the '<ou-linux-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-linux-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.linuxServers.samAccountName)"
+# Allow the RDS gateway server user to register computers in the '<ou-rds-gateway-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-rds-gateway-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsGatewayServers.samAccountName)"
+# Allow the RDS session server user to register computers in the '<ou-rds-session-servers-name>' container
+Grant-ComputerRegistrationPermissions -ContainerName "<ou-rds-session-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.rdsSessionServers.samAccountName)"

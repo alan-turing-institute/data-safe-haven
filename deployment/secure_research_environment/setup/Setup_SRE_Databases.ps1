@@ -186,15 +186,15 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                                     Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
                                                     Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
-                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.name),$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.name),$($config.shm.domain.ous.serviceAccounts.path)").
                                                     Replace("<ldap-bind-user-password>", $vmLdapPassword).
                                                     Replace("<ldap-bind-user-username>", $config.sre.users.computerManagers.postgres.samAccountName).
                                                     Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
-                                                    Replace("<ldap-groups-base-dn>", $config.shm.domain.securityOuPath).
-                                                    Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.serviceOuPath)").
+                                                    Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
+                                                    Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
                                                     Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
-                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.securityOuPath))))").
-                                                    Replace("<ldap-users-base-dn>", $config.shm.domain.userOuPath).
+                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+                                                    Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

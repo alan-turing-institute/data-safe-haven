@@ -220,26 +220,32 @@ Write-Output $result.Value
 # Configure Active Directory remotely
 # -----------------------------------
 Add-LogMessage -Level Info "Configuring Active Directory for: $($config.dc.vmName)..."
-# Fetch user details
+# Fetch user and OU details
 $userAccounts = $config.users.computerManagers + $config.users.serviceAccounts
 foreach ($user in $userAccounts.Keys) {
     $userAccounts[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $userAccounts[$user]["passwordSecretName"] -DefaultLength 20
 }
 # Run remote script
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1"
+$scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
+$script = $scriptTemplate.Replace("<ou-data-servers-name>", $config.domain.ous.dataServers.name).
+                          Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
+                          Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
+                          Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
+                          Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
+                          Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
+                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name).
+                          Replace("<ou-service-servers-name>", $config.domain.ous.serviceServers.name)
 $params = @{
     domainAdminUsername = "`"$domainAdminUsername`""
     domainControllerVmName = "`"$($config.dc.vmName)`""
+    domainOuBase = "`"$($config.domain.dn)`""
+    gpoBackupPath = "`"C:\Installation\GPOs`""
     netbiosName = "`"$($config.domain.netbiosName)`""
-    ouBackupPath = "`"C:\Installation\GPOs`""
-    sgComputerManagersName = "`"$($config.domain.securityGroups.computerManagers.name)`""
-    sgServerAdminsName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
-    sgServiceServersName = "`"$($config.domain.serviceServerOuPath.Split(',')[0].Replace('OU=', ''))`""
-    shmDomainOu = "`"$($config.domain.dn)`""
     shmFdqn = "`"$($config.domain.fqdn)`""
     userAccountsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
+    securityGroupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
 }
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
+$result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
 
 

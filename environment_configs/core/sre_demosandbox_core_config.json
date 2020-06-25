@@ -116,7 +116,7 @@
                 "dbpostgresql": {
                     "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
                     "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-                    "dbAdminPassword": "ssre-sandbox-postgresdb-admin-password"
+                    "dbAdminPassword": "sre-sandbox-postgresdb-admin-password"
                 }
             },
             "dsvm": {

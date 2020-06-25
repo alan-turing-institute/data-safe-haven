@@ -15,10 +15,40 @@
       "fqdn": "testb.dsgroupdev.co.uk",
       "netbiosName": "TESTB",
       "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Linux Servers",
+          "path": "OU=Secure Research Environment Linux Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment RDS Gateway Servers",
+          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "serviceServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        }
+      },
       "securityGroups": {
         "computerManagers": {
           "name": "SG Safe Haven Computer Management Users",
@@ -121,6 +151,26 @@
           "name": "TESTB Service Servers Manager",
           "samAccountName": "testbserviceservers",
           "passwordSecretName": "shm-testb-computer-manager-password-service-servers"
+        },
+        "dataServers": {
+          "name": "TESTB Data Servers Manager",
+          "samAccountName": "testbdataservers",
+          "passwordSecretName": "shm-testb-computer-manager-password-data-servers"
+        },
+        "linuxServers": {
+          "name": "TESTB Linux Servers Manager",
+          "samAccountName": "testblinuxservers",
+          "passwordSecretName": "shm-testb-computer-manager-password-linux-servers"
+        },
+        "rdsGatewayServers": {
+          "name": "TESTB RDS Gateway Manager",
+          "samAccountName": "testbrdgservers",
+          "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers"
+        },
+        "rdsSessionServers": {
+          "name": "TESTB RDS Session Servers Manager",
+          "samAccountName": "testbrdshservers",
+          "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers"
         }
       },
       "serviceAccounts": {

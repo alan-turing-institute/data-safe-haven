@@ -134,16 +134,25 @@ function Get-ShmFullConfig {
 
     # Domain config
     # -------------
-    $shmDomainDN = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
     $shm.domain = [ordered]@{
         fqdn = $shmConfigBase.domain
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
-        dn = $shmDomainDN
-        serviceServerOuPath = "OU=Safe Haven Service Servers,${shmDomainDN}"
-        serviceOuPath = "OU=Safe Haven Service Accounts,${shmDomainDN}"
-        userOuPath = "OU=Safe Haven Research Users,${shmDomainDN}"
-        securityOuPath = "OU=Safe Haven Security Groups,${shmDomainDN}"
+        dn = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
+        ous = [ordered]@{
+            dataServers = [ordered]@{ name = "Secure Research Environment Data Servers" }
+            linuxServers = [ordered]@{ name = "Secure Research Environment Linux Servers" }
+            rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
+            rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
+            researchUsers = [ordered]@{ name = "Safe Haven Research Users" }
+            securityGroups = [ordered]@{ name = "Safe Haven Security Groups" }
+            serviceAccounts = [ordered]@{ name = "Safe Haven Service Accounts" }
+            serviceServers = [ordered]@{ name = "Safe Haven Service Servers" }
+        }
     }
+    foreach ($ouName in $shm.domain.ous.Keys) {
+        $shm.domain.ous[$ouName].path = "OU=$($shm.domain.ous[$ouName].name),$($shm.domain.dn)"
+    }
+    # Security groups
     $shm.domain.securityGroups = [ordered]@{
         computerManagers = [ordered]@{ name = "SG Safe Haven Computer Management Users" }
         serverAdmins = [ordered]@{ name = "SG Safe Haven Server Administrators" }
@@ -243,6 +252,26 @@ function Get-ShmFullConfig {
                 name = "$($shm.domain.netbiosName) Service Servers Manager"
                 samAccountName = "$($shm.id)serviceservers".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-service-servers".ToLower()
+            }
+            dataServers = [ordered]@{
+                name = "$($shm.domain.netbiosName) Data Servers Manager"
+                samAccountName = "$($shm.id)dataservers".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-data-servers".ToLower()
+            }
+            linuxServers = [ordered]@{
+                name = "$($shm.domain.netbiosName) Linux Servers Manager"
+                samAccountName = "$($shm.id)linuxservers".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
+            }
+            rdsGatewayServers = [ordered]@{
+                name = "$($shm.domain.netbiosName) RDS Gateway Manager"
+                samAccountName = "$($shm.id)rdgservers".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
+            }
+            rdsSessionServers = [ordered]@{
+                name = "$($shm.domain.netbiosName) RDS Session Servers Manager"
+                samAccountName = "$($shm.id)rdshservers".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
         serviceAccounts = [ordered]@{
