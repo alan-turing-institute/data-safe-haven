@@ -149,8 +149,7 @@ def unresolved_mr_discussions(config, mr):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"]
-        + f"/projects/{project_id}/merge_requests/{mr_iid}/discussions"
+        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/discussions"
     )
     response = requests.get(endpoint, headers=config["headers"])
     if response.status_code != 200:
@@ -185,8 +184,7 @@ def accept_merge_request(config, mr):
     project_id = mr["project_id"]
     mr_iid = mr["iid"]
     endpoint = (
-        config["api_url"]
-        + f"/projects/{project_id}/merge_requests/{mr_iid}/merge"
+        config["api_url"] + f"/projects/{project_id}/merge_requests/{mr_iid}/merge"
     )
 
     response = requests.put(endpoint, headers=config["headers"])
@@ -226,7 +224,7 @@ def handle_all_merge_requests():
 
     logger.info("Getting open merge requests for approval")
 
-    ## TODO throw in get_merge_requests_for_approval
+    # TODO throw in get_merge_requests_for_approval
     merge_requests = get_merge_requests_for_approval(config_gitlabreview)
 
     logger.info("Found %s open merge requests", len(merge_requests))
@@ -234,7 +232,7 @@ def handle_all_merge_requests():
     mr_errors_encountered = 0
     for i, mr in enumerate(merge_requests):
         logger.info("-" * 20)
-        logger.info("Merge request %s of %s", i+1, len(merge_requests))
+        logger.info("Merge request %s of %s", i + 1, len(merge_requests))
         logger.info("Checking merge request %s", mr)
 
         if mr["merge_status"] != "can_be_merged":
@@ -280,7 +278,7 @@ def handle_all_merge_requests():
                     "Merge request has not been approved: skipping.  Reason: %s", merge_checks
                 )
 
-        ## Errors from GitLab requests and subprocess
+        # Errors from GitLab requests and subprocess
         except (requests.HTTPError, subprocess.CalledProcessError):
             logger.exception(
                 "Handling merge request failed for %s.  Attempting to continue "

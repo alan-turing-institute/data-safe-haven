@@ -34,7 +34,7 @@ def unzip_zipfiles(zipfile_dir):
         zipfile_subdir = os.path.join(zipfile_dir, d)
         zipfile_path = os.path.join(zipfile_subdir, "repo.zip")
         unpacked_location = os.path.join(zipfile_subdir, "repo")
-        ## ensure "repo" does not already exist (from a previous failed attempt)
+        # ensure "repo" does not already exist (from a previous failed attempt)
         subprocess.run("rm", "-rf", unpacked_location, check=True)
         try:
             with ZipFile(zipfile_path, "r") as zip_obj:
@@ -142,7 +142,7 @@ commit history.
             "branch": "_gitlab_ingress_review",
             "commit_message": "Initial commit",
             "actions": [
-                {"action": "create", "file_path": "README.md", "content": README,}
+                {"action": "create", "file_path": "README.md", "content": README}
             ],
         },
     )
@@ -185,7 +185,7 @@ def create_branch_if_not_exists(
         logger.info("Branch %s exists for project %s", branch_name, project_id)
         return branch
 
-    ## Branch does not exist
+    # Branch does not exist
     branch_url = "{}/projects/{}/repository/branches".format(
         gitlab_config["api_url"], project_id
     )
@@ -215,7 +215,7 @@ def check_if_merge_request_exists(
 
     merge_requests = response.json()
 
-    ## return the (known unique) merge request if found, otherwise False
+    # return the (known unique) merge request if found, otherwise False
     for mr in merge_requests:
         if (
             mr["source_branch"] == source_branch
@@ -234,7 +234,7 @@ def create_merge_request_if_not_exists(
     target_project_id,
     target_branch,
 ):
-    ## Check whether requested MR exists, return it if it does
+    # Check whether requested MR exists, return it if it does
 
     mr = check_if_merge_request_exists(
         gitlab_config,
@@ -247,7 +247,7 @@ def create_merge_request_if_not_exists(
         logger.info("Merge Request for %s already exists", repo_name)
         return mr
 
-    ## Ensure fork relationship is established
+    # Ensure fork relationship is established
 
     fork_url = "{}/projects/{}/fork/{}".format(
         gitlab_config["api_url"], source_project_id, target_project_id
@@ -275,8 +275,8 @@ def create_merge_request_if_not_exists(
         },
     )
 
-    ## Check explicitly whether merge request exists, since sometimes
-    ## a 500 status is spuriously returned
+    # Check explicitly whether merge request exists, since sometimes
+    # a 500 status is spuriously returned
     mr = check_if_merge_request_exists(
         gitlab_config,
         source_project_id,
@@ -451,7 +451,7 @@ def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespac
         gitlab_config,
         target_branch_name,
         target_project_id,
-        "unapproved / {}".format(repo_name),  ## for logging
+        "unapproved / {}".format(repo_name),  # for logging
     )
 
     # Create the merge request

@@ -5,11 +5,13 @@ from pathlib import Path
 from urllib.parse import quote as url_quote
 import requests
 
+
 def http_error(msg, response):
     return requests.HTTPError(
         msg + ": Unexpected response: " + response.reason + " ("
         + response.status_code + "), content: " + response.text
     )
+
 
 def get_api_config(server, file=None):
     """Construct API URL, headers and other settings.
