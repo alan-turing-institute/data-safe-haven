@@ -13,20 +13,6 @@
                 "addressPrefix": "<subnet-vpn-cidr>",
                 "nextHop": "VirtualNetworkGateway"
             }
-        },
-        {
-            "name": "ADConnectPasswordResetRange1",
-            "properties": {
-                "addressPrefix": "20.190.128.0/18",
-                "nextHop": "Internet"
-            }
-        },
-        {
-            "name": "ADConnectPasswordResetRange2",
-            "properties": {
-                "addressPrefix": "40.126.0.0/18",
-                "nextHop": "Internet"
-            }
         }
     ],
     "networkRuleCollections": [
