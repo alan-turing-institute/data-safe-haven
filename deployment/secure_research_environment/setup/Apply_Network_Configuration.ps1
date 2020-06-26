@@ -25,25 +25,25 @@ $nsgs = @{}
 # RDS gateway
 Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.rds.gateway.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg
+$nsgs[$config.sre.rds.gateway.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.gateway.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 # RDS sesssion hosts
 Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost1.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.rds.sessionHost1.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg
+$nsgs[$config.sre.rds.sessionHost1.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg -ResourceGroupName $config.sre.network.vnet.rg
 Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost2.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.rds.sessionHost2.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost2.nsg
+$nsgs[$config.sre.rds.sessionHost2.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.rds.sessionHost2.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 # Data server
 Add-LogMessage -Level Info "Ensure data server is bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.dataserver.vmName -VmResourceGroupName $config.sre.dataserver.rg -NSGName $config.sre.dataserver.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.dataserver.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dataserver.nsg
+$nsgs[$config.sre.dataserver.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dataserver.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 # Webapp servers
 Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
 Add-VmToNSG -VMName $config.sre.webapps.gitlab.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 Add-VmToNSG -VMName $config.sre.webapps.hackmd.vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $config.sre.webapps.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
-$nsgs[$config.sre.webapps.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg
+$nsgs[$config.sre.webapps.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 # Compute VMs
 Add-LogMessage -Level Info "Ensure compute VMs are bound to correct NSG..."
@@ -51,7 +51,7 @@ $computeVmNames = $(Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Ob
 foreach ($vmName in $computeVmNames) {
     Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.dsvm.rg -NSGName $config.sre.dsvm.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 }
-$nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg
+$nsgs[$config.sre.dsvm.nsg] = Get-AzNetworkSecurityGroup -Name $config.sre.dsvm.nsg -ResourceGroupName $config.sre.network.vnet.rg
 
 
 # List all NICs associated with each NSG
