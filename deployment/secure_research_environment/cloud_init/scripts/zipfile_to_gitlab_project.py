@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# pylint: disable=C0330
-# pylint: disable=C0114
-# pylint: disable=C0116
-# pylint: disable=C0103
-
 import os
 import subprocess
 from zipfile import ZipFile, BadZipFile
