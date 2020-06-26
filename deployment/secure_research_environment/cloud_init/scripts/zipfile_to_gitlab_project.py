@@ -285,21 +285,21 @@ def create_merge_request_if_not_exists(
         target_branch,
     )
 
+    if mr and response.status_code == 201:
+        logger.info("Created merge request %s -> %s", source_branch, target_branch)
+        return mr
+
     if mr and response.status_code == 500:
         logger.error(
-            "Response 500 (%s) returned when creating merge request for %s, although "
-            "the merge request was created.  This may not signal a genuine problem.",
+            "Response 500 (%s) returned when creating merge request for %s -> %s, "
+            "although the merge request was determined to have been created successfully "
+            "so this may not signal a genuine problem.",
             response.reason,
             repo_name
         )
         return mr
 
-    if response.status_code != 201:
-        raise gl.http_error(f"Creating merge request for {repo_name}", response)
-
-    logger.info("Created merge request %s -> %s", source_branch, target_branch)
-    mr_info = response.json()
-    return mr_info
+    raise gl.http_error(f"Creating merge request for {repo_name}", response)
 
 
 def clone_commit_and_push(
