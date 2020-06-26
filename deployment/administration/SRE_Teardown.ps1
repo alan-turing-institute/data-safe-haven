@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Make user confirm before beginning deletion
@@ -25,39 +25,45 @@ while ($confirmation -ne "y") {
 }
 
 
-# Remove resources
-# ----------------
-$sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
-while ($sreResources.Length) {
+# Remove resources - if there are still resources remaining after 10 loops then throw an exception
+# ------------------------------------------------------------------------------------------------
+for ($i = 0; $i -le 10; $i++) {
+    $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+    if (-not $sreResources.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
     foreach ($resource in $sreResources) {
         Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
-        $_ = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
+        $null = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Resource removal succeeded"
         } else {
             Add-LogMessage -Level Info "Resource removal failed - rescheduling."
         }
     }
-    $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
+}
+if ($sreResources) {
+    Add-LogMessage -Level Fatal "There are still $($sreResources.Length) resource(s) remaining!`n$sreResources"
 }
 
 
-# Remove resource groups
-# ----------------------
-$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
-while ($sreResourceGroups.Length) {
+# Remove resource groups - if there are still resource groups remaining after 10 loops then throw an exception
+# ------------------------------------------------------------------------------------------------------------
+for ($i = 0; $i -le 10; $i++) {
+    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
+    if (-not $sreResourceGroups.Length) { break }
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
         Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
-        $_ = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
+        $null = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Resource group removal succeeded"
         } else {
             Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
         }
     }
-    $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
+}
+if ($sreResourceGroups) {
+    Add-LogMessage -Level Fatal "There are still $($sreResourceGroups.Length) resource(s) remaining!`n$sreResourceGroups"
 }
 
 
@@ -69,4 +75,4 @@ Invoke-Expression -Command "$scriptPath -configId $configId"
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

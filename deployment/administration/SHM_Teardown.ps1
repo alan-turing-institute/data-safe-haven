@@ -25,12 +25,13 @@ while ($confirmation -ne "y") {
 }
 
 
-# Remove resources
-# ----------------
-$sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
-while ($sreResources.Length) {
-    Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
-    foreach ($resource in $sreResources) {
+# Remove resources - if there are still resources remaining after 10 loops then throw an exception
+# ------------------------------------------------------------------------------------------------
+for ($i = 0; $i -le 10; $i++) {
+    $shmResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" }) | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" }
+    if (-not $shmResources.Length) { break }
+    Add-LogMessage -Level Info "Found $($shmResources.Length) resource(s) to remove..."
+    foreach ($resource in $shmResources) {
         Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
         $null = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
@@ -39,16 +40,19 @@ while ($sreResources.Length) {
             Add-LogMessage -Level Info "Resource removal failed - rescheduling."
         }
     }
-    $sreResources = @(Get-AzResource) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
+}
+if ($shmResources) {
+    Add-LogMessage -Level Fatal "There are still $($shmResources.Length) resource(s) remaining!`n$shmResources"
 }
 
 
 # Remove resource groups
 # ----------------------
-$sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
-while ($sreResourceGroups.Length) {
-    Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
-    foreach ($resourceGroup in $sreResourceGroups) {
+for ($i = 0; $i -le 10; $i++) {
+    $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" }) | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" }
+    if (-not $shmResourceGroups.Length) { break }
+    Add-LogMessage -Level Info "Found $($shmResourceGroups.Length) resource group(s) to remove..."
+    foreach ($resourceGroup in $shmResourceGroups) {
         Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
         $null = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
@@ -57,27 +61,20 @@ while ($sreResourceGroups.Length) {
             Add-LogMessage -Level Info "Resource group removal failed - rescheduling."
         }
     }
-    $sreResourceGroups = @(Get-AzResourceGroup) | Where-Object { $_.ResourceGroupName -NotLike "*WEBAPP*" }
+}
+if ($shmResourceGroups) {
+    Add-LogMessage -Level Fatal "There are still $($shmResourceGroups.Length) resource(s) remaining!`n$shmResourceGroups"
 }
 
 
 # Remove DNS data from the DNS subscription
 # -----------------------------------------
 $null = Set-AzContext -SubscriptionId $config.dns.subscriptionName
-$dnsResourceGroup = $config.dns.rg
-$shmDomain = $config.domain.fqdn
-# AD DNS record
 $adDnsRecordname = "@"
+$shmDomain = $config.domain.fqdn
 Add-LogMessage -Level Info "[ ] Removing '$adDnsRecordname' TXT record from SHM $shmId DNS zone ($shmDomain)"
-Remove-AzDnsRecordSet -Name $adDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-$success = $?
-# # RDS ACME record
-# $rdsAcmeDnsRecordname = "_acme-challenge"
-# Add-LogMessage -Level Info "[ ] Removing '$rdsAcmeDnsRecordname' TXT record from SRE $sreId DNS zone ($shmDomain)"
-# Remove-AzDnsRecordSet -Name $rdsAcmeDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $dnsResourceGroup
-# $success = $success -and $?
-# Print success/failure message
-if ($success) {
+Remove-AzDnsRecordSet -Name $adDnsRecordname -RecordType TXT -ZoneName $shmDomain -ResourceGroupName $config.dns.rg
+if ($?) {
     Add-LogMessage -Level Success "Record removal succeeded"
 } else {
     Add-LogMessage -Level Fatal "Record removal failed!"
