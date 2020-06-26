@@ -184,24 +184,20 @@ function Deploy-FirewallApplicationRule {
         $ruleCollection.AddRule($rule)
         # Remove the existing rule collection to ensure that we can update with the new rule
         $Firewall.RemoveApplicationRuleCollectionByName($ruleCollection.Name)
-        $result = $?
     } catch [System.Management.Automation.MethodInvocationException] {
         Add-LogMessage -Level Info "[ ] Creating application rule collection '$CollectionName'"
         $ruleCollection = New-AzFirewallApplicationRuleCollection -Name $CollectionName -Priority $Priority -ActionType $ActionType -Rule $rule
-        $result = $?
-        if ($result) {
+        if ($?) {
             Add-LogMessage -Level Success "Created application rule collection '$CollectionName'"
         } else {
             Add-LogMessage -Level Fatal "Failed to create application rule collection '$CollectionName'!"
         }
     }
-    $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
-    $result = $result -and $?
-    $null = Set-AzFirewall -AzureFirewall $Firewall
-    $result = $result -and $?
-    if ($result) {
+    try {
+        $null = $Firewall.ApplicationRuleCollections.Add($ruleCollection)
+        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
         Add-LogMessage -Level Success "Ensured that application rule '$Name' exists"
-    } else {
+    } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that application rule '$Name' exists!"
     }
     return $rule
@@ -253,14 +249,11 @@ function Deploy-FirewallNetworkRule {
             Add-LogMessage -Level Fatal "Failed to create network rule collection '$CollectionName'!"
         }
     }
-    $result = $?
-    $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
-    $result = $result -and $?
-    $null = Set-AzFirewall -AzureFirewall $Firewall
-    $result = $result -and $?
-    if ($result) {
+    try {
+        $null = $Firewall.NetworkRuleCollections.Add($ruleCollection) -ErrorAction Stop
+        $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
         Add-LogMessage -Level Success "Ensured that network rule '$Name' exists"
-    } else {
+    } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
         Add-LogMessage -Level Fatal "Failed to ensure that network rule '$Name' exists!"
     }
     return $rule
