@@ -1,3 +1,5 @@
 [flake8]
 # Ignore line length
 ignore = E501
+# Ignore line break before binary operator
+ignore = W503
