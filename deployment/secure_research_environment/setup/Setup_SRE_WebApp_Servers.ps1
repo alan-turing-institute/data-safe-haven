@@ -38,12 +38,14 @@ $gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -S
 # Set up NSGs for the webapps
 # ---------------------------
 $nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+
+# TODO fix this when this is no longer hard-coded
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "InboundAllowVpnSsh" `
                              -Description "Inbound allow SSH connections from VPN subnet" `
                              -Priority 1000 `
                              -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
+                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "InboundAllowHttpSessionHost" `
@@ -59,7 +61,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Direction Inbound -Access Allow -Protocol TCP `
                              -SourceAddressPrefix $config.sre.network.subnets.data.cidr -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 80,443
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "InboundDenyOtherVNet" `
                              -Description "Inbound deny other VNet connections" `
                              -Priority 4000 `
@@ -73,20 +75,22 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix Internet -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
+Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
                              -Name "OutboundDenyVNet" `
                              -Description "Outbound deny VNet connections" `
                              -Priority 3000 `
-                             -Direction Inbound -Access Deny -Protocol * `
+                             -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+
+# TODO fix hard-coded cidr in InboundAllowVpnSsh
 $nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundAllowVpnSsh" `
                              -Description "Inbound allow SSH connections from VPN subnet" `
                              -Priority 1000 `
                              -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `  # TODO fix this when this is no longer hard-coded
+                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "InboundAllowReviewServer" `
@@ -113,7 +117,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
                              -Name "OutboundDenyVNet" `
                              -Description "Outbound deny other VNet connections" `
                              -Priority 4000 `
-                             -Direction Inbound -Access Deny -Protocol * `
+                             -Direction Outbound -Access Deny -Protocol * `
                              -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
                              -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 
