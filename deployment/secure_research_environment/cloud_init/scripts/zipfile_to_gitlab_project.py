@@ -60,6 +60,21 @@ def unzip_zipfiles(zipfile_dir):
 
 
 def create_project(gitlab_config, repo_name, namespace_id):
+    """
+    Create empty project on gitlab, and return the project info as returned by
+    GitLab on creation
+    
+    Parameters
+    ==========
+    gitlab_config: dict, gitlab configuration information (same as used elsewhere)
+    repo_name: str, name of the repository/project
+    namespace_id: int, ID of the group ("unapproved" or "approved")
+    
+    Returns
+    =======
+    gitlab_project_info: dict, containing among other things, the name and
+    the remote URL for the project.
+    """
     projects_url = "{}/projects/".format(gitlab_config["api_url"])
     response = requests.post(
         projects_url,
@@ -161,6 +176,19 @@ def get_or_create_project(config, namespace_ids, namespace, repo_name):
 
 
 def check_if_branch_exists(gitlab_config, branch_name, project_id):
+    """
+    See if a branch with name branch_name already exists on this Project
+
+    Parameters
+    ==========
+    gitlab_config: dict, gitlab configuration (as used elsewhere)
+    branch_name: str, name of branch to look for
+    project_id: int, id of the project, obtained from projects API endpoint
+
+    Returns
+    =======
+    branch_exists: bool, True if branch exists, False if not.
+    """
     branches_url = "{}/projects/{}/repository/branches".format(
         gitlab_config["api_url"], project_id
     )
@@ -180,6 +208,26 @@ def check_if_branch_exists(gitlab_config, branch_name, project_id):
 def create_branch_if_not_exists(
     gitlab_config, branch_name, project_id, reference_branch="_gitlab_ingress_review",
 ):
+    """
+    Create a new branch on an existing project if it does not exist already.
+    By default, use '_gitlab_ingress_review' as the branch name (which is unlikely
+    to exist in the source repo) as the reference branch from which to create the
+    new one.
+
+    Parameters
+    ==========
+    gitlab_config: dict, gitlab configuration information (as used elsewhere)
+    branch_name: str, the desired name of the new branch
+    project_id: int, the ID of the project, which is the "id" value in
+    the dictionary of project information returned when
+    creating a new project or listing existing ones.
+    reference_branch: str, (default "_gitlab_ingress_review"), create the new
+    branch based on this branch
+
+    Returns
+    =======
+    dict, info about the branch (either existing or newly-created) from API endpoint
+    """
     branch = check_if_branch_exists(gitlab_config, branch_name, project_id)
     if branch:
         logger.info("Branch %s exists for project %s", branch_name, project_id)
@@ -206,6 +254,14 @@ def create_branch_if_not_exists(
 def check_if_merge_request_exists(
     gitlab_config, source_project_id, source_branch, target_project_id, target_branch,
 ):
+    """See if there is an existing merge request between the source and target
+    project/branch combinations.
+
+    Returns
+    =======
+    Either: the merge request (if it exists), or False
+    """
+
     mr_url = "{}/projects/{}/merge_requests".format(
         gitlab_config["api_url"], target_project_id
     )
@@ -234,6 +290,11 @@ def create_merge_request_if_not_exists(
     target_project_id,
     target_branch,
 ):
+    """
+    Create a new merge request if one does not exist already.  Return
+    the existing or newly created merge request information returned
+    by the API.
+    """
     # Check whether requested MR exists, return it if it does
 
     mr = check_if_merge_request_exists(
@@ -311,6 +372,23 @@ def clone_commit_and_push(
     target_project_url,
     commit_hash,
 ):
+    """
+    Run shell commands to convert the unzipped directory containing the
+    repository contents into a git repo, then commit it on the branch
+    with the requested name.
+    
+    Parameters
+    ==========
+    path_to_unzipped_repo: str, the full directory path to the unzipped repo
+    tmp_repo_dir: str, path to a temporary dir where we will clone the project
+    branch_name: str, the name of the branch holding the snapshot
+    target_branch_name: str, the name of the branch to push to
+    remote_url: str, the URL for this project on gitlab-review to be added
+    as a remote.
+    target_project_url: str, the url of the original upstream project
+    commit_hash: str, the commit hash of the snapshot of the upstream project
+    """
+
     # Clone the repo
     subprocess.run(["git", "clone", remote_url, "cloned_repo"], cwd=tmp_repo_dir, check=True)
     working_dir = os.path.join(tmp_repo_dir, "cloned_repo")
@@ -368,6 +446,23 @@ def fork_project(
     orig_project_id,
     fork_namespace_id,
 ):
+    """
+    Fork the project with id 'orig_project_id' to `fork_namespace`/`repo_name`
+    after first checking whether the latter exists.
+
+    Parameters
+    ==========
+    gitlab_config: dict, gitlab configuration information
+    fork_namespace: str, name of the namespace to create the fork
+    repo_name: str, name of the repo/project
+    orig_project_id: int, project id of the original (forked-from) project
+    fork_namespace_id: int, id of the namespace to fork into
+
+    Returns
+    =======
+    fork_project_info: dict, info of the newly created project from the API
+    """
+
     maybe_fork_project = gl.get_project(gitlab_config, fork_namespace, repo_name)
     if not maybe_fork_project:
         fork_url = "{}/projects/{}/fork".format(
@@ -399,6 +494,17 @@ def fork_project(
 
 
 def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespace_ids):
+    """
+    Go through all the steps for a single repo/project.
+
+    Parameters
+    ==========
+    gitlab_config: dict, contains api url and token
+    snapshot_details: tuple of strings, (repo_name, hash, desired_branch, location)
+    namespace_ids; dict, keys are the group names (e.g. "unapproved", "approved", values
+    are the ids of the corresponding namespaces in Gitlab
+    """
+
     # unpack tuple
     (
         repo_name,
