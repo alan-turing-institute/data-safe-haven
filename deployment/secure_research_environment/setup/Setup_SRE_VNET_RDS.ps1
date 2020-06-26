@@ -420,9 +420,9 @@ Write-Output $result.Value
 
 # Add VMs to correct NSG
 # ----------------------
-Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -NSGName $config.sre.rds.gateway.nsg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -NSGName $config.sre.rds.sessionHost1.nsg
-Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -NSGName $config.sre.rds.sessionHost2.nsg
+Add-VmToNSG -VMName $config.sre.rds.gateway.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.gateway.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost1.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost1.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
+Add-VmToNSG -VMName $config.sre.rds.sessionHost2.vmName -VmResourceGroupName $config.sre.rds.rg -NSGName $config.sre.rds.sessionHost2.nsg -NsgResourceGroupName $config.sre.network.vnet.rg
 
 
 # Reboot all the RDS VMs

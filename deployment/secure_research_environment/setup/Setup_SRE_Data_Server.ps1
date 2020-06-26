@@ -20,8 +20,7 @@ $null = Set-AzContext -Subscription $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-$domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.dataServers.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dataserver.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
@@ -50,8 +49,8 @@ $params = @{
     Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
     Administrator_User = $vmAdminUsername
     BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    DC_Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    DC_Administrator_User = $domainAdminUsername
+    Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+    Domain_Join_Username = $config.shm.users.computerManagers.dataServers.samAccountName
     Data_Server_Disk_Egress_Size_GB = [int]$config.sre.dataserver.disks.egress.sizeGb
     Data_Server_Disk_Egress_Type = $config.sre.dataserver.disks.egress.type
     Data_Server_Disk_Ingress_Size_GB = [int]$config.sre.dataserver.disks.ingress.sizeGb
@@ -62,25 +61,12 @@ $params = @{
     Data_Server_VM_Size = $config.sre.dataserver.vmSize
     Domain_Name = $config.shm.domain.fqdn
     IP_Address = $config.sre.dataserver.ip
+    OU_Path = $config.shm.domain.ous.dataServers.path
     Virtual_Network_Name = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
     Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
-
-
-# Move Data Server VM into correct OU
-# -----------------------------------
-$null = Set-AzContext -Subscription $config.shm.subscriptionName
-Add-LogMessage -Level Info "Adding data server VM to correct OUs on SHM DC..."
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Move_Data_Server_VM_Into_OU.ps1"
-$params = @{
-    shmDn = "`"$($config.shm.domain.dn)`""
-    dataServerHostname = "`"$($config.sre.dataserver.hostname)`""
-}
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
-Write-Output $result.Value
-$null = Set-AzContext -Subscription $config.sre.subscriptionName
 
 
 # Set locale, install updates and reboot

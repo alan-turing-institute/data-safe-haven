@@ -20,12 +20,14 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 $gitlabAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20
 $gitlabRootPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.rootPasswordSecretName -DefaultLength 20
-$gitlabLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.gitlab.passwordSecretName -DefaultLength 20
+# $gitlabLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.gitlab.passwordSecretName -DefaultLength 20
 $hackmdAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.hackmd.adminPasswordSecretName -DefaultLength 20
-$hackmdLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.hackmd.passwordSecretName -DefaultLength 20
+# $hackmdLdapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.ldapSearch.hackmd.passwordSecretName -DefaultLength 20
+$vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
+$ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+$ldapSearchUserPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 
 
 # Set up the NSG for the webapps
@@ -42,14 +44,14 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
 
 # Expand GitLab cloudinit
 # -----------------------
-$shmDcFqdn = ($config.shm.dc.hostname + "." + $config.shm.domain.fqdn)
-$gitlabFqdn = $config.sre.webapps.gitlab.hostname + "." + $config.sre.domain.fqdn
-$gitlabLdapUserDn = "CN=$($config.sre.users.computerManagers.gitlab.name),$($config.shm.domain.ous.serviceAccounts.path)"
+$shmDcFqdn = "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)"
+$gitlabFqdn = "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)"
+# $gitlabLdapUserDn = "CN=$($config.sre.users.computerManagers.gitlab.name),$($config.shm.domain.ous.serviceAccounts.path)"
 $gitlabUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))"
 $gitlabCloudInitTemplate = Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitlab.template.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFqdn).
-                                            Replace('<gitlab-rb-bind-dn>', $gitlabLdapUserDn).
-                                            Replace('<gitlab-rb-pw>', $gitlabLdapPassword).
+                                            Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
+                                            Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).
                                             Replace('<gitlab-rb-base>', $config.shm.domain.ous.researchUsers.path).
                                             Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
                                             Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
@@ -65,11 +67,11 @@ $gitlabCloudInitEncoded = [System.Convert]::ToBase64String([System.Text.Encoding
 # -----------------------
 $hackmdFqdn = $config.sre.webapps.hackmd.hostname + "." + $config.sre.domain.fqdn
 $hackmdUserFilter = "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(userPrincipalName={{username}}))"
-$hackmdLdapUserDn = "CN=$($config.sre.users.computerManagers.hackmd.name),$($config.shm.domain.ous.serviceAccounts.path)"
-$hackMdLdapUrl = "ldap://" + $config.shm.dc.fqdn
+# $hackmdSearchLdapUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
+$hackMdLdapUrl = "ldap://$($config.shm.dc.fqdn)"
 $hackmdCloudInitTemplate = Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-hackmd.template.yaml" | Get-Item | Get-Content -Raw
-$hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $hackmdLdapUserDn).
-                                            Replace('<hackmd-bind-creds>', $hackmdLdapPassword).
+$hackmdCloudInit = $hackmdCloudInitTemplate.Replace('<hackmd-bind-dn>', $ldapSearchUserDn).
+                                            Replace('<hackmd-bind-creds>', $ldapSearchUserPassword).
                                             Replace('<hackmd-user-filter>', $hackmdUserFilter).
                                             Replace('<hackmd-ldap-base>', $config.shm.domain.ous.researchUsers.path).
                                             Replace('<hackmd-ip>', $config.sre.webapps.hackmd.ip).
@@ -135,7 +137,7 @@ while (-Not ($gitlabStatuses.Contains("ProvisioningState/succeeded") -and $gitla
 # ------------------------------------------------------------------
 Add-LogMessage -Level Info "Ensure webapp servers and compute VMs are bound to correct NSG..."
 foreach ($vmName in ($config.sre.webapps.hackmd.vmName, $config.sre.webapps.gitlab.vmName)) {
-    Add-VmToNSG -VMName $vmName -NSGName $nsg.Name
+    Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.webapps.rg -NSGName $nsg.Name -NsgResourceGroupName $config.sre.network.vnet.rg
 }
 Start-Sleep -Seconds 30
 Add-LogMessage -Level Info "Summary: NICs associated with '$($nsg.Name)' NSG"

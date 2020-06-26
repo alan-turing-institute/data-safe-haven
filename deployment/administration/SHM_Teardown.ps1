@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig($shmId)
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Make user confirm before beginning deletion
@@ -32,7 +32,7 @@ while ($sreResources.Length) {
     Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
     foreach ($resource in $sreResources) {
         Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
-        $_ = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
+        $null = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Resource removal succeeded"
         } else {
@@ -50,7 +50,7 @@ while ($sreResourceGroups.Length) {
     Add-LogMessage -Level Info "Found $($sreResourceGroups.Length) resource group(s) to remove..."
     foreach ($resourceGroup in $sreResourceGroups) {
         Add-LogMessage -Level Info "Attempting to remove $($resourceGroup.ResourceGroupName)..."
-        $_ = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
+        $null = Remove-AzResourceGroup -ResourceId $resourceGroup.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
         if ($?) {
             Add-LogMessage -Level Success "Resource group removal succeeded"
         } else {
@@ -63,7 +63,7 @@ while ($sreResourceGroups.Length) {
 
 # Remove DNS data from the DNS subscription
 # -----------------------------------------
-$_ = Set-AzContext -SubscriptionId $config.dns.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.dns.subscriptionName
 $dnsResourceGroup = $config.dns.rg
 $shmDomain = $config.domain.fqdn
 # AD DNS record
@@ -86,4 +86,4 @@ if ($success) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

@@ -13,7 +13,7 @@ write_files:
   - path: "/etc/ldap.secret"
     permissions: "0600"
     content: |
-      <dsvm-ldap-password>
+      <domain-join-password>
   - path: "/installation/.smbcredentials"
     owner: root:root
     permissions: "0600"
@@ -134,7 +134,7 @@ write_files:
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
-      cat /etc/ldap.secret | realm join --verbose -U <dsvm-ldap-username> <shm-fqdn-lower> --install=/
+      cat /etc/ldap.secret | realm join --verbose --computer-ou="<ou-linux-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
     owner: root:root
     permissions: "0500"

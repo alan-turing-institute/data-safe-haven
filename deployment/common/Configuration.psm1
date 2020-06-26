@@ -558,29 +558,12 @@ function Add-SreConfig {
     # SRE users
     # ---------
     $config.sre.users = [ordered]@{
-        computerManagers = [ordered]@{
-            gitlab = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Gitlab VM Service Account"
-                samAccountName = "$($config.sre.id)vmgitlab".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-gitlab"
-            }
-            hackmd = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) HackMD VM Service Account"
-                samAccountName = "$($config.sre.id)vmhackmd".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-hackmd"
-            }
-            dsvm = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Compute VM Service Account"
-                samAccountName = "$($config.sre.id)vmcompute".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-compute"
-            }
-            postgres = [ordered]@{
-                name = "$($config.sre.domain.netbiosName) Postgres VM Service Account"
-                samAccountName = "$($config.sre.id)vmpostgres".ToLower() | Limit-StringLength 20
-                passwordSecretName = "$($config.sre.shortName)-vm-service-account-password-postgres"
-            }
-        }
         serviceAccounts = [ordered]@{
+            ldapSearch = [ordered]@{
+                name = "$($config.sre.domain.netbiosName) LDAP Search Service Account"
+                samAccountName = "$($config.sre.id)ldapsearch".ToLower() | Limit-StringLength 20
+                passwordSecretName = "$($config.sre.shortName)-other-service-account-password-ldap-search"
+            }
             postgres = [ordered]@{
                 name = "$($config.sre.domain.netbiosName) Postgres DB Service Account"
                 samAccountName = "$($config.sre.id)dbpostgres".ToLower() | Limit-StringLength 20

@@ -26,13 +26,13 @@
                 "description": "Enter name for data server VM"
             }
         },
-        "DC_Administrator_Password": {
+        "Domain_Join_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Enter name for DC Administrator Password"
             }
         },
-        "DC_Administrator_User": {
+        "Domain_Join_Username": {
             "type": "string",
             "metadata": {
                 "description": "Enter name for DC Administrator"
@@ -85,6 +85,12 @@
             "defaultValue": "10.250.x.100",
             "metadata": {
                 "description": "Enter IP_Address for VM, must end in 100"
+            }
+        },
+        "OU_Path": {
+            "type": "string",
+            "metadata": {
+                "description": "OU path to add this VM to"
             }
         },
         "Virtual_Network_Name": {
@@ -283,12 +289,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Administrator_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_Username'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Administrator_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         }

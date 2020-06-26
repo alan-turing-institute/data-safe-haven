@@ -1,6 +1,6 @@
 {
     "subscriptionName": "[Prod] Turing SRE – Sandbox",
-    "adminSecurityGroupName" : "Safe Haven Production Admins",
+    "adminSecurityGroupName": "Safe Haven Production Admins",
     "sreId": "sandbox",
     "shmId": "turing1",
     "tier": "2",

@@ -54,7 +54,10 @@
             "type": "string"
         },
         "OU_Path": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "OU path to add this VM to"
+            }
         },
         "Virtual_Network_Name": {
             "type": "string"

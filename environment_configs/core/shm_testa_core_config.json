@@ -23,8 +23,8 @@
                     "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
                 },
                 "rdsGatewayServers": {
-                  "name": "Secure Research Environment Service Servers",
-                  "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
                 }
             },
             "securityGroups": {
@@ -46,6 +46,28 @@
             }
         },
         "users": {
+            "computerManagers": {
+                "serviceServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmtestaadmin",
+                    "passwordSecretName": "shm-testa-domain-admin-password"
+                }
+            },
             "serviceAccounts": {
                 "aadLocalSync": {
                     "name": "Local AD Sync Administrator",

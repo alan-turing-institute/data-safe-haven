@@ -2,7 +2,7 @@
     "subscriptionName": "Safe Haven Management Test B",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "testb.dsgroupdev.co.uk",
     "shmId": "testb",

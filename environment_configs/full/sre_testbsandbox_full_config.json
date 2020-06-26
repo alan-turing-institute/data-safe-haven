@@ -4,9 +4,9 @@
     "id": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
-      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "uksouth",
@@ -390,29 +390,12 @@
       }
     },
     "users": {
-      "computerManagers": {
-        "gitlab": {
-          "name": "SANDBOX Gitlab VM Service Account",
-          "samAccountName": "sandboxvmgitlab",
-          "passwordSecretName": "sre-sandbox-vm-service-account-password-gitlab"
-        },
-        "hackmd": {
-          "name": "SANDBOX HackMD VM Service Account",
-          "samAccountName": "sandboxvmhackmd",
-          "passwordSecretName": "sre-sandbox-vm-service-account-password-hackmd"
-        },
-        "dsvm": {
-          "name": "SANDBOX Compute VM Service Account",
-          "samAccountName": "sandboxvmcompute",
-          "passwordSecretName": "sre-sandbox-vm-service-account-password-compute"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres VM Service Account",
-          "samAccountName": "sandboxvmpostgres",
-          "passwordSecretName": "sre-sandbox-vm-service-account-password-postgres"
-        }
-      },
       "serviceAccounts": {
+        "ldapSearch": {
+          "name": "SANDBOX LDAP Search Service Account",
+          "samAccountName": "sandboxldapsearch",
+          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search"
+        },
         "postgres": {
           "name": "SANDBOX Postgres DB Service Account",
           "samAccountName": "sandboxdbpostgres",

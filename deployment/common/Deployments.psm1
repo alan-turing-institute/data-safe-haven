@@ -81,12 +81,18 @@ function Add-VmToNSG {
         [Parameter(Mandatory = $true, HelpMessage = "Name of virtual machine")]
         $VMName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group")]
-        $NSGName
+        $NSGName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
+        $VmResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the NSG belongs to")]
+        $NsgResourceGroupName
     )
-    Add-LogMessage -Level Info ("[ ] Associating $VMName with $NSGName...")
-    $vmId = $(Get-AzVM -Name $VMName).Id
+    Add-LogMessage -Level Info "[ ] Associating $VMName with $NSGName..."
+    $vmId = $(Get-AzVM -Name $VMName -ResourceGroupName $VmResourceGroupName).Id
+    if ($vmId.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($vmId.Count) VM(s) called $VMName!" }
     $nic = Get-AzNetworkInterface | Where-Object { $_.VirtualMachine.Id -eq $vmId }
-    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName
+    $nsg = Get-AzNetworkSecurityGroup -Name $NSGName -ResourceGroupName $NsgResourceGroupName
+    if ($nsg.Count -ne 1) { Add-LogMessage -Level Fatal "Found $($nsg.Count) NSG(s) called $NSGName!" }
     $nic.NetworkSecurityGroup = $nsg
     $null = ($nic | Set-AzNetworkInterface)
     if ($?) {

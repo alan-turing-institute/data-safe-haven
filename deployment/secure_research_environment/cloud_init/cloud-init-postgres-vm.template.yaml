@@ -116,7 +116,7 @@ write_files:
       ls -alh /etc/sssd/sssd.conf
       # Join realm
       echo ">=== Joining realm... ===<"
-      cat /etc/ldap.secret | realm join --verbose -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
+      cat /etc/ldap.secret | realm join --verbose --computer-ou="<ou-data-servers-path>" -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
   - path: "/opt/installation/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"

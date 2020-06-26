@@ -2,7 +2,7 @@
     "subscriptionName": "Research Engineering",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "adminSecurityGroupName" : "Safe Haven Test Admins",
+    "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "mortest.dsgroupdev.co.uk",
     "netbiosName": "MORTEST",

@@ -44,13 +44,13 @@
                 "description": "Username for SQL AuthUpdate User"
             }
         },
-        "DC_Join_Password": {
+        "Domain_Join_Password": {
             "type": "securestring",
             "metadata": {
                 "description": "Password for DC Join User"
             }
         },
-        "DC_Join_User": {
+        "Domain_Join_Username": {
             "type": "string",
             "metadata": {
                 "description": "Username for DC Join User"
@@ -69,11 +69,10 @@
                 "description": "IP Address for VM"
             }
         },
-        "Location": {
+        "OU_Path": {
             "type": "string",
-            "defaultValue": "[resourceGroup().location]",
             "metadata": {
-                "description": "Azure location"
+                "description": "OU path to add this VM to"
             }
         },
         "OS_Disk_Size": {
@@ -137,7 +136,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Sql_Server_Name')]",
             "apiVersion": "2018-06-01",
-            "location": "[parameters('Location')]",
+            "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
@@ -210,7 +209,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nic')]",
             "apiVersion": "2018-10-01",
-            "location": "[parameters('Location')]",
+            "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "ipConfigurations": [
@@ -242,7 +241,7 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('Sql_Server_Name'), '/', 'bginfo')]",
             "apiVersion": "2018-06-01",
-            "location": "[parameters('Location')]",
+            "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "autoUpgradeMinorVersion": true,
@@ -258,7 +257,7 @@
             "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('Sql_Server_Name'),'/joindomain')]",
-            "location": "[parameters('Location')]",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]",
                 "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('Sql_Server_Name'),'bginfo')]"
@@ -270,12 +269,13 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "Name": "[parameters('Domain_Name')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('DC_Join_User'))]",
+                    "OUPath": "[parameters('OU_Path')]",
+                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_Username'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('DC_Join_Password')]"
+                    "Password": "[parameters('Domain_Join_Password')]"
                 }
             }
         },
@@ -283,7 +283,7 @@
             "name": "[parameters('Sql_Server_Name')]",
             "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
             "apiVersion": "2017-03-01-preview",
-            "location": "[parameters('Location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('Sql_Server_Name'))]",
                 "sqlManagement": "Full",

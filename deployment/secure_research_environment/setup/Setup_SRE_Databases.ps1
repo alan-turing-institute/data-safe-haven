@@ -84,6 +84,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         # Retrieve common secrets from key vaults
         # ---------------------------------------
         Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+        $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.dataServers.passwordSecretName -DefaultLength 20
         $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
         $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20
 
@@ -93,8 +94,6 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         if ($databaseCfg.type -eq "MSSQL") {
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
-            $domainAdminPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminPassword -DefaultLength 20
-            $domainAdminUsername = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.keyVault.secretNames.domainAdminUsername -DefaultValue "shm$($config.shm.id)admin".ToLower()
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
             $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPassword -DefaultLength 20
             $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
@@ -109,11 +108,11 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 Data_Disk_Type = $databaseCfg.disks.data.type
                 Db_Admin_Password = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
                 Db_Admin_Username = $dbAdminUsername
-                DC_Join_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-                DC_Join_User = $domainAdminUsername
+                Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+                Domain_Join_Username = $config.shm.users.computerManagers.dataServers.samAccountName
                 Domain_Name = $config.shm.domain.fqdn
                 IP_Address = $databaseCfg.ip
-                Location = $config.sre.location
+                OU_Path = $config.shm.domain.ous.dataServers.path
                 OS_Disk_Size = $databaseCfg.disks.os.sizeGb
                 OS_Disk_Type = $databaseCfg.disks.os.type
                 Sql_Connection_Port = $databaseCfg.port
@@ -157,7 +156,6 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             $dbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
             $dbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
             $dbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
-            $vmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.postgres.passwordSecretName -DefaultLength 20
 
             # Create an AD service principal and get the keytab for it
             Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
@@ -187,14 +185,15 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                                     Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
                                                     Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
                                                     Replace("<ldap-bind-user-dn>", "CN=$($config.sre.users.computerManagers.postgres.name),$($config.shm.domain.ous.serviceAccounts.path)").
-                                                    Replace("<ldap-bind-user-password>", $vmLdapPassword).
-                                                    Replace("<ldap-bind-user-username>", $config.sre.users.computerManagers.postgres.samAccountName).
+                                                    Replace("<ldap-bind-user-password>", $domainJoinPassword).
+                                                    Replace("<ldap-bind-user-username>", $config.shm.users.computerManagers.dataServers.samAccountName).
                                                     Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
                                                     Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
                                                     Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
                                                     Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
                                                     Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
                                                     Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+                                                    Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
                                                     Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
                                                     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).

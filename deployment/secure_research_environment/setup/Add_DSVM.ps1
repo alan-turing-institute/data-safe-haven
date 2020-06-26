@@ -333,7 +333,7 @@ Add-LogMessage -Level Success "Found subnet '$($subnet.Name)' in $($vnet.Name)"
 # Set mirror URLs
 # ---------------
 Add-LogMessage -Level Info "Determining correct URLs for package mirrors..."
-$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].ipAddresses.internal -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].ipAddresses.internal
+$addresses = Get-MirrorAddresses -cranIp $config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress -pypiIp $config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress
 Add-LogMessage -Level Success "CRAN: '$($addresses.cran.url)'"
 Add-LogMessage -Level Success "PyPI server: '$($addresses.pypi.url)'"
 Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
@@ -343,7 +343,7 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
-$dsvmLdapPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.computerManagers.dsvm.passwordSecretName -DefaultLength 20
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
@@ -358,11 +358,12 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
                                                             Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
                                                             Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
                                                             Replace("<dsvm-hostname>", $vmName).
-                                                            Replace("<dsvm-ldap-password>", $dsvmLdapPassword).
-                                                            Replace("<dsvm-ldap-username>", $config.sre.users.computerManagers.dsvm.samAccountName).
+                                                            Replace("<domain-join-password>", $domainJoinPassword).
+                                                            Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
                                                             Replace("<mirror-host-pypi>", $addresses.pypi.host).
                                                             Replace("<mirror-url-cran>", $addresses.cran.url).
                                                             Replace("<mirror-url-pypi>", $addresses.pypi.url).
+                                                            Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
                                                             Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
                                                             Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
                                                             Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
@@ -476,7 +477,7 @@ if ($upgrade) {
 # VM must be off for us to switch NSG
 # -----------------------------------
 Add-LogMessage -Level Info "Switching to secure NSG '$($secureNsg.Name)'..."
-Add-VmToNSG -VMName $vmName -NSGName $secureNsg.Name
+Add-VmToNSG -VMName $vmName -VmResourceGroupName $config.sre.dsvm.rg -NSGName $secureNsg.Name -NsgResourceGroupName $config.sre.network.vnet.rg
 
 
 # Restart after the NSG switch
@@ -523,7 +524,7 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
 $params = @{
     TEST_HOST = $config.shm.dc.fqdn
-    LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
+    LDAP_USER = $config.shm.users.computerManagers.linuxServers.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
     SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }

@@ -14,7 +14,7 @@ param(
 
 # Initialise the data drives
 # --------------------------
-Write-Host "Initialising data drives..."
+Write-Output "Initialising data drives..."
 Stop-Service ShellHWDetection
 $CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | Sort -Property Number
 foreach ($rawDisk in $CandidateRawDisks) {
@@ -22,78 +22,80 @@ foreach ($rawDisk in $CandidateRawDisks) {
     $null = Initialize-Disk -PartitionStyle GPT -Number $rawDisk.Number
     $partition = New-Partition -DiskNumber $rawDisk.Number -UseMaximumSize -AssignDriveLetter
     $label = "DATA-$LUN"
-    Write-Host "Formatting partition $($partition.PartitionNumber) of raw disk $($rawDisk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
+    Write-Output "Formatting partition $($partition.PartitionNumber) of raw disk $($rawDisk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
     $null = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
 }
 Start-Service ShellHWDetection
 
 
+# Get map of folders to disk location since do not know which disk letter will be assigned in advance
+# ---------------------------------------------------------------------------------------------------
+$smbShareMap = @{
+    "Ingress" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-0' }).DeviceId)\Ingress"
+    "Shared" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-1' }).DeviceId)\Shared"
+    "Egress" = "$((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.VolumeName -eq 'DATA-2' }).DeviceId)\Egress"
+}
+
+
 # Setup disk shares
 # -----------------
-Write-Host "Configuring disk shares..."
-foreach ($namePathPair in (("Ingress", "F:\Ingress"),
-                           ("Shared", "G:\Shared"),
-                           ("Egress", "H:\Egress"))) {
-    $shareName, $sharePath = $namePathPair
+Write-Output "Configuring disk shares..."
+foreach ($shareName in @("Ingress", "Shared", "Egress")) {
+    $sharePath = $smbShareMap[$shareName]
     $dataMountDomainUser = "$shmNetbiosName\$dataMountUser"
     $researcherUserSg = "$shmNetbiosName\$researcherUserSgName"
     $serverAdminSg = "$shmNetbiosName\$serverAdminSgName"
-    Write-Host " [ ] Creating SMB data share '$shareName'..."
+    Write-Output " [ ] Creating SMB data share '$shareName' at '$sharePath'..."
     if (Get-SmbShare | Where-Object { $_.Name -eq "$shareName" }) {
-        Write-Host " [o] SMB share '$shareName' already exists"
+        Write-Output " [o] SMB share '$shareName' already exists"
     } else {
-        # Create share, being robust to case where share folder already exists
+        # Create folder if it does not exist
         if (-Not (Test-Path -Path $sharePath)) {
             $null = New-Item -ItemType directory -Path $sharePath
         }
+        # Create SMB share
         $null = New-SmbShare -Path $sharePath -Name $shareName -ErrorAction:Continue
         if ($?) {
-            Write-Host " [o] Completed"
+            Write-Output " [o] Successfully created SMB share '$shareName'"
         } else {
-            Write-Host " [x] Failed"
+            Write-Output " [x] Failed to create SMB share '$shareName'"
         }
     }
 }
 
 
-# Set SMB share access
-# --------------------
-foreach ($nameAccessPair in (("Ingress", "Read"), ("Shared", "Change"), ("Egress", "Full"))) {
-    $shareName, $accessRight = $nameAccessPair
-    Write-Host "Setting SMB share access for '$shareName' share..."
+# Set SMB and ACL access rules
+# ----------------------------
+foreach ($pathAccessTuple in (("Ingress", "Read", "Read"), ("Shared", "Change", "Modify"), ("Egress", "Full", "Full"))) {
+    $shareName, $smbAccessRight, $aclAccessRight = $pathAccessTuple
+
+    Write-Output "Setting SMB share access for '$shareName' share..."
     # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
-    Write-Host "dataMountDomainUser: '$dataMountDomainUser'"
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -Force -ErrorAction:Continue
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
-    # Set the permissions we want explicitly on the share
+    # Explicitly set the permissions we want on the share
     $null = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
-    $null = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight $accessRight -Force
-    $null = Grant-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -AccessRight $accessRight -Force
-    # Print current permissions
-    Write-Host "SMB share access for '$shareName' share is currently:"
-    Get-SmbShareAccess -Name $shareName | Format-List
-}
+    $null = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight $smbAccessRight -Force
+    $null = Grant-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -AccessRight $smbAccessRight -Force
 
-
-# Set ACL rules using the rights listed here: https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesystemrights?view=netframework-4.8
-# ------------------------------------------------------------------------------------------------------------------------------------------------------------
-foreach ($pathAccessPair in (("F:\Ingress", "Read"), ("G:\Shared", "Modify"), ("H:\Egress", "Full"))) {
-    $sharePath, $accessRight = $pathAccessPair
-    Write-Host "Setting ACL rules for folder '$sharePath'"
-    # Remove all existing ACL rules on the dataserver folder backing the share
+    $sharePath = $smbShareMap[$shareName]
+    Write-Output "Setting ACL rules for folder '$sharePath'"
+    # Remove all existing ACL rules on the folder backing the share
     $acl = Get-Acl $sharePath
     $null = $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) }
-    # Set the permissions we want explicitly on the dataserver folder backing the shares
+    # Explicitly set the permissions we want on the folder backing the share
+    # https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.filesystemrights?view=netframework-4.8
     $serverAdminAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($serverAdminSg, "Full", "ContainerInherit, ObjectInherit", "None", "Allow");
-    $researchUserAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($researcherUserSg, $accessRight, "ContainerInherit, ObjectInherit", "None", "Allow");
-    $dataMountAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($dataMountDomainUser, $accessRight, "ContainerInherit, ObjectInherit", "None", "Allow");
+    $researchUserAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($researcherUserSg, $aclAccessRight, "ContainerInherit, ObjectInherit", "None", "Allow");
+    $dataMountAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($dataMountDomainUser, $aclAccessRight, "ContainerInherit, ObjectInherit", "None", "Allow");
     $null = $acl.SetAccessRule($serverAdminAccessRule)
     $null = $acl.SetAccessRule($researchUserAccessRule)
     $null = $acl.SetAccessRule($dataMountAccessRule)
     $null = (Set-Acl $sharePath $acl)
-    # Print current access rules
+
+    # Print current permissions and access rules
     $rules = (Get-Acl $sharePath).Access | Select-Object -Property IdentityReference, FileSystemRights
-    Write-Host "ACL access rules for '$sharePath' folder are currently:`n$($rules | Out-String)"
+    Write-Output "ACL access rules for '$sharePath' folder are currently:`n$($rules | Out-String)"
 }
