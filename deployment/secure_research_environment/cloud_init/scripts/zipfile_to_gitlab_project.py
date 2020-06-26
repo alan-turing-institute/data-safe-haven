@@ -63,13 +63,13 @@ def create_project(gitlab_config, repo_name, namespace_id):
     """
     Create empty project on gitlab, and return the project info as returned by
     GitLab on creation
-    
+
     Parameters
     ==========
     gitlab_config: dict, gitlab configuration information (same as used elsewhere)
     repo_name: str, name of the repository/project
     namespace_id: int, ID of the group ("unapproved" or "approved")
-    
+
     Returns
     =======
     gitlab_project_info: dict, containing among other things, the name and
@@ -376,7 +376,7 @@ def clone_commit_and_push(
     Run shell commands to convert the unzipped directory containing the
     repository contents into a git repo, then commit it on the branch
     with the requested name.
-    
+
     Parameters
     ==========
     path_to_unzipped_repo: str, the full directory path to the unzipped repo
