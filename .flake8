@@ -1,5 +1,4 @@
 [flake8]
-# Ignore line length
-ignore = E501
-# Ignore line break before binary operator
-ignore = W503
+# Ignore line length (E501)
+# and line break before binary operator (W503)
+ignore = E501,W503
