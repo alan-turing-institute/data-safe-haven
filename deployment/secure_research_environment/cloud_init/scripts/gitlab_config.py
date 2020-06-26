@@ -13,6 +13,7 @@ def http_error(msg, response):
         + response.status_code + "), content: " + response.text
     )
 
+
 def get_gitlab_config(file=None, server=None, value=None):
     """Get GitLab server details and user secrets.
     Parameters
