@@ -4,9 +4,9 @@
     "id": "testc",
     "name": "Turing Development Safe Haven C",
     "organisation": {
-      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "centralus",
@@ -21,12 +21,12 @@
           "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "linuxServers": {
-          "name": "Computers",
-          "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsGatewayServers": {
           "name": "Secure Research Environment Service Servers",
-          "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsSessionServers": {
           "name": "Secure Research Environment RDS Session Servers",
@@ -142,36 +142,35 @@
         "vpnCaCertificatePlain": "shm-testc-vpn-ca-cert-plain",
         "vpnCaCertPassword": "shm-testc-vpn-ca-cert-password",
         "vpnClientCertificate": "shm-testc-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testc-vpn-client-cert-password",
-        "aadLocalSyncPassword": "shm-testc-localadsync-password"
+        "vpnClientCertPassword": "shm-testc-vpn-client-cert-password"
       }
     },
     "users": {
       "computerManagers": {
         "serviceServers": {
-          "name": "SAFEHAVENTESTC Service Servers Manager",
-          "samAccountName": "testcserviceservers",
-          "passwordSecretName": "shm-testc-computer-manager-password-service-servers"
+          "name": "TESTC Service Servers Manager",
+          "samAccountName": "shmtestcadmin",
+          "passwordSecretName": "shm-testc-domain-admin-password"
         },
         "dataServers": {
-          "name": "SAFEHAVENTESTC Data Servers Manager",
-          "samAccountName": "testcdataservers",
-          "passwordSecretName": "shm-testc-computer-manager-password-data-servers"
+          "name": "TESTC Data Servers Manager",
+          "samAccountName": "shmtestcadmin",
+          "passwordSecretName": "shm-testc-domain-admin-password"
         },
         "linuxServers": {
-          "name": "SAFEHAVENTESTC Linux Servers Manager",
-          "samAccountName": "testclinuxservers",
-          "passwordSecretName": "shm-testc-computer-manager-password-linux-servers"
+          "name": "TESTC Linux Servers Manager",
+          "samAccountName": "shmtestcadmin",
+          "passwordSecretName": "shm-testc-domain-admin-password"
         },
         "rdsGatewayServers": {
-          "name": "SAFEHAVENTESTC RDS Gateway Manager",
-          "samAccountName": "testcrdgservers",
-          "passwordSecretName": "shm-testc-computer-manager-password-rds-gateway-servers"
+          "name": "TESTC RDS Gateway Manager",
+          "samAccountName": "shmtestcadmin",
+          "passwordSecretName": "shm-testc-domain-admin-password"
         },
         "rdsSessionServers": {
-          "name": "SAFEHAVENTESTC RDS Session Servers Manager",
-          "samAccountName": "testcrdshservers",
-          "passwordSecretName": "shm-testc-computer-manager-password-rds-session-servers"
+          "name": "TESTC RDS Session Servers Manager",
+          "samAccountName": "shmtestcadmin",
+          "passwordSecretName": "shm-testc-domain-admin-password"
         }
       },
       "serviceAccounts": {
@@ -392,29 +391,12 @@
       }
     },
     "users": {
-      "computerManagers": {
-        "gitlab": {
+      "serviceAccounts": {
+        "ldapSearch": {
           "name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox",
           "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
         },
-        "hackmd": {
-          "name": "SANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldapsandbox",
-          "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
-        },
-        "dsvm": {
-          "name": "SANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres VM LDAP",
-          "samAccountName": "pgvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-        }
-      },
-      "serviceAccounts": {
         "postgres": {
           "name": "SANDBOX Postgres DB Service Account",
           "samAccountName": "pgdbsrvcsandbox",
@@ -550,17 +532,53 @@
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
-        "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password"
-      },
       "dbmssql": {
-        "vmName": "SQL-ING-SANDBOX",
         "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
         "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
         "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
-        "port": "14330"
+        "vmName": "SQL-ING-SANDBOX",
+        "type": "MSSQL",
+        "ip": "10.151.3.4",
+        "port": "14330",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "vmSize": "Standard_DS2_v2",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true,
+        "datadisk": {
+          "size_gb": "2048"
+        }
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
+        "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "vmName": "PSTGRS-SANDBOX",
+        "type": "PostgreSQL",
+        "ip": "10.151.3.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "vmSize": "Standard_DS2_v2",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        }
       }
     },
     "dsvm": {

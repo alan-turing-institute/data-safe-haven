@@ -10,6 +10,7 @@
     "outboundInternetAccess": "default",
     "computeVmImageType": "Ubuntu",
     "computeVmImageVersion": "0.1.2019122000",
+    "databases": ["MSSQL", "PostgreSQL"],
     "overrides": {
         "sre": {
             "network": {
@@ -35,37 +36,20 @@
                 }
             },
             "users": {
-                "computerManagers": {
-                    "gitlab": {
+                "serviceAccounts": {
+                    "datamount": {
+                        "samAccountName": "datamountsandbox",
+                        "passwordSecretName": "sre-sandbox-datamount-password"
+                    },
+                    "ldapSearch": {
                         "name": "SANDBOX Gitlab LDAP",
                         "samAccountName": "gitlabldapsandbox",
                         "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
                     },
-                    "hackmd": {
-                        "name": "SANDBOX HackMD LDAP",
-                        "samAccountName": "hackmdldapsandbox",
-                        "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
-                    },
-                    "dsvm": {
-                        "name": "SANDBOX DSVM LDAP",
-                        "samAccountName": "dsvmldapsandbox",
-                        "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
-                    },
-                    "postgres": {
-                        "name": "SANDBOX Postgres VM LDAP",
-                        "samAccountName": "pgvmldapsandbox",
-                        "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-                    }
-                },
-                "serviceAccounts": {
                     "postgres": {
                         "name": "SANDBOX Postgres DB Service Account",
                         "samAccountName": "pgdbsrvcsandbox",
                         "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
-                    },
-                    "datamount": {
-                        "samAccountName": "datamountsandbox",
-                        "passwordSecretName": "sre-sandbox-datamount-password"
                     }
                 }
             },
@@ -103,11 +87,14 @@
             "databases": {
                 "rg": "RG_SRE_DATABASES",
                 "dbmssql": {
+                    "vmName": "SQL-ING-SANDBOX",
                     "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
                     "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
                     "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
                     "port": "14330",
-                    "vmName": "SQL-ING-SANDBOX"
+                    "datadisk": {
+                        "size_gb": "2048"
+                    }
                 },
                 "dbpostgresql": {
                     "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",

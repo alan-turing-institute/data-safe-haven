@@ -36,37 +36,20 @@
                 }
             },
             "users": {
-                "computerManagers": {
-                    "gitlab": {
+                "serviceAccounts": {
+                    "datamount": {
+                        "samAccountName": "datamountsandbox",
+                        "passwordSecretName": "sre-sandbox-datamount-password"
+                    },
+                    "ldapSearch": {
                         "name": "SANDBOX Gitlab LDAP",
                         "samAccountName": "gitlabldapsandbox",
                         "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
                     },
-                    "hackmd": {
-                        "name": "SANDBOX HackMD LDAP",
-                        "samAccountName": "hackmdldapsandbox",
-                        "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
-                    },
-                    "dsvm": {
-                        "name": "SANDBOX DSVM LDAP",
-                        "samAccountName": "dsvmldapsandbox",
-                        "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
-                    },
-                    "postgres": {
-                        "name": "SANDBOX Postgres VM LDAP",
-                        "samAccountName": "pgvmldapsandbox",
-                        "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-                    }
-                },
-                "serviceAccounts": {
                     "postgres": {
                         "name": "SANDBOX Postgres DB Service Account",
                         "samAccountName": "pgdbsrvcsandbox",
                         "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
-                    },
-                    "datamount": {
-                        "samAccountName": "datamountsandbox",
-                        "passwordSecretName": "sre-sandbox-datamount-password"
                     }
                 }
             },

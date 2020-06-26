@@ -5,7 +5,6 @@
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "testc.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENTESTC",
     "shmId": "testc",
     "name": "Turing Development Safe Haven C",
     "organisation": {
@@ -20,12 +19,12 @@
             "netbiosName": "SAFEHAVENTESTC",
             "ous": {
                 "linuxServers": {
-                    "name": "Computers",
-                    "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
                 },
                 "rdsGatewayServers": {
                     "name": "Secure Research Environment Service Servers",
-                    "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "path": "OU=Secure Research Environment Service Servers,DC=testc,DC=dsgroupdev,DC=co,DC=uk"
                 }
             },
             "securityGroups": {
@@ -43,7 +42,6 @@
         "keyVault": {
             "rg": "RG_SHM_SECRETS",
             "secretNames": {
-                "aadLocalSyncPassword": "shm-testc-localadsync-password",
                 "domainAdminUsername": "shm-testc-vm-admin-username"
             }
         },

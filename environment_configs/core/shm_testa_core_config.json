@@ -19,12 +19,12 @@
             "netbiosName": "SAFEHAVENTESTA",
             "ous": {
                 "linuxServers": {
-                    "name": "Computers",
-                    "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
                 },
                 "rdsGatewayServers": {
                     "name": "Secure Research Environment Service Servers",
-                    "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "path": "OU=Secure Research Environment Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
                 }
             },
             "securityGroups": {

@@ -4,9 +4,9 @@
     "id": "demo",
     "name": "Turing Development Safe Haven B",
     "organisation": {
-      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "centralus",
@@ -21,8 +21,8 @@
           "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
         },
         "linuxServers": {
-          "name": "Computers",
-          "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsGatewayServers": {
           "name": "Secure Research Environment Service Servers",
@@ -148,29 +148,29 @@
     "users": {
       "computerManagers": {
         "serviceServers": {
-          "name": "SAFEHAVENDEMO Service Servers Manager",
-          "samAccountName": "demoserviceservers",
-          "passwordSecretName": "shm-demo-computer-manager-password-service-servers"
+          "name": "DEMO Service Servers Manager",
+          "samAccountName": "shmdemoadmin",
+          "passwordSecretName": "shm-demo-domain-admin-password"
         },
         "dataServers": {
-          "name": "SAFEHAVENDEMO Data Servers Manager",
-          "samAccountName": "demodataservers",
-          "passwordSecretName": "shm-demo-computer-manager-password-data-servers"
+          "name": "DEMO Data Servers Manager",
+          "samAccountName": "shmdemoadmin",
+          "passwordSecretName": "shm-demo-domain-admin-password"
         },
         "linuxServers": {
-          "name": "SAFEHAVENDEMO Linux Servers Manager",
-          "samAccountName": "demolinuxservers",
-          "passwordSecretName": "shm-demo-computer-manager-password-linux-servers"
+          "name": "DEMO Linux Servers Manager",
+          "samAccountName": "shmdemoadmin",
+          "passwordSecretName": "shm-demo-domain-admin-password"
         },
         "rdsGatewayServers": {
-          "name": "SAFEHAVENDEMO RDS Gateway Manager",
-          "samAccountName": "demordgservers",
-          "passwordSecretName": "shm-demo-computer-manager-password-rds-gateway-servers"
+          "name": "DEMO RDS Gateway Manager",
+          "samAccountName": "shmdemoadmin",
+          "passwordSecretName": "shm-demo-domain-admin-password"
         },
         "rdsSessionServers": {
-          "name": "SAFEHAVENDEMO RDS Session Servers Manager",
-          "samAccountName": "demordshservers",
-          "passwordSecretName": "shm-demo-computer-manager-password-rds-session-servers"
+          "name": "DEMO RDS Session Servers Manager",
+          "samAccountName": "shmdemoadmin",
+          "passwordSecretName": "shm-demo-domain-admin-password"
         }
       },
       "serviceAccounts": {
@@ -391,29 +391,12 @@
       }
     },
     "users": {
-      "computerManagers": {
-        "gitlab": {
+      "serviceAccounts": {
+        "ldapSearch": {
           "name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox",
           "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
         },
-        "hackmd": {
-          "name": "SANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldapsandbox",
-          "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
-        },
-        "dsvm": {
-          "name": "SANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres VM LDAP",
-          "samAccountName": "pgvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-        }
-      },
-      "serviceAccounts": {
         "postgres": {
           "name": "SANDBOX Postgres DB Service Account",
           "samAccountName": "pgdbsrvcsandbox",

@@ -206,6 +206,7 @@ write_files:
       chmod go+rw /scratch
       UUID=$(blkid | grep "$PARTITION" | cut -d'"' -f2)
       echo "UUID=${UUID}\t/scratch\text4\tdefaults,nofail\t0\t2" >> /etc/fstab
+      tail -n 1 /etc/fstab
       echo ">=== /etc/fstab ===<"
       cat /etc/fstab
       echo ">=== end of /etc/fstab ===<"

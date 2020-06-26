@@ -5,7 +5,6 @@
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
     "domain": "demo.dsgroupdev.co.uk",
-    "netbiosName": "SAFEHAVENDEMO",
     "shmId": "demo",
     "name": "Turing Development Safe Haven B",
     "organisation": {
@@ -20,8 +19,8 @@
             "netbiosName": "SAFEHAVENDEMO",
             "ous": {
                 "linuxServers": {
-                    "name": "Computers",
-                    "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
                 },
                 "rdsGatewayServers": {
                     "name": "Secure Research Environment Service Servers",

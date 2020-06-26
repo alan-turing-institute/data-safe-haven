@@ -358,8 +358,8 @@ if ($success) {
 # Delegate Active Directory permissions to users/groups that allow them to register computers in the domain
 # ---------------------------------------------------------------------------------------------------------
 Write-Output "Delegating Active Directory registration permissions to service users..."
-# Allow computer managers to register computers in the 'Computers' container
-Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\$($securityGroups.computerManagers.name)"
+# # Allow computer managers to register computers in the 'Computers' container
+# Grant-ComputerRegistrationPermissions -ContainerName "Computers" -UserPrincipalName "${netbiosname}\$($securityGroups.computerManagers.name)"
 # Allow the service server user to register computers in the '<ou-service-servers-name>' container
 Grant-ComputerRegistrationPermissions -ContainerName "<ou-service-servers-name>" -UserPrincipalName "${netbiosname}\$($userAccounts.serviceServers.samAccountName)"
 # Allow the data server user to register computers in the '<ou-data-servers-name>' container

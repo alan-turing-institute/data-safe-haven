@@ -4,9 +4,9 @@
     "id": "testa",
     "name": "Turing Development Safe Haven A",
     "organisation": {
-      "stateCountyRegion": "London",
       "countryCode": "GB",
       "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
       "townCity": "London"
     },
     "location": "centralus",
@@ -21,12 +21,12 @@
           "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
         },
         "linuxServers": {
-          "name": "Computers",
-          "path": "CN=Computers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsGatewayServers": {
           "name": "Secure Research Environment Service Servers",
-          "path": "OU=Secure Research Environment Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
         },
         "rdsSessionServers": {
           "name": "Secure Research Environment RDS Session Servers",
@@ -149,28 +149,28 @@
       "computerManagers": {
         "serviceServers": {
           "name": "TESTA Service Servers Manager",
-          "samAccountName": "testaserviceservers",
-          "passwordSecretName": "shm-testa-computer-manager-password-service-servers"
+          "samAccountName": "shmtestaadmin",
+          "passwordSecretName": "shm-testa-domain-admin-password"
         },
         "dataServers": {
           "name": "TESTA Data Servers Manager",
-          "samAccountName": "testadataservers",
-          "passwordSecretName": "shm-testa-computer-manager-password-data-servers"
+          "samAccountName": "shmtestaadmin",
+          "passwordSecretName": "shm-testa-domain-admin-password"
         },
         "linuxServers": {
           "name": "TESTA Linux Servers Manager",
-          "samAccountName": "testalinuxservers",
-          "passwordSecretName": "shm-testa-computer-manager-password-linux-servers"
+          "samAccountName": "shmtestaadmin",
+          "passwordSecretName": "shm-testa-domain-admin-password"
         },
         "rdsGatewayServers": {
           "name": "TESTA RDS Gateway Manager",
-          "samAccountName": "testardgservers",
-          "passwordSecretName": "shm-testa-computer-manager-password-rds-gateway-servers"
+          "samAccountName": "shmtestaadmin",
+          "passwordSecretName": "shm-testa-domain-admin-password"
         },
         "rdsSessionServers": {
           "name": "TESTA RDS Session Servers Manager",
-          "samAccountName": "testardshservers",
-          "passwordSecretName": "shm-testa-computer-manager-password-rds-session-servers"
+          "samAccountName": "shmtestaadmin",
+          "passwordSecretName": "shm-testa-domain-admin-password"
         }
       },
       "serviceAccounts": {
@@ -391,29 +391,12 @@
       }
     },
     "users": {
-      "computerManagers": {
-        "gitlab": {
+      "serviceAccounts": {
+        "ldapSearch": {
           "name": "SANDBOX Gitlab LDAP",
           "samAccountName": "gitlabldapsandbox",
           "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
         },
-        "hackmd": {
-          "name": "SANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldapsandbox",
-          "passwordSecretName": "sre-sandbox-hackmd-ldap-password"
-        },
-        "dsvm": {
-          "name": "SANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-dsvm-ldap-password"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres VM LDAP",
-          "samAccountName": "pgvmldapsandbox",
-          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
-        }
-      },
-      "serviceAccounts": {
         "postgres": {
           "name": "SANDBOX Postgres DB Service Account",
           "samAccountName": "pgdbsrvcsandbox",
