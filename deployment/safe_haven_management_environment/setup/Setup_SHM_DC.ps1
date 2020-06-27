@@ -228,13 +228,13 @@ foreach ($user in $userAccounts.Keys) {
 # Run remote script
 $scriptTemplate = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Active_Directory_Configuration.ps1" | Get-Item | Get-Content -Raw
 $script = $scriptTemplate.Replace("<ou-data-servers-name>", $config.domain.ous.dataServers.name).
+                          Replace("<ou-identity-servers-name>", $config.domain.ous.identityServers.name).
                           Replace("<ou-linux-servers-name>", $config.domain.ous.linuxServers.name).
                           Replace("<ou-rds-gateway-servers-name>", $config.domain.ous.rdsGatewayServers.name).
                           Replace("<ou-rds-session-servers-name>", $config.domain.ous.rdsSessionServers.name).
                           Replace("<ou-research-users-name>", $config.domain.ous.researchUsers.name).
                           Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
-                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name).
-                          Replace("<ou-service-servers-name>", $config.domain.ous.serviceServers.name)
+                          Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 $params = @{
     domainAdminUsername = "`"$domainAdminUsername`""
     domainControllerVmName = "`"$($config.dc.vmName)`""

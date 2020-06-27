@@ -44,27 +44,15 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SHM side of peerings involving this SRE
     # ----------------------------------------------
     Add-LogMessage -Level Info "Removing peerings for SRE VNet from SHM VNets..."
-
-    # Remove main SRE <-> SHM VNet peering
     $peeringName = "PEER_$($config.sre.network.vnet.name)"
-    Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from SHM VNet '$($config.shm.network.vnet.name)'"
-    $null = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $config.shm.network.vnet.name -ResourceGroupName $config.shm.network.vnet.rg -Force
-    if ($?) {
-        Add-LogMessage -Level Success "Peering removal succeeded"
-    } else {
-        Add-LogMessage -Level Fatal "Peering removal failed!"
-    }
-
-    # Remove any SRE <-> Mirror VNet peerings
-    $mirrorVnets = Get-AzVirtualNetwork -Name "*" -ResourceGroupName $config.shm.mirrors.rg
-    foreach ($mirrorVNet in $mirrorVnets) {
-        $peeringName = "PEER_$($config.sre.network.vnet.name)"
-        Add-LogMessage -Level Info "[ ] Removing peering '$peeringName' from $($mirrorVNet.Name)..."
-        $null = Remove-AzVirtualNetworkPeering -Name "$peeringName" -VirtualNetworkName $mirrorVNet.Name -ResourceGroupName $config.sre.mirrors.rg -Force
-        if ($?) {
-            Add-LogMessage -Level Success "Peering removal succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Peering removal failed!"
+    foreach ($shmVnet in $(Get-AzVirtualNetwork -Name * -ResourceGroupName $config.shm.network.vnet.rg)) {
+        foreach ($peering in $(Get-AzVirtualNetworkPeering -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg | Where-Object { $_.Name -eq $peeringName })) {
+            $null = Remove-AzVirtualNetworkPeering -Name $peering.Name -VirtualNetworkName $shmVnet.Name -ResourceGroupName $config.shm.network.vnet.rg -Force
+            if ($?) {
+                Add-LogMessage -Level Success "Removal of peering '$($peering.Name)' succeeded"
+            } else {
+                Add-LogMessage -Level Fatal "Removal of peering '$($peering.Name)' failed!"
+            }
         }
     }
 

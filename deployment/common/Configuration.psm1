@@ -146,7 +146,7 @@ function Get-ShmFullConfig {
             researchUsers = [ordered]@{ name = "Safe Haven Research Users" }
             securityGroups = [ordered]@{ name = "Safe Haven Security Groups" }
             serviceAccounts = [ordered]@{ name = "Safe Haven Service Accounts" }
-            serviceServers = [ordered]@{ name = "Safe Haven Service Servers" }
+            identityServers = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
     foreach ($ouName in $shm.domain.ous.Keys) {
@@ -248,10 +248,10 @@ function Get-ShmFullConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            serviceServers = [ordered]@{
-                name = "$($shm.domain.netbiosName) Service Servers Manager"
-                samAccountName = "$($shm.id)serviceservers".ToLower() | Limit-StringLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-service-servers".ToLower()
+            identity = [ordered]@{
+                name = "$($shm.domain.netbiosName) Identity Servers Manager"
+                samAccountName = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength 20
+                passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
             dataServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Data Servers Manager"

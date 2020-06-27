@@ -47,7 +47,7 @@
         },
         "users": {
             "computerManagers": {
-                "serviceServers": {
+                "identityServers": {
                     "samAccountName": "shmtestaadmin",
                     "passwordSecretName": "shm-testa-domain-admin-password"
                 },

@@ -47,7 +47,7 @@
         },
         "users": {
             "computerManagers": {
-                "serviceServers": {
+                "identityServers": {
                     "samAccountName": "shmdemoadmin",
                     "passwordSecretName": "shm-demo-domain-admin-password"
                 },

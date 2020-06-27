@@ -26,8 +26,8 @@ $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.keyVault.name)'..."
-$domainJoinUsername = $config.users.computerManagers.serviceServers.samAccountName
-$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.serviceServers.passwordSecretName -DefaultLength 20
+$domainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
+$domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower()
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20
 
@@ -76,7 +76,7 @@ $params = @{
     NPS_Os_Disk_Type = $config.nps.disks.os.type
     NPS_VM_Name = $config.nps.vmName
     NPS_VM_Size = $config.nps.vmSize
-    OU_Path = $config.domain.ous.serviceServers.path
+    OU_Path = $config.domain.ous.identityServers.path
     Virtual_Network_Name = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
     Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
