@@ -75,7 +75,7 @@ function Get-ShmFullConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
-    $shmIpPrefix = "10.0.0"  # this does not need to be user-configurable as it is never changed in practice
+    $shmIpPrefix = "10.0.0"  # this does not need to be user-configurable as different SHMs are never peered so they can share the same address space. This is therefore never changed in practice
 
     # Safe Haven management config
     # ----------------------------
