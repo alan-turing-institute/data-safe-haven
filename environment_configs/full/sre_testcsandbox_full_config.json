@@ -373,10 +373,16 @@
     },
     "storageAccount": {
       "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-      "accountName": "lwmshstorageconnection21",
+      "accountName": "lwmshstorageconnection3",
       "PrivateLinkServiceConnectionGroupId": "Blob",
       "startAccess":0,
       "endAccess":365
     },
+        "privateEndpoints": [{
+        "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
+        "resourceName": "lwmshstorageconnection3",
+        "PrivateLinkServiceConnectionGroupId": "Blob",
+        "privateEndpointName":"lwmshstorageconnection9_pe"         
+    }],
   }
 }
