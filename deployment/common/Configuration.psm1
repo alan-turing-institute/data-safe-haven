@@ -18,12 +18,13 @@ function Copy-HashtableOverrides {
             $Target[$sourcePair.Key] = $sourcePair.Value
             continue
         }
-        # If this key is not in the target then we add it
-        if (-not $Target.Contains($sourcePair.Key)) {
+        # If the target already contains this key then continue recursively
+        if ($Target.Contains($sourcePair.Key)) {
+            Copy-HashtableOverrides $sourcePair.Value $Target[$sourcePair.Key]
+        # Otherwise create a new key in the target with value taken from the source
+        } else {
             $Target[$sourcePair.Key] = $sourcePair.Value
-            continue
         }
-        Copy-HashtableOverrides $sourcePair.Value $Target[$sourcePair.Key]
     }
 }
 Export-ModuleMember -Function Copy-HashtableOverrides
