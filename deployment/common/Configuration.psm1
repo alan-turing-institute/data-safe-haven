@@ -91,13 +91,14 @@ function Get-ShmFullConfig {
 
     # DSVM build images
     # -----------------
+    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.computeVmImageSubscriptionName
     $shm.dsvmImage = [ordered]@{
         subscription = $shmConfigBase.computeVmImageSubscriptionName
         # In principle this should be kept in-sync with $shm.location but as an ImageGallery cannot be moved once created, we hard-code it here
         location = "uksouth"
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
-            accountName = "build$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24
+            accountName = "build$($shm.id)bootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24
         }
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
@@ -353,16 +354,16 @@ function Get-ShmFullConfig {
 
     # Storage config
     # --------------
-    $storageSuffix = New-RandomLetters -SeedPhrase ($shm.subscriptionName + $shm.id)
+    $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "RG_SHM_$($shm.id)_ARTIFACTS".ToUpper()
     $shm.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "shm$($shm.id)artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "shm$($shm.id)bootdiags${shmStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
     }
 
@@ -532,15 +533,15 @@ function Add-SreConfig {
     # Storage config
     # --------------
     $storageRg = "RG_SRE_$($config.sre.id)_ARTIFACTS".ToUpper()
-    $storageSuffix = New-RandomLetters -SeedPhrase ($config.sre.subscriptionName + $config.sre.id)
+    $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($config.sre.id)artifacts${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
         bootdiagnostics = [ordered]@{
             rg = $storageRg
-            accountName = "sre$($config.sre.id)bootdiags${storageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
     }
 
