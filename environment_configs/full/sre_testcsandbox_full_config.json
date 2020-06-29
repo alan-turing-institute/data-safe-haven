@@ -9,7 +9,7 @@
       "stateCountyRegion": "London",
       "countryCode": "GB"
     },
-    "location": "uksouth",
+    "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "testc.dsgroupdev.co.uk",
@@ -133,7 +133,7 @@
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "uksouth",
+    "location": "centralus",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
@@ -141,17 +141,21 @@
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
+        "dataAdministrators": {
+          "name": "SG SANDBOX Data Administrators",
+          "description": "SG SANDBOX Data Administrators"
         },
-        "sqlAdmins": {
-          "name": "SG SANDBOX SQL Server Administrators",
-          "description": "SG SANDBOX SQL Server Administrators"
+        "systemAdministrators": {
+          "name": "SG SANDBOX System Administrators",
+          "description": "SG SANDBOX System Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
           "description": "SG SANDBOX Research Users"
+        },
+        "reviewUsers": {
+          "name": "SG SANDBOX Review Users",
+          "description": "SG SANDBOX Review Users"
         }
       }
     },
@@ -177,24 +181,36 @@
           "prefix": "10.151.2",
           "cidr": "10.151.2.0/24"
         },
-        "dbingress": {
-          "name": "DbIngressSubnet",
+        "databases": {
+          "name": "DatabasesSubnet",
           "prefix": "10.151.3",
-          "nsg": "dbingress",
+          "nsg": "databases",
           "cidr": "10.151.3.0/24"
+        },
+        "airlock": {
+          "name": "AirlockSubnet",
+          "prefix": "10.151.4",
+          "nsg": "airlock",
+          "cidr": "10.151.4.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "dbingress": {
-          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
+        },
+        "airlock": {
+          "name": "NSG_SRE_SANDBOX_AIRLOCK"
         }
       }
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sreartifactsjazbmpthnsgk"
+        "accountName": "sreartifactsjazbmpthnsgk",
+        "containers": {
+          "gitlabAirlockName": "gitlabairlock"
+        }
       },
       "bootdiagnostics": {
         "rg": "RG_SRE_ARTIFACTS",
@@ -216,13 +232,23 @@
         "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
         "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
         "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
+        "gitlabUsername": "sre-sandbox-gitlab-username",
+        "gitlabPassword": "sre-sandbox-gitlab-password",
+        "gitlabAPIToken": "sre-sandbox-gitlab-api-token",
         "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
+        "gitlabReviewUsername": "sre-sandbox-gitlab-review-username",
+        "gitlabReviewPassword": "sre-sandbox-gitlab-review-password",
+        "gitlabReviewAPIToken": "sre-sandbox-gitlab-review-api-token",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
+        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
         "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
@@ -240,16 +266,28 @@
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
+        },
+        "postgres": {
+          "name": "SANDBOX Postgres VM LDAP",
+          "samAccountName": "pgvmldapsandbox",
+          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
+        }
+      },
+      "serviceAccounts": {
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcsandbox",
+          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount",
+        "name": "SANDBOX Data Mount Service Account",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "testresrchsandbox"
+          "samAccountName": "researchersandbox"
         }
       }
     },
@@ -282,6 +320,14 @@
         "hostname": "DKP-SRE-SANDBOX",
         "fqdn": "DKP-SRE-SANDBOX.testc.dsgroupdev.co.uk",
         "ip": "10.151.1.248"
+      },
+      "sessionHost3": {
+        "vmName": "REV-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "hostname": "REV-SRE-SANDBOX",
+        "fqdn": "REV-SRE-SANDBOX.testc.dsgroupdev.co.uk",
+        "ip": "10.151.1.247"
       }
     },
     "dataserver": {
@@ -300,39 +346,29 @@
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
-        "vmName": "GITLAB-SRE-SANDBOX",
+        "vmName": "GITLAB-SANDBOX",
         "vmSize": "Standard_D2s_v3",
-        "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.testc.dsgroupdev.co.uk",
+        "hostname": "GITLAB-SANDBOX",
+        "fqdn": "GITLAB-SANDBOX.testc.dsgroupdev.co.uk",
         "ip": "10.151.2.151"
       },
-      "hackmd": {
-        "vmName": "HACKMD-SRE-SANDBOX",
+      "gitlabreview": {
+        "vmName": "GITLAB-REVIEW-SANDBOX",
         "vmSize": "Standard_D2s_v3",
-        "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.testc.dsgroupdev.co.uk",
+        "hostname": "GITLAB-REVIEW-SANDBOX",
+        "fqdn": "GITLAB-REVIEW-SANDBOX.testc.dsgroupdev.co.uk",
+        "ip": "10.151.4.151"
+      },
+      "hackmd": {
+        "vmName": "HACKMD-SANDBOX",
+        "vmSize": "Standard_D2s_v3",
+        "hostname": "HACKMD-SANDBOX",
+        "fqdn": "HACKMD-SANDBOX.testc.dsgroupdev.co.uk",
         "ip": "10.151.2.152"
       }
     },
     "databases": {
-      "rg": "RG_SRE_DATABASES",
-      "dbmssqlingress": {
-        "name": "SQL-ING-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
-        "port": "14330",
-        "sku": "sqldev",
-        "subnet": "dbingress",
-        "vmSize": "Standard_DS2_v2",
-        "datadisk": {
-          "size_gb": "2048",
-          "type": "Standard_LRS"
-        },
-        "osdisk": {
-          "size_gb": "128",
-          "type": "Standard_LRS"
-        }
-      }
+      "rg": "RG_SRE_DATABASES"
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
