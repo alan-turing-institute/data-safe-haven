@@ -125,7 +125,7 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
 # ---------------------------------
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
 $null = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.data.cidr
-$null = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
+$subnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
 
 
 # Expand GitLab cloudinit
