@@ -175,6 +175,11 @@ $acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRul
 $success = $success -and $?
 $acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["pwdLastSet"], "Descendents", $guidmap["user"]))
 $success = $success -and $?
+# Allow the localadsync account to write the mS-DS-ConsistencyGuid extended property (used as an anchor) on all descendent user objects
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["mS-DS-ConsistencyGuid"], "Descendents", $guidmap["user"]))
+$success = $success -and $?
+$acl.AddAccessRule((New-Object System.DirectoryServices.ActiveDirectoryAccessRule $adsyncSID, "WriteProperty", "Allow", $guidmap["msDS-KeyCredentialLink"], "Descendents", $guidmap["user"]))
+$success = $success -and $?
 # Set the ACL properties
 Set-ACL -ACLObject $acl -Path "AD:\${domainou}"
 $success = $success -and $?
