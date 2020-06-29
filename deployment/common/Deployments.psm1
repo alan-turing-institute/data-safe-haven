@@ -250,7 +250,7 @@ function Deploy-FirewallNetworkRule {
         }
     }
     try {
-        $null = $Firewall.NetworkRuleCollections.Add($ruleCollection) -ErrorAction Stop
+        $null = $Firewall.NetworkRuleCollections.Add($ruleCollection)
         $null = Set-AzFirewall -AzureFirewall $Firewall -ErrorAction Stop
         Add-LogMessage -Level Success "Ensured that network rule '$Name' exists"
     } catch [System.Management.Automation.MethodInvocationException], [Microsoft.Rest.Azure.CloudException] {
