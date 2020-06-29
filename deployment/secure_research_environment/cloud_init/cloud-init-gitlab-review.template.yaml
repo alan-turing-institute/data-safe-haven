@@ -213,7 +213,7 @@ runcmd:
   # run zipfile_to_gitlab_project.py and check_merge_requests.py sequentially, and with a lock, to prevent
   # them from interfering.  Return an error code
   - echo "*** Adding zipfile_to_gitlab_project.py and check_merge_requests.py to crontab ***"
-  - echo "*/10 * * * * gitlabdaemon \"flock -n /tmp/review_steps.lock bash -c 'EXIT_STATUS=0; zipfile_to_gitlab_project.py || EXIT_STATUS=$?; check_merge_requests.py || EXIT_STATUS=$?; exit $EXIT_STATUS' \" " >> /etc/crontab
+  - echo "*/10 * * * * gitlabdaemon flock -n /tmp/review_steps.lock bash -c 'EXIT_STATUS=0; zipfile_to_gitlab_project.py || EXIT_STATUS=\$?; check_merge_requests.py || EXIT_STATUS=\$?; exit \$EXIT_STATUS'" >> /etc/crontab
   # --------------------------------
   # GIVE gitlabdaemon OWNERSHIP OF THEIR HOME DIRECTORY
   # --------------------------------
