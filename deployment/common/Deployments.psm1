@@ -315,6 +315,17 @@ function Deploy-LogAnalyticsWorkspace {
     } else {
         Add-LogMessage -Level InfoSuccess "Log analytics workspace '$Name' already exists"
     }
+    if (-not $(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
+        Add-LogMessage -Level Info "[ ] Registering Microsoft.Insights provider in this subscription..."
+        $null = Register-AzResourceProvider -ProviderNamespace Microsoft.Insights
+        Add-LogMessage -Level Info "Waiting 5 minutes for this change to propagate..."
+        Start-Sleep 300
+        if ($(Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq "Microsoft.Insights" })) {
+            Add-LogMessage -Level Success "Successfully registered Microsoft.Insights provider"
+        } else {
+            Add-LogMessage -Level Fatal "Failed to register Microsoft.Insights provider!"
+        }
+    }
     return $workspace
 }
 Export-ModuleMember -Function Deploy-LogAnalyticsWorkspace
