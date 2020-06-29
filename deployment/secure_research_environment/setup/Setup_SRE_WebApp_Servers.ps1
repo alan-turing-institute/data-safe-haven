@@ -247,6 +247,7 @@ echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_rsa_key.pub | cut -d " " -f -2)"
 echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_ed25519_key.pub | cut -d " " -f -2)"
 echo "<gitlab-ip> $(cat /etc/ssh/ssh_host_ecdsa_key.pub | cut -d " " -f -2)"
 '.Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip)
+Add-LogMessage -Level Info "Fetching ssh keys from gitlab..."
 $result = Invoke-RemoteScript -VMName $config.sre.webapps.gitlab.vmName -ResourceGroupName $config.sre.webapps.rg -Shell "UnixShell" -Script $script
 Add-LogMessage -Level Success "Fetching ssh keys from gitlab succeeded"
 # Extract everything in between the [stdout] and [stderr] blocks of the result message. i.e. all output of the script.
