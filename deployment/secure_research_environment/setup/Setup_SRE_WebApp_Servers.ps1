@@ -124,8 +124,8 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
 # Check that VNET and subnets exist
 # ---------------------------------
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
-$null = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.data.cidr
-$subnet = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
+$subnetData = Deploy-Subnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.data.cidr
+$subnetAirlock = Deploy-Subnet -Name $config.sre.network.subnets.airlock.name -VirtualNetwork $vnet -AddressPrefix $config.sre.network.subnets.airlock.cidr
 
 
 # Expand GitLab cloudinit
@@ -259,7 +259,7 @@ $sshKeys = $result.Value[0].Message | Select-String "\[stdout\]\s*([\s\S]*?)\s*\
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $vmNameReview = $config.sre.webapps.gitlabreview.vmName
 $vmIpAddress = $config.sre.webapps.gitlabreview.ip
-$vmNic = Deploy-VirtualMachineNIC -Name "$vmNameReview-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+$vmNic = Deploy-VirtualMachineNIC -Name "$vmNameReview-NIC" -ResourceGroupName $config.sre.webapps.rg -Subnet $subnetAirlock -PrivateIpAddress $vmIpAddress -Location $config.sre.location
 
 
 # Expand GitLab review cloudinit
