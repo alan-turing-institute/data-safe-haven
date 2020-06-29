@@ -4,10 +4,10 @@
     "id": "testb",
     "name": "Turing Development Safe Haven B",
     "organisation": {
-      "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
-      "townCity": "London"
+      "townCity": "London",
+      "countryCode": "GB",
+      "stateCountyRegion": "London"
     },
     "location": "uksouth",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -44,9 +44,9 @@
           "name": "Safe Haven Service Accounts",
           "path": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         },
-        "serviceServers": {
-          "name": "Safe Haven Service Servers",
-          "path": "OU=Safe Haven Service Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "identityServers": {
+          "name": "Safe Haven Identity Servers",
+          "path": "OU=Safe Haven Identity Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         }
       },
       "securityGroups": {
@@ -147,10 +147,10 @@
     },
     "users": {
       "computerManagers": {
-        "serviceServers": {
-          "name": "TESTB Service Servers Manager",
-          "samAccountName": "testbserviceservers",
-          "passwordSecretName": "shm-testb-computer-manager-password-service-servers"
+        "identityServers": {
+          "name": "TESTB Identity Servers Manager",
+          "samAccountName": "testbidentitysrvrs",
+          "passwordSecretName": "shm-testb-computer-manager-password-identity-servers"
         },
         "dataServers": {
           "name": "TESTB Data Servers Manager",

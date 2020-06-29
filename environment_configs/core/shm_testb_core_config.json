@@ -3,7 +3,10 @@
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
     "adminSecurityGroupName": "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "testb.dsgroupdev.co.uk",
     "shmId": "testb",
     "name": "Turing Development Safe Haven B",

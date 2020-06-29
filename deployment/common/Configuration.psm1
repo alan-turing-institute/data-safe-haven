@@ -91,14 +91,26 @@ function Get-ShmFullConfig {
 
     # DSVM build images
     # -----------------
-    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.computeVmImageSubscriptionName
+    $dsvmImageStorageSuffix = New-RandomLetters -SeedPhrase $shmConfigBase.images.subscriptionName
+    # Since an ImageGallery cannot be moved once created, we must ensure that the location parameter matches any gallery that already exists
+    $originalContext = Get-AzContext
+    $null = Set-AzContext -SubscriptionId $shmConfigBase.images.subscriptionName
+    $locations = Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SH_*" } | ForEach-Object { $_.Location } | Sort-Object | Get-Unique
+    if ($locations.Count -gt 1) {
+        Add-LogMessage -Level Fatal "Image building resources found in multiple locations: ${locations}!"
+    } elseif ($locations.Count -eq 1) {
+        if ($shmConfigBase.images.location -ne $locations) {
+            Add-LogMessage -Level Fatal "Image building location ($($shmConfigBase.images.location)) must be set to ${locations}!"
+        }
+    }
+    $null = Set-AzContext -Context $originalContext
+    # Construct build images config
     $shm.dsvmImage = [ordered]@{
-        subscription = $shmConfigBase.computeVmImageSubscriptionName
-        # In principle this should be kept in-sync with $shm.location but as an ImageGallery cannot be moved once created, we hard-code it here
-        location = "uksouth"
+        subscription = $shmConfigBase.images.subscriptionName
+        location = $shmConfigBase.images.locations
         bootdiagnostics = [ordered]@{
             rg = "RG_SH_BOOT_DIAGNOSTICS"
-            accountName = "build$($shm.id)bootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24
+            accountName = "buildimgbootdiags${dsvmImageStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
         }
         build = [ordered]@{
             rg = "RG_SH_BUILD_CANDIDATES"
@@ -250,7 +262,7 @@ function Get-ShmFullConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            identity = [ordered]@{
+            identityServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Identity Servers Manager"
                 samAccountName = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()

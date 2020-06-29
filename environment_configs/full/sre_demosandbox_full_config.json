@@ -4,10 +4,10 @@
     "id": "demo",
     "name": "Turing Development Safe Haven B",
     "organisation": {
-      "countryCode": "GB",
       "name": "The Alan Turing Institute",
-      "stateCountyRegion": "London",
-      "townCity": "London"
+      "townCity": "London",
+      "countryCode": "GB",
+      "stateCountyRegion": "London"
     },
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
@@ -44,7 +44,7 @@
           "name": "Safe Haven Service Accounts",
           "path": "OU=Safe Haven Service Accounts,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
         },
-        "serviceServers": {
+        "identityServers": {
           "name": "Safe Haven Service Servers",
           "path": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk"
         }
@@ -147,8 +147,8 @@
     },
     "users": {
       "computerManagers": {
-        "serviceServers": {
-          "name": "DEMO Service Servers Manager",
+        "identityServers": {
+          "name": "DEMO Identity Servers Manager",
           "samAccountName": "shmdemoadmin",
           "passwordSecretName": "shm-demo-domain-admin-password"
         },

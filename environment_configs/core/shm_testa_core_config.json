@@ -3,7 +3,10 @@
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
     "adminSecurityGroupName": "Safe Haven Test Admins",
-    "computeVmImageSubscriptionName": "[Prod] Safe Haven VM Images",
+    "images": {
+        "subscriptionName": "[Prod] Safe Haven VM Images",
+        "location": "uksouth"
+    },
     "domain": "testa.dsgroupdev.co.uk",
     "shmId": "testa",
     "name": "Turing Development Safe Haven A",
@@ -18,6 +21,10 @@
         "domain": {
             "netbiosName": "SAFEHAVENTESTA",
             "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+                },
                 "linuxServers": {
                     "name": "Secure Research Environment Data Servers",
                     "path": "OU=Secure Research Environment Data Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
