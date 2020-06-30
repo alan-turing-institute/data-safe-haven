@@ -75,7 +75,7 @@ This is done using the VPN which should have been deployed when setting up the S
   -  This certificate will also allow you to connect via VPN to the SRE VNets once deployed.
 
 - **Configure the VPN connection**
-  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is defined in the config file. Once there open the "Point-to-site configuration page under the `Settings` section in the left hand sidebar (see image below).
+  - Navigate to the Safe Haven Management (SHM) VNet gateway in the SHM subscription via `Resource Groups -> RG_SHM_NETWORKING -> VNET_SHM_<SHM ID>_GW`, where `<SHM ID>` is defined in the config file. Once there open the "User VPN" configuration page under the `Settings` section in the left hand sidebar (see image below).
     <p align="center">
       <img src="images/deploy_sre/vpn_client.png" width="80%" title="vpn_client">
     </p>
