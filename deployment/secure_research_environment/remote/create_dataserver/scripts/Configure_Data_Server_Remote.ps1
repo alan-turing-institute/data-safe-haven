@@ -42,9 +42,6 @@ $smbShareMap = @{
 Write-Output "Configuring disk shares..."
 foreach ($shareName in @("Ingress", "Shared", "Egress")) {
     $sharePath = $smbShareMap[$shareName]
-    $dataMountDomainUser = "$shmNetbiosName\$dataMountUser"
-    $researcherUserSg = "$shmNetbiosName\$researcherUserSgName"
-    $serverAdminSg = "$shmNetbiosName\$serverAdminSgName"
     Write-Output " [ ] Creating SMB data share '$shareName' at '$sharePath'..."
     if (Get-SmbShare | Where-Object { $_.Name -eq "$shareName" }) {
         Write-Output " [o] SMB share '$shareName' already exists"
@@ -66,19 +63,22 @@ foreach ($shareName in @("Ingress", "Shared", "Egress")) {
 
 # Set SMB and ACL access rules
 # ----------------------------
+$dataMountDomainUser = "$shmNetbiosName\$dataMountUser"
+$researcherUserSg = "$shmNetbiosName\$researcherUserSgName"
+$serverAdminSg = "$shmNetbiosName\$serverAdminSgName"
 foreach ($pathAccessTuple in (("Ingress", "Read", "Read"), ("Shared", "Change", "Modify"), ("Egress", "Full", "Full"))) {
     $shareName, $smbAccessRight, $aclAccessRight = $pathAccessTuple
 
     Write-Output "Setting SMB share access for '$shareName' share..."
     # Revoke all access for our security groups and the "Everyone" group to ensure only the permissions we set explicitly apply
-    $null = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
-    $null = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -Force -ErrorAction:Continue
+    $null = Revoke-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -Force -ErrorAction:Continue
+    $null = Revoke-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -Force -ErrorAction:Continue
     $null = Revoke-SmbShareAccess -Name $shareName -AccountName Everyone -Force -ErrorAction:Continue
     # Explicitly set the permissions we want on the share
-    $null = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
-    $null = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight $smbAccessRight -Force
     $null = Grant-SmbShareAccess -Name $shareName -AccountName $dataMountDomainUser -AccessRight $smbAccessRight -Force
+    $null = Grant-SmbShareAccess -Name $shareName -AccountName $researcherUserSg -AccessRight $smbAccessRight -Force
+    $null = Grant-SmbShareAccess -Name $shareName -AccountName $serverAdminSg -AccessRight Full -Force
 
     $sharePath = $smbShareMap[$shareName]
     Write-Output "Setting ACL rules for folder '$sharePath'"
