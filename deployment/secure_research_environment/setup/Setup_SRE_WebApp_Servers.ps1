@@ -50,7 +50,6 @@ $params = @{
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
-
 # Check that VNET and subnets exist
 # ---------------------------------
 $vnet = Deploy-VirtualNetwork -Name $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg -AddressPrefix $config.sre.network.vnet.cidr -Location $config.sre.location
