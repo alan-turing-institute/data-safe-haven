@@ -109,7 +109,7 @@ function New-ShmUser {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of AD user")]
         [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "sAMAccountName of AD user")]
+        [Parameter(Mandatory = $true, HelpMessage = "SAM account name of AD user")]
         [string]$SamAccountName,
         [Parameter(Mandatory = $true, HelpMessage = "Domain to create user under")]
         [string]$Domain,
