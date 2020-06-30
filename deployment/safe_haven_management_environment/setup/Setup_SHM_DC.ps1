@@ -141,6 +141,7 @@ $params = @{
     VNET_CIDR = $config.network.vnet.cidr
     VNET_DNS_DC1 = $config.dc.ip
     VNET_DNS_DC2 = $config.dcb.ip
+    VPN_CIDR = $config.network.vpn.cidr
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 

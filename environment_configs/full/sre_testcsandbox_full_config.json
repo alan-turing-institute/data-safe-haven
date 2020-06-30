@@ -60,6 +60,10 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmtestcloganalytics"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
@@ -73,6 +77,10 @@
           "web": {
             "name": "WebSubnet",
             "cidr": "10.0.1.0/24"
+          },
+          "firewall": {
+            "name": "AzureFirewallSubnet",
+            "cidr": "10.0.2.0/24"
           },
           "gateway": {
             "name": "GatewaySubnet",
@@ -128,6 +136,10 @@
           "name": "NSG_SHM_TESTC_INTERNAL_PACKAGE_MIRRORS_TIER3"
         }
       }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTC",
+      "routeTableName": "ROUTE-TABLE-SHM-TESTC"
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
@@ -369,6 +381,9 @@
           "name": "NSG_SRE_SANDBOX_DATABASES"
         }
       }
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     },
     "storage": {
       "artifacts": {

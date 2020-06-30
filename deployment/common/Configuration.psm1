@@ -175,6 +175,13 @@ function Get-ShmFullConfig {
         $shm.domain.securityGroups[$groupName].description = $shm.domain.securityGroups[$groupName].name
     }
 
+    # Logging config
+    # --------------
+    $shm.logging = [ordered]@{
+        rg = "RG_SHM_LOGGING"
+        workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower() #| TrimToLength 24
+    }
+
     # Network config
     # --------------
     # Deconstruct base address prefix to allow easy construction of IP based parameters
@@ -195,6 +202,11 @@ function Get-ShmFullConfig {
                 web = [ordered]@{
                     name = "WebSubnet"
                     cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 1).0/24"
+                }
+                firewall = [ordered]@{
+                    # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
+                    name = "AzureFirewallSubnet"
+                    cidr = "${shmBasePrefix}.$([int]$shmThirdOctet + 2).0/24"
                 }
                 gateway = [ordered]@{
                     # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
@@ -237,6 +249,13 @@ function Get-ShmFullConfig {
                 }
             }
         }
+    }
+
+    # Firewall config
+    # ---------------
+    $shm.firewall = [ordered]@{
+        name = "FIREWALL-SHM-$($shm.id)".ToUpper()
+        routeTableName = "ROUTE-TABLE-SHM-$($shm.id)".ToUpper()
     }
 
     # Secrets config
@@ -540,6 +559,12 @@ function Add-SreConfig {
                 name = "NSG_SRE_$($config.sre.id)_DATABASES".ToUpper()
             }
         }
+    }
+
+    # Firewall config
+    # ---------------
+    $config.sre.firewall = [ordered]@{
+        routeTableName = "ROUTE-TABLE-SRE-$($config.sre.id)".ToUpper()
     }
 
     # Storage config

@@ -1,0 +1,47 @@
+{
+    "routes": [
+        {
+            "name": "ViaFirewall",
+            "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHop": "<shm-firewall-private-ip>"
+            }
+        },
+        {
+            "name": "ViaVpn",
+            "properties": {
+                "addressPrefix": "<subnet-shm-vpn-cidr>",
+                "nextHop": "VirtualNetworkGateway"
+            }
+        }
+    ],
+    "networkRuleCollections": [],
+    "applicationRuleCollections": [
+        {
+            "name": "sre-<sre-id>",
+            "properties": {
+                "priority": "<priority>",
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "WindowsUpdate",
+                        "protocols": [],
+                        "fqdnTags": [
+                            "WindowsUpdate"
+                        ],
+                        "targetFqdns": [],
+                        "sourceAddresses": [
+                            "<subnet-data-cidr>",
+                            "<subnet-databases-cidr>",
+                            "<subnet-identity-cidr>",
+                            "<subnet-rds-cidr>"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "natRuleCollections": []
+}

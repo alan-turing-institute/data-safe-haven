@@ -37,8 +37,10 @@
         },
         "VNET_DNS_DC2": {
             "type": "string"
+        },
+        "VPN_CIDR": {
+            "type": "string"
         }
-
     },
     "variables": {
         "nsgName": "[concat('NSG_SHM_', toUpper(parameters('Shm_Id')), '_SUBNET_IDENTITY')]"
@@ -349,7 +351,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "172.16.201.0/24",
+                            "sourceAddressPrefix": "[parameters('VPN_CIDR')]",
                             "destinationAddressPrefix": "VirtualNetwork",
                             "access": "Allow",
                             "priority": 400,
@@ -540,7 +542,7 @@
                 "vpnClientConfiguration": {
                     "vpnClientAddressPool": {
                         "addressPrefixes": [
-                            "172.16.201.0/24"
+                            "[parameters('VPN_CIDR')]"
                         ]
                     },
                     "vpnClientProtocols": [
