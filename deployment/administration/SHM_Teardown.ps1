@@ -25,29 +25,9 @@ while ($confirmation -ne "y") {
 }
 
 
-# Remove resources - if there are still resources remaining after 10 loops then throw an exception
-# ------------------------------------------------------------------------------------------------
-for ($i = 0; $i -le 10; $i++) {
-    $shmResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
-    if (-not $shmResources.Length) { break }
-    Add-LogMessage -Level Info "Found $($shmResources.Length) resource(s) to remove..."
-    foreach ($resource in $shmResources) {
-        Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
-        $null = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
-        if ($?) {
-            Add-LogMessage -Level Success "Resource removal succeeded"
-        } else {
-            Add-LogMessage -Level Info "Resource removal failed - rescheduling."
-        }
-    }
-}
-if ($shmResources) {
-    Add-LogMessage -Level Fatal "There are still $($shmResources.Length) resource(s) remaining!`n$shmResources"
-}
-
-
-# Remove resource groups
-# ----------------------
+# Remove resource groups and the resources they contain
+# If there are still resources remaining after 10 loops then throw an exception
+# -----------------------------------------------------------------------------
 for ($i = 0; $i -le 10; $i++) {
     $shmResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SHM_$($config.sre.id)*" } | Where-Object { $_.ResourceGroupName -notlike "*WEBAPP*" })
     if (-not $shmResourceGroups.Length) { break }

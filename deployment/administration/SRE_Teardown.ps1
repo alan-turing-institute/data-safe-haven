@@ -25,29 +25,9 @@ while ($confirmation -ne "y") {
 }
 
 
-# Remove resources - if there are still resources remaining after 10 loops then throw an exception
-# ------------------------------------------------------------------------------------------------
-for ($i = 0; $i -le 10; $i++) {
-    $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
-    if (-not $sreResources.Length) { break }
-    Add-LogMessage -Level Info "Found $($sreResources.Length) resource(s) to remove..."
-    foreach ($resource in $sreResources) {
-        Add-LogMessage -Level Info "Attempting to remove $($resource.Name)..."
-        $null = Remove-AzResource -ResourceId $resource.ResourceId -Force -Confirm:$False -ErrorAction SilentlyContinue
-        if ($?) {
-            Add-LogMessage -Level Success "Resource removal succeeded"
-        } else {
-            Add-LogMessage -Level Info "Resource removal failed - rescheduling."
-        }
-    }
-}
-if ($sreResources) {
-    Add-LogMessage -Level Fatal "There are still $($sreResources.Length) resource(s) remaining!`n$sreResources"
-}
-
-
-# Remove resource groups - if there are still resource groups remaining after 10 loops then throw an exception
-# ------------------------------------------------------------------------------------------------------------
+# Remove resource groups and the resources they contain
+# If there are still resources remaining after 10 loops then throw an exception
+# -----------------------------------------------------------------------------
 for ($i = 0; $i -le 10; $i++) {
     $sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
     if (-not $sreResourceGroups.Length) { break }

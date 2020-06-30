@@ -19,7 +19,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 # Look for resources in this subscription
 # ---------------------------------------
-$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*SRE_$($config.sre.id)*" })
+$sreResourceGroups = @(Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 $sreResources = @(Get-AzResource | Where-Object { $_.ResourceGroupName -like "RG_SRE_$($config.sre.id)*" })
 
 
