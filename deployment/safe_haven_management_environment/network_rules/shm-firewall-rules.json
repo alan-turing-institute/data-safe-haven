@@ -88,7 +88,26 @@
                         "fqdnTags": [],
                         "targetFqdns": [
                             "*.passwordreset.microsoftonline.com",
-                            "*.servicebus.windows.net"
+                            "ssprdedicatedsbprodncu.servicebus.windows.net",
+                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "ADConnectHealthCheck",
+                        "protocols": [
+                            "https:443",
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "adhsprodncuaadsynciadata.blob.core.windows.net",
+                            "adhsprodneuaadsynciadata.blob.core.windows.net",
+                            "adhsprodwcuaadsynciadata.blob.core.windows.net",
+                            "adhsprodweuaadsynciadata.blob.core.windows.net",
+                            "adhsprodwusaadsynciadata.blob.core.windows.net"
                         ],
                         "sourceAddresses": [
                             "<subnet-identity-cidr>"
