@@ -3,8 +3,8 @@ Import-Module $PSScriptRoot/Networking.psm1
 Import-Module $PSScriptRoot/Security.psm1
 
 
-# Get root directory for configuration files
-# ------------------------------------------
+# Overwrite the contents of one hash table with that of another
+# -------------------------------------------------------------
 function Copy-HashtableOverrides {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Source hashtable")]
