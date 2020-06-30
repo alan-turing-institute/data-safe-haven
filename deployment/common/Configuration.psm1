@@ -794,8 +794,8 @@ function Add-SreConfig {
         }
         $config.sre.databases["db$($databaseType.ToLower())"] = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
-            dbAdminUsername = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
-            dbAdminPassword = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
+            dbAdminUsernameSecretName = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
+            dbAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
             vmName = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset

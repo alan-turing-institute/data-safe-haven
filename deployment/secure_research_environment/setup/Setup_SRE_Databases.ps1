@@ -84,10 +84,10 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
         # Retrieve common secrets from key vaults
         # ---------------------------------------
         Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
+        $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPasswordSecretName -DefaultLength 20
         $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.dataServers.passwordSecretName -DefaultLength 20
         $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
         $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.adminPasswordSecretName -DefaultLength 20
-
 
         # Deploy an SQL server
         # --------------------
@@ -95,8 +95,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.shm.keyVault.name)'..."
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-            $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPassword -DefaultLength 20
-            $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsername -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
+            $dbAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminUsernameSecretName -DefaultValue "sre$($config.sre.id)sqlauthupd".ToLower()
 
             # Create SQL server from template
             Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
@@ -131,14 +130,14 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
             $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
             $params = @{
+                DataAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+                DbAdminPassword = $dbAdminPassword
+                DbAdminUsername = $dbAdminUsername
                 EnableSSIS = $databaseCfg.enableSSIS
                 LocalAdminUser = $vmAdminUsername
-                DataAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
                 ResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
-                SysAdminGroup = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SqlAuthUpdateUserPassword = $dbAdminPassword
-                SqlAuthUpdateUsername = $dbAdminUsername
+                SysAdminGroup = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
@@ -152,7 +151,6 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
 
             # Retrieve secrets from key vaults
             Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-            $dbAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $databaseCfg.dbAdminPassword -DefaultLength 20
             $dbServiceAccountName = $config.sre.users.serviceAccounts.postgres.name
             $dbServiceAccountSamAccountName = $config.sre.users.serviceAccounts.postgres.samAccountName
             $dbServiceAccountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.postgres.passwordSecretName -DefaultLength 20
