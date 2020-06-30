@@ -783,20 +783,24 @@ function Add-SreConfig {
     $config.sre.databases = [ordered]@{
         rg = "RG_SRE_$($config.sre.id)_DATABASES".ToUpper()
     }
+    $dbConfig = @{
+        MSSQL = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev"}
+        PostgreSQL = @{port = "5432"; prefix = "PSTGRS"; sku = "18.04-LTS"}
+    }
     $ipOffset = 4
-    $dbPorts = @{"MSSQL" = "1433"; "PostgreSQL" = "5432"}
-    $dbSkus = @{"MSSQL" = "sqldev"; "PostgreSQL" = "18.04-LTS"}
-    $dbHostnamePrefix = @{"MSSQL" = "MSSQL"; "PostgreSQL" = "PSTGRS"}
     foreach ($databaseType in $sreConfigBase.databases) {
+        if (-not @($dbConfig.Keys).Contains($databaseType)) {
+            Add-LogMessage -Level Fatal "Database type '$databaseType' was not recognised!"
+        }
         $config.sre.databases["db$($databaseType.ToLower())"] = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
             dbAdminUsername = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
             dbAdminPassword = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
-            vmName = "$($dbHostnamePrefix[$databaseType])-$($config.sre.id)".ToUpper() | Limit-StringLength 15
+            vmName = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength 15
             type = $databaseType
             ip = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset
-            port = $dbPorts[$databaseType]
-            sku = $dbSkus[$databaseType]
+            port = $dbConfig[$databaseType].port
+            sku = $dbConfig[$databaseType].sku
             subnet = "databases"
             vmSize = "Standard_DS2_v2"
             disks = [ordered]@{
