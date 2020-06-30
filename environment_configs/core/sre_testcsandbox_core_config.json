@@ -89,8 +89,8 @@
                 "dbmssql": {
                     "vmName": "SQL-ING-SANDBOX",
                     "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-                    "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
-                    "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+                    "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+                    "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
                     "port": "14330",
                     "datadisk": {
                         "size_gb": "2048"
@@ -98,8 +98,8 @@
                 },
                 "dbpostgresql": {
                     "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
-                    "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-                    "dbAdminPassword": "sre-sandbox-postgresdb-admin-password"
+                    "dbAdminUsernameSecretName": "sre-sandbox-postgresdb-admin-username",
+                    "dbAdminPasswordSecretName": "sre-sandbox-postgresdb-admin-password"
                 }
             },
             "dsvm": {

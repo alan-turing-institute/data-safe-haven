@@ -60,6 +60,10 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmdemologanalytics"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
@@ -73,6 +77,10 @@
           "web": {
             "name": "WebSubnet",
             "cidr": "10.0.1.0/24"
+          },
+          "firewall": {
+            "name": "AzureFirewallSubnet",
+            "cidr": "10.0.2.0/24"
           },
           "gateway": {
             "name": "GatewaySubnet",
@@ -128,6 +136,10 @@
           "name": "NSG_SHM_DEMO_INTERNAL_PACKAGE_MIRRORS_TIER3"
         }
       }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-DEMO",
+      "routeTableName": "ROUTE-TABLE-SHM-DEMO"
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
@@ -370,6 +382,9 @@
         }
       }
     },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
+    },
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
@@ -534,8 +549,8 @@
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
         "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
-        "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+        "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+        "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
         "vmName": "SQL-ING-SANDBOX",
         "type": "MSSQL",
         "ip": "10.151.3.4",
@@ -560,8 +575,8 @@
       },
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
-        "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "dbAdminUsernameSecretName": "sre-sandbox-postgresdb-admin-username",
+        "dbAdminPasswordSecretName": "sre-sandbox-postgresdb-admin-password",
         "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.151.3.5",

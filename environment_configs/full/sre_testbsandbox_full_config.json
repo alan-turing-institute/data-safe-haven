@@ -60,6 +60,10 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmtestbloganalytics"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_TESTB_NETWORKING",
@@ -73,6 +77,10 @@
           "web": {
             "name": "WebSubnet",
             "cidr": "10.0.1.0/24"
+          },
+          "firewall": {
+            "name": "AzureFirewallSubnet",
+            "cidr": "10.0.2.0/24"
           },
           "gateway": {
             "name": "GatewaySubnet",
@@ -129,6 +137,10 @@
         }
       }
     },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTB",
+      "routeTableName": "ROUTE-TABLE-SHM-TESTB"
+    },
     "keyVault": {
       "rg": "RG_SHM_TESTB_SECRETS",
       "name": "kv-shm-testb",
@@ -154,22 +166,22 @@
         },
         "dataServers": {
           "name": "TESTB Data Servers Manager",
-          "samAccountName": "testbdataservers",
+          "samAccountName": "testbdatasrvrs",
           "passwordSecretName": "shm-testb-computer-manager-password-data-servers"
         },
         "linuxServers": {
           "name": "TESTB Linux Servers Manager",
-          "samAccountName": "testblinuxservers",
+          "samAccountName": "testblinuxsrvrs",
           "passwordSecretName": "shm-testb-computer-manager-password-linux-servers"
         },
         "rdsGatewayServers": {
           "name": "TESTB RDS Gateway Manager",
-          "samAccountName": "testbrdgservers",
+          "samAccountName": "testbgatewaysrvrs",
           "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers"
         },
         "rdsSessionServers": {
           "name": "TESTB RDS Session Servers Manager",
-          "samAccountName": "testbrdshservers",
+          "samAccountName": "testbsessionsrvrs",
           "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers"
         }
       },
@@ -370,6 +382,9 @@
         }
       }
     },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
+    },
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_SANDBOX_ARTIFACTS",
@@ -533,8 +548,8 @@
       "rg": "RG_SRE_SANDBOX_DATABASES",
       "dbmssql": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
-        "dbAdminUsername": "sre-sandbox-db-admin-username-mssql",
-        "dbAdminPassword": "sre-sandbox-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
         "vmName": "MSSQL-SANDBOX",
         "type": "MSSQL",
         "ip": "10.150.3.4",
@@ -556,8 +571,8 @@
       },
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
-        "dbAdminUsername": "sre-sandbox-db-admin-username-postgresql",
-        "dbAdminPassword": "sre-sandbox-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
         "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.150.3.5",

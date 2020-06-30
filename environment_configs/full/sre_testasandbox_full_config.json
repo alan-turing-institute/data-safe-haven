@@ -549,8 +549,8 @@
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
         "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
-        "dbAdminUsername": "sre-sandbox-sql-authupdate-user-username",
-        "dbAdminPassword": "sre-sandbox-sql-authupdate-user-password",
+        "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+        "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
         "vmName": "MSSQL-SANDBOX",
         "type": "MSSQL",
         "ip": "10.150.3.4",
@@ -572,8 +572,8 @@
       },
       "dbpostgresql": {
         "adminPasswordSecretName": "sre-sandbox-postgresvm-admin-password",
-        "dbAdminUsername": "sre-sandbox-postgresdb-admin-username",
-        "dbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "dbAdminUsernameSecretName": "sre-sandbox-postgresdb-admin-username",
+        "dbAdminPasswordSecretName": "sre-sandbox-postgresdb-admin-password",
         "vmName": "PSTGRS-SANDBOX",
         "type": "PostgreSQL",
         "ip": "10.150.3.5",
