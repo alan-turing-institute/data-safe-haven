@@ -9,7 +9,7 @@
       "stateCountyRegion": "London",
       "countryCode": "GB"
     },
-    "location": "uksouth",
+    "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
       "fqdn": "testc.dsgroupdev.co.uk",
@@ -30,11 +30,18 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmtestcloganalyticsnxbqspytauwdljovmcrh"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
         "name": "VNET_SHM_TESTC",
         "cidr": "10.0.0.0/21"
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
       },
       "subnets": {
         "identity": {
@@ -46,6 +53,11 @@
           "name": "WebSubnet",
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
+        },
+        "firewall": {
+          "name": "AzureFirewallSubnet",
+          "prefix": "10.0.2",
+          "cidr": "10.0.2.0/24"
         },
         "gateway": {
           "name": "GatewaySubnet",
@@ -75,6 +87,10 @@
       "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TESTC",
       "ip": "10.0.0.248"
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTC",
+      "routeTableName": "FIREWALL-SHM-TESTC-ROUTE-TABLE"
     },
     "storage": {
       "artifacts": {
@@ -133,7 +149,7 @@
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "uksouth",
+    "location": "centralus",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
@@ -141,13 +157,13 @@
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=testc,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
-        "serverAdmins": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
+        "dataAdministrators": {
+          "name": "SG SANDBOX Data Administrators",
+          "description": "SG SANDBOX Data Administrators"
         },
-        "sqlAdmins": {
-          "name": "SG SANDBOX SQL Server Administrators",
-          "description": "SG SANDBOX SQL Server Administrators"
+        "systemAdministrators": {
+          "name": "SG SANDBOX System Administrators",
+          "description": "SG SANDBOX System Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -177,17 +193,17 @@
           "prefix": "10.151.2",
           "cidr": "10.151.2.0/24"
         },
-        "dbingress": {
+        "databases": {
           "name": "DbIngressSubnet",
           "prefix": "10.151.3",
-          "nsg": "dbingress",
+          "nsg": "databases",
           "cidr": "10.151.3.0/24"
         }
       },
       "nsg": {
         "data": {},
-        "dbingress": {
-          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
         }
       }
     },
@@ -220,9 +236,13 @@
         "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
+        "postgresDbAdminUsername": "sre-sandbox-postgresdb-admin-username",
+        "postgresDbAdminPassword": "sre-sandbox-postgresdb-admin-password",
+        "postgresVmAdminPassword": "sre-sandbox-postgresvm-admin-password",
         "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
         "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
         "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
+        "sqlVmAdminPassword": "sre-sandbox-sqlvm-admin-password",
         "testResearcherPassword": "sre-sandbox-test-researcher-password",
         "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
       }
@@ -240,10 +260,22 @@
         "dsvm": {
           "name": "SANDBOX DSVM LDAP",
           "samAccountName": "dsvmldapsandbox"
+        },
+        "postgres": {
+          "name": "SANDBOX Postgres VM LDAP",
+          "samAccountName": "pgvmldapsandbox",
+          "passwordSecretName": "sre-sandbox-postgresvm-ldap-password"
+        }
+      },
+      "serviceAccounts": {
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcsandbox",
+          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         }
       },
       "datamount": {
-        "name": "SANDBOX Data Mount",
+        "name": "SANDBOX Data Mount Service Account",
         "samAccountName": "datamountsandbox"
       },
       "researchers": {
@@ -315,24 +347,7 @@
       }
     },
     "databases": {
-      "rg": "RG_SRE_DATABASES",
-      "dbmssqlingress": {
-        "name": "SQL-ING-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
-        "port": "14330",
-        "sku": "sqldev",
-        "subnet": "dbingress",
-        "vmSize": "Standard_DS2_v2",
-        "datadisk": {
-          "size_gb": "2048",
-          "type": "Standard_LRS"
-        },
-        "osdisk": {
-          "size_gb": "128",
-          "type": "Standard_LRS"
-        }
-      }
+      "rg": "RG_SRE_DATABASES"
     },
     "dsvm": {
       "rg": "RG_SRE_COMPUTE",
@@ -367,6 +382,9 @@
       "pypi": {
         "ip": "10.20.2.20"
       }
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     }
   }
 }

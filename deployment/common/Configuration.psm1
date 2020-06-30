@@ -110,12 +110,22 @@ function Get-ShmFullConfig {
         }
     }
 
+    # Logging config
+    # --------------
+    $shm.logging = [ordered]@{
+        rg = "RG_SHM_LOGGING"
+        workspaceName = "shm$($shm.id)loganalytics${storageSuffix}".ToLower() #| TrimToLength 24
+    }
+
     # --- Network config ---
     $shm.network = [ordered]@{
         vnet = [ordered]@{
             rg = "RG_SHM_NETWORKING"
             name = "VNET_SHM_$($shm.id)".ToUpper()
             cidr = "${shmBasePrefix}.${shmThirdOctet}.0/21"
+        }
+        vpn = [ordered]@{
+            cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
         subnets = [ordered]@{}
     }
@@ -129,8 +139,14 @@ function Get-ShmFullConfig {
     $shm.network.subnets.web.name = "WebSubnet"
     $shm.network.subnets.web.prefix = "${shmBasePrefix}.$([int]$shmThirdOctet + 1)"
     $shm.network.subnets.web.cidr = "$($shm.network.subnets.web.prefix).0/24"
+    # --- Firewall subnet
+     # NB. The firewall subnet MUST be named 'AzureFirewallSubnet'. See https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
+    $shm.network.subnets.firewall = [ordered]@{}
+    $shm.network.subnets.firewall.name = "AzureFirewallSubnet"
+    $shm.network.subnets.firewall.prefix = "${shmBasePrefix}.$([int]$shmThirdOctet + 2)"
+    $shm.network.subnets.firewall.cidr = "$($shm.network.subnets.firewall.prefix).0/24"
     # --- Gateway subnet
-    # NB. The Gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+    # NB. The gateway subnet MUST be named 'GatewaySubnet'. See https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
     $shm.network.subnets.gateway = [ordered]@{}
     $shm.network.subnets.gateway.name = "GatewaySubnet"
     $shm.network.subnets.gateway.prefix = "${shmBasePrefix}.$([int]$shmThirdOctet + 7)"
@@ -161,6 +177,12 @@ function Get-ShmFullConfig {
     $shm.nps.vmSize = "Standard_D2s_v3"
     $shm.nps.hostname = $shm.nps.vmName
     $shm.nps.ip = "$($shm.network.subnets.identity.prefix).248"
+
+    # Firewall config
+    $shm.firewall = [ordered]@{
+        name = "FIREWALL-SHM-$($shm.id)".ToUpper()
+        routeTableName = "FIREWALL-SHM-$($shm.id)-ROUTE-TABLE".ToUpper()
+    }
 
     # --- Storage config --
     $storageRg = "RG_SHM_ARTIFACTS"
@@ -600,6 +622,11 @@ function Add-SreConfig {
     } else {
         Write-Error "Tier '$($config.sre.tier)' not supported (NOTE: Tier must be provided as a string in the core SRE config.)"
         return
+    }
+
+    # Firewall config
+    $config.sre.firewall = [ordered]@{
+        routeTableName = "ROUTE-TABLE-SRE-$($config.sre.id)".ToUpper()
     }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
