@@ -1,0 +1,63 @@
+---
+variant: fcos
+
+version: 1.0.0
+
+systemd:
+  units:
+    - name: postgres.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Deploy a postgres container
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill database
+        ExecStartPre=-/bin/podman rm database
+        ExecStartPre=/bin/podman pull postgres:11.6-alpine
+        ExecStart=/bin/podman run --name database \
+        --pod new:hackmdpod -p 3000:3000 \
+        -v database:/var/lib/postgresql/data \
+        -e POSTGRES_USER=hackmd \
+        -e POSTGRES_PASSWORD=hackmdpass \
+        -e POSTGRES_DB=hackmd \
+        postgres:11.6-alpine
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: hackmd.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Deploy a HackMD container
+        After=network-online.target
+        Wants=network-online.target
+        Requires=postgres.service
+        After=postgres.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/podman kill hackmd
+        ExecStartPre=-/bin/podman rm hackmd
+        ExecStartPre=/bin/podman pull hackmdio/hackmd:2.1.0
+        ExecStart=/bin/podman run --name hackmd --pod hackmdpod \
+        -v uploads:/hackmd/public/uploads \
+        -e CMD_DB_URL=postgres://hackmd:hackmdpass@localhost/hackmd \
+        -e CMD_ALLOW_ANONYMOUS=false \
+        -e CMD_ALLOW_FREEURL=true \
+        -e CMD_EMAIL=false \
+        -e CMD_USECDN=false \
+        -e CMD_LDAP_SEARCHFILTER=<hackmd-user-filter> \
+        -e CMD_LDAP_SEARCHBASE=<hackmd-ldap-base> \
+        -e CMD_LDAP_BINDCREDENTIALS=<hackmd-bind-creds> \
+        -e CMD_LDAP_BINDDN=<hackmd-bind-dn> \
+        -e CMD_LDAP_URL=<hackmd-ldap-url> \
+        -e CMD_LDAP_PROVIDERNAME=<hackmd-ldap-netbios> \
+        -e CMD_IMAGE_UPLOAD_TYPE=filesystem \
+        hackmdio/hackmd:2.1.0
+
+        [Install]
+        WantedBy=multi-user.target
