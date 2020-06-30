@@ -288,22 +288,22 @@ function Get-ShmFullConfig {
             }
             dataServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Data Servers Manager"
-                samAccountName = "$($shm.id)dataservers".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)datasrvrs".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-data-servers".ToLower()
             }
             linuxServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) Linux Servers Manager"
-                samAccountName = "$($shm.id)linuxservers".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
             }
             rdsGatewayServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) RDS Gateway Manager"
-                samAccountName = "$($shm.id)rdgservers".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
             }
             rdsSessionServers = [ordered]@{
                 name = "$($shm.domain.netbiosName) RDS Session Servers Manager"
-                samAccountName = "$($shm.id)rdshservers".ToLower() | Limit-StringLength 20
+                samAccountName = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
