@@ -290,6 +290,71 @@ write_files:
           . /etc/bash_completion
         fi
       fi
+  - path: "/etc/clamav/clamd.conf"
+    owner: "root:root"
+    permissions: "0644"
+    append: true
+    content: |
+      # Scan on access settings
+      # Scan on access for locally mounted disks
+      OnAccessIncludePath /home
+      OnAccessIncludePath /scratch
+      OnAccessIncludePath /mnt
+      # Scan on access for samba shares
+      OnAccessIncludePath /shared
+      OnAccessIncludePath /data
+      OnAccessIncludePath /output
+      # Prevent access to infected files
+      OnAccessPrevention yes
+      OnAccessExcludeUname clamav
+      OnAccessExcludeRootUID yes
+  - path: "/lib/systemd/system/clamav-clamonacc.service"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav on access scanning daemon
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+
+      [Service]
+      Type=simple
+      User=root
+      ExecStart=/usr/bin/clamonacc --foreground=true
+      Restart=on-failure
+      RestartSec=30
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: "/lib/systemd/system/clamav-clamdscan.service"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Clamav full system scan
+      Requires=clamav-daemon.service
+      After=clamav-daemon.service
+
+      [Service]
+      Type=oneshot
+      User=root
+      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
+  - path: "/lib/systemd/system/clamav-clamdscan.timer"
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run clamdscan every week
+
+      [Timer]
+      # Will run on every Monday at 00:00:00
+      OnCalendar=weekly
+      AccuracySec=1h
+      # Will run if a job was missed (e.g. due to system being powered down)
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
 
 
 runcmd:
@@ -384,6 +449,18 @@ runcmd:
   - echo ">=== Mount and configure disks... ===<"
   - /disk_setup
   - rm /disk_setup
+  - echo ">=== Enabling clamav services... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable clamav-daemon
+  - systemctl enable clamav-daemon.service
+  - systemctl status clamav-daemon.service
+  # Enable clamav scan on access
+  - systemctl enable clamav-clamonacc.service
+  - systemctl status clamav-clamonacc.service
+  # Enable clamv peroidic scan
+  - systemctl enable clamav-clamdscan.timer
+  - systemctl status clamav-clamdscan.timer
 
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
