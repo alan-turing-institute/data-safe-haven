@@ -61,42 +61,26 @@ function Grant-ComputerRegistrationPermissions {
         [Parameter(Mandatory = $true, HelpMessage = "Name of the user or group that will be given permissions.")]
         $UserPrincipalName
     )
-    # TODO: check whether these permissions can replace the GRGWCCDC set
-    # dsacls $computersContainer /I:S /G "$($user):GR;;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;pwdLastSet;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;Logon Information;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;description;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;displayName;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;sAMAccountName;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;DNS Host Name Attributes;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;Account Restrictions;computer"
-    # dsacls $computersContainer /I:S /G "$($user):WP;servicePrincipalName;computer"
-    # dsacls $computersContainer /I:S /G "$($user):CC;computer;organizationalUnit"
     $adContainer = Get-ADObject -Filter "Name -eq '$ContainerName'"
-    # Add 'generic read', 'generic write', 'create child' and 'delete child' permissions on the container
-    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:GRGWCCDC"
     $success = $?
-    # Add 'read property' and 'write property' on service principal name
-    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;servicePrincipalName"
-    $success = $success -And $?
-    # Add 'read property' and 'write property' on DNS attributes
-    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;DNS Host Name Attributes"
-    $success = $success -And $?
-    # Add 'read property' and 'write property' on supported encryption types
-    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:RPWP;msDS-SupportedEncryptionTypes"
-    $success = $success -And $?
-    # Add 'control access' permission on computer password for child computers
-    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:CA;Change Password;computer"
-    $success = $?
-    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:CA;Reset Password;computer"
-    $success = $?
-    # Add 'read property' and 'write property' on operating system attributes for child computers
-    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystem;computer"
-    $success = $success -And $?
-    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystemVersion;computer"
-    $success = $success -And $?
-    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:RPWP;operatingSystemServicePack;computer"
-    $success = $success -And $?
+    # Add permission to create child computer objects
+    $null = dsacls $adContainer /I:T /G "${UserPrincipalName}:CC;computer"
+    $success = $success -and $?
+    # Give 'write property' permissions over several attributes of child computers
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;DNS Host Name Attributes;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;msDS-SupportedEncryptionTypes;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;operatingSystem;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;operatingSystemVersion;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;operatingSystemServicePack;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;sAMAccountName;computer"
+    $success = $success -and $?
+    $null = dsacls $adContainer /I:S /G "${UserPrincipalName}:WP;servicePrincipalName;computer"
+    $success = $success -and $?
     if ($success) {
         Write-Output " [o] Successfully delegated permissions on the '$ContainerName' container to '${UserPrincipalName}'"
     } else {
