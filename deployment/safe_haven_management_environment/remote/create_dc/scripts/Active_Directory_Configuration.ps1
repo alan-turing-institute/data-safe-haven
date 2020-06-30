@@ -315,7 +315,7 @@ $rootDse = Get-ADRootDSE
 $defaultNamingContext = $rootDse.DefaultNamingContext
 $configurationNamingContext = $rootDse.ConfigurationNamingContext
 $schemaNamingContext = $rootDse.SchemaNamingContext
-# Create a hashtables to store the GUID values of each schema class and attribute and each extended right in the forest
+# Create hashtables to store the GUID values of each schema class and attribute and each extended right in the forest
 $guidmap = @{}
 Get-ADObject -SearchBase $schemaNamingContext -LDAPFilter "(schemaidguid=*)" -Properties lDAPDisplayName,schemaIDGUID | ForEach-Object {$guidmap[$_.lDAPDisplayName] = [System.GUID]$_.schemaIDGUID }
 $extendedRightsMap = @{}
