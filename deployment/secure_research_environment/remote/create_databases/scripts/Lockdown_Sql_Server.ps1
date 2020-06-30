@@ -142,7 +142,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         } elseif ($role -eq "dataadmin") { # this is a schema-level role
             $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
         } elseif ($role -eq "datareader") { # this is a schema-level role
-            $sqlCommand = "GRANT SELECT ON SCHEMA::data TO [$domainGroup]; GRANT SHOWPLAN TO [$domainGroup]; ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; GRANT CREATE TABLE TO [$domainGroup];"
+            $sqlCommand = "ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; USE master; GRANT CONNECT TO [$domainGroup]; GRANT SHOWPLAN TO [$domainGroup]; GRANT SELECT ON SCHEMA::data TO [$domainGroup]; GRANT CREATE TABLE TO [$domainGroup];"
         } else {
             Write-Output " [x] Role $role not recognised!"
             continue
