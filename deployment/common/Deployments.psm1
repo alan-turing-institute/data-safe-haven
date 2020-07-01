@@ -665,15 +665,24 @@ function Deploy-UbuntuVirtualMachine {
         $CloudInitYaml,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
         $Location,
-        [Parameter(Mandatory = $true, HelpMessage = "ID of network card to attach to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageId", HelpMessage = "ID of network card to attach to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageSku", HelpMessage = "ID of network card to attach to this VM")]
         $NicId,
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "Private IP address to assign to this VM")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "Private IP address to assign to this VM")]
+        $PrivateIpAddress,
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "Subnet to deploy this VM into")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "Subnet to deploy this VM into")]
+        $Subnet,
         [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
         $OsDiskType,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
-        [Parameter(Mandatory = $true, ParameterSetName="ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageId", HelpMessage = "ID of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageId", HelpMessage = "ID of VM image to deploy")]
         $ImageId = $null,
-        [Parameter(Mandatory = $true, ParameterSetName="ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByNicId_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
+        [Parameter(Mandatory = $true, ParameterSetName="ByIpAddress_ByImageSku", HelpMessage = "SKU of VM image to deploy")]
         $ImageSku = $null,
         [Parameter(Mandatory = $false, HelpMessage = "Size of OS disk (GB)")]
         $OsDiskSizeGb = $null,
@@ -689,10 +698,15 @@ function Deploy-UbuntuVirtualMachine {
         # Set source image to a custom image or to latest Ubuntu (default)
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
-        } else {
+        } elseif ($ImageSku) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus $ImageSku -Version "latest"
+        } else {
+            Add-LogMessage -Level Fatal "Could not determine which source image to use!"
         }
         $vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Linux -ComputerName $Name -Credential $adminCredentials -CustomData $CloudInitYaml
+        if (-Not $NicId) {
+            $NicId = (Deploy-VirtualMachineNIC -Name "${Name}-NIC" -ResourceGroupName $ResourceGroupName -Subnet $Subnet -PrivateIpAddress $PrivateIpAddress -Location $Location).Id
+        }
         $vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $NicId -Primary
         if ($OsDiskSizeGb) {
             $vmConfig = Set-AzVMOSDisk -VM $vmConfig -StorageAccountType $OsDiskType -Name "$Name-OS-DISK" -CreateOption FromImage -DiskSizeInGB $OsDiskSizeGb
@@ -1000,7 +1014,7 @@ function Remove-AllNetworkSecurityGroupRules {
         Add-LogMessage -Level Fatal "Could not find an NSG named '$Name'!"
     }
     $rules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $nsg
-    Add-LogMessage -Level Info "[ ] Preparing to remove $($rules.Count) rules from NSG '$Name'..."
+    Add-LogMessage -Level Info "[ ] Preparing to remove $($rules.Count) rule(s) from NSG '$Name'..."
     $null = $rules | ForEach-Object { Remove-AzNetworkSecurityRuleConfig -Name $_.Name -NetworkSecurityGroup $nsg }
     $null = $nsg | Set-AzNetworkSecurityGroup
     if ($?) {

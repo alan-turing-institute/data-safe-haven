@@ -2,7 +2,7 @@
 package_update: true
 package_upgrade: true
 
-# Install LDAP tools for debugging LDAP issues
+# Install necessary apt packages
 packages:
   - apt-transport-https
   - ca-certificates

@@ -226,32 +226,33 @@ Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
 # Expand deploy script
 $deployScriptLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.template.ps1" | Get-Item | Get-Content -Raw
-$template.Replace('<airlockSubnetIpPrefix>',$airlockSubnetIpPrefix).
-          Replace('<dataSubnetIpPrefix>',$dataSubnetIpPrefix).
-          Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
+$template.Replace('<airlockSubnetIpPrefix>', $airlockSubnetIpPrefix).
+          Replace('<dataSubnetIpPrefix>', $dataSubnetIpPrefix).
+          Replace('<webappsSubnetIpPrefix>', $dataSubnetIpPrefix).
+          Replace('<rdsGatewayVmFqdn>', $rdsGatewayVmFqdn).
           Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
-          Replace('<rdsSh1VmFqdn>',$rdsSh1VmFqdn).
-          Replace('<rdsSh1VmName>',$rdsSh1VmName).
-          Replace('<rdsSh2VmFqdn>',$rdsSh2VmFqdn).
-          Replace('<rdsSh2VmName>',$rdsSh2VmName).
-          Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
-          Replace('<rdsSh3VmName>',$rdsSh3VmName).
-          Replace('<remoteUploadDir>',$remoteUploadDir).
-          Replace('<researchUserSgName>',$researchUserSgName).
-          Replace('<reviewUserSgName>',$reviewUserSgName).
-          Replace('<shmDcAdminUsername>',$shmDcAdminUsername).
+          Replace('<rdsSh1VmFqdn>', $rdsSh1VmFqdn).
+          Replace('<rdsSh1VmName>', $rdsSh1VmName).
+          Replace('<rdsSh2VmFqdn>', $rdsSh2VmFqdn).
+          Replace('<rdsSh2VmName>', $rdsSh2VmName).
+          Replace('<rdsSh3VmFqdn>', $rdsSh3VmFqdn).
+          Replace('<rdsSh3VmName>', $rdsSh3VmName).
+          Replace('<remoteUploadDir>', $remoteUploadDir).
+          Replace('<researchUserSgName>', $researchUserSgName).
+          Replace('<reviewUserSgName>', $reviewUserSgName).
+          Replace('<shmDcAdminUsername>', $shmDcAdminUsername).
           Replace('<shmNetbiosName>', $shmNetbiosName).
-          Replace('<sreFqdn>',$sreFqdn) | Out-File $deployScriptLocalFilePath
+          Replace('<sreFqdn>', $sreFqdn) | Out-File $deployScriptLocalFilePath
 
 # Expand server list XML
 $serverListLocalFilePath = (New-TemporaryFile).FullName
 $template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.template.xml" | Get-Item | Get-Content -Raw
-$template.Replace('<rdsGatewayVmFqdn>',$rdsGatewayVmFqdn).
+$template.Replace('<rdsGatewayVmFqdn>', $rdsGatewayVmFqdn).
           Replace('<rdsGatewayVmName>', $rdsGatewayVmName).
-          Replace('<rdsSh1VmFqdn>',$rdsSh1VmFqdn).
-          Replace('<rdsSh2VmFqdn>',$rdsSh2VmFqdn).
-          Replace('<rdsSh3VmFqdn>',$rdsSh3VmFqdn).
-          Replace('<sreFqdn>',$sreFqdn) | Out-File $serverListLocalFilePath
+          Replace('<rdsSh1VmFqdn>', $rdsSh1VmFqdn).
+          Replace('<rdsSh2VmFqdn>', $rdsSh2VmFqdn).
+          Replace('<rdsSh3VmFqdn>', $rdsSh3VmFqdn).
+          Replace('<sreFqdn>', $sreFqdn) | Out-File $serverListLocalFilePath
 
 # Copy installers from SHM storage
 Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"

@@ -2,11 +2,12 @@
 package_update: true
 package_upgrade: true
 
+# Install necessary apt packages
 packages:
-  - git
   - apt-transport-https
   - ca-certificates
   - curl
+  - git
   - gitlab-ce
   - gnupg
   - ldap-utils
