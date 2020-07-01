@@ -37,7 +37,19 @@ $gitlabAPIToken = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -S
 
 # Set up NSGs for the webapps
 # ---------------------------
-$nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
+$nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location -RemoveAllRules
+$nsgWebapps = Deploy-NetworkSecurityGroup -Name $config.sre.webapps.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location -RemoveAllRules
+$params = @{
+    ipAddressGitLab = $config.sre.webapps.gitlab.ip
+    ipAddressGitLabReview = $config.sre.webapps.gitlabreview.ip
+    ipAddressSessionHostApps = $config.sre.rds.sessionHost1.ip
+    ipAddressSessionHostReview = $config.sre.rds.sessionHost3.ip
+    nsgWebappsName = $config.sre.webapps.nsg
+    subnetComputeCidr =  $config.sre.network.subnets.data.cidr
+    subnetVpnCidr = "172.16.201.0/24"
+}
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
+
 
 # TODO fix this when this is no longer hard-coded
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `

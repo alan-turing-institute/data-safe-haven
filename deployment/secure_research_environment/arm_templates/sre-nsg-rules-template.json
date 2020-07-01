@@ -1,0 +1,126 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ipAddressGitLab": {
+            "type": "string"
+        },
+        "ipAddressGitLabReview": {
+            "type": "string"
+        },
+        "ipAddressSessionHostApps": {
+            "type": "string"
+        },
+        "ipAddressSessionHostReview": {
+            "type": "string"
+        },
+        "nsgWebappsName": {
+            "type": "string"
+        },
+        "subnetComputeCidr": {
+            "type": "string"
+        },
+        "subnetVpnCidr": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/AllowInboundSshSubnetVpn')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound SSH connections from VPN subnet",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRange": "22",
+                "direction": "Inbound",
+                "priority": 1000,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('subnetVpnCidr')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/AllowInboundHttpSessionHostApps')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound http(s) from application session host",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRanges": ["80", "443"],
+                "direction": "Inbound",
+                "priority": 2000,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('ipAddressSessionHostApps')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/AllowInboundHttpSubnetCompute')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound http(s) from compute VM subnet",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRanges": ["80", "443"],
+                "direction": "Inbound",
+                "priority": 3000,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('subnetComputeCidr')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/AllowInboundHttpSshGitLabReview')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound ssh and http(s) connections from GitLab review VM",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRanges": ["22", "80", "443"],
+                "direction": "Inbound",
+                "priority": 3500,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('ipAddressGitLabReview')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/DenyInboundAnyAnywhere')]",
+            "properties": {
+                "access": "Deny",
+                "description": "Deny inbound connections from any other sources",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "*",
+                "direction": "Inbound",
+                "priority": 4000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgWebappsName'), '/DenyOutboundAnyAnywhere')]",
+            "properties": {
+                "access": "Deny",
+                "description": "Deny outbound connections to any other sources",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "*",
+                "direction": "Outbound",
+                "priority": 4000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        }
+    ]
+}

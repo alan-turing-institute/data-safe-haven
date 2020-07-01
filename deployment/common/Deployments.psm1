@@ -88,6 +88,35 @@ function Add-VmToNSG {
 Export-ModuleMember -Function Add-VmToNSG
 
 
+# Ensure the specified storage container is empty
+# -----------------------------------------------
+function Clear-StorageContainer {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to clear")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account where the container exists")]
+        $StorageAccount
+    )
+    # delete existing blobs in the container
+    $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
+    $numBlobs = $blobs.Length
+    if ($numBlobs -gt 0) {
+        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$Name'..."
+        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $Name -Context $StorageAccount.Context -Force }
+        while ($numBlobs -gt 0) {
+            Start-Sleep -Seconds 5
+            $numBlobs = (Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length
+        }
+        if ($?) {
+            Add-LogMessage -Level Success "Blob deletion succeeded"
+        } else {
+            Add-LogMessage -Level Fatal "Blob deletion failed!"
+        }
+    }
+}
+Export-ModuleMember -Function Clear-StorageContainer
+
+
 # Deploy an ARM template and log the output
 # -----------------------------------------
 function Deploy-ArmTemplate {
@@ -370,11 +399,13 @@ Export-ModuleMember -Function Deploy-ManagedDisk
 function Deploy-NetworkSecurityGroup {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group to deploy")]
-        $Name,
+        [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
+        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy")]
-        $Location
+        [string]$Location,
+        [Parameter(Mandatory = $false, HelpMessage = "Remove all rules from this network security group")]
+        [switch]$RemoveAllRules = $false
     )
     Add-LogMessage -Level Info "Ensuring that network security group '$Name' exists..."
     $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
@@ -388,6 +419,9 @@ function Deploy-NetworkSecurityGroup {
         }
     } else {
         Add-LogMessage -Level InfoSuccess "Network security group '$Name' already exists"
+    }
+    if ($RemoveAllRules) {
+        $nsg = Remove-AllNetworkSecurityGroupRules -Name $Name -ResourceGroupName $ResourceGroupName
     }
     return $nsg
 }
@@ -611,35 +645,6 @@ function Deploy-StorageContainer {
     return $storageContainer
 }
 Export-ModuleMember -Function Deploy-StorageContainer
-
-
-# Ensure the specified storage container is empty
-# -----------------------------------------------
-function Clear-StorageContainer {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to clear")]
-        $Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage account where the container exists")]
-        $StorageAccount
-    )
-    # delete existing blobs in the container
-    $blobs = @(Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] deleting $numBlobs blobs aready in container '$Name'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $Name -Context $StorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $Name -Context $StorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
-}
-Export-ModuleMember -Function Clear-StorageContainer
 
 
 # Create Linux virtual machine if it does not exist
@@ -978,6 +983,34 @@ function New-DNSZone {
     }
 }
 Export-ModuleMember -Function New-DNSZone
+
+
+# Create network security group rule if it does not exist
+# -------------------------------------------------------
+function Remove-AllNetworkSecurityGroupRules {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the NSG from which to remove rules.")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the NSG belongs to.")]
+        [string]$ResourceGroupName
+    )
+    try {
+        $nsg = Get-AzNetworkSecurityGroup -Name $Name -ResourceGroupName $ResourceGroupName -ErrorAction Stop
+    } catch [Microsoft.Rest.Azure.CloudException] {
+        Add-LogMessage -Level Fatal "Could not find an NSG named '$Name'!"
+    }
+    $rules = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $nsg
+    Add-LogMessage -Level Info "[ ] Preparing to remove $($rules.Count) rules from NSG '$Name'..."
+    $null = $rules | ForEach-Object { Remove-AzNetworkSecurityRuleConfig -Name $_.Name -NetworkSecurityGroup $nsg }
+    $null = $nsg | Set-AzNetworkSecurityGroup
+    if ($?) {
+        Add-LogMessage -Level Success "Removed all rules from NSG '$Name'"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to remove rules from NSG '$Name'"
+    }
+    return $nsg
+}
+Export-ModuleMember -Function Remove-AllNetworkSecurityGroupRules
 
 
 # Remove Virtual Machine
