@@ -54,6 +54,7 @@ if ($sa.subscriptionName -eq $subscriptionName) {
 
 	  $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
 	  $accountId = $resource.ResourceId
+	  Add-LogMessage -Level Info "The storage account '$accountId' has been created in the subscription '$($sa.subscriptionName)'"
 
 
 	}  
@@ -116,7 +117,7 @@ $_ = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.
 Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.sre.adminSecurityGroupName
 
 # -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.keyVault.name)'..."
+Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
 
 $_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
 
@@ -167,11 +168,13 @@ $subnet = $virtualNetwork `
 | Select -ExpandProperty subnets `
 | Where-Object  {$_.Name -eq $config.sre.network.subnets.data.name}
 
+
 $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
 -Name $privateEndpointName `
 -Location $config.sre.Location `
 -Subnet $subnet `
 -PrivateLinkServiceConnection $privateEndpointConnection
+
 
 # Create a Private DNS Zone
 # ----------------------------
@@ -189,15 +192,14 @@ $link  = New-AzPrivateDnsVirtualNetworkLink -ResourceGroupName $config.sre.netwo
 
 # The hard-coded API version "2019-04-01" specified here is necessary for
 # obtaining the required IP config properties below.
-$networkInterface = Get-AzResource `
--ResourceId $privateEndpoint.NetworkInterfaces[0].Id `
--ApiVersion "2019-04-01"
+$networkInterface = Get-AzResource ` -ResourceId $privateEndpoint.NetworkInterfaces[0].Id ` -ApiVersion "2019-04-01"
 
 foreach ($ipconfig in $networkInterface.properties.ipConfigurations) {
 foreach ($fqdn in $ipconfig.properties.privateLinkConnectionProperties.fqdns) {
   Write-Host "$($ipconfig.properties.privateIPAddress) $($fqdn)"
   $recordName = $fqdn.split('.',2)[0]
   $dnsZone = $fqdn.split('.',2)[1]
+Add-LogMessage -Level Info "Check: $fqdn $recordName $dnsZone $ipconfig.properties.privateIPAddress"
 
   New-AzPrivateDnsRecordSet -Name $recordName -RecordType A -ZoneName $privateDnsZoneName `
     -ResourceGroupName $config.sre.network.vnet.rg -Ttl 600 `

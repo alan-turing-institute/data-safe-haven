@@ -20,6 +20,13 @@ write_files:
     content: |
       username=<datamount-username>
       password=<datamount-password>
+  - path: "/installation/SASingress"
+    permissions: "0600"
+    content: |
+      accountName $SA_ACCOUNT_NAME
+      sasToken $SA_SAS_INGRESS
+      authType SAS
+      containerName ingress
   - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
@@ -445,6 +452,16 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
+
+  # Mount ingress blob folder with read-only local access 
+  - echo "user_allow_other" | tee -a /etc/fuse.conf
+  - echo ">=== Mount ingress blob folder ... ===<"
+  - mkdir -p /ingress
+  - mkdir -p /mnt/resource/ingresstmp
+  - chmod +x /installation/ingressmount.sh
+#  - chmod +x /installation/ingressmount.sh
+  - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
+
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
   - /disk_setup
