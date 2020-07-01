@@ -14,6 +14,9 @@
         "ipAddressSessionHostReview": {
             "type": "string"
         },
+        "nsgAirlockName": {
+            "type": "string"
+        },
         "nsgWebappsName": {
             "type": "string"
         },
@@ -110,6 +113,86 @@
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2020-04-01",
             "name": "[concat(parameters('nsgWebappsName'), '/DenyOutboundAnyAnywhere')]",
+            "properties": {
+                "access": "Deny",
+                "description": "Deny outbound connections to any other sources",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "*",
+                "direction": "Outbound",
+                "priority": 4000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundSshSubnetVpn')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound SSH connections from VPN subnet",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRange": "22",
+                "direction": "Inbound",
+                "priority": 1000,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('subnetVpnCidr')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/AllowInboundRdpSessionHostReview')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound RDP connections from GitLab review VM",
+                "destinationAddressPrefix": "VirtualNetwork",
+                "destinationPortRanges": ["3389"],
+                "direction": "Inbound",
+                "priority": 2000,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "[parameters('ipAddressSessionHostReview')]",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/DenyInboundAnyAnywhere')]",
+            "properties": {
+                "access": "Deny",
+                "description": "Deny inbound connections from any other sources",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "*",
+                "direction": "Inbound",
+                "priority": 4000,
+                "protocol": "*",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/AllowOutboundHttpSshGitLab')]",
+            "properties": {
+                "access": "Allow",
+                "description": "Allow inbound ssh and http(s) connections from user-facing GitLab VM",
+                "destinationAddressPrefix": "[parameters('ipAddressGitLab')]",
+                "destinationPortRanges": ["22", "80", "443"],
+                "direction": "Outbound",
+                "priority": 3500,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "sourcePortRange": "*"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('nsgAirlockName'), '/DenyOutboundAnyAnywhere')]",
             "properties": {
                 "access": "Deny",
                 "description": "Deny outbound connections to any other sources",

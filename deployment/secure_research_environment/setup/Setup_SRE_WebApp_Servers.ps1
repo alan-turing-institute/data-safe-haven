@@ -44,94 +44,13 @@ $params = @{
     ipAddressGitLabReview = $config.sre.webapps.gitlabreview.ip
     ipAddressSessionHostApps = $config.sre.rds.sessionHost1.ip
     ipAddressSessionHostReview = $config.sre.rds.sessionHost3.ip
+    nsgAirlockName = $config.sre.network.nsg.airlock.name
     nsgWebappsName = $config.sre.webapps.nsg
     subnetComputeCidr =  $config.sre.network.subnets.data.cidr
-    subnetVpnCidr = "172.16.201.0/24"
+    subnetVpnCidr = "172.16.201.0/24" # TODO fix this when it is no longer hard-coded
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-nsg-rules-template.json") -Params $params -ResourceGroupName $config.sre.network.vnet.rg
 
-
-# TODO fix this when this is no longer hard-coded
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "InboundAllowVpnSsh" `
-                             -Description "Inbound allow SSH connections from VPN subnet" `
-                             -Priority 1000 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "InboundAllowHttpSessionHost" `
-                             -Description "Inbound allow http(s) from application session host" `
-                             -Priority 2000 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix $config.sre.rds.sessionHost1.ip -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 80,443
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "InboundAllowHttpComputeSubnet" `
-                             -Description "Inbound allow http(s) from compute VM subnet" `
-                             -Priority 3000 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix $config.sre.network.subnets.data.cidr -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 80,443
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "InboundDenyOtherVNet" `
-                             -Description "Inbound deny other VNet connections" `
-                             -Priority 4000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "OutboundDenyInternet" `
-                             -Description "Outbound deny internet" `
-                             -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgWebapps `
-                             -Name "OutboundDenyVNet" `
-                             -Description "Outbound deny VNet connections" `
-                             -Priority 3000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
-
-# TODO fix hard-coded cidr in InboundAllowVpnSsh
-$nsgAirlock = Deploy-NetworkSecurityGroup -Name $config.sre.network.nsg.airlock.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "InboundAllowVpnSsh" `
-                             -Description "Inbound allow SSH connections from VPN subnet" `
-                             -Priority 1000 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix "172.16.201.0/24" -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 22
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "InboundAllowReviewServer" `
-                             -Description "Inbound allow connections from review session host" `
-                             -Priority 2000 `
-                             -Direction Inbound -Access Allow -Protocol * `
-                             -SourceAddressPrefix $config.sre.rds.sessionHost3.ip -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange 3389
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "InboundDenyOtherVNet" `
-                             -Description "Inbound deny other VNet connections" `
-                             -Priority 4000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "OutboundAllowGitLabInternal" `
-                             -Description "Outbound allow GitLab internal server" `
-                             -Priority 3000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix $config.sre.webapps.gitlab.ip -DestinationPortRange *
-Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgAirlock `
-                             -Name "OutboundDenyVNet" `
-                             -Description "Outbound deny other VNet connections" `
-                             -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
 
 # Check that VNET and subnets exist
 # ---------------------------------
