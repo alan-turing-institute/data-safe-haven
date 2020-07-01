@@ -8,10 +8,6 @@ foreach ($package in $packages){
 
     if($package -like "*.msi") {
         Start-Process $package.FullName -ArgumentList '/quiet' -Verbose -Wait
-    } else {
-        if($package -like "*WinSCP*exe") {
-            Start-Process $package.FullName -ArgumentList '/SILENT','/ALLUSERS' -Verbose -Wait
-        }
     }
     # Check installation status
     if ($?) {

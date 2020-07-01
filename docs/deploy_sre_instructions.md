@@ -382,9 +382,9 @@ On your **deployment machine**.
 - Click on the VM in the SRE subscription under the `RG_DSG_COMPUTE` resource group. It will have the last octet of its IP address at the end of its name.
 - Click on the "Serial console" item near the bottom of the VM menu on the left hand side of the VM information panel
 - If you are not prompted with `login:`, hit enter until the prompt appears
-- Enter the username from the `<SRE ID>-dsvm-admin-username` secret in the SRE key vault.
-- Enter the password from the `<SRE ID>-dsvm-admin-password` secret in the SRE key vault.
-- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `secure_research_environment/azure-vms/environment_configs/cloud-init-compute-vm-sre-<SRE ID>.template.yaml` file in the Safe Haven git repository.
+- Enter the username from the `sre-<SRE ID>-vm-admin-username` secret in the SRE key vault.
+- Enter the password from the `sre-<SRE ID>-dsvm-admin-password` secret in the SRE key vault.
+- To validate that our custom `cloud-init.yaml` file has been successfully uploaded, run `sudo cat /var/lib/cloud/instance/user-data.txt`. You should see the contents of the `deployment/secure_research_environment/cloud_init/cloud-init-compute-vm.template.yaml` file in the Safe Haven git repository.
 - To see the output of our custom `cloud-init.yaml` file, run `sudo tail -n 200 /var/log/cloud-init-output.log` and scroll up.
 
 ## :lock: Apply network configuration

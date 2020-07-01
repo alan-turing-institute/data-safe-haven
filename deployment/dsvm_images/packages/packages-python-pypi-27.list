@@ -36,7 +36,6 @@ pandas
 pandas-profiling
 pandasql
 pathos
-pg8000
 Pillow
 plotly
 psycopg2

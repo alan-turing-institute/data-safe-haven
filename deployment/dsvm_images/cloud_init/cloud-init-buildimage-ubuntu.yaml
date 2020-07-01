@@ -58,6 +58,17 @@ apt:
 
 
 write_files:
+  - path: "/etc/jaas.conf"
+    owner: root:root
+    permissions: "0444"
+    content: |
+      pgjdbc {
+      com.sun.security.auth.module.Krb5LoginModule required
+          useTicketCache=true
+          debug=true
+          renewTGT=true
+          doNotPrompt=true;
+      };
   - path: "/installation/azuredatastudio.debinfo"
     permissions: "0400"
     content: |
@@ -122,10 +133,6 @@ write_files:
     permissions: "0500"
     content: |
       <download_and_install_tar.sh>
-  - path: "/installation/install_postgres_extensions.sql"
-    permissions: "0400"
-    content: |
-      <install_postgres_extensions.sql>
   - path: "/installation/performance_log.csv"
     permissions: "0644"
     content: |
@@ -195,6 +202,13 @@ runcmd:
   # Install additional deb/snap packages
   - echo ">=== $(date +%s) Installing deb/snap packages ===<"
 
+  # Manually update clamav signature database
+  # The systemd unit is disabled as otherwise the freshclam log will be locked
+  - echo "Updating clamav database"
+  - systemctl stop clamav-freshclam.service
+  - freshclam
+  - clamav-unofficial-sigs
+
   # Azure Data Studio
   - echo "Installing Azure Data Studio"
   - /installation/download_and_install_deb.sh azuredatastudio
@@ -229,6 +243,7 @@ runcmd:
   - sed -i "s/|POSTGIS_JDBC_VERSION|/${POSTGIS_JDBC_VERSION}/g" /installation/dbeaver_drivers_config.xml
   - mv /installation/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
 
   # Install PyCharm
@@ -248,10 +263,6 @@ runcmd:
   - SPARK_BASE_DIR=$(ls -d /opt/spark/spark*)
   - PATH=$PATH:${SPARK_BASE_DIR}/bin
   - if [ "$(which spark-shell)" = "" ]; then echo "Could not install Spark!"; exit 1; fi
-
-    # Install PostgreSQL extensions
-  - echo "Installing PostgreSQL extensions"
-  - while read -r SQLCOMMAND; do echo "=> $SQLCOMMAND <="; sudo -u postgres psql -c "$SQLCOMMAND" || exit 1; done < /installation/install_postgres_extensions.sql
 
   # Install latest anaconda version (download is ~640MB)
   - echo ">=== $(date +%s) Installing and configuring conda ===<"
@@ -361,7 +372,7 @@ runcmd:
   - jupyter kernelspec install /opt/anaconda/envs/py36/share/jupyter/kernels/py36 || exit 1
   - jupyter kernelspec install /opt/anaconda/envs/py37/share/jupyter/kernels/py37 || exit 1
   # Add the R kernel
-  - R_VERSION=$(R --version | head -n 1 | cut -d' ' -f3)
+  - R_VERSION=$(R --version | head -n 1 | cut -d ' ' -f3)
   - ln -s /usr/local/lib/R/site-library/IRkernel/kernelspec /usr/local/lib/R/site-library/IRkernel/R${R_VERSION}
   - |
     sed -i "s|\"display_name\":.*\R.*|\"display_name\": \"R ${R_VERSION}\",|" /usr/local/lib/R/site-library/IRkernel/kernelspec/kernel.json

@@ -1,8 +1,8 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Test A",
-    "id": "testa",
-    "name": "Turing Development Safe Haven A",
+    "subscriptionName": "Safe Haven Management Test B",
+    "id": "demo",
+    "name": "Turing Development Safe Haven B",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -12,13 +12,13 @@
     "location": "centralus",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "testa.dsgroupdev.co.uk",
-      "netbiosName": "SAFEHAVENTESTA",
-      "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "fqdn": "demo.dsgroupdev.co.uk",
+      "netbiosName": "SAFEHAVENDEMO",
+      "dn": "DC=demo,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
+      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
+      "userOuPath": "OU=Safe Haven Research Users,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
+      "securityOuPath": "OU=Safe Haven Security Groups,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dsvmLdapUsers": {
           "name": "SG Safe Haven LDAP Users",
@@ -33,7 +33,7 @@
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
-        "name": "VNET_SHM_TESTA",
+        "name": "VNET_SHM_DEMO",
         "cidr": "10.0.0.0/21"
       },
       "subnets": {
@@ -56,53 +56,53 @@
     },
     "dc": {
       "rg": "RG_SHM_DC",
-      "vmName": "DC1-SHM-TESTA",
+      "vmName": "DC1-SHM-DEMO",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "DC1-SHM-TESTA",
-      "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-DEMO",
+      "fqdn": "DC1-SHM-DEMO.demo.dsgroupdev.co.uk",
       "ip": "10.0.0.250",
       "external_dns_resolver": "168.63.129.16"
     },
     "dcb": {
-      "vmName": "DC2-SHM-TESTA",
-      "hostname": "DC2-SHM-TESTA",
-      "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
+      "vmName": "DC2-SHM-DEMO",
+      "hostname": "DC2-SHM-DEMO",
+      "fqdn": "DC2-SHM-DEMO.demo.dsgroupdev.co.uk",
       "ip": "10.0.0.249"
     },
     "nps": {
       "rg": "RG_SHM_NPS",
-      "vmName": "NPS-SHM-TESTA",
+      "vmName": "NPS-SHM-DEMO",
       "vmSize": "Standard_D2s_v3",
-      "hostname": "NPS-SHM-TESTA",
+      "hostname": "NPS-SHM-DEMO",
       "ip": "10.0.0.248"
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmtestaartifactsvkdrslu"
+        "accountName": "shmdemoartifactsnhavsfry"
       },
       "bootdiagnostics": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmtestabootdiagsvkdrslu"
+        "accountName": "shmdemobootdiagsnhavsfry"
       }
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-testa",
+      "name": "kv-shm-demo",
       "secretNames": {
-        "aadAdminPassword": "shm-testa-aad-admin-password",
-        "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
-        "dcSafemodePassword": "shm-testa-dc-safemode-password",
-        "domainAdminPassword": "shm-testa-domain-admin-password",
-        "localAdsyncPassword": "shm-testa-localadsync-password",
-        "npsAdminPassword": "shm-testa-nps-admin-password",
-        "vmAdminUsername": "shm-testa-vm-admin-username",
-        "vpnCaCertificate": "shm-testa-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-testa-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+        "aadAdminPassword": "shm-demo-aad-admin-password",
+        "buildImageAdminUsername": "shm-demo-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-demo-buildimage-admin-password",
+        "dcSafemodePassword": "shm-demo-dc-safemode-password",
+        "domainAdminPassword": "shm-demo-domain-admin-password",
+        "localAdsyncPassword": "shm-demo-localadsync-password",
+        "npsAdminPassword": "shm-demo-nps-admin-password",
+        "vmAdminUsername": "shm-demo-vm-admin-username",
+        "vpnCaCertificate": "shm-demo-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-demo-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-demo-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-demo-vpn-client-cert",
+        "vpnClientCertPassword": "shm-demo-vpn-client-cert-password"
       }
     },
     "dns": {
@@ -130,16 +130,16 @@
     }
   },
   "sre": {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test A)",
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
     "id": "sandbox",
     "shortName": "sre-sandbox",
     "location": "centralus",
-    "tier": "2",
+    "tier": "3",
     "adminSecurityGroupName": "Safe Haven Test Admins",
     "domain": {
-      "fqdn": "sandbox.testa.dsgroupdev.co.uk",
+      "fqdn": "sandbox.demo.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
-      "dn": "DC=sandbox,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
+      "dn": "DC=sandbox,DC=demo,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dataAdministrators": {
           "name": "SG SANDBOX Data Administrators",
@@ -159,29 +159,29 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.150.0.0/21"
+        "cidr": "10.151.0.0/21"
       },
       "subnets": {
         "identity": {
           "name": "IdentitySubnet",
-          "prefix": "10.150.0",
-          "cidr": "10.150.0.0/24"
+          "prefix": "10.151.0",
+          "cidr": "10.151.0.0/24"
         },
         "rds": {
           "name": "RDSSubnet",
-          "prefix": "10.150.1",
-          "cidr": "10.150.1.0/24"
+          "prefix": "10.151.1",
+          "cidr": "10.151.1.0/24"
         },
         "data": {
           "name": "SharedDataSubnet",
-          "prefix": "10.150.2",
-          "cidr": "10.150.2.0/24"
+          "prefix": "10.151.2",
+          "cidr": "10.151.2.0/24"
         },
         "databases": {
           "name": "DatabasesSubnet",
-          "prefix": "10.150.3",
+          "prefix": "10.151.3",
           "nsg": "databases",
-          "cidr": "10.150.3.0/24"
+          "cidr": "10.151.3.0/24"
         }
       },
       "nsg": {
@@ -194,15 +194,15 @@
     "storage": {
       "artifacts": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "sreartifactszvmwtqkigrld"
+        "accountName": "sreartifactsmzgcboxwifps"
       },
       "bootdiagnostics": {
         "rg": "RG_SRE_ARTIFACTS",
-        "accountName": "srebootdiagszvmwtqkigrld"
+        "accountName": "srebootdiagsmzgcboxwifps"
       }
     },
     "keyVault": {
-      "name": "kv-testa-sre-sandbox",
+      "name": "kv-demo-sre-sandbox",
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
@@ -265,7 +265,7 @@
       "researchers": {
         "test": {
           "name": "SANDBOX Test Researcher",
-          "samAccountName": "researchersandbox"
+          "samAccountName": "testresrchsandbox"
         }
       }
     },
@@ -280,24 +280,24 @@
           "outboundInternet": "Deny"
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.250"
+        "fqdn": "RDG-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+        "ip": "10.151.1.250"
       },
       "sessionHost1": {
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.249"
+        "fqdn": "APP-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+        "ip": "10.151.1.249"
       },
       "sessionHost2": {
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.1.248"
+        "fqdn": "DKP-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+        "ip": "10.151.1.248"
       }
     },
     "dataserver": {
@@ -306,8 +306,8 @@
       "vmName": "DAT-SRE-SANDBOX",
       "vmSize": "Standard_D2s_v3",
       "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-      "ip": "10.150.2.250",
+      "fqdn": "DAT-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+      "ip": "10.151.2.250",
       "egressDiskGb": 512,
       "ingressDiskGb": 512,
       "sharedDiskGb": 512
@@ -319,21 +319,21 @@
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.2.151"
+        "fqdn": "GITLAB-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+        "ip": "10.151.2.151"
       },
       "hackmd": {
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.testa.dsgroupdev.co.uk",
-        "ip": "10.150.2.152"
+        "fqdn": "HACKMD-SRE-SANDBOX.demo.dsgroupdev.co.uk",
+        "ip": "10.151.2.152"
       }
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
       "dbmssql": {
-        "name": "MSSQL-SANDBOX",
+        "name": "SQL-ING-SANDBOX",
         "type": "MSSQL",
         "ipLastOctet": 4,
         "port": "14330",
@@ -341,7 +341,7 @@
         "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
         "datadisk": {
-          "size_gb": "1024",
+          "size_gb": "2048",
           "type": "Standard_LRS"
         },
         "osdisk": {
@@ -377,7 +377,7 @@
       "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.2.2020060100",
+      "vmImageVersion": "0.2.2020050300",
       "osdisk": {
         "type": "Standard_LRS",
         "size_gb": "64"
@@ -393,13 +393,13 @@
     },
     "mirrors": {
       "vnet": {
-        "name": "VNET_SHM_TESTA_PACKAGE_MIRRORS_TIER2"
+        "name": "VNET_SHM_DEMO_PACKAGE_MIRRORS_TIER3"
       },
       "cran": {
-        "ip": "10.20.2.21"
+        "ip": "10.20.3.21"
       },
       "pypi": {
-        "ip": "10.20.2.20"
+        "ip": "10.20.3.20"
       }
     }
   }

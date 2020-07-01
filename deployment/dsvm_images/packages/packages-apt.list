@@ -6,6 +6,9 @@ attr
 auditd
 autotools-dev
 build-essential
+clamav
+clamav-daemon
+clamav-unofficial-sigs
 code
 default-jdk
 docker.io
@@ -66,10 +69,7 @@ osm2pgsql
 p7zip
 parallel
 pgadmin3
-postgresql-12
-postgresql-12-pgrouting
-postgresql-12-postgis-3-scripts
-postgresql-contrib
+postgresql-client-12
 python3
 qgis
 r-base

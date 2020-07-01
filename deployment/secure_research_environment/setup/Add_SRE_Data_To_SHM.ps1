@@ -32,17 +32,29 @@ Set-AzKeyVaultAccessPolicy -VaultName $config.sre.keyVault.Name -ResourceGroupNa
 # Retrieve passwords from the keyvault
 # ------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
-$hackmdPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.hackmdLdapPassword
-$gitlabPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.gitlabLdapPassword
-$dsvmPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dsvmLdapPassword
-$dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.dataMountPassword
-$testResearcherPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.testResearcherPassword
-# Encrypt passwords for passing to script
-$hackmdPasswordEncrypted = ConvertTo-SecureString $hackmdPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-$gitlabPasswordEncrypted = ConvertTo-SecureString $gitlabPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-$dsvmPasswordEncrypted = ConvertTo-SecureString $dsvmPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-$dataMountPasswordEncrypted = ConvertTo-SecureString $dataMountPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
-$testResearcherPasswordEncrypted = ConvertTo-SecureString $testResearcherPassword -AsPlainText -Force | ConvertFrom-SecureString -Key (1..16)
+# Load SRE groups
+$groups = $config.sre.domain.securityGroups | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+# Load SRE LDAP users
+$ldapUsers = $config.sre.users.ldap | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+foreach ($user in $ldapUsers.Keys) {
+    if ($user -eq "dsvm") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.dsvmLdapPassword }  # TODO remove once secret name is moved
+    if ($user -eq "gitlab") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.gitlabLdapPassword }  # TODO remove once secret name is moved
+    if ($user -eq "hackmd") { $ldapUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.hackmdLdapPassword }  # TODO remove once secret name is moved
+    $ldapUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $ldapUsers[$user]["passwordSecretName"]
+}
+# Load other SRE service users
+$serviceUsers = $config.sre.users.serviceAccounts | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+$serviceUsers["datamount"] = $config.sre.users.datamount | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+foreach ($user in $serviceUsers.Keys) {
+    if ($user -eq "datamount") { $serviceUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.dataMountPassword }  # TODO remove once secret name is moved
+    $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $serviceUsers[$user]["passwordSecretName"]
+}
+# Load SRE research users
+$researchUsers = $config.sre.users.researchers | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+foreach ($user in $researchUsers.Keys) {
+    if ($user -eq "test") { $researchUsers[$user]["passwordSecretName"] = $config.sre.keyVault.secretNames.testResearcherPassword }  # TODO remove once secret name is moved
+    $researchUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $researchUsers[$user]["passwordSecretName"]
+}
 
 
 # Add SRE users and groups to SHM
@@ -51,31 +63,15 @@ Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $_ = Set-AzContext -Subscription $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
-    shmFqdn = "`"$($config.shm.domain.fqdn)`""
-    sreFqdn = "`"$($config.sre.domain.fqdn)`""
-    researchUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-    researchUserSgDescription = "`"$($config.sre.domain.securityGroups.researchUsers.description)`""
-    sqlAdminSgName = "`"$($config.sre.domain.securityGroups.sqlAdmins.name)`""
-    sqlAdminSgDescription = "`"$($config.sre.domain.securityGroups.sqlAdmins.description)`""
-    ldapUserSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
+    shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.dsvmLdapUsers.name)`""
+    shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
+    groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
+    ldapUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($ldapUsers | ConvertTo-Json)))
+    researchUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($researchUsers | ConvertTo-Json)))
+    serviceUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
+    researchUserOuPath = "`"$($config.shm.domain.userOuPath)`""
     securityOuPath = "`"$($config.shm.domain.securityOuPath)`""
     serviceOuPath = "`"$($config.shm.domain.serviceOuPath)`""
-    researchUserOuPath = "`"$($config.shm.domain.userOuPath)`""
-    hackmdSamAccountName = "`"$($config.sre.users.ldap.hackmd.samAccountName)`""
-    hackmdName = "`"$($config.sre.users.ldap.hackmd.name)`""
-    hackmdPasswordEncrypted = $hackmdPasswordEncrypted
-    gitlabSamAccountName = "`"$($config.sre.users.ldap.gitlab.samAccountName)`""
-    gitlabName = "`"$($config.sre.users.ldap.gitlab.name)`""
-    gitlabPasswordEncrypted = $gitlabPasswordEncrypted
-    dsvmSamAccountName = "`"$($config.sre.users.ldap.dsvm.samAccountName)`""
-    dsvmName = "`"$($config.sre.users.ldap.dsvm.name)`""
-    dsvmPasswordEncrypted = $dsvmPasswordEncrypted
-    dataMountSamAccountName = "`"$($config.sre.users.datamount.samAccountName)`""
-    dataMountName = "`"$($config.sre.users.datamount.name)`""
-    dataMountPasswordEncrypted = $dataMountPasswordEncrypted
-    testResearcherSamAccountName = "`"$($config.sre.users.researchers.test.samAccountName)`""
-    testResearcherName = "`"$($config.sre.users.researchers.test.name)`""
-    testResearcherPasswordEncrypted = $testResearcherPasswordEncrypted
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 Write-Output $result.Value

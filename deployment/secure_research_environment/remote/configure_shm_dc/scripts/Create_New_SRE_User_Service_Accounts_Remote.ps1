@@ -5,94 +5,140 @@
 # job, but this does not seem to have an immediate effect
 # Fror details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [String]$sreFqdn,
-    [String]$shmFqdn,
-    [String]$researchUserSgName,
-    [String]$researchUserSgDescription,
-    [String]$sqlAdminSgName,
-    [String]$sqlAdminSgDescription,
-    [String]$ldapUserSgName,
-    [String]$securityOuPath,
-    [String]$serviceOuPath,
+    [String]$shmLdapUserSgName,
+    [String]$shmSystemAdministratorSgName,
+    [String]$groupsB64,
+    [String]$ldapUsersB64,
+    [String]$researchUsersB64,
+    [String]$serviceUsersB64,
     [String]$researchUserOuPath,
-    [String]$hackmdSamAccountName,
-    [String]$hackmdName,
-    [String]$hackmdPasswordEncrypted,
-    [String]$gitlabSamAccountName,
-    [String]$gitlabName,
-    [String]$gitlabPasswordEncrypted,
-    [String]$dsvmSamAccountName,
-    [String]$dsvmName,
-    [String]$dsvmPasswordEncrypted,
-    [String]$dataMountSamAccountName,
-    [String]$dataMountName,
-    [String]$dataMountPasswordEncrypted,
-    [String]$testResearcherSamAccountName,
-    [String]$testResearcherName,
-    [String]$testResearcherPasswordEncrypted
+    [String]$securityOuPath,
+    [String]$serviceOuPath
 )
 
-function New-SreGroup($name, $description, $path, $groupCategory, $groupScope) {
-    if(Get-ADGroup -Filter "Name -eq '$name'"){
-        Write-Output " [o] Group '$name' already exists"
+
+# Create a new security group associated with this SRE
+# ----------------------------------------------------
+function New-SreGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the group to be created")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Description of the group to be created.")]
+        $Description,
+        [Parameter(Mandatory = $true, HelpMessage = "Path that the group will be created under.")]
+        $Path,
+        [Parameter(Mandatory = $true, HelpMessage = "Group category.")]
+        $groupCategory,
+        [Parameter(Mandatory = $true, HelpMessage = "Group scope.")]
+        $groupScope
+    )
+    if (Get-ADGroup -Filter "Name -eq '$Name'") {
+        Write-Output " [o] Group '$Name' already exists"
     } else {
-        Write-Output " [ ] Creating group '$name' in OU '$serviceOuPath'..."
-        $group = (New-ADGroup -Name "$name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
+        Write-Output " [ ] Creating group '$Name' in OU '$serviceOuPath'..."
+        $group = (New-ADGroup -Name "$Name" -Description $description -Path $path -GroupScope $groupScope -GroupCategory Security)
         if ($?) {
-            Write-Output " [o] Group '$name' created"
+            Write-Output " [o] Group '$Name' created"
         } else {
-            Write-Output " [x] Failed to create group '$name'!"
+            Write-Output " [x] Failed to create group '$Name'!"
         }
-        return $group
+        return $Group
     }
 }
 
-function New-SreUser($samAccountName, $name, $path, $passwordSecureString) {
-    if(Get-ADUser -Filter "SamAccountName -eq '$samAccountName'"){
-        Write-Output " [o] User '$samAccountName' already exists"
+
+# Create a new user associated with this SRE
+# ------------------------------------------
+function New-SreUser {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user. Maximum 20 characters for backwards compatibility.")]
+        $SamAccountName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the user to be created.")]
+        $Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Path that the user will be created under.")]
+        $Path,
+        [Parameter(Mandatory = $true, HelpMessage = "User password as a secure string.")]
+        $PasswordSecureString
+    )
+    if (Get-ADUser -Filter "SamAccountName -eq '$SamAccountName'") {
+        Write-Output " [o] User '$Name' ('$SamAccountName') already exists"
     } else {
-        $principalName = $samAccountName + "@" + $shmFqdn;
-        Write-Output " [ ] Creating user '$name' ($samAccountName)..."
-        $user = (New-ADUser -Name "$name" `
+        $principalName = "${SamAccountName}@${shmFqdn}"
+        Write-Output " [ ] Creating user '$Name' ($SamAccountName)..."
+        $user = (New-ADUser -Name "$Name" `
                             -UserPrincipalName $principalName `
                             -Path $path `
-                            -SamAccountName $samAccountName `
-                            -DisplayName "$name" `
-                            -Description "$name" `
+                            -SamAccountName $SamAccountName `
+                            -DisplayName "$Name" `
+                            -Description "$Name" `
                             -AccountPassword $passwordSecureString `
                             -Enabled $true `
                             -PasswordNeverExpires $true)
         if ($?) {
-            Write-Output " [o] User '$name' ($samAccountName) created"
+            Write-Output " [o] User '$Name' ($SamAccountName) created"
         } else {
-            Write-Output " [x] Failed to create user '$name' ($samAccountName)!"
+            Write-Output " [x] Failed to create user '$Name' ($SamAccountName)!"
         }
         return $user
     }
 }
 
-# Convert encrypted string to secure string
-$hackmdPasswordSecureString = ConvertTo-SecureString -String $hackmdPasswordEncrypted -Key (1..16)
-$gitlabPasswordSecureString = ConvertTo-SecureString -String $gitlabPasswordEncrypted -Key (1..16)
-$dsvmPasswordSecureString = ConvertTo-SecureString -String $dsvmPasswordEncrypted -Key (1..16)
-$dataMountPasswordSecureString = ConvertTo-SecureString -String $dataMountPasswordEncrypted -Key (1..16)
-$testResearcherPasswordSecureString = ConvertTo-SecureString -String $testResearcherPasswordEncrypted -Key (1..16)
+
+# Add a user to a group associated with this SRE
+# ----------------------------------------------
+function Add-SreUserToGroup {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Security Account Manager (SAM) account name of the user, group, computer, or service account. Maximum 20 characters for backwards compatibility.")]
+        $SamAccountName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the group that the user or group will be added to.")]
+        $GroupName
+    )
+    if ((Get-ADGroupMember -Identity $GroupName | Where-Object { $_.SamAccountName -eq "$SamAccountName" })) {
+        Write-Output " [o] User '$SamAccountName' is already a member of '$GroupName'"
+    } else {
+        Write-Output " [ ] Adding '$SamAccountName' user to group '$GroupName'"
+        Add-ADGroupMember -Identity "$GroupName" -Members "$SamAccountName"
+        if ($?) {
+            Write-Output " [o] User '$SamAccountName' was added to '$GroupName'"
+        } else {
+            Write-Output " [x] User '$SamAccountName' could not be added to '$GroupName'!"
+        }
+    }
+}
+
+
+# Unserialise JSON and read into PSCustomObject
+$groups = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($groupsB64)) | ConvertFrom-Json
+$ldapUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($ldapUsersB64)) | ConvertFrom-Json
+$researchUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($researchUsersB64)) | ConvertFrom-Json
+$serviceUsers = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($serviceUsersB64)) | ConvertFrom-Json
 
 # Create SRE Security Groups
-New-SreGroup -name $researchUserSgName -description $researchUserSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
-New-SreGroup -name $sqlAdminSgName -description $sqlAdminSgDescription -Path $securityOuPath -GroupScope Global -GroupCategory Security
+$researchUserSgName = $null
+foreach ($group in $groups.PSObject.Members) {
+    if ($group.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreGroup -Name $group.Value.name -description $group.Value.description -Path $securityOuPath -GroupScope Global -GroupCategory Security
+}
 
-# Create Service Accounts for SRE
-New-SreUser -samAccountName $hackmdSamAccountName -name $hackmdName -path $serviceOuPath -passwordSecureString $hackmdPasswordSecureString
-New-SreUser -samAccountName $gitlabSamAccountName -name $gitlabName -path $serviceOuPath -passwordSecureString $gitlabPasswordSecureString
-New-SreUser -samAccountName $dsvmSamAccountName -name $dsvmName -path $serviceOuPath -passwordSecureString $dsvmPasswordSecureString
-New-SreUser -samAccountName $dataMountSamAccountName -name $dataMountName -path $serviceOuPath -passwordSecureString $dataMountPasswordSecureString
-New-SreUser -samAccountName $testResearcherSamAccountName -name $testResearcherName -path $researchUserOuPath -passwordSecureString $testResearcherPasswordSecureString
+# Add SHM sysadmins group to the SRE sysadmins group
+Add-SreUserToGroup -SamAccountName "$shmSystemAdministratorSgName" -GroupName $groups.systemAdministrators.name
 
-# Add Data Science LDAP users to SG Data Science LDAP Users security group
-Write-Output " [ ] Adding '$dsvmSamAccountName' user to group '$ldapUserSgName'"
-Add-ADGroupMember "$ldapUserSgName" "$dsvmSamAccountName"
+# Create SRE LDAP users and add them to the LDAP users group
+foreach ($user in $ldapUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+    Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $shmLdapUserSgName
+}
 
-# Add SRE test users to the relative Security Groups
-Write-Output " [ ] Adding '$testResearcherSamAccountName' user to group '$researchUserSgName'"
-Add-ADGroupMember "$researchUserSgName" "$testResearcherSamAccountName"
+# Create SRE service accounts
+foreach ($user in $serviceUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $serviceOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+}
+
+# Create SRE research users and add them to the researchers group
+foreach ($user in $researchUsers.PSObject.Members) {
+    if ($user.TypeNameOfValue -ne "System.Management.Automation.PSCustomObject") { continue }
+    New-SreUser -SamAccountName "$($user.Value.samAccountName)" -Name "$($user.Value.name)" -Path $researchUserOuPath -PasswordSecureString (ConvertTo-SecureString $user.Value.password -AsPlainText -Force)
+    Add-SreUserToGroup -SamAccountName "$($user.Value.samAccountName)" -GroupName $groups.researchUsers.name
+}
