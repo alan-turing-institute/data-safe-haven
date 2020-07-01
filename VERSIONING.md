@@ -7,7 +7,7 @@ We use versioning to indicate two things:
 - the level of confidence we have in the release, indicated by the metadata
 
 ## Numbering
-Versions are numbered as `MAJOR.MINOR.PATCH`. 
+Versions are numbered as `MAJOR.MINOR.PATCH`.
 
 An increment to each of these corresponds to:
 - `MAJOR`: Using this release together with an existing environment will require redeployment or patching of some or all existing components. An SRE will not be compatible with an SHM (or another SRE) deployed from a different `MAJOR` version.
@@ -33,15 +33,15 @@ This is not guaranteed although we're happy to provide assistance to anyone tryi
 ## Production versions
 The following versions have been used for events held at the Turing or in conjunction with partners.
 
-| Event name | Date | Release used |
+| Date | Event name | Release used |
 | --- | --- | --- |
-| DSG 2018-12 | December 2018 | v0.1.0-beta |
-| DSG 2019-04 | April 2019 | v0.2.0-beta |
-| DSSG 2019 | June-August 2019 | v0.3.0-beta |
-| DSGN Bristol | August 2019 | v1.0.0-beta | 
-| DSG 2019-09 | September 2019 | v1.0.1-beta |
-| DSG 2019-12 | December 2019 | v1.1.0-beta |
-| DSG 2020-04 | April 2020 (event cancelled) | v2.0.0-beta |
+| December 2018 | DSG 2018-12 | v0.1.0-beta |
+| April 2019 | DSG 2019-04 | v0.2.0-beta |
+| June-August 2019 | DSSG 2019 | v0.3.0-beta |
+| August 2019 | DSGN Bristol | v1.0.0-beta |
+| September 2019 | DSG 2019-09 | v1.0.1-beta |
+| December 2019 | DSG 2019-12 | v1.1.0-beta |
+| April 2020 | DSG 2020-04 (event cancelled) | v2.0.0-beta |
 
 ## Questions
 If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](#project-management-through-issues).
