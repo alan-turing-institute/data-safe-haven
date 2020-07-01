@@ -32,9 +32,11 @@ $params = @{
     "Subnet-Identity Address Prefix" = $config.sre.network.subnets.identity.cidr
     "Subnet-RDS Address Prefix" = $config.sre.network.subnets.rds.cidr
     "Subnet-Data Address Prefix" = $config.sre.network.subnets.data.cidr
+    "Subnet-Databases Address Prefix" = $config.sre.network.subnets.databases.cidr
     "Subnet-Identity Name" = $config.sre.network.subnets.identity.Name
     "Subnet-RDS Name" = $config.sre.network.subnets.rds.Name
     "Subnet-Data Name" = $config.sre.network.subnets.data.Name
+    "Subnet-Databases Name" = $config.sre.network.subnets.databases.Name
     "VNET_DNS_DC1" = $config.shm.dc.ip
     "VNET_DNS_DC2" = $config.shm.dcb.ip
 }

@@ -1,0 +1,122 @@
+{
+    "routes": [
+        {
+            "name": "ViaFirewall",
+            "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHop": "<shm-firewall-private-ip>"
+            }
+        },
+        {
+            "name": "ViaVpn",
+            "properties": {
+                "addressPrefix": "<subnet-vpn-cidr>",
+                "nextHop": "VirtualNetworkGateway"
+            }
+        }
+    ],
+    "networkRuleCollections": [
+        {
+            "name": "shm-<shm-id>",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "AzureActiveDirectory",
+                        "protocols": [
+                            "TCP"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ],
+                        "destinationAddresses": [
+                            "AzureActiveDirectory"
+                        ],
+                        "destinationPorts": [
+                            "80",
+                            "443"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "applicationRuleCollections": [
+        {
+            "name": "shm-<shm-id>",
+            "properties": {
+                "priority": 1000,
+                "action": {
+                    "type": "Allow"
+                },
+                "rules": [
+                    {
+                        "name": "WindowsUpdate",
+                        "protocols": [],
+                        "fqdnTags": [
+                            "WindowsUpdate"
+                        ],
+                        "targetFqdns": [],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "AzureMFA",
+                        "protocols": [
+                            "https:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "pfd.phonefactor.net",
+                            "pfd2.phonefactor.net",
+                            "css.phonefactor.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "ADConnectPasswordReset",
+                        "protocols": [
+                            "https:443",
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "*.passwordreset.microsoftonline.com",
+                            "ssprdedicatedsbprodncu.servicebus.windows.net",
+                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    },
+                    {
+                        "name": "ADConnectHealthCheck",
+                        "protocols": [
+                            "https:443",
+                            "http:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "adhsprodncuaadsynciadata.blob.core.windows.net",
+                            "adhsprodneuaadsynciadata.blob.core.windows.net",
+                            "adhsprodwcuaadsynciadata.blob.core.windows.net",
+                            "adhsprodweuaadsynciadata.blob.core.windows.net",
+                            "adhsprodwusaadsynciadata.blob.core.windows.net"
+                        ],
+                        "sourceAddresses": [
+                            "<subnet-identity-cidr>"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "natRuleCollections": []
+}
+
