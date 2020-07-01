@@ -135,13 +135,13 @@ if ($operationFailed -Or (-Not $loginExists)) {
 
     # Give domain groups appropriate roles on the SQL Server
     # ------------------------------------------------------
-    foreach($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "datareader"))) {
+    foreach($groupRoleTuple in @(($SysAdminGroup, "sysadmin"), ($DataAdminGroup, "dataadmin"), ($ResearchUsersGroup, "researchuser"))) {
         $domainGroup, $role = $groupRoleTuple
         if ($role -eq "sysadmin") { # this is a server-level role
             $sqlCommand = "ALTER SERVER ROLE [$role] ADD MEMBER [$domainGroup];"
-        } elseif ($role -eq "dataadmin") { # this is a schema-level role
+        } elseif ($role -eq "dataadmin") { # this is a schema-level permission set
             $sqlCommand = "GRANT CONTROL ON SCHEMA::data TO [$domainGroup];"
-        } elseif ($role -eq "datareader") { # this is a schema-level role
+        } elseif ($role -eq "researchuser") { # this is a schema-level permission set
             $sqlCommand = "ALTER USER [$domainGroup] WITH DEFAULT_SCHEMA=[dbopublic]; USE master; GRANT CONNECT TO [$domainGroup]; GRANT SHOWPLAN TO [$domainGroup]; GRANT SELECT ON SCHEMA::data TO [$domainGroup]; GRANT CREATE TABLE TO [$domainGroup];"
         } else {
             Write-Output " [x] Role $role not recognised!"
@@ -149,10 +149,10 @@ if ($operationFailed -Or (-Not $loginExists)) {
         }
         Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
-            Write-Output " [o] Successfully gave '$domainGroup' the $role role on: '$serverName'"
+            Write-Output " [o] Successfully gave '$domainGroup' $role permissions on: '$serverName'"
             Start-Sleep -s 10  # allow time for the database action to complete
         } else {
-            Write-Output " [x] Failed to give '$domainGroup' the $role role on: '$serverName'!"
+            Write-Output " [x] Failed to give '$domainGroup' $role permissions on: '$serverName'!"
             Write-Output "Failed SQL command was: $sqlCommand"
             Write-Output "Error message: $sqlErrorMessage"
             exit 1
