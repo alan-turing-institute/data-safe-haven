@@ -394,6 +394,7 @@ function Add-SreConfig {
             sqlAuthUpdateUsername = "$($config.sre.shortName)-sql-authupdate-user-username"
             sqlAuthUpdateUserPassword = "$($config.sre.shortName)-sql-authupdate-user-password"
             sqlVmAdminPassword = "$($config.sre.shortName)-sqlvm-admin-password"
+            storageIngressSAS = "$($config.sre.shortName)-storage-ingress-sas"
             testResearcherPassword = "$($config.sre.shortName)-test-researcher-password"
             webappAdminPassword = "$($config.sre.shortName)-webappvm-admin-password"
         }
@@ -602,11 +603,24 @@ function Add-SreConfig {
         return
     }
 
+    $config.sre.storageAccount = [ordered]@{
+        subscriptionName = $sreConfigBase.subscriptionName
+        accountName =  "$($config.sre.id)storageconnection${storageSuffix}".ToLower() | TrimToLength 24
+        PrivateLinkServiceConnectionGroupId= "Blob"
+        startAccess =0
+        endAccess =365
+    }
+
+
+
+
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     # Write-Host $jsonOut
     Out-File -FilePath $sreFullConfigPath -Encoding "UTF8" -InputObject $jsonOut
 }
 Export-ModuleMember -Function Add-SreConfig
+
+
 
 
 # Get a SRE configuration

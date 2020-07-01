@@ -41,23 +41,22 @@ if ($sa.subscriptionName -eq $subscriptionName) {
 
 	  $_ = Deploy-ResourceGroup -Name $rg -Location $config.sre.location
 
-	  # Create storage account 
+	  # Create storage account
 	  $storageAccount = New-AzStorageAccount -ResourceGroupName $rg -Name $sa.accountName -Location $config.sre.location  -SkuName Standard_RAGRS -Kind StorageV2
 
 	  # Deny network access
 	  Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $rg -Name $sa.accountName -DefaultAction Deny
 
-	  # Create two blob container: ingress and egress, which will have associated two differet SAS tokens with different permissions
+	  # Create two blob container: ingress, which will have associated two differet SAS tokens with different permissions
 	  $ctx = $storageAccount.Context
-	  New-AzStorageContainer -Name "ingress" -Context $ctx 
-	  New-AzStorageContainer -Name "egress" -Context $ctx 
+	  New-AzStorageContainer -Name "ingress" -Context $ctx
 
 	  $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
 	  $accountId = $resource.ResourceId
 	  Add-LogMessage -Level Info "The storage account '$accountId' has been created in the subscription '$($sa.subscriptionName)'"
 
 
-	}  
+	}
 	else {
 	  Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists in the subscription '$($sa.subscriptionName)'"
 	  	$resource = Get-AzResource -Name $sa.accountName -ExpandProperties
@@ -85,7 +84,7 @@ else {
 	    $accountId = $sa.accountId
 	    $rg = $sa.rg
 
-	   
+
 	  }
 
 	  else {
@@ -97,7 +96,7 @@ else {
 	}
 }
 
-# Create the ingress and egress SAS token and store them in a secret
+# Create the ingress SAS token and store them in a secret
 
 
 
@@ -107,27 +106,16 @@ $storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -Stor
 $start = [System.DateTime]::Now.AddDays($sa.startAccess)
 $end = [System.DateTime]::Now.AddDays($sa.endAccess)
 
-$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime $start -ExpiryTime $end 
+$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime $start -ExpiryTime $end
 
-$egressSAS = New-AzStorageContainerSASToken -Name "egress" -Context $storageContext -Permission "rlw" -StartTime $start -ExpiryTime $end 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-$_ = Deploy-KeyVault -Name $config.sre.keyVault.name -ResourceGroupName $config.sre.keyVault.rg -Location $config.sre.location
-Set-KeyVaultPermissions -Name $config.sre.keyVault.name -GroupName $config.sre.adminSecurityGroupName
-
 # -----------------------------------------
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
 
-$_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS
+$_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue "$ingressSAS"
 
-if ($?) {
-  Add-LogMessage -Level Success "AD sync password exists"
-} else {
-  Add-LogMessage -Level Fatal "Failed to create AD sync password!"
-}
-
-$_ = Set-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.storageIngressSAS -SecretValue (ConvertTo-SecureString "$ingressSAS" -AsPlainText -Force)
 if ($?) {
 Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
 } else {
@@ -135,27 +123,12 @@ Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
       }
 
 
-$_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storagegressSAS
-if ($?) {
-  Add-LogMessage -Level Success "AD sync password exists"
-} else {
-  Add-LogMessage -Level Fatal "Failed to create AD sync password!"
-}
-
-$_ = Set-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.storagegressSAS -SecretValue (ConvertTo-SecureString "$egressSAS" -AsPlainText -Force)
-if ($?) {
-Add-LogMessage -Level Success "Uploading the egressSAS succeeded"
-} else {
-       Add-LogMessage -Level Fatal "Uploading the egressSAS failed!"
-      }
-
 
 # Create the private endpoint
 # ---------------------------
 
 $privateEndpointName = $sa.accountName + "-endpoint"
 
-Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
 
 $privateDnsZoneName = $($sa.accountName +"." + $sa.PrivateLinkServiceConnectionGroupId+ ".core.windows.net").ToLower()
 $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
@@ -168,43 +141,26 @@ $subnet = $virtualNetwork `
 | Select -ExpandProperty subnets `
 | Where-Object  {$_.Name -eq $config.sre.network.subnets.data.name}
 
+$privateEndpoint = Get-AzPrivateEndpoint -name $privateEndpointName
 
+if (-not $privateEndpoint){
+Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
 $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
 -Name $privateEndpointName `
 -Location $config.sre.Location `
 -Subnet $subnet `
--PrivateLinkServiceConnection $privateEndpointConnection
+-PrivateLinkServiceConnection $privateEndpointConnection}
 
+Add-LogMessage -Level Info "Setting up DNS Zone"
 
-# Create a Private DNS Zone
-# ----------------------------
-  
-Add-LogMessage -Level Info "Creating private DNS zone '$($privateDnsZoneName)'"
-$zone = New-AzPrivateDnsZone -ResourceGroupName $config.sre.network.vnet.rg `
--Name $privateDnsZoneName
+$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
-$privateDnsVirtualNetworkLinkName = "$($sa.accountName)VirtualNetworkLink"
-Add-LogMessage -Level Info "Creating private DNS virtual network link '$($privateDnsVirtualNetworkLinkName)'"
-$link  = New-AzPrivateDnsVirtualNetworkLink -ResourceGroupName $config.sre.network.vnet.rg `
--ZoneName $privateDnsZoneName `
--Name $privateDnsVirtualNetworkLinkName `
--VirtualNetworkId $virtualNetwork.Id
+$params = @{
+    StorageAccountName = $sa.accountName
 
-# The hard-coded API version "2019-04-01" specified here is necessary for
-# obtaining the required IP config properties below.
-$networkInterface = Get-AzResource ` -ResourceId $privateEndpoint.NetworkInterfaces[0].Id ` -ApiVersion "2019-04-01"
-
-foreach ($ipconfig in $networkInterface.properties.ipConfigurations) {
-foreach ($fqdn in $ipconfig.properties.privateLinkConnectionProperties.fqdns) {
-  Write-Host "$($ipconfig.properties.privateIPAddress) $($fqdn)"
-  $recordName = $fqdn.split('.',2)[0]
-  $dnsZone = $fqdn.split('.',2)[1]
-Add-LogMessage -Level Info "Check: $fqdn $recordName $dnsZone $ipconfig.properties.privateIPAddress"
-
-  New-AzPrivateDnsRecordSet -Name $recordName -RecordType A -ZoneName $privateDnsZoneName `
-    -ResourceGroupName $config.sre.network.vnet.rg -Ttl 600 `
-    -PrivateDnsRecords (New-AzPrivateDnsRecordConfig -IPv4Address $ipconfig.properties.privateIPAddress)
-}
 }
 
-
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "set_dns_zone.ps1"
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath $sa.accountName -Parameter $params
+Write-Output $result.Values
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
