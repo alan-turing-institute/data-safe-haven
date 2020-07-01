@@ -34,7 +34,7 @@ This is not guaranteed although we're happy to provide assistance to anyone tryi
 The following versions have been used for events held at the Turing or in conjunction with partners.
 
 | Event name | Date | Release used |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | DSG 2018-12 | December 2018 | v0.1.0-beta |
 | DSG 2019-04 | April 2019 | v0.2.0-beta |
 | DSSG 2019 | June-August 2019 | v0.3.0-beta |
