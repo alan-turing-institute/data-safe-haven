@@ -3,7 +3,9 @@
 
 param(
   [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SRE ID (a short string) e.g 'sandbox' for the sandbox environment")]
-  [string]$sreId
+  [string]$sreId,
+  [Parameter(Position=1, Mandatory = $false, HelpMessage = "Used to force the update of DNS record")]
+  [switch]$dnsForceUpdate
 )
 
 Import-Module Az
@@ -150,17 +152,25 @@ $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.
 -Location $config.sre.Location `
 -Subnet $subnet `
 -PrivateLinkServiceConnection $privateEndpointConnection}
+$privateip = (Get-AzNetworkInterface -Resourceid $($privateEndpoint.NetworkInterfaces.id)).IpConfigurations[0].PrivateIpAddress
 
 Add-LogMessage -Level Info "Setting up DNS Zone"
 
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
+
+
+
 $params = @{
-    StorageAccountName = $sa.accountName
+    ZoneName = $privateDnsZoneName
+    ipaddress = $privateip
+    update  =  ($dnsForceUpdate ? "force" : "non forced")
+
+
 
 }
 
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_storage" "set_dns_zone.ps1"
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath $sa.accountName -Parameter $params
-Write-Output $result.Values
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -vmName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
+Write-Output $result.Value
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName

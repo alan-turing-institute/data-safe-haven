@@ -54,7 +54,7 @@ The following 7 virtual machines are created as a result of these instructions:
 
 ### :beginner: Software
 - `PowerShell` with support for Azure
-  - Install [PowerShell v6.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+  - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
   - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps)
 - `Microsoft Remote Desktop`
   - On Mac this can be installed from the [Apple store](https://itunes.apple.com/gb/app/microsoft-remote-desktop-10/id1295203466?mt=12)

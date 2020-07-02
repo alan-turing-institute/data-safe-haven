@@ -5,11 +5,35 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(HelpMessage = "Hostname for the VM")]
-    [string]$StorageAccountName
+    [Parameter(HelpMessage = "Hostname for the VM", mandatory = $false)]
+    [string]$ZoneName,
+    [Parameter(HelpMessage = "IP Address", mandatory = $false)]
+    [string]$ipaddress,
+    [Parameter(HelpMessage = "Forced update", mandatory = $false)]
+    [String]$update
+
 
 
 )
 
+if (   (Get-DnsServerZone -name $ZoneName | where-object {$_.ZoneType -eq "Primary"})){
+    Write-Output "DNS Zone $ZoneName already exists"
+} Else {
+    Add-DnsServerPrimaryZone -Name $ZoneName -ReplicationScope "Forest"
+    Write-Output "Creating DNS Zone $ZoneName"
+}
 
-Add-DnsServerPrimaryZone -Name $StorageAccountName -ReplicationScope "Forest" 
+if ( (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction silentlycontinue)){
+    if ($update.ToLower() -eq "force"){
+      Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force
+      Write-Output "Removing record $ZoneName"
+    } Else {
+      Write-Output "Record $ZoneName already exists, use -update 'force' to override"
+    }
+}
+
+if ( -not (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction silentlycontinue)){
+
+    Add-DnsServerResourceRecordA -Name $ZoneName -ZoneName $ZoneName -IPv4Address $ipaddress
+    Write-Output "Creating Record $ZoneName"
+}
