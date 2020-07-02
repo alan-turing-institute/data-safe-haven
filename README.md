@@ -1,4 +1,7 @@
 # The Turing Data Safe Haven
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This is the repository for the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project, and contains the code and instructions to to deploy, administer and use your own instance of the Turing's Data Safe Haven on Microsoft's Azure cloud platform.
 
@@ -47,3 +50,22 @@ We are grateful for the following support for this project:
   - The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
   - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
   - Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/jemrobinson"><img src="https://avatars2.githubusercontent.com/u/3502751?v=4" width="100px;" alt=""/><br /><sub><b>James Robinson</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jemrobinson" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jemrobinson" title="Documentation">📖</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/issues?q=author%3Ajemrobinson" title="Bug reports">🐛</a> <a href="#ideas-jemrobinson" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-jemrobinson" title="Maintenance">🚧</a> <a href="#projectManagement-jemrobinson" title="Project Management">📆</a> <a href="#question-jemrobinson" title="Answering Questions">💬</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/pulls?q=is%3Apr+reviewed-by%3Ajemrobinson" title="Reviewed Pull Requests">👀</a> <a href="#security-jemrobinson" title="Security">🛡️</a> <a href="#tool-jemrobinson" title="Tools">🔧</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jemrobinson" title="Tests">⚠️</a> <a href="#talk-jemrobinson" title="Talks">📢</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
