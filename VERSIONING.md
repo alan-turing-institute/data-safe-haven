@@ -15,17 +15,21 @@ An increment to each of these corresponds to:
 - `PATCH`: Fixes bugs only and new SREs can be deployed into existing environments deployed from any version sharing the same `MAJOR` number without these existing SHM and SRE elements needing to be redeployed or patched.
 
 ## Releases vs pre-releases
-We use the pre-release label to indicate the level of quality assurance that has taken place using the following values, representing increasing order of assurance.
-
-
-### Pre-releases
-- `beta` pre-release: We have done a full, from-scratch deployment of an SHM and SRE and run a test suite to confirm key functionality and security is as expected, but have not fully validated the deployment against our stated security and functionality standard.
 
 ### Releases
-- When we have comprehensively evaluated a complete freshly deployed system from this release against our stated security and functionality standard, we issue it as a full release, with no pre-release label in the version.
+- When we have comprehensively evaluated a complete freshly deployed system against our stated security and functionality standard, we issue it as a full release, with no pre-release label in the version.
+
+### Pre-releases
+We also issue pre-releases, where functionality has been tested to some extent, but not fully evaluated against our stated security and functionality standard. We use the pre-release label to indicate the level of quality assurance that has taken place using the following values, representing increasing order of assurance.
+
+- `beta`: We have done a full, from-scratch deployment of an SHM and SRE and run a test suite to confirm key functionality and security is as expected, but have not fully validated the deployment against our stated security and functionality standard.
+
 
 ## Which version to choose
-If you are beginning a deployment from scratch, take the highest numbered version that corresponds to the quality level you require. If you want the highest confidence that the deployment will work with no issues, take the latest full release. To take advantage of more recent developments, where you are comfortable working with us to resolve the odd teething issue, take the latest `beta` pre-release.
+If you are beginning a deployment from scratch, take the highest numbered version that corresponds to the quality level you require.
+- If you want the highest confidence that the deployment will work with no issues, take the latest full release.
+- To take advantage of more recent developments, where you are comfortable working with us to resolve the odd teething issue, take the latest `beta` pre-release.
+
 If you are deploying SREs against an existing SHM you should either:
 - use the same release as was used for deploying the SHM
 - use a compatible `MINOR` version of the same `MAJOR` version
@@ -35,7 +39,7 @@ Under some circumstances, it may be possible to patch an existing SHM to bring i
 This is not guaranteed although we're happy to provide assistance to anyone trying to do this.
 
 ## Production versions
-The following versions have been used for events held at the Turing or in conjunction with partners.
+The following versions have been deployed for events held at the Turing or in conjunction with partners.
 
 | Date | Event name | Release used |
 | --- | --- | --- |
