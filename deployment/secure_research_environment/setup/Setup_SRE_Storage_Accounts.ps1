@@ -19,21 +19,20 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 $config = Get-SreConfig $sreId
 
 
-#$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
-# getting the storage account object
+# Get the storage account object 
 $sa = $config.shm.storage.datastorage
 
 
-# check if it is available or not
+# Check if it is available or not
 $availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
 
 
 if($availability.NameAvailable){
+
     # Create storage account if it does not exist
-	  # ---------------------------------------------------
+      # ---------------------------------------------------
     Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($sa.rg)' in the subscription '$($config.shm.subscriptionName)'"
 
     $_ = Deploy-ResourceGroup -Name $sa.rg -Location $config.shm.location
@@ -45,8 +44,7 @@ if($availability.NameAvailable){
     Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $sa.rg -Name $sa.accountName -DefaultAction Deny
 
     # Create a blob container: ingress, which will have associated a read only SAS token
-    $ctx = $storageAccount.Context
-    New-AzStorageContainer -Name "ingress" -Context $ctx    
+    New-AzStorageContainer -Name "ingress" -Context $storageAccount.Context  
 
     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' has been created in the subscription '$($config.shm.subscriptionName)'"
     }
@@ -62,33 +60,12 @@ $accountKeys = Get-AzStorageAccountKey -ResourceGroupName $sa.rg -Name $sa.accou
 
 $storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -StorageAccountKey $accountKeys[0].Value
 
-# hardcoded 1 year for the moment
+# Hardcoded 1 year for the moment
 $ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime 0 -ExpiryTime 365
-
-
-
-# switching back to the SRE subscription
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
-
-
-# Ensure the keyvault exists and set its access policies
-# ------------------------------------------------------
-# -----------------------------------------
-Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
-
-$_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue "$ingressSAS"
-
-if ($?) {
-    Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
-    }
- else {
-    Add-LogMessage -Level Fatal "Uploading the ingressSAS failed!"
-    }
 
 
 # Create the private endpoint
 # ---------------------------
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
 
@@ -100,8 +77,23 @@ $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privat
 -PrivateLinkServiceId $resource.ResourceId `
 -GroupId $sa.GroupId
 
-# switching back to the SRE subscription
+
+# Switching back to the SRE subscription for storing SAS in the secret vault
 $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+
+
+# Ensure the keyvault exists and set its access policies
+# ------------------------------------------------------
+Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
+
+$_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue "$ingressSAS"
+
+if ($?) {
+    Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
+    }
+ else {
+    Add-LogMessage -Level Fatal "Uploading the ingressSAS failed!"
+    }
 
 
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name

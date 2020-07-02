@@ -28,8 +28,8 @@ write_files:
       authType SAS
       containerName ingress
   - path: "/installation/ingressmount.sh"
-    permissions: "0777"  
-    content: /usr/bin/blobfuse $1 --tmp-path=/mnt/resource/ingresstmp -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/SASingress -o allow_other 
+    permissions: "0777"
+    content: /usr/bin/blobfuse $1 --tmp-path=/mnt/resource/ingresstmp -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/SASingress -o allow_other
   - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
