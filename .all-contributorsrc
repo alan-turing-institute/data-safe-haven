@@ -27,6 +27,7 @@
     }
   ],
   "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": true,
   "projectName": "data-safe-haven",
   "projectOwner": "alan-turing-institute",
   "repoType": "github",
