@@ -30,11 +30,18 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmtestcloganalyticsnxbqspytauwdljovmcrh"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
         "name": "VNET_SHM_TESTC",
         "cidr": "10.0.0.0/21"
+      },
+      "vpn": {
+        "cidr": "172.16.201.0/24"
       },
       "subnets": {
         "identity": {
@@ -46,6 +53,11 @@
           "name": "WebSubnet",
           "prefix": "10.0.1",
           "cidr": "10.0.1.0/24"
+        },
+        "firewall": {
+          "name": "AzureFirewallSubnet",
+          "prefix": "10.0.2",
+          "cidr": "10.0.2.0/24"
         },
         "gateway": {
           "name": "GatewaySubnet",
@@ -76,6 +88,10 @@
       "hostname": "NPS-SHM-TESTC",
       "ip": "10.0.0.248"
     },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTC",
+      "routeTableName": "FIREWALL-SHM-TESTC-ROUTE-TABLE"
+    },
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
@@ -87,9 +103,7 @@
       },
       "datastorage": {
         "rg": "RG_SHM_DATA_STORAGE"
-      },
-
-
+      }
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
@@ -183,7 +197,7 @@
           "cidr": "10.151.2.0/24"
         },
         "databases": {
-          "name": "DatabasesSubnet",
+          "name": "DbIngressSubnet",
           "prefix": "10.151.3",
           "nsg": "databases",
           "cidr": "10.151.3.0/24"
@@ -372,6 +386,9 @@
       "pypi": {
         "ip": "10.20.2.20"
       }
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     },
     "storageAccount": {
       "accountName": "testcsandboxstorage1"

@@ -17,6 +17,9 @@
         "Subnet-Data Address Prefix": {
             "type": "string"
         },
+        "Subnet-Databases Address Prefix": {
+            "type": "string"
+        },
         "Subnet-Identity Name": {
             "type": "string"
         },
@@ -24,6 +27,9 @@
             "type": "string"
         },
         "Subnet-Data Name": {
+            "type": "string"
+        },
+        "Subnet-Databases Name": {
             "type": "string"
         },
         "VNET_DNS_DC1": {
@@ -48,7 +54,7 @@
                 },
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[parameters('VNET_DNS_DC1')]",                        
+                        "[parameters('VNET_DNS_DC1')]",
                         "[parameters('VNET_DNS_DC2')]"
                     ]
                 },
@@ -72,6 +78,14 @@
                         "name": "[parameters('Subnet-Data Name')]",
                         "properties": {
                             "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                            "serviceEndpoints": [],
+                            "delegations": []
+                        }
+                    },
+                    {
+                        "name": "[parameters('Subnet-Databases Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('Subnet-Databases Address Prefix')]",
                             "serviceEndpoints": [],
                             "delegations": []
                         }
@@ -117,6 +131,20 @@
             "scale": null,
             "properties": {
                 "addressPrefix": "[parameters('Subnet-Data Address Prefix')]",
+                "serviceEndpoints": [],
+                "delegations": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('Virtual Network Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('Virtual Network Name'), '/', parameters('Subnet-Databases Name'))]",
+            "apiVersion": "2018-10-01",
+            "scale": null,
+            "properties": {
+                "addressPrefix": "[parameters('Subnet-Databases Address Prefix')]",
                 "serviceEndpoints": [],
                 "delegations": []
             },
