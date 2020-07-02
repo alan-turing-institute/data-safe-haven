@@ -84,7 +84,12 @@
       "bootdiagnostics": {
         "rg": "RG_SHM_ARTIFACTS",
         "accountName": "shmtestcbootdiagsnxbqspy"
-      }
+      },
+      "datastorage": {
+        "rg": "RG_SHM_DATA_STORAGE"
+      },
+
+
     },
     "keyVault": {
       "rg": "RG_SHM_SECRETS",
@@ -369,11 +374,7 @@
       }
     },
     "storageAccount": {
-      "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-      "accountName": "sandboxstorageconnection",
-      "PrivateLinkServiceConnectionGroupId": "Blob",
-      "startAccess": 0,
-      "endAccess": 365
+      "accountName": "testcsandboxstorage1"
     }
   }
 }
