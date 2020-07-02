@@ -282,14 +282,14 @@ Please ensure that this account is fully set-up (including MFA) as [detailed in 
 ### :mountain_bicyclist: Test the RDS using a non-privileged user account
 On your **deployment machine**.
 - Launch a local web browser and go to `https://<SRE ID>.<safe haven domain>` (eg. `https://sandbox.dsgroupdev.co.uk/`) and log in.
-- You should see a screen like the following. If you do not, follow the troubleshooting instructions.
+- You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 - **NOTE:** The apps will not work until the other servers have been deployed.
     <p align="center">
       <img src="images/deploy_sre/rds_desktop.png" width="80%" title="rds_desktop">
     </p>
 
 <details>
-<summary>Troubleshooting</summary>
+<summary><strong>Troubleshooting</strong></summary>
 
 If you get a `404 resource not found` error when accessing the webclient URL, it is likely that the RDS webclient failed to install correctly.
 - Go back to the previous section and rerun the `C:\Installation\Deploy_RDS_Environment.ps1` script on the RDS gateway.
@@ -323,9 +323,10 @@ On your **deployment machine**.
   - You should receive an MFA request to your phone or authentication app.
   - Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
   - Log in with the long-form `username@<shm-domain-fqdn>` of a user in the `SG <SRE ID> Research Users` security group.
+- If you do not get an MFA prompt or you cannot connect to the GitLab and HackMD servers, follow the **troubleshooting** instructions below.
 
 <details>
-<summary>Troubleshooting</summary>
+<summary><strong>Troubleshooting</strong></summary>
 
 If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
 - Ensure that both the SHM NPS server and the RDS Gateway are running
@@ -333,8 +334,8 @@ If you can log in to the initial webclient authentication but do not get the MFA
 - Ensure that the default UDP ports `1812`, `1813`, `1645` and `1646` are all open on the SHM NPS network security group (`NSG_SHM_SUBNET_IDENTITY`). [This documentation](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316134(v=ws.10)) gives further details.
 
 If this does not resolve the issue, trying checking the Windows event logs
-  - Use the Event viewer on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
-  - Use the Event viewer on the SHM NPS server  (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
+  - Use `Event Viewer` on the SRE RDS Gateway (`Custom views > Server roles > Network Policy and Access Services`) to check whether the NPS server is contactable and whether it is discarding requests
+  - Use `Event Viewer` on the SHM NPS server (`Custom views > Server roles > Network Policy and Access Services`) to check whether NPS requests are being received and whether the NPS server has an LDAP connection to the SHM DC.
     - Ensure that the requests are being received from the **private** IP address of the RDS Gateway and **not** its public one.
   - One common error on the NPS server is `A RADIUS message was received from the invalid RADIUS client IP address x.x.x.x`. [This help page](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd316135(v=ws.10)) might be useful.
     - This may indicate that the NPS server could not join the SHM domain. Try `ping DC1-SHM-<SHM ID>` from the NPS server and if this does not resolve, try rebooting it.
