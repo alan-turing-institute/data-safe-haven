@@ -21,12 +21,15 @@ write_files:
       username=<datamount-username>
       password=<datamount-password>
   - path: "/installation/SASingress"
-    permissions: "0600"
+    permissions: "0777"
     content: |
       accountName $SA_ACCOUNT_NAME
       sasToken $SA_SAS_INGRESS
       authType SAS
       containerName ingress
+  - path: "/installation/ingressmount.sh"
+    permissions: "0777"  
+    content: /usr/bin/blobfuse $1 --tmp-path=/mnt/resource/ingresstmp -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 --config-file=/installation/SASingress -o allow_other 
   - path: "/etc/ldap.conf"
     content: |
       # The distinguished name of the search base.
@@ -452,6 +455,7 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
+
   # Mount ingress blob folder with read only local access
   - echo "user_allow_other" | tee -a /etc/fuse.conf
   - echo ">=== Mount ingress blob folder ... ===<"
@@ -460,6 +464,9 @@ runcmd:
   - chmod +x /installation/ingressmount.sh
 #  - chmod +x /installation/ingressmount.sh
   - echo "/installation/ingressmount.sh\t/ingress\tfuse\t_netdev" >> /etc/fstab
+
+# additional packages needed
+  - sudo apt-get install blobfuse
 
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
@@ -477,9 +484,6 @@ runcmd:
   # Enable clamv peroidic scan
   - systemctl enable clamav-clamdscan.timer
   - systemctl status clamav-clamdscan.timer
-
-# additional packages needed
-  - sudo apt-get install blobfuse
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

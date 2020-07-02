@@ -195,6 +195,11 @@ function Get-ShmFullConfig {
             rg = $storageRg
             accountName = "shm$($shm.id)bootdiags${storageSuffix}".ToLower() | TrimToLength 24
         }
+        datastorage = [ordered]@{
+            rg = "RG_SHM_DATA_STORAGE"
+            accountName =  "$($sreId)storageconnection${storageSuffix}".ToLower() | TrimToLength 24
+            GroupId = "Blob"
+        }
     }
 
     # --- Secrets config ---
@@ -630,14 +635,6 @@ function Add-SreConfig {
         routeTableName = "ROUTE-TABLE-SRE-$($config.sre.id)".ToUpper()
     }
 
-    # Azure storage config
-    $config.sre.storageAccount = [ordered]@{
-        subscriptionName = $sreConfigBase.subscriptionName
-        accountName =  "$($config.sre.id)storageconnection${storageSuffix}".ToLower() | TrimToLength 24
-        PrivateLinkServiceConnectionGroupId= "Blob"
-        startAccess =0
-        endAccess =365
-    }
 
     $jsonOut = ($config | ConvertTo-Json -Depth 10)
     # Write-Host $jsonOut

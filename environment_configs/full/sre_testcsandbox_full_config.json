@@ -102,7 +102,9 @@
         "accountName": "shmtestcbootdiagsnxbqspy"
       },
       "datastorage": {
-        "rg": "RG_SHM_DATA_STORAGE"
+        "rg": "RG_SHM_DATA_STORAGE",
+        "accountName": "testcsandboxstorageconne",
+        "GroupId": "Blob"
       }
     },
     "keyVault": {
@@ -197,7 +199,7 @@
           "cidr": "10.151.2.0/24"
         },
         "databases": {
-          "name": "DbIngressSubnet",
+          "name": "DatabasesSubnet",
           "prefix": "10.151.3",
           "nsg": "databases",
           "cidr": "10.151.3.0/24"
@@ -389,9 +391,6 @@
     },
     "firewall": {
       "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
-    },
-    "storageAccount": {
-      "accountName": "testcsandboxstorage1"
     }
   }
 }

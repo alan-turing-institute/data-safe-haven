@@ -23,17 +23,21 @@ if (   (Get-DnsServerZone -name $ZoneName | where-object {$_.ZoneType -eq "Prima
     Write-Output "Creating DNS Zone $ZoneName"
 }
 
-if ( (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction silentlycontinue)){
-    if ($update.ToLower() -eq "force"){
-      Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force
-      Write-Output "Removing record $ZoneName"
-    } Else {
-      Write-Output "Record $ZoneName already exists, use -update 'force' to override"
-    }
-}
-
 if ( -not (Get-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -name "@" -ErrorAction silentlycontinue)){
 
     Add-DnsServerResourceRecordA -Name $ZoneName -ZoneName $ZoneName -IPv4Address $ipaddress
     Write-Output "Creating Record $ZoneName"
+
+} Else {
+    if ($update.ToLower() -eq "force"){
+      Remove-DnsServerResourceRecord -ZoneName $ZoneName -RRType "A" -Name "@" -force
+      Write-Output "Removing record $ZoneName"
+
+      Add-DnsServerResourceRecordA -Name $ZoneName -ZoneName $ZoneName -IPv4Address $ipaddress
+      Write-Output "Creating Record $ZoneName"
+
+    } Else {
+      Write-Output "Record $ZoneName already exists, use -dnsForceUpdate 'force' to override"
+    }
 }
+
