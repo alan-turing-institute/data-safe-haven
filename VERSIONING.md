@@ -50,6 +50,7 @@ The following versions have been deployed for events held at the Turing or in co
 | September 2019 | DSG 2019-09 | v1.0.1-beta |
 | December 2019 | DSG 2019-12 | v1.1.0-beta |
 | April 2020 | DSG 2020-04 (event cancelled) | v2.0.0-beta |
+| June 2020 | DSSG 2020 | v3.0.0-beta |
 
 ## Questions
 If you have any questions or comments that are not dealt with here, please let us know by [opening an issue](#project-management-through-issues).
