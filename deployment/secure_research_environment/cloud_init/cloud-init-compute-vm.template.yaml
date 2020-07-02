@@ -452,7 +452,7 @@ runcmd:
   - mkdir -p /output
   - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
-  # Mount ingress blob folder with read only local access 
+  # Mount ingress blob folder with read only local access
   - echo "user_allow_other" | tee -a /etc/fuse.conf
   - echo ">=== Mount ingress blob folder ... ===<"
   - mkdir -p /ingress
