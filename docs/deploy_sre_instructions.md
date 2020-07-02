@@ -262,7 +262,7 @@ On the **SHM Domain Controller**.
 - Still in the `Active Directory Users and Computers` app, open the `Safe Haven Security Groups` OU
 - Right click the `SG <SRE ID> Research Users` security group and select `Properties`
 - Click on the `Members` tab.
-- If the user you plan to use is not already listed here you must add them to the group (*the automatically-created test researcher should already be in the correct group*)
+- If the user you plan to use is not already listed here you must add them to the group
   - Click the `Add` button
   - Enter the start of the username and click `Check names`
   - Select the correct username and click `Ok`
