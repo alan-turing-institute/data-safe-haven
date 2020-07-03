@@ -25,7 +25,7 @@ $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
 # Ensure that storage account exists (throw exception if there's a problem)
 Add-LogMessage -Level Info "Ensuring that storage account $($config.shm.storage.datastorage.accountName) exists"
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -ErrorAction silentlycontinue
 if ($storageAccount) {
     Add-LogMessage -Level InfoSuccess "Found storage account $($config.shm.storage.datastorage.accountName)"
 } else {
@@ -40,7 +40,11 @@ if ($storageAccount) {
 
 # Ensure that container exists in storage account (throw exception if there's a problem)
 $containerName = "ingress"
-$storageContainer = Get-AzStorageContainer -Context $storageAccount.Context -Name $containerName
+Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
+Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction allow
+
+$storageContainer = Get-AzStorageContainer -Context $storageAccount.Context -Name $containerName -ClientTimeoutPerRequest 300 -ErrorAction silentlycontinue
+
 if ($storageContainer) {
     Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
 } else {
@@ -51,7 +55,7 @@ if ($storageContainer) {
         Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
     }
 }
-
+Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
 
 
 # # Check if it is available or not
@@ -88,19 +92,26 @@ $sa = $config.shm.storage.datastorage
 
 # Create the ingress SAS token and store it in a secret
 
-$accountKeys = Get-AzStorageAccountKey -ResourceGroupName $sa.rg -Name $sa.accountName
+# $accountKeys = Get-AzStorageAccountKey -ResourceGroupName $config.shm.storage.datastorage.rg -Name $storageAccount.context.name
 
-$storageContext = New-AzStorageContext -StorageAccountName $sa.accountName -StorageAccountKey $accountKeys[0].Value
+# $storageContext = New-AzStorageContext -StorageAccountName $storageAccount.context.name -StorageAccountKey $accountKeys[0].Value
 
 # Hardcoded 1 year for the moment
-$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime 0 -ExpiryTime 365
+#$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime 0 -ExpiryTime 365
 
+$ingressSAS = New-AccountSasToken -subscriptionName "$($config.shm.subscriptionName)" `
+                               -resourceGroup "$($config.shm.storage.datastorage.rg)" `
+                               -AccountName "$($config.shm.storage.datastorage.accountName)" `
+                               -Service "Blob" `
+                               -ResourceType "Container" `
+                               -Permission "rlw"
+                               -validityHours "8760"
 
 # Create the private endpoint
 # ---------------------------
-Write-Host "storage account name? $($storageAccount.Name)"
 $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
-
+Write-Host "$($resource.ResourceId)"
+Write-Host "$($storageAccount.Id)"
 $privateEndpointName = $sa.accountName + "-endpoint"
 
 $privateDnsZoneName = $($sa.accountName +"." + "blob.core.windows.net").ToLower()
