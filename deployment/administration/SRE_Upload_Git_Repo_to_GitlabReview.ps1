@@ -123,16 +123,13 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "[ ] Cleaning up zipfile and blob storage container..."
 Remove-Item -Path $zipFilePath
 $success = $?
-Remove-AzStorageContainer -Name $tmpContainerName
+Remove-AzStorageContainer -Name $tmpContainerName -Context $sreStorageAccount.Context -Confirm $false
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Successfully cleaned up resources"
 } else {
     Add-LogMessage -Level Fatal "Failed to clean up resources!"
 }
-
-# Remove the temporary storage container
-Remove-AzStorageContainer -Name $tmpContainerName -Context $sreStorageAccount.Context -Confirm $false
 
 # Switch back to original subscription
 # ------------------------------------
