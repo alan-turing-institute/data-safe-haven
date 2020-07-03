@@ -25,14 +25,14 @@ $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 # Ensure that storage account exists
 # ----------------------------------
 Add-LogMessage -Level Info "Ensuring that storage account $($config.shm.storage.datastorage.accountName) exists"
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -ErrorAction silentlycontinue
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -ErrorAction SilentlyContinue
 if ($storageAccount) {
     Add-LogMessage -Level InfoSuccess "Found storage account $($config.shm.storage.datastorage.accountName)"
 } else {
     try {
         $storageAccount = New-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -Location $config.shm.location -SkuName Standard_RAGRS -Kind StorageV2 -ErrorAction Stop
         Add-LogMessage -Level Success "Created storage account $($config.shm.storage.datastorage.accountName)"
-    } catch {
+    } catch [System.ArgumentException] {
         Add-LogMessage -Level Fatal "Failed to create storage account '$($config.shm.storage.datastorage.accountName)'!"
     }
 }
@@ -43,14 +43,15 @@ if ($storageAccount) {
 foreach ($containerName in @("ingress")) {
     Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
     $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Allow
-    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ClientTimeoutPerRequest 300 -ErrorAction silentlycontinue
+    Start-Sleep 30  # wait for the permission change to propagate
+    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ClientTimeoutPerRequest 300 -ErrorAction SilentlyContinue
     if ($storageContainer) {
         Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
     } else {
         try {
             $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
             Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
-        } catch {
+        } catch [Microsoft.Azure.Storage.StorageException] {
             Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
         }
     }
@@ -89,16 +90,23 @@ if ($?) {
 
 # Ensure that private endpoint exists
 # -----------------------------------
-$privateEndpoint = Get-AzPrivateEndpoint -name $privateEndpointName
-if (-not $privateEndpoint) {
-    Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
-    $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
-    $subnet = Get-AzSubnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $virtualNetwork
-    $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
-                                             -Name $privateEndpointName `
-                                             -Location $config.sre.Location `
-                                             -Subnet $subnet `
-                                             -PrivateLinkServiceConnection $privateEndpointConnection
+$privateEndpoint = Get-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction SilentlyContinue
+if ($privateEndpoint) {
+    Add-LogMessage -Level Warning "Removing existing private endpoint '$($privateEndpointName)'"
+    Remove-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $config.sre.network.vnet.rg -Force
+}
+Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
+$virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
+$subnet = Get-AzSubnet -Name $config.sre.network.subnets.data.name -VirtualNetwork $virtualNetwork
+$privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
+                                         -Name $privateEndpointName `
+                                         -Location $config.sre.Location `
+                                         -Subnet $subnet `
+                                         -PrivateLinkServiceConnection $privateEndpointConnection
+if ($?) {
+    Add-LogMessage -Level Success "Successfully created private endpoint '$($privateEndpointName)'"
+} else {
+    Add-LogMessage -Level Fatal "Failed to create private endpoint '$($privateEndpointName)'!"
 }
 $privateip = (Get-AzNetworkInterface -Resourceid $($privateEndpoint.NetworkInterfaces.id)).IpConfigurations[0].PrivateIpAddress
 
