@@ -35,7 +35,7 @@ def unzip_zipfiles(zipfile_dir):
         zipfile_path = os.path.join(zipfile_subdir, "repo.zip")
         unpacked_location = os.path.join(zipfile_subdir, "repo")
         # ensure "repo" does not already exist (from a previous failed attempt)
-        subprocess.run("rm", "-rf", unpacked_location, check=True)
+        subprocess.run(["rm", "-rf", unpacked_location], check=True)
         try:
             with ZipFile(zipfile_path, "r") as zip_obj:
                 zip_obj.extractall(path=zipfile_subdir)
@@ -572,7 +572,7 @@ def unzipped_snapshot_to_merge_request(gitlab_config, snapshot_details, namespac
     )
 
     # cleanup this zipfile and its extracted contents
-    subprocess.run("rm", "-rf", snapshot_path, check=True)
+    subprocess.run(["rm", "-rf", snapshot_path], check=True)
 
 
 def main():
