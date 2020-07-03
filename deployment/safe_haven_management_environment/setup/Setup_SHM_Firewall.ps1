@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Ensure that firewall subnet exists
@@ -83,7 +83,7 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
         if ($rule.fqdnTags) { $params["TargetTag"] = $rule.fqdnTags }
         if ($rule.protocols) { $params["Protocol"] = $rule.protocols }
         if ($rule.targetFqdns) { $params["TargetFqdn"] = $rule.targetFqdns }
-        $_ = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
+        $null = Deploy-FirewallApplicationRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type @params
     }
 }
 
@@ -93,11 +93,11 @@ foreach ($ruleCollection in $rules.applicationRuleCollections) {
 Add-LogMessage -Level Info "Setting firewall network rules..."
 foreach ($ruleCollection in $rules.networkRuleCollections) {
     foreach ($rule in $ruleCollection.properties.rules) {
-        $_ = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
+        $null = Deploy-FirewallNetworkRule -Name $rule.name -CollectionName $ruleCollection.name -Firewall $firewall -SourceAddress $rule.sourceAddresses -DestinationAddress $rule.destinationAddresses -DestinationPort $rule.destinationPorts -Protocol $rule.protocols -Priority $ruleCollection.properties.priority -ActionType $ruleCollection.properties.action.type
     }
 }
 
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

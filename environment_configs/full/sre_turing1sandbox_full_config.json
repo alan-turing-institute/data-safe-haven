@@ -2,7 +2,7 @@
   "shm": {
     "subscriptionName": "[Prod] Safe Haven Management",
     "id": "turing1",
-    "name": "Turng Safe Haven",
+    "name": "Turing Safe Haven",
     "organisation": {
       "name": "The Alan Turing Institute",
       "townCity": "London",
@@ -15,12 +15,42 @@
       "fqdn": "turingsafehaven.ac.uk",
       "netbiosName": "TURINGSAFEHAVEN",
       "dn": "DC=turingsafehaven,DC=ac,DC=uk",
-      "serviceServerOuPath": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk",
-      "serviceOuPath": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk",
-      "userOuPath": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk",
-      "securityOuPath": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk",
+      "ous": {
+        "dataServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "linuxServers": {
+          "name": "Secure Research Environment Data Servers",
+          "path": "OU=Secure Research Environment Data Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsGatewayServers": {
+          "name": "Secure Research Environment Service Servers",
+          "path": "OU=Secure Research Environment Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "rdsSessionServers": {
+          "name": "Secure Research Environment RDS Session Servers",
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "researchUsers": {
+          "name": "Safe Haven Research Users",
+          "path": "OU=Safe Haven Research Users,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "securityGroups": {
+          "name": "Safe Haven Security Groups",
+          "path": "OU=Safe Haven Security Groups,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "serviceAccounts": {
+          "name": "Safe Haven Service Accounts",
+          "path": "OU=Safe Haven Service Accounts,DC=turingsafehaven,DC=ac,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Service Servers",
+          "path": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+        }
+      },
       "securityGroups": {
-        "dsvmLdapUsers": {
+        "computerManagers": {
           "name": "SG Safe Haven LDAP Users",
           "description": "SG Safe Haven LDAP Users"
         },
@@ -30,27 +60,136 @@
         }
       }
     },
+    "logging": {
+      "rg": "RG_SHM_LOGGING",
+      "workspaceName": "shmturing1loganalytics"
+    },
     "network": {
       "vnet": {
         "rg": "RG_SHM_NETWORKING",
         "name": "VNET_SHM_TURING1",
-        "cidr": "10.0.0.0/21"
+        "cidr": "10.0.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.0.0.0/24"
+          },
+          "web": {
+            "name": "WebSubnet",
+            "cidr": "10.0.1.0/24"
+          },
+          "firewall": {
+            "name": "AzureFirewallSubnet",
+            "cidr": "10.0.2.0/24"
+          },
+          "gateway": {
+            "name": "GatewaySubnet",
+            "cidr": "10.0.7.0/24"
+          }
+        }
       },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "prefix": "10.0.0",
-          "cidr": "10.0.0.0/24"
+      "mirrorVnets": {
+        "tier2": {
+          "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER2",
+          "cidr": "10.20.2.0/24",
+          "subnets": {
+            "external": {
+              "name": "ExternalPackageMirrorsTier2Subnet",
+              "cidr": "10.20.2.0/28",
+              "nsg": "externalPackageMirrorsTier2"
+            },
+            "internal": {
+              "name": "InternalPackageMirrorsTier2Subnet",
+              "cidr": "10.20.2.16/28",
+              "nsg": "internalPackageMirrorsTier2"
+            }
+          }
         },
-        "web": {
-          "name": "WebSubnet",
-          "prefix": "10.0.1",
-          "cidr": "10.0.1.0/24"
+        "tier3": {
+          "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER3",
+          "cidr": "10.20.3.0/24",
+          "subnets": {
+            "external": {
+              "name": "ExternalPackageMirrorsTier3Subnet",
+              "cidr": "10.20.3.0/28",
+              "nsg": "externalPackageMirrorsTier3"
+            },
+            "internal": {
+              "name": "InternalPackageMirrorsTier3Subnet",
+              "cidr": "10.20.3.16/28",
+              "nsg": "internalPackageMirrorsTier3"
+            }
+          }
+        }
+      },
+      "nsg": {
+        "externalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TURING1_EXTERNAL_PACKAGE_MIRRORS_TIER2"
         },
-        "gateway": {
-          "name": "GatewaySubnet",
-          "prefix": "10.0.7",
-          "cidr": "10.0.7.0/24"
+        "externalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TURING1_EXTERNAL_PACKAGE_MIRRORS_TIER3"
+        },
+        "internalPackageMirrorsTier2": {
+          "name": "NSG_SHM_TURING1_INTERNAL_PACKAGE_MIRRORS_TIER2"
+        },
+        "internalPackageMirrorsTier3": {
+          "name": "NSG_SHM_TURING1_INTERNAL_PACKAGE_MIRRORS_TIER3"
+        }
+      }
+    },
+    "firewall": {
+      "name": "FIREWALL-SHM-TURING1",
+      "routeTableName": "ROUTE-TABLE-SHM-TURING1"
+    },
+    "keyVault": {
+      "rg": "RG_SHM_SECRETS",
+      "name": "kv-shm-turing1",
+      "secretNames": {
+        "aadAdminPassword": "shm-turing1-aad-admin-password",
+        "buildImageAdminUsername": "shm-turing1-buildimage-admin-username",
+        "buildImageAdminPassword": "shm-turing1-buildimage-admin-password",
+        "domainAdminUsername": "shm-turing1-vm-admin-username",
+        "domainAdminPassword": "shm-turing1-domain-admin-password",
+        "vpnCaCertificate": "shm-turing1-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-turing1-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-turing1-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-turing1-vpn-client-cert",
+        "vpnClientCertPassword": "shm-turing1-vpn-client-cert-password"
+      }
+    },
+    "users": {
+      "computerManagers": {
+        "identityServers": {
+          "name": "TURING1 Identity Servers Manager",
+          "samAccountName": "shmturing1admin",
+          "passwordSecretName": "shm-turing1-domain-admin-password"
+        },
+        "dataServers": {
+          "name": "TURING1 Data Servers Manager",
+          "samAccountName": "shmturing1admin",
+          "passwordSecretName": "shm-turing1-domain-admin-password"
+        },
+        "linuxServers": {
+          "name": "TURING1 Linux Servers Manager",
+          "samAccountName": "shmturing1admin",
+          "passwordSecretName": "shm-turing1-domain-admin-password"
+        },
+        "rdsGatewayServers": {
+          "name": "TURING1 RDS Gateway Manager",
+          "samAccountName": "shmturing1admin",
+          "passwordSecretName": "shm-turing1-domain-admin-password"
+        },
+        "rdsSessionServers": {
+          "name": "TURING1 RDS Session Servers Manager",
+          "samAccountName": "shmturing1admin",
+          "passwordSecretName": "shm-turing1-domain-admin-password"
+        }
+      },
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "Local AD Sync Administrator",
+          "samAccountName": "localadsync",
+          "passwordSecretName": "shm-turing1-localadsync-password"
         }
       }
     },
@@ -61,48 +200,62 @@
       "hostname": "DC1-SHM-TURING1",
       "fqdn": "DC1-SHM-TURING1.turingsafehaven.ac.uk",
       "ip": "10.0.0.250",
-      "external_dns_resolver": "168.63.129.16"
+      "external_dns_resolver": "168.63.129.16",
+      "safemodePasswordSecretName": "shm-turing1-dc-safemode-password",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "dcb": {
       "vmName": "DC2-SHM-TURING1",
+      "vmSize": "Standard_D2s_v3",
       "hostname": "DC2-SHM-TURING1",
       "fqdn": "DC2-SHM-TURING1.turingsafehaven.ac.uk",
-      "ip": "10.0.0.249"
+      "ip": "10.0.0.249",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "nps": {
+      "adminPasswordSecretName": "shm-turing1-nps-admin-password",
       "rg": "RG_SHM_NPS",
       "vmName": "NPS-SHM-TURING1",
       "vmSize": "Standard_D2s_v3",
       "hostname": "NPS-SHM-TURING1",
-      "ip": "10.0.0.248"
+      "ip": "10.0.0.248",
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "storage": {
       "artifacts": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmturing1artifactsbkdlp"
+        "accountName": "shmturing1artifactsvkdrslu"
       },
       "bootdiagnostics": {
         "rg": "RG_SHM_ARTIFACTS",
-        "accountName": "shmturing1bootdiagsbkdlp"
-      }
-    },
-    "keyVault": {
-      "rg": "RG_SHM_SECRETS",
-      "name": "kv-shm-turing1",
-      "secretNames": {
-        "aadAdminPassword": "shm-turing1-aad-admin-password",
-        "buildImageAdminUsername": "shm-turing1-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-turing1-buildimage-admin-password",
-        "dcSafemodePassword": "shm-turing1-dc-safemode-password",
-        "domainAdminPassword": "shm-turing1-domain-admin-password",
-        "localAdsyncPassword": "shm-turing1-localadsync-password",
-        "npsAdminPassword": "shm-turing1-nps-admin-password",
-        "vmAdminUsername": "shm-turing1-vm-admin-username",
-        "vpnCaCertificate": "shm-turing1-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-turing1-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-turing1-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-turing1-vpn-client-cert",
-        "vpnClientCertPassword": "shm-turing1-vpn-client-cert-password"
+        "accountName": "shmturing1bootdiagsvkdrslu"
       }
     },
     "dns": {
@@ -114,17 +267,59 @@
       "vmSize": "Standard_B2ms",
       "diskType": "Standard_LRS",
       "pypi": {
-        "ipOffset": 4,
-        "diskSize": {
-          "tier2": 8191,
-          "tier3": 511
+        "tier2": {
+          "diskSize": 8191,
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 511,
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          }
         }
       },
       "cran": {
-        "ipOffset": 5,
-        "diskSize": {
-          "tier2": 127,
-          "tier3": 31
+        "tier2": {
+          "diskSize": 127,
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-cran-internal-tier-2-admin-password",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-package-mirror-cran-external-tier-2-admin-password",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 31,
+          "internal": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
+          },
+          "external": {
+            "adminPasswordSecretName": "shm-turing1-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
+          }
         }
       }
     }
@@ -133,21 +328,21 @@
     "subscriptionName": "[Prod] Turing SRE – Sandbox",
     "id": "sandbox",
     "shortName": "sre-sandbox",
-    "location": "uksouth",
     "tier": "2",
     "adminSecurityGroupName": "Safe Haven Production Admins",
+    "location": "uksouth",
     "domain": {
       "fqdn": "sandbox.turingsafehaven.ac.uk",
       "netbiosName": "SANDBOX",
       "dn": "DC=sandbox,DC=turingsafehaven,DC=ac,DC=uk",
       "securityGroups": {
-        "serverAdmins": {
-          "name": "SG SANDBOX Server Administrators",
-          "description": "SG SANDBOX Server Administrators"
-        },
-        "sqlAdmins": {
+        "dataAdministrators": {
           "name": "SG SANDBOX SQL Server Administrators",
           "description": "SG SANDBOX SQL Server Administrators"
+        },
+        "systemAdministrators": {
+          "name": "SG SANDBOX Server Administrators",
+          "description": "SG SANDBOX Server Administrators"
         },
         "researchUsers": {
           "name": "SG SANDBOX Research Users",
@@ -159,37 +354,36 @@
       "vnet": {
         "rg": "RG_SRE_NETWORKING",
         "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.150.0.0/21"
-      },
-      "subnets": {
-        "identity": {
-          "name": "IdentitySubnet",
-          "prefix": "10.150.0",
-          "cidr": "10.150.0.0/24"
-        },
-        "rds": {
-          "name": "RDSSubnet",
-          "prefix": "10.150.1",
-          "cidr": "10.150.1.0/24"
-        },
-        "data": {
-          "name": "SharedDataSubnet",
-          "prefix": "10.150.2",
-          "cidr": "10.150.2.0/24"
-        },
-        "dbingress": {
-          "name": "DbIngressSubnet",
-          "prefix": "10.150.3",
-          "nsg": "dbingress",
-          "cidr": "10.150.3.0/24"
+        "cidr": "10.150.0.0/21",
+        "subnets": {
+          "identity": {
+            "name": "IdentitySubnet",
+            "cidr": "10.150.0.0/24"
+          },
+          "rds": {
+            "name": "RDSSubnet",
+            "cidr": "10.150.1.0/24"
+          },
+          "data": {
+            "name": "SharedDataSubnet",
+            "cidr": "10.150.2.0/24"
+          },
+          "databases": {
+            "name": "DatabasesSubnet",
+            "cidr": "10.150.3.0/24",
+            "nsg": "databases"
+          }
         }
       },
       "nsg": {
         "data": {},
-        "dbingress": {
-          "name": "NSG_SRE_SANDBOX_DB_INGRESS"
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
         }
       }
+    },
+    "firewall": {
+      "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     },
     "storage": {
       "artifacts": {
@@ -206,85 +400,92 @@
       "rg": "RG_SRE_SECRETS",
       "secretNames": {
         "adminUsername": "sre-sandbox-vm-admin-username",
-        "dataMountPassword": "sre-sandbox-datamount-password",
-        "dataServerAdminPassword": "sre-sandbox-dataservervm-admin-password",
-        "dsvmAdminPassword": "sre-sandbox-dsvm-admin-password",
-        "dsvmDbAdminPassword": "sre-sandbox-dsvm-pgdb-admin-password",
-        "dsvmDbReaderPassword": "sre-sandbox-dsvm-pgdb-reader-password",
-        "dsvmDbWriterPassword": "sre-sandbox-dsvm-pgdb-writer-password",
-        "dsvmLdapPassword": "sre-sandbox-dsvm-ldap-password",
-        "gitlabLdapPassword": "sre-sandbox-gitlab-ldap-password",
-        "gitlabRootPassword": "sre-sandbox-gitlab-root-password",
-        "gitlabUserPassword": "sre-sandbox-gitlab-user-password",
-        "hackmdLdapPassword": "sre-sandbox-hackmd-ldap-password",
-        "hackmdUserPassword": "sre-sandbox-hackmd-user-password",
         "letsEncryptCertificate": "sre-sandbox-lets-encrypt-certificate",
         "npsSecret": "sre-sandbox-nps-secret",
-        "rdsAdminPassword": "sre-sandbox-rdsvm-admin-password",
-        "sqlAuthUpdateUsername": "sre-sandbox-sql-authupdate-user-username",
-        "sqlAuthUpdateUserPassword": "sre-sandbox-sql-authupdate-user-password",
-        "testResearcherPassword": "sre-sandbox-test-researcher-password",
-        "webappAdminPassword": "sre-sandbox-webappvm-admin-password"
+        "gitlabRootPassword": "sre-sandbox-gitlab-root-password"
       }
     },
     "users": {
-      "ldap": {
-        "gitlab": {
+      "serviceAccounts": {
+        "ldapSearch": {
           "name": "SANDBOX Gitlab LDAP",
-          "samAccountName": "gitlabldapsandbox"
+          "samAccountName": "gitlabldapsandbox",
+          "passwordSecretName": "sre-sandbox-gitlab-ldap-password"
         },
-        "hackmd": {
-          "name": "SANDBOX HackMD LDAP",
-          "samAccountName": "hackmdldapsandbox"
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "samAccountName": "pgdbsrvcsandbox",
+          "passwordSecretName": "sre-sandbox-postgresdb-service-account-password"
         },
-        "dsvm": {
-          "name": "SANDBOX DSVM LDAP",
-          "samAccountName": "dsvmldapsandbox"
-        }
-      },
-      "datamount": {
-        "name": "SANDBOX Data Mount",
-        "samAccountName": "datamountsandbox"
-      },
-      "researchers": {
-        "test": {
-          "name": "SANDBOX Test Researcher",
-          "samAccountName": "testresrchsandbox"
+        "datamount": {
+          "name": "SANDBOX Data Mount Service Account",
+          "samAccountName": "datamountsandbox",
+          "passwordSecretName": "sre-sandbox-datamount-password"
         }
       }
     },
     "rds": {
       "rg": "RG_SRE_RDS",
       "gateway": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "RDG-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
+        "ip": "10.150.1.250",
         "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
         "networkRules": {
           "allowedSources": "Internet",
-          "outboundInternet": null
+          "outboundInternet": "Deny"
+        },
+        "disks": {
+          "data1": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "data2": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
         },
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "ip": "10.150.1.250"
+        "fqdn": "RDG-SRE-SANDBOX.turingsafehaven.ac.uk"
       },
       "sessionHost1": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "APP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
+        "ip": "10.150.1.249",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "ip": "10.150.1.249"
+        "fqdn": "APP-SRE-SANDBOX.turingsafehaven.ac.uk"
       },
       "sessionHost2": {
+        "adminPasswordSecretName": "sre-sandbox-rdsvm-admin-password",
         "vmName": "DKP-SRE-SANDBOX",
         "vmSize": "Standard_DS2_v2",
+        "ip": "10.150.1.248",
         "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "disks": {
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "ip": "10.150.1.248"
+        "fqdn": "DKP-SRE-SANDBOX.turingsafehaven.ac.uk"
       }
     },
     "dataserver": {
+      "adminPasswordSecretName": "sre-sandbox-dataservervm-admin-password",
       "rg": "RG_SRE_DATA",
       "nsg": "NSG_SRE_SANDBOX_DATA",
       "vmName": "DAT-SRE-SANDBOX",
@@ -292,49 +493,86 @@
       "hostname": "DAT-SRE-SANDBOX",
       "fqdn": "DAT-SRE-SANDBOX.turingsafehaven.ac.uk",
       "ip": "10.150.2.250",
-      "egressDiskGb": 512,
-      "ingressDiskGb": 512,
-      "sharedDiskGb": 512
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      }
     },
     "webapps": {
       "rg": "RG_SRE_WEBAPPS",
       "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
+        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
         "vmName": "GITLAB-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
+        "ip": "10.150.2.151",
+        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
+        "disks": {
+          "data": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "50",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "ip": "10.150.2.151"
+        "fqdn": "GITLAB-SRE-SANDBOX.turingsafehaven.ac.uk"
       },
       "hackmd": {
+        "adminPasswordSecretName": "sre-sandbox-webappvm-admin-password",
         "vmName": "HACKMD-SRE-SANDBOX",
         "vmSize": "Standard_D2s_v3",
+        "ip": "10.150.2.152",
+        "disks": {
+          "os": {
+            "sizeGb": "750",
+            "type": "Standard_LRS"
+          }
+        },
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.turingsafehaven.ac.uk",
-        "ip": "10.150.2.152"
+        "fqdn": "HACKMD-SRE-SANDBOX.turingsafehaven.ac.uk"
       }
     },
     "databases": {
       "rg": "RG_SRE_DATABASES",
-      "dbmssqlingress": {
-        "name": "SQL-ING-SANDBOX",
-        "enableSSIS": true,
-        "ipLastOctet": "4",
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",
+        "dbAdminUsernameSecretName": "sre-sandbox-sql-authupdate-user-username",
+        "dbAdminPasswordSecretName": "sre-sandbox-sql-authupdate-user-password",
+        "vmName": "SQL-ING-SANDBOX",
+        "type": "MSSQL",
+        "ip": "10.150.3.4",
         "port": "14330",
         "sku": "sqldev",
-        "subnet": "dbingress",
+        "subnet": "databases",
         "vmSize": "Standard_DS2_v2",
-        "datadisk": {
-          "size_gb": "2048",
-          "type": "Standard_LRS"
+        "disks": {
+          "data": {
+            "sizeGb": "2048",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
         },
-        "osdisk": {
-          "size_gb": "128",
-          "type": "Standard_LRS"
-        }
+        "enableSSIS": true
       }
     },
     "dsvm": {
+      "adminPasswordSecretName": "sre-sandbox-dsvm-admin-password",
       "rg": "RG_SRE_COMPUTE",
       "nsg": "NSG_SRE_SANDBOX_COMPUTE",
       "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
@@ -344,28 +582,19 @@
       "vmSizeDefault": "Standard_D2s_v3",
       "vmImageType": "Ubuntu",
       "vmImageVersion": "0.2.2020050300",
-      "osdisk": {
-        "type": "Standard_LRS",
-        "size_gb": "64"
-      },
-      "scratchdisk": {
-        "type": "Standard_LRS",
-        "size_gb": "512"
-      },
-      "homedisk": {
-        "type": "Standard_LRS",
-        "size_gb": "128"
-      }
-    },
-    "mirrors": {
-      "vnet": {
-        "name": "VNET_SHM_TURING1_PACKAGE_MIRRORS_TIER2"
-      },
-      "cran": {
-        "ip": "10.20.2.21"
-      },
-      "pypi": {
-        "ip": "10.20.2.20"
+      "disks": {
+        "home": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "64",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
       }
     }
   }

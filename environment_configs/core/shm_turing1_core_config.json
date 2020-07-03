@@ -8,7 +8,6 @@
         "location": "uksouth"
     },
     "domain": "turingsafehaven.ac.uk",
-    "netbiosName": "TURINGSAFEHAVEN",
     "shmId": "turing1",
     "name": "Turing Safe Haven",
     "organisation": {
@@ -17,5 +16,120 @@
         "stateCountyRegion": "London",
         "countryCode": "GB"
     },
-    "location": "uksouth"
+    "location": "uksouth",
+    "overrides": {
+        "domain": {
+            "netbiosName": "TURINGSAFEHAVEN",
+            "ous": {
+                "identityServers": {
+                    "name": "Safe Haven Service Servers",
+                    "path": "OU=Safe Haven Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+                },
+                "linuxServers": {
+                    "name": "Secure Research Environment Data Servers",
+                    "path": "OU=Secure Research Environment Data Servers,DC=turingsafehaven,DC=ac,DC=uk"
+                },
+                "rdsGatewayServers": {
+                    "name": "Secure Research Environment Service Servers",
+                    "path": "OU=Secure Research Environment Service Servers,DC=turingsafehaven,DC=ac,DC=uk"
+                }
+            },
+            "securityGroups": {
+                "computerManagers": {
+                    "name": "SG Safe Haven LDAP Users",
+                    "description": "SG Safe Haven LDAP Users"
+                }
+            }
+        },
+        "network": {
+            "vnet": {
+                "rg": "RG_SHM_NETWORKING"
+            }
+        },
+        "keyVault": {
+            "rg": "RG_SHM_SECRETS",
+            "secretNames": {
+                "domainAdminUsername": "shm-turing1-vm-admin-username"
+            }
+        },
+        "users": {
+            "computerManagers": {
+                "identityServers": {
+                    "samAccountName": "shmturing1admin",
+                    "passwordSecretName": "shm-turing1-domain-admin-password"
+                },
+                "dataServers": {
+                    "samAccountName": "shmturing1admin",
+                    "passwordSecretName": "shm-turing1-domain-admin-password"
+                },
+                "linuxServers": {
+                    "samAccountName": "shmturing1admin",
+                    "passwordSecretName": "shm-turing1-domain-admin-password"
+                },
+                "rdsGatewayServers": {
+                    "samAccountName": "shmturing1admin",
+                    "passwordSecretName": "shm-turing1-domain-admin-password"
+                },
+                "rdsSessionServers": {
+                    "samAccountName": "shmturing1admin",
+                    "passwordSecretName": "shm-turing1-domain-admin-password"
+                }
+            },
+            "serviceAccounts": {
+                "aadLocalSync": {
+                    "name": "Local AD Sync Administrator",
+                    "samAccountName": "localadsync",
+                    "passwordSecretName": "shm-turing1-localadsync-password"
+                }
+            }
+        },
+        "dc": {
+            "rg": "RG_SHM_DC",
+            "ip": "10.0.0.250",
+            "safemodePasswordSecretName": "shm-turing1-dc-safemode-password"
+        },
+        "dcb": {
+            "ip": "10.0.0.249"
+        },
+        "nps": {
+            "adminPasswordSecretName": "shm-turing1-nps-admin-password",
+            "rg": "RG_SHM_NPS",
+            "ip": "10.0.0.248"
+        },
+        "storage": {
+            "artifacts": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmturing1artifactsvkdrslu"
+            },
+            "bootdiagnostics": {
+                "rg": "RG_SHM_ARTIFACTS",
+                "accountName": "shmturing1bootdiagsvkdrslu"
+            }
+        },
+        "mirrors": {
+            "rg": "RG_SHM_PKG_MIRRORS",
+            "pypi": {
+                "tier2": {
+                    "diskSize": 8191,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-internal-tier-2-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-turing1-package-mirror-pypi-external-tier-2-admin-password"
+                    }
+                }
+            },
+            "cran": {
+                "tier2": {
+                    "diskSize": 127,
+                    "internal": {
+                        "adminPasswordSecretName": "shm-turing1-package-mirror-cran-internal-tier-2-admin-password"
+                    },
+                    "external": {
+                        "adminPasswordSecretName": "shm-turing1-package-mirror-cran-external-tier-2-admin-password"
+                    }
+                }
+            }
+        }
+    }
 }
