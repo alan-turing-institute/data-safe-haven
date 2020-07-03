@@ -149,7 +149,7 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                 LocalAdminUser           = $vmAdminUsername
                 ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
+                SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.serverAdmins.name)"
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
