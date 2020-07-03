@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
+  [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
   [string]$shmId,
   [Parameter(Mandatory = $false, HelpMessage = "Sku for the licence you want to assign")]
   [string]$licenceSku = "AAD_PREMIUM"
