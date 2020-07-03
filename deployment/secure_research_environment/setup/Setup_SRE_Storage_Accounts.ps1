@@ -11,6 +11,7 @@ param(
 Import-Module Az
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
+Import-Module $PSScriptRoot/../../common/GenerateSasToken.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 
@@ -41,10 +42,8 @@ if ($storageAccount) {
 # Ensure that container exists in storage account (throw exception if there's a problem)
 $containerName = "ingress"
 Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction allow
-
+$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction allow
 $storageContainer = Get-AzStorageContainer -Context $storageAccount.Context -Name $containerName -ClientTimeoutPerRequest 300 -ErrorAction silentlycontinue
-
 if ($storageContainer) {
     Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
 } else {
@@ -55,35 +54,35 @@ if ($storageContainer) {
         Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
     }
 }
-Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
+$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
 
 
 # # Check if it is available or not
-# $availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
+# $availability = Get-AzStorageAccountNameAvailability -Name $storageAccount.context.name
 
 
 # if($availability.NameAvailable){
 
 #     # Create storage account if it does not exist
 #       # ---------------------------------------------------
-#     Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($sa.rg)' in the subscription '$($config.shm.subscriptionName)'"
+#     Add-LogMessage -Level Info "Creating storage account '$($storageAccount.context.name)' under '$($config.shm.storage.datastorage.rg)' in the subscription '$($config.shm.subscriptionName)'"
 
-#     $_ = Deploy-ResourceGroup -Name $sa.rg -Location $config.shm.location
+#     $_ = Deploy-ResourceGroup -Name $config.shm.storage.datastorage.rg -Location $config.shm.location
 
 #     # Create storage account
-#     $storageAccount = New-AzStorageAccount -ResourceGroupName $sa.rg -Name $sa.accountName -Location $config.shm.location  -SkuName Standard_RAGRS -Kind StorageV2
+#     $storageAccount = New-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $storageAccount.context.name -Location $config.shm.location  -SkuName Standard_RAGRS -Kind StorageV2
 
 #     # Deny network access
-#     Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $sa.rg -Name $sa.accountName -DefaultAction Deny
+#     Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $storageAccount.context.name -DefaultAction Deny
 
 #     # Create a blob container: ingress, which will have associated a read only SAS token
 #     New-AzStorageContainer -Name "ingress" -Context $storageAccount.Context
 
-#     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' has been created in the subscription '$($config.shm.subscriptionName)'"
+#     Add-LogMessage -Level Info "The storage account '$($storageAccount.context.name)' has been created in the subscription '$($config.shm.subscriptionName)'"
 #     }
 
 # else {
-#     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists, try a different name"
+#     Add-LogMessage -Level Info "The storage account '$($storageAccount.context.name)' already exists, try a different name"
 #     exit
 # }
 
@@ -99,44 +98,31 @@ $sa = $config.shm.storage.datastorage
 # Hardcoded 1 year for the moment
 #$ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageContext -Permission "rlw" -StartTime 0 -ExpiryTime 365
 
-$ingressSAS = New-AccountSasToken -subscriptionName "$($config.shm.subscriptionName)" `
-                               -resourceGroup "$($config.shm.storage.datastorage.rg)" `
-                               -AccountName "$($config.shm.storage.datastorage.accountName)" `
-                               -Service "Blob" `
-                               -ResourceType "Container" `
-                               -Permission "rlw"
-                               -validityHours "8760"
+$ingressSAS = New-AccountSasToken -SubscriptionName "$($config.shm.subscriptionName)" `
+                                  -ResourceGroup "$($config.shm.storage.datastorage.rg)" `
+                                  -AccountName "$($config.shm.storage.datastorage.accountName)" `
+                                  -Service "$($config.shm.storage.datastorage.GroupId)" `
+                                  -ResourceType "Container" `
+                                  -Permission "rlw" `
+                                  -validityHours "8760"
 
 # Create the private endpoint
 # ---------------------------
-$resource = Get-AzResource -Name $sa.accountName -ExpandProperties
-Write-Host "$($resource.ResourceId)"
-Write-Host "$($storageAccount.Id)"
-$privateEndpointName = $sa.accountName + "-endpoint"
-
-$privateDnsZoneName = $($sa.accountName +"." + "blob.core.windows.net").ToLower()
-
-$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" `
--PrivateLinkServiceId $resource.ResourceId `
--GroupId $sa.GroupId
-
-
-# Switching back to the SRE subscription for storing SAS in the secret vault
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$privateEndpointName = "$($storageAccount.Context.Name)-endpoint"
+$privateDnsZoneName = "$($storageAccount.Context.Name).blob.core.windows.net".ToLower()
+$privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "$($privateEndpointName)ServiceConnection" -PrivateLinkServiceId $storageAccount.Id -GroupId $config.shm.storage.datastorage.GroupId
 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
+$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 Add-LogMessage -Level Info "Ensuring that secrets exist in key vault '$($config.sre.keyVault.name)'..."
-
 $_ = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.Name -SecretName $config.sre.keyVault.secretNames.storageIngressSAS -DefaultValue "$ingressSAS"
-
 if ($?) {
     Add-LogMessage -Level Success "Uploading the ingressSAS succeeded"
-    }
- else {
+} else {
     Add-LogMessage -Level Fatal "Uploading the ingressSAS failed!"
-    }
+}
 
 
 $virtualNetwork = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name
@@ -148,7 +134,7 @@ $subnet = $virtualNetwork `
 $privateEndpoint = Get-AzPrivateEndpoint -name $privateEndpointName
 
 if (-not $privateEndpoint){
-    Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($sa.accountName)'"
+    Add-LogMessage -Level Info "Creating private endpoint '$($privateEndpointName)' to resource '$($storageAccount.context.name)'"
     $privateEndpoint = New-AzPrivateEndpoint -ResourceGroupName $config.sre.network.vnet.rg `
     -Name $privateEndpointName `
     -Location $config.sre.Location `
