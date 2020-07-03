@@ -955,10 +955,10 @@ function New-DNSZone {
         $ResourceGroupName
     )
     Add-LogMessage -Level Info "Ensuring the DNS zone '$($Name)' exists..."
-    $_ = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating DNS Zone '$Name'"
-        $_ = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
+        $null = New-AzDnsZone -Name $Name -ResourceGroupName $ResourceGroupName
         if ($?) {
             Add-LogMessage -Level Success "Created DNS Zone '$Name'"
         } else {
@@ -1073,7 +1073,7 @@ function Set-DnsZoneAndParentNSRecords {
 
     # Check if parent DNS Zone exists in same subscription and resource group
     # -----------------------------------------------------------------------
-    $_ = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsZone -Name $parentDnsZoneName -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "No existing DNS Zone was found for '$parentDnsZoneName' in resource group '$ResourceGroupName'."
         Add-LogMessage -Level Info "You need to add the following NS records to the parent DNS system for '$parentDnsZoneName': '$nsRecords'"
@@ -1133,10 +1133,10 @@ function Set-NSRecords {
         [Parameter(Mandatory = $true, HelpMessage = "NS records to add")]
         $NsRecords
     )
-    $_ = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
+    $null = Get-AzDnsRecordSet -ResourceGroupName $ResourceGroupName -ZoneName $DnsZoneName -Name $RecordSetName -RecordType NS -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "Creating new Record Set '$($RecordSetName)' in DNS Zone '$($DnsZoneName)' with NS records '$($nsRecords)' to ..."
-        $_ = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
+        $null = New-AzDnsRecordSet -Name $RecordSetName –ZoneName $DnsZoneName -ResourceGroupName $ResourceGroupName -Ttl 3600 -RecordType NS -DnsRecords $NsRecords
         if ($?) {
             Add-LogMessage -Level Success "Created DNS Record Set '$RecordSetName'"
         } else {

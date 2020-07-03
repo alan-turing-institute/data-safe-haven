@@ -17,11 +17,11 @@ param(
 
 # Set DNS defaults
 # ----------------
-Write-Host "Setting DNS search order to: $sreFqdn, $shmFqdn"
+Write-Output "Setting DNS search order to: $sreFqdn, $shmFqdn"
 $class = [wmiclass]'Win32_NetworkAdapterConfiguration'
 $null = $class.SetDNSSuffixSearchOrder(@("$sreFqdn", "$shmFqdn"))
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Completed"
 } else {
-    Write-Host " [x] Failed"
+    Write-Output " [x] Failed"
 }

@@ -13,28 +13,28 @@ param(
 # Remove users
 foreach ($samAccountName in $userNamesJoined.Split("|")) {
     if (Get-ADUser -Filter "SamAccountName -eq '$samAccountName'") {
-        Write-Host " [ ] Removing user '$samAccountName'"
+        Write-Output " [ ] Removing user '$samAccountName'"
         Remove-ADUser (Get-AdUser $samAccountName) -Confirm:$False
         if ($?) {
-            Write-Host " [o] Succeeded"
+            Write-Output " [o] Succeeded"
         } else {
-            Write-Host " [x] Failed"
+            Write-Output " [x] Failed"
             exit 1
         }
     } else {
-        Write-Host "No user named '$samAccountName' exists"
+        Write-Output "No user named '$samAccountName' exists"
     }
 }
 
 # Remove computers
 foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
     foreach ($computer in $(Get-ADComputer -Filter "Name -like '$computerNamePattern'")) {
-        Write-Host " [ ] Removing computer '$($computer.Name)'"
+        Write-Output " [ ] Removing computer '$($computer.Name)'"
         $computer | Remove-ADObject -Recursive -Confirm:$False
         if ($?) {
-            Write-Host " [o] Succeeded"
+            Write-Output " [o] Succeeded"
         } else {
-            Write-Host " [x] Failed"
+            Write-Output " [x] Failed"
             exit 1
         }
     }
@@ -43,15 +43,15 @@ foreach ($computerNamePattern in $computerNamePatternsJoined.Split("|")) {
 # Remove groups
 foreach ($groupName in $groupNamesJoined.Split("|")) {
     if (Get-ADGroup -Filter "Name -eq '$groupName'") {
-        Write-Host " [ ] Removing group '$groupName'"
+        Write-Output " [ ] Removing group '$groupName'"
         Remove-ADGroup (Get-ADGroup $groupName) -Confirm:$False
         if ($?) {
-            Write-Host " [o] Succeeded"
+            Write-Output " [o] Succeeded"
         } else {
-            Write-Host " [x] Failed"
+            Write-Output " [x] Failed"
             exit 1
         }
     } else {
-        Write-Host "No group named '$groupName' exists"
+        Write-Output "No group named '$groupName' exists"
     }
 }

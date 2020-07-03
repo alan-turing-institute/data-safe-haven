@@ -35,7 +35,7 @@ foreach ($disk in $dataDisks) {
         $LUN = $(Get-WmiObject Win32_DiskDrive | Where-Object { $_.Index -eq $disk.Number }).SCSILogicalUnit
         $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
         $label = "DATA-$LUN"
-        Write-Host " [o] Formatting partition $($partition.PartitionNumber) of disk $($disk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
+        Write-Output " [o] Formatting partition $($partition.PartitionNumber) of disk $($disk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
         $null = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
     }
 }

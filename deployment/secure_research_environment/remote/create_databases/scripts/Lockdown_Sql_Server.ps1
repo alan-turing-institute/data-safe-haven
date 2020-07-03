@@ -92,7 +92,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         if (Get-SqlLogin -ServerInstance $serverName -Credential $sqlAdminCredentials | Where-Object { $_.Name -eq $domainGroup } ) {
             Write-Output " [o] '$domainGroup' already has SQL login access to: '$serverName'"
         } else {
-            $_ = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $domainGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
+            $null = Add-SqlLogin -ConnectionTimeout $connectionTimeoutInSeconds -GrantConnectSql -ServerInstance $serverName -LoginName $domainGroup -LoginType "WindowsGroup" -Credential $sqlAdminCredentials -ErrorAction SilentlyContinue -ErrorVariable operationFailed
             if ($? -And -Not $operationFailed) {
                 Write-Output " [o] Successfully gave '$domainGroup' SQL login access to: '$serverName'"
             } else {

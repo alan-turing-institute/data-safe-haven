@@ -104,7 +104,7 @@ function Test-OutboundConnection {
         Add-LogMessage -Level Info "... registering the Azure NetworkWatcher extension on $($VM.Name). "
         # Add the Windows extension
         if ($VM.OSProfile.WindowsConfiguration) {
-            $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+            $null = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentWindows" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
             if ($NotInstalled) {
                 Add-LogMessage -Level Warning "Unable to register Windows network watcher extension for $($VM.Name)"
                 return "Unknown"
@@ -112,7 +112,7 @@ function Test-OutboundConnection {
         }
         # Add the Linux extension
         if ($VM.OSProfile.LinuxConfiguration) {
-            $_ = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentLinux" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
+            $null = Set-AzVMExtension -ResourceGroupName $VM.ResourceGroupName -VMName $VM.Name -Location $VM.Location -Name "AzureNetworkWatcherExtension" -Publisher "Microsoft.Azure.NetworkWatcher" -Type "NetworkWatcherAgentLinux" -TypeHandlerVersion "1.4" -ErrorVariable NotInstalled -ErrorAction SilentlyContinue
             if ($NotInstalled) {
                 Add-LogMessage -Level Warning "Unable to register Linux network watcher extension for $($VM.Name)"
                 return "Unknown"
@@ -224,7 +224,7 @@ $originalContext = Get-AzContext
 if ($BenchmarkSubscription) {
     $JsonConfig = [ordered]@{}
     # Get VMs in current subscription
-    $_ = Set-AzContext -SubscriptionId $BenchmarkSubscription
+    $null = Set-AzContext -SubscriptionId $BenchmarkSubscription
     $benchmarkVMs = Get-AzVM | Where-Object { $_.Name -NotLike "*shm-deploy*" }
     Add-LogMessage -Level Info "Found $($benchmarkVMs.Count) VMs in subscription: '$BenchmarkSubscription'"
     foreach ($VM in $benchmarkVMs) {
@@ -270,7 +270,7 @@ foreach ($JsonVm in $BenchmarkJsonConfig.PSObject.Properties) {
 
 # Get VMs in test SHM
 # -------------------
-$_ = Set-AzContext -SubscriptionId $Subscription
+$null = Set-AzContext -SubscriptionId $Subscription
 $testVMs = Get-AzVM
 Add-LogMessage -Level Info "Found $($testVMs.Count) VMs in subscription: '$Subscription'"
 foreach ($VM in $testVMs) {
@@ -298,7 +298,7 @@ foreach ($testVM in $testVMs) {
 
     # Get parameters for new VM
     # -------------------------
-    $_ = Set-AzContext -SubscriptionId $Subscription
+    $null = Set-AzContext -SubscriptionId $Subscription
     Add-LogMessage -Level Info "Getting NSG rules and connectivity for $($testVM.Name)"
     $testRules = Get-NSGRules -VM $testVM
     # Check that each NSG rule has a matching equivalent (which might be named differently)
@@ -325,4 +325,4 @@ foreach ($testVM in $testVMs) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext
