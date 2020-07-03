@@ -82,12 +82,7 @@ try {
 Add-LogMessage -Level Info "Loading secrets for SRE users and groups..."
 # Load SRE groups
 $groups = $config.sre.domain.securityGroups
-# # Load SRE computer manager users
-# $computerManagers = $config.sre.users.computerManagers
-# foreach ($user in $computerManagers.Keys) {
-#     $computerManagers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $computerManagers[$user]["passwordSecretName"] -DefaultLength 20
-# }
-# Load other SRE service users
+# Load SRE service users
 $serviceUsers = $config.sre.users.serviceAccounts
 foreach ($user in $serviceUsers.Keys) {
     $serviceUsers[$user]["password"] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $serviceUsers[$user]["passwordSecretName"] -DefaultLength 20
@@ -101,10 +96,10 @@ $null = Set-AzContext -Subscription $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $params = @{
     shmSystemAdministratorSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
-    groupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
-    serviceUsersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
-    securityOuPath = "`"$($config.shm.domain.ous.securityGroups.path)`""
-    serviceOuPath = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
+    groupsB64                    = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($groups | ConvertTo-Json)))
+    serviceUsersB64              = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($serviceUsers | ConvertTo-Json)))
+    securityOuPath               = "`"$($config.shm.domain.ous.securityGroups.path)`""
+    serviceOuPath                = "`"$($config.shm.domain.ous.serviceAccounts.path)`""
 }
 # shmLdapUserSgName = "`"$($config.shm.domain.securityGroups.computerManagers.name)`""
 # computerManagersB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($computerManagers | ConvertTo-Json)))

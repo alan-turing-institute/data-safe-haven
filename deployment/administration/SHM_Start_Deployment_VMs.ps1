@@ -1,5 +1,5 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
+  [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a number e.g enter '9' for DSG9)")]
   [string]$shmId
 )
 
@@ -13,7 +13,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.subscriptionName
 
 
 # Start/restart the deployment servers
@@ -24,4 +24,4 @@ Get-AzVM -ResourceGroupName "RG_SHM_DEPLOYMENT_POOL" | ForEach-Object { Enable-A
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

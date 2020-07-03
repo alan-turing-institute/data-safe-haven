@@ -134,8 +134,8 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scr
 foreach ($vmName in $computeVmNames) {
     Add-LogMessage -Level Info "Setting PyPI and CRAN locations on compute VM: $($vmName)"
     $params = @{
-        CRAN_MIRROR_IP = "`"$($addresses.cran.url)`""
-        PYPI_MIRROR_IP = "`"$($addresses.pypi.url)`""
+        CRAN_MIRROR_IP   = "`"$($addresses.cran.url)`""
+        PYPI_MIRROR_IP   = "`"$($addresses.pypi.url)`""
         PYPI_MIRROR_HOST = "`"$($addresses.pypi.host)`""
     }
     $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params

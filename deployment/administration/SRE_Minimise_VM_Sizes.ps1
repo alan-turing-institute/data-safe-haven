@@ -12,7 +12,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Resize all VMs
@@ -20,7 +20,7 @@ $_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 $vmSize = "Standard_B2ms"
 Add-LogMessage -Level Info "Resizing all VMs in SRE $($config.sre.id) to size '$vmSize'"
 Add-LogMessage -Level Info "Resizing all compute VMs..."
-Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object {$vm = $_; $vm.HardwareProfile.VmSize = $vmSize; Update-AzVM -VM $vm -ResourceGroupName $config.sre.dsvm.rg -NoWait}
+Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object { $vm = $_; $vm.HardwareProfile.VmSize = $vmSize; Update-AzVM -VM $vm -ResourceGroupName $config.sre.dsvm.rg -NoWait }
 Add-LogMessage -Level Info "Resizing web app servers..."
 $vm = Get-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName
 $vm.HardwareProfile.VmSize = $vmSize
@@ -51,4 +51,4 @@ Update-AzVM -VM $vm -ResourceGroupName $config.sre.dc.rg -NoWait
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

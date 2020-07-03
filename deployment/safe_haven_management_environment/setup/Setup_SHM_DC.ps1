@@ -91,21 +91,21 @@ Start-AzStorageBlobCopy -AbsoluteUri "http://dl.google.com/edgedl/chrome/install
 $success = $success -and $?
 # LibreOffice
 $baseUri = "https://downloadarchive.documentfoundation.org/libreoffice/old/latest/win/x86_64/"
-$httpContent = Invoke-WebRequest -URI $baseUri
+$httpContent = Invoke-WebRequest -Uri $baseUri
 $filename = $httpContent.Links | Where-Object { $_.href -like "*Win_x64.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$baseUri/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "LibreOffice_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # PuTTY
 $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
-$httpContent = Invoke-WebRequest -URI $baseUri
+$httpContent = Invoke-WebRequest -Uri $baseUri
 $filename = $httpContent.Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
 $version = ($filename -split "-")[2]
 Start-AzStorageBlobCopy -AbsoluteUri "$($baseUri.Replace('latest', $version))/$filename" -DestContainer "sre-rds-sh-packages" -DestBlob "PuTTY_x64.msi" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 # WinSCP
-$httpContent = Invoke-WebRequest -URI "https://winscp.net/eng/download.php"
+$httpContent = Invoke-WebRequest -Uri "https://winscp.net/eng/download.php"
 $filename = $httpContent.Links | Where-Object { $_.href -like "*Setup.exe" } | ForEach-Object { ($_.href -split "/")[-1] }
-$absoluteUri = (Invoke-WebRequest -URI "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
+$absoluteUri = (Invoke-WebRequest -Uri "https://winscp.net/download/$filename").Links | Where-Object { $_.href -like "*winscp.net*$filename*" } | ForEach-Object { $_.href } | Select-Object -First 1
 Start-AzStorageBlobCopy -AbsoluteUri "$absoluteUri" -DestContainer "sre-rds-sh-packages" -DestBlob "WinSCP_x32.exe" -DestContext $storageAccount.Context -Force
 $success = $success -and $?
 if ($success) {
@@ -129,19 +129,19 @@ $null = Deploy-ResourceGroup -Name $config.network.vnet.rg -Location $config.loc
 # ---------------------------------
 Add-LogMessage -Level Info "Deploying VNet gateway from template..."
 $params = @{
-    P2S_VPN_Certificate = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
-    Shm_Id = "$($config.id)".ToLower()
-    Subnet_Gateway_CIDR = $config.network.vnet.subnets.gateway.cidr
-    Subnet_Gateway_Name = $config.network.vnet.subnets.gateway.name
+    P2S_VPN_Certificate  = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    Shm_Id               = "$($config.id)".ToLower()
+    Subnet_Gateway_CIDR  = $config.network.vnet.subnets.gateway.cidr
+    Subnet_Gateway_Name  = $config.network.vnet.subnets.gateway.name
     Subnet_Identity_CIDR = $config.network.vnet.subnets.identity.cidr
     Subnet_Identity_Name = $config.network.vnet.subnets.identity.name
-    Subnet_Web_CIDR = $config.network.vnet.subnets.web.cidr
-    Subnet_Web_Name = $config.network.vnet.subnets.web.name
+    Subnet_Web_CIDR      = $config.network.vnet.subnets.web.cidr
+    Subnet_Web_Name      = $config.network.vnet.subnets.web.name
     Virtual_Network_Name = $config.network.vnet.name
-    VNET_CIDR = $config.network.vnet.cidr
-    VNET_DNS_DC1 = $config.dc.ip
-    VNET_DNS_DC2 = $config.dcb.ip
-    VPN_CIDR = $config.network.vpn.cidr
+    VNET_CIDR            = $config.network.vnet.cidr
+    VNET_DNS_DC1         = $config.dc.ip
+    VNET_DNS_DC2         = $config.dcb.ip
+    VPN_CIDR             = $config.network.vpn.cidr
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-vnet-template.json") -Params $params -ResourceGroupName $config.network.vnet.rg
 
@@ -164,35 +164,35 @@ $safemodeAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name
 Add-LogMessage -Level Info "Deploying domain controller (DC) from template..."
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
-    Administrator_User = $domainAdminUsername
-    Artifacts_Location = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
-    Artifacts_Location_SAS_Token = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
-    BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
-    DC1_Data_Disk_Size_GB = [int]$config.dc.disks.data.sizeGb
-    DC1_Data_Disk_Type = $config.dc.disks.data.type
-    DC1_Host_Name = $config.dc.hostname
-    DC1_IP_Address = $config.dc.ip
-    DC1_Os_Disk_Size_GB = [int]$config.dc.disks.os.sizeGb
-    DC1_Os_Disk_Type = $config.dc.disks.os.type
-    DC1_VM_Name = $config.dc.vmName
-    DC1_VM_Size = $config.dc.vmSize
-    DC2_Host_Name = $config.dcb.hostname
-    DC2_Data_Disk_Size_GB = [int]$config.dcb.disks.data.sizeGb
-    DC2_Data_Disk_Type = $config.dcb.disks.data.type
-    DC2_IP_Address = $config.dcb.ip
-    DC2_Os_Disk_Size_GB = [int]$config.dcb.disks.os.sizeGb
-    DC2_Os_Disk_Type = $config.dcb.disks.os.type
-    DC2_VM_Name = $config.dcb.vmName
-    DC2_VM_Size = $config.dcb.vmSize
-    Domain_Name = $config.domain.fqdn
-    Domain_NetBIOS_Name = $config.domain.netbiosName
-    External_DNS_Resolver = $config.dc.external_dns_resolver
-    SafeMode_Password = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
-    Shm_Id = $config.id
-    Virtual_Network_Name = $config.network.vnet.name
+    Administrator_Password         = (ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)
+    Administrator_User             = $domainAdminUsername
+    Artifacts_Location             = "https://$($config.storage.artifacts.accountName).blob.core.windows.net"
+    Artifacts_Location_SAS_Token   = (ConvertTo-SecureString $artifactSasToken -AsPlainText -Force)
+    BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
+    DC1_Data_Disk_Size_GB          = [int]$config.dc.disks.data.sizeGb
+    DC1_Data_Disk_Type             = $config.dc.disks.data.type
+    DC1_Host_Name                  = $config.dc.hostname
+    DC1_IP_Address                 = $config.dc.ip
+    DC1_Os_Disk_Size_GB            = [int]$config.dc.disks.os.sizeGb
+    DC1_Os_Disk_Type               = $config.dc.disks.os.type
+    DC1_VM_Name                    = $config.dc.vmName
+    DC1_VM_Size                    = $config.dc.vmSize
+    DC2_Host_Name                  = $config.dcb.hostname
+    DC2_Data_Disk_Size_GB          = [int]$config.dcb.disks.data.sizeGb
+    DC2_Data_Disk_Type             = $config.dcb.disks.data.type
+    DC2_IP_Address                 = $config.dcb.ip
+    DC2_Os_Disk_Size_GB            = [int]$config.dcb.disks.os.sizeGb
+    DC2_Os_Disk_Type               = $config.dcb.disks.os.type
+    DC2_VM_Name                    = $config.dcb.vmName
+    DC2_VM_Size                    = $config.dcb.vmSize
+    Domain_Name                    = $config.domain.fqdn
+    Domain_NetBIOS_Name            = $config.domain.netbiosName
+    External_DNS_Resolver          = $config.dc.external_dns_resolver
+    SafeMode_Password              = (ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)
+    Shm_Id                         = $config.id
+    Virtual_Network_Name           = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
+    Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-dc-template.json") -Params $params -ResourceGroupName $config.dc.rg
 
@@ -208,11 +208,11 @@ $remoteInstallationDir = "C:\Installation"
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Import_Artifacts.ps1" -Resolve
 $params = @{
-    remoteDir = "`"$remoteInstallationDir`""
+    remoteDir              = "`"$remoteInstallationDir`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName = "`"$storageContainerName`""
-    sasToken = "`"$artifactSasToken`""
+    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
+    storageContainerName   = "`"$storageContainerName`""
+    sasToken               = "`"$artifactSasToken`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
@@ -237,14 +237,14 @@ $script = $scriptTemplate.Replace("<ou-data-servers-name>", $config.domain.ous.d
                           Replace("<ou-security-groups-name>", $config.domain.ous.securityGroups.name).
                           Replace("<ou-service-accounts-name>", $config.domain.ous.serviceAccounts.name)
 $params = @{
-    domainAdminUsername = "`"$domainAdminUsername`""
+    domainAdminUsername    = "`"$domainAdminUsername`""
     domainControllerVmName = "`"$($config.dc.vmName)`""
-    domainOuBase = "`"$($config.domain.dn)`""
-    gpoBackupPath = "`"C:\Installation\GPOs`""
-    netbiosName = "`"$($config.domain.netbiosName)`""
-    shmFdqn = "`"$($config.domain.fqdn)`""
-    userAccountsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
-    securityGroupsB64 = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
+    domainOuBase           = "`"$($config.domain.dn)`""
+    gpoBackupPath          = "`"C:\Installation\GPOs`""
+    netbiosName            = "`"$($config.domain.netbiosName)`""
+    shmFdqn                = "`"$($config.domain.fqdn)`""
+    userAccountsB64        = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($userAccounts | ConvertTo-Json)))
+    securityGroupsB64      = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes(($config.domain.securityGroups | ConvertTo-Json)))
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 Write-Output $result.Value
@@ -255,7 +255,7 @@ Write-Output $result.Value
 Add-LogMessage -Level Info "Configuring group policies for: $($config.dc.vmName)..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dc" "scripts" "Configure_Group_Policies.ps1"
 $params = @{
-    shmFqdn = "`"$($config.domain.fqdn)`""
+    shmFqdn           = "`"$($config.domain.fqdn)`""
     serverAdminSgName = "`"$($config.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params

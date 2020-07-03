@@ -37,34 +37,38 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `
                              -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix Internet `
+                             -DestinationPortRange *
 
 
 # Deploy data server from template
 # --------------------------------
 Add-LogMessage -Level Info "Creating data server '$($config.sre.dataserver.vmName)' from template..."
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    Administrator_User = $vmAdminUsername
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
-    Domain_Join_Username = $config.shm.users.computerManagers.dataServers.samAccountName
-    Data_Server_Disk_Egress_Size_GB = [int]$config.sre.dataserver.disks.egress.sizeGb
-    Data_Server_Disk_Egress_Type = $config.sre.dataserver.disks.egress.type
+    Administrator_Password           = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+    Administrator_User               = $vmAdminUsername
+    BootDiagnostics_Account_Name     = $config.sre.storage.bootdiagnostics.accountName
+    Domain_Join_Password             = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+    Domain_Join_Username             = $config.shm.users.computerManagers.dataServers.samAccountName
+    Data_Server_Disk_Egress_Size_GB  = [int]$config.sre.dataserver.disks.egress.sizeGb
+    Data_Server_Disk_Egress_Type     = $config.sre.dataserver.disks.egress.type
     Data_Server_Disk_Ingress_Size_GB = [int]$config.sre.dataserver.disks.ingress.sizeGb
-    Data_Server_Disk_Ingress_Type = $config.sre.dataserver.disks.ingress.type
-    Data_Server_Disk_Shared_Size_GB = [int]$config.sre.dataserver.disks.shared.sizeGb
-    Data_Server_Disk_Shared_Type = $config.sre.dataserver.disks.shared.type
-    Data_Server_Name = $config.sre.dataserver.vmName
-    Data_Server_VM_Size = $config.sre.dataserver.vmSize
-    Domain_Name = $config.shm.domain.fqdn
-    IP_Address = $config.sre.dataserver.ip
-    OU_Path = $config.shm.domain.ous.dataServers.path
-    Virtual_Network_Name = $config.sre.network.vnet.name
-    Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
+    Data_Server_Disk_Ingress_Type    = $config.sre.dataserver.disks.ingress.type
+    Data_Server_Disk_Shared_Size_GB  = [int]$config.sre.dataserver.disks.shared.sizeGb
+    Data_Server_Disk_Shared_Type     = $config.sre.dataserver.disks.shared.type
+    Data_Server_Name                 = $config.sre.dataserver.vmName
+    Data_Server_VM_Size              = $config.sre.dataserver.vmSize
+    Domain_Name                      = $config.shm.domain.fqdn
+    IP_Address                       = $config.sre.dataserver.ip
+    OU_Path                          = $config.shm.domain.ous.dataServers.path
+    Virtual_Network_Name             = $config.sre.network.vnet.name
+    Virtual_Network_Resource_Group   = $config.sre.network.vnet.rg
+    Virtual_Network_Subnet           = $config.sre.network.vnet.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-data-server-template.json") -Params $params -ResourceGroupName $config.sre.dataserver.rg
 
@@ -80,11 +84,11 @@ Invoke-WindowsConfigureAndUpdate -VMName $config.sre.dataserver.vmName -Resource
 Add-LogMessage -Level Info "Configuring data server VM..."
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_dataserver" "scripts" "Configure_Data_Server_Remote.ps1"
 $params = @{
-    sreNetbiosName = "`"$($config.sre.domain.netbiosName)`""
-    shmNetbiosName = "`"$($config.shm.domain.netbiosName)`""
-    dataMountUser = "`"$($config.sre.users.serviceAccounts.datamount.samAccountName)`""
+    sreNetbiosName       = "`"$($config.sre.domain.netbiosName)`""
+    shmNetbiosName       = "`"$($config.shm.domain.netbiosName)`""
+    dataMountUser        = "`"$($config.sre.users.serviceAccounts.datamount.samAccountName)`""
     researcherUserSgName = "`"$($config.sre.domain.securityGroups.researchUsers.name)`""
-    serverAdminSgName = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
+    serverAdminSgName    = "`"$($config.shm.domain.securityGroups.serverAdmins.name)`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.dataserver.vmName -ResourceGroupName $config.sre.dataserver.rg -Parameter $params
 Write-Output $result.Value

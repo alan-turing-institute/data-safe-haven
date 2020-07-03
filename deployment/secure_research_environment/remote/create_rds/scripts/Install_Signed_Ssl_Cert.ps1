@@ -5,11 +5,11 @@
 # job, but this does not seem to have an immediate effect
 # For details, see https://docs.microsoft.com/en-gb/azure/virtual-machines/windows/run-command
 param(
-    [Parameter(Position=0, HelpMessage = "Fully qualified domain name for RDS broker")]
+    [Parameter(Position = 0, HelpMessage = "Fully qualified domain name for RDS broker")]
     [string]$rdsFqdn,
-    [Parameter(Position=1, HelpMessage = "Thumbprint for the relevant certificate")]
+    [Parameter(Position = 1, HelpMessage = "Thumbprint for the relevant certificate")]
     [string]$certThumbPrint,
-    [Parameter(Position=2, HelpMessage = "Remote folder to write SSL certificate to")]
+    [Parameter(Position = 2, HelpMessage = "Remote folder to write SSL certificate to")]
     [string]$remoteDirectory
 )
 
@@ -40,7 +40,7 @@ Set-RDCertificate -Role RDWebAccess -Thumbprint $certificate.Thumbprint -Connect
 $success = $success -and $?
 Set-RDCertificate -Role RDGateway -Thumbprint $certificate.Thumbprint -ConnectionBroker $rdsFqdn -Force
 $success = $success -and $?
-if($success) {
+if ($success) {
     Write-Output " [o] Successfully updated RDS roles"
 } else {
     Write-Output " [x] Failed to update RDS roles!"

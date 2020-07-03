@@ -1,17 +1,17 @@
 # Check installed modules
-Write-Host "List installed modules..."
+Write-Output "List installed modules..."
 Get-Module
 
 # Install module
-Write-Host "Installing RDWebClientManagement..."
+Write-Output "Installing RDWebClientManagement..."
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name RDWebClientManagement -Force -AllowClobber -AcceptLicense
 if ($?) {
-    Write-Host " [o] Succeeded"
+    Write-Output " [o] Succeeded"
 } else {
-    Write-Host " [x] Failed!"
+    Write-Output " [x] Failed!"
 }
 
 # Check installed modules
-Write-Host "List installed modules..."
+Write-Output "List installed modules..."
 Get-Module

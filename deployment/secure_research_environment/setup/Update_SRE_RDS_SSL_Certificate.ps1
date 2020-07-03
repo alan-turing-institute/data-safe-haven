@@ -106,7 +106,7 @@ if ($requestCertificate) {
     $testDomain = "dnstest.$($baseFqdn)"
     $params = @{
         AZSubscriptionId = $azureContext.Subscription.Id
-        AZAccessToken = $token
+        AZAccessToken    = $token
     }
     Add-LogMessage -Level Info "[ ] Attempting to create a DNS record for $testDomain..."
     Publish-DnsChallenge $testDomain -Account $acct -Token faketoken -Plugin Azure -PluginArgs $params -Verbose
@@ -198,8 +198,8 @@ if ($doInstall) {
     Add-LogMessage -Level Info "Configuring RDS Gateway VM to use SSL certificate"
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
     $params = @{
-        rdsFqdn = "`"$rdsFqdn`""
-        certThumbPrint = "`"$($kvCertificate.Thumbprint)`""
+        rdsFqdn         = "`"$rdsFqdn`""
+        certThumbPrint  = "`"$($kvCertificate.Thumbprint)`""
         remoteDirectory = "`"$remoteDirectory`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params

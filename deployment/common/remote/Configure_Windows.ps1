@@ -1,6 +1,6 @@
 # Set locale and timezone
 # -----------------------
-Write-Host "Setting locale and timezone..."
+Write-Output "Setting locale and timezone..."
 Set-WinHomeLocation -GeoId 0xf2
 $success = $?
 Set-TimeZone -Name "GMT Standard Time"
@@ -13,9 +13,9 @@ Set-WinUserLanguageList -LanguageList en-GB -Force
 $success = $success -and $?
 Get-WinUserLanguageList
 if ($success) {
-    Write-Host " [o] Setting locale succeeded"
+    Write-Output " [o] Setting locale succeeded"
 } else {
-    Write-Host " [x] Setting locale failed!"
+    Write-Output " [x] Setting locale failed!"
 }
 
 
@@ -23,22 +23,22 @@ if ($success) {
 # -----------------------
 $existingUpdateTitles = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") } | ForEach-Object { $_.Title }
 $updatesToInstall = Get-WindowsUpdate -MicrosoftUpdate
-Write-Host "`nInstalling $($updatesToInstall.Count) Windows updates:"
+Write-Output "`nInstalling $($updatesToInstall.Count) Windows updates:"
 foreach ($update in $updatesToInstall) {
-    Write-Host " ... $($update.Title)"
+    Write-Output " ... $($update.Title)"
 }
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 2>&1 | Out-Null
 if ($?) {
-    Write-Host " [o] Installing Windows updates succeeded."
+    Write-Output " [o] Installing Windows updates succeeded."
 } else {
-    Write-Host " [x] Installing Windows updates failed!"
+    Write-Output " [x] Installing Windows updates failed!"
 }
 
 
 # Report any updates that were installed
 # --------------------------------------
-Write-Host "`nNewly installed Windows updates:"
+Write-Output "`nNewly installed Windows updates:"
 $installedUpdates = Get-WUHistory | Where-Object { ($_.Result -eq "Succeeded") -And ($_.Title -NotIn $existingUpdateTitles) }
 foreach ($update in $installedUpdates) {
-    Write-Host " ... $($update.Title)"
+    Write-Output " ... $($update.Title)"
 }

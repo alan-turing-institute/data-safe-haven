@@ -52,10 +52,10 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 # --------------------------------
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
-             Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
-             Replace("<shm-id>", $config.id).
-             Replace("<subnet-identity-cidr>", $config.network.subnets.identity.cidr).
-             Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
+    Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
+    Replace("<shm-id>", $config.id).
+    Replace("<subnet-identity-cidr>", $config.network.subnets.identity.cidr).
+    Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
 
 
 # Add routes to the route table

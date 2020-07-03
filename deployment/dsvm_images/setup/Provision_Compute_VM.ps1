@@ -20,7 +20,7 @@ Import-Module $PSScriptRoot/../../common/Security.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
+$null = Set-AzContext -SubscriptionId $config.dsvmImage.subscription
 
 
 # Select which VM size to use
@@ -51,15 +51,15 @@ $cloudInitTemplate = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "clo
 
 # Create resource groups if they do not exist
 # -------------------------------------------
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.build.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $config.dsvmImage.location
-$_ = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.build.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.bootdiagnostics.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.network.rg -Location $config.dsvmImage.location
+$null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 
 
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
-$_ = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
+$null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
 Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.adminSecurityGroupName
 
 
@@ -74,39 +74,39 @@ $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwor
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Allow `
-                             -Name "AllowTuringSSH" `
-                             -Description "Allow port 22 for management over ssh" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange 22 `
-                             -Direction Inbound `
-                             -Priority 1000 `
-                             -Protocol TCP `
-                             -SourceAddressPrefix 193.60.220.240,193.60.220.253 `
-                             -SourcePortRange *
+    -Access Allow `
+    -Name "AllowTuringSSH" `
+    -Description "Allow port 22 for management over ssh" `
+    -DestinationAddressPrefix * `
+    -DestinationPortRange 22 `
+    -Direction Inbound `
+    -Priority 1000 `
+    -Protocol TCP `
+    -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
+    -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-                             -Access Deny `
-                             -Name "DenyAll" `
-                             -Description "Inbound deny all" `
-                             -DestinationAddressPrefix * `
-                             -DestinationPortRange * `
-                             -Direction Inbound `
-                             -Priority 3000 `
-                             -Protocol * `
-                             -SourceAddressPrefix * `
-                             -SourcePortRange *
-$_ = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
+    -Access Deny `
+    -Name "DenyAll" `
+    -Description "Inbound deny all" `
+    -DestinationAddressPrefix * `
+    -DestinationPortRange * `
+    -Direction Inbound `
+    -Priority 3000 `
+    -Protocol * `
+    -SourceAddressPrefix * `
+    -SourcePortRange *
+$null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
 # Insert scripts into the cloud-init template
 # -------------------------------------------
 $indent = "      "
 foreach ($scriptName in @("analyse_build.py",
-                          "create_or_update_conda_python_environment.sh",
-                          "dbeaver_drivers_config.xml",
-                          "deprovision_vm.sh",
-                          "download_and_install_deb.sh",
-                          "download_and_install_tar.sh")) {
+        "create_or_update_conda_python_environment.sh",
+        "dbeaver_drivers_config.xml",
+        "deprovision_vm.sh",
+        "download_and_install_deb.sh",
+        "download_and_install_tar.sh")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)
@@ -152,11 +152,11 @@ $python37AllPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "pac
 $python37PipPackages = $python37AllPackages | Where-Object { $nonCondaPythonPackages -Contains $_ }
 $python37CondaPackages = $python37AllPackages | Where-Object { $python37PipPackages -NotContains $_ } | ForEach-Object { $pypi2conda.ContainsKey($_) ? $pypi2conda[$_] : $_ }
 $pythonPackages = "- export PYTHON27_CONDA_PACKAGES=`" ${python27CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
-                  "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
-                  "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
-                  "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
+    "- export PYTHON27_PIP_PACKAGES=`"${python27PipPackages}`"" + "`n  " + `
+    "- export PYTHON36_CONDA_PACKAGES=`" ${python36CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
+    "- export PYTHON36_PIP_PACKAGES=`"${python36PipPackages}`"" + "`n  " + `
+    "- export PYTHON37_CONDA_PACKAGES=`" ${python37CondaPackages} ${nonPythonPackages} `"" + "`n  " + `
+    "- export PYTHON37_PIP_PACKAGES=`"${python37PipPackages}`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <Python package list>", $pythonPackages)
 # Require specific versions of some packages. Replace ' package ' with ' package<version requirement> '
 $requiredCondaVersions = "CONDA_VERSIONED_PACKAGES=`$(echo `$CONDA_PACKAGES | sed " + $($packageVersions.Keys | ForEach-Object { "-e 's/ $_ / $_$($packageVersions[$_]) /g'" } | Join-String -Separator " ") + ")"
@@ -168,7 +168,7 @@ $cloudInitTemplate = $cloudInitTemplate.Replace("# <required versions>", $requir
 $cranPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-cran.list")
 $bioconductorPackages = Get-Content (Join-Path $PSScriptRoot ".." "packages" "packages-r-bioconductor.list")
 $rPackages = "- export CRAN_PACKAGES=`"$($cranPackages | Join-String -SingleQuote -Separator ', ')`"" + "`n  " + `
-             "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
+    "- export BIOCONDUCTOR_PACKAGES=`"$($bioconductorPackages | Join-String -SingleQuote -Separator ', ')`""
 $cloudInitTemplate = $cloudInitTemplate.Replace("- <R package list>", $rPackages)
 
 
@@ -201,7 +201,7 @@ $params = @{
     ResourceGroupName      = $config.dsvmImage.build.rg
     ImageSku               = $baseImageSku
 }
-$_ = Deploy-UbuntuVirtualMachine @params
+$null = Deploy-UbuntuVirtualMachine @params
 
 
 # Log connection details for monitoring this build
@@ -217,4 +217,4 @@ Add-LogMessage -Level Info "  The full log file can be viewed with: tail -f -n+1
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

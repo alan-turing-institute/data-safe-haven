@@ -8,16 +8,16 @@ param(
     [Parameter(Position = 0, HelpMessage = "Absolute path to remote artifacts directory")]
     [ValidateNotNullOrEmpty()]
     [string]$remoteDir,
-    [Parameter(Position = 1,HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
+    [Parameter(Position = 1, HelpMessage = "Names of blobs to dowload from artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$pipeSeparatedBlobNames,
-    [Parameter(Position = 2,HelpMessage = "Name of the artifacts storage account")]
+    [Parameter(Position = 2, HelpMessage = "Name of the artifacts storage account")]
     [ValidateNotNullOrEmpty()]
     [string]$storageAccountName,
-    [Parameter(Position = 3,HelpMessage = "Name of the artifacts storage container")]
+    [Parameter(Position = 3, HelpMessage = "Name of the artifacts storage container")]
     [ValidateNotNullOrEmpty()]
     [string]$storageContainerName,
-    [Parameter(Position = 4,HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
+    [Parameter(Position = 4, HelpMessage = "SAS token with read/list rights to the artifacts storage blob container")]
     [ValidateNotNullOrEmpty()]
     [string]$sasToken
 )
@@ -31,7 +31,7 @@ $blobNames = $pipeSeparatedBlobNames.Split("|")
 # Download artifacts from blob storage
 # ------------------------------------
 $numBlobs = $blobNames.length
-Write-Host "Downloading $numBlobs files to '$remoteDir'..."
+Write-Output "Downloading $numBlobs files to '$remoteDir'..."
 foreach ($blobName in $blobNames) {
     $fileName = Split-Path -Leaf $blobName
     $fileDirRel = Split-Path -Parent $blobName
@@ -47,5 +47,5 @@ foreach ($blobName in $blobNames) {
 
 # Import the NPS configuration
 # ----------------------------
-Write-Host "Importing NPS configuration for RDG_CAP policy..."
+Write-Output "Importing NPS configuration for RDG_CAP policy..."
 Import-NpsConfiguration -Path (Join-Path $remoteDir "nps_config.xml")

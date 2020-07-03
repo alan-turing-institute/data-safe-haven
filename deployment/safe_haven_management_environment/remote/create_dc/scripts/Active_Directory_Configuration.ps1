@@ -171,7 +171,7 @@ foreach ($ouName in ("<ou-research-users-name>",
                      "<ou-linux-servers-name>",
                      "<ou-rds-session-servers-name>",
                      "<ou-rds-gateway-servers-name>")
-                     ) {
+) {
     $ouExists = Get-ADOrganizationalUnit -Filter "Name -eq '$ouName'"
     if ("$ouExists" -ne "") {
         Write-Output " [o] OU '$ouName' already exists"
@@ -239,7 +239,7 @@ foreach ($backupTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All ser
                                ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
                                ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
                                ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
-    $backup,$target = $backupTargetPair
+    $backup, $target = $backupTargetPair
     $null = Import-GPO -BackupId "$backup" -TargetName "$target" -Path $gpoBackupPath -CreateIfNeeded
     if ($?) {
         Write-Output " [o] Importing '$backup' to '$target' succeeded"
@@ -267,7 +267,7 @@ foreach ($gpoOuNamePair in (("All servers - Local Administrators", "<ou-service-
                             ("All Servers - Windows Update", "<ou-rds-session-servers-name>"),
                             ("All Servers - Windows Update", "<ou-rds-gateway-servers-name>"),
                             ("Session Servers - Remote Desktop Control", "<ou-rds-session-servers-name>"))) {
-    $gpoName,$ouName = $gpoOuNamePair
+    $gpoName, $ouName = $gpoOuNamePair
     $gpo = Get-GPO -Name "$gpoName"
     # Check for a match in existing GPOs
     [xml]$gpoReportXML = Get-GPOReport -Guid $gpo.Id -ReportType xml
@@ -301,9 +301,9 @@ $configurationNamingContext = $rootDse.ConfigurationNamingContext
 $schemaNamingContext = $rootDse.SchemaNamingContext
 # Create hashtables to store the GUID values of each schema class and attribute and each extended right in the forest
 $guidmap = @{}
-Get-ADObject -SearchBase $schemaNamingContext -LDAPFilter "(schemaidguid=*)" -Properties lDAPDisplayName,schemaIDGUID | ForEach-Object {$guidmap[$_.lDAPDisplayName] = [System.GUID]$_.schemaIDGUID }
+Get-ADObject -SearchBase $schemaNamingContext -LDAPFilter "(schemaidguid=*)" -Properties lDAPDisplayName, schemaIDGUID | ForEach-Object { $guidmap[$_.lDAPDisplayName] = [System.GUID]$_.schemaIDGUID }
 $extendedRightsMap = @{}
-Get-ADObject -SearchBase $configurationNamingContext -LDAPFilter "(&(objectclass=controlAccessRight)(rightsguid=*))" -Properties displayName,rightsGuid | ForEach-Object { $extendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
+Get-ADObject -SearchBase $configurationNamingContext -LDAPFilter "(&(objectclass=controlAccessRight)(rightsguid=*))" -Properties displayName, rightsGuid | ForEach-Object { $extendedRightsMap[$_.displayName] = [System.GUID]$_.rightsGuid }
 # Get the SID for the localadsync account
 $adsyncSID = New-Object System.Security.Principal.SecurityIdentifier (Get-ADUser $userAccounts.aadLocalSync.samAccountName).SID
 $success = $?

@@ -1,7 +1,7 @@
 param(
   [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID")]
   [string]$shmId,
-  [Parameter(Mandatory = $false,HelpMessage = "Sku for the licence you want to assign")]
+  [Parameter(Mandatory = $false, HelpMessage = "Sku for the licence you want to assign")]
   [string]$licenceSku = "AAD_PREMIUM"
 )
 
@@ -15,7 +15,7 @@ $shmDomain = $config.domain.fqdn
 # Connect to the Azure AD
 # We connect within the script to ensure we are connected to the right Azure AD for the SHM
 Add-LogMessage -Level Info "Connecting to Azure AD for '$shmDomain'..."
-$_ = Connect-AzureAD -TenantId $shmDomain
+$null = Connect-AzureAD -TenantId $shmDomain
 
 
 # Get the appropriate licence
@@ -27,13 +27,13 @@ Add-LogMessage -Level Info "Preparing to add licence '$licenceSku' ($($Licence.S
 
 
 # Find all users without assigned licences who have an OnPremisesSecurityIdentifier (indicating that they were synched from a local AD)
-$unlicensedUsers = Get-AzureAdUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }
+$unlicensedUsers = Get-AzureADUser | Where-Object { -Not $_.AssignedLicenses } | Where-Object { $_.OnPremisesSecurityIdentifier }
 Add-LogMessage -Level Info "Assigning licences to $($unlicensedUsers.Count) unlicenced users"
 $unlicensedUsers | Set-AzureADUserLicense -AssignedLicenses $LicencesToAssign
 
 # Disconnect from AzureAD
-# We disconnect from the SHM Azure AD to ensure the user does not assume they are still 
+# We disconnect from the SHM Azure AD to ensure the user does not assume they are still
 # connected to a different Azure AD they may have been connected to prior to running this
 # script and therefore perform subsequent operations against the wrong Azure AD
 Add-LogMessage -Level Info "Disconnecting from AzureAD for '$shmDomain"
-$_ = Disconnect-AzureAD
+$null = Disconnect-AzureAD

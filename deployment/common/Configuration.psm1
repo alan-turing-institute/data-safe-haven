@@ -8,7 +8,7 @@ Import-Module $PSScriptRoot/Security.psm1
 # ---------------------------
 function Add-SreConfig {
     param(
-        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
         [string]$configId
     )
     Add-LogMessage -Level Info "Generating/updating config file for '$configId'"
@@ -26,11 +26,11 @@ function Add-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            subscriptionName = $sreConfigBase.subscriptionName
+            adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
             id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
+            subscriptionName = $sreConfigBase.subscriptionName
             tier = $sreConfigBase.tier
-            adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
         }
     }
     $config.sre.location = $config.shm.location
@@ -43,9 +43,9 @@ function Add-SreConfig {
     # Domain config
     # -------------
     $config.sre.domain = [ordered]@{
+        dn = "DC=$($sreConfigBase.domain.Replace('.',',DC='))"
         fqdn = $sreConfigBase.domain
         netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength 15 -FailureIsFatal
-        dn = "DC=$($sreConfigBase.domain.Replace('.',',DC='))"
     }
     $config.sre.domain.securityGroups = [ordered]@{
         dataAdministrators = [ordered]@{ name = "SG $($config.sre.domain.netbiosName) Data Administrators" }
@@ -107,12 +107,12 @@ function Add-SreConfig {
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         artifacts = [ordered]@{
-            rg = $storageRg
             accountName = "sre$($config.sre.id)artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            rg = $storageRg
         }
         bootdiagnostics = [ordered]@{
-            rg = $storageRg
             accountName = "sre$($config.sre.id)bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength 24 -Silent
+            rg = $storageRg
         }
     }
 
@@ -209,8 +209,6 @@ function Add-SreConfig {
         $config.sre.rds[$server].hostname = $config.sre.rds[$server].vmName
         $config.sre.rds[$server].fqdn = "$($config.sre.rds[$server].vmName).$($config.shm.domain.fqdn)"
     }
-
-
     # Set which IPs can access the Safe Haven: if 'default' is given then apply sensible defaults
     if ($sreConfigBase.inboundAccessFrom -eq "default") {
         if (@("3", "4").Contains($config.sre.tier)) {
@@ -444,7 +442,7 @@ function Get-ShmFullConfig {
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $shmConfigBase = Get-ConfigFile -configType "shm" -configLevel "core" -configName $shmId
-    $shmIpPrefix = "10.0.0"  # this does not need to be user-configurable as different SHMs are never peered so they can share the same address space. This is therefore never changed in practice
+    $shmIpPrefix = "10.0.0"  # This does not need to be user-configurable. Different SHMs can share the same address space as they are never peered.
 
     # Safe Haven management config
     # ----------------------------

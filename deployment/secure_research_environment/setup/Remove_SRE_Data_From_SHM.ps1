@@ -68,8 +68,8 @@ if ($sreResources -or $sreResourceGroups) {
     # Remove SRE users and groups from SHM DC
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_Users_And_Groups_Remote.ps1" -Resolve
     $params = @{
-        groupNamesJoined = "`"$($groupNames -Join '|')`""
-        userNamesJoined = "`"$($userNames -Join '|')`""
+        groupNamesJoined           = "`"$($groupNames -Join '|')`""
+        userNamesJoined            = "`"$($userNames -Join '|')`""
         computerNamePatternsJoined = "`"$($computerNamePatterns -Join '|')`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -82,8 +82,7 @@ if ($sreResources -or $sreResourceGroups) {
     $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_DNS_Entries_Remote.ps1" -Resolve
     $params = @{
         shmFqdn = "`"$($config.shm.domain.fqdn)`""
-        sreId = "`"$($config.sre.id)`""
-
+        sreId   = "`"$($config.sre.id)`""
     }
     $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
     Write-Output $result.Value

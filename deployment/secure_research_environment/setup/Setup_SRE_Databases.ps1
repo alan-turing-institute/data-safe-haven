@@ -46,23 +46,32 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                  -Name "InboundAllowVNet" `
                                  -Description "Inbound allow SRE VNet" `
                                  -Priority 3000 `
-                                 -Direction Inbound -Access Allow -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                                 -DestinationAddressPrefix $subnetCfg.cidr -DestinationPortRange *
+                                 -Direction Inbound `
+                                 -Access Allow -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix $subnetCfg.cidr `
+                                 -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "InboundDenyAll" `
                                  -Description "Inbound deny all" `
                                  -Priority 4000 `
-                                 -Direction Inbound -Access Deny -Protocol * `
-                                 -SourceAddressPrefix * -SourcePortRange * `
-                                 -DestinationAddressPrefix * -DestinationPortRange *
+                                 -Direction Inbound `
+                                 -Access Deny -Protocol * `
+                                 -SourceAddressPrefix * `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix * `
+                                 -DestinationPortRange *
     Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                                  -Name "OutboundDenyInternet" `
                                  -Description "Outbound deny internet" `
                                  -Priority 4000 `
-                                 -Direction Outbound -Access Deny -Protocol * `
-                                 -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                                 -DestinationAddressPrefix Internet -DestinationPortRange *
+                                 -Direction Outbound `
+                                 -Access Deny -Protocol * `
+                                 -SourceAddressPrefix VirtualNetwork `
+                                 -SourcePortRange * `
+                                 -DestinationAddressPrefix Internet `
+                                 -DestinationPortRange *
 
     # Attach the NSG to the appropriate subnet
     # ----------------------------------------
@@ -77,9 +86,12 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                      -Name "OutboundAllowInternetTemporary" `
                                      -Description "Outbound allow internet" `
                                      -Priority 100 `
-                                     -Direction Outbound -Access Allow -Protocol * `
-                                     -SourceAddressPrefix $databaseCfg.ip -SourcePortRange * `
-                                     -DestinationAddressPrefix Internet -DestinationPortRange *
+                                     -Direction Outbound `
+                                     -Access Allow -Protocol * `
+                                     -SourceAddressPrefix $databaseCfg.ip `
+                                     -SourcePortRange * `
+                                     -DestinationAddressPrefix Internet `
+                                     -DestinationPortRange *
 
         # Retrieve common secrets from key vaults
         # ---------------------------------------
@@ -100,25 +112,25 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             # Create SQL server from template
             Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
             $params = @{
-                Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-                Administrator_User = $vmAdminUsername
+                Administrator_Password       = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+                Administrator_User           = $vmAdminUsername
                 BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-                Data_Disk_Size = $databaseCfg.disks.data.sizeGb
-                Data_Disk_Type = $databaseCfg.disks.data.type
-                Db_Admin_Password = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
-                Db_Admin_Username = $dbAdminUsername
-                Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
-                Domain_Join_Username = $config.shm.users.computerManagers.dataServers.samAccountName
-                Domain_Name = $config.shm.domain.fqdn
-                IP_Address = $databaseCfg.ip
-                OU_Path = $config.shm.domain.ous.dataServers.path
-                OS_Disk_Size = $databaseCfg.disks.os.sizeGb
-                OS_Disk_Type = $databaseCfg.disks.os.type
-                Sql_Connection_Port = $databaseCfg.port
-                Sql_Server_Name = $databaseCfg.vmName
-                Sql_Server_Edition = $databaseCfg.sku
-                SubnetResourceId = $subnet.Id
-                VM_Size = $databaseCfg.vmSize
+                Data_Disk_Size               = $databaseCfg.disks.data.sizeGb
+                Data_Disk_Type               = $databaseCfg.disks.data.type
+                Db_Admin_Password            = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
+                Db_Admin_Username            = $dbAdminUsername
+                Domain_Join_Password         = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+                Domain_Join_Username         = $config.shm.users.computerManagers.dataServers.samAccountName
+                Domain_Name                  = $config.shm.domain.fqdn
+                IP_Address                   = $databaseCfg.ip
+                OU_Path                      = $config.shm.domain.ous.dataServers.path
+                OS_Disk_Size                 = $databaseCfg.disks.os.sizeGb
+                OS_Disk_Type                 = $databaseCfg.disks.os.type
+                Sql_Connection_Port          = $databaseCfg.port
+                Sql_Server_Name              = $databaseCfg.vmName
+                Sql_Server_Edition           = $databaseCfg.sku
+                SubnetResourceId             = $subnet.Id
+                VM_Size                      = $databaseCfg.vmSize
             }
             Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
 
@@ -130,14 +142,14 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Add-LogMessage -Level Info "[ ] Locking down $($databaseCfg.vmName)..."
             $serverLockdownCommandPath = (Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "sre-mssql2019-server-lockdown.sql")
             $params = @{
-                DataAdminGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
-                DbAdminPassword = $dbAdminPassword
-                DbAdminUsername = $dbAdminUsername
-                EnableSSIS = $databaseCfg.enableSSIS
-                LocalAdminUser = $vmAdminUsername
-                ResearchUsersGroup = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
+                DataAdminGroup           = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.dataAdministrators.name)"
+                DbAdminPassword          = $dbAdminPassword
+                DbAdminUsername          = $dbAdminUsername
+                EnableSSIS               = $databaseCfg.enableSSIS
+                LocalAdminUser           = $vmAdminUsername
+                ResearchUsersGroup       = "$($config.shm.domain.netbiosName)\$($config.sre.domain.securityGroups.researchUsers.name)"
                 ServerLockdownCommandB64 = [Convert]::ToBase64String((Get-Content $serverLockdownCommandPath -Raw -AsByteStream))
-                SysAdminGroup = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
+                SysAdminGroup            = "$($config.shm.domain.netbiosName)\$($config.shm.domain.securityGroups.serverAdmins.name)"
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Lockdown_Sql_Server.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Parameter $params
@@ -159,10 +171,10 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             Add-LogMessage -Level Info "Register '$dbServiceAccountName' ($dbServiceAccountSamAccountName) as a service principal for the database..."
             $null = Set-AzContext -Subscription $config.shm.subscriptionName
             $params = @{
-                Hostname = "`"$($databaseCfg.vmName)`""
-                Name = "`"$($dbServiceAccountName)`""
+                Hostname       = "`"$($databaseCfg.vmName)`""
+                Name           = "`"$($dbServiceAccountName)`""
                 SamAccountName = "`"$($dbServiceAccountSamAccountName)`""
-                ShmFqdn = "`"$($config.shm.domain.fqdn)`""
+                ShmFqdn        = "`"$($config.shm.domain.fqdn)`""
             }
             $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_databases" "scripts" "Create_Postgres_Service_Principal.ps1"
             $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -200,18 +212,18 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
                                                     Replace("<vm-ipaddress>", $databaseCfg.ip)
             # Deploy the VM
             $params = @{
-                AdminPassword = $vmAdminPassword
-                AdminUsername = $vmAdminUsername
+                AdminPassword          = $vmAdminPassword
+                AdminUsername          = $vmAdminUsername
                 BootDiagnosticsAccount = $bootDiagnosticsAccount
-                CloudInitYaml = $cloudInitTemplate
-                DataDiskIds = @($dataDisk.Id)
-                ImageSku = $databaseCfg.sku
-                Location = $config.sre.location
-                Name = $databaseCfg.vmName
-                NicId = $vmNic.Id
-                OsDiskType = $databaseCfg.disks.os.type
-                ResourceGroupName = $config.sre.databases.rg
-                Size = $databaseCfg.vmSize
+                CloudInitYaml          = $cloudInitTemplate
+                DataDiskIds            = @($dataDisk.Id)
+                ImageSku               = $databaseCfg.sku
+                Location               = $config.sre.location
+                Name                   = $databaseCfg.vmName
+                NicId                  = $vmNic.Id
+                OsDiskType             = $databaseCfg.disks.os.type
+                ResourceGroupName      = $config.sre.databases.rg
+                Size                   = $databaseCfg.vmSize
             }
             $null = Deploy-UbuntuVirtualMachine @params
             Wait-ForAzVMCloudInit -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg

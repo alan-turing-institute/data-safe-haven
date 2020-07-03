@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId
 )
 
 Import-Module Az
@@ -62,24 +62,24 @@ Add-LogMessage -Level Info "Deploying network policy server (NPS) from template.
 # NB. We do not currently use the dedicated service-servers computer management user.
 # This will need some deeper thought about which OU each VM should belong to.
 $params = @{
-    Administrator_Password = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    Administrator_User = $vmAdminUsername
-    BootDiagnostics_Account_Name = $config.storage.bootdiagnostics.accountName
-    Domain_Join_Password = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
-    Domain_Join_User = $domainJoinUsername
-    Domain_Name = $config.domain.fqdn
-    NPS_Data_Disk_Size_GB = [int]$config.nps.disks.data.sizeGb
-    NPS_Data_Disk_Type = $config.nps.disks.data.type
-    NPS_Host_Name = $config.nps.hostname
-    NPS_IP_Address = $config.nps.ip
-    NPS_Os_Disk_Size_GB = [int]$config.nps.disks.os.sizeGb
-    NPS_Os_Disk_Type = $config.nps.disks.os.type
-    NPS_VM_Name = $config.nps.vmName
-    NPS_VM_Size = $config.nps.vmSize
-    OU_Path = $config.domain.ous.identityServers.path
-    Virtual_Network_Name = $config.network.vnet.name
+    Administrator_Password         = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+    Administrator_User             = $vmAdminUsername
+    BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
+    Domain_Join_Password           = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+    Domain_Join_User               = $domainJoinUsername
+    Domain_Name                    = $config.domain.fqdn
+    NPS_Data_Disk_Size_GB          = [int]$config.nps.disks.data.sizeGb
+    NPS_Data_Disk_Type             = $config.nps.disks.data.type
+    NPS_Host_Name                  = $config.nps.hostname
+    NPS_IP_Address                 = $config.nps.ip
+    NPS_Os_Disk_Size_GB            = [int]$config.nps.disks.os.sizeGb
+    NPS_Os_Disk_Type               = $config.nps.disks.os.type
+    NPS_VM_Name                    = $config.nps.vmName
+    NPS_VM_Size                    = $config.nps.vmSize
+    OU_Path                        = $config.domain.ous.identityServers.path
+    Virtual_Network_Name           = $config.network.vnet.name
     Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet = $config.network.vnet.subnets.identity.name
+    Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
 
@@ -102,11 +102,11 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Impo
 $blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
 $artifactSasToken = New-ReadOnlyAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
 $params = @{
-    remoteDir = "`"C:\Installation`""
+    remoteDir              = "`"C:\Installation`""
     pipeSeparatedBlobNames = "`"$($blobNames -join "|")`""
-    storageAccountName = "`"$($config.storage.artifacts.accountName)`""
-    storageContainerName = "`"$storageContainerName`""
-    sasToken = "`"$artifactSasToken`""
+    storageAccountName     = "`"$($config.storage.artifacts.accountName)`""
+    storageContainerName   = "`"$storageContainerName`""
+    sasToken               = "`"$artifactSasToken`""
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
 Write-Output $result.Value

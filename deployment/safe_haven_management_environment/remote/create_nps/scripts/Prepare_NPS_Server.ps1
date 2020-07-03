@@ -13,7 +13,7 @@ param(
 
 # Clear any previously downloaded artifacts
 # -----------------------------------------
-Write-Host "Clearing all pre-existing files and folders from '$remoteDir'"
+Write-Output "Clearing all pre-existing files and folders from '$remoteDir'"
 if (Test-Path -Path $remoteDir) {
     $null = Get-ChildItem $remoteDir -Recurse | Remove-Item -Recurse -Force
 } else {
@@ -23,35 +23,35 @@ if (Test-Path -Path $remoteDir) {
 
 # Install NPAS
 # ------------
-Write-Host "Installing NPAS feature..."
+Write-Output "Installing NPAS feature..."
 Install-WindowsFeature NPAS -IncludeManagementTools
 if ($?) {
-    Write-Host " [o] Successfully installed NPAS"
+    Write-Output " [o] Successfully installed NPAS"
 } else {
-    Write-Host " [x] Failed to install NPAS"
+    Write-Output " [x] Failed to install NPAS"
 }
 
 
 # Set SQL Firewall rules
 # ----------------------
-Write-Host "Setting SQL Firewall rules..."
+Write-Output "Setting SQL Firewall rules..."
 $null = New-NetFirewallRule -DisplayName "SQL" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 if ($?) {
-    Write-Host " [o] Set inbound rule"
+    Write-Output " [o] Set inbound rule"
 } else {
-    Write-Host " [x] Failed to set inbound rule"
+    Write-Output " [x] Failed to set inbound rule"
 }
 $null = New-NetFirewallRule -DisplayName "SQL" -Direction Outbound -Action Allow -Protocol TCP -LocalPort 1433 -Profile Domain -Enabled True
 if ($?) {
-    Write-Host " [o] Set outbound rule"
+    Write-Output " [o] Set outbound rule"
 } else {
-    Write-Host " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to set outbound rule"
 }
 
 
 # Format the data drives
 # ----------------------
-Write-Host "Formatting data drive..."
+Write-Output "Formatting data drive..."
 Stop-Service ShellHWDetection
 $CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq 'raw' } | Sort -Property Number
 foreach ($RawDisk in $CandidateRawDisks) {
@@ -61,26 +61,26 @@ foreach ($RawDisk in $CandidateRawDisks) {
 }
 Start-Service ShellHWDetection
 if ($?) {
-    Write-Host " [o] Completed"
+    Write-Output " [o] Completed"
 } else {
-    Write-Host " [x] Failed to set outbound rule"
+    Write-Output " [x] Failed to set outbound rule"
 }
 
 
 # Download and install the NPS Extension
 # --------------------------------------
-Write-Host "Downloading NPS extension to '$remoteDir'..."
+Write-Output "Downloading NPS extension to '$remoteDir'..."
 $npsExtnPath = Join-Path $remoteDir "NpsExtnForAzureMfaInstaller.exe"
 Invoke-WebRequest -Uri https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe -OutFile $npsExtnPath
 if ($?) {
-    Write-Host " [o] Successfully downloaded NPS extension"
+    Write-Output " [o] Successfully downloaded NPS extension"
 } else {
-    Write-Host " [x] Failed to download NPS extension"
+    Write-Output " [x] Failed to download NPS extension"
 }
-Write-Host "Installing NPS extension..."
+Write-Output "Installing NPS extension..."
 Start-Process $npsExtnPath -ArgumentList '/install','/quiet'
 if ($?) {
-    Write-Host " [o] Successfully installed NPS extension"
+    Write-Output " [o] Successfully installed NPS extension"
 } else {
-    Write-Host " [x] Failed to install NPS extension"
+    Write-Output " [x] Failed to install NPS extension"
 }

@@ -88,8 +88,8 @@ $remoteUploadDir = "C:\Installation"
 $containerNameGateway = "sre-rds-gateway-scripts"
 $containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.rds.gateway.vmName),
-                 ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
-                 ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
+    ("RDS Session Host (App server)", $config.sre.rds.sessionHost1.vmName),
+    ("RDS Session Host (Remote desktop server)", $config.sre.rds.sessionHost2.vmName))
 
 
 # Set variables used in template expansion, retrieving from the key vault where appropriate
@@ -144,24 +144,36 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -Name "HttpsIn" `
                              -Description "Allow HTTPS inbound to RDS server" `
                              -Priority 100 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix Internet -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange 443
+                             -Direction Inbound `
+                             -Access Allow `
+                             -Protocol TCP `
+                             -SourceAddressPrefix Internet `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange 443
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgGateway `
                              -Name "RadiusAuthenticationRdsToNps" `
                              -Description "Authenticate to SHM RADIUS server" `
                              -Priority 300 `
-                             -Direction Outbound -Access Allow -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix $config.shm.nps.ip -DestinationPortRange 1645,1646,1812,1813
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $config.shm.nps.ip `
+                             -DestinationPortRange 1645, 1646, 1812, 1813
 $nsgSessionHosts = Deploy-NetworkSecurityGroup -Name $config.sre.rds.sessionHost1.nsg -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgSessionHosts `
                              -Name "Deny_Internet" `
                              -Description "Deny Outbound Internet Access" `
                              -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix Internet `
+                             -DestinationPortRange *
 
 
 # Create RDS resource group if it does not exist
@@ -174,42 +186,42 @@ $null = Deploy-ResourceGroup -Name $config.sre.rds.rg -Location $config.sre.loca
 Add-LogMessage -Level Info "Deploying RDS from template..."
 $null = Set-AzContext -Subscription $config.sre.subscriptionName
 $params = @{
-    Administrator_User = $sreAdminUsername
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Join_Password_Gateway = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
-    Domain_Join_Password_Session_Hosts = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
-    Domain_Join_User_Gateway = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
-    Domain_Join_User_Session_Hosts = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
-    Domain_Name = $config.shm.domain.fqdn
-    NSG_Gateway_Name = $config.sre.rds.gateway.nsg
-    OU_Path_Gateway = $config.shm.domain.ous.rdsGatewayServers.path
-    OU_Path_Session_Hosts = $config.shm.domain.ous.rdsSessionServers.path
-    RDS_Gateway_Admin_Password = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
-    RDS_Gateway_Data1_Disk_Size_GB = [int]$config.sre.rds.gateway.disks.data1.sizeGb
-    RDS_Gateway_Data1_Disk_Type = $config.sre.rds.gateway.disks.data1.type
-    RDS_Gateway_Data2_Disk_Size_GB = [int]$config.sre.rds.gateway.disks.data2.sizeGb
-    RDS_Gateway_Data2_Disk_Type = $config.sre.rds.gateway.disks.data2.type
-    RDS_Gateway_IP_Address = $config.sre.rds.gateway.ip
-    RDS_Gateway_Name = $config.sre.rds.gateway.vmName
-    RDS_Gateway_Os_Disk_Size_GB = [int]$config.sre.rds.gateway.disks.os.sizeGb
-    RDS_Gateway_Os_Disk_Type = $config.sre.rds.gateway.disks.os.type
-    RDS_Gateway_VM_Size = $config.sre.rds.gateway.vmSize
-    RDS_Session_Host_Apps_Admin_Password = (ConvertTo-SecureString $rdsSh1AdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Apps_IP_Address = $config.sre.rds.sessionHost1.ip
-    RDS_Session_Host_Apps_Name = $config.sre.rds.sessionHost1.vmName
-    RDS_Session_Host_Apps_Os_Disk_Size_GB = [int]$config.sre.rds.sessionHost1.disks.os.sizeGb
-    RDS_Session_Host_Apps_Os_Disk_Type = $config.sre.rds.sessionHost1.disks.os.type
-    RDS_Session_Host_Apps_VM_Size = $config.sre.rds.sessionHost1.vmSize
-    RDS_Session_Host_Desktop_Admin_Password = (ConvertTo-SecureString $rdsSh2AdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Desktop_IP_Address = $config.sre.rds.sessionHost2.ip
-    RDS_Session_Host_Desktop_Name = $config.sre.rds.sessionHost2.vmName
+    Administrator_User                       = $sreAdminUsername
+    BootDiagnostics_Account_Name             = $config.sre.storage.bootdiagnostics.accountName
+    Domain_Join_Password_Gateway             = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
+    Domain_Join_Password_Session_Hosts       = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
+    Domain_Join_User_Gateway                 = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
+    Domain_Join_User_Session_Hosts           = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
+    Domain_Name                              = $config.shm.domain.fqdn
+    NSG_Gateway_Name                         = $config.sre.rds.gateway.nsg
+    OU_Path_Gateway                          = $config.shm.domain.ous.rdsGatewayServers.path
+    OU_Path_Session_Hosts                    = $config.shm.domain.ous.rdsSessionServers.path
+    RDS_Gateway_Admin_Password               = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
+    RDS_Gateway_Data1_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.data1.sizeGb
+    RDS_Gateway_Data1_Disk_Type              = $config.sre.rds.gateway.disks.data1.type
+    RDS_Gateway_Data2_Disk_Size_GB           = [int]$config.sre.rds.gateway.disks.data2.sizeGb
+    RDS_Gateway_Data2_Disk_Type              = $config.sre.rds.gateway.disks.data2.type
+    RDS_Gateway_IP_Address                   = $config.sre.rds.gateway.ip
+    RDS_Gateway_Name                         = $config.sre.rds.gateway.vmName
+    RDS_Gateway_Os_Disk_Size_GB              = [int]$config.sre.rds.gateway.disks.os.sizeGb
+    RDS_Gateway_Os_Disk_Type                 = $config.sre.rds.gateway.disks.os.type
+    RDS_Gateway_VM_Size                      = $config.sre.rds.gateway.vmSize
+    RDS_Session_Host_Apps_Admin_Password     = (ConvertTo-SecureString $rdsSh1AdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Apps_IP_Address         = $config.sre.rds.sessionHost1.ip
+    RDS_Session_Host_Apps_Name               = $config.sre.rds.sessionHost1.vmName
+    RDS_Session_Host_Apps_Os_Disk_Size_GB    = [int]$config.sre.rds.sessionHost1.disks.os.sizeGb
+    RDS_Session_Host_Apps_Os_Disk_Type       = $config.sre.rds.sessionHost1.disks.os.type
+    RDS_Session_Host_Apps_VM_Size            = $config.sre.rds.sessionHost1.vmSize
+    RDS_Session_Host_Desktop_Admin_Password  = (ConvertTo-SecureString $rdsSh2AdminPassword -AsPlainText -Force)
+    RDS_Session_Host_Desktop_IP_Address      = $config.sre.rds.sessionHost2.ip
+    RDS_Session_Host_Desktop_Name            = $config.sre.rds.sessionHost2.vmName
     RDS_Session_Host_Desktop_Os_Disk_Size_GB = [int]$config.sre.rds.sessionHost2.disks.os.sizeGb
-    RDS_Session_Host_Desktop_Os_Disk_Type = $config.sre.rds.sessionHost2.disks.os.type
-    RDS_Session_Host_Desktop_VM_Size = $config.sre.rds.sessionHost2.vmSize
-    SRE_ID = $config.sre.id
-    Virtual_Network_Name = $config.sre.network.vnet.name
-    Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.rds.name
+    RDS_Session_Host_Desktop_Os_Disk_Type    = $config.sre.rds.sessionHost2.disks.os.type
+    RDS_Session_Host_Desktop_VM_Size         = $config.sre.rds.sessionHost2.vmSize
+    SRE_ID                                   = $config.sre.id
+    Virtual_Network_Name                     = $config.sre.network.vnet.name
+    Virtual_Network_Resource_Group           = $config.sre.network.vnet.rg
+    Virtual_Network_Subnet                   = $config.sre.network.vnet.subnets.rds.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.rds.rg
 
@@ -299,7 +311,7 @@ $sreDomain = $config.sre.domain.fqdn
 # Set the A record
 Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($sreDomain)"
 Remove-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup
-$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -IPv4Address $rdsGatewayPublicIp)
+$result = New-AzDnsRecordSet -Name $baseDnsRecordname -RecordType A -ZoneName $sreDomain -ResourceGroupName $dnsResourceGroup -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
 if ($?) {
     Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
 } else {
@@ -359,12 +371,12 @@ $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Impo
 # Copy software and/or scripts to RDS Gateway
 Add-LogMessage -Level Info "[ ] Copying $($filePathsGateway.Count) files to RDS Gateway"
 $params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameGateway`""
-    sasToken = "`"$sasToken`""
+    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
+    storageService               = "blob"
+    shareOrContainerName         = "`"$containerNameGateway`""
+    sasToken                     = "`"$sasToken`""
     pipeSeparatedremoteFilePaths = "`"$($filePathsGateway -join "|")`""
-    downloadDir = "$remoteUploadDir"
+    downloadDir                  = "$remoteUploadDir"
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.gateway.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
@@ -372,12 +384,12 @@ Write-Output $result.Value
 # Copy software and/or scripts to RDS SH1 (App server)
 Add-LogMessage -Level Info "[ ] Copying $($filePathsSh1.Count) files to RDS Session Host (App server)"
 $params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameSessionHosts`""
-    sasToken = "`"$sasToken`""
+    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
+    storageService               = "blob"
+    shareOrContainerName         = "`"$containerNameSessionHosts`""
+    sasToken                     = "`"$sasToken`""
     pipeSeparatedremoteFilePaths = "`"$($filePathsSh1 -join "|")`""
-    downloadDir = "$remoteUploadDir"
+    downloadDir                  = "$remoteUploadDir"
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost1.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value
@@ -385,12 +397,12 @@ Write-Output $result.Value
 # Copy software and/or scripts to RDS SH2 (Remote desktop server)
 Add-LogMessage -Level Info "[ ] Copying $($filePathsSh2.Count) files to RDS Session Host (Remote desktop server)"
 $params = @{
-    storageAccountName = "`"$($sreStorageAccount.StorageAccountName)`""
-    storageService = "blob"
-    shareOrContainerName = "`"$containerNameSessionHosts`""
-    sasToken = "`"$sasToken`""
+    storageAccountName           = "`"$($sreStorageAccount.StorageAccountName)`""
+    storageService               = "blob"
+    shareOrContainerName         = "`"$containerNameSessionHosts`""
+    sasToken                     = "`"$sasToken`""
     pipeSeparatedremoteFilePaths = "`"$($filePathsSh2 -join "|")`""
-    downloadDir = "$remoteUploadDir"
+    downloadDir                  = "$remoteUploadDir"
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.sre.rds.sessionHost2.vmName -ResourceGroupName $config.sre.rds.rg -Parameter $params
 Write-Output $result.Value

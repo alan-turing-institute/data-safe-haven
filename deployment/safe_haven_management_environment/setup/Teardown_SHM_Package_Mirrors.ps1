@@ -1,9 +1,9 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be torn down")]
-  [ValidateSet("2", "3")]
-  [string]$tier
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be torn down")]
+    [ValidateSet("2", "3")]
+    [string]$tier
 )
 
 Import-Module Az
@@ -47,9 +47,9 @@ if ($notExists) {
     # Tear down package mirrors
     # -------------------------
     foreach ($mirrorType in ("PyPI", "CRAN")) {
-      foreach ($mirrorDirection in ("External", "Internal")) {
-          Remove-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
-      }
+        foreach ($mirrorDirection in ("External", "Internal")) {
+            Remove-PackageMirror -MirrorType $mirrorType -MirrorDirection $mirrorDirection
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 param(
-  [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-  [string]$shmId
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId
 )
 
 Import-Module Az
@@ -23,7 +23,7 @@ Add-LogMessage -Level Info "Adding SHM domain to AAD..."
 # arguments avoids having to use a try/catch to handle an expected 404 "Not found exception"
 # if the domain has not yet been added.
 $aadDomain = Get-AzureADDomain | Where-Object { $_.Name -eq $config.domain.fqdn }
-if($aadDomain) {
+if ($aadDomain) {
     Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already present as custom domain on SHM AAD."
 } else {
     $null = New-AzureADDomain -Name $config.domain.fqdn
@@ -33,12 +33,12 @@ if($aadDomain) {
 # Verify the SHM domain record for the Azure AD
 # ---------------------------------------------
 Add-LogMessage -Level Info "Verifying domain on SHM AAD..."
-if($aadDomain.IsVerified) {
+if ($aadDomain.IsVerified) {
     Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already verified on SHM AAD."
 } else {
     # Fetch TXT version of AAD domain verification record set
     $validationRecord = Get-AzureADDomainVerificationDnsRecord -Name $config.domain.fqdn `
-                          | Where-Object { $_.RecordType -eq "Txt"}
+    | Where-Object { $_.RecordType -eq "Txt" }
     # Make a DNS TXT Record object containing the validation code
     $validationCode = New-AzDnsRecordConfig -Value $validationRecord.Text
 
@@ -47,18 +47,18 @@ if($aadDomain.IsVerified) {
 
     # Check if this validation record already exists for the domain
     $recordSet = Get-AzDnsRecordSet -RecordType TXT -Name "@" `
-                 -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg `
-                 -ErrorVariable notExists -ErrorAction SilentlyContinue
-    if($notExists) {
+        -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg `
+        -ErrorVariable notExists -ErrorAction SilentlyContinue
+    if ($notExists) {
         # If no TXT record set exists at all, create a new TXT record set with the domain validation code
         $null = New-AzDnsRecordSet -RecordType TXT -Name "@" `
-             -Ttl $validationRecord.Ttl -DnsRecords $validationCode `
-             -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg
+            -Ttl $validationRecord.Ttl -DnsRecords $validationCode `
+            -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg
         Add-LogMessage -Level Success "Verification TXT record added to '$($config.domain.fqdn)' DNS zone."
     } else {
         # Check if the verification TXT record already exists in domain DNS zone
-        $existingRecord = $recordSet.Records | Where-Object { $_.Value -eq $validationCode}
-        if($existingRecord) {
+        $existingRecord = $recordSet.Records | Where-Object { $_.Value -eq $validationCode }
+        if ($existingRecord) {
             Add-LogMessage -Level InfoSuccess "Verification TXT record already exists in '$($config.domain.fqdn)' DNS zone."
         } else {
             # Add the verification TXT record if it did not already exist
@@ -71,7 +71,7 @@ if($aadDomain.IsVerified) {
     $maxTries = 10
     $retryDelaySeconds = 60
 
-    for($tries = 1; $tries -le $maxTries; $tries++){
+    for ($tries = 1; $tries -le $maxTries; $tries++) {
         Add-LogMessage -Level Info "Checking domain verification status on SHM AAD (attempt $tries of $maxTries)..."
         try {
             $null = Confirm-AzureADDomain -Name $config.domain.fqdn
@@ -85,10 +85,10 @@ if($aadDomain.IsVerified) {
             Add-LogMessage -Level Warning "$errorMessage"
         }
         $aadDomain = Get-AzureADDomain -Name $config.domain.fqdn
-        if($aadDomain.IsVerified) {
+        if ($aadDomain.IsVerified) {
             Add-LogMessage -Level Success "Domain '$($config.domain.fqdn)' is verified on SHM AAD."
             break
-        } elseif($tries -eq $maxTries) {
+        } elseif ($tries -eq $maxTries) {
             Add-LogMessage -Level Fatal "Failed to verify domain after $tries attempts. Please try again later."
         } else {
             Add-LogMessage -Level Warning "Verification check failed. Retrying in $retryDelaySeconds seconds..."
@@ -99,9 +99,9 @@ if($aadDomain.IsVerified) {
 
 # Make domain primary on SHM AAD
 # ------------------------------
-if($aadDomain.IsVerified) {
+if ($aadDomain.IsVerified) {
     Add-LogMessage -Level Info "Ensuring '$($config.domain.fqdn)' is primary domain on SHM AAD."
-    if($aadDomain.isDefault){
+    if ($aadDomain.isDefault) {
         Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' is already primary domain on SHM AAD."
     } else {
         $null = Set-AzureADDomain -Name $config.domain.fqdn -IsDefault $TRUE

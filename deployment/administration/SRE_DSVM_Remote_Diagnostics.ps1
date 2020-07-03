@@ -1,7 +1,7 @@
 param(
     [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SRE config ID. This will be the concatenation of <SHM ID> and <SRE ID> (eg. 'testasandbox' for SRE 'sandbox' in SHM 'testa')")]
     [string]$configId,
-    [Parameter(Position = 1,Mandatory = $true,HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
+    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter last octet of compute VM IP address (e.g. 160)")]
     [string]$ipLastOctet
 )
 
@@ -15,7 +15,7 @@ Import-Module $PSScriptRoot/../common/Logging.psm1 -Force
 # ------------------------------------------------------------
 $config = Get-SreConfig $configId
 $originalContext = Get-AzContext
-$_ = Set-AzContext -SubscriptionId $config.sre.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 
 
 # Find VM with private IP address matching the provided last octet
@@ -33,16 +33,16 @@ if ($?) {
 # -----------------------------
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $($vm.Name)..."
 $params = @{
-    TEST_HOST = $config.shm.dc.fqdn
-    LDAP_USER = $config.sre.users.computerManagers.dsvm.samAccountName
+    TEST_HOST    = $config.shm.dc.fqdn
+    LDAP_USER    = $config.sre.users.computerManagers.dsvm.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
     SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
-                             ("name resolution", "restart_name_resolution_service.sh"),
-                             ("realm join", "rerun_realm_join.sh"),
-                             ("SSSD service", "restart_sssd_service.sh"),
-                             ("xrdp service", "restart_xrdp_service.sh"))) {
+        ("name resolution", "restart_name_resolution_service.sh"),
+        ("realm join", "rerun_realm_join.sh"),
+        ("SSSD service", "restart_sssd_service.sh"),
+        ("xrdp service", "restart_xrdp_service.sh"))) {
     $name, $diagnostic_script = $scriptNamePair
     $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" $diagnostic_script
     Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$($vm.Name)'"
@@ -87,11 +87,11 @@ if ($success) {
 
 # Set LDAP secret in local Active Directory on the SHM DC
 # -------------------------------------------------------
-$_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
     samAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
-    ldapPassword = "`"$kvLdapPassword`""
+    ldapPassword   = "`"$kvLdapPassword`""
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
@@ -106,4 +106,4 @@ if ($success) {
 
 # Switch back to original subscription
 # ------------------------------------
-$_ = Set-AzContext -Context $originalContext
+$null = Set-AzContext -Context $originalContext

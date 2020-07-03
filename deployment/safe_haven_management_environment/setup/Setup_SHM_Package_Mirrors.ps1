@@ -1,7 +1,7 @@
 param(
-    [Parameter(Position=0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Position=1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
+    [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Which tier of mirrors should be deployed")]
     [ValidateSet("2", "3")]
     [string]$tier
 )
@@ -41,23 +41,35 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `
                              -Priority 3000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+                             -Direction Inbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "UpdateFromInternet" `
                              -Description "Allow ports 443 (https) and 873 (unencrypted rsync) for updating mirrors" `
                              -Priority 300 `
-                             -Direction Outbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange 443,873
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix Internet `
+                             -DestinationPortRange 443, 873
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal `
                              -Name "IgnoreOutboundRulesBelowHere" `
                              -Description "Deny all other outbound" `
                              -Priority 3000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange *
 # Create or update external mirror rule
 $destinationAddressPrefix = @($subnetInternal.AddressPrefix)
 $rule = $nsgExternal.SecurityRules | Where-Object { $_.Name -eq "RsyncToInternal" }
@@ -68,9 +80,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgExternal -VerboseLogging 
                              -Name "RsyncToInternal" `
                              -Description "Allow ports 22 and 873 for rsync" `
                              -Priority 400 `
-                             -Direction Outbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
-                             -DestinationAddressPrefix $destinationAddressPrefix -DestinationPortRange 22,873
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $destinationAddressPrefix `
+                             -DestinationPortRange 22, 873
 $subnetExternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetExternal -NetworkSecurityGroup $nsgExternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgExternalName' succeeded"
@@ -87,30 +103,46 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "RsyncFromExternal" `
                              -Description "Allow ports 22 and 873 for rsync" `
                              -Priority 200 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix $subnetExternal.AddressPrefix -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange 22,873
+                             -Direction Inbound `
+                             -Access Allow `
+                             -Protocol TCP `
+                             -SourceAddressPrefix $subnetExternal.AddressPrefix `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange 22, 873
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "MirrorRequestsFromVMs" `
                              -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for webservices" `
                              -Priority 300 `
-                             -Direction Inbound -Access Allow -Protocol TCP `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange 80,443,3128
+                             -Direction Inbound `
+                             -Access Allow `
+                             -Protocol TCP `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange 80, 443, 3128
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "IgnoreInboundRulesBelowHere" `
                              -Description "Deny all other inbound" `
                              -Priority 3000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+                             -Direction Inbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsgInternal `
                              -Name "IgnoreOutboundRulesBelowHere" `
                              -Description "Deny all other outbound" `
                              -Priority 3000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange *
 $subnetInternal = Set-SubnetNetworkSecurityGroup -Subnet $subnetInternal -NetworkSecurityGroup $nsgInternal -VirtualNetwork $vnetPkgMirrors
 if ($?) {
     Add-LogMessage -Level Success "Configuring NSG '$nsgInternalName' succeeded"
@@ -167,7 +199,7 @@ function Resolve-CloudInit {
     $whiteList = Get-Content $WhitelistPath -Raw -ErrorVariable notExists -ErrorAction SilentlyContinue
     if (-Not $notExists) {
         $packagesBefore = "      # PACKAGE_WHITELIST"
-        $packagesAfter  = ""
+        $packagesAfter = ""
         foreach ($package in $whitelist -split "`n") {
             $packagesAfter += "      $package`n"
         }
@@ -222,33 +254,41 @@ function Deploy-PackageMirror {
             # Set temporary NSG rules
             Add-LogMessage -Level Info "Temporarily allowing outbound internet access from $privateIpAddress on ports 80, 443 and 3128"
             Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                        -Name "ConfigurationOutboundTemporary" `
-                                        -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" `
-                                        -Priority 100 `
-                                        -Direction Outbound -Access Allow -Protocol TCP `
-                                        -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
-                                        -DestinationAddressPrefix Internet -DestinationPortRange 80,443,3128
+                                         -Name "ConfigurationOutboundTemporary" `
+                                         -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" `
+                                         -Priority 100 `
+                                         -Direction Outbound `
+                                         -Access Allow `
+                                         -Protocol TCP `
+                                         -SourceAddressPrefix $privateIpAddress `
+                                         -SourcePortRange * `
+                                         -DestinationAddressPrefix Internet `
+                                         -DestinationPortRange 80, 443, 3128
             Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
-                                        -Name "VnetOutboundTemporary" `
-                                        -Description "Block connections to the VNet" `
-                                        -Priority 150 `
-                                        -Direction Outbound -Access Deny -Protocol * `
-                                        -SourceAddressPrefix $privateIpAddress -SourcePortRange * `
-                                        -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+                                         -Name "VnetOutboundTemporary" `
+                                         -Description "Block connections to the VNet" `
+                                         -Priority 150 `
+                                         -Direction Outbound `
+                                         -Access Deny `
+                                         -Protocol * `
+                                         -SourceAddressPrefix $privateIpAddress `
+                                         -SourcePortRange * `
+                                         -DestinationAddressPrefix VirtualNetwork `
+                                         -DestinationPortRange *
             # Deploy the VM
             $params = @{
-                Name = $vmName
-                Size = $config.mirrors.vmSize
-                AdminPassword = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20)
-                AdminUsername = $domainAdminUsername
+                Name                   = $vmName
+                Size                   = $config.mirrors.vmSize
+                AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $adminPasswordSecretName -DefaultLength 20)
+                AdminUsername          = $domainAdminUsername
                 BootDiagnosticsAccount = $bootDiagnosticsAccount
-                CloudInitYaml = $cloudInitYaml
-                Location = $config.location
-                NicId = $vmNic.Id
-                OsDiskType = $config.mirrors.diskType
-                ResourceGroupName = $config.mirrors.rg
-                ImageSku = "18.04-LTS"
-                DataDiskIds = @($dataDisk.Id)
+                CloudInitYaml          = $cloudInitYaml
+                Location               = $config.location
+                NicId                  = $vmNic.Id
+                OsDiskType             = $config.mirrors.diskType
+                ResourceGroupName      = $config.mirrors.rg
+                ImageSku               = "18.04-LTS"
+                DataDiskIds            = @($dataDisk.Id)
             }
             $null = Deploy-UbuntuVirtualMachine @params
             Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.mirrors.rg

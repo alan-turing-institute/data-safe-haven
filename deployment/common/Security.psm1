@@ -108,7 +108,7 @@ function Resolve-KeyVaultSecret {
             $DefaultValue = $(New-Password -length $DefaultLength)
         }
         # Store the password in the keyvault
-        $_ = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
+        $null = Set-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName -SecretValue (ConvertTo-SecureString $DefaultValue -AsPlainText -Force)
     }
     # Retrieve the secret from the key vault and return its value
     $secret = Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName

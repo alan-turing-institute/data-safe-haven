@@ -1,5 +1,5 @@
 param(
-    [Parameter(Position = 0,Mandatory = $true,HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId
 )
 
@@ -110,8 +110,8 @@ try {
     # Generate or retrieve CA certificate
     # -----------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' KeyVault..."
-    $vpnCaCertificate = (Get-AzKeyVaultCertificate -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificate).Certificate
-    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -vaultName $config.keyVault.name -name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
+    $vpnCaCertificate = (Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).Certificate
+    $vpnCaCertificatePlain = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificatePlain).SecretValueText
     if ($vpnCaCertificate -And $vpnCaCertificatePlain) {
         Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
     } else {
@@ -195,7 +195,7 @@ try {
         $caPfxBase64 = (Get-AzKeyVaultSecret -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate).SecretValueText
         [IO.File]::WriteAllBytes($caPfxPath, [System.Convert]::FromBase64String($caPfxBase64))
         $caKeyData = openssl pkcs12 -in $caPfxPath -nocerts -nodes -passin pass:
-        $caKeyData.Where({ $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
+        $caKeyData.Where( { $_ -like "-----BEGIN PRIVATE KEY-----" }, 'SkipUntil') | Out-File -FilePath $caKeyPath
         $caKeyMD5 = openssl rsa -noout -modulus -in $caKeyPath | openssl md5
         if ($?) {
             Add-LogMessage -Level Success "Loading CA private key succeeded"

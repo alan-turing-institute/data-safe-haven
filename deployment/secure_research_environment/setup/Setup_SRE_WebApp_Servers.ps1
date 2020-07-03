@@ -37,9 +37,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $nsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix Internet `
+                             -DestinationPortRange *
 
 
 # Expand GitLab cloudinit
@@ -53,7 +57,7 @@ $gitlabCloudInit = $gitlabCloudInitTemplate.Replace('<gitlab-rb-host>', $shmDcFq
                                             Replace('<gitlab-rb-bind-dn>', $ldapSearchUserDn).
                                             Replace('<gitlab-rb-pw>', $ldapSearchUserPassword).
                                             Replace('<gitlab-rb-base>', $config.shm.domain.ous.researchUsers.path).
-                                            Replace('<gitlab-rb-user-filter>',$gitlabUserFilter).
+                                            Replace('<gitlab-rb-user-filter>', $gitlabUserFilter).
                                             Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
                                             Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
                                             Replace('<gitlab-fqdn>', $gitlabFqdn).
@@ -92,27 +96,27 @@ $null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.
 # --------------------------------------
 Add-LogMessage -Level Info "Deploying GitLab/HackMD VMs from template..."
 $params = @{
-    Administrator_User = $vmAdminUsername
-    BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-    GitLab_Cloud_Init = $gitlabCloudInitEncoded
-    GitLab_Administrator_Password = (ConvertTo-SecureString $gitlabAdminPassword -AsPlainText -Force)
-    GitLab_Data_Disk_Size_GB = [int]$config.sre.webapps.gitlab.disks.data.sizeGb
-    GitLab_Data_Disk_Type = $config.sre.webapps.gitlab.disks.data.type
-    GitLab_Os_Disk_Size_GB = [int]$config.sre.webapps.gitlab.disks.os.sizeGb
-    GitLab_Os_Disk_Type = $config.sre.webapps.gitlab.disks.os.type
-    GitLab_IP_Address =  $config.sre.webapps.gitlab.ip
-    GitLab_Server_Name = $config.sre.webapps.gitlab.vmName
-    GitLab_VM_Size = $config.sre.webapps.gitlab.vmSize
-    HackMD_Administrator_Password = (ConvertTo-SecureString $hackmdAdminPassword -AsPlainText -Force)
-    HackMD_Cloud_Init = $hackmdCloudInitEncoded
-    HackMD_IP_Address = $config.sre.webapps.hackmd.ip
-    HackMD_Os_Disk_Size_GB = [int]$config.sre.webapps.hackmd.disks.os.sizeGb
-    HackMD_Os_Disk_Type = $config.sre.webapps.hackmd.disks.os.type
-    HackMD_Server_Name = $config.sre.webapps.hackmd.vmName
-    HackMD_VM_Size = $config.sre.webapps.hackmd.vmSize
-    Virtual_Network_Name = $config.sre.network.vnet.name
+    Administrator_User             = $vmAdminUsername
+    BootDiagnostics_Account_Name   = $config.sre.storage.bootdiagnostics.accountName
+    GitLab_Cloud_Init              = $gitlabCloudInitEncoded
+    GitLab_Administrator_Password  = (ConvertTo-SecureString $gitlabAdminPassword -AsPlainText -Force)
+    GitLab_Data_Disk_Size_GB       = [int]$config.sre.webapps.gitlab.disks.data.sizeGb
+    GitLab_Data_Disk_Type          = $config.sre.webapps.gitlab.disks.data.type
+    GitLab_Os_Disk_Size_GB         = [int]$config.sre.webapps.gitlab.disks.os.sizeGb
+    GitLab_Os_Disk_Type            = $config.sre.webapps.gitlab.disks.os.type
+    GitLab_IP_Address              = $config.sre.webapps.gitlab.ip
+    GitLab_Server_Name             = $config.sre.webapps.gitlab.vmName
+    GitLab_VM_Size                 = $config.sre.webapps.gitlab.vmSize
+    HackMD_Administrator_Password  = (ConvertTo-SecureString $hackmdAdminPassword -AsPlainText -Force)
+    HackMD_Cloud_Init              = $hackmdCloudInitEncoded
+    HackMD_IP_Address              = $config.sre.webapps.hackmd.ip
+    HackMD_Os_Disk_Size_GB         = [int]$config.sre.webapps.hackmd.disks.os.sizeGb
+    HackMD_Os_Disk_Type            = $config.sre.webapps.hackmd.disks.os.type
+    HackMD_Server_Name             = $config.sre.webapps.hackmd.vmName
+    HackMD_VM_Size                 = $config.sre.webapps.hackmd.vmSize
+    Virtual_Network_Name           = $config.sre.network.vnet.name
     Virtual_Network_Resource_Group = $config.sre.network.vnet.rg
-    Virtual_Network_Subnet = $config.sre.network.vnet.subnets.data.name
+    Virtual_Network_Subnet         = $config.sre.network.vnet.subnets.data.name
 }
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-webapps-template.json") -Params $params -ResourceGroupName $config.sre.webapps.rg
 

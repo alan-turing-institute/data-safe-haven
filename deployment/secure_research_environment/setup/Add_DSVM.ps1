@@ -38,7 +38,7 @@ if (!$vmSize) { $vmSize = $config.sre.dsvm.vmSizeDefault }
 # -----------------------------------------------------------------------------------------------------
 $vmNamePrefix = "SRE-$($config.sre.id)-${ipLastOctet}-DSVM".ToUpper()
 $imageVersion = $config.sre.dsvm.vmImageVersion
-$vmName = "$vmNamePrefix-${imageVersion}".Replace(".","-")
+$vmName = "$vmNamePrefix-${imageVersion}".Replace(".", "-")
 
 
 # Check whether this IP address has been used.
@@ -129,7 +129,7 @@ if ($upgrade) {
 
             # Snapshot disk
             Add-LogMessage -Level Info "[ ] Snapshotting disk '$diskName'."
-            $snapshotConfig = New-AzSnapShotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
+            $snapshotConfig = New-AzSnapshotConfig -SourceUri $disk.Id -Location $config.sre.location -CreateOption copy
             $snapshotName = $vmNamePrefix + "-" + "$name" + "-DISK-SNAPSHOT"
             $snapshot = New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $snapshotName -ResourceGroupName $config.sre.dsvm.rg
             if ($snapshot) {
@@ -143,7 +143,7 @@ if ($upgrade) {
         # If there is no disk, look for an existing snapshot
         } else {
             Add-LogMessage -Level Info "'$name' disk not found, attempting to find existing snapshot"
-            $snapshot = Get-AzSnapShot | Where-Object { $_.Name -match "$vmNamePrefix-$name-DISK-SNAPSHOT" }
+            $snapshot = Get-AzSnapshot | Where-Object { $_.Name -match "$vmNamePrefix-$name-DISK-SNAPSHOT" }
             if ($snapshot) {
                 if ($snapshot.Length -ne 1) {
                     Add-LogMessage -Level Fatal "Multiple candidate '$name' snapshots found, aborting upgrade"
@@ -229,7 +229,7 @@ $null = Set-AzContext -Subscription $config.sre.dsvm.vmImageSubscription
 Add-LogMessage -Level Info "Looking for image $imageDefinition version $imageVersion..."
 try {
     $image = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition -GalleryImageVersionName $imageVersion -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
+} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
     $versions = Get-AzGalleryImageVersion -ResourceGroup $config.sre.dsvm.vmImageResourceGroup -GalleryName $config.sre.dsvm.vmImageGallery -GalleryImageDefinitionName $imageDefinition | Sort-Object Name | ForEach-Object { $_.Name } #Select-Object -Last 1
     Add-LogMessage -Level Error "Image version '$imageVersion' is invalid. Available versions are: $versions"
     $imageVersion = $versions | Select-Object -Last 1
@@ -270,9 +270,13 @@ Add-NetworkSecurityGroupRule -NetworkSecurityGroup $secureNsg `
                              -Name "OutboundInternetAccess" `
                              -Description "Outbound internet access" `
                              -Priority 4000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix Internet -DestinationPortRange *
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix Internet `
+                             -DestinationPortRange *
 
 
 # Ensure that deployment NSG exists
@@ -281,34 +285,50 @@ $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNs
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundAllowLDAP" `
-                             -Description "Inbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Inbound -Access Allow -Protocol * `
-                             -SourceAddressPrefix $shmIdentitySubnetIpRange -SourcePortRange 88,389,636 `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+    -Name "InboundAllowLDAP" `
+    -Description "Inbound allow LDAP" `
+    -Priority 2000 `
+    -Direction Inbound `
+    -Access Allow `
+    -Protocol * `
+    -SourceAddressPrefix $shmIdentitySubnetIpRange `
+    -SourcePortRange 88, 389, 636 `
+    -DestinationAddressPrefix VirtualNetwork `
+    -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "InboundDenyAll" `
-                             -Description "Inbound deny all" `
-                             -Priority 3000 `
-                             -Direction Inbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix * -DestinationPortRange *
+    -Name "InboundDenyAll" `
+    -Description "Inbound deny all" `
+    -Priority 3000 `
+    -Direction Inbound `
+    -Access Deny `
+    -Protocol * `
+    -SourceAddressPrefix * `
+    -SourcePortRange * `
+    -DestinationAddressPrefix * `
+    -DestinationPortRange *
 # Outbound: allow LDAP then deny all Virtual Network
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundAllowLDAP" `
-                             -Description "Outbound allow LDAP" `
-                             -Priority 2000 `
-                             -Direction Outbound -Access Allow -Protocol * `
-                             -SourceAddressPrefix VirtualNetwork -SourcePortRange * `
-                             -DestinationAddressPrefix $shmIdentitySubnetIpRange -DestinationPortRange *
+    -Name "OutboundAllowLDAP" `
+    -Description "Outbound allow LDAP" `
+    -Priority 2000 `
+    -Direction Outbound `
+    -Access Allow `
+    -Protocol * `
+    -SourceAddressPrefix VirtualNetwork `
+    -SourcePortRange * `
+    -DestinationAddressPrefix $shmIdentitySubnetIpRange `
+    -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-                             -Name "OutboundDenyVNet" `
-                             -Description "Outbound deny virtual network" `
-                             -Priority 3000 `
-                             -Direction Outbound -Access Deny -Protocol * `
-                             -SourceAddressPrefix * -SourcePortRange * `
-                             -DestinationAddressPrefix VirtualNetwork -DestinationPortRange *
+    -Name "OutboundDenyVNet" `
+    -Description "Outbound deny virtual network" `
+    -Priority 3000 `
+    -Direction Outbound `
+    -Access Deny `
+    -Protocol * `
+    -SourceAddressPrefix * `
+    -SourcePortRange * `
+    -DestinationAddressPrefix VirtualNetwork `
+    -DestinationPortRange *
 
 
 # Check that VNET and subnet exist
@@ -317,7 +337,7 @@ Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.v
 # $vnet = $null
 try {
     $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
-} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException]{
+} catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
     Add-LogMessage -Level Fatal "Virtual network '$($config.sre.network.vnet.name)' could not be found!"
 }
 Add-LogMessage -Level Success "Found virtual network '$($vnet.Name)' in $($vnet.ResourceGroupName)"
@@ -355,22 +375,22 @@ $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
 $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
-                                                            Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
-                                                            Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
-                                                            Replace("<dsvm-hostname>", $vmName).
-                                                            Replace("<domain-join-password>", $domainJoinPassword).
-                                                            Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
-                                                            Replace("<mirror-host-pypi>", $addresses.pypi.host).
-                                                            Replace("<mirror-url-cran>", $addresses.cran.url).
-                                                            Replace("<mirror-url-pypi>", $addresses.pypi.url).
-                                                            Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
-                                                            Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
-                                                            Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-                                                            Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-                                                            Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-                                                            Replace("<shm-ldap-base-dn>", $config.shm.domain.ous.researchUsers.path).
-                                                            Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.ous.serviceAccounts.path)").
-                                                            Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))")
+    Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
+    Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
+    Replace("<dsvm-hostname>", $vmName).
+    Replace("<domain-join-password>", $domainJoinPassword).
+    Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
+    Replace("<mirror-host-pypi>", $addresses.pypi.host).
+    Replace("<mirror-url-cran>", $addresses.cran.url).
+    Replace("<mirror-url-pypi>", $addresses.pypi.url).
+    Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
+    Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
+    Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
+    Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
+    Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+    Replace("<shm-ldap-base-dn>", $config.shm.domain.ous.researchUsers.path).
+    Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.ous.serviceAccounts.path)").
+    Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))")
 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
@@ -405,7 +425,7 @@ $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config
 # -----------------
 if ($upgrade) {
     $dataDisks = @()
-    for ($i=0; $i -lt $dataDiskNames.Length; $i++) {
+    for ($i = 0; $i -lt $dataDiskNames.Length; $i++) {
         # Create disk from snapshot
         $diskConfig = New-AzDiskConfig -Location $config.sre.location -SourceResourceId $snapshots[$i].Id -CreateOption Copy
         $diskName = $vmName + "-" + $dataDiskNames[$i] + "-DISK"
@@ -430,19 +450,19 @@ if ($upgrade) {
 # Deploy the VM
 # -------------
 $params = @{
-    Name = $vmName
-    Size = $vmSize
-    AdminPassword = $vmAdminPassword
-    AdminUsername = $vmAdminUsername
+    Name                   = $vmName
+    Size                   = $vmSize
+    AdminPassword          = $vmAdminPassword
+    AdminUsername          = $vmAdminUsername
     BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml = $cloudInitTemplate
-    location = $config.sre.location
-    NicId = $vmNic.Id
-    OsDiskSizeGb = $config.sre.dsvm.disks.os.sizeGb
-    OsDiskType = $config.sre.dsvm.disks.os.type
-    ResourceGroupName = $config.sre.dsvm.rg
-    DataDiskIds = @($homeDisk.Id,$scratchDisk.Id)
-    ImageId = $image.Id
+    CloudInitYaml          = $cloudInitTemplate
+    location               = $config.sre.location
+    NicId                  = $vmNic.Id
+    OsDiskSizeGb           = $config.sre.dsvm.disks.os.sizeGb
+    OsDiskType             = $config.sre.dsvm.disks.os.type
+    ResourceGroupName      = $config.sre.dsvm.rg
+    DataDiskIds            = @($homeDisk.Id, $scratchDisk.Id)
+    ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
 
@@ -511,7 +531,7 @@ Remove-Item -Path $zipFilePath
 # Run remote script
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" "upload_smoke_tests.sh"
 $params = @{
-    PAYLOAD = $zipFileEncoded
+    PAYLOAD        = $zipFileEncoded
     ADMIN_USERNAME = $vmAdminUsername
 };
 Add-LogMessage -Level Info "[ ] Uploading and extracting smoke tests on $vmName"
@@ -523,8 +543,8 @@ Write-Output $result.Value
 # -----------------------------
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
 $params = @{
-    TEST_HOST = $config.shm.dc.fqdn
-    LDAP_USER = $config.shm.users.computerManagers.linuxServers.samAccountName
+    TEST_HOST    = $config.shm.dc.fqdn
+    LDAP_USER    = $config.shm.users.computerManagers.linuxServers.samAccountName
     DOMAIN_LOWER = $config.shm.domain.fqdn
     SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }
