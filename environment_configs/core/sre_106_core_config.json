@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 106 - Homeslink",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "106",
     "shmId": "turing1",
     "tier": "2",

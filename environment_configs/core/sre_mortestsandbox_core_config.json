@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Martin OReilly",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "sreId": "sandbox",
     "shmId": "mortest",
     "tier": "2",

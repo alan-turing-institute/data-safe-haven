@@ -1,6 +1,6 @@
 {
   "shm": {
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "dc": {
       "disks": {
         "data": {
@@ -325,7 +325,7 @@
     }
   },
   "sre": {
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "databases": {
       "dbmssql": {
         "adminPasswordSecretName": "sre-sandbox-sqlvm-admin-password",

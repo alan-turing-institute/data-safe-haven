@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - Sandbox (SHM Test C)",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "sreId": "sandbox",
     "shmId": "testc",
     "tier": "2",

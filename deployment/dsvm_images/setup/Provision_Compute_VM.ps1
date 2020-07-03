@@ -60,7 +60,7 @@ $null = Deploy-ResourceGroup -Name $config.dsvmImage.keyVault.rg -Location $conf
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.dsvmImage.keyVault.name -ResourceGroupName $config.dsvmImage.keyVault.rg -Location $config.dsvmImage.location
-Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.adminSecurityGroupName
+Set-KeyVaultPermissions -Name $config.dsvmImage.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that VNET and subnet exist

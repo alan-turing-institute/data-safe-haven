@@ -26,7 +26,7 @@ function Add-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmFullConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            adminSecurityGroupName = $sreConfigBase.adminSecurityGroupName
+            azureAdminGroupName = $sreConfigBase.azureAdminGroupName
             id = $sreConfigBase.sreId | Limit-StringLength 7 -FailureIsFatal
             shortName = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
@@ -452,7 +452,7 @@ function Get-ShmFullConfig {
         name = $shmConfigBase.name
         organisation = $shmConfigBase.organisation
         location = $shmConfigBase.location
-        adminSecurityGroupName = $shmConfigBase.adminSecurityGroupName
+        azureAdminGroupName = $shmConfigBase.azureAdminGroupName
     }
 
     # DSVM build images

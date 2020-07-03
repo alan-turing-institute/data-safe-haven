@@ -2,7 +2,7 @@
     "subscriptionName": "Safe Haven Management Test C",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_TEST",
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "images": {
         "subscriptionName": "[Prod] Safe Haven VM Images",
         "location": "uksouth"

@@ -1,6 +1,6 @@
 {
     "subscriptionName": "Turing SRE - 109 - Cochrane",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "sreId": "109",
     "shmId": "turing1",
     "tier": "2",

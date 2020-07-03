@@ -25,7 +25,7 @@ $null = Deploy-ResourceGroup -Name $config.keyVault.rg -Location $config.locatio
 # Ensure the keyvault exists and set its access policies
 # ------------------------------------------------------
 $null = Deploy-KeyVault -Name $config.keyVault.name -ResourceGroupName $config.keyVault.rg -Location $config.location
-Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.adminSecurityGroupName
+Set-KeyVaultPermissions -Name $config.keyVault.name -GroupName $config.azureAdminGroupName
 
 
 # Ensure that secrets exist in the keyvault

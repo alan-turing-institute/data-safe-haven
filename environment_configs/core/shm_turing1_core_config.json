@@ -2,7 +2,7 @@
     "subscriptionName": "[Prod] Safe Haven Management",
     "dnsSubscriptionName": "[Prod] Safe Haven Domains",
     "dnsResourceGroupName": "RG_SHM_DNS_PRODUCTION",
-    "adminSecurityGroupName": "Safe Haven Production Admins",
+    "azureAdminGroupName": "Safe Haven Production Admins",
     "images": {
         "subscriptionName": "[Prod] Safe Haven VM Images",
         "location": "uksouth"

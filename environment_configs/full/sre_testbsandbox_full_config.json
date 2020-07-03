@@ -1,6 +1,6 @@
 {
   "shm": {
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "dc": {
       "disks": {
         "data": {
@@ -325,7 +325,7 @@
     }
   },
   "sre": {
-    "adminSecurityGroupName": "Safe Haven Test Admins",
+    "azureAdminGroupName": "Safe Haven Test Admins",
     "databases": {
       "dbmssql": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
