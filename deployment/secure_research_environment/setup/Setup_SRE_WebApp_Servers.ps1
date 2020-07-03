@@ -89,6 +89,7 @@ $gitlabCloudInit = (Join-Path $PSScriptRoot  ".." "cloud_init" "cloud-init-gitla
     Replace('<gitlab-rb-pw>', $gitlabLdapPassword).
     Replace('<gitlab-rb-base>', $config.shm.domain.userOuPath).
     Replace('<gitlab-rb-user-filter>', "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.securityOuPath)))").
+    Replace('<gitlab-rb-host>', "$($config.shm.dc.hostname).$($config.shm.domain.fqdn)").
     Replace('<gitlab-ip>', $config.sre.webapps.gitlab.ip).
     Replace('<gitlab-hostname>', $config.sre.webapps.gitlab.hostname).
     Replace('<gitlab-fqdn>', "$($config.sre.webapps.gitlab.hostname).$($config.sre.domain.fqdn)").
