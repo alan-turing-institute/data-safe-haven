@@ -1,24 +1,59 @@
 {
   "shm": {
-    "subscriptionName": "Safe Haven Management Test B",
-    "id": "testb",
-    "name": "Turing Development Safe Haven B",
-    "organisation": {
-      "name": "The Alan Turing Institute",
-      "townCity": "London",
-      "countryCode": "GB",
-      "stateCountyRegion": "London"
-    },
-    "location": "uksouth",
     "adminSecurityGroupName": "Safe Haven Test Admins",
+    "dc": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "external_dns_resolver": "168.63.129.16",
+      "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
+      "hostname": "DC1-SHM-TESTB",
+      "ip": "10.0.0.4",
+      "rg": "RG_SHM_TESTB_DC",
+      "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
+      "vmName": "DC1-SHM-TESTB",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dcb": {
+      "disks": {
+        "data": {
+          "sizeGb": "20",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
+      "hostname": "DC2-SHM-TESTB",
+      "ip": "10.0.0.5",
+      "vmName": "DC2-SHM-TESTB",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "dns": {
+      "rg": "RG_SHM_DNS_TEST",
+      "subscriptionName": "[Prod] Safe Haven Domains"
+    },
     "domain": {
+      "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "testb.dsgroupdev.co.uk",
       "netbiosName": "TESTB",
-      "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "ous": {
         "dataServers": {
           "name": "Secure Research Environment Data Servers",
           "path": "OU=Secure Research Environment Data Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        },
+        "identityServers": {
+          "name": "Safe Haven Identity Servers",
+          "path": "OU=Safe Haven Identity Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         },
         "linuxServers": {
           "name": "Secure Research Environment Linux Servers",
@@ -43,80 +78,137 @@
         "serviceAccounts": {
           "name": "Safe Haven Service Accounts",
           "path": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
-        },
-        "identityServers": {
-          "name": "Safe Haven Identity Servers",
-          "path": "OU=Safe Haven Identity Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
         }
       },
       "securityGroups": {
         "computerManagers": {
-          "name": "SG Safe Haven Computer Management Users",
-          "description": "SG Safe Haven Computer Management Users"
+          "description": "SG Safe Haven Computer Management Users",
+          "name": "SG Safe Haven Computer Management Users"
         },
         "serverAdmins": {
-          "name": "SG Safe Haven Server Administrators",
-          "description": "SG Safe Haven Server Administrators"
+          "description": "SG Safe Haven Server Administrators",
+          "name": "SG Safe Haven Server Administrators"
         }
       }
     },
+    "firewall": {
+      "name": "FIREWALL-SHM-TESTB",
+      "routeTableName": "ROUTE-TABLE-SHM-TESTB"
+    },
+    "id": "testb",
+    "keyVault": {
+      "name": "kv-shm-testb",
+      "rg": "RG_SHM_TESTB_SECRETS",
+      "secretNames": {
+        "aadAdminPassword": "shm-testb-aad-admin-password",
+        "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
+        "domainAdminPassword": "shm-testb-domain-admin-password",
+        "domainAdminUsername": "shm-testb-domain-admin-username",
+        "vpnCaCertificate": "shm-testb-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-testb-vpn-client-cert",
+        "vpnClientCertPassword": "shm-testb-vpn-client-cert-password"
+      }
+    },
+    "location": "uksouth",
     "logging": {
       "rg": "RG_SHM_LOGGING",
       "workspaceName": "shmtestbloganalytics"
     },
-    "network": {
-      "vnet": {
-        "rg": "RG_SHM_TESTB_NETWORKING",
-        "name": "VNET_SHM_TESTB",
-        "cidr": "10.0.0.0/21",
-        "subnets": {
-          "identity": {
-            "name": "IdentitySubnet",
-            "cidr": "10.0.0.0/24"
+    "mirrors": {
+      "cran": {
+        "tier2": {
+          "diskSize": 127,
+          "external": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-external-mirror-tier-2",
+            "ipAddress": "10.20.2.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
           },
-          "web": {
-            "name": "WebSubnet",
-            "cidr": "10.0.1.0/24"
+          "internal": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 31,
+          "external": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-external-mirror-tier-3",
+            "ipAddress": "10.20.3.5",
+            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
           },
-          "firewall": {
-            "name": "AzureFirewallSubnet",
-            "cidr": "10.0.2.0/24"
-          },
-          "gateway": {
-            "name": "GatewaySubnet",
-            "cidr": "10.0.7.0/24"
+          "internal": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.21",
+            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
           }
         }
       },
+      "diskType": "Standard_LRS",
+      "pypi": {
+        "tier2": {
+          "diskSize": 8191,
+          "external": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-external-mirror-tier-2",
+            "ipAddress": "10.20.2.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-internal-mirror-tier-2",
+            "ipAddress": "10.20.2.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
+          }
+        },
+        "tier3": {
+          "diskSize": 511,
+          "external": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-external-mirror-tier-3",
+            "ipAddress": "10.20.3.4",
+            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
+          },
+          "internal": {
+            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-internal-mirror-tier-3",
+            "ipAddress": "10.20.3.20",
+            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
+          }
+        }
+      },
+      "rg": "RG_SHM_TESTB_PKG_MIRRORS",
+      "vmSize": "Standard_B2ms"
+    },
+    "name": "Turing Development Safe Haven B",
+    "network": {
       "mirrorVnets": {
         "tier2": {
-          "name": "VNET_SHM_TESTB_PACKAGE_MIRRORS_TIER2",
           "cidr": "10.20.2.0/24",
+          "name": "VNET_SHM_TESTB_PACKAGE_MIRRORS_TIER2",
           "subnets": {
             "external": {
-              "name": "ExternalPackageMirrorsTier2Subnet",
               "cidr": "10.20.2.0/28",
+              "name": "ExternalPackageMirrorsTier2Subnet",
               "nsg": "externalPackageMirrorsTier2"
             },
             "internal": {
-              "name": "InternalPackageMirrorsTier2Subnet",
               "cidr": "10.20.2.16/28",
+              "name": "InternalPackageMirrorsTier2Subnet",
               "nsg": "internalPackageMirrorsTier2"
             }
           }
         },
         "tier3": {
-          "name": "VNET_SHM_TESTB_PACKAGE_MIRRORS_TIER3",
           "cidr": "10.20.3.0/24",
+          "name": "VNET_SHM_TESTB_PACKAGE_MIRRORS_TIER3",
           "subnets": {
             "external": {
-              "name": "ExternalPackageMirrorsTier3Subnet",
               "cidr": "10.20.3.0/28",
+              "name": "ExternalPackageMirrorsTier3Subnet",
               "nsg": "externalPackageMirrorsTier3"
             },
             "internal": {
-              "name": "InternalPackageMirrorsTier3Subnet",
               "cidr": "10.20.3.16/28",
+              "name": "InternalPackageMirrorsTier3Subnet",
               "nsg": "internalPackageMirrorsTier3"
             }
           }
@@ -135,108 +227,33 @@
         "internalPackageMirrorsTier3": {
           "name": "NSG_SHM_TESTB_INTERNAL_PACKAGE_MIRRORS_TIER3"
         }
-      }
-    },
-    "firewall": {
-      "name": "FIREWALL-SHM-TESTB",
-      "routeTableName": "ROUTE-TABLE-SHM-TESTB"
-    },
-    "keyVault": {
-      "rg": "RG_SHM_TESTB_SECRETS",
-      "name": "kv-shm-testb",
-      "secretNames": {
-        "aadAdminPassword": "shm-testb-aad-admin-password",
-        "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
-        "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
-        "domainAdminUsername": "shm-testb-domain-admin-username",
-        "domainAdminPassword": "shm-testb-domain-admin-password",
-        "vpnCaCertificate": "shm-testb-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-testb-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testb-vpn-client-cert-password"
-      }
-    },
-    "users": {
-      "computerManagers": {
-        "identityServers": {
-          "name": "TESTB Identity Servers Manager",
-          "samAccountName": "testbidentitysrvrs",
-          "passwordSecretName": "shm-testb-computer-manager-password-identity-servers"
-        },
-        "dataServers": {
-          "name": "TESTB Data Servers Manager",
-          "samAccountName": "testbdatasrvrs",
-          "passwordSecretName": "shm-testb-computer-manager-password-data-servers"
-        },
-        "linuxServers": {
-          "name": "TESTB Linux Servers Manager",
-          "samAccountName": "testblinuxsrvrs",
-          "passwordSecretName": "shm-testb-computer-manager-password-linux-servers"
-        },
-        "rdsGatewayServers": {
-          "name": "TESTB RDS Gateway Manager",
-          "samAccountName": "testbgatewaysrvrs",
-          "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers"
-        },
-        "rdsSessionServers": {
-          "name": "TESTB RDS Session Servers Manager",
-          "samAccountName": "testbsessionsrvrs",
-          "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers"
-        }
       },
-      "serviceAccounts": {
-        "aadLocalSync": {
-          "name": "TESTB Local AD Sync Administrator",
-          "samAccountName": "testblocaladsync",
-          "passwordSecretName": "shm-testb-aad-localsync-password"
-        }
-      }
-    },
-    "dc": {
-      "rg": "RG_SHM_TESTB_DC",
-      "vmName": "DC1-SHM-TESTB",
-      "vmSize": "Standard_D2s_v3",
-      "hostname": "DC1-SHM-TESTB",
-      "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "ip": "10.0.0.4",
-      "external_dns_resolver": "168.63.129.16",
-      "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
-      "disks": {
-        "data": {
-          "sizeGb": "20",
-          "type": "Standard_LRS"
-        },
-        "os": {
-          "sizeGb": "128",
-          "type": "Standard_LRS"
-        }
-      }
-    },
-    "dcb": {
-      "vmName": "DC2-SHM-TESTB",
-      "vmSize": "Standard_D2s_v3",
-      "hostname": "DC2-SHM-TESTB",
-      "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "ip": "10.0.0.5",
-      "disks": {
-        "data": {
-          "sizeGb": "20",
-          "type": "Standard_LRS"
-        },
-        "os": {
-          "sizeGb": "128",
-          "type": "Standard_LRS"
+      "vnet": {
+        "cidr": "10.0.0.0/21",
+        "name": "VNET_SHM_TESTB",
+        "rg": "RG_SHM_TESTB_NETWORKING",
+        "subnets": {
+          "firewall": {
+            "cidr": "10.0.2.0/24",
+            "name": "AzureFirewallSubnet"
+          },
+          "gateway": {
+            "cidr": "10.0.7.0/24",
+            "name": "GatewaySubnet"
+          },
+          "identity": {
+            "cidr": "10.0.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "web": {
+            "cidr": "10.0.1.0/24",
+            "name": "WebSubnet"
+          }
         }
       }
     },
     "nps": {
       "adminPasswordSecretName": "shm-testb-vm-admin-password-nps",
-      "rg": "RG_SHM_TESTB_NPS",
-      "vmName": "NPS-SHM-TESTB",
-      "vmSize": "Standard_D2s_v3",
-      "hostname": "NPS-SHM-TESTB",
-      "ip": "10.0.0.6",
       "disks": {
         "data": {
           "sizeGb": "20",
@@ -246,155 +263,190 @@
           "sizeGb": "128",
           "type": "Standard_LRS"
         }
-      }
+      },
+      "hostname": "NPS-SHM-TESTB",
+      "ip": "10.0.0.6",
+      "rg": "RG_SHM_TESTB_NPS",
+      "vmName": "NPS-SHM-TESTB",
+      "vmSize": "Standard_D2s_v3"
+    },
+    "organisation": {
+      "countryCode": "GB",
+      "name": "The Alan Turing Institute",
+      "stateCountyRegion": "London",
+      "townCity": "London"
     },
     "storage": {
       "artifacts": {
-        "rg": "RG_SHM_TESTB_ARTIFACTS",
-        "accountName": "shmtestbartifactsqtxiyzd"
+        "accountName": "shmtestbartifactsqtxiyzd",
+        "rg": "RG_SHM_TESTB_ARTIFACTS"
       },
       "bootdiagnostics": {
-        "rg": "RG_SHM_TESTB_ARTIFACTS",
-        "accountName": "shmtestbbootdiagsqtxiyzd"
+        "accountName": "shmtestbbootdiagsqtxiyzd",
+        "rg": "RG_SHM_TESTB_ARTIFACTS"
       }
     },
-    "dns": {
-      "subscriptionName": "[Prod] Safe Haven Domains",
-      "rg": "RG_SHM_DNS_TEST"
-    },
-    "mirrors": {
-      "rg": "RG_SHM_TESTB_PKG_MIRRORS",
-      "vmSize": "Standard_B2ms",
-      "diskType": "Standard_LRS",
-      "pypi": {
-        "tier2": {
-          "diskSize": 8191,
-          "internal": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-internal-mirror-tier-2",
-            "ipAddress": "10.20.2.20",
-            "vmName": "PYPI-INTERNAL-MIRROR-TIER-2"
-          },
-          "external": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-external-mirror-tier-2",
-            "ipAddress": "10.20.2.4",
-            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-2"
-          }
+    "subscriptionName": "Safe Haven Management Test B",
+    "users": {
+      "computerManagers": {
+        "dataServers": {
+          "name": "TESTB Data Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-data-servers",
+          "samAccountName": "testbdatasrvrs"
         },
-        "tier3": {
-          "diskSize": 511,
-          "internal": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-internal-mirror-tier-3",
-            "ipAddress": "10.20.3.20",
-            "vmName": "PYPI-INTERNAL-MIRROR-TIER-3"
-          },
-          "external": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-pypi-external-mirror-tier-3",
-            "ipAddress": "10.20.3.4",
-            "vmName": "PYPI-EXTERNAL-MIRROR-TIER-3"
-          }
+        "identityServers": {
+          "name": "TESTB Identity Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-identity-servers",
+          "samAccountName": "testbidentitysrvrs"
+        },
+        "linuxServers": {
+          "name": "TESTB Linux Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-linux-servers",
+          "samAccountName": "testblinuxsrvrs"
+        },
+        "rdsGatewayServers": {
+          "name": "TESTB RDS Gateway Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers",
+          "samAccountName": "testbgatewaysrvrs"
+        },
+        "rdsSessionServers": {
+          "name": "TESTB RDS Session Servers Manager",
+          "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers",
+          "samAccountName": "testbsessionsrvrs"
         }
       },
-      "cran": {
-        "tier2": {
-          "diskSize": 127,
-          "internal": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-internal-mirror-tier-2",
-            "ipAddress": "10.20.2.21",
-            "vmName": "CRAN-INTERNAL-MIRROR-TIER-2"
-          },
-          "external": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-external-mirror-tier-2",
-            "ipAddress": "10.20.2.5",
-            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-2"
-          }
-        },
-        "tier3": {
-          "diskSize": 31,
-          "internal": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-internal-mirror-tier-3",
-            "ipAddress": "10.20.3.21",
-            "vmName": "CRAN-INTERNAL-MIRROR-TIER-3"
-          },
-          "external": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-cran-external-mirror-tier-3",
-            "ipAddress": "10.20.3.5",
-            "vmName": "CRAN-EXTERNAL-MIRROR-TIER-3"
-          }
+      "serviceAccounts": {
+        "aadLocalSync": {
+          "name": "TESTB Local AD Sync Administrator",
+          "passwordSecretName": "shm-testb-aad-localsync-password",
+          "samAccountName": "testblocaladsync"
         }
       }
     }
   },
   "sre": {
-    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
-    "id": "sandbox",
-    "shortName": "sre-sandbox",
-    "tier": "2",
     "adminSecurityGroupName": "Safe Haven Test Admins",
-    "location": "uksouth",
+    "databases": {
+      "dbmssql": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "enableSSIS": true,
+        "ip": "10.150.3.4",
+        "port": "1433",
+        "sku": "sqldev",
+        "subnet": "databases",
+        "type": "MSSQL",
+        "vmName": "MSSQL-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "dbpostgresql": {
+        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
+        "disks": {
+          "data": {
+            "sizeGb": "1024",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "ip": "10.150.3.5",
+        "port": "5432",
+        "sku": "18.04-LTS",
+        "subnet": "databases",
+        "type": "PostgreSQL",
+        "vmName": "PSTGRS-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "rg": "RG_SRE_SANDBOX_DATABASES"
+    },
+    "dataserver": {
+      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
+      "disks": {
+        "egress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "ingress": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        },
+        "shared": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
+        }
+      },
+      "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
+      "hostname": "DAT-SRE-SANDBOX",
+      "ip": "10.150.2.4",
+      "nsg": "NSG_SRE_SANDBOX_DATA",
+      "rg": "RG_SRE_SANDBOX_DATA",
+      "vmName": "DAT-SRE-SANDBOX",
+      "vmSize": "Standard_D2s_v3"
+    },
     "domain": {
+      "dn": "DC=sandbox,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "sandbox.testb.dsgroupdev.co.uk",
       "netbiosName": "SANDBOX",
-      "dn": "DC=sandbox,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
       "securityGroups": {
         "dataAdministrators": {
-          "name": "SG SANDBOX Data Administrators",
-          "description": "SG SANDBOX Data Administrators"
-        },
-        "systemAdministrators": {
-          "name": "SG SANDBOX System Administrators",
-          "description": "SG SANDBOX System Administrators"
+          "description": "SG SANDBOX Data Administrators",
+          "name": "SG SANDBOX Data Administrators"
         },
         "researchUsers": {
-          "name": "SG SANDBOX Research Users",
-          "description": "SG SANDBOX Research Users"
+          "description": "SG SANDBOX Research Users",
+          "name": "SG SANDBOX Research Users"
+        },
+        "systemAdministrators": {
+          "description": "SG SANDBOX System Administrators",
+          "name": "SG SANDBOX System Administrators"
         }
       }
     },
-    "network": {
-      "vnet": {
-        "rg": "RG_SRE_SANDBOX_NETWORKING",
-        "name": "VNET_SRE_SANDBOX",
-        "cidr": "10.150.0.0/21",
-        "subnets": {
-          "identity": {
-            "name": "IdentitySubnet",
-            "cidr": "10.150.0.0/24"
-          },
-          "rds": {
-            "name": "RDSSubnet",
-            "cidr": "10.150.1.0/24"
-          },
-          "data": {
-            "name": "SharedDataSubnet",
-            "cidr": "10.150.2.0/24"
-          },
-          "databases": {
-            "name": "DatabasesSubnet",
-            "cidr": "10.150.3.0/24",
-            "nsg": "databases"
-          }
+    "dsvm": {
+      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
+      "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
+      "disks": {
+        "home": {
+          "sizeGb": "128",
+          "type": "Standard_LRS"
+        },
+        "os": {
+          "sizeGb": "64",
+          "type": "Standard_LRS"
+        },
+        "scratch": {
+          "sizeGb": "512",
+          "type": "Standard_LRS"
         }
       },
-      "nsg": {
-        "data": {},
-        "databases": {
-          "name": "NSG_SRE_SANDBOX_DATABASES"
-        }
-      }
+      "nsg": "NSG_SRE_SANDBOX_COMPUTE",
+      "rg": "RG_SRE_SANDBOX_COMPUTE",
+      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
+      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
+      "vmImageSubscription": "[Prod] Safe Haven VM Images",
+      "vmImageType": "Ubuntu",
+      "vmImageVersion": "0.2.2020062200",
+      "vmSizeDefault": "Standard_D2s_v3"
     },
     "firewall": {
       "routeTableName": "ROUTE-TABLE-SRE-SANDBOX"
     },
-    "storage": {
-      "artifacts": {
-        "rg": "RG_SRE_SANDBOX_ARTIFACTS",
-        "accountName": "sresandboxartifactsopmkq"
-      },
-      "bootdiagnostics": {
-        "rg": "RG_SRE_SANDBOX_ARTIFACTS",
-        "accountName": "sresandboxbootdiagsopmkq"
-      }
-    },
+    "id": "sandbox",
     "keyVault": {
       "name": "kv-testb-sre-sandbox",
       "rg": "RG_SRE_SANDBOX_SECRETS",
@@ -404,37 +456,42 @@
         "npsSecret": "sre-sandbox-other-nps-secret"
       }
     },
-    "users": {
-      "serviceAccounts": {
-        "ldapSearch": {
-          "name": "SANDBOX LDAP Search Service Account",
-          "samAccountName": "sandboxldapsearch",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search"
-        },
-        "postgres": {
-          "name": "SANDBOX Postgres DB Service Account",
-          "samAccountName": "sandboxdbpostgres",
-          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres"
-        },
-        "datamount": {
-          "name": "SANDBOX Data Mount Service Account",
-          "samAccountName": "sandboxdatamount",
-          "passwordSecretName": "sre-sandbox-other-service-account-password-datamount"
+    "location": "uksouth",
+    "network": {
+      "nsg": {
+        "data": {},
+        "databases": {
+          "name": "NSG_SRE_SANDBOX_DATABASES"
+        }
+      },
+      "vnet": {
+        "cidr": "10.150.0.0/21",
+        "name": "VNET_SRE_SANDBOX",
+        "rg": "RG_SRE_SANDBOX_NETWORKING",
+        "subnets": {
+          "data": {
+            "cidr": "10.150.2.0/24",
+            "name": "SharedDataSubnet"
+          },
+          "databases": {
+            "cidr": "10.150.3.0/24",
+            "name": "DatabasesSubnet",
+            "nsg": "databases"
+          },
+          "identity": {
+            "cidr": "10.150.0.0/24",
+            "name": "IdentitySubnet"
+          },
+          "rds": {
+            "cidr": "10.150.1.0/24",
+            "name": "RDSSubnet"
+          }
         }
       }
     },
     "rds": {
-      "rg": "RG_SRE_SANDBOX_RDS",
       "gateway": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-gateway",
-        "vmName": "RDG-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
-        "ip": "10.150.1.4",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
-        "networkRules": {
-          "allowedSources": "193.60.220.253",
-          "outboundInternet": "Deny"
-        },
         "disks": {
           "data1": {
             "sizeGb": "1023",
@@ -449,73 +506,84 @@
             "type": "Standard_LRS"
           }
         },
+        "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "RDG-SRE-SANDBOX",
-        "fqdn": "RDG-SRE-SANDBOX.testb.dsgroupdev.co.uk"
+        "ip": "10.150.1.4",
+        "networkRules": {
+          "allowedSources": "193.60.220.253",
+          "outboundInternet": "Deny"
+        },
+        "nsg": "NSG_SRE_SANDBOX_RDS_SERVER",
+        "vmName": "RDG-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
       },
+      "rg": "RG_SRE_SANDBOX_RDS",
       "sessionHost1": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh1",
-        "vmName": "APP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
-        "ip": "10.150.1.5",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
+        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "APP-SRE-SANDBOX",
-        "fqdn": "APP-SRE-SANDBOX.testb.dsgroupdev.co.uk"
+        "ip": "10.150.1.5",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "vmName": "APP-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
       },
       "sessionHost2": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-rds-sh2",
-        "vmName": "DKP-SRE-SANDBOX",
-        "vmSize": "Standard_DS2_v2",
-        "ip": "10.150.1.6",
-        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
+        "fqdn": "DKP-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "DKP-SRE-SANDBOX",
-        "fqdn": "DKP-SRE-SANDBOX.testb.dsgroupdev.co.uk"
+        "ip": "10.150.1.6",
+        "nsg": "NSG_SRE_SANDBOX_RDS_SESSION_HOSTS",
+        "vmName": "DKP-SRE-SANDBOX",
+        "vmSize": "Standard_DS2_v2"
       }
     },
-    "dataserver": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-dataserver",
-      "rg": "RG_SRE_SANDBOX_DATA",
-      "nsg": "NSG_SRE_SANDBOX_DATA",
-      "vmName": "DAT-SRE-SANDBOX",
-      "vmSize": "Standard_D2s_v3",
-      "hostname": "DAT-SRE-SANDBOX",
-      "fqdn": "DAT-SRE-SANDBOX.testb.dsgroupdev.co.uk",
-      "ip": "10.150.2.4",
-      "disks": {
-        "egress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
+    "shortName": "sre-sandbox",
+    "storage": {
+      "artifacts": {
+        "accountName": "sresandboxartifactsopmkq",
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
+      },
+      "bootdiagnostics": {
+        "accountName": "sresandboxbootdiagsopmkq",
+        "rg": "RG_SRE_SANDBOX_ARTIFACTS"
+      }
+    },
+    "subscriptionName": "Turing SRE - Sandbox (SHM Test B)",
+    "tier": "2",
+    "users": {
+      "serviceAccounts": {
+        "datamount": {
+          "name": "SANDBOX Data Mount Service Account",
+          "passwordSecretName": "sre-sandbox-other-service-account-password-datamount",
+          "samAccountName": "sandboxdatamount"
         },
-        "ingress": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
+        "ldapSearch": {
+          "name": "SANDBOX LDAP Search Service Account",
+          "passwordSecretName": "sre-sandbox-other-service-account-password-ldap-search",
+          "samAccountName": "sandboxldapsearch"
         },
-        "shared": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
+        "postgres": {
+          "name": "SANDBOX Postgres DB Service Account",
+          "passwordSecretName": "sre-sandbox-db-service-account-password-postgres",
+          "samAccountName": "sandboxdbpostgres"
         }
       }
     },
     "webapps": {
-      "rg": "RG_SRE_SANDBOX_WEBAPPS",
-      "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
       "gitlab": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-gitlab",
-        "vmName": "GITLAB-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
-        "ip": "10.150.2.5",
-        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
         "disks": {
           "data": {
             "sizeGb": "750",
@@ -526,97 +594,29 @@
             "type": "Standard_LRS"
           }
         },
+        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "GITLAB-SRE-SANDBOX",
-        "fqdn": "GITLAB-SRE-SANDBOX.testb.dsgroupdev.co.uk"
+        "ip": "10.150.2.5",
+        "rootPasswordSecretName": "sre-sandbox-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-SANDBOX",
+        "vmSize": "Standard_D2s_v3"
       },
       "hackmd": {
         "adminPasswordSecretName": "sre-sandbox-vm-admin-password-hackmd",
-        "vmName": "HACKMD-SRE-SANDBOX",
-        "vmSize": "Standard_D2s_v3",
-        "ip": "10.150.2.6",
         "disks": {
           "os": {
             "sizeGb": "750",
             "type": "Standard_LRS"
           }
         },
+        "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk",
         "hostname": "HACKMD-SRE-SANDBOX",
-        "fqdn": "HACKMD-SRE-SANDBOX.testb.dsgroupdev.co.uk"
-      }
-    },
-    "databases": {
-      "rg": "RG_SRE_SANDBOX_DATABASES",
-      "dbmssql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-mssql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-mssql",
-        "vmName": "MSSQL-SANDBOX",
-        "type": "MSSQL",
-        "ip": "10.150.3.4",
-        "port": "1433",
-        "sku": "sqldev",
-        "subnet": "databases",
-        "vmSize": "Standard_DS2_v2",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "enableSSIS": true
+        "ip": "10.150.2.6",
+        "vmName": "HACKMD-SRE-SANDBOX",
+        "vmSize": "Standard_D2s_v3"
       },
-      "dbpostgresql": {
-        "adminPasswordSecretName": "sre-sandbox-vm-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-sandbox-db-admin-username-postgresql",
-        "dbAdminPasswordSecretName": "sre-sandbox-db-admin-password-postgresql",
-        "vmName": "PSTGRS-SANDBOX",
-        "type": "PostgreSQL",
-        "ip": "10.150.3.5",
-        "port": "5432",
-        "sku": "18.04-LTS",
-        "subnet": "databases",
-        "vmSize": "Standard_DS2_v2",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        }
-      }
-    },
-    "dsvm": {
-      "adminPasswordSecretName": "sre-sandbox-vm-admin-password-compute",
-      "rg": "RG_SRE_SANDBOX_COMPUTE",
-      "nsg": "NSG_SRE_SANDBOX_COMPUTE",
-      "deploymentNsg": "NSG_SRE_SANDBOX_COMPUTE_DEPLOYMENT",
-      "vmImageSubscription": "[Prod] Safe Haven VM Images",
-      "vmImageResourceGroup": "RG_SH_IMAGE_GALLERY",
-      "vmImageGallery": "SAFE_HAVEN_COMPUTE_IMAGES",
-      "vmSizeDefault": "Standard_D2s_v3",
-      "vmImageType": "Ubuntu",
-      "vmImageVersion": "0.2.2020062200",
-      "disks": {
-        "home": {
-          "sizeGb": "128",
-          "type": "Standard_LRS"
-        },
-        "os": {
-          "sizeGb": "64",
-          "type": "Standard_LRS"
-        },
-        "scratch": {
-          "sizeGb": "512",
-          "type": "Standard_LRS"
-        }
-      }
+      "nsg": "NSG_SRE_SANDBOX_WEBAPPS",
+      "rg": "RG_SRE_SANDBOX_WEBAPPS"
     }
   }
 }
