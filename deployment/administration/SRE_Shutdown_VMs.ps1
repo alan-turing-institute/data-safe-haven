@@ -18,19 +18,26 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName
 # Stop all VMs
 # ------------
 Add-LogMessage -Level Info "Stopping all compute VMs..."
-Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | Stop-AzVM -Force -NoWait
-Add-LogMessage -Level Info "Stopping web app servers..."
-Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.gitlab.vmName -Force -NoWait
-Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $config.sre.webapps.hackmd.vmName -Force -NoWait
-Add-LogMessage -Level Info "Stopping dataserver..."
-Stop-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $config.sre.dataserver.vmName -Force -NoWait
-Add-LogMessage -Level Info "Stopping RDS session hosts..."
-Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost1.vmName -Force -NoWait
-Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.sessionHost2.vmName -Force -NoWait
-Add-LogMessage -Level Info "Stopping RDS gateway..."
-Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $config.sre.rds.gateway.vmName -Force -NoWait
-Add-LogMessage -Level Info "Stopping AD DC..."
-Stop-AzVM -ResourceGroupName $config.sre.dc.rg -Name $config.sre.dc.vmName -Force -NoWait
+
+Add-LogMessage -Level Info "Resizing compute VMs..."
+Get-AzVM -ResourceGroupName $config.sre.dsvm.rg | ForEach-Object {
+    Stop-AzVM -ResourceGroupName $config.sre.dsvm.rg -Name $_.Name -Force -NoWait
+}
+
+Add-LogMessage -Level Info "Resizing web app servers..."
+Get-AzVM -ResourceGroupName $config.sre.webapps.rg | ForEach-Object {
+    Stop-AzVM -ResourceGroupName $config.sre.webapps.rg -Name $_.Name -Force -NoWait
+}
+
+Add-LogMessage -Level Info "Resizing dataserver..."
+Get-AzVM -ResourceGroupName $config.sre.dataserver.rg | ForEach-Object {
+    Stop-AzVM -ResourceGroupName $config.sre.dataserver.rg -Name $_.Name -Force -NoWait
+}
+
+Add-LogMessage -Level Info "Resizing RDS gateway and session hosts..."
+Get-AzVM -ResourceGroupName $config.sre.rds.rg | ForEach-Object {
+    Stop-AzVM -ResourceGroupName $config.sre.rds.rg -Name $_.Name -Force -NoWait
+}
 
 
 # Switch back to original subscription
