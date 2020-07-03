@@ -1,14 +1,14 @@
 param(
-  [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
-  [string]$sreNetbiosName,
-  [Parameter(Position=1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
-  [string]$shmNetbiosName,
-  [Parameter(Position=2, Mandatory = $true, HelpMessage = "User which enables the SMB share to be mounted locally")]
-  [string]$dataMountUser,
-  [Parameter(Position=3, Mandatory = $true, HelpMessage = "Security group name for research users")]
-  [string]$researcherUserSgName,
-  [Parameter(Position=4, Mandatory = $true, HelpMessage = "Security group name for server admins")]
-  [string]$serverAdminSgName
+    [Parameter(Position=0, Mandatory = $true, HelpMessage = "SRE Netbios name")]
+    [string]$sreNetbiosName,
+    [Parameter(Position=1, Mandatory = $true, HelpMessage = "SHM Netbios name")]
+    [string]$shmNetbiosName,
+    [Parameter(Position=2, Mandatory = $true, HelpMessage = "User which enables the SMB share to be mounted locally")]
+    [string]$dataMountUser,
+    [Parameter(Position=3, Mandatory = $true, HelpMessage = "Security group name for research users")]
+    [string]$researcherUserSgName,
+    [Parameter(Position=4, Mandatory = $true, HelpMessage = "Security group name for server admins")]
+    [string]$serverAdminSgName
 )
 
 
@@ -16,14 +16,28 @@ param(
 # --------------------------
 Write-Output "Initialising data drives..."
 Stop-Service ShellHWDetection
-$CandidateRawDisks = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | Sort -Property Number
-foreach ($rawDisk in $CandidateRawDisks) {
-    $LUN = (Get-WmiObject Win32_DiskDrive | Where-Object index -eq $rawDisk.Number | Select-Object SCSILogicalUnit -ExpandProperty SCSILogicalUnit)
-    $null = Initialize-Disk -PartitionStyle GPT -Number $rawDisk.Number
-    $partition = New-Partition -DiskNumber $rawDisk.Number -UseMaximumSize -AssignDriveLetter
-    $label = "DATA-$LUN"
-    Write-Output "Formatting partition $($partition.PartitionNumber) of raw disk $($rawDisk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
-    $null = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
+$null = Get-Disk | Where-Object { $_.PartitionStyle -eq "raw" } | ForEach-Object { Initialize-Disk -PartitionStyle GPT -Number $_.Number }
+
+
+# Check that all disks are correctly partitioned
+# ----------------------------------------------
+Write-Output "Checking drive partitioning..."
+$dataDisks = Get-Disk | Where-Object { $_.Model -ne "Virtual HD" } | Sort -Property Number  # This excludes the OS and temp disks
+foreach ($disk in $dataDisks) {
+    $existingPartition = Get-Partition -DiskNumber $disk.Number | Where-Object { $_.Type -eq "Basic" }  # This selects normal partitions that are not system-reserved
+    if ($existingPartition.DriveLetter) {
+        Write-Output " [o] Partition $($existingPartition.PartitionNumber) of disk $($disk.DiskNumber) is mounted at drive letter '$($existingPartition.DriveLetter)'"
+    } else {
+        if ($existingPartition.PartitionNumber) {
+            Write-Output "Removing non-lettered partition $($existingPartition.PartitionNumber) from disk $($disk.DiskNumber)!"
+            Remove-Partition -DiskNumber $disk.DiskNumber -PartitionNumber $existingPartition.PartitionNumber -Confirm:$false
+        }
+        $LUN = $(Get-WmiObject Win32_DiskDrive | Where-Object { $_.Index -eq $disk.Number }).SCSILogicalUnit
+        $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
+        $label = "DATA-$LUN"
+        Write-Host " [o] Formatting partition $($partition.PartitionNumber) of disk $($disk.Number) with label '$label' at drive letter '$($partition.DriveLetter)'"
+        $null = Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel $label -Confirm:$false
+    }
 }
 Start-Service ShellHWDetection
 
@@ -47,7 +61,7 @@ foreach ($shareName in @("Ingress", "Shared", "Egress")) {
         Write-Output " [o] SMB share '$shareName' already exists"
     } else {
         # Create folder if it does not exist
-        if (-Not (Test-Path -Path $sharePath)) {
+        if (-not (Test-Path -Path $sharePath)) {
             $null = New-Item -ItemType directory -Path $sharePath
         }
         # Create SMB share
