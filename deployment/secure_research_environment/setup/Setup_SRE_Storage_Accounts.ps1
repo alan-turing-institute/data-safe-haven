@@ -40,21 +40,22 @@ if ($storageAccount) {
 
 # Ensure that container exists in storage account
 # -----------------------------------------------
-$containerName = "ingress"
-Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
-$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction allow
-$storageContainer = Get-AzStorageContainer -Context $storageAccount.Context -Name $containerName -ClientTimeoutPerRequest 300 -ErrorAction silentlycontinue
-if ($storageContainer) {
-    Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
-} else {
-    try {
-        $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
-        Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
-    } catch {
-        Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
+foreach ($containerName in @("ingress")) {
+    Add-LogMessage -Level Info "Ensuring that storage container $($containerName) exists"
+    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Allow
+    $storageContainer = Get-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ClientTimeoutPerRequest 300 -ErrorAction silentlycontinue
+    if ($storageContainer) {
+        Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+    } else {
+        try {
+            $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
+            Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
+        }
     }
+    $null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
 }
-$null = Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -DefaultAction Deny
 
 
 # Create a SAS token (hardcoded 1 year for the moment)
