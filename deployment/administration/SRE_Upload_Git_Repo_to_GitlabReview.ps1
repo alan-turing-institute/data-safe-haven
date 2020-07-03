@@ -131,6 +131,8 @@ if ($success) {
     Add-LogMessage -Level Fatal "Failed to clean up resources!"
 }
 
+# Remove the temporary storage container
+Remove-AzStorageContainer -Name $containerName -Context $sreStorageAccount.Context -Confirm $false
 
 # Switch back to original subscription
 # ------------------------------------
