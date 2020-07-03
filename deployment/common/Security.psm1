@@ -7,7 +7,7 @@ function New-Password {
         [int]$Length = 20
     )
     # Construct allowed character set
-    $alphaNumeric = 48..122 | ForEach-Object { [char]($_) } | Join-String | ForEach-Object { $_ -replace "[^a-zA-Z0-9]", "" }
+    $alphaNumeric = [char[]](1..127) -match "[a-zA-Z0-9]" -join ""
 
     # Initialise common parameters
     $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
