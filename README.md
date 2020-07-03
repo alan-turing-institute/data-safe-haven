@@ -26,6 +26,7 @@ To get a good overview of the Safe Haven, see the resources below.
 
   - [Design choices](https://arxiv.org/abs/1908.08737): Our preprint "Design choices for productive, secure, data-intensive research at scale in the cloud", outlining our policies, processes and design decisions for the Safe Haven.
 
+  - [Versioning](VERSIONING.md): An overview of our versioning scheme and a list of versions that we have deployed into production.
 
 ## Documentation
 
