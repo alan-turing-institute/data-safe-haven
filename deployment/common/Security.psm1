@@ -1,64 +1,33 @@
 Import-Module $PSScriptRoot/Logging.psm1
 
-# Modified from the [System.Web.Security.Membership]::GeneratePassword() function
-# Source : https://github.com/Microsoft/referencesource/blob/master/System.Web/Security/Membership.cs
-# Needed because [System.Web.Security.Membership] is not in .NetCore so unavailable in Powershell 6
-# Modifications:
-# - Remove requirement for special characters (as these cause us problems when embedding in config files in our application)
-# - Require at least one character from upper case, lower case and numeric character sets (using a "check and recurse" approach)
-# ------------------------------------------------------------------------------------------------------------------------------
+# Generate a random alphanumeric password
+# ---------------------------------------
 function New-Password {
     param(
-        [int]$length = 20
+        [int]$Length = 20
     )
-    [string]$password = "";
-    [int]$index = 0;
+    # Construct allowed character set
+    $alphaNumeric = 48..122 | ForEach-Object { [char]($_) } | Join-String | ForEach-Object { $_ -replace "[^a-zA-Z0-9]", "" }
 
-    $buf = [System.Byte[]]::CreateInstance([System.Byte],$length);
-    $cBuf = [System.Char[]]::CreateInstance([System.Char],$length);
+    # Initialise common parameters
+    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $fourByteArray = [System.Byte[]]::CreateInstance([System.Byte], 4)
+    $maxUint = [uint32]::MaxValue
 
-    $cryptoRng = [System.Security.Cryptography.RandomNumberGenerator]::Create();
-    $cryptoRng.GetBytes($buf);
-
-    $numericEnd = 10
-    $alphaUpperEnd = 36
-    $numCharsInSet = 62
-
-    # Convert random bytes into characters from permitted character set (lower alpha, upper alpha, numeric)
-    for ([int]$iter = 0; $iter -lt $length; $iter++) {
-        [int]$i = [int]($buf[$iter] % $numCharsInSet);
-        if ($i -lt $numericEnd) {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'0')) + $i);
-        }
-        elseif ($i -lt $alphaUpperEnd) {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'A')) + $i - $numericEnd);
-        }
-        else {
-            $cBuf[$iter] = [char](([System.Convert]::ToByte([int][char]'a')) + $i - $alphaUpperEnd);
-        }
+    # Convert random bytes into characters from permitted character set
+    $password = ""
+    foreach ($i in 1..$Length) {
+        $cryptoRng.GetBytes($fourByteArray)
+        $randomUint = [BitConverter]::ToUInt32($fourByteArray, 0)
+        # This should give a smoother distribution across the 0..<n characters> space than the previous method which used 'byte % <n characters>' which inherently favours lower numbers
+        $password += $alphaNumeric[[int](($alphaNumeric.Length - 1) * $randomUint / $maxUint)]
     }
-    $password = -join $cBuf;
 
     # Require at least one of each character class
-    $numNumeric = 0;
-    $numAlphaUpper = 0;
-    $numAlphaLower = 0;
-    for ([int]$iter = 0; $iter -lt $length; $iter++) {
-        [int]$i = [int]($buf[$iter] % $numCharsInSet);
-        if ($i -lt $numericEnd) {
-            $numNumeric++;
-        }
-        elseif ($i -lt $alphaUpperEnd) {
-            $numAlphaUpper++;
-        }
-        else {
-            $numAlphaLower++;
-        }
+    if (-not (($password -cmatch "[a-z]+") -and ($password -cmatch "[A-Z]+") -and ($password -cmatch "[0-9]+"))) {
+        $password = New-Password -Length $Length
     }
-    if (($numNumeric -eq 0) -or ($numAlphaUpper -eq 0) -or ($numAlphaLower -eq 0)) {
-        $password = New-Password ($length);
-    }
-    return $password;
+    return $password
 }
 Export-ModuleMember -Function New-Password
 
