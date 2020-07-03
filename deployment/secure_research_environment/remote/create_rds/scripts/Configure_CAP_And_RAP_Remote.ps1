@@ -46,9 +46,9 @@ foreach ($rapName in ("RDG_AllDomainComputers", "RDG_RDConnectionBrokers")) {
     $success = ($success -And $?)
     # Report success / failure
     if ($success) {
-        Write-Output -ForegroundColor DarkGreen " [o] Successfully restricted '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'."
+        Write-Output " [o] Successfully restricted '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'."
     } else {
-        Write-Output -ForegroundColor DarkRed " [x] Failed to restrict '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'!"
+        Write-Output " [x] Failed to restrict '$rapName' User Groups to '$sreResearchUserSecurityGroupWithDomain'!"
     }
 }
 
@@ -72,9 +72,9 @@ if ($numNpsServers -ne 1) {
     $success = ($success -And ($firstNpsServerAddress -eq $shmNpsIp))
 }
 if ($success) {
-    Write-Output -ForegroundColor DarkGreen " [o] Successfully configured '$firstNpsServerAddress' as the only remote NPS server."
+    Write-Output " [o] Successfully configured '$firstNpsServerAddress' as the only remote NPS server."
 } else {
-    Write-Output -ForegroundColor DarkRed " [x] Failed to configure '$firstNpsServerAddress' as the only remote NPS server!"
+    Write-Output " [x] Failed to configure '$firstNpsServerAddress' as the only remote NPS server!"
 }
 
 # Set RDS Gateway to use remote NPS server
@@ -82,8 +82,8 @@ if ($success) {
 $null = Set-Item RDS:\GatewayServer\CentralCAPEnabled\ -Value 1 -ErrorAction SilentlyContinue
 $success = $?
 if ($success) {
-    Write-Output -ForegroundColor DarkGreen " [o] Successfully set remote NPS server as RD CAP store."
+    Write-Output " [o] Successfully set remote NPS server as RD CAP store."
 } else {
-    Write-Output -ForegroundColor DarkRed " [x] Failed to set remote NPS server as RD CAP store!"
+    Write-Output " [x] Failed to set remote NPS server as RD CAP store!"
 }
 
