@@ -3,33 +3,33 @@
 function New-AccountSasToken {
     param(
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter subscription name")]
-        [string]$subscriptionName,
+        [string]$SubscriptionName,
         [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Enter storage account resource group")]
-        [string]$resourceGroup,
+        [string]$ResourceGroup,
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
-        [string]$accountName,
+        [string]$AccountName,
         [Parameter(Position = 3, Mandatory = $true, HelpMessage = "Enter service(s) - one or more of Blob,File,Table,Queue")]
-        $service,
+        [string]$Service,
         [Parameter(Position = 4, Mandatory = $true, HelpMessage = "Enter resource type(s) - one or more of Service,Container,Object")]
-        $resourceType,
+        [string]$ResourceType,
         [Parameter(Position = 5, Mandatory = $true, HelpMessage = "Enter permission string")]
-        [string]$permission,
+        [string]$Permission,
         [Parameter(Position = 6, Mandatory = $false, HelpMessage = "Enter validity in hours")]
-        [int]$validityHours = 2
+        [int]$ValidityHours = 2
     )
 
     # Temporarily switch to storage account subscription
     $originalContext = Get-AzContext
-    $_ = Set-AzContext -Subscription $subscriptionName
+    $null = Set-AzContext -Subscription $subscriptionName
 
     # Generate SAS token
-    $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0];
-    $accountContext = (New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey);
+    $accountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -AccountName $accountName).Value[0]
+    $accountContext = New-AzStorageContext -StorageAccountName $accountName -StorageAccountKey $accountKey
     $expiryTime = ((Get-Date) + (New-TimeSpan -Hours $validityHours))
-    $sasToken = (New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -ExpiryTime $expiryTime -Context $accountContext);
+    $sasToken = New-AzStorageAccountSASToken -Service $service -ResourceType $resourceType -Permission $permission -ExpiryTime $expiryTime -Context $accountContext
 
     # Switch back to previous subscription
-    $_ = Set-AzContext -Context $originalContext;
+    $null = Set-AzContext -Context $originalContext
     return $sasToken
 }
 Export-ModuleMember -Function New-AccountSasToken
@@ -46,8 +46,8 @@ function New-ReadOnlyAccountSasToken {
         [Parameter(Position = 2, Mandatory = $true, HelpMessage = "Enter storage account name")]
         [string]$AccountName
     )
-    return New-AccountSasToken -subscriptionName "$SubscriptionName" `
-                               -resourceGroup "$ResourceGroup" `
+    return New-AccountSasToken -SubscriptionName "$SubscriptionName" `
+                               -ResourceGroup "$ResourceGroup" `
                                -AccountName "$AccountName" `
                                -Service Blob,File `
                                -ResourceType Service,Container,Object `
