@@ -98,7 +98,7 @@ if ($?) {
 # --------------------------------------
 Add-LogMessage -Level Info "[ ] Generating SAS token..."
 $sasToken = New-ReadOnlyAccountSasToken -ResourceGroup $storageResourceGroupName -AccountName $sreStorageAccount.StorageAccountName -SubscriptionName $config.sre.subscriptionName
-$remoteUrl = "https://$($sreStorageAccount.StorageAccountName).blob.core.windows.net/${containerName}/${zipFileName}${sasToken}"
+$remoteUrl = "https://$($sreStorageAccount.StorageAccountName).blob.core.windows.net/${tmpContainerName}/${zipFileName}${sasToken}"
 Add-LogMessage -Level Success "Constructed upload URL $remoteUrl"
 
 
@@ -132,7 +132,7 @@ if ($success) {
 }
 
 # Remove the temporary storage container
-Remove-AzStorageContainer -Name $containerName -Context $sreStorageAccount.Context -Confirm $false
+Remove-AzStorageContainer -Name $tmpContainerName -Context $sreStorageAccount.Context -Confirm $false
 
 # Switch back to original subscription
 # ------------------------------------
