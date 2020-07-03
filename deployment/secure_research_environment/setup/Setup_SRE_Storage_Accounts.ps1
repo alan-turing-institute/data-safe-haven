@@ -21,38 +21,70 @@ $config = Get-SreConfig $sreId
 
 $_ = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 
-# Get the storage account object 
-$sa = $config.shm.storage.datastorage
 
 
-# Check if it is available or not
-$availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
-
-
-if($availability.NameAvailable){
-
-    # Create storage account if it does not exist
-      # ---------------------------------------------------
-    Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($sa.rg)' in the subscription '$($config.shm.subscriptionName)'"
-
-    $_ = Deploy-ResourceGroup -Name $sa.rg -Location $config.shm.location
-
-    # Create storage account
-    $storageAccount = New-AzStorageAccount -ResourceGroupName $sa.rg -Name $sa.accountName -Location $config.shm.location  -SkuName Standard_RAGRS -Kind StorageV2
-
-    # Deny network access
-    Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $sa.rg -Name $sa.accountName -DefaultAction Deny
-
-    # Create a blob container: ingress, which will have associated a read only SAS token
-    New-AzStorageContainer -Name "ingress" -Context $storageAccount.Context  
-
-    Add-LogMessage -Level Info "The storage account '$($sa.accountName)' has been created in the subscription '$($config.shm.subscriptionName)'"
+# Ensure that storage account exists (throw exception if there's a problem)
+Add-LogMessage -Level Info "Ensuring that storage account $($config.shm.storage.datastorage.accountName) exists"
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName
+if ($storageAccount) {
+    Add-LogMessage -Level InfoSuccess "Found storage account $($config.shm.storage.datastorage.accountName)"
+} else {
+    try {
+        $storageAccount = New-AzStorageAccount -ResourceGroupName $config.shm.storage.datastorage.rg -Name $config.shm.storage.datastorage.accountName -Location $config.shm.location -SkuName Standard_RAGRS -Kind StorageV2 -ErrorAction Stop
+        Add-LogMessage -Level Success "Created storage account $($config.shm.storage.datastorage.accountName)"
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to create storage account '$($config.shm.storage.datastorage.accountName)'!"
     }
-
-else {
-    Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists, try a different name"
-    exit
 }
+
+
+# Ensure that container exists in storage account (throw exception if there's a problem)
+$containerName = "ingress"
+$storageContainer = Get-AzStorageContainer -Context $storageAccount.Context -Name $containerName
+if ($storageContainer) {
+    Add-LogMessage -Level InfoSuccess "Found container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+} else {
+    try {
+        $storageContainer = New-AzStorageContainer -Name $containerName -Context $storageAccount.Context -ErrorAction Stop
+        Add-LogMessage -Level Success "Created container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'"
+    } catch {
+        Add-LogMessage -Level Fatal "Failed to create container '$containerName' in storage account '$($config.shm.storage.datastorage.accountName)'!"
+    }
+}
+
+
+
+# # Check if it is available or not
+# $availability = Get-AzStorageAccountNameAvailability -Name $sa.accountName
+
+
+# if($availability.NameAvailable){
+
+#     # Create storage account if it does not exist
+#       # ---------------------------------------------------
+#     Add-LogMessage -Level Info "Creating storage account '$($sa.accountName)' under '$($sa.rg)' in the subscription '$($config.shm.subscriptionName)'"
+
+#     $_ = Deploy-ResourceGroup -Name $sa.rg -Location $config.shm.location
+
+#     # Create storage account
+#     $storageAccount = New-AzStorageAccount -ResourceGroupName $sa.rg -Name $sa.accountName -Location $config.shm.location  -SkuName Standard_RAGRS -Kind StorageV2
+
+#     # Deny network access
+#     Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $sa.rg -Name $sa.accountName -DefaultAction Deny
+
+#     # Create a blob container: ingress, which will have associated a read only SAS token
+#     New-AzStorageContainer -Name "ingress" -Context $storageAccount.Context
+
+#     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' has been created in the subscription '$($config.shm.subscriptionName)'"
+#     }
+
+# else {
+#     Add-LogMessage -Level Info "The storage account '$($sa.accountName)' already exists, try a different name"
+#     exit
+# }
+
+# Get the storage account object
+$sa = $config.shm.storage.datastorage
 
 # Create the ingress SAS token and store it in a secret
 
@@ -66,7 +98,7 @@ $ingressSAS = New-AzStorageContainerSASToken -Name "ingress" -Context $storageCo
 
 # Create the private endpoint
 # ---------------------------
-
+Write-Host "storage account name? $($storageAccount.Name)"
 $resource = Get-AzResource -Name $sa.accountName -ExpandProperties
 
 $privateEndpointName = $sa.accountName + "-endpoint"
