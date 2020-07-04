@@ -36,57 +36,51 @@ mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
-  - path: "/etc/ldap.secret"
+  - path: "/etc/domain-join.secret"
+    owner: root:root
     permissions: "0600"
     content: |
-      <ldap-bind-user-password>
+      <domain-join-password>
+  - path: "/etc/ldap-search.secret"
+    owner: root:root
+    permissions: "0600"
+    content: |
+      <ldap-search-user-password>
   - path: "/etc/postgres-user.secret"
+    owner: root:root
     permissions: "0600"
     content: |
       <db-admin-password>
   - path: "/etc/postgres-service-account.secret"
+    owner: root:root
     permissions: "0600"
     content: |
       <ldap-postgres-service-account-password>
   - path: "/etc/krb5.conf"
+    owner: root:root
+    permissions: "0444"
     content: |
       [libdefaults]
         default_realm = <shm-fqdn-upper>
-        rdns = false
-        # The following krb5.conf variables are only for MIT Kerberos.
-        krb4_config = /etc/krb.conf
-        krb4_realms = /etc/krb.realms
-        kdc_timesync = 1
-        ccache_type = 4
         forwardable = true
+        kdc_timesync = true
         proxiable = true
-        # The following libdefaults parameters are only for Heimdal Kerberos.
-        v4_instance_resolve = false
-        v4_name_convert = {
-          host = {
-            rcmd = host
-            ftp = ftp
-          }
-          plain = {
-            something = something-else
-          }
-        }
-        fcc-mit-ticketflags = true
-
+        rdns = false
+        renew_lifetime = 7d
+        ticket_lifetime = 24h
+      [logging]
+        default = FILE:/var/log/krb5libs.log
+        kdc = FILE:/var/log/krb5kdc.log
+        admin_server = FILE:/var/log/kadmind.log
       [realms]
         <shm-fqdn-upper> = {
           kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
           admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
           default_domain = <shm-fqdn-upper>
         }
-
       [domain_realm]
         .<shm-fqdn-lower> = <shm-fqdn-upper>
         <shm-fqdn-lower> = <shm-fqdn-upper>
-
-      [login]
-        krb4_convert = true
-        krb4_get_tickets = false
   - path: "/opt/installation/join_domain.sh"
     owner: root:root
     permissions: "0500"
@@ -116,7 +110,7 @@ write_files:
       ls -alh /etc/sssd/sssd.conf
       # Join realm
       echo ">=== Joining realm... ===<"
-      cat /etc/ldap.secret | realm join --verbose --computer-ou="<ou-data-servers-path>" -U <ldap-bind-user-username> <shm-fqdn-lower> --install=/
+      cat /etc/domain-join.secret | realm join --verbose --computer-ou="<ou-data-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
   - path: "/opt/installation/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
@@ -135,8 +129,8 @@ write_files:
         port: 389
         auth:
           method: :simple
-          username: <ldap-bind-user-dn>
-          password: <ldap-bind-user-password>
+          username: <ldap-search-user-dn>
+          password: <ldap-search-user-password>
         #encryption:
         #  method: :simple_tls
 
@@ -292,8 +286,8 @@ runcmd:
   - SERVICE_PRINCIPAL="POSTGRES/<vm-hostname>.<shm-fqdn-lower>"
   - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
   - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
-  - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-bind-user-dn>' -W msDS-KeyVersionNumber"
-  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-bind-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+  - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-search-user-dn>' -W msDS-KeyVersionNumber"
+  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap-search.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
   - echo "Current KVNO is $KVNO"
   # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
   # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab

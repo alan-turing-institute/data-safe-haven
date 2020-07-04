@@ -377,20 +377,20 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
     Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
     Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
-    Replace("<dsvm-hostname>", $vmName).
     Replace("<domain-join-password>", $domainJoinPassword).
     Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
+    Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
     Replace("<mirror-url-pypi>", $addresses.pypi.url).
     Replace("<ou-linux-servers-path>", $config.shm.domain.ous.linuxServers.path).
+    Replace("<ou-research-users-path>", $config.shm.domain.ous.researchUsers.path).
+    Replace("<ou-service-accounts-path>", $config.shm.domain.ous.serviceAccounts.path).
     Replace("<shm-dc-hostname-lower>", $($config.shm.dc.hostname).ToLower()).
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-    Replace("<shm-ldap-base-dn>", $config.shm.domain.ous.researchUsers.path).
-    Replace("<sre-ldap-bind-dn>", "CN=$($config.sre.users.computerManagers.dsvm.name),$($config.shm.domain.ous.serviceAccounts.path)").
-    Replace("<sre-ldap-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))")
+    Replace("<vm-hostname>", $vmName)
 
 # Insert xrdp logo into the cloud-init template
 # Please note that the logo has to be an 8-bit RGB .bmp with no alpha.

@@ -3,16 +3,18 @@ package_upgrade: false
 
 write_files:
   - path: "/etc/xrdp/startwm.sh"
-    owner: "root:root"
+    owner: root:root
     permissions: "0755"
     content: |
       #!/bin/sh
-      echo "LANG=en_GB.UTF-8" > /etc/default/locale
-      . /etc/default/locale
+      if [ -r /etc/default/locale ]; then
+        . /etc/default/locale
+        export LANG LANGUAGE
+      fi
       # Start xfce4
       startxfce4
-  - path: "/etc/ldap.secret"
-    owner: "root:root"
+  - path: "/etc/domain-join.secret"
+    owner: root:root
     permissions: "0600"
     content: |
       <domain-join-password>
@@ -23,72 +25,46 @@ write_files:
       username=<datamount-username>
       password=<datamount-password>
   - path: "/etc/ldap.conf"
-    owner: "root:root"
-    permissions: "0600"
+    owner: root:root
+    permissions: "0444"
     content: |
       # The distinguished name of the search base.
-      base <shm-ldap-base-dn>
-
+      base <ou-research-users-path>
       # Restrict users to those in the security group of this SRE
-      filter <sre-ldap-user-filter>
-
-      # Another way to specify your LDAP server is to provide a URI
+      filter <ldap-sre-user-filter>
+      # Specify the LDAP server by URI
       uri ldap://<shm-dc-hostname-upper>.<shm-fqdn-lower>:389
-
-      # The LDAP version to use (defaults to 3
-      # if supported by client library)
+      # The LDAP version to use (defaults to 3 if supported by client library)
       ldap_version 3
-
-      # The distinguished name to bind to the server with
-      # if the effective user ID is root. Password is
-      # stored in /etc/ldap.secret (mode 600)
-      rootbinddn <sre-ldap-bind-dn>
-
-      # Do not hash the password at all; presume
-      # the directory server will do it, if
-      # necessary. This is the default.
+      # The distinguished name used to bind to the server
+      rootbinddn CN=<domain-join-username>,<ou-service-accounts-path>
+      # Do not hash the password relying on the server to do so (default)
       pam_password md5
   - path: "/etc/krb5.conf"
-    owner: "root:root"
-    permissions: "0600"
+    owner: root:root
+    permissions: "0444"
     content: |
       [libdefaults]
         default_realm = <shm-fqdn-upper>
-        rdns = false
-        # The following krb5.conf variables are only for MIT Kerberos.
-        krb4_config = /etc/krb.conf
-        krb4_realms = /etc/krb.realms
-        kdc_timesync = 1
-        ccache_type = 4
         forwardable = true
+        kdc_timesync = true
         proxiable = true
-        # The following libdefaults parameters are only for Heimdal Kerberos.
-        v4_instance_resolve = false
-        v4_name_convert = {
-          host = {
-            rcmd = host
-            ftp = ftp
-          }
-          plain = {
-            something = something-else
-          }
-        }
-        fcc-mit-ticketflags = true
-
+        rdns = false
+        renew_lifetime = 7d
+        ticket_lifetime = 24h
+      [logging]
+        default = FILE:/var/log/krb5libs.log
+        kdc = FILE:/var/log/krb5kdc.log
+        admin_server = FILE:/var/log/kadmind.log
       [realms]
         <shm-fqdn-upper> = {
           kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
           admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
           default_domain = <shm-fqdn-upper>
         }
-
       [domain_realm]
         .<shm-fqdn-lower> = <shm-fqdn-upper>
         <shm-fqdn-lower> = <shm-fqdn-upper>
-
-      [login]
-        krb4_convert = true
-        krb4_get_tickets = false
   - path: "/active_directory_step01_pre"
     owner: root:root
     permissions: "0500"
@@ -102,12 +78,12 @@ write_files:
       systemctl status sssd
       # Add information to hosts file
       echo "Setting hostname"
-      hostnamectl set-hostname <dsvm-hostname>.<shm-fqdn-lower>
+      hostnamectl set-hostname <vm-hostname>.<shm-fqdn-lower>
       echo ">=== /etc/hostname ===<"
       cat /etc/hostname
       echo ">=== end of /etc/hostname ===<"
-      echo "Adding <dsvm-hostname> [$(hostname -i)] to /etc/hosts"
-      HOST_INFORMATION="$(hostname -i) <dsvm-hostname> <dsvm-hostname>.<shm-fqdn-lower>"
+      echo "Adding <vm-hostname> [$(hostname -i)] to /etc/hosts"
+      HOST_INFORMATION="$(hostname -i) <vm-hostname> <vm-hostname>.<shm-fqdn-lower>"
       sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
       echo ">=== /etc/hosts ===<"
       cat /etc/hosts
@@ -140,7 +116,7 @@ write_files:
     content: |
       # Join the VM to the domain
       echo "Joining VM to the domain"
-      cat /etc/ldap.secret | realm join --verbose --computer-ou="<ou-linux-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
+      cat /etc/domain-join.secret | realm join --verbose --computer-ou="<ou-linux-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
   - path: "/active_directory_step03_update_sssd"
     owner: root:root
     permissions: "0500"
@@ -212,7 +188,7 @@ write_files:
           doNotPrompt=true;
       };
   - path: "/etc/pip.conf"
-    owner: "root:root"
+    owner: root:root
     permissions: "0444"
     content: |
       # Add the PyPI mirror to our global settings
@@ -221,7 +197,7 @@ write_files:
       index-url = <mirror-url-pypi>/simple
       trusted-host = <mirror-host-pypi>
   - path: "/etc/R/Rprofile.site"
-    owner: "root:root"
+    owner: root:root
     permissions: "0444"
     content: |
       ## Set Rprofile.site to the appropriate CRAN mirror
@@ -233,24 +209,26 @@ write_files:
   - path: "/etc/skel/.xsession"
     owner: root:root
     permissions: "0444"
-    content: xfce4-session
+    content: |
+      xfce4-session
   - path: "/usr/share/xrdp/xrdp_custom_logo.bmp"
     owner: root:root
     encoding: gz+b64
     permissions: "0644"
-    content: <xrdpCustomLogoEncoded>
+    content: |
+      <xrdpCustomLogoEncoded>
   - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/project.default.xml"
-    owner: "root:root"
+    owner: root:root
     permissions: "0400"
     content: |
       <project.default.xml>
   - path: "/etc/skel/.config/JetBrains/PYCHARM_VERSION/options/jdk.table.xml"
-    owner: "root:root"
+    owner: root:root
     permissions: "0400"
     content: |
       <jdk.table.xml>
   - path: "/etc/skel/.bashrc"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     content: |
       # determine if terminal has color support
@@ -275,7 +253,7 @@ write_files:
           alias egrep='egrep --color=auto'
       fi
   - path: "/etc/bash.bashrc"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     append: true
     content: |
@@ -288,7 +266,7 @@ write_files:
           fi
       fi
   - path: "/etc/clamav/clamd.conf"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     append: true
     content: |
@@ -306,7 +284,7 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
   - path: "/lib/systemd/system/clamav-clamonacc.service"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -324,7 +302,7 @@ write_files:
       [Install]
       WantedBy=multi-user.target
   - path: "/lib/systemd/system/clamav-clamdscan.service"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -337,7 +315,7 @@ write_files:
       User=root
       ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
   - path: "/lib/systemd/system/clamav-clamdscan.timer"
-    owner: "root:root"
+    owner: root:root
     permissions: "0644"
     content: |
       [Unit]
@@ -356,6 +334,9 @@ write_files:
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
+  # Set locale
+  - locale-gen en_GB.UTF-8
+  - update-locale LANG=en_GB.UTF-8
   # PyCharm configuration
   - PY27_VERSION=$(/opt/anaconda/envs/py27/bin/python --version 2>&1 | cut -d ' ' -f2)
   - PY36_VERSION=$(/opt/anaconda/envs/py36/bin/python --version 2>&1 | cut -d ' ' -f2)
