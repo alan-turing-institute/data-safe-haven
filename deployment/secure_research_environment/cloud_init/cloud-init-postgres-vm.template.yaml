@@ -38,12 +38,12 @@ mounts:
 write_files:
   - path: "/etc/domain-join.secret"
     owner: root:root
-    permissions: "0600"
+    permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/etc/ldap-search.secret"
+  - path: "/etc/ldap.secret"
     owner: root:root
-    permissions: "0600"
+    permissions: "0400"
     content: |
       <ldap-search-user-password>
   - path: "/etc/postgres-user.secret"
@@ -60,57 +60,12 @@ write_files:
     owner: root:root
     permissions: "0444"
     content: |
-      [libdefaults]
-        default_realm = <shm-fqdn-upper>
-        forwardable = true
-        kdc_timesync = true
-        proxiable = true
-        rdns = false
-        renew_lifetime = 7d
-        ticket_lifetime = 24h
-      [logging]
-        default = FILE:/var/log/krb5libs.log
-        kdc = FILE:/var/log/krb5kdc.log
-        admin_server = FILE:/var/log/kadmind.log
-      [realms]
-        <shm-fqdn-upper> = {
-          kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
-          admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
-          default_domain = <shm-fqdn-upper>
-        }
-      [domain_realm]
-        .<shm-fqdn-lower> = <shm-fqdn-upper>
-        <shm-fqdn-lower> = <shm-fqdn-upper>
+      <krb5.conf>
   - path: "/opt/installation/join_domain.sh"
     owner: root:root
     permissions: "0500"
     content: |
-      # Add FQDN to the hostname file (without using the FQDN we cannot set service principals when joining the Windows domain)
-      echo ">=== Setting hostname in /etc/hostname... ===<"
-      hostnamectl set-hostname <vm-hostname>.<shm-fqdn-lower>
-      cat /etc/hostname
-      # Update DNS settings
-      echo ">=== Updating DNS settings in /etc/resolv.conf... ===<"
-      rm /etc/resolv.conf
-      sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
-      ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-      cat /etc/resolv.conf
-      # Restart systemd-resolved to ensure that these settings get propagated
-      systemctl restart systemd-resolved
-      systemctl status systemd-resolved
-      # Add localhost information to /etc/hosts
-      echo ">=== Adding <vm-hostname> [<vm-ipaddress>] to /etc/hosts... ===<"
-      HOST_INFORMATION="<vm-ipaddress> <vm-hostname> <vm-hostname>.<shm-fqdn-lower>"
-      sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
-      cat /etc/hosts
-      # Configure sssd
-      echo ">=== Configuring sssd... ===<"
-      cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
-      chmod 0600 /etc/sssd/sssd.conf
-      ls -alh /etc/sssd/sssd.conf
-      # Join realm
-      echo ">=== Joining realm... ===<"
-      cat /etc/domain-join.secret | realm join --verbose --computer-ou="<ou-data-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
+      <join_domain.sh>
   - path: "/opt/installation/pg-ldap-sync.yaml"
     owner: root:root
     permissions: "0700"
@@ -279,7 +234,7 @@ packages:
 
 runcmd:
   # Join the domain
-  - /opt/installation/join_domain.sh
+  - /opt/installation/join_domain.sh "<shm-fqdn-lower>" "<ou-data-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
 
   # Generate a keytab and verify by getting a Kerberos ticket
   - echo ">=== Generating service principal credentials... ===<"
@@ -287,7 +242,7 @@ runcmd:
   - KEYTAB_PATH="/var/lib/postgresql/data/postgres.keytab"
   - install -g postgres -o postgres -d /var/lib/postgresql/data/ # create the directory with correct ownership
   - echo "ldapsearch -b '<ldap-postgres-service-account-dn>' -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D '<ldap-search-user-dn>' -W msDS-KeyVersionNumber"
-  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap-search.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
+  - KVNO=$(ldapsearch -b "<ldap-postgres-service-account-dn>" -h <shm-dc-hostname-upper>.<shm-fqdn-lower> -D "<ldap-search-user-dn>" -w $(cat /etc/ldap.secret) msDS-KeyVersionNumber | grep "msDS-KeyVersionNumber:" | cut -d' ' -f2)
   - echo "Current KVNO is $KVNO"
   # Use the same encryption methods and ordering as ktpass on Windows. The Active Directory default is RC4-HMAC.
   # NB. Kerberos will preferentially choose AES-256, but Active Directory does not support it without configuration changes. We therefore do not include it in the keytab

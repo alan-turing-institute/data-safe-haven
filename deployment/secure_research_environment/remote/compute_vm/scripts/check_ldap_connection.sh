@@ -1,6 +1,6 @@
 #!/bin/bash
-# $DOMAIN_JOIN_USER must be present as an environment variable
 # $DOMAIN_CONTROLLER must be present as an environment variable
+# $LDAP_SEARCH_USER must be present as an environment variable
 # $LDAP_TEST_USER must be present as an environment variables
 # $SERVICE_PATH must be present as an environment variable
 # This script is designed to be deployed to an Azure Linux VM via
@@ -14,7 +14,7 @@ END="\033[0m"
 echo -e "${BLUE}Checking LDAP connectivity${END}"
 
 LDAP_SECRET=$(sudo cat /etc/ldap.secret)
-LDAPSEARCH_CMD="ldapsearch -LLL -D \"${DOMAIN_JOIN_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$DOMAIN_CONTROLLER\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_TEST_USER})\""
+LDAPSEARCH_CMD="ldapsearch -LLL -D \"${LDAP_SEARCH_USER}@${DOMAIN_LOWER}\" -w \"$LDAP_SECRET\" -p 389 -h \"$DOMAIN_CONTROLLER\" -b \"$SERVICE_PATH\" -s sub \"(sAMAccountName=${LDAP_TEST_USER})\""
 
 echo -e "Testing LDAP search..."
 LDAP_SEARCH_OUTPUT=$(eval ${LDAPSEARCH_CMD} 2>&1)  # NB. eval is OK here since we control the inputs

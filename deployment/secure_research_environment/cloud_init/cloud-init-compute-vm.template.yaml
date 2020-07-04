@@ -15,10 +15,20 @@ write_files:
       startxfce4
   - path: "/etc/domain-join.secret"
     owner: root:root
-    permissions: "0600"
+    permissions: "0400"
     content: |
       <domain-join-password>
-  - path: "/installation/.smbcredentials"
+  - path: "/etc/ldap.secret"
+    owner: root:root
+    permissions: "0400"
+    content: |
+      <ldap-search-user-password>
+  - path: "/opt/installation/join_domain.sh"
+    owner: root:root
+    permissions: "0500"
+    content: |
+      <join_domain.sh>
+  - path: "/opt/installation/.smbcredentials"
     owner: root:root
     permissions: "0600"
     content: |
@@ -37,114 +47,53 @@ write_files:
       # The LDAP version to use (defaults to 3 if supported by client library)
       ldap_version 3
       # The distinguished name used to bind to the server
-      rootbinddn CN=<domain-join-username>,<ou-service-accounts-path>
-      # Do not hash the password relying on the server to do so (default)
+      rootbinddn <ldap-search-user-dn>
+      # Do not hash the password: rely on the server to do so (default)
       pam_password md5
   - path: "/etc/krb5.conf"
     owner: root:root
     permissions: "0444"
     content: |
-      [libdefaults]
-        default_realm = <shm-fqdn-upper>
-        forwardable = true
-        kdc_timesync = true
-        proxiable = true
-        rdns = false
-        renew_lifetime = 7d
-        ticket_lifetime = 24h
-      [logging]
-        default = FILE:/var/log/krb5libs.log
-        kdc = FILE:/var/log/krb5kdc.log
-        admin_server = FILE:/var/log/kadmind.log
-      [realms]
-        <shm-fqdn-upper> = {
-          kdc = <shm-dc-hostname-upper>.<shm-fqdn-upper>:88
-          admin_server = <shm-dc-hostname-upper>.<shm-fqdn-upper>
-          default_domain = <shm-fqdn-upper>
-        }
-      [domain_realm]
-        .<shm-fqdn-lower> = <shm-fqdn-upper>
-        <shm-fqdn-lower> = <shm-fqdn-upper>
-  - path: "/active_directory_step01_pre"
+      <krb5.conf>
+  - path: "/opt/installation/kerberos_configuration.sh"
     owner: root:root
     permissions: "0500"
     content: |
-      #!/bin/sh
-      # Set up Active Directory
-      # -----------------------
-      echo ">=== Setting up Active Directory... ===<"
-      # Check sssd status
-      echo "Check sssd status"
-      systemctl status sssd
-      # Add information to hosts file
-      echo "Setting hostname"
-      hostnamectl set-hostname <vm-hostname>.<shm-fqdn-lower>
-      echo ">=== /etc/hostname ===<"
-      cat /etc/hostname
-      echo ">=== end of /etc/hostname ===<"
-      echo "Adding <vm-hostname> [$(hostname -i)] to /etc/hosts"
-      HOST_INFORMATION="$(hostname -i) <vm-hostname> <vm-hostname>.<shm-fqdn-lower>"
-      sed -i "/127.0.0.1/ a $HOST_INFORMATION" /etc/hosts
-      echo ">=== /etc/hosts ===<"
-      cat /etc/hosts
-      echo ">=== end of /etc/hosts ===<"
-      # Set timezone
-      echo "Setting timezone"
-      timedatectl set-timezone Europe/London
-      # Create a default sssd.conf file
-      echo "Creating sssd config"
-      cp /usr/share/doc/sssd-common/examples/sssd-example.conf /etc/sssd/sssd.conf
-      chmod 0600 /etc/sssd/sssd.conf
-      echo ">=== /etc/sssd/sssd.conf ===<"
-      grep -v "^[#;]" /etc/sssd/sssd.conf
-      echo ">=== end of /etc/sssd/sssd.conf ===<"
       # Edit LDAP config
       echo "Checking LDAP config"
-      # mv /ldap.conf /etc/ldap.conf
       echo ">=== /etc/ldap.conf ===<"
       cat /etc/ldap.conf
       echo ">=== end of /etc/ldap.conf ===<"
       # Edit Kerberos config
       echo "Checking Kerberos config"
-      # mv /krb5.conf /etc/krb5.conf
       echo ">=== /etc/krb5.conf ===<"
       cat /etc/krb5.conf
       echo ">=== end of /etc/krb5.conf ===<"
-  - path: "/active_directory_step02_realm_join"
+  - path: "/opt/installation/user_login_configuration.sh"
     owner: root:root
     permissions: "0500"
     content: |
-      # Join the VM to the domain
-      echo "Joining VM to the domain"
-      cat /etc/domain-join.secret | realm join --verbose --computer-ou="<ou-linux-servers-path>" -U <domain-join-username> <shm-fqdn-lower> --install=/
-  - path: "/active_directory_step03_update_sssd"
-    owner: root:root
-    permissions: "0500"
-    content: |
-      # Check the sssd.conf file
-      echo "Updating sssd settings"
+      # Configure sssd logins
+      echo "Configuring sssd..."
       sed -i -E 's|(use_fully_qualified_names = ).*|\1False|' /etc/sssd/sssd.conf
       sed -i -E 's|(fallback_homedir = ).*|\1/home/%u|' /etc/sssd/sssd.conf
       sed -i -E 's|(access_provider = ).*|\1simple|' /etc/sssd/sssd.conf
       echo ">=== /etc/sssd/sssd.conf ===<"
-      cat /etc/sssd/sssd.conf
+      grep -v "^[#;]" /etc/sssd/sssd.conf | grep -v "^$"
       echo ">=== end of /etc/sssd/sssd.conf ===<"
-      # Restart the sssd daemon
-      echo "Restarting sssd"
+      # Restart sssd to ensure that these settings get propagated
       systemctl restart sssd
-  - path: "/active_directory_step04_update_pam"
-    owner: root:root
-    permissions: "0500"
-    content: |
+      sleep 10
+      systemctl status sssd
       # Edit the pam session configuration file
-      echo "Updating PAM configuration"
+      echo "Updating PAM configuration..."
       PAM_INFORMATION="session required|pam_mkhomedir.so|skel=/etc/skel/|umask=0022"
       sed "/pam_unix/ a $PAM_INFORMATION" /etc/pam.d/common-session | tr "|" "\t" > /tmp/common-session
       mv /tmp/common-session /etc/pam.d/common-session
       echo ">=== /etc/pam.d/common-session ===<"
-      grep -v "^#" /etc/pam.d/common-session
+      grep -v "^#" /etc/pam.d/common-session | grep -v "^$"
       echo ">=== end of /etc/pam.d/common-session ===<"
-  - path: "/installation/setup_disk.sh"
+  - path: "/opt/installation/setup_disk.sh"
     owner: root:root
     permissions: "0500"
     content: |
@@ -334,6 +283,10 @@ write_files:
 
 runcmd:
   - echo ">=== Beginning DSVM configuration... ===<"
+  # Join this VM to the domain and allow domain users to log in
+  - /opt/installation/kerberos_configuration.sh
+  - /opt/installation/join_domain.sh "<shm-fqdn-lower>" "<ou-linux-servers-path>" "<domain-join-username>" "<vm-hostname>" "<vm-ipaddress>"
+  - /opt/installation/user_login_configuration.sh
   # Set locale
   - locale-gen en_GB.UTF-8
   - update-locale LANG=en_GB.UTF-8
@@ -351,33 +304,23 @@ runcmd:
   # Set default keyboard to a generic 105 key en-GB
   - sed -i 's|XKBMODEL=.*|XKBMODEL=\"pc105\"|g' /etc/default/keyboard
   - sed -i 's|XKBLAYOUT=.*|XKBLAYOUT=\"gb\"|g' /etc/default/keyboard
-  - cat /etc/default/keyboard
+  - grep -v "^[# ]" /etc/default/keyboard
   # Disable light-locker which can cause irritating error messages
-  - echo ">=== Disabling screen lock... ===<"
+  - echo "Disabling screen lock..."
   - echo "Hidden=true" >> /etc/xdg/autostart/light-locker.desktop
-  - cat /etc/xdg/autostart/light-locker.desktop
-  # Set default terminal for xfce
-  - echo ">=== Setting default xfce terminal... ===<"
+  # Set default terminal and panel for xfce
+  - echo "Setting xfce default terminal and panel..."
   - sed -i -E 's/(TerminalEmulator=).*/\1xfce4-terminal/' /etc/xdg/xfce4/helpers.rc
-  # Remove "default config" prompt
   - cp /etc/xdg/xfce4/panel/default.xml /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
-  # Ensure that sssd is running and enabled at startup
-  - echo ">=== Restarting sssd service... ===<"
-  - systemctl restart sssd
-  - systemctl status sssd
-  - systemctl enable sssd
-  # Ensure that xrdp is running and enabled at startup
-  - echo ">=== Restart xrdp service... ===<"
-  - systemctl restart xrdp
-  - systemctl status xrdp
-  - systemctl enable xrdp
-  - systemctl enable xrdp-sesman
-  # Override xrdp defaults
+  # Set xrdp defaults
+  - echo "Setting xrdp defaults..."
+  # Change colours
   - sed -i "s|dark_grey=808080|dark_grey=ffffff|g" /etc/xrdp/xrdp.ini                       # title bar (unselected)
   - sed -i "s|blue=009cb5|blue=ffffff|g" /etc/xrdp/xrdp.ini                                 # title bar (selected)
   - sed -i "s|ls_top_window_bg_color=.*|ls_top_window_bg_color=000000|g" /etc/xrdp/xrdp.ini # teal background
   - sed -i "s|ls_bg_color=.*|ls_bg_color=ffffff|g" /etc/xrdp/xrdp.ini                       # grey box
-  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini                               # window title
+  # Change window title
+  - sed -i "s|.*ls_title=.*|ls_title=\.|g" /etc/xrdp/xrdp.ini
   # Change logo
   - sed -i "s|ls_logo_filename=.*|ls_logo_filename=/usr/share/xrdp/xrdp_custom_logo.bmp|g" /etc/xrdp/xrdp.ini
   # Centre buttons
@@ -390,44 +333,33 @@ runcmd:
   - sed -i '/\[vnc-any\]/,/^$/d' /etc/xrdp/xrdp.ini          # delete lines from [vnc-any] until next empty line
   - sed -i '/\[sesman-any\]/,/^$/d' /etc/xrdp/xrdp.ini       # delete lines from [sesman-any] until next empty line
   - sed -i '/\[neutrinordp-any\]/,/^$/d' /etc/xrdp/xrdp.ini  # delete lines from [neutrinordp-any] until next empty line
-  # Run the Active Directory set up scripts
-  - echo ">=== Run Active Directory setup scripts... ===<"
-  - /active_directory_step01_pre
-  - /active_directory_step02_realm_join
-  - /active_directory_step03_update_sssd
-  - /active_directory_step04_update_pam
-  # Remove the Active Directory set up scripts (as these contain secrets)
-  - echo ">=== Delete Active Directory setup scripts... ===<"
-  - rm /active_directory_step01_pre
-  - rm /active_directory_step02_realm_join
-  - rm /active_directory_step03_update_sssd
-  - rm /active_directory_step04_update_pam
-  # Update resolv.conf to point to the correct location
-  - echo ">=== Update resolv.conf to point to the correct file... ===<"
-  - rm /etc/resolv.conf
-  - sed -i -e "s/^#DNS=.*/DNS=/" -e "s/^#FallbackDNS=.*/FallbackDNS=/" -e "s/^#Domains=.*/Domains=<shm-fqdn-lower>/" /etc/systemd/resolved.conf
-  - ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-  - ls -alh /etc/resolv.conf
+  # Ensure that xrdp is running and enabled at startup
+  - echo ">=== Restart xrdp service... ===<"
+  - systemctl enable xrdp
+  - systemctl enable xrdp-sesman
+  - systemctl restart xrdp
+  - sleep 10
+  - systemctl status xrdp
   # Mount ingress data folder with read-only local access [remote access is controlled by SMB rules]
   - echo ">=== Mount data folder using SMB... ===<"
   - mkdir -p /data
-  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/installation/.smbcredentials\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Ingress\t/data\tcifs\tcredentials=/opt/installation/.smbcredentials\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount shared folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /shared
-  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Shared\t/shared\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Mount egress data folder with full local access [remote access is controlled by SMB rules]
   - echo ">=== Mount output folder using SMB... ===<"
   - mkdir -p /output
-  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
+  - echo "//<dataserver-hostname>/Egress\t/output\tcifs\tcredentials=/opt/installation/.smbcredentials,file_mode=0777,dir_mode=0777\t0\t0" >> /etc/fstab
   - tail -n 1 /etc/fstab
   # Configure disks
   - echo ">=== Mount and configure disks... ===<"
   # This matches the order of disk in Add_DSVM.ps1 which is passed to a loop in Deployments.psm1
-  - /installation/setup_disk.sh 1 /home
-  - /installation/setup_disk.sh 2 /scratch
+  - /opt/installation/setup_disk.sh 1 /home
+  - /opt/installation/setup_disk.sh 2 /scratch
   - echo ">=== Enabling clamav services... ===<"
   # Allow unlimited recursion when scanning
   - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf

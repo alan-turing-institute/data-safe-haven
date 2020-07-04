@@ -285,56 +285,55 @@ $deploymentNsg = Deploy-NetworkSecurityGroup -Name $config.sre.dsvm.deploymentNs
 $shmIdentitySubnetIpRange = $config.shm.network.vnet.subnets.identity.cidr
 # Inbound: allow LDAP then deny all
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-    -Name "InboundAllowLDAP" `
-    -Description "Inbound allow LDAP" `
-    -Priority 2000 `
-    -Direction Inbound `
-    -Access Allow `
-    -Protocol * `
-    -SourceAddressPrefix $shmIdentitySubnetIpRange `
-    -SourcePortRange 88, 389, 636 `
-    -DestinationAddressPrefix VirtualNetwork `
-    -DestinationPortRange *
+                             -Name "InboundAllowLDAP" `
+                             -Description "Inbound allow LDAP" `
+                             -Priority 2000 `
+                             -Direction Inbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix $shmIdentitySubnetIpRange `
+                             -SourcePortRange 88, 389, 636 `
+                             -DestinationAddressPrefix VirtualNetwork `
+                             -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-    -Name "InboundDenyAll" `
-    -Description "Inbound deny all" `
-    -Priority 3000 `
-    -Direction Inbound `
-    -Access Deny `
-    -Protocol * `
-    -SourceAddressPrefix * `
-    -SourcePortRange * `
-    -DestinationAddressPrefix * `
-    -DestinationPortRange *
+                             -Name "InboundDenyAll" `
+                             -Description "Inbound deny all" `
+                             -Priority 3000 `
+                             -Direction Inbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange *
 # Outbound: allow LDAP then deny all Virtual Network
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-    -Name "OutboundAllowLDAP" `
-    -Description "Outbound allow LDAP" `
-    -Priority 2000 `
-    -Direction Outbound `
-    -Access Allow `
-    -Protocol * `
-    -SourceAddressPrefix VirtualNetwork `
-    -SourcePortRange * `
-    -DestinationAddressPrefix $shmIdentitySubnetIpRange `
-    -DestinationPortRange *
+                             -Name "OutboundAllowLDAP" `
+                             -Description "Outbound allow LDAP" `
+                             -Priority 2000 `
+                             -Direction Outbound `
+                             -Access Allow `
+                             -Protocol * `
+                             -SourceAddressPrefix VirtualNetwork `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix $shmIdentitySubnetIpRange `
+                             -DestinationPortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $deploymentNsg `
-    -Name "OutboundDenyVNet" `
-    -Description "Outbound deny virtual network" `
-    -Priority 3000 `
-    -Direction Outbound `
-    -Access Deny `
-    -Protocol * `
-    -SourceAddressPrefix * `
-    -SourcePortRange * `
-    -DestinationAddressPrefix VirtualNetwork `
-    -DestinationPortRange *
+                             -Name "OutboundDenyVNet" `
+                             -Description "Outbound deny virtual network" `
+                             -Priority 3000 `
+                             -Direction Outbound `
+                             -Access Deny `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange * `
+                             -DestinationAddressPrefix VirtualNetwork `
+                             -DestinationPortRange *
 
 
 # Check that VNET and subnet exist
 # --------------------------------
 Add-LogMessage -Level Info "Looking for virtual network '$($config.sre.network.vnet.name)'..."
-# $vnet = $null
 try {
     $vnet = Get-AzVirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg -Name $config.sre.network.vnet.name -ErrorAction Stop
 } catch [Microsoft.Azure.Commands.Compute.Common.ComputeCloudException] {
@@ -364,22 +363,50 @@ Add-LogMessage -Level Success "PyPI host: '$($addresses.pypi.host)'"
 Add-LogMessage -Level Info "Creating/retrieving secrets from key vault '$($config.sre.keyVault.name)'..."
 $dataMountPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.datamount.passwordSecretName -DefaultLength 20
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.shm.keyVault.name -SecretName $config.shm.users.computerManagers.linuxServers.passwordSecretName -DefaultLength 20
+$ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.users.serviceAccounts.ldapSearch.passwordSecretName -DefaultLength 20
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.dsvm.adminPasswordSecretName -DefaultLength 20
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.keyVault.secretNames.adminUsername -DefaultValue "sre$($config.sre.id)admin".ToLower()
 
 
-# Construct the cloud-init yaml file for the target subscription
+# Construct the cloud-init YAML file for the target subscription
 # --------------------------------------------------------------
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $cloudInitFilePath = Get-ChildItem -Path $cloudInitBasePath | Where-Object { $_.Name -eq "cloud-init-compute-vm-sre-${sreId}.template.yaml" } | ForEach-Object { $_.FullName }
 if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath "cloud-init-compute-vm.template.yaml" }
-$cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-password>", $dataMountPassword).
+$cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
+
+# Insert scripts into the cloud-init template
+$indent = "      "
+$resourcePaths = @("jdk.table.xml", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+$resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
+foreach ($resourcePath in $resourcePaths) {
+    $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resourcePath | Split-Path -Leaf)>", $indentedContent)
+}
+
+# Insert xrdp logo into the cloud-init template
+# Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
+# If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
+$xrdpCustomLogo = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
+$outputStream = New-Object IO.MemoryStream
+$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
+$gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
+$gzipStream.Close()
+$xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
+$outputStream.Close()
+$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
+
+# Expand placeholders in the cloud-init template
+$cloudInitTemplate = $cloudInitTemplate.
+    Replace("<datamount-password>", $dataMountPassword).
     Replace("<datamount-username>", $config.sre.users.serviceAccounts.datamount.samAccountName).
     Replace("<dataserver-hostname>", $config.sre.dataserver.hostname).
     Replace("<domain-join-password>", $domainJoinPassword).
     Replace("<domain-join-username>", $config.shm.users.computerManagers.linuxServers.samAccountName).
     Replace("<ldap-sre-user-filter>", "(&(objectClass=user)(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path)))").
+    Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
+    Replace("<ldap-search-user-password>", $ldapSearchPassword).
     Replace("<mirror-host-pypi>", $addresses.pypi.host).
     Replace("<mirror-url-cran>", $addresses.cran.url).
     Replace("<mirror-url-pypi>", $addresses.pypi.url).
@@ -390,36 +417,16 @@ $cloudInitTemplate = $(Get-Content $cloudInitFilePath -Raw).Replace("<datamount-
     Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
     Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
     Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-    Replace("<vm-hostname>", $vmName)
-
-# Insert xrdp logo into the cloud-init template
-# Please note that the logo has to be an 8-bit RGB .bmp with no alpha.
-# If you want to use a size other than the default (240x140) the xrdp.ini will need to be modified appropriately
-# --------------------------------------------------------------------------------------------------------------
-$xrdpCustomLogo = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "resources" "xrdp_custom_logo.bmp") -Raw -AsByteStream
-$outputStream = New-Object IO.MemoryStream
-$gzipStream = New-Object System.IO.Compression.GZipStream($outputStream, [Io.Compression.CompressionMode]::Compress)
-$gzipStream.Write($xrdpCustomLogo, 0, $xrdpCustomLogo.Length)
-$gzipStream.Close()
-$xrdpCustomLogoEncoded = [Convert]::ToBase64String($outputStream.ToArray())
-$outputStream.Close()
-$cloudInitTemplate = $cloudInitTemplate.Replace("<xrdpCustomLogoEncoded>", $xrdpCustomLogoEncoded)
+    Replace("<vm-hostname>", $vmName).
+    Replace("<vm-ipaddress>", $vmIpAddress)
 
 
-# Insert PyCharm defaults into the cloud-init template
-# ----------------------------------------------------
-$indent = "      "
-foreach ($resourceFile in @("jdk.table.xml", "project.default.xml")) {
-    $unindentedContent = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $resourceFile) -Raw
-    $indentedContent = $unindentedContent -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$resourceFile>", $indentedContent)
-}
-
-
-# Deploy NIC
-# ----------
-$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
+# Deploy NIC and attach it to the deployment NSG
+# ----------------------------------------------
 $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.sre.dsvm.rg -Subnet $subnet -PrivateIpAddress $vmIpAddress -Location $config.sre.location
+$vmNic.NetworkSecurityGroup = $deploymentNsg
+$null = $vmNic | Set-AzNetworkInterface
+
 
 # Deploy data disks
 # -----------------
@@ -449,6 +456,7 @@ if ($upgrade) {
 
 # Deploy the VM
 # -------------
+$bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $params = @{
     Name                   = $vmName
     Size                   = $vmSize
@@ -465,18 +473,7 @@ $params = @{
     ImageId                = $image.Id
 }
 $null = Deploy-UbuntuVirtualMachine @params
-
-
-# Poll VM to see whether it has finished running
-Add-LogMessage -Level Info "Waiting for cloud-init provisioning to finish (this will take 5+ minutes)..."
-$progress = 0
-$statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
-while (-Not ($statuses.Contains("ProvisioningState/succeeded") -and $statuses.Contains("PowerState/stopped"))) {
-    $statuses = (Get-AzVM -Name $vmName -ResourceGroupName $config.sre.dsvm.rg -Status).Statuses.Code
-    $progress = [math]::min(100, $progress + 1)
-    Write-Progress -Activity "Deployment status" -Status "$($statuses[0]) $($statuses[1])" -PercentComplete $progress
-    Start-Sleep 10
-}
+Wait-ForAzVMCloudInit -Name $vmName -ResourceGroupName $config.sre.dsvm.rg
 
 
 # Remove snapshots
@@ -541,31 +538,7 @@ Write-Output $result.Value
 
 # Run remote diagnostic scripts
 # -----------------------------
-Add-LogMessage -Level Info "Running diagnostic scripts on VM $vmName..."
-$params = @{
-    DOMAIN_CONTROLLER = $config.shm.dc.fqdn
-    DOMAIN_JOIN_USER  = $config.shm.users.computerManagers.linuxServers.samAccountName
-    DOMAIN_LOWER      = $config.shm.domain.fqdn
-    LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
-    SERVICE_PATH      = "'$($config.shm.domain.ous.serviceAccounts.path)'"
-}
-foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
-                             ("name resolution", "restart_name_resolution_service.sh"),
-                             ("realm join", "rerun_realm_join.sh"),
-                             ("SSSD service", "restart_sssd_service.sh"),
-                             ("xrdp service", "restart_xrdp_service.sh"))) {
-    $name, $diagnostic_script = $scriptNamePair
-    $scriptPath = Join-Path $PSScriptRoot ".." "remote" "compute_vm" "scripts" $diagnostic_script
-    Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$vmName'"
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-    $success = $?
-    Write-Output $result.Value
-    if ($success) {
-        Add-LogMessage -Level Success "Configuring $name on $vmName was successful"
-    } else {
-        Add-LogMessage -Level Failure "Configuring $name on $vmName failed!"
-    }
-}
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
 
 
 # Get private IP address for this machine

@@ -74,27 +74,27 @@ $subnet = Deploy-Subnet -Name $config.dsvmImage.build.subnet.name -VirtualNetwor
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.dsvmImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.dsvmImage.build.nsg.name -ResourceGroupName $config.dsvmImage.network.rg -Location $config.dsvmImage.location
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-    -Access Allow `
-    -Name "AllowTuringSSH" `
-    -Description "Allow port 22 for management over ssh" `
-    -DestinationAddressPrefix * `
-    -DestinationPortRange 22 `
-    -Direction Inbound `
-    -Priority 1000 `
-    -Protocol TCP `
-    -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
-    -SourcePortRange *
+                             -Access Allow `
+                             -Name "AllowTuringSSH" `
+                             -Description "Allow port 22 for management over ssh" `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange 22 `
+                             -Direction Inbound `
+                             -Priority 1000 `
+                             -Protocol TCP `
+                             -SourceAddressPrefix 193.60.220.240, 193.60.220.253 `
+                             -SourcePortRange *
 Add-NetworkSecurityGroupRule -NetworkSecurityGroup $buildNsg `
-    -Access Deny `
-    -Name "DenyAll" `
-    -Description "Inbound deny all" `
-    -DestinationAddressPrefix * `
-    -DestinationPortRange * `
-    -Direction Inbound `
-    -Priority 3000 `
-    -Protocol * `
-    -SourceAddressPrefix * `
-    -SourcePortRange *
+                             -Access Deny `
+                             -Name "DenyAll" `
+                             -Description "Inbound deny all" `
+                             -DestinationAddressPrefix * `
+                             -DestinationPortRange * `
+                             -Direction Inbound `
+                             -Priority 3000 `
+                             -Protocol * `
+                             -SourceAddressPrefix * `
+                             -SourcePortRange *
 $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -NetworkSecurityGroup $buildNsg
 
 
@@ -102,11 +102,11 @@ $null = Set-SubnetNetworkSecurityGroup -VirtualNetwork $vnet -Subnet $subnet -Ne
 # -------------------------------------------
 $indent = "      "
 foreach ($scriptName in @("analyse_build.py",
-        "create_or_update_conda_python_environment.sh",
-        "dbeaver_drivers_config.xml",
-        "deprovision_vm.sh",
-        "download_and_install_deb.sh",
-        "download_and_install_tar.sh")) {
+                          "create_or_update_conda_python_environment.sh",
+                          "dbeaver_drivers_config.xml",
+                          "deprovision_vm.sh",
+                          "download_and_install_deb.sh",
+                          "download_and_install_tar.sh")) {
     $raw_script = Get-Content (Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $scriptName) -Raw
     $indented_script = $raw_script -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
     $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$scriptName>", $indented_script)

@@ -32,38 +32,14 @@ if ($?) {
 
 # Run remote diagnostic scripts
 # -----------------------------
-Add-LogMessage -Level Info "Running diagnostic scripts on VM $($vm.Name)..."
-$params = @{
-    DOMAIN_CONTROLLER = $config.shm.dc.fqdn
-    DOMAIN_JOIN_USER  = $config.shm.users.computerManagers.linuxServers.samAccountName
-    DOMAIN_LOWER      = $config.shm.domain.fqdn
-    LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
-    SERVICE_PATH      = "'$($config.shm.domain.ous.serviceAccounts.path)'"
-}
-foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
-                             ("name resolution", "restart_name_resolution_service.sh"),
-                             ("realm join", "rerun_realm_join.sh"),
-                             ("SSSD service", "restart_sssd_service.sh"),
-                             ("xrdp service", "restart_xrdp_service.sh"))) {
-    $name, $diagnostic_script = $scriptNamePair
-    $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" $diagnostic_script
-    Add-LogMessage -Level Info "[ ] Configuring $name ($diagnostic_script) on compute VM '$($vm.Name)'"
-    $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
-    $success = $?
-    Write-Output $result.Value
-    if ($success) {
-        Add-LogMessage -Level Success "Configuring $name on $($vm.Name) was successful"
-    } else {
-        Add-LogMessage -Level Failure "Configuring $name on $($vm.Name) failed!"
-    }
-}
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot '..' 'secure_research_environment' 'setup' 'Run_SRE_DSVM_Remote_Diagnostics.ps1') -configId $configId -vmName $vmName"
 
 
 # Get LDAP secret from the KeyVault
 # ---------------------------------
 Add-LogMessage -Level Info "[ ] Loading LDAP secret from key vault '$($config.sre.keyVault.name)'"
-$kvLdapPassword = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.dsvmLdapPassword).SecretValueText;
-if ($kvLdapPassword) {
+$ldapSearchPassword = (Get-AzKeyVaultSecret -VaultName $config.sre.keyVault.Name -Name $config.sre.keyVault.secretNames.dsvmLdapPassword).SecretValueText;
+if ($ldapSearchPassword) {
     Add-LogMessage -Level Success "Found LDAP secret in the key vault"
 } else {
     Add-LogMessage -Level Fatal "Could not load LDAP secret from key vault '$($config.sre.keyVault.name)'"
@@ -75,7 +51,7 @@ if ($kvLdapPassword) {
 Add-LogMessage -Level Info "[ ] Setting LDAP secret on compute VM '$($vm.Name)'"
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "reset_ldap_password.sh"
 $params = @{
-    ldapPassword = "`"$kvLdapPassword`""
+    ldapPassword = "`"$ldapSearchPassword`""
 }
 $result = Invoke-RemoteScript -Shell "UnixShell" -ScriptPath $scriptPath -VMName $vm.Name -ResourceGroupName $config.sre.dsvm.rg -Parameter $params
 $success = $?
@@ -92,8 +68,8 @@ if ($success) {
 $null = Set-AzContext -SubscriptionId $config.shm.subscriptionName
 $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "remote" "compute_vm" "scripts" "ResetLdapPasswordOnAD.ps1"
 $params = @{
-    samAccountName = "`"$($config.sre.users.computerManagers.dsvm.samAccountName)`""
-    ldapPassword   = "`"$kvLdapPassword`""
+    samAccountName = "`"$($config.sre.users.serviceAccounts.ldapSearch.name)`""
+    ldapPassword   = "`"$ldapSearchPassword`""
 }
 Add-LogMessage -Level Info "[ ] Setting LDAP secret in local AD on '$($config.shm.dc.vmName)'"
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

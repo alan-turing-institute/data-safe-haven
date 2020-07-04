@@ -190,28 +190,41 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             # Construct the cloud-init file
             Add-LogMessage -Level Info "Constructing cloud-init from template..."
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
-            $cloudInitTemplate = $cloudInitTemplate.Replace("<client-cidr>", $config.sre.network.vnet.subnets.data.cidr).
-                                                    Replace("<db-admin-password>", $dbAdminPassword).
-                                                    Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
-                                                    Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
-                                                    Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
-                                                    Replace("<domain-join-username>", $config.shm.users.computerManagers.dataServers.samAccountName).
-                                                    Replace("<domain-join-password>", $domainJoinPassword).
-                                                    Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
-                                                    Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
-                                                    Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
-                                                    Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
-                                                    Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
-                                                    Replace("<ldap-search-user-password>", $ldapSearchPassword).
-                                                    Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
-                                                    Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
-                                                    Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
-                                                    Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
-                                                    Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
-                                                    Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
-                                                    Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
-                                                    Replace("<vm-hostname>", $databaseCfg.vmName).
-                                                    Replace("<vm-ipaddress>", $databaseCfg.ip)
+
+            # Insert scripts into the cloud-init file
+            $indent = "      "
+            $resourcePaths = @("krb5.conf") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+            $resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
+            foreach ($resourcePath in $resourcePaths) {
+                $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
+                $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resourcePath | Split-Path -Leaf)>", $indentedContent)
+            }
+
+            # Expand placeholders in the cloud-init file
+            $cloudInitTemplate = $cloudInitTemplate.
+                Replace("<client-cidr>", $config.sre.network.vnet.subnets.data.cidr).
+                Replace("<db-admin-password>", $dbAdminPassword).
+                Replace("<db-data-admin-group>", $config.sre.domain.securityGroups.dataAdministrators.name).
+                Replace("<db-sysadmin-group>", $config.sre.domain.securityGroups.systemAdministrators.name).
+                Replace("<db-users-group>", $config.sre.domain.securityGroups.researchUsers.name).
+                Replace("<domain-join-username>", $config.shm.users.computerManagers.dataServers.samAccountName).
+                Replace("<domain-join-password>", $domainJoinPassword).
+                Replace("<ldap-group-filter>", "(&(objectClass=group)(|(CN=SG $($config.sre.domain.netbiosName) *)(CN=$($config.shm.domain.securityGroups.serverAdmins.name))))").  # Using ' *' removes the risk of synchronising groups from an SRE with an overlapping name
+                Replace("<ldap-groups-base-dn>", $config.shm.domain.ous.securityGroups.path).
+                Replace("<ldap-postgres-service-account-dn>", "CN=${dbServiceAccountName},$($config.shm.domain.ous.serviceAccounts.path)").
+                Replace("<ldap-postgres-service-account-password>", $dbServiceAccountPassword).
+                Replace("<ldap-search-user-dn>", "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)").
+                Replace("<ldap-search-user-password>", $ldapSearchPassword).
+                Replace("<ldap-user-filter>", "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))").
+                Replace("<ldap-users-base-dn>", $config.shm.domain.ous.researchUsers.path).
+                Replace("<ou-data-servers-path>", $config.shm.domain.ous.dataServers.path).
+                Replace("<shm-dc-hostname>", $config.shm.dc.hostname).
+                Replace("<shm-dc-hostname-upper>", $($config.shm.dc.hostname).ToUpper()).
+                Replace("<shm-fqdn-lower>", $($config.shm.domain.fqdn).ToLower()).
+                Replace("<shm-fqdn-upper>", $($config.shm.domain.fqdn).ToUpper()).
+                Replace("<vm-hostname>", $databaseCfg.vmName).
+                Replace("<vm-ipaddress>", $databaseCfg.ip)
+
             # Deploy the VM
             $params = @{
                 AdminPassword          = $vmAdminPassword
