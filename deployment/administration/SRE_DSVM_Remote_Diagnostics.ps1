@@ -34,10 +34,11 @@ if ($?) {
 # -----------------------------
 Add-LogMessage -Level Info "Running diagnostic scripts on VM $($vm.Name)..."
 $params = @{
-    TEST_HOST    = $config.shm.dc.fqdn
-    LDAP_USER    = $config.sre.users.computerManagers.dsvm.samAccountName
-    DOMAIN_LOWER = $config.shm.domain.fqdn
-    SERVICE_PATH = "'$($config.shm.domain.ous.serviceAccounts.path)'"
+    DOMAIN_CONTROLLER = $config.shm.dc.fqdn
+    DOMAIN_JOIN_USER  = $config.shm.users.computerManagers.linuxServers.samAccountName
+    DOMAIN_LOWER      = $config.shm.domain.fqdn
+    LDAP_TEST_USER    = $config.shm.users.serviceAccounts.aadLocalSync.samAccountName
+    SERVICE_PATH      = "'$($config.shm.domain.ous.serviceAccounts.path)'"
 }
 foreach ($scriptNamePair in (("LDAP connection", "check_ldap_connection.sh"),
                              ("name resolution", "restart_name_resolution_service.sh"),
