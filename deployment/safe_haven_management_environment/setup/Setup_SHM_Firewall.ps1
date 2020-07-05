@@ -19,7 +19,7 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName
 # Ensure that firewall subnet exists
 # ----------------------------------
 $virtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.subnets.firewall.cidr
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $virtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -54,7 +54,7 @@ Add-LogMessage -Level Info "Setting firewall rules from template..."
 $rules = (Get-Content (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Raw).
     Replace("<shm-firewall-private-ip>", $firewall.IpConfigurations.PrivateIpAddress).
     Replace("<shm-id>", $config.id).
-    Replace("<subnet-identity-cidr>", $config.network.subnets.identity.cidr).
+    Replace("<subnet-identity-cidr>", $config.network.vnet.subnets.identity.cidr).
     Replace("<subnet-vpn-cidr>", $config.network.vpn.cidr) | ConvertFrom-Json -AsHashtable
 
 
@@ -71,7 +71,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the VPN gateway to the firewall route table
 # ---------------------------------------------------------------------
-$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.subnets.identity.name -AddressPrefix $config.network.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
+$null = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $config.network.vnet.subnets.identity.name -AddressPrefix $config.network.vnet.subnets.identity.cidr -RouteTable $RouteTable | Set-AzVirtualNetwork
 
 
 # Application rules
