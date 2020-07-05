@@ -249,6 +249,11 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   - Under `Enable policy` select `On`
   - Click `Create`
 
+5. Setup MFA for global administrator
+- Sign out of the Azure portal and then sign-in again as one of the `Global Administrator` accounts that you set up above.
+- You should be prompted with a screen telling you that `Your organisation needs more information to keep your account secure`
+- Click `Next` and fill out the required information (phone number and email address) that you want to have associated with this account
+
 
 ## 7. Deploy and configure VNET and Domain Controllers
 
@@ -265,7 +270,7 @@ To enable MFA, purchase sufficient licences and add them to all the new users.
   </p>
 
 ### Download a client VPN certificate for the Safe Haven Management VNet
-1. Navigate to the SHM Key Vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
+1. Navigate to the SHM key vault via `Resource Groups -> RG_SHM_SECRETS -> kv-shm-<SHM ID>`, where `<SHM ID>` will be the one defined in the config file.
 2. Once there open the "Certificates" page under the "Settings" section in the left hand sidebar.
 3. Click on the certificate named `shm-<SHM ID>-vpn-client-cert`, click on the "current version" and click the "Download in PFX/PEM format" link.
 4. To install, double click on the downloaded certificate (or on OSX you can manually drag it into the "login" keychain), leaving the password field blank.
@@ -321,7 +326,7 @@ rather than simply `<admin username>`)
     - Click `Next`
   - On the `Connect to Azure AD` screen:
     - Provide a global administrator details for the Azure Active Directory you are connected to
-    - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the Key Vault
+    - You should have created `admin@<SHM domain>` during the `Add additional administrators` step and its password should be stored in the key vault
       - If you receive an Internet Explorer pop-up dialog `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration: https://login.microsoft.com`
         - Click `Add`
         - Click `Add`
@@ -338,16 +343,16 @@ rather than simply `<admin username>`)
     - Ensure that correct forest (your custom domain name; e.g `turingsafehaven.ac.uk`) is selected and click `Add Directory`
     - On the `AD forest account` pop-up:
       - Select `Use existing AD account`
-      - Enter the details for the `localadsync` user.
-        - Username: `localadsync@<SHM domain>` (e.g. localadsync)
-        - Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
+      - Enter the details for the local AD synchronisation user.
+        - Username: `<username>@<SHM domain>` where `username` is in the `shm-<SHM ID>-aad-localsync-username` secret in the management key vault.
+        - Password: use the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
       - Click `OK`
-      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
+      - **Troubleshooting:** if you get an error that the username/password is incorrect or that the domain/directory could not be found, try resetting the password for this user to the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
           - In Server Manager click `Tools > Active Directory Users and Computers`
           - Expand the domain in the left hand panel
           - Expand the `Safe Haven Service Accounts` OU
           - Right click on the "Local AD Sync Administrator" user and select "reset password"
-          - Set the password to the the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management Key Vault.
+          - Set the password to the the secret value from the `shm-<SHM ID>-aad-localsync-password` secret in the management key vault.
           - Leave the other settings as is and click `OK`
     - Click `Next`
   - On the `Azure AD sign-in configuration` screen:

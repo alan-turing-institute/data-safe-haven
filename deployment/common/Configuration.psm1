@@ -682,6 +682,7 @@ function Get-ShmFullConfig {
                 name = "$($shm.domain.netbiosName) Local AD Sync Administrator"
                 samAccountName = "$($shm.id)localadsync".ToLower() | Limit-StringLength 20
                 passwordSecretName = "shm-$($shm.id)-aad-localsync-password".ToLower()
+                usernameSecretName =  "shm-$($shm.id)-aad-localsync-username".ToLower()
             }
         }
     }

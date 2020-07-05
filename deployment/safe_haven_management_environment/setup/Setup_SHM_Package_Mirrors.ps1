@@ -245,7 +245,7 @@ function Deploy-PackageMirror {
         # Deploy NIC and data disks
         # -------------------------
         $vmNic = Deploy-VirtualMachineNIC -Name "$vmName-NIC" -ResourceGroupName $config.mirrors.rg -Subnet $subnet -PrivateIpAddress $privateIpAddress -Location $config.location
-        $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.mirrors.pypi.diskSize["tier$tier"] -Type $config.mirrors.diskType -ResourceGroupName $config.mirrors.rg -Location $config.location
+        $dataDisk = Deploy-ManagedDisk -Name "$vmName-DATA-DISK" -SizeGB $config.mirrors[$MirrorType]["tier${tier}"].diskSize -Type $config.mirrors.diskType -ResourceGroupName $config.mirrors.rg -Location $config.location
         $nsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $subnet.NetworkSecurityGroup.Id }
 
         # Deploy the VM with access to the internet for configuration

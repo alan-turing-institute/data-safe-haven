@@ -40,12 +40,13 @@ try {
 } catch {
     Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
 }
-# :: AAD admin passwords
+# :: AAD admin details
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.aadAdminPassword -DefaultLength 20
-    Add-LogMessage -Level Success "Ensured that AAD admin passwords exist"
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName
+    Add-LogMessage -Level Success "Ensured that AAD admin details exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that AAD admin passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that AAD admin details exist!"
 }
 # :: VM admin passwords
 try {
