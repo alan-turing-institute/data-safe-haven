@@ -377,12 +377,14 @@ if (-not $cloudInitFilePath) { $cloudInitFilePath = Join-Path $cloudInitBasePath
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 
 # Insert scripts into the cloud-init template
-$indent = "      "
-$resourcePaths = @("jdk.table.xml", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+$resourcePaths = @()
+$resourcePaths += @("jdk.table.xml", "krb5.conf", "project.default.xml") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
 $resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
 foreach ($resourcePath in $resourcePaths) {
+    $resourceFileName = $resourcePath | Split-Path -Leaf
+    $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<${resourceFileName}>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
     $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resourcePath | Split-Path -Leaf)>", $indentedContent)
+    $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<${resourceFileName}>", $indentedContent)
 }
 
 # Insert xrdp logo into the cloud-init template

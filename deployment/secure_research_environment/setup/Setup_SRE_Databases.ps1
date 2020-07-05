@@ -192,12 +192,14 @@ foreach ($dbConfigName in $config.sre.databases.Keys) {
             $cloudInitTemplate = Get-Content $(Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-postgres-vm.template.yaml" -Resolve) -Raw
 
             # Insert scripts into the cloud-init file
-            $indent = "      "
-            $resourcePaths = @("krb5.conf") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
+            $resourcePaths = @()
+            $resourcePaths += @("krb5.conf") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "resources" $_ }
             $resourcePaths += @("join_domain.sh") | ForEach-Object { Join-Path $PSScriptRoot ".." "cloud_init" "scripts" $_ }
             foreach ($resourcePath in $resourcePaths) {
+                $resourceFileName = $resourcePath | Split-Path -Leaf
+                $indent = $cloudInitTemplate -split "`n" | Where-Object { $_ -match "<${resourceFileName}>" } | ForEach-Object { $_.Split("<")[0] } | Select-Object -First 1
                 $indentedContent = (Get-Content $resourcePath -Raw) -split "`n" | ForEach-Object { "${indent}$_" } | Join-String -Separator "`n"
-                $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<$($resourcePath | Split-Path -Leaf)>", $indentedContent)
+                $cloudInitTemplate = $cloudInitTemplate.Replace("${indent}<${resourceFileName}>", $indentedContent)
             }
 
             # Expand placeholders in the cloud-init file
