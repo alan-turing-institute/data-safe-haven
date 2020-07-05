@@ -105,6 +105,7 @@
         "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
         "domainAdminPassword": "shm-testb-domain-admin-password",
         "domainAdminUsername": "shm-testb-domain-admin-username",
+        "vmAdminUsername": "shm-testb-vm-admin-username",
         "vpnCaCertificate": "shm-testb-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
         "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
@@ -322,7 +323,8 @@
         "aadLocalSync": {
           "name": "TESTB Local AD Sync Administrator",
           "passwordSecretName": "shm-testb-aad-localsync-password",
-          "samAccountName": "testblocaladsync"
+          "samAccountName": "testblocaladsync",
+          "usernameSecretName": "shm-testb-aad-localsync-username"
         }
       }
     }

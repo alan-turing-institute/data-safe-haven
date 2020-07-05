@@ -49,7 +49,8 @@
         "keyVault": {
             "rg": "RG_SHM_SECRETS",
             "secretNames": {
-                "domainAdminUsername": "shm-testa-vm-admin-username"
+                "domainAdminUsername": "shm-testa-vm-admin-username",
+                "vmAdminUsername": "shm-testa-vm-admin-username"
             }
         },
         "users": {

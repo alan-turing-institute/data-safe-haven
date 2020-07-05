@@ -105,6 +105,7 @@
         "buildImageAdminUsername": "shm-demo-buildimage-admin-username",
         "domainAdminPassword": "shm-demo-domain-admin-password",
         "domainAdminUsername": "shm-demo-vm-admin-username",
+        "vmAdminUsername": "shm-demo-vm-admin-username",
         "vpnCaCertificate": "shm-demo-vpn-ca-cert",
         "vpnCaCertificatePlain": "shm-demo-vpn-ca-cert-plain",
         "vpnCaCertPassword": "shm-demo-vpn-ca-cert-password",
@@ -322,7 +323,8 @@
         "aadLocalSync": {
           "name": "Local AD Sync Administrator",
           "passwordSecretName": "shm-demo-localadsync-password",
-          "samAccountName": "localadsync"
+          "samAccountName": "localadsync",
+          "usernameSecretName": "shm-demo-aad-localsync-username"
         }
       }
     }
