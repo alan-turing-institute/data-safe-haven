@@ -106,7 +106,7 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 ### Add the SHM domain to the new AAD
 1. Navigate to the AAD you have created within the Azure portal. You ca n do this by:
     - Clicking the link displayed at the end of the initial AAD deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking "Switch directory" and selecting the AAD you have just created from the "All Directories" section of "Directory + Subscription" panel that then displays.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of `Directory + Subscription` panel that then displays.
 2. Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
    <p align="center">
       <img src="images/deploy_shm/aad_tenant_id.png" width="80%" title="AAD Tenant ID">
@@ -114,15 +114,15 @@ The following core SHM properties must be defined in a JSON file named `shm_<SHM
 3. Add the SHM domain:
     - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
     - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-    - **IMPORTANT** Ensure you are authenticated to the correct AAD within PowerShell using the command: `Connect-AzureAD -TenantId <aad-tenant-id>`, where `<aad-tenant-id>` is the `Tenant ID` you copied from the AAD portal `Overview` page in the previous step. :warning: If you do not do this before running the next script, you will have to exit Powershell and start it again.
-    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config.
+    - Run `./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>`, where the SHM ID is the one specified in the config and `AAD tenant ID` is the `Tenant ID` you copied from the AAD
+      - **Troubleshooting:** If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh Powershell terminal.
     - :warning: Due to delays with DNS propagation, occasionally the script may exhaust the maximum number of retries without managing to verify the domain. If this occurs, run the script again. If it exhausts the number of retries a second time, wait an hour and try again.
 
 
 ## 5. Deploy key vault for SHM secrets
 - Ensure you have the latest version of the Safe Haven repository from [https://github.com/alan-turing-institute/data-safe-haven](https://github.com/alan-turing-institute/data-safe-haven).
 - Open a Powershell terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Safe Haven repository.
-- Ensure you are logged into Azure within PowerShell using the command: `Connect-AzAccount`.
+- Ensure you are logged into Azure within Powershell using the command: `Connect-AzAccount`.
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Deploy and configure the RDS VMs by running `./Setup_SHM_KeyVault.ps1 -shmId <SHM ID>`, where the SHM ID is the one specified in the config
 - This will take **a few minutes** to run.

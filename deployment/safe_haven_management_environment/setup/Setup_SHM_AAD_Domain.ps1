@@ -1,24 +1,43 @@
 param(
-    [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
-    [string]$shmId
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (usually a string e.g enter 'testa' for Turing Development Safe Haven A)")]
+    [string]$shmId,
+    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
+    [string]$tenantId
 )
 
-Import-Module Az
+# Connect to the Azure AD
+# Note that this must be done in a fresh Powershell session with nothing else imported
+# ------------------------------------------------------------------------------------
+if (-not (Get-Module -ListAvailable -Name AzureAD.Standard.Preview)) {
+    Write-Output "Installing Azure AD Powershell module..."
+    $null = Register-PackageSource -Trusted -ProviderName "PowerShellGet" -Name "Posh Test Gallery" -Location https://www.poshtestgallery.com/api/v2/ -ErrorAction SilentlyContinue
+    $null = Install-Module AzureAD.Standard.Preview -Repository "Posh Test Gallery" -Force
+}
 Import-Module AzureAD.Standard.Preview
+Write-Output "Connecting to Azure AD '$tenantId'..."
+try {
+    $null = Connect-AzureAD -TenantId $tenantId
+} catch {
+    Write-Output "Please run this script in a fresh Powershell session with no other modules imported!"
+    throw
+}
+
+
+Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Configuration.psm1 -Force
 Import-Module $PSScriptRoot/../../common/Deployments.psm1 -Force
-Import-Module $PSScriptRoot/../../common/Logging.psm1 -Force
+
 
 # Get config and original context before changing subscription
 # ------------------------------------------------------------
 $config = Get-ShmFullConfig $shmId
 $originalContext = Get-AzContext
+$null = Set-AzContext -Subscription $config.dns.subscriptionName
 
 
 # Add the SHM domain record to the Azure AD
 # -----------------------------------------
 Add-LogMessage -Level Info "Adding SHM domain to AAD..."
-
 # Check if domain name has already been added to AAD. Calling Get-AzureADDomain with no
 # arguments avoids having to use a try/catch to handle an expected 404 "Not found exception"
 # if the domain has not yet been added.
@@ -41,9 +60,6 @@ if ($aadDomain.IsVerified) {
     | Where-Object { $_.RecordType -eq "Txt" }
     # Make a DNS TXT Record object containing the validation code
     $validationCode = New-AzDnsRecordConfig -Value $validationRecord.Text
-
-    # Temporarily switch to domain subscription
-    $null = Set-AzContext -Subscription $config.dns.subscriptionName
 
     # Check if this validation record already exists for the domain
     $recordSet = Get-AzDnsRecordSet -RecordType TXT -Name "@" `
